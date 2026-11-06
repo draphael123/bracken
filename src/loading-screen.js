@@ -1,3 +1,4 @@
+import { LESSON_TIPS } from './opening-tutorial.js';
 // src/loading-screen.js - THE LOADING SCREEN (claude/loadbar, 2026-09-30). Daniel: "progress bars for loading and a hero do a dance
 // at them." A pixel bar with the percentage and a line of what is loading, and the player's own hero beside it (since claude/hubpolish: standing at the
 // fire in his own idle frames, with the others you own round it - see heroReady / campReady below).
@@ -137,6 +138,7 @@ export const TIPS = [
   'TIP: THE DESERT SUN HURTS. STAND IN SHADE AND DRINK FROM YOUR SKIN.',
   'TIP: A BOSS CAN ALWAYS BE HURT. A CLANK MEANS WRONG ANGLE: GO ROUND. HIS GOLD RING IS AN OPENING: HIT HARD.',
   'TIP: THE MAP SHOWS EACH WOOD\'S MEDAL TIMES. BEAT THEM FOR GOLD FROM THE PURSE.',
+  ...LESSON_TIPS.map(t => 'TIP: ' + t),   /* (claude/tutorial1) what the inn is, where the Arena Yard is, how to replay the lesson */
   'A ROAD, A CROWN, A MOUNTAIN.',
   'THE BRACKEN HAS GROWN OVER THE OLD ROAD.',
   'SOMEONE LEFT THE FIRE LIT. NOBODY WILL SAY WHO.',

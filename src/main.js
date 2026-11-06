@@ -279,7 +279,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
-import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
+import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
@@ -5417,7 +5417,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'TAVERN' : 'F TAVERN  G ONLINE', x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN: CO-OP, TRAINING  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-dots.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -6548,7 +6548,7 @@ const SETTING_TIPS = {
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
 const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Arena Yard', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
-const menuItems = () => menuItems0().filter(k => k !== 'Swap hero' || swapMenuOk()).filter(k => k !== 'Arena Yard' || !(L && L.arenaYard));   /* (claude/yardswap) the row is the way IN: not offered inside the yard */
+const menuItems = () => menuItems0().map(k => k === 'Return to map' && L && L.opening ? 'Skip lesson' : k).filter(k => k !== 'Swap hero' || swapMenuOk()).filter(k => k !== 'Arena Yard' || !(L && L.arenaYard));   /* (claude/yardswap) the row is the way IN: not offered inside the yard */
 const menuItems0 = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
@@ -6611,6 +6611,7 @@ function menuConfirm() {
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
   else if (k === 'Return to map' && L && L.duelPit) { duelLeave(); }   /* (claude/pvpduel) out of the duel pit: back to the inn */
+  else if (k === 'Skip lesson') { state = 'play'; opnLeave(true); }   /* (claude/tutorial1) the roadside lesson's SKIP: out to the inn */
   else if (k === 'Return to map' && L && L.arenaYard) { yardLeave(); }   /* (claude/arenayard) out of the yard: back to the inn it was entered from, else the map */
   else if (k === 'Return to map' && L && L.tavern) { tavernToMap(); }   /* (claude/tavernname) out of the inn's door, to the map */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -6699,12 +6700,11 @@ function updateHeroPick() {
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
     else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); heroPick.stage = 'trial'; if (openingHeroDue) { openingHeroDue = false; opening = { i: OP.HERO_PANEL, t: 0, post: true }; state = 'opening'; } } }
-  else { if (confirmPress) { if (!yardEnter(false)) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
+  else if (heroPick.stage === 'trial') { heroPick.stage = 'go'; if (!opnEnter(false)) { if (!yardEnter(false)) { state = 'map'; SFX.ui(); } } }   /* (claude/tutorial1, Daniel 11-05) a NEW save starts in the roadside lesson (skippable: pause > SKIP LESSON); it ends at the inn */
 }
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
-  if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('SEE THE ARENA YARD FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('the training yard: every move this hero has, and straw that cannot hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
-    text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
+  if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT LESSON', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'TAP C: THE FLAME WARD', '88 health', 'HARDER'],   /* (claude/pyrokit) */
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
@@ -7327,7 +7327,7 @@ function tavHands(pp) {
 function enterTavern(cont) {
   const i = tavernIndex(); if (i < 0) return;
   rush = null; trialLend = null;
-  loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; music.play('store'); if (cont) cont(); });
+  loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; music.play('store'); if (!PROG.innTold) { PROG.innTold = 1; saveProgress(); OPN.innCard(9); } if (cont) cont(); });   /* (claude/tutorial1) the first arrival says what the inn IS, once per save */
 }
 function tavernToMap(say) {
   partyToWant(); setView('normal'); mapToSaved(); state = 'map'; music.play(menuTrack()); SFX.uiSel();
@@ -7360,7 +7360,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -7434,6 +7434,32 @@ YARD = makeArenaYard({ TS, L: () => L, players: () => players, time: () => time,
   openBoard: p => yardBoardOpen(p), leave: () => yardLeave() });
 VERB_HOOKS.push(c => { if (YARD && YARD.on() && c.P) { const s = YARD.spotNear(c.P); if (s) return { verb: YARD.VERB[s], key: 'talk' }; } return null; });
 VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
+/* ===== (claude/tutorial1, Daniel 11-05 22:05) THE ROADSIDE LESSON: the generic opening for a new save (src/opening-tutorial.js), replayable from the inn ===== */
+let opnFromInn = false;
+const opnIndex = () => LEVELS.findIndex(l => l.id === 'lesson');
+/* the CURRENT hero's own words for each key: keyboard (binds, the swapped Z/X), the pad (its own buttons), touch (its buttons) */
+function opnWords() {
+  if (TCH.on) return { move: 'THE STICK', jump: 'THE JUMP BUTTON', atk: 'THE ATTACK BUTTON', block: 'DEFEND', dodge: 'TAP DEFEND', flask: 'THE FLASK BUTTON', pause: 'THE BACK BUTTON', talk: 'THE USE BUTTON' };
+  const pad = !!padLast, prof = pad ? 'pad1' : 'kb', lf = a => CTL.labelFor(SET.binds, prof, a, 1), cu = a => CTL.isCustom(SET.binds, 'kb', a);
+  const swapped = !pad && SET.swapZX && !cu('jump') && !cu('atk');
+  return { move: pad ? 'THE STICK OR D-PAD' : (!cu('left') && !cu('right') ? 'ARROWS OR A D' : lf('left') + ' ' + lf('right')), jump: swapped ? 'X' : lf('jump'), atk: swapped ? 'Z' : lf('atk'), block: lf('block'),
+    dodge: pad ? lf('dodge') : 'TAP A WAY TWICE, OR ' + lf('dodge'), flask: lf('flask'), pause: pad ? lf('pause') : lf('pause'), talk: lf('talk') };
+}
+/* INTO THE LESSON: a new save after its hero pick (alone), or the inn's lesson board (with the party, back to the inn) */
+function opnEnter(fromInn) { const i = opnIndex(); if (i < 0) return false; opnFromInn = !!fromInn; rush = null; loadThen(i, () => { introSeen = true; startGame(); OPN.reset(); SFX.uiSel(); }); return true; }
+/* OUT of it - the door, or SKIP: always into the inn (the first arrival there says what it is). PROG.lesson: 1 finished, 2 skipped */
+function opnLeave(skipped) { setView('normal'); const done = OPN && OPN.st.i >= OT.STEPS.length; PROG.lesson = skipped && !done ? 2 : 1; if (skipped && !done) OPN.st.stats.skipped++; else OPN.st.stats.finished++; saveProgress(); if (opnFromInn) { partyToWant(); opnFromInn = false; } enterTavern(); }
+const OPN = OT.makeLesson({ L: () => L, P: () => P, time: () => time, TS, shrines: () => shrines, words: () => opnWords(), openGate: c => openGate(c, 0, LH - 1), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
+  say: (m, col) => number(P.x, P.y - 34, m, col), taught: k => { PROG.taught = PROG.taught || {}; PROG.taught[k] = 1; saveProgress(); }, hint: (m, t) => hintSay('tip', t, m),
+  hurtMe: () => { P.hp = Math.min(P.hp, Math.max(1, Math.ceil(P.maxHp * 0.45))); P.flasks = Math.max(P.flasks | 0, 1); hintSay('tip', 3, 'THE ROAD HAS BITTEN YOU.'); }, save: () => saveProgress(), leave: s => opnLeave(s),
+  text: (...a) => text(...a), wrap: (t, w, z) => wrap(t, w, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'), VW, VH });
+function opnFrame(dt) { OPN.tick(dt); if (OPN.st.nearDoor && state === 'play' && P && !P.dead && pressRead().talk) { talkPress = false; opnLeave(false); } }
+VERB_HOOKS.push(c => (OPN.on() && OPN.st.nearDoor ? { verb: 'ENTER', key: 'talk' } : null));
+/* the inn's door at the road's end: the tavern's own door art and a plate over it */
+function drawLessonProps(cx, cy) { const o = L.opening, fy = o.floor * TS - cy, x = Math.round(o.door * TS + TS / 2 - cx); if (x < -80 || x > VW + 80) return;
+  TVA.door(g, x, fy, OPN.st.nearDoor, time);
+  const w = 132, h = 13, px = x - (w >> 1), py = fy - 84; g.fillStyle = '#2a1a0e'; g.fillRect(px, py, w, h); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, py + 1, w - 2, h - 2); g.fillStyle = '#2a3a20'; g.fillRect(px + 3, py + 3, w - 6, h - 6);
+  text(OT.INN_SIGN, x, py + 4, '#ffe9a8', 'center', 6); if (OPN.st.nearDoor) text('UP: ENTER THE INN', x, py - 9 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
 /* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
 /* TWO PASSES: 'back' (before the heroes) is the ring's far half and the leash rope; 'front' (after the near layer, which paints over the floor line in
    the halls) is the ring's near half - under his feet, never over his legs - and the tags, so neither is ever hidden */
@@ -7815,7 +7841,7 @@ function sndAt(x, y, big) { const dx = x - (camX + VW / 2), dy = y - (camY + VH 
   return { pan: Math.max(-0.7, Math.min(0.7, dx / (VW * 0.75))), v: d <= near ? 1 : Math.max(big ? 0.6 : 0.18, 1 - (d - near) / (VW * 0.9)) }; }
 // the player's own sounds are never placed: whatever hurts them, the cry is theirs
 /* (claude/arenayard) THE YARD'S SAFETY: a trial (L.trial) or the Arena Yard (L.arenaYard, which must NOT be a trial: co-op) never hurts, never bills a price, never drinks a flask */
-const yardSafe = () => !!(L && (L.trial || L.arenaYard));
+const yardSafe = () => !!(L && (L.trial || L.arenaYard || L.opening));   /* (claude/tutorial1) the roadside lesson is as safe as the yard (but its flask is real: tryDrink) */
 const yardSnap = () => ({ parries, rpParries: RP.stats.parries, fwParryAt: P.fwParryAt, parryT: P.parryT || 0 });
 /* GRADE one blow from one of the yard's attacking dummies: PERFECT / GOOD / HIT from the game's own counters (src/arena-yard.js gradeOf). Arrows grade here when they reach damagePlayer, and in yardWatch when a kit takes them out of the air */
 function yardGrade(sn, r, o) {
@@ -7823,7 +7849,7 @@ function yardGrade(sn, r, o) {
   const now = { parries, rpParries: RP.stats.parries, fwParryAt: P.fwParryAt, parryT: P.parryT || 0, geoBeat: P.geoBeatT === time, retSince: P.retSince ?? 9 };
   const g = gradeOf(r, sn, now); if (g) { YARD.st.gradedT = time; YARD.grade(g, P); }
 }
-function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, ysn = L && L.arenaYard ? yardSnap() : null, r = damagePlayer0(fromX, dmg, o); if (ysn) yardGrade(ysn, r, o); if (REC.on) REC.hurt(o, hp0 - P.hp, r); if (P.hp < hp0) P.fpHurtAt = time;   /* (claude/foepass) when he last lost health: a told attack answered unhurt (src/told-attacks.js judge) */ if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
+function damagePlayer(fromX, dmg, o) { const was = emitNow(); emitAt(null); try { const hp0 = P.hp, ysn = L && L.arenaYard ? yardSnap() : null, r = damagePlayer0(fromX, dmg, o); if (ysn) yardGrade(ysn, r, o); if (L && L.opening && OPN) OPN.blow(r, P.dodge > 0);   /* (claude/tutorial1) the lesson counts a blow blocked or rolled through */ if (REC.on) REC.hurt(o, hp0 - P.hp, r); if (P.hp < hp0) P.fpHurtAt = time;   /* (claude/foepass) when he last lost health: a told attack answered unhurt (src/told-attacks.js judge) */ if (r === 'blocked') TCH.buzz(P.parryT > 0.2 ? 'parry' : 'block'); else if (P.hp < hp0) TCH.buzz('hit');
   if (r === 'blocked') creditTurn(fromX);   /* and whether that was a blow turned for the PARTNER (the co-op block) */
   if (r === 'hit' && o && o.who && o.who.elite && EK) EK.landed(o.who);   /* (ELITES2) VENOMOUS: his blow that lands poisons */
   /* THE AUDITS' EAR (tools/audit-*.mjs): when a tool has set BK.log to an array, every blow on the hero is written down with the line it came from. Off (null) in play; it changes nothing. */
@@ -8082,7 +8108,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
 const flaskHud = { flashT: 0, spillT: 0, last: -1, spills: [], glowT: 0, levelDrinks: 0 };   /* the HUD row's flash and shake, the knocked-away flasks, the rising glow, this wood's drinks */
 const drinkT0 = () => P.drinkDur || SV.FLASK.drinkT, swallowT0 = () => P.swallowAt || SV.FLASK.swallowAt;
 function tryDrink() { if (DUELO && DUELO.on() && state === 'play') { SFX.buzz(); return false; }   /* (claude/pvpduel) NO FLASKS IN THE DUEL PIT */
-  if (state !== 'play' || !P || P.dead || P.down > 0 || yardSafe() || P.drinkT > 0) return false;
+  if (state !== 'play' || !P || P.dead || P.down > 0 || (yardSafe() && !(L && L.opening)) || P.drinkT > 0) return false;
   if (!((P.flasks | 0) > 0)) { SFX.buzz(); number(P.x, P.y - 30, 'NO FLASKS', '#9aa39a'); return false; }
   if (P.hp >= P.maxHp) { SFX.buzz(); number(P.x, P.y - 30, 'FULL', '#9aa39a'); return false; }
   if (!(P.ground || P.carpet || P.swim) || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry || P.ptC) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
@@ -8940,7 +8966,7 @@ const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (cl
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
   : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap * DFM.df('parry') : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!(P.fwUp && (P.fwT || 0) <= FW_K.perfect) : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
 const rpSkillBlow = () => P.atk < 0 && !P.plunge && time - (P.skillAt ?? -9) < 1.5;
-function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; if (DUELO) DUELO.hit(e, dmg, fromX); return; }   /* (claude/pvpduel) A DUELLIST'S PROXY: the blow is a hero's on a hero - src/pvp-duel.js routes it onto that seat through damagePlayer, before any foe rule */ const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */
+function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; if (DUELO) DUELO.hit(e, dmg, fromX); return; }   /* (claude/pvpduel) A DUELLIST'S PROXY: the blow is a hero's on a hero - src/pvp-duel.js routes it onto that seat through damagePlayer, before any foe rule */ const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */ if (e && e.t === 'dummy' && L && L.opening && OPN) OPN.dummyHit(P);   /* (claude/tutorial1) the lesson's attack step */
   if (RGK && dmg > 0 && (e.rgMarkT || 0) > time) dmg = Math.round(dmg * RGK.markMul(e));
   if (WCH && dmg > 0 && e && !e.harmless && WCH.raging(P)) dmg = Math.round(dmg * WCM.WC.rage.dealt);   /* (claude/warcairn) WAR-RAGE: a drum struck - every blow lands a quarter harder a while (src/war-cairn-hands.js) */   /* (claude/ranger) THE RANGER'S MARK: every blow on her quarry lands harder (src/ranger.js) */   /* taken at once, so nothing this blow sets off inherits it */
   /* (claude/keyscore, B14) THE TAG IS EVERY BLOW'S NAME, the BLOW is a HERO'S HAND: a thrown prop ('throw') and a seed sent back ('reflect') reach every boss hook by their tag,
@@ -31654,7 +31680,7 @@ function updateProps(dt) {
       if (Math.random() < dt * 40) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y + Math.random() * 8, vx: 0, vy: -50, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7cc8c8' : '#dff0f5', size: 1, grav: -30 }); }
   }
   for (const p of (L.pools || [])) if (p.draining && !p.frogDry) { p.y += 34 * dt; if (Math.random() < dt * 30) parts.push({ x: p.x0 + Math.random() * (p.x1 - p.x0), y: p.y, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#eefaff', size: 1, grav: 0 }); if (p.y >= p.yTo) { p.y = p.yTo; p.draining = false; p.shallow = true; p.depth = 12; resolveTiles(); for (const e of L.ents) if (e.ifDrained !== undefined && e.ifDrained * TS === p.x0) spawnEnt(e); number((p.x0 + p.x1) / 2, p.y - 24, 'THE FROGS COME OUT', '#8fd160'); SFX.croak(); } }
-  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateMonkProps(dt, hb); updateAlarms(dt); updateAmbush(dt); updateGateFx(dt); updateHealths(dt); dcTick(dt); HERO_HAND = true; try { updateHoly(dt); } finally { HERO_HAND = false; } updateSceptres(dt); updateTrial(); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
+  updateStals(dt); updateSkyProps(dt); updateCastleProps(dt, hb); updateMonkProps(dt, hb); updateAlarms(dt); updateAmbush(dt); updateGateFx(dt); updateHealths(dt); dcTick(dt); HERO_HAND = true; try { updateHoly(dt); } finally { HERO_HAND = false; } updateSceptres(dt); updateTrial(); if (L.opening) opnFrame(dt); openYardRespawn(dt); updateRisen(dt); updateCulls(dt); updateGrips(dt); updateUnholy(dt); updateSevers(dt); updateWakes(dt); updatePortal(dt);
   for (const pr of props) {
     if (pr.t === 'barrel' && pr.gone) { pr.respawnT -= dt; if (pr.respawnT <= 0 && Math.abs(P.x - pr.x0) > 24) { pr.gone = false; pr.rolling = false; pr.vx = 0; pr.fuse = 0; pr.x = pr.x0; pr.y = pr.y0; burst(pr.x, pr.y - 7, 8, ['#8a5a32', '#c9b27c'], 40, 0.4); number(pr.x, pr.y - 20, 'ANOTHER BARREL', '#c9b27c'); } }
     if (pr.t === 'barrel' && !pr.gone) {
@@ -35197,7 +35223,7 @@ function drawWorld(cx, cy, showPlayer) {
      one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
   /* EACH HERO IN HIS OWN PASS. The hundred lines below are the same hundred lines, with P, the hero he is and his
      baked frames set to whoever is being painted. One in the list and asPlayer calls straight through. */
-  if (TAVO) TAVO.draw(g, cx, cy, time); if (L && (L.arenaYard || L.duelPit)) drawYardProps(cx, cy); drawPartyMarks(cx, cy); if (DUELO) DUELO.drawWorld(g, cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
+  if (TAVO) TAVO.draw(g, cx, cy, time); if (L && (L.arenaYard || L.duelPit)) drawYardProps(cx, cy); if (L && L.opening) drawLessonProps(cx, cy); drawPartyMarks(cx, cy); if (DUELO) DUELO.drawWorld(g, cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
   for (const pDraw of players) asPlayer(pDraw, () => {
   if (showPlayer && P.down > 0 && K && K.R) drawDowned(cx, cy);   /* on the floor, with his clock and his partner's ring */
   if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
@@ -36855,7 +36881,7 @@ function render() {
       flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6, 'outline');   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
     if (coop()) drawCoopHud();
-    if (TAVO) TAVO.drawHud(VW, VH); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
+    if (TAVO) TAVO.drawHud(VW, VH); if (L && L.tavern) OPN.drawCard(g, VW, VH, 1 / 60); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
@@ -36986,7 +37012,7 @@ function render() {
     if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
       g.globalAlpha = UIH.idleAlpha(levelTime, 6, 2, 0.5); if (!hudMin) { g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); } hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, '#e8dcc0', 'center', 8, 'outline'); g.globalAlpha = 1; }   /* (thin Silkscreen over the world: a 1px dark outline, not a plate) */
-    if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
+    if (state === 'play' && L && L.opening) OPN.drawStep(g, VW, VH); if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
     else if (state === 'play') { if (hintT > 0) hintT -= 1 / 60; if (toastQ.L !== L) { UIH.toastClear(toastQ); toastQ.L = L; } UIH.toastFeed(toastQ, hintMsg, hintT); const tc = UIH.toastTick(toastQ, 1 / 60), k = UIH.toastAlpha(tc); if (tc) {   /* ONE QUEUE, ONE SAFE ZONE (src/ui-hud.js): a toast waits its turn and never sits on the plates, the status row or the boss bar */
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
       const zone = UIH.toastZone(VW, VH, CV ? { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow + rgRow + (deathRecap ? 26 : 0), boss: bossActive || miniActive } : { wide: true, top: Math.max(48 + xpRow, hudPH + 4) + (deathRecap ? 26 : 0), boss: bossActive || miniActive })   /* (only the caravan's sun/water rows stand under the plate on the left; elsewhere the band under the plates is the full width, so a long level-up line is still two lines) */, lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
@@ -37133,7 +37159,7 @@ function render() {
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(bx + 8, my + mh - 13, mw - 16, 1);
-      text(sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
+      text(items[titleI] === 'LOCAL CO-OP' || items[titleI] === 'ONLINE CO-OP' ? 'THE INN: CO-OP, LOOK, TRAIN' : sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
