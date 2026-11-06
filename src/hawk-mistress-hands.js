@@ -70,8 +70,8 @@ export function makeHawkMistressHands(ctx) {
       knife: k => { let res = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res === 'hit' || !ctx.upright(pp) || P.dead || keyed2(pp, k.key)) return;
           const b = ctx.box(P), kb = { l: k.x - HM.knifeR, r: k.x + HM.knifeR, t: k.y - 2, b: k.y + 2 }; if (!ctx.overlap(kb, b)) return;
           if (k.ht === 'high' && P.ducking) { keyed(pp, k.key); if (!(S.underSaid > ctx.time())) { S.underSaid = ctx.time() + 1; ctx.number(P.x, P.y - 22, 'UNDER THE KNIFE', '#bfe6f5'); } res = res || 'under'; return; }
-          keyed(pp, k.key); const hp0 = P.hp, r = ctx.damagePlayer(k.x - Math.sign(k.vx) * 8, HM.dmg.knife, { who: e, name: HMM.MOVE_NAME.knife });
-          hurtTally(HMM.MOVE_NAME.knife, hp0 - Math.max(0, P.hp)); res = r === 'blocked' ? 'blocked' : P.hp < hp0 ? 'hit' : (res || null); }); return res; },
+          keyed(pp, k.key); const fe = k.kind === 'feather', kn = fe ? HMM.MOVE_NAME.moult : HMM.MOVE_NAME.knife, hp0 = P.hp, r = ctx.damagePlayer(k.x - Math.sign(k.vx) * 8, fe ? HMM.HM2.dmg.moult : HM.dmg.knife, { who: e, name: kn });   /* (claude/ksar3) a RAZOR MOULT feather */
+          hurtTally(kn, hp0 - Math.max(0, P.hp)); res = r === 'blocked' ? 'blocked' : P.hp < hp0 ? 'hit' : (res || null); }); return res; },
       /* her rolling keg: a blade on it strikes it back; a body in its way sets it off */
       keg: K => { let res = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res || !ctx.upright(pp) || P.dead) return;
           const kb = { l: K.x - 7, r: K.x + 7, t: S.G.floorY - 12, b: S.G.floorY }; const hb = P.atk >= 0 ? ctx.attackBox() : null;
@@ -84,7 +84,11 @@ export function makeHawkMistressHands(ctx) {
         for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res || !ctx.upright(pp) || P.dead || !ctx.overlap(B, ctx.box(P)) || keyed(pp, key)) return;
           const hp0 = P.hp, r = ctx.damagePlayer(S.hawk.x, d, { who: e, name }); hurtTally(name, hp0 - Math.max(0, P.hp)); if (r === 'blocked') res = 'blocked'; else if (P.hp < hp0) { res = 'hit'; lastHit.push(pp); } }); return res; },
       /* THE SNATCH caught a hero: the hawk carries him over the shaft at x and lets go */
-      drop: () => { for (const pp of ctx.players) if (pp.hmCarry) { pp.hmCarry = null; pp.vy = 40; ctx.number(pp.x, pp.y - 20, 'THE HAWK LETS YOU GO', '#ff9a5c'); } },   /* (claude/ksarhawk) burnt out of the air with a hero in its talons */
+      drop: (how, x) => { for (const pp of ctx.players) if (pp.hmCarry) { pp.hmCarry = null; pp.vy = 40; if (how === 'blade' && x != null) pp.x = x;   /* (claude/ksar3) HM2: struck free, or dropped at her blade */
+          ctx.number(pp.x, pp.y - 20, how === 'free' ? 'YOU STRIKE THE HAWK: IT LETS GO' : how === 'blade' ? 'INTO HER BLADE: BLOCK!' : 'THE HAWK LETS YOU GO', how === 'free' ? '#8fd160' : '#ff9a5c'); } },
+      lift: (x, t) => { for (const pp of lastHit) { pp.hmCarry = { tx: x, t: t + 0.25, lift: true }; pp.hmSnare = null; } if (lastHit.length && !S.told.lift) { S.told.lift = 1; ctx.number(x, S.G.floorY - 90, 'THE HAWK HAS YOU: STRIKE IT!', '#ff6b6b'); } },
+      hawkStruck: () => { let hit = false; for (const pp of ctx.players) if (pp.hmCarry && pp.hmCarry.lift) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (hit || P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox();
+          if (hb && ctx.overlap(hb, { l: S.hawk.x - 14, r: S.hawk.x + 14, t: S.hawk.y - 14, b: S.hawk.y + 12 })) hit = true; }); return hit; },   /* (claude/ksarhawk) burnt out of the air with a hero in its talons */
       carry: (tx, t) => { for (const pp of lastHit) { pp.hmCarry = { tx, t }; pp.hmSnare = null; } if (lastHit.length && !S.told.carry) { S.told.carry = 1; ctx.number(tx, S.G.floorY - 90, 'THE HAWK HAS YOU', '#ff6b6b'); } },
       gongs, guards: () => ctx.enemies().filter(q => q.alive && q.hmGuard).length,
       guardRing: id => { const r = ctx.ringGong ? ctx.ringGong(id, 'guard') : 'cut'; if (r !== 'rung') return false;
@@ -109,7 +113,7 @@ export function makeHawkMistressHands(ctx) {
       if (pp.hmSnare) { const q = pp.hmSnare; q.t -= dt;
         if (pp.dead || q.t <= 0 || pp.ksLift || pp.dodge > 0 || (!pp.ground && pp.vy < -60)) { if (!pp.dead && q.t > 0 && !pp.ksLift) { ctx.number(pp.x, pp.y - 30, 'YOU BREAK FREE OF THE WHIP', '#8fd160'); S.n.snareBroke = (S.n.snareBroke || 0) + 1; } pp.hmSnare = null; }
         else { pp.vx = q.dir * HM.snarePull; if (Math.random() < dt * 12) ctx.dust(pp.x, pp.y, 1); } }
-      if (pp.hmCarry) { const q = pp.hmCarry; q.t -= dt; pp.x += (q.tx - pp.x) * Math.min(1, dt * 7); pp.y += (S.G.floorY - 62 - pp.y) * Math.min(1, dt * 7); pp.vx = 0; pp.vy = 0; pp.ground = false;
+      if (pp.hmCarry) { const q = pp.hmCarry; q.t -= dt; pp.x += (q.tx - pp.x) * Math.min(1, dt * 7); pp.y += (S.G.floorY - (q.lift ? HMM.HM2.liftH : 62) - pp.y) * Math.min(1, dt * 7);   /* (claude/ksar3) the talon lift holds you lower, under the hawk */ pp.vx = 0; pp.vy = 0; pp.ground = false;
         if (q.t <= 0 || pp.dead) { pp.hmCarry = null; pp.x = q.tx; pp.vy = 40; if (!pp.dead) ctx.number(pp.x, pp.y - 20, 'THE HAWK LETS YOU GO', '#ff9a5c'); } } }
     e.phase = S.ph; S.flashFx = Math.max(0, (S.flashFx || 0) - dt);
     /* A BLADE THROUGH THE HAWK: nothing there (it is her kit, not a foe) */
@@ -118,6 +122,7 @@ export function makeHawkMistressHands(ctx) {
   };
   /* THE RULE ON HER: a hero's ring on a courtyard gong, a flash (src/ksar-hands.js) */
   H.onRing = g => { const e = live(); if (!S || !e || !ctx.bossActive) return; HMM.ringHeard(e, S, world(e)); };
+  H.onIgnite = (x, y) => { const e = live(); if (!S || !e || !ctx.bossActive || !S.v2) return null; return HMM.oilIgnite(e, S, world(e), x, y); };   /* (claude/ksar3) HM2: a torch lands in an oil channel */
   H.onFlash = (x, y) => { const e = live(); if (!S || !e || !ctx.bossActive) return; HMM.flashAt(e, S, world(e), x, y); };
   /* (claude/ksarhawk) THE CENTRAL MECHANIC: a thrown TORCH or a KEG that meets the hawk in the air (src/ksar-hands.js) - it comes DOWN, she is OPEN; a keg's blast
      beside the hawk does it too, and one on her lands its blast on her (through take: the hawk's guard holds it to the floor) */
@@ -143,10 +148,24 @@ export function makeHawkMistressHands(ctx) {
 
   /* ---------- DRAWING (GREYBOX) ---------- */
   /* the courtyard: the back wall's walk (the runners), the guard doors, the burning store's ends (phase three) */
+  /* (claude/ksar3) HM2 GREYBOX: oil = a dark glinting strip in the roof; lit = a flame line + a smoke column (the hawk will not fly through it) */
+  function drawOil2(g, cx, cy, time) { const G = S.G;
+    for (const o of S.oil || []) { const x0 = R(o.x0 - cx), w = R(o.x1 - o.x0), y = R(G.floorY - cy);
+      g.fillStyle = '#1a1410'; g.fillRect(x0, y - 2, w, 3); g.fillStyle = 'rgba(255,220,140,' + (0.25 + 0.25 * Math.sin(time * 3 + o.x0)) + ')'; g.fillRect(x0 + ((time * 30 + o.x0) % Math.max(1, w)) | 0, y - 2, 3, 1);
+      if (o.burn > 0) { for (let x = 0; x < w; x += 3) { const h = 8 + 7 * Math.abs(Math.sin(time * 10 + x + o.x0)); g.fillStyle = '#d8481a'; g.fillRect(x0 + x, y - h, 3, h); g.fillStyle = '#ffd36b'; g.fillRect(x0 + x + 1, y - h * 0.6, 1, h * 0.6); }
+        g.fillStyle = 'rgba(60,52,48,0.35)'; g.fillRect(x0 - HMM.HM2.smokePad, y - 150, w + HMM.HM2.smokePad * 2, 140); ctx.text('FIRE LINE', x0 + w / 2, y - 26, '#ff9a3c', 'center', 5); } }
+  }
+  function drawOver2(g, e, cx, cy, time) { const G = S.G, k = S.hawk, hx = R(k.x - cx), hy = R(k.y - cy);
+    if (k.mode === 'smoke') ctx.text('GROUNDED IN SMOKE', hx, hy - 16, '#ffd36b', 'center', 5);
+    if (k.mode === 'lift') { ctx.text('STRIKE IT!', hx, hy - 18, Math.floor(time * 8) % 2 ? '#ff6b6b' : '#fff6e0', 'center', 6); g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(hx, hy, 12 + 2 * Math.sin(time * 12), 0, Math.PI * 2); g.stroke(); }
+    if (k.mode === 'moultTell') { ctx.text('!', hx, hy - 16, '#ffd36b', 'center', 7); ctx.text(HMM.POSES2.moultTell[0], hx, hy + 14, '#9aa39a', 'center', 4); g.strokeStyle = 'rgba(191,230,245,0.6)'; g.beginPath(); g.moveTo(hx, R(G.floorY - HMM.HM2.moultY - cy)); g.lineTo(hx + (S.moult ? S.moult.dir : 1) * 60, R(G.floorY - HMM.HM2.moultY - cy)); g.stroke(); }
+    if (k.mode === 'moult') ctx.text(HMM.POSES2.moultTell[1], hx, hy + 14, '#9aa39a', 'center', 4);
+  }
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (S.runner) { const r = S.runner, gg = gongs().find(q => q.id === r.gong), k = 1 - r.t / r.t0, x = r.from + ((gg ? gg.x : r.from) - r.from) * k;
       g.fillStyle = '#a8302a'; g.fillRect(R(x - 3 - cx), R(G.wallY - 12 - cy), 6, 10); g.fillStyle = '#e8d8b0'; g.fillRect(R(x - 3 - cx), R(G.wallY - 14 - cy), 6, 3); g.fillStyle = '#1b1626'; g.fillRect(R(x - 3 - cx), R(G.wallY - 3 - cy), 6, 2); ctx.text('!', R(x - cx), R(G.wallY - 24 - cy), Math.floor(time * 10) % 2 ? '#ff6b6b' : '#fff6e0', 'center', 6);
       if (gg) { g.strokeStyle = 'rgba(255,107,107,0.5)'; g.beginPath(); g.moveTo(R(x - cx), R(G.wallY - cy)); g.lineTo(R(gg.x - cx), R(G.floorY - 46 - cy)); g.stroke(); } }
+    if (S.v2) drawOil2(g, cx, cy, time);   /* (claude/ksar3) HM2's oil channels and fire lines (greybox) */
     if (S.ph === 3) for (const [a, b] of G.fire) for (let x = a; x < b; x += 3) { const h = 9 + 8 * Math.abs(Math.sin(time * 9 + x)), k = (x / 3) | 0; g.fillStyle = '#d8481a'; g.fillRect(R(x - cx), R(G.floorY - h - cy), 3, h); g.fillStyle = '#ff8a2a'; g.fillRect(R(x - cx), R(G.floorY - h * 0.75 - cy), 3, h * 0.75); g.fillStyle = k % 2 ? '#ffc84a' : '#ffd36b'; g.fillRect(R(x - cx) + 1, R(G.floorY - h * 0.45 - cy), 1, h * 0.45); if (k % 5 === 0) { g.fillStyle = '#3a2a22'; g.fillRect(R(x - cx), R(G.floorY - h - 8 - ((time * 20 + x) % 10) - cy), 2, 2); } }
   };
   /* HER: a falconer in a red-brown coat, the whip coiled at her hip, a leather gauntlet on her left arm; her pose by mode (greybox) */
@@ -215,6 +234,7 @@ export function makeHawkMistressHands(ctx) {
         drawKeyGlyph(g, 'throw', hx, hy, time, 1.4); } }
     if (S.mark && (e.mode === 'spotTell' || e.mode === 'markLashTell' || e.mode === 'diveTell' || k.mode === 'dive')) { const x = R(S.mark.x - cx), y = R(G.floorY - 2 - cy), r = e.mode === 'diveTell' || k.mode === 'dive' ? HM.diveR : HM.markR;
       g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - r, y, r * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
+    if (S.v2) drawOver2(g, e, cx, cy, time);   /* (claude/ksar3) HM2: the smoke, the talon, the moult's tell, pose names */
     /* (claude/ksar2) THE KNIVES, THE KEG, THE RAKE'S LINE, THE SNATCH'S SHADOW */
     for (const kn of S.knives || []) { const kx = R(kn.x - cx), ky = R(kn.y - cy), d = Math.sign(kn.vx) || 1; g.fillStyle = '#e8eef4'; g.fillRect(kx - 4, ky, 8, 1); g.fillStyle = '#3a2418'; g.fillRect(kx - d * 5, ky - 1, 2, 3);
       g.globalAlpha = 0.5; g.fillStyle = kn.ht === 'high' ? '#bfe6f5' : kn.ht === 'low' ? '#ffd36b' : '#ffffff'; g.fillRect(kx - d * 14, ky, 8, 1); g.globalAlpha = 1; }

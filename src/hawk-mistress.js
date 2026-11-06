@@ -75,6 +75,23 @@ export const MOVES = {
 export const MOVE_NAME = { lash: 'HER WHIP', cut: 'HER KNIFE', markLash: 'HER WHIP', rake: 'HER HAWK', fire: 'THE FIRE', snare: 'HER WHIP', knife: 'HER KNIVES', keg: 'HER KEG', snatch: 'HER HAWK' };
 export const NEW_MOVES = { 1: 'snare', 2: 'fan', 3: 'keg' };   /* hers, one a phase (B5) */
 export const HAWK_MOVES = { rake: 1, snatch: 2 };               /* the hawk's: the phase each joins */
+/* (claude/ksar3) HAWK-MISTRESS 2 (brief-hawkmistress2-1014 + plan-desert-1105 s1.7, Daniel approved 11-05 14:07) - ONLY on the tallest tower's roof (the arena's
+   hm.v2: src/ksar3.js); the live courtyard (no v2) is untouched. Every addition below is gated by S.v2:
+   (a) HER HAWK BURNS: a thrown torch into the hawk - the same DOWN opening (x openMul, openT), now read 'HER HAWK BURNS'.
+   (b) OIL FIRE-LINES: oil channels in the roof (G.oil, glinting); a torch landing in one lights a FIRE LINE for HM2.oilBurn s: SHE CANNOT CROSS IT (her walk, her cut,
+       her leap stop at its edge - she must go round), THE HAWK WILL NOT FLY THROUGH ITS SMOKE (a stoop at a hero in the smoke becomes her lash), and lit while the
+       hawk rides near it, THE SMOKE GROUNDS THE HAWK for HM2.smokeT s - she is BARE (the lesser opening). A hero standing in it takes a tick.
+   (c) TALON SNATCH (the snatch, re-made; P2): caught, the hawk LIFTS you HM2.liftH px for HM2.liftT s - STRIKE IT (a blow on the hawk: it flinches, you drop free,
+       she is BARE) or it drops you INTO HER BLADE (a told HM2.bladeTell s cut: block it). Strike-answerable, never a mash (mash 0/6).
+   (d) RAZOR MOULT (renamed from FEATHER VOLLEY; P3, the hawk's new move): the hawk takes station past you (told HM2.moultTell s, '!', a hard wing-beat) and fires
+       three bladed feathers flat at head height - DUCK them, or BLOCK. */
+export const HM2 = { moultTell: 0.9, moultGap: 0.16, moultY: 24, moultV: 200, moultFrom: 110, liftT: 1.0, liftH: 34, bladeTell: 0.45, oilBurn: 6.0, oilTick: 0.5, oilPad: 8, smokePad: 18, smokeT: 2.6, smokeR: 80,
+  dmg: { moult: 30, oil: 8 } };
+export const CYCLES2 = { 1: CYCLES[1], 2: CYCLES[2], 3: [['keg', 'moult', 'rake', 'fan'], ['snatch', 'keg', 'moult', 'snare'], ['moult', 'fan', 'call', 'lash']] };
+export const HAWK_MOVES2 = { rake: 1, snatch: 2, moult: 3 };   /* (claude/ksar3) the hawk's in HM2: its TALON SNATCH from P2, RAZOR MOULT from P3 */
+MOVES.moultTell = { mark: '!', answer: 'duck' };
+MOVE_NAME.moult = 'THE RAZOR MOULT'; MOVE_NAME.oil = 'THE FIRE LINE';
+export const POSES2 = { moultTell: ['hawkMoultWind', 'hawkMoultRel'], lift: ['hawkTalonLift', 'hawkTalonDrop'], oil: ['oilFlare', 'oilSmoke'] };   /* (claude/ksar3) the art lane's pose names (greybox: the name is drawn) */
 
 /* ---------- THE ROOFTOPS ---------- */
 /* local columns (0..45), the roofs' surface row R (the hero stands on R-1). Three ROOFS at one height and two SPIKED SHAFTS between them (cols, inclusive; the
@@ -86,7 +103,7 @@ export const HAWK_MOVES = { rake: 1, snatch: 2 };               /* the hawk's: t
 export const HM_STAGE = { W: 46, door: 6, shaftD: 6, shafts: [[13, 14], [30, 31]], gongs: [{ id: 'yardW', x: 4 }, { id: 'yardE', x: 41 }],
   racks: [{ x: 9, kind: 'torch', n: 2 }, { x: 37, kind: 'torch', n: 2 }, { x: 21, kind: 'keg', n: 2 }], exitAlcove: { w: 3, h: 5 },
   ledges: [{ x0: 1, x1: 8, dy: 4 }, { x0: 18, x1: 27, dy: 7 }, { x0: 37, x1: 44, dy: 4 }], doors: [2, 43], her: 23, wallRow: 12 };
-export function stageHawkMistress(W, T, TS, sx, R) {
+export function stageHawkMistress(W, T, TS, sx, R, o = {}) {   /* (claude/ksar3) o.v2: HM2's roof (oil channels) - absent, the live courtyard exactly */
   const { set, block, ent, air } = W, ex = sx + HM_STAGE.W;
   const carve = () => {
     air(sx, ex - 1, R - 18, R - 1);
@@ -101,7 +118,7 @@ export function stageHawkMistress(W, T, TS, sx, R) {
     ent('hawkmistress', sx + HM_STAGE.her, R - 1, { face: -1 });
   };
   const arena = { x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 2) * TS, wallL: sx - 1, wallR: ex, boss: 'hawkmistress', music: 'hawkmistress',
-    tint: '#c8843a', tintA: 0.05, start: [sx + 2, R - 1], y0: (R - 18) * TS, y1: (R + HM_STAGE.shaftD + 1) * TS, hm: { sx, R } };
+    tint: '#c8843a', tintA: 0.05, start: [sx + 2, R - 1], y0: (R - 18) * TS, y1: (R + HM_STAGE.shaftD + 1) * TS, hm: o.v2 ? { sx, R, v2: o.v2 } : { sx, R } };
   const shafts = HM_STAGE.shafts.map(([a, b]) => ({ x0: sx + a, x1: sx + b, top: R, bottom: R + HM_STAGE.shaftD - 1 }));
   return { arena, carve, shafts, gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: sx + g.x, y: R - 1, ear: 24, earY: 12, arena: true })), racks: HM_STAGE.racks.map((r, i) => ({ id: 'rack' + i, x: sx + r.x, y: R - 1, kind: r.kind, n: r.n, arena: true })),
     exit: { x0: ex, x1: ex + HM_STAGE.exitAlcove.w - 1, y0: R - HM_STAGE.exitAlcove.h, y1: R - 1, gate: ex + HM_STAGE.exitAlcove.w - 1 } };
@@ -114,7 +131,8 @@ export function geom(A, TS = 16) {
     shafts: sh.map(([a, b]) => [X(a), X(b + 1)]), roofs,
     gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: X(g.x) + 8 })), racks: HM_STAGE.racks.map((r, i) => ({ id: 'rack' + i, x: X(r.x) + 8, kind: r.kind })),
     ledges: HM_STAGE.ledges.map(l => ({ x0: X(l.x0), x1: X(l.x1 + 1), y: (q.R - l.dy) * TS, c0: q.sx + l.x0, c1: q.sx + l.x1, row: q.R - l.dy })),
-    doors: HM_STAGE.doors.map(c => X(c) + 8), fire: [[X(0), X(HM.fireW)], [X(HM_STAGE.W - HM.fireW), X(HM_STAGE.W)]] };
+    doors: HM_STAGE.doors.map(c => X(c) + 8), fire: [[X(0), X(HM.fireW)], [X(HM_STAGE.W - HM.fireW), X(HM_STAGE.W)]],
+    v2: !!q.v2, oil: q.v2 && q.v2.oil ? q.v2.oil.map(([a, b]) => [X(a), X(b + 1)]) : [] };   /* (claude/ksar3) HM2's oil channels (px) */
 }
 /* which roof a point is over (0..2), the nearest one when it is over a shaft; and whether it is over a shaft */
 export const roofOf = (G, x) => { if (!G.roofs) return 0; let b = 0, bd = 1e9; G.roofs.forEach(([a, c], i) => { const d = x < a ? a - x : x > c ? x - c : 0; if (d < bd) { bd = d; b = i; } }); return b; };
@@ -125,10 +143,11 @@ export const nearestShaft = (G, x) => (G.shafts || []).slice().sort((p, q) => Ma
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, ward: 0, openTaken: 0, behindT: 0, pend: 0, pendWhy: '', mark: null, runner: null, leap: null,
     knives: [], fan: null, keg: null, rake: null, snatch: null,
+    v2: !!G.v2, oil: (G.oil || []).map(([x0, x1]) => ({ x0, x1, burn: 0, tick: 0 })), moult: null, lift: null,   /* (claude/ksar3) HM2 */
     hawk: { mode: 'circle', a: 0, x: 0, y: 0, t: 0, fx: 0, fy: 0, tx: 0, ty: 0 }, roofT: HM.roofEvery, fireT: 0, told: {},
     n: { cycles: 0, opens: 0, wheels: 0, blinds: 0, wards: 0, warded: 0, guarded: 0, rings: 0, ringsHome: 0, calls: 0, callsCut: 0, guards: 0, spots: 0, lashes: 0, cuts: 0, flashes: 0, crumbles: 0,
       leaps: 0, snares: 0, snared: 0, fans: 0, knives: 0, knivesHit: 0, kegs: 0, kegsBack: 0, kegOpens: 0, rakes: 0, snatches: 0, snatched: 0, flinches: 0, moves: {},
-      downs: 0, fires: 0, firesHome: 0, kegDowns: 0, bares: 0, hawkGuarded: 0 } };   /* (claude/ksarhawk) the hawk brought down (fire / a keg), fire on a hawk at home, the lesser openings, blows the hawk turned */
+      downs: 0, fires: 0, firesHome: 0, kegDowns: 0, bares: 0, hawkGuarded: 0, moults: 0, feathers: 0, lifts: 0, liftBroke: 0, blades: 0, oilLit: 0, smokes: 0, oilBlocks: 0, smokeBlocks: 0 } };   /* (claude/ksarhawk) the hawk brought down (fire / a keg), fire on a hawk at home, the lesser openings, blows the hawk turned */
 }
 export const hPhase = e => (e.hp <= e.maxHp * HM.p3 ? 3 : e.hp <= e.maxHp * HM.p2 ? 2 : 1);
 export const hmOpen = e => !!e && e.mode === 'whistle' && (e.open || 0) > 0;
@@ -142,13 +161,13 @@ export const hawkGuards = S => !!S && (S.ward > 0 || GUARD_HAWK.has(S.hawk.mode)
 export const guarded = (e, S) => !!e && !!S && !hmOpen(e) && hawkGuards(S);
 export const hawkAloft = S => !!S && ['circle', 'spot', 'climb'].includes(S.hawk.mode);
 /* WHERE FIRE CAN FIND THE HAWK: anywhere in the air off her glove (aloft, wheeling, blind, sent off, out on its own stoops) */
-const FIRE_HAWK = new Set(['circle', 'climb', 'spot', 'wheel', 'blind', 'sent', 'rakeTell', 'rake', 'hover', 'drop', 'carry']);
+const FIRE_HAWK = new Set(['circle', 'climb', 'spot', 'wheel', 'blind', 'sent', 'rakeTell', 'rake', 'hover', 'drop', 'carry', 'smoke', 'lift', 'moultTell', 'moult']);   /* (claude/ksar3: + HM2's) */
 export const hawkTarget = S => !!S && FIRE_HAWK.has(S.hawk.mode);
 export const hawkDown = S => !!S && (S.hawk.mode === 'fall' || S.hawk.mode === 'down');
 /* ONE WINDUP AT A TIME (Daniel 10-13): nothing new while her keg rolls, her knives fly or the hawk is out on a stoop */
-export const calm = S => !S.keg && !(S.knives && S.knives.length) && !S.rake && !S.snatch && !['rakeTell', 'rake', 'hover', 'drop', 'carry'].includes(S.hawk.mode);
+export const calm = S => !S.keg && !(S.knives && S.knives.length) && !S.rake && !S.snatch && !S.moult && !S.lift && !['rakeTell', 'rake', 'hover', 'drop', 'carry', 'lift', 'moultTell', 'moult'].includes(S.hawk.mode);
 
-const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
+const nextScript = S => { const set = (S.v2 ? CYCLES2 : CYCLES)[S.ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 16, Math.min(G.x1 - 16, x));
 /* she keeps to the roof she stands on (a lunge or a step never carries her over a shaft's lip) */
@@ -160,10 +179,11 @@ function endOpen(e, S, c) { e.open = 0; e.openKind = S.openKind = ''; S.ward = H
 const DOWN_WHY = new Set(['fire', 'keghawk', 'keg']);
 function open(e, S, c) { const down = DOWN_WHY.has(S.pendWhy), T0 = down ? HM.openT : HM.bareT;
   setMode(e, 'whistle', T0 + 0.05); e.open = T0; e.openKind = S.openKind = down ? 'down' : 'bare'; e.openT0 = T0; S.openTaken = 0; S.n.opens++; if (S.pendWhy === 'keg') S.n.kegOpens++; if (!down) S.n.bares++;
-  if (hawkDown(S)) { if (S.hawk.mode === 'down') S.hawk.t = Math.max(S.hawk.t, T0); }   /* it lies on the roof while she is open (a falling hawk takes her open time when it lands) */
+  if (S.hawk.mode === 'smoke') S.hawk.t = Math.max(S.hawk.t, T0);   /* (claude/ksar3) grounded in the smoke: it stays down while she is bare */
+  else if (hawkDown(S)) { if (S.hawk.mode === 'down') S.hawk.t = Math.max(S.hawk.t, T0); }   /* it lies on the roof while she is open (a falling hawk takes her open time when it lands) */
   else if (S.hawk.mode !== 'sent') { S.hawk.mode = 'return'; S.hawk.t = T0; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; } else { S.hawk.t = Math.max(S.hawk.t, 0.4); S.hawk.after = 'return'; }
   S.leap = null; S.fan = null; c.fx('open', e.x, e.y); c.sound('whistle');
-  c.number(e.x, e.y - 70, S.pendWhy === 'fire' ? 'THE HAWK IS DOWN! SHE IS OPEN - CUT HER' : S.pendWhy === 'keghawk' ? 'THE POWDER BRINGS THE HAWK DOWN - CUT HER' : S.pendWhy === 'blind' ? 'THE HAWK IS BLIND: SHE IS BARE - CUT HER' : S.pendWhy === 'struck' ? 'THE HAWK FLINCHES OFF: SHE IS BARE - CUT HER' : S.pendWhy === 'keg' ? 'HER OWN KEG! SHE REELS - CUT HER' : 'THE HAWK WHEELS OFF: SHE IS BARE - BURN IT OR CUT HER', '#8fd160'); }
+  c.number(e.x, e.y - 70, S.pendWhy === 'fire' ? (S.v2 ? 'HER HAWK BURNS! SHE IS OPEN - CUT HER' : 'THE HAWK IS DOWN! SHE IS OPEN - CUT HER') : S.pendWhy === 'smoke' ? 'THE SMOKE GROUNDS HER HAWK: SHE IS BARE - CUT HER' : S.pendWhy === 'keghawk' ? 'THE POWDER BRINGS THE HAWK DOWN - CUT HER' : S.pendWhy === 'blind' ? 'THE HAWK IS BLIND: SHE IS BARE - CUT HER' : S.pendWhy === 'struck' ? 'THE HAWK FLINCHES OFF: SHE IS BARE - CUT HER' : S.pendWhy === 'keg' ? 'HER OWN KEG! SHE REELS - CUT HER' : 'THE HAWK WHEELS OFF: SHE IS BARE - BURN IT OR CUT HER', '#8fd160'); }
 /* THE CENTRAL MECHANIC (claude/ksarhawk): FIRE (a thrown torch) or POWDER (a keg that strikes it) finds the hawk in the air - it comes DOWN: it falls burning to the
    roof and lies there, and she is OPEN. On her glove (her ward) it is safe. Returns 'down' | 'home' | 'far' | 'busy'. (x, y): where the fire met it; why: 'fire' | 'keghawk' */
 export function fireAt(e, S, c, x, y, why = 'fire') {
@@ -214,7 +234,36 @@ export function flashAt(e, S, c, x, y) {
    c.gongs() -> [{ id, x, cut, hum }]   c.guardRing(id) -> bool   c.guards() -> alive count   c.crumble() -> bool   c.time()
    (claude/ksar2) c.snare(dir) -> bool (a hero is wrapped: the hands yank him)   c.knife(k) -> 'hit' | 'blocked' | 'under' | 'over' | null
    c.keg(k) -> 'hit' | 'struck' | null   c.hawkAt(box, dmg, name, key) -> 'hit' | 'blocked' | 'struck' | null   c.carry(x) (the snatch: carry the caught hero over x) ---------- */
+/* (claude/ksar3) HM2's frame: the old frame, then the oil's fire lines - she never crosses a burning one (her walk / cut / leap stop at its edge) */
 export function stepHawkMistress(e, S, dt, h, c) {
+  if (!S.v2) return stepHawkMistress1(e, S, dt, h, c);
+  const x0 = e.x; stepHawkMistress1(e, S, dt, h, c); stepOil(e, S, dt, c);
+  if (e.mode === 'leap' && S.leap && crossesFire(S, S.leap.x0, S.leap.x1)) { S.leap = null; e.yOff = 0; e.x = x0; setMode(e, 'recover', 0.4); S.n.oilBlocks++; if (!S.told.oilLeap) { S.told.oilLeap = 1; c.number(e.x, e.y - 60, 'THE FIRE LINE HOLDS HER', '#8fd160'); } return; }
+  const x = fireClamp(S, x0, e.x); if (x !== e.x) { e.x = x; S.n.oilBlocks++; if (!S.told.oilWalk) { S.told.oilWalk = 1; c.number(e.x, e.y - 60, 'SHE CANNOT CROSS THE FIRE', '#8fd160'); } }
+}
+const burning = S => (S.oil || []).filter(o => o.burn > 0);
+export const smokeAt = (S, x) => burning(S).some(o => x > o.x0 - HM2.smokePad && x < o.x1 + HM2.smokePad);
+const crossesFire = (S, a, b) => burning(S).some(o => Math.max(a, b) > o.x0 - 6 && Math.min(a, b) < o.x1 + 6);
+function fireClamp(S, from, x) { for (const o of burning(S)) { const a = o.x0 - 10, b = o.x1 + 10; if (from <= a && x > a) x = a; else if (from >= b && x < b) x = b; } return x; }
+/* A TORCH LANDS (the hands: src/ksar-hands.js ignite -> onIgnite): in an oil channel it lights a FIRE LINE; lit while the hawk rides near it, THE SMOKE GROUNDS IT (BARE).
+   Returns 'lit' | 'burning' | 'far' */
+export function oilIgnite(e, S, c, x, y) {
+  if (!S.v2) return 'far'; const G = S.G;
+  const o = (S.oil || []).find(q => x > q.x0 - HM2.oilPad && x < q.x1 + HM2.oilPad && Math.abs(y - G.floorY) < 30); if (!o) return 'far';
+  if (o.burn > 0) { o.burn = HM2.oilBurn; return 'burning'; }
+  o.burn = HM2.oilBurn; o.tick = 0; S.n.oilLit++; const mx = (o.x0 + o.x1) / 2; c.fx('oil', mx, G.floorY); c.sound('blast'); c.shake(2);
+  if (!S.told.oil) { S.told.oil = 1; c.number(mx, G.floorY - 60, 'THE OIL CATCHES: A FIRE LINE - SHE CANNOT CROSS IT', '#ffd36b'); }
+  const k = S.hawk;
+  if (e && e.alive && ['circle', 'climb', 'spot', 'wheel'].includes(k.mode) && Math.abs(k.x - mx) < (o.x1 - o.x0) / 2 + HM2.smokeR && !(S.ward > 0) && !hmOpen(e) && !(S.pend > 0)) {
+    k.mode = 'smoke'; k.t = HM2.smokeT; k.fx = k.x; k.fy = k.y; S.n.smokes++; S.pend = 0.3; S.pendWhy = 'smoke'; c.sound('hawk');
+    if (!S.told.smoke) { S.told.smoke = 1; c.number(k.x, k.y - 20, 'THE SMOKE GROUNDS HER HAWK', '#ffd36b'); } }
+  return 'lit';
+}
+function stepOil(e, S, dt, c) { const G = S.G;
+  for (const [i, o] of (S.oil || []).entries()) { if (!(o.burn > 0)) continue; o.burn -= dt; o.tick -= dt;
+    if (o.tick <= 0) { o.tick = HM2.oilTick; c.hit([o.x0, o.x1, G.floorY - 16, G.floorY + 2], HM2.dmg.oil, MOVE_NAME.oil, { key: 'oil' + i + '_' + Math.round(c.time() * 2), noKnock: true }); } }
+}
+function stepHawkMistress1(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
   e.modeT -= dt; e.y = G.floorY;
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
@@ -260,7 +309,8 @@ function nextMove(e, S, P, c) {
   e.face = Math.sign(dx) || e.face;
   if ((m === 'lash' || m === 'snare') && ad > HM.lashRange) { setMode(e, 'walk', 0.45); S.step--; return; }      /* out of the whip's reach: she closes first */
   if ((m === 'feint' || m === 'keg') && ad > HM.lashRange + 30) { setMode(e, 'walk', 0.45); S.step--; return; }
-  if ((m === 'spot' || m === 'rake' || m === 'snatch') && !hawkAloft(S)) m = 'lash';
+  if ((m === 'spot' || m === 'rake' || m === 'snatch' || m === 'moult') && !hawkAloft(S)) m = 'lash';
+  if (S.v2 && (m === 'rake' || m === 'snatch' || m === 'moult') && smokeAt(S, P.x)) { S.n.smokeBlocks++; m = 'lash'; if (!S.told.smokeBlock) { S.told.smokeBlock = 1; c.number(P.x, G.floorY - 70, 'THE HAWK WILL NOT FLY THROUGH SMOKE', '#ffd36b'); } }   /* (claude/ksar3) */
   if (m === 'call') { const gs = c.gongs().filter(g => !g.cut); if (!gs.length || c.guards() >= HM.guardCap) m = hawkAloft(S) ? 'rake' : 'lash'; }
   if (m === 'keg' && S.keg) m = 'fan';
   if (m === 'lash' && ad > HM.lashRange) { setMode(e, 'walk', 0.45); return; }
@@ -279,7 +329,10 @@ function nextMove(e, S, P, c) {
       if (!S.told.rake) { S.told.rake = 1; c.number(e.x, e.y - 60, 'THE RAKE: STEP OFF ITS LINE, OR STRIKE THE HAWK', '#ffd36b'); } return; }
     case 'snatch': { tell(e, S, c, 'hawkGrabTell', HM.snatchTell); S.snatch = { x: clampX(G, P.x), t: 0, key: 'snatch' + S.act, lock: false }; S.n.snatches++;
       S.hawk.mode = 'hover'; S.hawk.t = HM.snatchTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; c.sound('hawk');
-      if (!S.told.snatch) { S.told.snatch = 1; c.number(e.x, e.y - 60, 'THE SNATCH: BLOCK IT OR STRIKE IT AS IT DROPS', '#ffd36b'); } return; }
+      if (!S.told.snatch) { S.told.snatch = 1; c.number(e.x, e.y - 60, S.v2 ? 'TALON SNATCH: STRIKE IT AS IT DROPS - OR WHILE IT HOLDS YOU' : 'THE SNATCH: BLOCK IT OR STRIKE IT AS IT DROPS', '#ffd36b'); } return; }
+    case 'moult': { tell(e, S, c, 'moultTell', HM2.moultTell); const hx = clampX(G, P.x + (P.x >= e.x ? HM2.moultFrom : -HM2.moultFrom));   /* (claude/ksar3) RAZOR MOULT: station past you */
+      S.moult = { hx, dir: Math.sign(P.x - hx) || -1, i: 0, gt: 0 }; S.n.moults++; S.hawk.mode = 'moultTell'; S.hawk.t = HM2.moultTell; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; c.sound('hawk');
+      if (!S.told.moult) { S.told.moult = 1; c.number(e.x, e.y - 60, 'RAZOR MOULT: DUCK THE FEATHERS - OR BLOCK', '#ffd36b'); } return; }
   }
   setMode(e, 'walk', 0.5);
 }
@@ -313,6 +366,7 @@ function stepMove(e, S, dt, P, h, c) {
         if (!S.told.call) { S.told.call = 1; c.number((G.x0 + G.x1) / 2, G.wallY + 30, 'A GUARD RUNS FOR A GONG: CUT ITS ROPE', '#ffd36b'); } after(0.4); } return;
     case 'rakeTell': if (e.modeT <= 0) { after(HM.rakeFly + 0.35); } return;           /* the hawk flies its line (stepHawk); she watches it go */
     case 'hawkGrabTell': if (e.modeT <= 0) { after(HM.snatchDrop + 0.4); } return;
+    case 'moultTell': if (e.modeT <= 0) { after(HM2.moultGap * 3 + 0.5); } return;   /* (claude/ksar3) she watches her hawk moult */
     default: setMode(e, 'walk', 0.5);
   }
 }
@@ -374,8 +428,21 @@ function stepHawk(e, S, dt, P, c) {
       const q = Math.max(0, Math.min(1, 1 - k.t / HM.snatchDrop)); k.x = k.fx + (Sn.x - k.fx) * q; k.y = k.fy + (G.floorY - 14 - k.fy) * q;
       const r = c.hawkAt ? c.hawkAt([Sn.x - HM.snatchR, Sn.x + HM.snatchR, k.y - 10, G.floorY + 2], HM.dmg.snatch, MOVE_NAME.snatch, Sn.key) : null;
       if (r === 'blocked' || r === 'struck') { flinch(e, S, c, k.x, k.y); break; }
+      if (r === 'hit' && S.v2) { S.n.snatched++; S.n.lifts++; k.mode = 'lift'; k.t = HM2.liftT; k.fx = k.x; k.fy = k.y; S.lift = { x: Sn.x, key: Sn.key }; S.snatch = null; if (c.lift) c.lift(Sn.x, HM2.liftT); c.sound('hawk'); break; }   /* (claude/ksar3) TALON SNATCH */
       if (r === 'hit') { S.n.snatched++; const sh = nearestShaft(G, Sn.x); k.mode = 'carry'; k.t = HM.carryT; k.fx = k.x; k.fy = k.y; k.tx = sh ? (sh[0] + sh[1]) / 2 : Sn.x; S.snatch = null; if (c.carry) c.carry(k.tx, HM.carryT); break; }
       if (k.t <= 0) { S.snatch = null; k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break; }
+    /* (claude/ksar3) HM2: THE TALON LIFT (strike it free, or it drops you into her blade), THE RAZOR MOULT, GROUNDED IN SMOKE */
+    case 'lift': { const Lf = S.lift; if (!Lf) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; break; }
+      lerpTo(Lf.x, G.floorY - HM2.liftH - 22, 6);
+      if (c.hawkStruck && c.hawkStruck()) { S.n.liftBroke++; S.lift = null; if (c.drop) c.drop('free'); flinch(e, S, c, k.x, k.y); break; }
+      if (k.t <= 0) { S.lift = null; const bx = clampRoof(G, e.x + (e.face || 1) * 26, e.x); if (c.drop) c.drop('blade', bx); S.n.blades++; k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y;
+        if (!hmOpen(e) && !(S.pend > 0) && !STRIKE.has(e.mode)) { e.face = Math.sign(bx - e.x) || e.face; tell(e, S, c, 'cutTell', HM2.bladeTell); } } break; }
+    case 'moultTell': { const M = S.moult; if (!M) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; break; } lerpTo(M.hx, G.floorY - HM2.moultY, 6);
+      if (k.t <= 0) { k.mode = 'moult'; k.t = HM2.moultGap * 3 + 0.25; M.i = 0; M.gt = 0; c.sound('lash'); } break; }
+    case 'moult': { const M = S.moult; if (!M) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; break; } M.gt -= dt;
+      if (M.gt <= 0 && M.i < 3) { M.gt = HM2.moultGap; M.i++; S.knives.push({ x: k.x + M.dir * 6, y: G.floorY - HM2.moultY, vx: M.dir * HM2.moultV, ht: 'high', kind: 'feather', key: 'moult' + S.act + '_' + M.i }); S.n.feathers++; c.sound('slash'); }
+      if (k.t <= 0) { S.moult = null; k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break; }
+    case 'smoke': k.y += ((G.floorY - 8) - k.y) * Math.min(1, dt * 4); if (k.t <= 0 && !hmOpen(e) && !(S.pend > 0)) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break;
     case 'carry': { const q = Math.max(0, Math.min(1, 1 - k.t / HM.carryT)); k.x = k.fx + (k.tx - k.fx) * q; k.y = k.fy + (G.floorY - 70 - k.fy) * q;
       if (k.t <= 0) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break; }
   }
@@ -406,8 +473,11 @@ function stepFire(e, S, dt, h, c) {
    s = { P: { x, y, face, ground, atk, carry, snared, lifted }, e, S, gongs, racks, reach, shield, t, rng, mem, v2, hero } ->
        { gx, face, atk, jump, dodge, block, talk, up, down, why } */
 export const PLAN = { react: 0.25, miss: 0.12, missRing: 0.15, ringR: 150, kegBack: 0.5, rakeSwing: 0.4, jumpEdge: 4,
-  kegUse: 0.25, gongCost: 40, chip: 0.3, aim: 0.45, aimErr: 34 };   /* (claude/ksarhawk) a keg instead of a torch some of the time; a gong weighed a little dearer than a brazier; a chip under the hawk now and then; the throw's beat and its misjudged px */
+  kegUse: 0.25, gongCost: 40, chip: 0.3, aim: 0.45, aimErr: 34, talonMiss: 0.25 };   /* (claude/ksarhawk) a keg instead of a torch some of the time; a gong weighed a little dearer than a brazier; a chip under the hawk now and then; the throw's beat and its misjudged px */
 export function hmPlan(s) {
+  /* (claude/ksar3) HM2: in the talons, STRIKE THE HAWK (a beat late, some misread) */
+  if (s.S && s.S.v2 && s.P && s.P.talon) { const mem = s.mem || {}, rng = s.rng || Math.random, k = 'tal' + s.S.n.lifts; mem.tal = mem.tal || {}; if (mem.tal[k] == null) mem.tal[k] = { t: s.t || 0, miss: rng() < PLAN.talonMiss };
+    const q = mem.tal[k], go = !q.miss && (s.t || 0) - q.t >= PLAN.react; return { gx: s.P.x, face: Math.sign(s.S.hawk.x - s.P.x) || 1, atk: go, jump: false, dodge: false, block: false, talk: false, up: true, down: false, why: go ? 'strike the hawk free' : 'in the talons' }; }
   const out = hmPlan0(s), { P, S } = s, G = S.G;
   /* THE SHAFTS: never a goal inside one; at a lip with the goal across, JUMP it */
   if (G.shafts && out.gx != null) { const toHer = /^cut her|^in to her|^where she lands/.test(out.why);
