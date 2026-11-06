@@ -60,7 +60,7 @@ for (const h of L.hoists.filter(q => q.land)) { const [x, y] = h.land, under = [
   ok(under && clear && Math.abs(h.x - 1 - x) === 0, h.id + ': the step lands on solid ground in open air, under its rope'); }
 for (const h of L.hoists.filter(q => q.load === 'log')) { const fl = (() => { let r = h.hang + 1; while (r < L.H - 1 && L.grid[r * L.W + h.x] === T.AIR) r++; return r; })();
   let x = h.x, n = 0; while (n < h.rollMax && L.grid[(fl - 1) * L.W + x + h.roll * 2] === T.AIR) { x += h.roll; n++; }
-  const foes = L.ents.filter(e => ['pike', 'sprig', 'shield', 'hound', 'brute'].includes(e.t) && e.y === fl - 1 && (e.x - h.x) * h.roll >= -1 && (e.x - h.x) * h.roll <= n + 2);
+  const foes = L.ents.filter(e => ['pike', 'sprig', 'shield', 'hound', 'brute', 'sentry', 'thief'].includes(e.t) && e.y === fl - 1 && (e.x - h.x) * h.roll >= -1 && (e.x - h.x) * h.roll <= n + 2);
   ok(n < h.rollMax ? L.grid[(fl - 1) * L.W + x + h.roll * 2] !== T.AIR : true, h.id + ': its road (row ' + (fl - 1) + ') runs ' + n + ' tiles ' + (h.roll > 0 ? 'east' : 'west') + (n < h.rollMax ? ' to a wall it splits on' : ' (rollMax)'));
   ok(foes.length >= (h.id === 'procLog' ? 0 : 2), h.id + ': foes stand on its road: ' + foes.map(e => e.t + '@' + e.x).join(' ')); }
 const checks0 = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), checks = checks0.filter(x => x !== 169);   /* (claude/bossheal 10-30: 169 (168 grounded) is the extra shrine a few steps before the kennel's gate - a shrine before every mini) */

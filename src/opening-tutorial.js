@@ -72,7 +72,7 @@ export function buildLesson({ painter, T }) {
   ent('sign', GEO.inn.x0 + 1, gy, { text: INN_SIGN + '. THE ROAD STARTS HERE. YOUR HOME BETWEEN ROADS.' });
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: OT.START, y: gy }, pools: [], falls: [], moversExtra: [], interiors: [],
-    reskin: { swornsword: 'strawsword' }, openYard: true, opening: { steps: STEPS, gates, door: GEO.door, floor: F }, duskStart: -1, duskLen: 1, music: 'select', reachExact: true, noCoin: true,
+    reskin: { swornsword: 'strawsword' }, openYard: true, opening: { steps: STEPS, gates, door: GEO.door, floor: F }, duskStart: -1, duskLen: 1, music: 'select', ambient: [{ x0: 0, x1: 99999, kind: 'wind' }], reachExact: true, noCoin: true,
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.12)', grass: '#6a8a3a', grassL: '#9ac050', grassD: '#3a5a24', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10' },
   };
 }

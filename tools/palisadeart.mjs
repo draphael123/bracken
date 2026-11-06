@@ -16,7 +16,7 @@ const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'palisadewood');
-ok(levelHash(lv) === '8c1d63865e73', 'the level hash is the greybox\'s (art lanes never change the level data): ' + levelHash(lv));
+ok(levelHash(lv) === '3b3f12cba4f1', 'the level hash is the greybox\'s plus the foevariety cast pass (was 8c1d63865e73; art lanes never change the level data): ' + levelHash(lv));
 const main = src('src/main.js');
 for (const t of ['stakesetter', 'lanternhand', 'maulcrew', 'batteringbeast']) ok(new RegExp("\\{ t: '" + t + "', name:").test(main), 'a bestiary row for ' + t);
 ok(AU.AMBIENT_NAMES.includes('palisade') && !!AU.AMBIENT_SOURCES.palisade && (lv.build().ambient || []).every(a => a.kind === 'palisade'), 'its own ambient bed (palisade: ' + AU.AMBIENT_SOURCES.palisade.join(', ') + ')');

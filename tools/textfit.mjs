@@ -123,7 +123,7 @@ async function pageTextFit(input) {
       if (ix > 1 && iy > 1) report('COLLIDE', screen, A, { other: B.s, otherAt: B.at }); }
     for (const c of rec.filter(r => r.kind === 'cut')) report('TRUNCATED', screen, c, { out: c.out, maxW: c.maxW });
     const pagedS = new Set(rec.filter(r => r.kind === 'paged').map(r => r.s));   /* a description with a page key reaches its every line */
-    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());
+    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim()).filter(s => s.length > 1);   /* (rel147: a one-glyph text - the whats-new scroll arrow 'v' - is not a drawn LINE; it matched the 'village burns...' piece by startsWith and made batch 144's wrapped line read CLIPPED on every screen) */
       const drawn = w.lines.filter(l => later.some(s => s === l.trim() || l.trim().startsWith(s) || l.trim().endsWith(s))).length;
       if (drawn > 0 && drawn < w.lines.length) report('CLIPPED', screen, w, { lines: w.lines.length, drawn }); }
     if (opts.cover) { const v = BK.view, P = BK.P, hx = P.x - Math.max(0, Math.min(BK.L.W * 16 - v.VW, v.x)), hy = P.y - Math.max(0, Math.min(BK.L.H * 16 - v.VH, v.y));
