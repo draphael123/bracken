@@ -12,6 +12,7 @@
 // main.js calls: spawnBoss, props, owns, ownsProp, on, update, take, lever, drawBoss, drawOver, barName, end, read, show, clear, phase, plan.
 import * as SKM from './skyhook.js';
 import { BOSS_PHASE } from './boss-music.js';
+import { lineCut } from './line-kit.js';
 const { SH } = SKM;
 const R = Math.round;
 const SOUND = { rideTell: s => (s.ratchet || s.clank)(), ride: s => (s.ratchet || s.throwWhoosh)(), perch: s => (s.pStep || s.thud)(), hookTell: s => s.tell && s.tell(false),
@@ -117,7 +118,7 @@ export function makeSkyhookHands(ctx) {
       mark: m => ctx.number(e.x, e.y - SH.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 14, 34, '#ffd36b'); ctx.burst(x, y - 8, 14, ['#8a8a94', '#c8b088', '#ffd36b'], 110, 0.7); } else if (k === 'ward') ctx.ring(x, y - 14, 36, '#c8d8e8'); else if (k === 'dust') ctx.burst(x, y - 2, 18, ['#8a8a94', '#6a6a72', '#c8c8d0'], 120, 0.6); },
       lineUp: id => !!(K && K.lines[id] && !(K.lines[id].cut > 0)),
-      cutLine: (id, s) => !!(K && ctx.lineCut && ctx.lineCut(K, id, s)),
+      cutLine: (id, s) => !!(K && lineCut(K, id, s)),
       riders: id => ctx.players.filter(pp => pp.lk && pp.lk.id === id && !pp.dead),
       hit: (bx, d, name, o = {}) => { const out = [];
         for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;

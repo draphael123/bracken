@@ -134,8 +134,8 @@ export function stepSky(e, S, dt, heroes, w) {
     case 'slip': { const k = 1 - Math.max(0, e.modeT) / SH.slip.fall; e.y = e.vy0 + (G.floorY - e.vy0) * k * k;
       if (e.modeT <= 0) { e.y = G.floorY; e.mode = 'downed'; e.modeT = SH.downed.t[i]; e.openT0 = e.modeT; S.purse = e.maxHp * SH.downed.cap; S.n.downed++; w.shake(9); w.sound('downed'); w.fx('open', e.x, G.floorY); w.number(e.x, G.floorY - 50, SKY_SAY.downed, '#ffd36b'); }
       return; }
-    case 'downed': e.y = G.floorY; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = SH.rise.tell; e.hitKey = 'ri' + S.act; S.act++; w.sound('rise'); w.number(e.x, G.floorY - 50, SKY_SAY.rise, '#ff9a5c'); } return;
-    case 'rise': e.y = G.floorY; if (e.modeT <= 0) { w.hit([e.x - SH.rise.r, e.x + SH.rise.r, G.floorY - 30, G.floorY + 2], SH.rise.dmg, 'rise', { key: e.hitKey, pushFrom: e.x, push: SH.rise.push });
+    case 'downed': e.y = G.floorY; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = SH.rise.tell; e.hitKey = 'ri' + S.act; S.act++; w.sound('rise'); w.mark('!'); w.number(e.x, G.floorY - 50, SKY_SAY.rise, '#ff9a5c'); } return;
+    case 'rise': e.y = G.floorY; if (e.modeT <= 0) { w.hit([e.x - SH.rise.r, e.x + SH.rise.r, G.floorY - 30, G.floorY + 2], SH.rise.dmg, 'rise', { key: e.hitKey, pushFrom: e.x, push: SH.rise.push, yellow: true });
         S.ward = SH.rise.ward; e.ward = S.ward; w.fx('ward', e.x, G.floorY); w.number(e.x, G.floorY - 62, SKY_SAY.ward, '#c8d8e8'); startClimb(e, S, w); }
       return;
     case 'hookTell': if (S.side) atPerch(e, S); if (e.modeT > SH.hook.lock && e.target) { e.aimX = e.target.x; e.aimY = e.target.y - 8; }
@@ -197,7 +197,7 @@ function pick(e, S, heroes, w) {
   if (k === 'ride') S.sinceRide = 0; else S.sinceRide++;
   if (k === 'swing') S.sinceSwing = 0; else S.sinceSwing++;
   switch (k) {
-    case 'ride': e.mode = 'rideTell'; e.modeT = SH.ride.tell[i]; w.sound('rideTell'); w.mark('!'); break;
+    case 'ride': e.mode = 'rideTell'; e.modeT = SH.ride.tell[i]; w.sound('rideTell'); break;   /* no mark: hooking on throws no blow (the levers glow: src/skyhook-hands.js) */
     case 'hook': e.mode = 'hookTell'; e.modeT = SH.hook.tell[i]; e.target = P; e.aimX = P ? P.x : e.x; e.aimY = P ? P.y - 8 : G.floorY - 8; w.mark('!'); w.sound('hookTell'); break;
     case 'shove': e.face = Math.sign(besideMe.x - e.x) || e.face; e.mode = 'shoveTell'; e.modeT = SH.shove.tell; w.mark('!'); w.sound('shoveTell'); break;
     case 'cut': e.mode = 'cutTell'; e.modeT = SH.cut.tell; w.mark('!!'); w.sound('cutTell'); break;
