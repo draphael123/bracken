@@ -746,7 +746,7 @@ export const HEIGHT = {
   'holdfast|gripTell': 'low',
   'hopper|hopTell': 'low',
   'horn|tell': 'high',
-  'hound|pounceTell': 'low', 'greathound|lungeTell': 'low', 'greathound|pounceTell': 'low', 'greathound|snapTell': 'low', 'greathound|boughTell': 'low',   /* (claude/batch74: the Great Hound's answered blows (claude/sweep1's ANSWER rows) all run along the ground) */
+  'hound|pounceTell': 'low', 'greathound|lungeTell': 'low', 'greathound|pounceTell': 'low', 'greathound|leapTell': 'low', 'greathound|snapTell': 'low', 'greathound|boughTell': 'low',   /* (claude/batch74: the Great Hound's answered blows (claude/sweep1's ANSWER rows) all run along the ground) */
   'husk|grabTell': 'low',
   'imp|throwTell': 'low',
   'javelin|grabTell': 'low', 'javelin|raise': 'low', 'javelin|slashTell': 'low', 'javelin|windUp': 'low',
