@@ -36300,8 +36300,21 @@ function drawSecretsJournal() { const x = 24, y = 8, w = VW - 48, h = VH - 16, J
     yy += 5; }
   if (!J.length) text('NOTHING HIDDEN IS KNOWN YET', VW / 2, yy, UI.dim, 'center', 6);
   text('ESC BACK', VW / 2, y + h - 10, UI.dim, 'center', 6); }
+function drawShrineAsk() {   /* (claude/shrinekey) BACK TO THE LAST SHRINE? YES / NO: the question alone over the dimmed game, no pause rows under it */
+    g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
+    const bw = 230, bh = 84, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
+    board(bx, by, bw, bh, '#ffd36b', undefined, false, 'iron');
+    text('BACK TO THE LAST SHRINE?', VW / 2, by + 8, '#ffd36b', 'center');
+    text('NOT A DEATH: YOU KEEP WHAT YOU CARRY', VW / 2, by + 22, UI.dim, 'center', 6);
+    text('YOUR HEALTH AND FLASKS STAY AS THEY ARE', VW / 2, by + 32, UI.dim, 'center', 6);
+    [['YES', true], ['NO', false]].forEach(([lab, yes], j) => { const w2 = 70, x2 = VW / 2 - w2 - 6 + j * (w2 + 12), y2 = by + 50, on = shrineYes === yes;
+      TCH.hit(x2, y2, w2, 20, () => { shrineYes = yes; confirmPress = true; });
+      board(x2, y2, w2, 20, on ? '#ffd36b' : '#5a6474', on ? (yes ? 'rgba(70,56,30,0.95)' : 'rgba(40,70,40,0.95)') : 'rgba(30,26,44,0.95)', false, 'ledger');
+      text(lab, x2 + w2 / 2, y2 + 6, on ? '#fff6e0' : UI.dim, 'center'); });
+}
 function drawMenu() {
-  if (TCH.editing()) return;   /* the touch layout editor draws its own screen (src/touch.js) */
+  if (TCH.editing()) return;
+  if (shrineAsk) { drawShrineAsk(); return; }   /* the touch layout editor draws its own screen (src/touch.js) */
   if (menuKind === 'map') { drawPauseMap(); return; }
   if (menuKind === 'secrets') { drawSecretsJournal(); return; }   /* (claude/secrets) */
   const open = Math.min(1, (time - menuSince) / 0.22), eo = 1 - Math.pow(1 - open, 3);
@@ -36339,18 +36352,6 @@ function drawMenu() {
     const two = lines.slice(0, 2), col2 = menuMsgT > 0 && menuMsg ? '#ffd36b' : tip ? '#9aa39a' : UI.dim;
     g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x + 4, ty - 9 - (two.length - 1) * 8, w - 8, 13 + (two.length - 1) * 8);
     two.forEach((ln, i) => text(ln, VW / 2, ty - (two.length - 1 - i) * 8, col2, 'center', 6)); }
-  if (shrineAsk) {   /* (claude/shrinekey) BACK TO THE LAST SHRINE? YES / NO */
-    g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
-    const bw = 230, bh = 84, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
-    board(bx, by, bw, bh, '#ffd36b', undefined, false, 'iron');
-    text('BACK TO THE LAST SHRINE?', VW / 2, by + 8, '#ffd36b', 'center');
-    text('NOT A DEATH: YOU KEEP WHAT YOU CARRY', VW / 2, by + 22, UI.dim, 'center', 6);
-    text('YOUR HEALTH AND FLASKS STAY AS THEY ARE', VW / 2, by + 32, UI.dim, 'center', 6);
-    [['YES', true], ['NO', false]].forEach(([lab, yes], j) => { const w2 = 70, x2 = VW / 2 - w2 - 6 + j * (w2 + 12), y2 = by + 50, on = shrineYes === yes;
-      TCH.hit(x2, y2, w2, 20, () => { shrineYes = yes; confirmPress = true; });
-      board(x2, y2, w2, 20, on ? '#ffd36b' : '#5a6474', on ? (yes ? 'rgba(70,56,30,0.95)' : 'rgba(40,70,40,0.95)') : 'rgba(30,26,44,0.95)', false, 'ledger');
-      text(lab, x2 + w2 / 2, y2 + 6, on ? '#fff6e0' : UI.dim, 'center'); });
-  }
 }
 function drawSelect() {
   const vg = g.createRadialGradient(VW / 2, VH / 2, 40, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(10,20,14,0.5)'); vg.addColorStop(1, 'rgba(10,20,14,0.85)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
