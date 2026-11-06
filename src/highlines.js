@@ -31,12 +31,12 @@ export const HL_DATA = {
     [58, 208, 72, 209],  // 2  L2
     [38, 195, 46, 196],  // 3  L3  the junction station
     [40, 206, 45, 207],  // 4  Ls2 SILVER ONE's ledge (the points' side glide)
-    [2, 202, 8, 203],    // 5  L4  the glides' west station
+    [1, 202, 8, 203],    // 5  L4  the glides' west station
     [24, 189, 34, 190],  // 6  L5
-    [2, 177, 12, 178],   // 7  L6  the gorge's west lee rock
+    [1, 177, 12, 178],   // 7  L6  the gorge's west lee rock
     [60, 184, 78, 185],  // 8  L7  the gorge's east lee rock
     [59, 165, 66, 166],  // 9  L8  the east lee, high
-    [2, 171, 11, 172],   // 10 L9  the west lee, high (the ambush begins)
+    [1, 171, 11, 172],   // 10 L9  the west lee, high (the ambush begins)
     [19, 156, 30, 157],  // 11 L10
     [24, 143, 31, 144],  // 12 Ls4 SILVER TWO's ledge (the side winch)
     [54, 142, 62, 143],  // 13 L11 the cutter's station
@@ -55,12 +55,12 @@ export const HL_DATA = {
     [63, 104, 72, 105],  // 26 THE DOCK (the gondola's far station)
     [73, 92, 78, 93],    // 27 L16 the exam's east lee
     [36, 74, 46, 75],    // 28 L17 the exam's west lee
-    [2, 58, 15, 59],     // 29 THE CAVE MOUTH LEDGE (checkpoint 3)
+    [1, 58, 15, 59],     // 29 THE CAVE MOUTH LEDGE (checkpoint 3)
     [8, 56, 11, 57],     // 30 the last rock steps
     [3, 54, 6, 55],      // 31
     [8, 52, 11, 53],     // 32
     [3, 50, 6, 51],      // 33
-    [2, 48, 40, 49],     // 34 THE CAVE MOUTH LANDING (SKYHOOK's arena stub, the exit)
+    [1, 48, 40, 49],     // 34 THE CAVE MOUTH LANDING (SKYHOOK's arena stub, the exit)
   ],
   nets: [[15, 234, 33, 235], [41, 222, 60, 223]],   /* the cargo nets under band 1 (rope nets: art owed). The exam has none */
   checkpoints: [{ x: 4, y: 232 }, { x: 75, y: 134 }, { x: 5, y: 58 }],
@@ -68,7 +68,7 @@ export const HL_DATA = {
   exit: [30, 44, 40, 48],
   arena: { x0: 2, x1: 40, floor: 48, boss: 'skyhook', stub: true },   /* SKYHOOK's landing: a LATER lane builds the fight here */
   lineKit: {
-    anchors: [[61, 199.536], [43, 151.6], [37, 97.5], [59, 85]],   /* iron pylons a line end hangs from (no landing under it) */
+    anchors: [[61, 199.536], [43, 151.6], [37, 97.5], [59, 85], [26, 198], [21, 198.5]],   /* iron pylons a line end hangs from (no landing under it) */
     lines: [
       /* 1 FOOTHOLD */
       { id: 'W1', kind: 'winch', a: [12, 231], b: [32, 218] },
@@ -82,18 +82,18 @@ export const HL_DATA = {
       /* 3 THE WIND GORGE */
       { id: 'W5', kind: 'winch', a: [27, 188], b: [6, 176] },
       { id: 'G2', kind: 'glide', a: [11, 176], b: [61, 183] },
-      { id: 'W6', kind: 'winch', a: [77, 183], b: [63, 164] },
+      { id: 'W6', kind: 'winch', a: [77, 183], b: [63, 163] },
       { id: 'G3', kind: 'glide', a: [60, 164], b: [10, 170] },
       /* 4 THE AMBUSH */
-      { id: 'H1', kind: 'winch', a: [7, 170], b: [21, 155], cut: true },
+      { id: 'H1', kind: 'winch', a: [7, 170], b: [21, 154.5], cut: true },
       { id: 'H2', kind: 'winch', a: [28, 155], b: [58, 141], cut: true, points: [{ at: 40, to: 'S4' }] },
       { id: 'S4', kind: 'winch', a: [43, 151.6], b: [30, 142], secret: true },
-      { id: 'H3', kind: 'winch', a: [60, 141], b: [68, 133], cut: true },
+      { id: 'H3', kind: 'winch', a: [60, 141], b: [68, 132.5], cut: true },
       /* 7 THE GONDOLA (the line kit lab's set piece, laid at the station) */
       { id: 'GD', kind: 'free', a: [26, 99.5], b: [59, 85], dir: 1, snap: { at: 41 }, cab: { onto: 'LO' } },
       { id: 'LO', kind: 'glide', a: [37, 97.5], b: [65, 101] },
       /* 8 THE EXAM */
-      { id: 'E1', kind: 'winch', a: [67, 103], b: [77, 91], cut: true },
+      { id: 'E1', kind: 'winch', a: [67, 103], b: [77, 90.5], cut: true },
       { id: 'E2', kind: 'winch', a: [74, 91], b: [44, 73], cut: true },
       { id: 'E3', kind: 'winch', a: [38, 73], b: [14, 57] },
     ],
@@ -122,6 +122,8 @@ export function buildHighLines({ painter, T, TS }) {
   const { W, H } = HL, D = HL_DATA, L = painter(W, H), { set, block, ent } = L;
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const foe = (t, x, y, o) => ent(t, x, y, o || {});
+  const lineAt = (id, tx) => { const d = D.lineKit.lines.find(q => q.id === id), k = (tx - d.a[0]) / (d.b[0] - d.a[0]); return d.a[1] + (d.b[1] - d.a[1]) * k; };
+  const coinOn = (id, tx) => ent('coin', tx, Math.floor(lineAt(id, tx)));   /* a coin on a rider's path (taken as you ride by) */
   /* the cliff walls (the shaft), the line-yard's rock, the cave's rock over the top */
   block(0, 0, 0, H - 1); block(W - 1, W - 1, 0, H - 1);
   block(1, 14, 233, H - 1);
@@ -139,27 +141,27 @@ export function buildHighLines({ painter, T, TS }) {
   sign(36, 219, 'A MISS COSTS A CLIMB: THE NETS CATCH YOU.');
   foe('goat', 35, 219, { face: 1 });                               /* a crag ram on the first station: weight on foot before the lines */
   foe('crossbow', 71, 207, { face: -1 });                          /* the first bolt at a rider: he leads you up W2 */
-  for (const [cx, cy] of [[20, 231], [34, 219], [64, 207]]) ent('coin', cx, cy);
+  coinOn('W1', 22); coinOn('W2', 50); ent('coin', 64, 207);
   /* ---- 2 JUNCTIONS ---- */
   sign(66, 207, 'POINTS: HOLD UP AS YOU PASS THE BOARD AND YOU TAKE THE BRANCH.');
   sign(41, 194, 'THE GLIDE IS FAST. JUMP TO KICK OFF ACROSS TO THE NEXT LINE.');
   foe('harpy', 14, 190, { face: 1 });                              /* a crag harpy dives at the glide riders */
-  for (const [cx, cy] of [[44, 205], [5, 201], [30, 188]]) ent('coin', cx, cy);
+  coinOn('S2', 50); coinOn('F2', 14); ent('coin', 30, 188);
   /* ---- 3 THE WIND GORGE ---- */
   sign(9, 176, 'THE GORGE WIND IS TOLD. RIDE WITH IT AND YOU FLY; AGAINST IT YOU CRAWL. THE LEE ROCKS ARE CALM.');
   foe('crossbow', 33, 188, { face: 1 });
   foe('galeharpy', 44, 176, { face: -1 }); foe('galeharpy', 40, 160, { face: 1 });
-  for (const [cx, cy] of [[70, 183], [62, 164]]) ent('coin', cx, cy);
+  coinOn('G2', 36); coinOn('G3', 30); ent('coin', 70, 183);
   /* ---- 4 THE AMBUSH ---- */
   sign(4, 170, 'THE LINE CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
   sign(24, 155, 'A RIGGER WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
   foe('crossbow', 55, 141, { face: -1 });
-  for (const [cx, cy] of [[22, 155], [60, 141]]) ent('coin', cx, cy);
+  coinOn('H2', 48); coinOn('S4', 36); ent('coin', 60, 141);
   /* ---- 5 THE LEE HUT (on foot) ---- */
   sign(72, 133, 'THE LEE HUT. NO LINES ABOVE: CLIMB THE CREVICE. LISTEN FOR THE ROCK.');
   for (const x of [58, 64, 70]) ent('rockfall', x, 112, { every: 2.6 + (x % 3) * 0.3, tell: 1.0, seen: true });   /* THE CREVICE's loose rock: told, on screen */
   foe('goat', 40, 117, { face: -1 }); foe('goat', 26, 117, { face: 1 });
-  for (const [cx, cy] of [[64, 131], [58, 125], [70, 121]]) ent('coin', cx, cy);
+  for (const [cx, cy] of [[64, 131], [58, 125], [70, 121]]) ent('coin', cx, cy);   /* on the rock lips */
   /* ---- 6 THE COUNTERWEIGHT ---- */
   sign(15, 117, 'STAND IN THE CAGE AND STRIKE THE HOPPER: THE STONE GOES DOWN, THE CAGE GOES UP.');
   foe('crossbow', 21, 101, { face: -1 });                          /* bolts at the cage as it rises */

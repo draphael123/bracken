@@ -84,6 +84,7 @@ export function hookStep(e, dt, w) {
       break; }
     case 'tell': {
       e.modeT -= dt; e.vx = 0; const z = kit.lines[e.line]; if (z) { e.y = Lk.lineY(z, e.x) + z.hang; }
+      if (e.modeT <= 0 && now - w.lastSwipe() < HK.noStack) { e.modeT = 0.05; e.hkN.held = (e.hkN.held || 0) + 1; break; }   /* another one's swipe is out: he HOLDS his tell (still open) */
       if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = HK.swipeT; e.hit = false; e.hkN.swipes++; w.swiped(now); w.sound('swipe'); }
       break; }
     case 'swipe': {
@@ -110,7 +111,7 @@ export function hookStep(e, dt, w) {
         if (Math.abs(d) <= HK.footReach && e.modeT <= 0 && now - w.lastSwipe() >= HK.noStack) { e.mode = 'footTell'; e.modeT = HK.footTell; e.hkN.tells++; w.mark(e, '!'); w.sound('tell'); }
         else if (Math.abs(d) > 14) { const nx = e.x + e.face * HK.footSpeed * dt; if (w.landingUnder(nx, e.y - 2, e.y + 2) !== null) e.x = nx; } }
       break; }
-    case 'footTell': { e.modeT -= dt; if (e.modeT <= 0) { e.mode = 'footSwipe'; e.modeT = HK.swipeT; e.hit = false; e.hkN.swipes++; w.swiped(now); w.sound('swipe'); } break; }
+    case 'footTell': { e.modeT -= dt; if (e.modeT <= 0 && now - w.lastSwipe() < HK.noStack) { e.modeT = 0.05; break; } if (e.modeT <= 0) { e.mode = 'footSwipe'; e.modeT = HK.swipeT; e.hit = false; e.hkN.swipes++; w.swiped(now); w.sound('swipe'); } break; }
     case 'footSwipe': {
       e.modeT -= dt;
       if (!e.hit) for (const h of hs) { if (!h || h.dead) continue; const dx = (h.x - e.x) * e.face; if (dx < -4 || dx > HK.reach || Math.abs(h.y - e.y) > 22) continue;
