@@ -118,7 +118,7 @@ export function buildDeep3(R, T, TS = 16) {
   curtain(26, 28, f2.y0, f2.y1 - 2); ent('walleel', 27, f2.y1 - 1, { dir: 'down', wall: f2.y1 - 2 });
   ent('angler', 36, f2.y0 + 5);
   ent('ballast', 64, f2.y1, { kind: 'stone', rack: true });   /* a spare, under F1's crack: a hero who lost his on the way down */
-  vent(56, f2.y1, 7); pocket(52, 60, f2.y0, f2.y0 + 1);
+  vent(56, f2.y1, 7); vent(35, f2.y1, 6);   /* (a breath between the curtains: a heavy walk is slow) */ pocket(52, 60, f2.y0, f2.y0 + 1);
   coins(32, 40, f2.y1 - 2);
   coins(Tw.x0 + 1, Tw.x0 + 5, f2.y0 + 1);   /* (off-route) up in the window hall's west corner, over the rot: a light swimmer's purse. (NO NEW SILVER: the game counts three and a silver's place in the list is its save bit - src/level.js silverTrim, src/relics.js VAULT_SILVER - so master's three stay exactly where they are) */
   // F3 THE SETTLING ROOM (remix): THIS crack is too thick for a hero and his stone - a SETTLING STONE hangs over it. Stand under it and it falls (told):
@@ -126,7 +126,7 @@ export function buildDeep3(R, T, TS = 16) {
   curtain(29, 31, f3.y0, f3.y1 - 2); ent('walleel', 30, f3.y1 - 1, { dir: 'down', wall: f3.y1 - 2 });
   ent('lamprey', 38, f3.y0 + 6); ent('lamprey', 58, f3.y0 + 4);
   ent('drownedknight', 22, f3.y1, { face: 1 });
-  vent(20, f3.y1, 7); pocket(14, 22, f3.y0, f3.y0 + 1); clam(60, f3.y1);
+  vent(20, f3.y1, 7); vent(38, f3.y1, 6); pocket(14, 22, f3.y0, f3.y0 + 1); clam(60, f3.y1);
   ent('sign', 40, f3.y1, { text: 'THE TOWER SETTLES. THIS FLOOR IS TOO THICK FOR YOU: A STONE THAT FALLS WEIGHS MORE. STAND UNDER IT, THEN STEP AWAY.' });
   coins(52, 60, f3.y1 - 1);
   // F4 THE COLLAPSING STAIR (exam): F3's crack drops you on the west landing (the tower's foot: its shrine, two stones on racks); the stair runs east and down
@@ -169,6 +169,8 @@ export function buildDeep3(R, T, TS = 16) {
   out.currents.push({ x0: Sh.x0, x1: Sh.x1, y0: Sh.y0, y1: Sh.y1, fx: 0, fy: -150, kind: 'hot', d3: 'upwell' });   /* THE ROT UPWELLS: 'hot' = only weight sinks through it (main.js updateDeep) */
   for (const [x, y, face] of [[Sh.x0, 244, 1], [Sh.x1, 251, -1], [Sh.x0, 258, 1], [Sh.x1, 265, -1]]) ent('walleel', x, y, { face, wall: x - face, shaft: true });
   ent('sign', 58, St.east[2], { text: 'THE OLD BELL. THE ROT RISES UP HER WELL AND THROWS THE LIGHT BACK UP. STAND IN HER WITH A STONE AND SHE TAKES YOU DOWN.' });
+  cut(Sh.x0 - 3, Sh.x0 - 1, 249, 253); pocket(Sh.x0 - 3, Sh.x0 - 1, 249, 250);   /* an old hatch in the well's west wall with a breath caught in it (the bell is the air for a rider; this is for a swimmer who missed her) */
+  vent(64, D3.cavern.y1, 8);   /* and bubbles where she sets down */
   out.zones.push({ name: 'THE BELL SHAFT', x0: Sh.x0, x1: Sh.x1, y0: Sh.y0, y1: Sh.y1, col: [140, 190, 150], a: 0.1 });
   const moversExtra = [{ kind: 'lift', d3bell: true, x: B.x * TS, y: B.y0 * TS, y0: B.y0 * TS, y1: B.y1 * TS, w: B.w * TS, h: 8, speed: B.speed }];
 
@@ -178,7 +180,7 @@ export function buildDeep3(R, T, TS = 16) {
   const [dx0, dx1, dy] = D3.wreck.deck;
   for (let x = dx0; x <= dx1; x++) { set(x, dy, T.PLANK); fill(x, x, dy + 1, C.y1); }   /* her deck on her keel, lying on the floor (a ship: the one timber down here) */
   fill(dx0 - 1, dx0 - 1, dy - 5, dy);   /* her stern post */
-  for (const [a, b, y] of [[44, 52, 287], [100, 103, 288]]) fill(a, b, y, C.y1);   /* the seabed's rubble */
+  for (const [a, b, y] of [[44, 52, 287], [97, 99, 289]]) fill(a, b, y, C.y1);   /* the seabed's rubble */
   ent('sign', 60, C.y1, { text: 'THE WRECK OF THE SALT WIDOW. FOUR OF HER CREW NEVER LEFT HER. THEY KEEP HER STILL.' });
   ent('sign', A.trigger - 4, C.y1, { text: 'A SOUL LANTERN OVER A FALLEN SAILOR BURNS TEN SECONDS. FELL THE REST BEFORE IT GOES OUT, OR HIS MATES RAISE HIM.' });
   ent('crab', 82, dy - 1, { face: -1 }); ent('lamprey', 90, 280);
@@ -186,6 +188,7 @@ export function buildDeep3(R, T, TS = 16) {
   out.currents.push({ x0: C.x0 + 4, x1: A.wallL - 2, y0: C.y1 - 6, y1: C.y1, fx: 30, fy: 0, kind: 'cold', d3: 'coldroad' });   /* the cold road runs on along the seabed, east to her grave (master's cold current, the wreck's floor) */
   for (const x of [112, 128, 144]) vent(x, C.y1, 9);   /* the arena's air: three vents (the Bell Grave had three) */
   vent(54, C.y1, 8); clam(98, dy - 1);
+  out.wrecks.push({ x: 84, y: dy - 1 });   /* AIR IN HER CROWN: her cabin still holds a breath (src/main.js airBoxes: a wreck is always air) - the wreck crossing is one leg, not a drowning */
   out.zones.push({ name: "THE CREW'S WRECK", x0: C.x0, x1: A.wallL, y0: C.y0, y1: C.y1, col: [120, 160, 190], a: 0.08 });
   out.zones.push({ name: "THE WRECK'S GRAVE", x0: A.x0, x1: C.x1, y0: C.y0, y1: C.y1, col: [130, 200, 190], a: 0.12 });
   ent('sunkencrew', 128, C.y1, { face: -1 });
