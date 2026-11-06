@@ -36,7 +36,8 @@ const lint = AS.lintAirship(L, T); ok(lint.length === 0, 'lintAirship: ' + lint.
 ok(L.W >= 420 && L.W <= 440, 'about 420 columns (' + L.W + ')');
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.x); ok(checks.length === 2, 'the start + two shrines (' + checks + ')');
 { const gaps = [checks[0], checks[1] - checks[0], L.arena.x0 / TS - checks[1]]; ok(gaps.every(g => g <= 240), 'shrine gaps ' + gaps + ' (<= 240: fewer checkpoints, matching the dune\'s 199/180/153)'); }
-ok(L.ents.filter(e => e.skyRaider).every(e => ['cutthroat', 'slinger', 'archer'].includes(e.t)), 'sky raiders are existing bandit AIs (reskin only)');
+ok(L.ents.filter(e => e.skyRaider).every(e => ['cutthroat', 'slinger', 'archer', 'shield'].includes(e.t)), 'sky raiders are existing bandit AIs (reskin only: cutthroat, slinger, archer, the shield)');
+ok(L.ents.filter(e => e.t === 'shield').every(e => e.cnSkin === 'shieldguard'), "every shield is the gorge bandit's SHIELD GUARD skin (the bare 'shield' is the helmed goblin)");
 ok(!L.ents.some(e => /gob/i.test(e.t + ' ' + (e.cnSkin || '') + ' ' + (e.skin || ''))), 'no goblin on the airship (ents)');
 ok(!/\b(log|logs|timber|wooden)\b/i.test(readFileSync('src/airship.js', 'utf8').replace(/generic wood/gi, '')), 'no generic wood/logs in the level file (a lacquered, brass-banded hull)');
 for (const f of ['airship', 'airship-hands', 'wyrmling', 'thunder-wyrm']) ok(!/(^|[-_.])(ad|ads|admiral|banner|track|pixel|promo|analytics)([-_.]|$)/.test(f) && !/ad-?insert/.test(f), 'filename ' + f + ' is clean vs the ad-block lists');

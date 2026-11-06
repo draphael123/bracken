@@ -203,12 +203,12 @@ export function buildAirship({ T, TS }) {
   const sq = (t, x, y, squad, o) => raider(t, x, y, Object.assign({ squad }, o || {}));
   sq('cutthroat', 34, deckFeet, 'boarders'); sq('cutthroat', 40, deckFeet, 'boarders');
   sq('slinger', 60, D - 4, 'quarterdeck'); sq('archer', 66, D - 4, 'quarterdeck');
-  sq('cutthroat', 98, holdFloor - 1, 'holdFore'); sq('shield', 102, holdFloor - 1, 'holdFore');   /* THE PLATED BOARDER: the bandit shield's AI in a sky raider's harness (the Plated Bandit's skin is Ksar-bound: Q) */
+  sq('cutthroat', 98, holdFloor - 1, 'holdFore'); sq('shield', 102, holdFloor - 1, 'holdFore', { cnSkin: 'shieldguard' });   /* THE PLATED BOARDER: the gorge bandits' SHIELD GUARD (cnSkin shieldguard - never the default helmed goblin) in a sky raider's harness (the Plated Bandit's skin is Ksar-bound: Q) */
   sq('slinger', 112, holdFloor - 5, 'holdShelf'); sq('cutthroat', 108, holdFloor - 1, 'holdShelf');
   sq('archer', 130, holdFloor - 3, 'holdAft'); sq('cutthroat', 135, holdFloor - 1, 'holdAft');
   raider('cutthroat', 254, deckFeet, { face: 1 });   /* the boarder waiting at the forecastle's foot (after the rigging, before the cloud line's climbs) */
   sq('archer', 329, deckFeet, 'brood'); sq('cutthroat', 337, deckFeet, 'brood');   /* the cloud deck's raid fights beside the brood (one encounter) */
-  sq('cutthroat', 343, deckFeet, 'bridgeDoor'); sq('shield', 347, deckFeet, 'bridgeDoor'); sq('slinger', 350, deckFeet, 'bridgeDoor');
+  sq('cutthroat', 343, deckFeet, 'bridgeDoor'); sq('shield', 347, deckFeet, 'bridgeDoor', { cnSkin: 'shieldguard' }); sq('slinger', 350, deckFeet, 'bridgeDoor');
 
   const START = { x: 3, y: deckFeet };
   return {
