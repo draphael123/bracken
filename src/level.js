@@ -8099,7 +8099,7 @@ export const LEVELS = [
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
   /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
-  { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
+  { id: 'tavern', name: 'THE INN', sub: 'friends meet here', build: theTavern, hidden: true },
   /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
   { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },
   /* THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel 10-22): APPENDED (saves count levels by index). Her home: THE HORNET QUEEN 2.

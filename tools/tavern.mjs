@@ -67,7 +67,7 @@ if (WANT.includes('pure')) {
   const xs = STATIONS.map(s => s.x); ok(xs.every((x, i) => i === 0 || x - xs[i - 1] >= 3), 'the stations stand apart (3+ tiles), west to east: ' + xs.join(','));
   const { LEVELS, T } = await import('../src/level.js');
   const lv = LEVELS.find(l => l.id === 'tavern'), L = lv && lv.build();
-  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE TAVERN is a hidden level, flagged tavern (no death cost: openYard)');
+  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE INN is a hidden level, flagged tavern (no death cost: openYard)');
   { /* (claude/yardswap, Daniel 11-03) the training entry is the ARENA YARD: the door says so; no practice-yard / hero-trial wording left on the room's stations */
     const pd = STATIONS.find(s => s.id === 'practice');
     ok(pd && pd.name === 'THE ARENA YARD' && pd.verb === 'TRAIN' && /ARENA YARD/.test(pd.first), 'the training door is THE ARENA YARD (verb TRAIN): ' + JSON.stringify(pd && [pd.name, pd.verb]));

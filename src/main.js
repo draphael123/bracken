@@ -5920,7 +5920,7 @@ function updateStore0(dt) {
     const k = items[storeI], owned = k.consumable ? false : (k.id === 'none' || owns(tab, k.id)), lock = lockOf(k, PROG, featDone);
     if (owned && tab.key) { setEquip(tab.key, k.id); if (tab.key === 'menu') music.play(menuTrack()); if (tab.key === 'hero') { applySkin(); applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); } applySkin(); saveProgress(); SFX.equip(); storeMsg = k.passive ? k.name + ' is always on' : k.name + ' equipped' + (tab.key === 'charm' ? ' (worn)' : ''); storeMsgT = 2;
       if (tab.key === 'hero' && heroLevel(k.id) === 0) { storeMsg = k.name + ' starts at nothing: no levels, no skills, no charm. Walk a wood with him and he grows.'; storeMsgT = 5.5; }
-      else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. THE ARENA YARD (THE TAVERN DOOR, OR ARENA YARD ON THE TITLE) SHOWS EVERY MOVE HE HAS.'; storeMsgT = 5; } }
+      else if (tab.key === 'hero' && !(PROG.tried && PROG.tried[k.id])) { storeMsg = k.name + ' equipped. THE ARENA YARD (THE INN DOOR, OR ARENA YARD ON THE TITLE) SHOWS EVERY MOVE HE HAS.'; storeMsgT = 5; } }
     else if (owned) { SFX.ui(); storeMsg = 'already yours'; storeMsgT = 1.5; }
     else if (lock) { SFX.buzz(); storeMsg = lock; storeMsgT = 2; }   /* every lock is the item's own: a level cleared or a feat done (src/store.js lockOf) */
     else if (!loadoutSafe()) { SFX.buzz(); storeMsg = 'buy at a shrine, the map or a shop'; storeMsgT = 2.5; }   /* coins are spent where they are safe: the carried ones are at risk between shrines (src/death-cost.js) */
@@ -7139,7 +7139,7 @@ const freeStarter = () => { const list = coopPickList(), used = players.map(p =>
 const tavDoorX = () => TAV_STATIONS[0].x * TS + 8 - TAV_WALK.from * TS + TS;
 function tavernJoin(src, h, prof, more) {
   if (!L || !L.tavern || state !== 'play') return null;
-  if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE TAVERN IS FULL: FOUR TO A PARTY.'); return null; }
+  if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE INN IS FULL: FOUR TO A PARTY.'); return null; }
   if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
   const p = seatAdd({ hero: h || freeStarter(), src, prof, ...(more || {}) }); if (!p) return null;   /* (more: an AI partner's ally flag + behaviour) */
   const fy = (TAV_START.y + 1) * TS;
@@ -7200,7 +7200,7 @@ function partySeatProf(slotI, h) {
 }
 /* THE BOARD'S JOIN: a new local seat (his pad: the next free one) on slot slotI with hero h */
 function partyJoin(slotI, h) {
-  if (!L || !L.tavern || state !== 'play') return { ok: false, why: 'JOIN IN THE TAVERN' };
+  if (!L || !L.tavern || state !== 'play') return { ok: false, why: 'JOIN IN THE INN' };
   if (players.length >= PARTY.MAX_PLAYERS) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
   const r = partySeatProf(slotI, h); if (!r.ok) return r;
   const p = tavernJoin({ kind: 'pad', pad: null }, h, r.prof);
@@ -7232,7 +7232,7 @@ function aiProfFor(slotI, h) {
 }
 function partyAi(slotI, h, beh) {
   const inn = !!(L && L.tavern && state === 'play');   /* (claude/partypersist) the inn walks it in at the door; in a wood it steps in beside player one; anywhere else it joins the party for the next wood */
-  if (!inn && !['menu', 'map', 'title', 'play'].includes(state)) return { ok: false, why: 'SEAT AN AI PARTNER IN THE TAVERN OR FROM THE PAUSE MENU' };
+  if (!inn && !['menu', 'map', 'title', 'play'].includes(state)) return { ok: false, why: 'SEAT AN AI PARTNER IN THE INN OR FROM THE PAUSE MENU' };
   if (partyRoom() <= 0) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
   const pr = aiProfFor(slotI, h); if (!pr.ok) return pr; const prof = pr.prof;
   if (!inn) return partyAiSeat(h, beh, prof);

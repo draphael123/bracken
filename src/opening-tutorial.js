@@ -25,7 +25,7 @@ export const GEO = { curb: 19, pit: [23, 25], ledge: [32, 34], door: 106, shrine
 export const ROLL_GRACE = 0.45;   /* s: a roll that ended up to this long before his blow still counts (a dodge is 0.2 s; the flash is the beat, not a frame) */
 export const STALL_S = 40;   /* s in one station with no headway: its gate opens anyway ("ON WE GO"): a lesson never traps anybody (a step opened this way teaches nothing) */
 export const INN_SIGN = "WAYMEET'S CROSSROADS INN";
-export const INN_CARD = { title: "THE TAVERN: WAYMEET'S CROSSROADS INN", body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
+export const INN_CARD = { title: "WAYMEET'S CROSSROADS INN", body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
 export const LESSON_TIPS = ["THE CROSSROADS INN: PRESS F ON THE MAP. FRIENDS JOIN, THE WARDROBE, TRAINING.", "THE ARENA YARD IS THROUGH THE INN'S TRAINING YARD: EVERY MOVE YOUR HERO HAS.", "WANT THE OPENING LESSON AGAIN? THE LESSON BOARD IN THE INN'S YARD REPLAYS IT."];
 
 /* THE PROMPT of a step, from the hero's own words k = { move, jump, atk, block, dodge, flask, pause }. Pure. Every line fits three rows of the step panel. */
