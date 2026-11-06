@@ -362,10 +362,10 @@ if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem
 const speedNote = SPEED_MIGRATE && !SET.speedV3 && rawSetWas && SET.speed !== 1; if (SPEED_MIGRATE && !SET.speedV3) { SET.speed = 1; SET.speedV3 = 1; try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 let speedNoteShown = false;
 const GAME_SPEEDS = [0.5, 0.6, 0.7, 0.85, 1, 1.25, 1.5, 1.75, 2];   /* the Game speed steps (Daniel 10-12): 50 .. 200%, default 100% */
-function saveSettings() { try { const o = { ...SET }; delete o.fps; localStorage.setItem('bracken.settings', JSON.stringify(o)); } catch {} }   /* (claude/demoaudit 11-06) the frame counter is a URL flag (?fps=1), never a saved setting: Daniel's live 147 photo showed FPS UPDATE/DRAW on a normal run because one ?fps=1 visit plus any settings change had saved it */
+function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
-SET.fps = false; if (q.get('fps') === '1') SET.fps = true;
+if (q.get('fps') === '1') SET.fps = true;
 REC.init(location.search);   /* ?rec=1 on, ?rec=0 off (src/playrec.js) */   /* ?fps=1: the frame counter on, for a test on a real phone (not saved unless a setting is changed) */
 // Progress lives in one of five save slots. The old single save becomes slot 1 the first time it is read.
 const PROG = {}; let saveBlocked = ''; const SLOTS = 5; let slot = 0, slotI = 0, slotMsg = '', slotMsgT = 0;
