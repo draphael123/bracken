@@ -446,7 +446,7 @@ export function makeDuel(api) {
     if (st.card && api.L() && api.L().tavern) {
       const c = st.card, w = 196, rows = cardRows(), S = getSettings(), VIS = 8, hum = api.players();
       if (c.row < c.top) c.top = c.row; if (c.row >= c.top + VIS) c.top = c.row - VIS + 1;
-      const h = c.ranks ? 96 : 30 + Math.min(hum.length, 4) * 9 + Math.min(VIS, rows.length) * 9 + 14, x = Math.round(VW / 2 - w / 2), y = Math.max(2, Math.round((VH - h) / 2) - 6);
+      const h = c.ranks ? 96 : 30 + Math.min(hum.length, 4) * 9 + (S.seats.length > hum.length ? 9 : 0) + Math.min(VIS, rows.length) * 9 + 14, x = Math.round(VW / 2 - w / 2), y = Math.max(2, Math.round((VH - h) / 2) - 6);
       api.board(x, y, w, h);
       if (c.ranks) { drawRanks(x + 4, y + 4, w - 8); T('ANY KEY: BACK', x + w / 2, y + h - 10, '#8a8f80', 'center', 8); return; }
       T('DUEL (BETA)' + (S.teams ? ' - 2 VS 2' : ''), x + w / 2, y + 4, '#ffd36b', 'center', 8);
