@@ -98,6 +98,7 @@ export async function openPage(opts = {}) {
   /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
+  if (process.env.BRACKEN_COL4 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_COL4=true' });   /* (claude/colossus4) the Glass Sea + Colossus 4 flag for bossLab / boss-rates (src/colossus4.js col4On): from the first script of every document, so the lab's reloads keep it */
   if (opts.seed !== undefined) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{let s=' + (opts.seed >>> 0) + ';Math.random=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};})()' });
   /* THE GAME SPEED IS PINNED (Daniel 10-12: results must not change with the player's setting): every page a tool opens starts with a settings file at the speed the
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it

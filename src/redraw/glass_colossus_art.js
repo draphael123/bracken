@@ -327,7 +327,7 @@ function drawActs(g, e, S, X, Y, sway, bob, at, SH, cur, A, now, pal, ph) {
    his light grazes its edge; the dark on the glass at its foot. Drawn in the tell (a promise: pulsing) and while the sweep runs (solid). live: 0 tell, 1 sweep */
 export function drawGazeShades(g, S, G, cx, cy, time, live, shadeLen) {
   const y = R(G.floor - cy), ex = G.cx;
-  if (!live && S.gaze && S.art && S.art.cur) { const Z = S.gaze, c = S.art.cur, ox = R(G.cx - cx) + R(c.lean * 0.6), oy = y - 175 + R(c.bob); lite(g, () => { g.strokeStyle = 'rgba(255,190,120,' + (0.16 + 0.1 * Math.sin(time * 14)).toFixed(2) + ')'; g.beginPath(); g.moveTo(ox, oy); g.lineTo(R(Z.x - cx), y - 12); g.stroke(); }); }   /* the eyes sight along the line the sweep will run: a faint aim */
+  if (!live && S.gaze && S.art && S.art.cur) { const Z = S.gaze, c = S.art.cur, ox = R(G.cx - cx) + R(c.lean * 0.6), oy = y - (G.eyeH || 175) + R(c.bob); lite(g, () => { g.strokeStyle = 'rgba(255,190,120,' + (0.16 + 0.1 * Math.sin(time * 14)).toFixed(2) + ')'; g.beginPath(); g.moveTo(ox, oy); g.lineTo(R(Z.x - cx), y - 12); g.stroke(); }); }   /* the eyes sight along the line the sweep will run: a faint aim */
   for (const m of S.mirrors) { const sd = Math.sign(m.x - ex); if (!sd || Math.abs(m.x - ex) < 20) continue; const face = m.notch === 'face', far = face ? (sd < 0 ? G.x0 : G.x1) : m.x + sd * shadeLen(S, m),
       ax = R(m.x + sd * 3 - cx), bx = R(far - cx), top = y - 42; if (Math.max(ax, bx) < -4 || Math.min(ax, bx) > 460) continue;
     const gr = g.createLinearGradient(ax, 0, bx, 0), k = live ? 1 : 0.62 + 0.18 * Math.sin(time * 9);
@@ -341,7 +341,7 @@ export function drawGazeShades(g, S, G, cx, cy, time, live, shadeLen) {
    and where a FACING disc catches it a glint (a starburst and a throw of sparks); a disc that only SHADES it takes the beam on its near side, dim */
 export function drawGaze(g, e, S, G, cx, cy, time, gazeBlock, W) {
   const Z = S.gaze, A = S.art, cur = A && A.cur; if (!Z || !cur) return;
-  const y = R(G.floor - cy), ex = R(G.cx - cx) + R(cur.lean * 0.6), ey = y - 175 + R(cur.bob), sx = R(Z.x - cx), b = gazeBlock(S, Z.x);
+  const y = R(G.floor - cy), ex = R(G.cx - cx) + R(cur.lean * 0.6), ey = y - (G.eyeH || 175) + R(cur.bob), sx = R(Z.x - cx), b = gazeBlock(S, Z.x);
   /* the scorch it leaves: glowing slag cooling behind the spot (only where it was lit: never behind a disc's shade) */
   const t0 = Z.dir < 0 ? G.x1 - 6 : G.x0 + 6;
   for (let x = Z.x - Z.dir * 3; (x - t0) * Z.dir >= 0 && Math.abs(x - Z.x) < 170; x -= Z.dir * 5) { const ag = Math.abs(x - Z.x) / 170; if (gazeBlock(S, x)) continue; const q = R(x - cx); if (q < -6 || q > 440) continue;
