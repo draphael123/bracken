@@ -5415,6 +5415,7 @@ function updateMap(dt) {
 /* THE MAP'S PLATES AND INFO PANEL (src/map-plates.js): one layout for every board, and for each node a camera height and panel corner that cover no node or board around it */
 let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
+let mapNoDanger = false;
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
 function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN: CO-OP  G ONLINE', x: VW - 4, right: true }]; }
@@ -5620,7 +5621,7 @@ function drawMap() {
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
     panel(cx0, cy0, cw, ch, UI.sel, 'parchment');
     { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      { const nm0 = secret ? '? ? ?' : nd.name, nmW = (store || secret) ? cw - 52 : cw - 84, big = inkW(nm0, 8) <= nmW; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
+      { const nm0 = secret ? '? ? ?' : nd.name, nmW0 = (store || secret) ? cw - 52 : cw - 84, longName = !store && !secret && inkW(nm0, 8) > nmW0 && inkW(nm0, 6) > nmW0, nmW = longName ? cw - 52 : nmW0, big = inkW(nm0, 8) <= nmW; mapNoDanger = longName; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (claude/lessonfix) a name too long even in the small hand (THE MASKWRIGHT'S THEATRE) takes the room of the word DANGER (the pips stay): it was printed 'THEATR' */   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
     if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
@@ -5635,7 +5636,7 @@ function drawMap() {
       // top right: how hard this wood is meant to be
       const pips = 1 + Math.round(tierOf(id) * 4);
       for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      text('DANGER', cx0 + cw - 8 - 5 * 6 - 3, cy0 + 5, '#c9463d', 'right', 6);   /* (claude/mappolish) named, so the red squares do not read as the HARD setting at the foot of the card */
+      if (!mapNoDanger) text('DANGER', cx0 + cw - 8 - 5 * 6 - 3, cy0 + 5, '#c9463d', 'right', 6);   /* (claude/mappolish) named, so the red squares do not read as the HARD setting at the foot of the card */
       text(MPX.fitBlurb(MAP_BLURB[id] || lv.sub || '', cw - 16, t => textW(t, 6)), cx0 + 8, cy0 + 13, UI.dim, 'left', 6);   /* ONE WHOLE LINE (src/map-blurbs.js): the old two-page blurb cut a sentence in half ("only blue in"), and the dots that paged it were a second form for one value */
       /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
       MCARD.drawPostcard(g, cx0 + 8, cy0 + 21, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
