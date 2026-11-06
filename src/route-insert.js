@@ -14,13 +14,14 @@
 
    main.js: levelLocked reads roadKept(PROG, lv) beside the old per-level flags; progDefaults calls roadMigrate(PROG). level.js calls applyInserts(LEVELS). */
 import { GD_SHIPS } from './great-dune.js';
+import { AS_SHIPS } from './airship.js';   /* (claude/airship) */
 
 /* the desert's four, in road order (plan s1 + Q1 rec). `live` is each level's SHIPS flag; the carpet / King's Pyramid / airship lanes flip their own. */
 export const ROAD_INSERTS = [
   { id: 'carpet', after: 'glasssea', before: 'ksar', live: false },             /* THE FLYING CARPET + SPHINX (claude/carpet, not built yet) */
   { id: 'greatdune', after: 'buriedcity', before: 'sealedpyramid', live: GD_SHIPS },   /* THE GREAT DUNE (this lane: src/great-dune.js) */
   { id: 'kingspyramid', after: 'sealedpyramid', before: null, live: false },    /* THE KING'S PYRAMID (claude/kingspyramid: KP_SHIPS) */
-  { id: 'airship', after: 'kingspyramid', before: null, live: false },          /* THE DESERT AIRSHIP (claude/airship, not built yet) */
+  { id: 'airship', after: 'kingspyramid', alt: 'sealedpyramid', before: null, live: AS_SHIPS },   /* THE DESERT AIRSHIP (claude/airship: src/airship.js AS_SHIPS); alt: the Sealed Pyramid while the King's Pyramid row does not exist */
 ];
 
 const cleared = (PROG, id) => !!(PROG && PROG[id] && PROG[id].cleared);
@@ -31,7 +32,7 @@ export function applyInserts(LEVELS, inserts = ROAD_INSERTS) {
   for (const ins of inserts) {
     if (!ins.live) continue;
     const row = LEVELS.find(l => l.id === ins.id); if (!row) continue;
-    row.needs = ins.after;
+    row.needs = ins.alt && !LEVELS.some(l => l.id === ins.after) ? ins.alt : ins.after;   /* (claude/airship) an insert after a level not built yet hangs off its alt */
     if (ins.before) { const nx = LEVELS.find(l => l.id === ins.before); if (nx) nx.needs = ins.id; }
     done.push(ins.id);
   }

@@ -184,6 +184,7 @@ for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) B
 // 'type|mode' -> '!' (a shield turns it) | '!!' (nothing does) | '' (not a blow). '*|mode' is any elite's own move.
 /* MARK:BEGIN */
 export const MARK = {
+  'wyrmling|spitTell': '!!', 'wyrmling|coilTell': '!', 'thunderwyrm|strikeTell': '!!', 'thunderwyrm|slamTell': '!!', 'thunderwyrm|roarTell': '!', 'thunderwyrm|tailTell': '!!', 'thunderwyrm|broodTell': '',   /* (claude/airship) THE WYRMLING's spark (step out) and coil-bite (a shield turns it); THE THUNDER WYRM's strike, slam, roar (block it / brace), tail, brood call (src/wyrmling.js, src/thunder-wyrm.js) */
   'sandskiff|sweepTell': '!', 'sandskiff|potTell': '!!', 'skiffchief|potTell': '!!',   /* (claude/greatdune) THE SAND-SKIFF BANDIT's spear sweep (the shield turns it) and sand pot; THE SKIFF CHIEF's pot (src/sand-skiff.js) */
   '*|ekCallTell': '', '*|ekRiposteTell': '!', '*|ekThornsTell': '!!', 'abbot|castTell': '!', 'abbot|censerTell': '!', 'abbot|coalsTell': '!!',
   'abbot|gleamTell': '!', 'abbot|knellTell': '!!', 'abbot|riteTell': '', 'abbot|swingTell': '!!', 'admiral|axeTell': '!!', 'admiral|cutTell': '!',
@@ -388,6 +389,7 @@ export const MARK = {
 // hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
 /* ANSWER:BEGIN */
 export const ANSWER = {
+  'wyrmling|spitTell': 'dodge', 'wyrmling|coilTell': 'block', 'thunderwyrm|strikeTell': 'dodge', 'thunderwyrm|slamTell': 'jump', 'thunderwyrm|roarTell': 'block', 'thunderwyrm|tailTell': 'jump',   /* (claude/airship) */
   'sandskiff|sweepTell': 'block', 'sandskiff|potTell': 'dodge', 'skiffchief|potTell': 'dodge',   /* (claude/greatdune) */
   'forgemaster|anvilTell': 'jump', 'forgemaster|bellowsTell': 'block', 'forgemaster|breathTell': 'dodge', 'forgemaster|dragTell': 'jump', 'forgemaster|dropTell': 'dodge', 'forgemaster|hurlTell': 'jump', 'forgemaster|ladleTell': 'dodge', 'forgemaster|pourTell': 'dodge', 'forgemaster|slamTell': 'dodge', 'forgemaster|sprayTell': 'block', 'forgemaster|tongsTell': 'block', 'forgemaster|whirlTell': 'jump',   /* (batch125 integ, answer-tags) THE FORGEMASTER: the hammer, the pour, the ingots and his drop leave the floor to you; the anvil, the chain and the hurled cart go under a jump; steam and HAMMER AND TONGS are blocked */
   'grubbag|lobTell': 'dodge', 'grubbag|flingTell': 'jump', 'grubbag|sweepTell': 'jump', 'grubbag|greaseTell': 'dodge', 'grubbag|bellTell': 'dodge', 'attendant|aim': 'block', 'attendant|bashTell': 'block', 'grubbag|belchTell': 'jump', 'grubbag|grabTell': 'jump', 'butcher|raise': 'dodge', 'butcher|wind': 'block',   /* (claude/kitchengate) */
@@ -669,6 +671,7 @@ export const ANSWER = {
 // A SHOT FROM ABOVE STILL FINDS A DUCKER: a high seed passes over only while it flies near level (src/duck.js seedOver).
 /* HEIGHT:BEGIN */
 export const HEIGHT = {
+  'wyrmling|spitTell': 'low', 'wyrmling|coilTell': 'low', 'thunderwyrm|strikeTell': 'low', 'thunderwyrm|slamTell': 'low', 'thunderwyrm|roarTell': 'low', 'thunderwyrm|tailTell': 'low',   /* (claude/airship) the spark arcs onto your spot, the bite lunges low, bolts / coil / roar / tail all reach the deck (no duck under any) */
   'sandskiff|sweepTell': 'low', 'sandskiff|potTell': 'low', 'skiffchief|potTell': 'low',   /* (claude/greatdune) the sweep cuts at the shins, the pots burst on the sand */
   'forgemaster|anvilTell': 'low', 'forgemaster|bellowsTell': 'low', 'forgemaster|breathTell': 'low', 'forgemaster|dragTell': 'low', 'forgemaster|dropTell': 'low', 'forgemaster|hurlTell': 'low', 'forgemaster|ladleTell': 'low', 'forgemaster|pourTell': 'low', 'forgemaster|slamTell': 'low', 'forgemaster|sprayTell': 'low', 'forgemaster|tongsTell': 'low', 'forgemaster|whirlTell': 'low',   /* (batch125 integ) THE FORGEMASTER: hammer, steam, chain, ingots and cart all reach the floor */
   'grubbag|lobTell': 'low', 'grubbag|flingTell': 'low', 'grubbag|sweepTell': 'low', 'grubbag|greaseTell': 'low', 'grubbag|bellTell': 'low', 'attendant|aim': 'low', 'attendant|bashTell': 'low', 'grubbag|belchTell': 'low', 'grubbag|grabTell': 'low', 'butcher|raise': 'low', 'butcher|wind': 'low',   /* (claude/kitchengate) */
