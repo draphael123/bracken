@@ -1,0 +1,62 @@
+{
+ "out": "thornroad-vertical-v3.mp4",
+ "vertical": true,
+ "track": "audio/boss4.ogg",
+ "trackStart": 0,
+ "parts": [
+  {
+   "clip": "c3_gorm_pyro",
+   "secs": 1.5,
+   "sect": "hook"
+  },
+  {
+   "card": "title3",
+   "secs": 2.2,
+   "sect": "title"
+  },
+  {
+   "clip": "verb_spore",
+   "secs": 2,
+   "sect": "rules",
+   "cap": "LEVELS WITH RULES"
+  },
+  {
+   "clip": "verb_comb",
+   "secs": 2.4,
+   "sect": "rules"
+  },
+  {
+   "clip": "s3_palbeast",
+   "secs": 2.4,
+   "sect": "rules"
+  },
+  {
+   "clip": "s3_inn_dance",
+   "secs": 3,
+   "sect": "coop",
+   "cap": "CO-OP + DANCE"
+  },
+  {
+   "clip": "s3_duel_2v2",
+   "secs": 3.4,
+   "sect": "duel",
+   "cap": "DUEL YOUR FRIENDS"
+  },
+  {
+   "clip": "s3_store_buy",
+   "secs": 2,
+   "sect": "duel"
+  },
+  {
+   "clip": "s3_bossfall",
+   "secs": 3,
+   "sect": "fights",
+   "cap": "HEAVY BOSS FIGHTS"
+  },
+  {
+   "card": "end3-short",
+   "secs": 3.4,
+   "sect": "end"
+  }
+ ]
+}
