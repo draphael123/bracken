@@ -51,6 +51,7 @@ import { highcrownTwo } from './highcrown2.js';
 import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
+import { buildWhale, WH_RULE } from './whale.js';   /* (claude/whale) THE WHALE: the Parasite Queen's whale (hidden until its art pass: dev only, ?level=whale) */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
@@ -8123,6 +8124,10 @@ LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds t
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 
+/* THE WHALE (claude/whale, the OPUS GREYBOX, 11-06; scratch/plan-water-1105.md item 9, the water arc pulled forward 11-06 with Daniel's OK): APPENDED (saves count levels by index). HIDDEN, no map node:
+   OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=whale). Its place when it goes live is the main road
+   THE UNDERWATER KEEP -> THE WHALE -> THE DROWNED CAUSEWAY: needs 'keep' is that link; the Causeway's needs moves through claude/greatdune's road-insert table when WH_SHIPS flips. THE PARASITE QUEEN is its boss */
+LEVELS.push({ id: 'whale', name: 'THE WHALE', sub: 'the breath is yours to call', rule: WH_RULE, build: () => buildWhale({ painter, T, TS }), hidden: true, needs: 'keep' });
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
    not - and the creatures that only ever lived in one place get a second home. [from, to, every Nth]

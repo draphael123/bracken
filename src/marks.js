@@ -950,4 +950,6 @@ export function markOf(e) {
   if (!MISSED.has(k)) { MISSED.add(k); console.warn('[marks] a windup with no row in src/marks.js: ' + k + ' - it wears no mark'); }
   return '';
 }
+/* (claude/whale) THE GASTRIC POLYP (src/gastric-polyp.js GP_TELLS) and THE PARASITE QUEEN (src/parasite-queen.js PQ_TELLS): MARK / ANSWER / HEIGHT rows */
+for (const [t, m, mk, an, ht] of [['gastricpolyp', 'spitTell', '!', 'block', 'low'], ['parasitequeen', 'lashTell', '!!', 'dodge', 'low'], ['parasitequeen', 'spitTell', '!', 'block', 'low'], ['parasitequeen', 'thrumTell', '!!', 'jump', 'low'], ['parasitequeen', 'constrictTell', '!!', 'dodge', 'low'], ['parasitequeen', 'broodTell', '!!', 'dodge', 'low'], ['parasitequeen', 'crushTell', '!!', 'jump', 'low'], ['parasitequeen', 'uprootTell', '', '', ''], ['parasitequeen', 'rerootTell', '', '', '']]) { MARK[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
 export const marksMissed = () => [...MISSED];

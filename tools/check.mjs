@@ -301,6 +301,7 @@ if (take('tide-kit')) results.push(run('tide-kit', process.execPath, ['tools/tid
 if (take('pull-field')) results.push(run('pull-field', process.execPath, ['tools/pull-field.mjs']));
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
 if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
+if (take('whale')) results.push(run('whale', process.execPath, ['tools/whale.mjs']));   /* (claude/whale) THE WHALE + THE GASTRIC POLYP + THE PARASITE QUEEN: node proofs */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
