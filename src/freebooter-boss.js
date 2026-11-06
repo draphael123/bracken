@@ -25,14 +25,14 @@
 //     THE BOARDING PLUNGE (!! off the red mark)  he springs to the yard; a red mark follows you along the deck and LOCKS; he plunges onto it. Missed: STUCK IN THE
 //                                                DECK = OPEN (1.25x). He also BOARDS across the gap to whichever deck you are on (a hop, told by a whistle).
 export const FB = {
-  hp: 4200, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
+  hp: 5000, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
   p2: 0.55,
-  pistol: { tell: 0.95, lock: 0.3, dmg: 30, reload: 3.6, y: 18, range: 360 },   /* aim at chest height (y px over the feet): jump it, or roll it */
-  cuts: { tell: 0.6, n: 5, gap: 0.17, reach: 30, step: 9, dmg: 11, rec: 0.75 },
-  boot: { tell: 0.5, reach: 28, dmg: 13, shove: 200, rec: 0.5, h: 10 },          /* low: a hero 10 px off the deck is over it */
-  riposte: { tell: 0.35, reach: 32, dmg: 20, rec: 0.45 },
+  pistol: { tell: 0.95, lock: 0.3, dmg: 22, reload: 3.6, y: 18, range: 360 },   /* aim at chest height (y px over the feet): jump it, or roll it */
+  cuts: { tell: 0.6, n: 5, gap: 0.17, reach: 30, step: 9, dmg: 8, rec: 0.75 },
+  boot: { tell: 0.5, reach: 28, dmg: 10, shove: 200, rec: 0.5, h: 10 },          /* low: a hero 10 px off the deck is over it */
+  riposte: { tell: 0.35, reach: 32, dmg: 15, rec: 0.45 },
   flash: { hits: 3, win: 1.6, dist: 84, cd: 5, smoke: 0.4 },
-  plunge: { tell: 1.15, track: 0.7, air: 0.45, r: 26, dmg: 30, stuck: 2.8, rec: 0.6 },
+  plunge: { tell: 1.15, track: 0.7, air: 0.45, r: 26, dmg: 22, stuck: 2.8, rec: 0.6 },
   haul: { tell: 1.4 }, board: { tell: 0.7, air: 0.6 },
   wardT: 1.6, idle: [0.55, 0.95],
   k: { floor: 0.4, guard: 0.4, flank: 0.6, open: 1.0, stuck: 1.25, ward: 0.4 },
