@@ -15,6 +15,7 @@
 // file); guests, online guests and bots are not ranked. Online leaderboard: LATER (needs a backend).
 // BOTS: botThink (pure) drives a 'duelbot' seat - the opponent when one person duels alone, and the hands of tools/pvp-duel.mjs's AI-vs-AI runs.
 
+import { makeRoster } from './duel-roster.js';   /* (claude/duelroster) the Smash-Bros-style pick screen: the DUEL entry (the interim settings card stays as ?duelcard / __DUELCARD) */
 const PVP_SHIP_FLAG = true;   /* THE SHIP SWITCH (one line): true = every player sees DUEL (BETA) - FLIPPED 11-06 (Daniel 11:53: the duel goes public in the SAT demo cut, labelled BETA) */
 export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && (!!globalThis.__DUELBETA || (!!globalThis.location && /[?&]duelbeta(=|&|$)/.test(String(globalThis.location.search)))));   /* (pvpduel2) DEV/URL SWITCH: open the game with ?duelbeta (or a tool sets window.__DUELBETA) to see the mode while the ship flag is off */
 void 0;   /* (proof146b 11-05) OFF until the warden bot-duel edge (16/16, 24/24) is settled; one line to flip, everything else proven */   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
@@ -283,7 +284,7 @@ export function makeDuel(api) {
   /* how many seats (2-4); teams force four; never fewer than the humans at the table */
   function setSeatCount(n) { const S = getSettings(), want = Math.max(DUEL.seats.min, humansIn(), Math.min(DUEL.seats.max, S.teams ? 4 : n | 0)); const list = S.seats.slice(0, want); while (list.length < want) list.push({ hero: 'random', isBot: true, botDifficulty: S.botDifficulty, team: 0 }); return setSeats(list); }
   const seatList = () => getSettings().seats;
-  function pickHeroes(n, taken) { const pool = BOT_HEROES.filter(h => !taken.includes(h)), out = []; for (let i = 0; i < n; i++) { const from = pool.length ? pool : BOT_HEROES, k = Math.floor(st.rnd() * from.length), h = from[k]; out.push(h); const j = pool.indexOf(h); if (j >= 0) pool.splice(j, 1); } return out; }
+  function pickHeroes(n, taken, ok) { const pool = BOT_HEROES.filter(h => !taken.includes(h) && (!ok || ok(h))), out = []; for (let i = 0; i < n; i++) { const from = pool.length ? pool : BOT_HEROES.filter(h => !ok || ok(h)).length ? BOT_HEROES.filter(h => !ok || ok(h)) : BOT_HEROES, k = Math.floor(st.rnd() * from.length), h = from[k]; out.push(h); const j = pool.indexOf(h); if (j >= 0) pool.splice(j, 1); } return out; }
   function begin(o = {}) {
     if (!PVP_SHIPS || !api.L() || !api.L().duelPit) return false;
     st.seed = o.seed ?? ((Date.now() & 0xffff) || 7); st.rnd = rng(st.seed);
@@ -303,7 +304,7 @@ export function makeDuel(api) {
     S.teams = S.teams && st.seats.length >= 3;
     st.seats.forEach((p, i) => { const sp = S.seats[i] || {}; p.duelDealt = 0; p.duelMax = Math.max(1, Math.round(DUEL.hp * S.health / 100)); p.duelTeam = S.teams ? (sp.team === 1 || sp.team === 2 ? sp.team : defTeam(i, st.seats.length)) : 0;
       if (p.duelBot) { st.bots.set(p, freshBot(sp.botDifficulty || S.botDifficulty)); }
-      else if (sp.hero && sp.hero !== p.hero && api.setSeatHero) api.setSeatHero(p, sp.hero === 'random' ? pickHeroes(1, st.seats.map(q => q.hero))[0] : sp.hero);   /* a human's pick: where the game lets him (a hero he owns) */
+      else if (sp.hero && (sp.hero !== p.hero || sp.hero === 'random') && api.setSeatHero) { if (!st.restore && p === api.players()[0]) st.restore = p.hero;   /* (duelroster, Daniel 11-06) the campaign's equipped hero is put back when the duel ends */ api.setSeatHero(p, sp.hero === 'random' ? pickHeroes(1, st.seats.filter(q => q !== p).map(q => q.hero), p === api.players()[0] && api.owns ? api.owns : null)[0] : sp.hero); }   /* a human's pick: where the game lets him (a hero he owns) */
       resolved.push({ ...sp, hero: p.hero, isBot: !!p.duelBot }); });
     if (S.teams && !(st.seats.some(p => p.duelTeam === 1) && st.seats.some(p => p.duelTeam === 2))) st.seats.forEach((p, i) => { p.duelTeam = defTeam(i, st.seats.length); });
     st.cfg = S; st.plan = { ...S, seats: resolved };
@@ -318,7 +319,7 @@ export function makeDuel(api) {
     placeAll(); sync(null); api.sfx('bell');
     return true;
   }
-  function end() { clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; }
+  function end() { clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; if (st.restore) { const h = st.restore; st.restore = null; try { if (api.players()[0] && api.players()[0].hero !== h && api.restoreHero) api.restoreHero(h); } catch {} }   /* (duelroster, Daniel 11-06) player one's campaign hero comes back (after the bots leave, so none wears him) */ }
 
   /* ===== hands: once a frame per seat, in his own pass, BEFORE the buffers read the presses ===== */
   function hands(p) {
@@ -344,6 +345,7 @@ export function makeDuel(api) {
   function post(dt) {
     if (st.m && !(api.L() && api.L().duelPit)) end();   /* left the pit some other way (the title, a load): the bots go, the proxies go */
     else if (!st.m) for (const p of api.players().slice(1)) if (isBotSeat(p)) api.seatDrop(p);   /* a duel bot never follows the party out */
+    if (st.card && st.card.roster) { if (!(api.L() && api.L().tavern)) { st.card = null; roster.R.open = false; } else roster.tick(dt); }
     const w = st.want; st.want = null;
     if (w && w.k === 'enter' && PVP_SHIPS) { api.enter(w.bot, w.settings); return; }
     if (w && w.k === 'leave' && on()) { api.leave(); return; }
@@ -408,9 +410,17 @@ export function makeDuel(api) {
     if (id === 'botDifficulty') { const l = C.botDifficulty, v = l[(l.indexOf(S.botDifficulty) + dir + l.length) % l.length]; setSettings({ botDifficulty: v, seats: S.seats.map(q => q.isBot ? { ...q, botDifficulty: v } : q) }); return true; }
     const l = C[id]; if (!l) return false; const v = l[(Math.max(0, l.indexOf(S[id])) + dir + l.length) % l.length]; setSettings({ [id]: v }); return true;
   }
-  function openCard(p) { if (!PVP_SHIPS) return false; st.card = { p, row: 0, top: 0, ranks: false }; getSettings(); api.sfx('uiSel'); return true; }
+  const roster = makeRoster({ get heroes() { return api.heroPick ? api.heroPick() : []; }, heroName: h => api.heroName(h), owns: h => api.owns ? api.owns(h) : true,
+    humans: () => api.players().filter(p => !isBotSeat(p)).map(p => ({ n: p.n, ai: !!p.ai, hero: p.hero })), colourOf: n => api.colourOf(n),
+    getSettings, setSettings, setSeat, setSeatCount, cycleOpt, submit: S => { const bi = S.seats.findIndex((q, i) => i >= humansIn()); st.want = { k: 'enter', bot: bi >= 0 ? S.seats[bi].hero : 'random', settings: S }; st.card = null; },
+    close: () => { st.card = null; }, sfx: k => api.sfx(k), text: (s, x, y, c, a, z) => api.text(s, x, y, c, a, z), board: (x, y, w, h) => api.board(x, y, w, h),
+    icon: (h, x, y, cw, ch, k, a) => api.heroBig && api.heroBig(h, x, y, cw, ch, k, a), rect: (x, y, w, h, c) => api.rect && api.rect(x, y, w, h, c), frame: (x, y, w, h, c) => api.frame && api.frame(x, y, w, h, c),
+    fit: (s, w, z) => api.fit ? api.fit(s, w, z) : s, inkW: (s, z) => api.inkW ? api.inkW(s, z) : String(s).length * 5, key: a => api.keyLabel ? api.keyLabel(a) : a.toUpperCase() });
+  const useRoster = () => !(typeof globalThis !== 'undefined' && (globalThis.__DUELCARD || (globalThis.location && /[?&]duelcard(=|&|$)/.test(String(globalThis.location.search)))));
+  function openCard(p) { if (!PVP_SHIPS) return false; if (api.heroPick && useRoster()) { st.card = { p, roster: true }; roster.open(); api.sfx('uiSel'); return true; } st.card = { p, row: 0, top: 0, ranks: false }; getSettings(); api.sfx('uiSel'); return true; }
   function cardHands(p, pr, keys) {
-    const c = st.card; if (!c || c.p !== p) return false;
+    const c = st.card; if (c && c.roster) { if (!roster.isOpen() || !api.players().includes(c.p) || c.p.dead || c.p.down > 0) { roster.close(); return false; } return roster.hands(p, pr, keys); }
+    if (!c || c.p !== p) return false;
     if (!api.players().includes(p) || p.dead || p.down > 0) { st.card = null; return false; }
     const rows = cardRows(); if (c.row >= rows.length) c.row = 0;
     if (c.ranks) { if (pr.talk || pr.atk || pr.dodge || pr.jump || pr.left || pr.right) { c.ranks = false; api.sfx('menuClose'); } }
@@ -443,6 +453,7 @@ export function makeDuel(api) {
   }
   function drawHud(VW, VH) {
     const T = api.text;
+    if (st.card && st.card.roster) { if (api.L() && api.L().tavern) roster.draw(VW, VH); return; }
     if (st.card && api.L() && api.L().tavern) {
       const c = st.card, w = 196, rows = cardRows(), S = getSettings(), VIS = 8, hum = api.players();
       if (c.row < c.top) c.top = c.row; if (c.row >= c.top + VIS) c.top = c.row - VIS + 1;
@@ -488,5 +499,5 @@ export function makeDuel(api) {
   const g2 = (x, y, w, h, sh, c) => api.bar(x, y, w, h, sh, c);
 
   function debug() { return { on: on(), m: st.m ? JSON.parse(JSON.stringify({ ...st.m })) : null, seats: st.seats.map(p => ({ n: p.n, hero: p.hero, hp: p.duelHp, max: p.duelMax, lives: p.duelLives, team: p.duelTeam, diff: (st.bots.get(p) || {}).diff, bot: !!p.duelBot, up: api.upright(p), x: Math.round(p.x), dealt: p.duelDealt || 0 })), result: st.result, stats: { ...st.stats }, card: st.card ? { n: st.card.p.n, row: st.card.row, ranks: st.card.ranks } : null, cfg: st.cfg, lvl: st.seats.map(p => st.lvl.get(p) ?? 1), proxies: [...st.prox.values()].map(e => ({ n: e.pvpSeat.n, alive: e.alive, x: Math.round(e.x) })) }; }
-  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, drawWorld, drawHud, debug, clearProxies, rematch, cardOpen: () => !!st.card };
+  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, roster, rosterOpen: () => !!(st.card && st.card.roster && roster.isOpen()), rosterMouse: (x, y, d) => roster.mouse(x, y, d), rosterEsc: () => roster.esc(), drawWorld, drawHud, debug, clearProxies, rematch, cardOpen: () => !!st.card };
 }
