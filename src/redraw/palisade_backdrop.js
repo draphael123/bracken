@@ -199,6 +199,8 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     for (const o of row(cx, VW, 0.3, 120, 233)) { if ((o.hs >>> 5) % 100 >= 82) continue; const kind = pickProp(zz, o.hs); if (zz === 0 && kind === 'tent') continue; const sp = bakeProp(kind, zz, o.hs % 3); g.drawImage(sp, o.sx - (sp.width >> 1) + 18, mb - sp.height + 12); }
     if (zz === 4) for (const o of row(cx, VW, 0.3, 700, 913)) { const sp = bakeProp('gatearch', 4, 0); g.drawImage(sp, o.sx - 60, mb - sp.height + 10); } }
   g.globalAlpha = 1;
+  /* (claude/demoaudit 11-06, Daniel's live photo) THE WHOLE BACKDROP BACK IN THE AIR: under the autumn wash the far/mid layers were as bright as the platforms you stand on; a haze veil over them (tiles and props draw after) lets the foreground read */
+  g.globalAlpha = 0.34; g.fillStyle = A.P.haze; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   /* a low bank of mist laid over the mid foot */
   { const gr = g.createLinearGradient(0, mb - 40, 0, mb + 20); gr.addColorStop(0, 'rgba(' + rgbStr(A.P.haze) + ',0)'); gr.addColorStop(0.7, 'rgba(' + rgbStr(A.P.haze) + ',0.22)'); gr.addColorStop(1, 'rgba(' + rgbStr(A.P.haze) + ',0.05)'); g.fillStyle = gr; g.fillRect(0, mb - 40, VW, 60); }
 }
