@@ -11906,7 +11906,9 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
 /* OPTIONS (Daniel 10-09): SETTINGS, SOUND TEST and CONTROLS are one row, OPTIONS, that opens its own short list on the same board (BACK closes it). The board is sized for the top
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
-const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
+/* (claude/demo-cut) an UNSTARTED save (the empty one written at boot: no hero picked, no level, no xp) reads NEW GAME; CONTINUE already routes it through the opening and hero pick */
+const saveUnstarted = r => !r || (!r.heroPicked && !LEVELS.some(l => r[l.id]) && !Object.values(r.xp || {}).some(v => v > 0));
+const titleTop = () => { const base = !saveUnstarted(readSlot(slot)) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
@@ -32742,8 +32744,8 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
-        else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
+        if (['CONTINUE', 'NEW GAME', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        else if (k === 'CONTINUE' || (k === 'NEW GAME' && readSlot(slot))) { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
