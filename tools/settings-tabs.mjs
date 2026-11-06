@@ -73,7 +73,7 @@ try {
     /* ---- 4. rebinding ---- */
     BK.state = 'menu'; ui.rebind.open(0); out.rebindState = BK.state; const rb = ui.rebind.state();
     rb.i = 4; rb.slot = 0; key('Enter'); out.listening = ui.rebind.state().listening;
-    key('r'); out.reserved = [ui.rebind.state().listening, JSON.stringify(ui.settings().binds.kb.jump || null)];
+    key('m'); out.reserved = [ui.rebind.state().listening, JSON.stringify(ui.settings().binds.kb.jump || null)];
     rb.i = 4; rb.slot = 0; key('Enter'); key('y'); out.jump = ui.settings().binds.kb.jump;
     if (${JSON.stringify(shots || '')}) shoot('rebind');
     rb.i = 5; rb.slot = 0; key('Enter'); key('y'); out.conflict = ui.rebind.conflicts();
@@ -114,7 +114,7 @@ try {
   assert.equal(o.tabs.length, 5);
   assert.equal(o.afterRight, 'display'); assert.equal(o.afterLeft, 'audio'); assert.equal(o.afterTab, 'display', 'TAB steps the tab'); assert.equal(o.afterRB, 'display', 'RB steps the tab on a pad'); assert.equal(o.afterLB, 'audio', 'LB steps it back');
   assert.notEqual(o.combat[0], o.combat[1], 'a Gameplay-tab toggle (Hit stop) still flips'); assert.equal(o.noCombatRow, true, 'the Weighty COMBAT row is retired'); assert.equal(o.combatDropped, true, 'an old save with weighty on loads into classic: the field is dropped');
-  assert.equal(o.rebindState, 'rebind'); assert.equal(o.listening, true, 'Z/ENTER on a row listens'); assert.deepEqual(o.reserved, [false, 'null'], 'R is reserved and refused');
+  assert.equal(o.rebindState, 'rebind'); assert.equal(o.listening, true, 'Z/ENTER on a row listens'); assert.deepEqual(o.reserved, [false, 'null'], 'M is reserved and refused');
   assert.deepEqual(o.jump, ['y', 'Space'], 'jump rebound to Y'); assert(o.conflict.jump && o.conflict.atk, 'binding Y twice flags both rows: ' + JSON.stringify(o.conflict));
   assert.equal(o.newKeyJumps, true, 'the new key jumps in play'); assert.equal(o.oldKey, 'no', 'the old key no longer does');
   assert.deepEqual(o.padJump, [6, null], 'the pad rebinds through a real poll (LT)');

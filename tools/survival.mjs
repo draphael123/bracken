@@ -85,7 +85,7 @@ out.spike=spikeRun(false);out.spikeArmour=spikeRun(true);
 /* 4. DRY SHRINES, a full death, R, a heart, a kill */
 {go('wood');BKT.PROG.flaskUp=2;const P=BK.P,s=BK.shrines().filter(q=>!q.lit).sort((a,b)=>a.x-b.x)[1],o={};BK.sim(5);P.hp=40;P.flasks=1;P.st=1;P.x=s.x;P.y=s.y;BK.sim(3);o.shrine={lit:s.lit,hp:P.hp,flasks:P.flasks,st:P.st===P.maxSt};
  P.x=s.x-60;BK.sim(3);P.flasks=0;P.x=s.x;P.y=s.y;BK.sim(3);o.again=P.flasks;   /* the same life: no second flask from it */
- P.hp=50;P.flasks=1;dispatchEvent(new KeyboardEvent('keydown',{key:'r'}));BK.step(1);dispatchEvent(new KeyboardEvent('keyup',{key:'r'}));BK.sim(2);o.r={hp:P.hp,flasks:P.flasks,at:Math.abs(P.x-s.x)<20};P.flasks=0;BK.sim(3);o.rLife=P.flasks;P.flasks=1;
+ P.hp=50;P.flasks=1;BKT.returnToShrine();BK.step(1);BK.sim(2);o.r={hp:P.hp,flasks:P.flasks,at:Math.abs(P.x-s.x)<20};P.flasks=0;BK.sim(3);o.rLife=P.flasks;P.flasks=1;
  P.inv=0;P.flasks=0;BK.damagePlayer(P.x,9999,{unblockable:true});let n=0;while(n<300&&(P.dead||P.hp<=0)){BK.sim(1);n++;}o.death={hp:P.hp,max:P.maxHp,flasks:P.flasks};
  P.hp=40;BK.healths().push({x:P.x,y:P.y-8,vy:0,t:0,stay:true});BK.sim(3);o.heart=P.hp-40;o.heartWant=Math.round(P.maxHp*SV.HEART_PCT);
  go('wood');BKT.PROG.charm='heart';const e=BK.enemies().find(q=>!q.maxHp&&!q.harmless&&!q.mini);if(e){e.alive=true;BK.P.hp=10;BK.P.inv=99;BKT.hurtEnemy(e,1e5,e.x-10,false);o.kill=BK.P.hp-10;}BKT.PROG.charm=null;
@@ -130,8 +130,8 @@ return out;})()`);
   assert.ok(f.key, 'U does not drink'); assert.equal(f.auto.flasks, 3, 'a blow under a quarter still drinks for you'); assert.equal(f.empty, false, 'a drink with no flask');
   assert.ok(d.shrine.lit && d.shrine.hp === 40 && d.shrine.flasks === 2 && d.shrine.st, 'a shrine must light, give back ONE flask (1 -> 2 of 3) and the stamina, and NOT heal: ' + JSON.stringify(d.shrine));
   assert.equal(d.again, 0, 'a shrine gave a second flask back in the same life (touch-farming)');
-  assert.equal(d.rLife, 0, 'R (back to the shrine) started a new life: the shrine gave a flask back for it');
-  assert.ok(d.r.at && d.r.hp === 50 && d.r.flasks === 1, 'R (back to the shrine) healed or filled the flasks: ' + JSON.stringify(d.r));
+  assert.equal(d.rLife, 0, 'back to the shrine started a new life: the shrine gave a flask back for it');
+  assert.ok(d.r.at && d.r.hp === 50 && d.r.flasks === 1, 'back to the shrine healed or filled the flasks: ' + JSON.stringify(d.r));
   assert.ok(d.death.hp === d.death.max && d.death.flasks === 3, 'a death does not heal in full and fill the flasks: ' + JSON.stringify(d.death));
   const b = r.brk;
   assert.ok(b.cpS2 && b.prompt, 'the BREAK prompt does not stand over a lit shrine: ' + JSON.stringify(b));

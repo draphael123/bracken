@@ -1,5 +1,5 @@
 // src/opening-tutorial.js - THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): a short GENERIC opening for a NEW save (the same layout for every hero),
-// replayable from the inn's training yard, that ends at the door of WAYMEET'S CROSSROADS INN.
+// replayable from the inn's training yard, that ends at the door of THE CROSSROADS INN.
 //   It replaces what the Arena Yard took (11-03 18:34): a new player got no teaching at all. The Arena Yard stays (tavern door / title / pause) for every move of one hero;
 //   this lesson is only the basics every hero shares: MOVE, JUMP, a HELD (higher) JUMP, ATTACK, BLOCK, DODGE, a FLASK, a SHRINE. The old open yard (git: openYard, before 87cb86171)
 //   gave the straw men, the gap and the ledges; they are rebuilt here as a line of stations with a gate after each one that has something to do.
@@ -24,8 +24,8 @@ export const STEPS = [
 export const GEO = { curb: 19, pit: [23, 25], ledge: [32, 34], door: 106, shrine: 94, dummies: [43, 46, 48], block: { foe: 56, lx: [53, 63] }, dodge: { foe: 69, lx: [66, 76] }, inn: { x0: 101, x1: 109 } };
 export const ROLL_GRACE = 0.45;   /* s: a roll that ended up to this long before his blow still counts (a dodge is 0.2 s; the flash is the beat, not a frame) */
 export const STALL_S = 40;   /* s in one station with no headway: its gate opens anyway ("ON WE GO"): a lesson never traps anybody (a step opened this way teaches nothing) */
-export const INN_SIGN = "WAYMEET'S CROSSROADS INN";
-export const INN_CARD = { title: "WAYMEET'S CROSSROADS INN", body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
+export const INN_SIGN = "THE CROSSROADS INN";
+export const INN_CARD = { title: "THE CROSSROADS INN", body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
 export const LESSON_TIPS = ["THE CROSSROADS INN: PRESS F ON THE MAP. FRIENDS JOIN, THE WARDROBE, TRAINING.", "THE ARENA YARD IS THROUGH THE INN'S TRAINING YARD: EVERY MOVE YOUR HERO HAS.", "WANT THE OPENING LESSON AGAIN? THE LESSON BOARD IN THE INN'S YARD REPLAYS IT."];
 
 /* THE PROMPT of a step, from the hero's own words k = { move, jump, atk, block, dodge, flask, pause }. Pure. Every line fits three rows of the step panel. */

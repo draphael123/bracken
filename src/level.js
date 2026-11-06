@@ -3889,7 +3889,7 @@ function theShopCrag() {
   };
 }
 
-/* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): WAYMEET'S CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
+/* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): THE CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
    their places and the furniture it draws; this paints the room and its dressing). The fire, the long tables and Waymeet's own drinkers (the beer
    garden's guests), the bar, a window onto the road; the training yard at the back; the duel pit roped off. No foe, no hazard, no coin. */
 function theTavern() {
@@ -8099,7 +8099,7 @@ export const LEVELS = [
   /* THE SEALED PYRAMID (claude/sealedpyramid, the OPUS GREYBOX, 2026-10-12; Daniel's concept interview 10-11): the tomb past THE BURIED CITY - a descent through galleries of
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
-  /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
+  /* THE TAVERN (claude/tavern, co-op phase 2): THE CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
   { id: 'tavern', name: 'THE INN', sub: 'friends meet here', build: theTavern, hidden: true },
   /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
   { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },

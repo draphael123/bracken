@@ -1,5 +1,5 @@
 // src/tavern.js - THE TAVERN (claude/tavern, CO-OP PHASE 2; Daniel 10-12, scratch brief-tavern.md + brief-onlinecoop.md 'ADDED 10-03').
-// WAYMEET'S CROSSROADS INN: one warm room - the fireplace, the long tables and their drinkers, the bar, a window onto the road - that is co-op's home.
+// THE CROSSROADS INN: one warm room - the fireplace, the long tables and their drinkers, the bar, a window onto the road - that is co-op's home.
 // Up to four players (local pads and online guests mixed) meet here, dress, practise together and take the road. It is open from the start.
 //
 // THE STATIONS, west to east (a player walks up and presses INTERACT - E/T, UP on a pad, the touch USE button):

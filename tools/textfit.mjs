@@ -307,6 +307,9 @@ async function pageTextFit(input) {
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
     for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 });
+    /* (claude/shrinekey) THE BACK-TO-SHRINE QUESTION, and the pause menu in the lesson + the yard (the greyed NO SHRINE HERE line) */
+    frame('shrine ask', () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.shrineAsk = true; }, { settle: 40 }); BK.ui.shrineAsk = false;
+    for (const id of ['lesson', 'arena-yard', 'arenayard']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; try { toPlay(li, 'knight'); } catch (e) { continue; } for (let i = 0; i < BK.ui.menuCount(); i++) frame('menu ' + id + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 }); }
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }

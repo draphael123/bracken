@@ -19,7 +19,7 @@ No dependencies. Plain canvas 2D at 320×180, integer-scaled, every sprite baked
 | Drop through a log | Down + jump |
 | Settings / pause | Esc / P |
 | Music toggle | M |
-| Restart at shrine | R |
+| Back to shrine | Pause menu (asks first) |
 
 ## Health and stamina
 

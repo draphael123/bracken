@@ -1,5 +1,5 @@
 // tools/tavern-menu.mjs - THE TAVERN's NAME and its PAUSE/SETTINGS MENU (claude/tavernname; Daniel 10-19). Node-only (reads sources, imports the level + pause rows).
-//   name      (Daniel 11-05 22:52) the hidden level is called THE INN; no player-facing 'Co-op Tavern' / 'CO-OP TAVERN' / 'THE TAVERN' / 'TAVERN' string is left in src/ (ids, files, saves keep 'tavern'); the full name WAYMEET'S CROSSROADS INN is allowed; the title rows stay LOCAL CO-OP / ONLINE CO-OP
+//   name      (Daniel 11-05 22:52) the hidden level is called THE INN; no player-facing 'Co-op Tavern' / 'CO-OP TAVERN' / 'THE TAVERN' / 'TAVERN' string is left in src/ (ids, files, saves keep 'tavern'); the full name THE CROSSROADS INN is allowed; the title rows stay LOCAL CO-OP / ONLINE CO-OP
 //   menu      the pause menu keeps Resume / Settings / Co-op / Return to map / Quit to title in the inn, and hides the level-only rows (map, level card, hero trial, shrine, restart);
 //             Return to map walks out of the inn's door (tavernToMap); settings Back returns to the pause menu and ESC to the play state (the tavern)
 //   hands     a JOINED pad player's START (padIntoPlayer) opens the menu in the inn; an UN-JOINED pad's START still joins (tavernPadJoin) and player one's own pad is never a joiner
