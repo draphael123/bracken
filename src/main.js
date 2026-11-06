@@ -1050,7 +1050,7 @@ const RG_ICONS = {   /* (claude/rangerart) redrawn: the same nine, with the arro
   rgWildHunt: pixIcon(['U........U', '.U......U.', '....yy....', '...yoooy..', '..yoyyooy.', '..yoooyyy.', '...yooy...', '....yy....', '.U......U.', 'U........U', '..........', '..........']),
 };
 const SP_ICONS = SPI.bakeIcons();   /* (claude/priestart) THE DESERT PRIEST'S ten actives (src/redraw/sun_priest_icons.js) */
-const skillIcon = k => SP_ICONS[k] || k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
+const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : SP_ICONS[k] || RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
 let meteors = [], fireRings = [], lanceBeams = [], moons = []; // FIRE LANCE (id meteor), RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
 function updateSkillFx(dt) {
