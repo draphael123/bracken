@@ -27,26 +27,26 @@
 import { trace, litBox } from './light.js';
 
 export const FS = {
-  hp: 1400, w: 12, h: 24, scale: 1.5, markH: 50,
+  hp: 1900, w: 12, h: 24, scale: 1.5, markH: 50,
   walk: 62, seekV: 78, keep: 34, turn: 0.4, gap: [0.6, 0.5, 0.42],
-  rad: { start: 0.6, fill: 0.4, drain: 0.15 },              /* his RADIANCE: fills 0.4/s in the sun (2.5 s empty -> full), drains 0.15/s in shade */
+  rad: { start: 0.6, fill: 0.4, drain: 0.08, ward: 0.5 },   /* his RADIANCE: fills 0.4/s in the sun (2.5 s empty -> full), drains 0.08/s in shade; the ward gives him back at least 0.5 */
   guard: { front: 0.4 },                                     /* B11/B15: THE DISC turns a blow from his front at x0.4 on guard; behind, whole */
-  open: { t: 3.2, mul: 1.7, cap: 0.14 }, ward: { t: 2.5, take: 0.4 }, reelT: 0.8,
+  open: { t: 3.2, mul: 1.7, cap: 0.12 }, ward: { t: 2.5, take: 0.4 }, reelT: 0.8,
   staff: { tell: 0.5, t: 0.16, beat: 0.32, n: [2, 3, 3], reach: 34, step: 90, dmg: 16 },
   beam: { tell: 0.7, t: 1.0, tick: 0.2, dmg: 6, cost: 0.3, y0: 22, y1: 8, cd: 3 },   /* the beam's band: his feet - y0 .. feet - y1 (chest height: jump it) */
   flare: { tell: 0.45, r: 44, dmg: 12, swingMul: 1.6, cost: 0.4, cd: 5, near: 40 },
   consec: { tell: 0.6, cost: 0.33, r: 24, t: 6, mend: 0.006, burn: 5, cd: 10 },
   fall: { tell: 0.8, fly: 0.55, r: 28, dmg: 24, cost: 0.25, patch: 2 },
-  rise: { tell: 1.2, t: 6, need: 0.9, beamMul: 1.5 },
+  rise: { tell: 1.2, t: 6, need: 0.9, beamMul: 1.5, cd: 20 },
   turnB: { tell: 0.7, walkT: 3.2, cd: 6, reach: 14 },
   shut: { t: [9, 7, 7], warn: 1.2 },                         /* a struck cord: the shutter shut this long (by phase), told FS.shut.warn s before it opens */
-  seek: { below: 0.6, walkT: 3 },
+  seek: { below: 0.6, walkT: 3, tries: 2 },
   p2: 0.65, p3: 0.3,
 };
 export const CYCLES = {
   1: [['staff', 'beam', 'staff', 'consec'], ['beam', 'staff', 'flare', 'staff'], ['staff', 'fall', 'beam', 'staff']],
   2: [['beam', 'staff', 'fall', 'staff', 'beam'], ['staff', 'consec', 'beam', 'staff'], ['fall', 'beam', 'staff', 'flare', 'staff']],
-  3: [['rise', 'beam', 'staff', 'fall'], ['beam', 'staff', 'beam', 'fall', 'staff'], ['staff', 'consec', 'beam', 'fall']],
+  3: [['beam', 'staff', 'fall', 'staff'], ['beam', 'staff', 'beam', 'fall', 'staff'], ['staff', 'consec', 'beam', 'fall']],   /* (SUNRISE is not in them: it comes off his full bar - nextMove) */
 };
 export const MOVES = {
   staffTell: { mark: '!', answer: 'block' }, staffBeatTell: { mark: '!', answer: 'block' }, beamTell: { mark: '!', answer: 'jump' }, flareTell: { mark: '!', answer: 'dodge' },
@@ -100,7 +100,7 @@ export function geom(A, TS) {
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, rad: FS.rad.start, ward: 0, openTaken: 0, behindT: 0, staffLeft: 0, lit: true,
-    shut: G.windows.map(() => 0), told: {}, patches: [], beam: null, leap: null, sunrise: 0, beamCd: 1, flareCd: 2, consecCd: 4, turnCd: 2, turnId: null,
+    shut: G.windows.map(() => 0), told: {}, riseCd: 0, seekTries: 0, patches: [], beam: null, leap: null, sunrise: 0, beamCd: 1, flareCd: 2, consecCd: 4, turnCd: 2, turnId: null,
     n: { cycles: 0, opens: 0, fizzles: 0, gutters: 0, sets: 0, wards: 0, warded: 0, guarded: 0, behind: 0, landed: 0, staffs: 0, beams: 0, flares: 0, consecs: 0, falls: 0,
       rises: 0, turns: 0, turnsCut: 0, seeks: 0, cords: 0, ripostes: 0, moves: {} } };
 }
@@ -120,7 +120,7 @@ export function inLight(e, S, c) {
 }
 function falter(e, S, c, why, word) { setMode(e, 'falter', FS.open.t + 0.05); e.open = FS.open.t; e.lift = 0; S.openTaken = 0; S.n.opens++; S.staffLeft = 0; S.beam = null; S.leap = null;
   c.fx('open', e.x, e.y); c.sound('falter'); c.shake(4); c.number(e.x, e.y - 72, why, '#8fd160'); if (word) c.word(word); }
-function endFalter(e, S, c) { e.open = 0; S.ward = FS.ward.t; S.n.wards++; S.openTaken = 0; setRad(S, Math.max(S.rad, 0.35)); c.fx('ward', e.x, e.y); c.sound('tell');
+function endFalter(e, S, c) { e.open = 0; S.ward = FS.ward.t; S.n.wards++; S.openTaken = 0; setRad(S, Math.max(S.rad, FS.rad.ward)); c.fx('ward', e.x, e.y); c.sound('tell');
   c.number(e.x, e.y - 72, 'THE LIGHT RETURNS TO HIM: WARDED', '#9ab0c0'); }
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
@@ -150,7 +150,7 @@ export function cordStruck(e, S, c, i) { if (!S || S.shut[i] > 0 || S.sunrise > 
 export function stepFallen(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
   e.modeT -= dt; e.y = G.floorY - (e.lift || 0); e.anim = (e.anim || 0) + dt;
-  for (const k of ['beamCd', 'flareCd', 'consecCd', 'turnCd']) S[k] = Math.max(0, S[k] - dt);
+  for (const k of ['beamCd', 'flareCd', 'consecCd', 'turnCd', 'riseCd']) S[k] = Math.max(0, S[k] - dt);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   /* THE SHUTTERS: count down; told before one opens */
@@ -217,13 +217,18 @@ function nextMove(e, S, P, h, c) {
   /* P2+: THE TURN - in shade, off cooldown, something to turn back: he goes to it */
   if (S.ph >= 2 && !S.lit && S.turnCd <= 0 && S.ward <= 0 && S.sunrise <= 0) { const all = turnTarget(S, c).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x));
     if (all.length) { S.turnId = all[0].id; setMode(e, 'turnWalk', FS.turnB.walkT); if (!S.told.turn) { S.told.turn = 1; c.number(e.x, e.y - 72, 'HE GOES TO TURN THE LIGHT BACK', '#ffd36b'); } return; } }
+  /* P3: SUNRISE comes off a FULL BAR (deny him the light and you deny him the sun) */
+  if (S.ph === 3 && S.riseCd <= 0 && S.sunrise <= 0 && S.rad >= FS.rise.need && S.ward <= 0) { S.riseCd = FS.rise.cd; S.n.rises++; tell(e, S, c, 'riseTell', FS.rise.tell); c.number(e.x, e.y - 80, 'SUNRISE', '#ff6b6b'); return; }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; const set = CYCLES[S.ph]; S.script = set[S.cycle % set.length].slice(); S.step = 0; }
   let m = S.script[S.step++];
-  if (m === 'rise' && (S.rad < FS.rise.need || S.sunrise > 0)) m = 'beam';
   if (m === 'beam' && S.beamCd > 0) m = 'staff';
   if (m === 'consec' && S.consecCd > 0) m = 'staff';
   if (m === 'flare') m = ad < FS.flare.r + 10 ? 'flare' : 'beam';
   if (m === 'staff' && ad > FS.staff.reach + 40) { if (S.beamCd <= 0) m = 'beam'; else { setMode(e, 'walk', 0.45); S.step--; return; } }
+  /* IN SHADE, LOW, A CAST NEXT: he goes to the light first (twice; then he casts where he stands - and it fizzles) */
+  const cost = { beam: FS.beam.cost, flare: FS.flare.cost, consec: FS.consec.cost, fall: FS.fall.cost }[m];
+  if (cost && !S.lit && S.rad < cost && S.sunrise <= 0 && S.ward <= 0 && S.seekTries < FS.seek.tries && maybeSeek(e, S, c)) { S.step--; S.seekTries++; return; }
+  if (cost) S.seekTries = 0;
   switch (m) {
     case 'staff': S.staffLeft = FS.staff.n[S.ph - 1]; S.n.staffs++; tell(e, S, c, 'staffTell', FS.staff.tell); return;
     case 'beam': S.n.beams++; S.beamCd = FS.beam.cd; S.beam = { dir: e.face || 1, t: 0, tick: 0, end: beamEnd(e, S, c, e.face || 1) }; tell(e, S, c, 'beamTell', FS.beam.tell);
@@ -232,7 +237,6 @@ function nextMove(e, S, P, h, c) {
     case 'consec': S.n.consecs++; S.consecCd = FS.consec.cd; tell(e, S, c, 'consecTell', FS.consec.tell); if (!S.told.consec) { S.told.consec = 1; c.number(e.x, e.y - 72, 'CONSECRATE: HIS OWN LIGHT - DRAW HIM OFF IT', '#ffd36b'); } return;
     case 'fall': S.n.falls++; S.leap = { x: clampX(G, P.x), fx: e.x }; tell(e, S, c, 'fallTell', FS.fall.tell); c.fx('ring', S.leap.x, G.floorY, FS.fall.r);
       if (!S.told.fall) { S.told.fall = 1; c.number(e.x, e.y - 72, 'SUNFALL: OFF THE RING', '#ff6b6b'); } return;
-    case 'rise': S.n.rises++; tell(e, S, c, 'riseTell', FS.rise.tell); c.number(e.x, e.y - 80, 'SUNRISE', '#ff6b6b'); return;
   }
   setMode(e, 'walk', 0.5);
 }
@@ -322,7 +326,7 @@ export function selfCheck(A, TS) {
     ok(c.mirrors()[0].state === '\\' && S.n.turns === 1, 'left alone, he turns it back: the fight over the light'); }
   { const e = newBoss(G), S = newFight(G), c = testWorld(G); S.ph = 2; const sh = { ...e, x: G.mirrors[0] + 60 }; ok(beamEnd(sh, S, c, -1) === G.mirrors[0], 'from THE NOON his beam stops at the first mirror in its way (a hero behind a mirror is safe)');
     S.ph = 1; ok(beamEnd(sh, S, c, -1) === G.x0 + 2, 'in THE DAWN it runs to the wall'); }
-  { const e = newBoss(G), S = newFight(G), c = testWorld(G, { lit: true }); e.hp = e.maxHp * 0.25; S.ph = 3; S.rad = 1; S.script = ['rise']; S.step = 0; setMode(e, 'recover', 0); cordStruck(e, S, c, 0); c.setMirror(1, '\\');
+  { const e = newBoss(G), S = newFight(G), c = testWorld(G, { lit: true }); e.hp = e.maxHp * 0.25; S.ph = 3; S.rad = 1; S.script = ['staff']; S.step = 0; setMode(e, 'recover', 0); cordStruck(e, S, c, 0); c.setMirror(1, '\\');
     for (let i = 0; i < 120 && S.sunrise <= 0; i++) stepFallen(e, S, 0.016, hero(e.x - 120), c);
     ok(S.sunrise > 0 && S.shut.every(t => t === 0) && c.mirrors()[1].state === '/', 'P3 SUNRISE on a full bar: every shutter open, every mirror his');
     c.setLit(false); for (let i = 0; i < 400 && S.sunrise > 0; i++) stepFallen(e, S, 0.016, hero(e.x - 120), c);
@@ -338,7 +342,7 @@ export function selfCheck(A, TS) {
 /* THE BOT FLOW SIM: one hero (knight-ish numbers, 3 flasks, a human's reaction) against the pure fight in the real sanctum's light (light.js on the level's
    tiles). Its plan: if he stands in light, go and take it (strike the cord of the window that lights him, or the mirror that throws it); else close and strike;
    jump the beam, leave the sunfall ring, back out of a flare. A PACE read (does the fight resolve, how long, which openings) - never the win rate. */
-export function simFights(A, TS, N, env) {
+export function simFights(A, TS, N, env) { env = { block: 0.5, ...env };   /* block: the share of his yellow blows a shield hero takes (a knight: ~half, human-ish) */
   const G = geom(A, TS), runs = [];
   for (let seed = 1; seed <= N; seed++) {
     let s = seed * 9301 + 49297; const rng = () => (s = (s * 9301 + 49297) % 233280) / 233280;
@@ -349,9 +353,9 @@ export function simFights(A, TS, N, env) {
     const c = { lit: b => litBox(res, b), mirrors: () => mirrors.map(m => ({ i: m.i, x: (m.x + 0.5) * TS, state: m.state, init: m.init })), setMirror: (i, st) => { mirrors[i].state = st; },
       hit: (bx, d, name, o) => { if (!hero.alive) return false; if (hero.jumpT > 0 && name === MOVE_NAME.beam) return false;
         if (hero.x < bx[0] - 6 || hero.x > bx[1] + 6) return false; const k = o && o.key; if (k && hero.keys && hero.keys.has(k)) return false; (hero.keys = hero.keys || new Set()).add(k);
-        hero.hp -= d; if (hero.hp <= 0) { if (hero.flasks > 0) { hero.flasks--; hero.hp = 60; } else hero.alive = false; } return true; },
+        if (o && o.blockable && rng() < env.block) { hero.blocked = (hero.blocked || 0) + 1; return false; } hero.hp -= d; hurtBy[name] = (hurtBy[name] || 0) + d; if (hero.hp <= 0) { if (hero.flasks > 0) { hero.flasks--; hero.hp = 60; } else hero.alive = false; } return true; },
       number: () => {}, word: () => {}, mark: () => {}, sound: () => {}, fx: () => {}, shake: () => {}, music: () => {}, rng };
-    const dt = 1 / 30; let t = 0, opensBy = { fizzle: 0, gutter: 0, set: 0 };
+    const hurtBy = {}; const dt = 1 / 30; let t = 0, opensBy = { fizzle: 0, gutter: 0, set: 0 };
     while (t < 400 && e.alive && hero.alive) {
       res = lightNow(); hero.cd -= dt; hero.jumpT = Math.max(0, hero.jumpT - dt); hero.react -= dt; hero.swinging = false;
       /* the hero's plan */
@@ -375,7 +379,7 @@ export function simFights(A, TS, N, env) {
       opensBy.fizzle += S.n.fizzles - o0; opensBy.gutter += S.n.gutters - g0; opensBy.set += S.n.sets - s0;
       t += dt;
     }
-    runs.push({ seed, won: !e.alive, t: Math.round(t), ph: S.ph, hp: Math.max(0, Math.round(hero.hp)), flasks: hero.flasks, opens: S.n.opens, ...opensBy, cords: S.n.cords, turns: S.n.turns, turnsCut: S.n.turnsCut, seeks: S.n.seeks, rises: S.n.rises });
+    runs.push({ seed, won: !e.alive, t: Math.round(t), ph: S.ph, hp: Math.max(0, Math.round(hero.hp)), flasks: hero.flasks, opens: S.n.opens, ...opensBy, cords: S.n.cords, turns: S.n.turns, turnsCut: S.n.turnsCut, seeks: S.n.seeks, rises: S.n.rises, fizzlesAt: S.n.fizzles, hurtBy, blocked: hero.blocked || 0 });
   }
   const won = runs.filter(r => r.won);
   return { wins: won.length + '/' + N, avgT: won.length ? Math.round(won.reduce((a, r) => a + r.t, 0) / won.length) : null, runs };
