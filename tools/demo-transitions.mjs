@@ -91,16 +91,18 @@ if (process.argv.includes('--browser')) {
       for (let n = 0; n < 1500 && e && e.alive; n++) { BK.players().forEach(p => { p.inv = 99; p.hp = p.maxHp; }); e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); dismiss(); if (e.alive) BK.sim(6); } return !!e && !e.alive; };
     if (MODE.direct) { BK.state = 'win'; out.began = BK.trans.begin(); }   /* the shut-spur fallback: begin straight off the table */
     else { out.killed = killBoss();
-      if (L.gateAfterBoss || ${JSON.stringify(from)} === 'stockade') { for (let i = 0; i < 400 && !(L.gateOpen || (${JSON.stringify(from)} === 'stockade' && i > 30)); i++) { dismiss(); BK.sim(1); } out.gateOpen = !!L.gateOpen; const g = BK.gate; BK.players().forEach((p, i) => { p.x = g.x - i * 2; p.y = g.y; p.vx = p.vy = 0; }); }
-      for (let i = 0; i < 900 && !BK.trans.tr && BK.state !== 'win'; i++) { dismiss(); BK.sim(1); } }
+      if (L.gateAfterBoss || ${JSON.stringify(from)} === 'stockade') { for (let i = 0; i < 400 && !(L.gateOpen || (${JSON.stringify(from)} === 'stockade' && i > 30)); i++) { dismiss(); BK.sim(1); } out.gateOpen = !!L.gateOpen; const g = BK.gate; BK.players().forEach((p, i) => { p.x = g.x - i * 2; p.y = g.y - (MODE.air ? 28 : 0); p.vx = p.vy = 0; }); }
+      for (let i = 0; i < 900 && !BK.trans.tr && BK.state !== 'win'; i++) { if (MODE.air && !L.gateAfterBoss && !BK.enemies().some(q => q.t === A.boss && q.alive)) { if (!MODE.hover) MODE.hover = BK.players().map(p => p.y - 56); BK.players().forEach((p, k) => { p.y = MODE.hover[k]; p.vy = 0; p.ground = false; }); } dismiss(); BK.sim(1); } }   /* (claude/transland) air: the party hangs 3.5 tiles above the floor from the kill until the transition begins - in the air at trnBegin, as when a boss falls to a mid-air blow */
     for (let i = 0; i < 200 && !BK.trans.tr && BK.state === 'win'; i++) { dismiss(); BK.sim(1); }
     out.tr = !!BK.trans.tr; if (!out.tr) { out.state = BK.state; return out; }
     out.to = BK.trans.tr.entry.to; out.walkers = BK.trans.tr.pos.length; out.scene = BK.trans.tr.entry.scene; out.cleared = !!(BK.PROG[${JSON.stringify(from)}] && BK.PROG[${JSON.stringify(from)}].cleared);
     out.saved = Object.keys(localStorage).some(k => new RegExp('"${from}":\\\\{[^}]*"cleared":(true|1)').test(localStorage.getItem(k) || ''));
     const open = BK.trans.tr.entry.open, tl0 = BK.trans.tr.tl; let skipped = false, opened = false;
     out.minX = 1e9; out.shotAt = [];
+    if (MODE.air) { const ps = BK.trans.tr.pos; out.air0 = ps.map(q => [Math.round(q.y), Math.round(q.landY), q.grounded]); out.ax0 = ps.map(q => q.x); out.airF = 0; out.walkedInAir = false; out.landPose = false; out.fallDy = 0; }
     for (let f = 0; f < 4000 && BK.trans.tr; f++) {
       const tr = BK.trans.tr, tl = tr.tl, ph = BK.trans.TRM.phase(tl);
+      if (MODE.air) tr.pos.forEach((q, i) => { if (!q.grounded) out.airF++; if (q.landT > 0) out.landPose = true; if (Math.abs(q.x - out.ax0[i]) > 0.01 && (!q.grounded || q.landT > 0)) out.walkedInAir = true; if (q.y > q.landY + 0.01) out.walkedInAir = true; });
       if (open && tr.opened && !opened) { opened = true; out.openedTiles = []; for (let c = open.col; c < open.col + (open.w || 1); c++) for (let r = open.rows[0]; r <= open.rows[1]; r++) out.openedTiles.push(BK.L.grid[r * BK.L.W + c]); out.wallWas = true; }
       if (MODE.skipAt && !skipped && ph === MODE.skipAt && tl.pt > 1.0) { BK.trans.press(); skipped = true; out.skipPhase = ph; }
       if (MODE.shots && !skipped) { const want = MODE.shots.find(w => !out.shotAt.includes(w.n) && w.ph === ph && tl.pt >= w.pt); if (want) { BK.step(1); out.shotAt.push(want.n); out.pending = want.n; out.pendingReady = true; return Object.assign(out, { stoppedFor: want.n, f }); } }
@@ -157,6 +159,16 @@ if (process.argv.includes('--browser')) {
       ok(from + ': after the skip the state is play, the arrival done, the party alive, the clear credited', st.state === 'play' && st.alive && st.cleared && st.a, JSON.stringify(st));
     }
     /* four seats, reduce motion, ?trans off, the setting NEVER */
+    /* (claude/transland) THE HERO IS IN THE AIR WHEN THE BOSS FALLS: every seat falls under gravity to the floor, lands (the landing pose), THEN walks - never walks while airborne - and the row still ends in the next level, arrived on solid footing */
+    for (const [from, tag, m] of [['marsh', 'air', { air: true }], ['spore', 'air3', { air: true, seats: 3 }], ['palisadewood', 'air-skip', { air: true, skipAt: 'walk' }], ['hornetsnest', 'air-gate', { air: true }]]) {
+      const e = TRM.entryFor(from, undefined, { burningOpen: true });
+      const w = await watch(from, { tag, ...m }), a = w.base;
+      ok(from + ' > ' + e.to + ' (' + tag + '): the party is IN THE AIR when the transition begins (every seat starts above its floor)', a.tr && a.air0 && a.air0.every(v => !v[2] && v[0] < v[1]), JSON.stringify(a.air0));
+      ok(from + ' > ' + e.to + ' (' + tag + '): every seat FELL (frames airborne > 0), took the landing pose, and never walked (x moved / below the floor) until it had landed', a.airF > 0 && a.landPose && !a.walkedInAir, JSON.stringify([a.airF, a.landPose, a.walkedInAir]));
+      ok(from + ' > ' + e.to + ' (' + tag + '): the transition plays through to the next level' + (m.skipAt ? ' (a skip in the walk)' : ''), w.end.done && w.end.lvl === e.to, JSON.stringify(w.end).slice(0, 200));
+      const st = await ev(`(()=>{ const L = BK.L, ps = BK.players(); const solid = (cx, cy) => cx < 0 || cy < 0 || (L.grid[cy * L.W + cx] === 1); const foot = ps.every(p => solid(Math.floor(p.x / 16), Math.floor((p.y + 1) / 16))); for (let i = 0; i < 300; i++) BK.sim(1); return { state: BK.state, foot, alive: ps.every(p => p.hp > 0) }; })()`);
+      ok(from + ' (' + tag + '): the arrival side - control back, everyone standing on solid ground (never spawned mid-air), alive', st.state === 'play' && st.foot && st.alive, JSON.stringify(st));
+    }
     for (const [from, tag, m] of [['fenroad', '4seats', { seats: 4 }], ['hornetsnest', '3seats', { seats: 3 }], ['kings', 'reduce', { reduce: true, burning: true }], ['fenroad', 'reduce', { reduce: true }], ['hornetsnest', 'reduce', { reduce: true }]]) {
       const e = TRM.entryFor(from, undefined, { burningOpen: true });
       const w = await watch(from, { tag, ...m });

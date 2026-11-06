@@ -32517,9 +32517,29 @@ function trnBegin() {
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
-    pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
+    pos: players.map(p => trnSeat(p, target)) };
+  if (TRN.pos.some(q2 => !q2.grounded)) { const wb = TRN.tl.beats.find(b => b.id === 'walk'); if (wb) wb.max = (wb.max || wb.dur) + 1.0; }   /* (claude/transland) the fall + the landing come out of the walk's clock: give it back */
   BUG.evlog('transition ' + key); slowT = 0; stop = 0;
   return true;
+}
+/* (claude/transland, Daniel 11-06) THE HEROES LAND BEFORE THEY WALK. The walk-out is kinematic, so a hero in the air when the boss fell (jumping, dashing, plunging, clinging, swimming, on a ladder or a rope)
+   floated through the whole cutscene. Every seat now FALLS under the normal gravity to the first floor below (a long drop starts from the last 7 tiles: placed, not a tumble), lands with the landing pose and a puff of dust, THEN walks. */
+const TRN_FLOOR = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.SOFT, T.ICE, T.WEB]);
+function trnFloorY(x, y) {
+  let best = Infinity; const y0 = Math.max(0, Math.floor((y - 0.5) / TS));
+  for (const dx of [0, -4, 4]) { const tx = Math.floor((x + dx) / TS); for (let ty = y0; ty < LH; ty++) if (TRN_FLOOR.has(tileAt(tx, ty))) { if (ty * TS < best) best = ty * TS; break; } }
+  return best === Infinity ? y : Math.max(y, best);
+}
+function trnSeat(p, target) {
+  const landY = trnFloorY(p.x, p.y), air = landY - p.y > 0.5;
+  let y = p.y; if (landY - y > 112) y = landY - 112;
+  return { x: p.x, y: air ? y : p.y, vy: air ? Math.max(-200, Math.min(400, p.vy || 0)) : 0, landY, grounded: !air, landT: 0, landMax: 0.2, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) };
+}
+function trnFall(q2, dt) {
+  if (q2.landT > 0) q2.landT = Math.max(0, q2.landT - dt);
+  if (q2.grounded) return;
+  q2.vy = Math.min(400, q2.vy + GRAV * dt); q2.y += q2.vy * dt;
+  if (q2.y >= q2.landY) { q2.y = q2.landY; q2.vy = 0; q2.grounded = true; q2.landT = q2.landMax; dust(q2.x, q2.y, 5); SFX.land('stone'); }
 }
 function trnOpenWay() {
   const o = TRN.entry.open; if (!o) return;
@@ -32536,8 +32556,9 @@ function trnUpdate(dt) {
   const tl = tr.tl, ph = TRM.phase(tl);
   if (ph === 'open' && !tr.opened && tl.pt >= 0.25) { tr.opened = true; trnOpenWay(); }
   let ready = true;
+  players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; trnFall(q2, dt); p.y = q2.y; if (!q2.grounded || q2.landT > 0) ready = false; });
   if (ph === 'walk') {
-    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
+    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived || !q2.grounded || q2.landT > 0) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
     if (players[0] && tr.pos[0]) { P.x = tr.pos[0].x; P.vx = tr.pos[0].v * 0.6; P.face = 1; }
   }
   const entered = TRM.step(tl, dt, { press: anyPress, ready });
@@ -32584,8 +32605,8 @@ function trnDrawScene() {
 }
 function trnDrawWorldOver(cx, cy) {
   if (TRN && !TRN.loading && TRN.entry.open && !TRN.scene) TRA.drawWayGate(trnEnv(), TRN.entry.open, cx, cy, TRN.tl.t, TRN.opened, time, !!SET.reduceMotion);   /* (claude/transwmart) the clearing's gate: lashed pine, then it gives way */
-  if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K, air = q2.hop < -2 && set.R && set.R.jump;   /* the hop over the settled gate uses the hero's own jump frames */
-    drawSet(set, air ? 'jump' : walking ? 'run' : 'idle', air ? 0 : walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
+  if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K, falling = !q2.grounded, landing = q2.grounded && q2.landT > 0 && set.R && set.R.land, air = !falling && q2.hop < -2 && set.R && set.R.jump;   /* the hop over the settled gate uses the hero's own jump frames */
+    drawSet(set, falling ? (set.R && set.R.fall ? 'fall' : 'jump') : landing ? 'land' : air ? 'jump' : walking ? 'run' : 'idle', falling ? (q2.vy > 220 ? 1 : 0) : landing ? (set.R.land.length < 3 ? (q2.landT > 0.1 ? 0 : 1) : (q2.landMax - q2.landT < 0.06 ? 0 : q2.landMax - q2.landT < 0.13 ? 1 : 2)) : air ? 0 : walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
     if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   if (trnArrive && trnArrive.ferry) TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time);
 }
