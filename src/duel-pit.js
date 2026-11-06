@@ -9,7 +9,7 @@ export function buildDuelPit({ painter }) {
   const { block, plat, ent } = L;
   const gy = F - 1;
   block(0, W - 1, F, H - 1); block(0, 1, 0, F - 1); block(W - 2, W - 1, 0, F - 1);   // the ring, walled both sides
-  plat(4, 12, 4); plat(18, 12, 4); plat(11, 8, 4);                                     // three oak planks: high ground to fight over (drop through with DOWN+JUMP)
+  plat(3, 14, 5); plat(18, 14, 5); plat(10, 11, 6);                                   // three oak planks (pvpduel3: every one is a JUMP from the one below - a flat jump peaks 51 px = 3.2 tiles): low left, low right, the high middle (drop through with DOWN+JUMP); nothing hurts
   for (const x of [3, 22]) ent('deco', x, gy, { kind: 'brazier' });
   for (const x of [8, 17]) ent('deco', x, gy, { kind: 'pennonPole', v: x & 1 });
   ent('deco', 13, gy, { kind: 'weaponRack' });

@@ -8,7 +8,7 @@
 //           match ends inside the cap, no soft-lock, no death cost, no flask drunk, every round ends; reports the win matrix and FAILS any hero over 80%
 //           of all his duels (n small: a sanity bar, not a tune). PAIRS=knight:pyro,warden:ranger narrows it.
 // node tools/pvp-duel.mjs [pure,sim,duel]    (default: pure,sim - the browser section runs only when named)
-import { DUEL, PVP_SHIPS, pvpDamage, sdMul, suddenDeath, landedShare, juggleGrace, attackerOf, newMatch, stepMatch, matchPoints, cleanRanks, recordMatch, rankRows, loadRanks, saveRanks, forgetSlot, RANK_KEY, botThink, freshBot, BOT_RANGE, BOT_HEROES, rng, isBotSeat } from '../src/pvp-duel.js';
+import { makeDuel, cleanSettings, defaultSettings, loadSettings, saveSettings, SET_KEY, SETTING_CHOICES, matchOpts, BOT_DIFF, DUEL, PVP_SHIPS, pvpDamage, sdMul, suddenDeath, landedShare, juggleGrace, attackerOf, newMatch, stepMatch, matchPoints, cleanRanks, recordMatch, rankRows, loadRanks, saveRanks, forgetSlot, RANK_KEY, botThink, freshBot, BOT_RANGE, BOT_HEROES, rng, isBotSeat } from '../src/pvp-duel.js';
 import { buildDuelPit, DP } from '../src/duel-pit.js';
 const WANT = process.argv[2] ? process.argv[2].split(',') : ['pure', 'sim'];
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
@@ -74,6 +74,75 @@ if (WANT.includes('pure')) {
     ok([0, 1, L.W - 2, L.W - 1].every(x => at(x, 3) === T.SOLID) && Array.from({ length: L.W }, (_, x) => at(x, DP.FLOOR)).every(v => v === T.SOLID), 'walled both sides, floored wall to wall (nobody falls out)');
     ok(DP.SPOTS.every(c => c > 1 && c < L.W - 2 && at(c, DP.FLOOR - 1) === T.AIR && at(c, DP.FLOOR - 2) === T.AIR), 'the four start spots stand on open floor');
     ok((L.W - 4) * 16 <= 400, 'the ring fits one party view (' + (L.W - 4) * 16 + ' px inside the walls, the party view is <= 400)'); }
+
+  /* ===== pvpduel3: the match options, the bot's difficulty, the planks, and the runtime on a mock game ===== */
+  ok(PVP_SHIPS === true, 'the ship flag is ON (DUEL (BETA) is public in the demo cut)');
+  { const D = defaultSettings();
+    ok(D.lives === 1 && D.health === 100 && D.stamina === 'normal' && D.rounds === 3 && D.teams === false && D.level === 'even' && D.timeLimit === 90 && D.botDifficulty === 'normal' && D.seats.length === 2 && !D.seats[0].isBot && D.seats[1].isBot, "settings: the defaults are today's duel (1 life, 100%, normal stamina, best of 3, EVEN - LEVEL 1, 90 s)");
+    const J = cleanSettings({ lives: 9, health: 77, stamina: 'x', rounds: 4, level: 'bad', timeLimit: 33, botDifficulty: 'insane', teams: 'yes', seats: 'no' });
+    ok(J.lives === 5 && J.health === 100 && J.stamina === 'normal' && J.rounds === 3 && J.level === 'even' && J.timeLimit === 90 && J.botDifficulty === 'normal' && J.teams === false, 'settings: junk values fall back to the defaults, lives clamp to 1-5');
+    ok(cleanSettings({ lives: 0 }).lives === 1 && cleanSettings({ lives: 3.7 }).lives === 3 && SETTING_CHOICES.health.join() === '50,100,150' && cleanSettings({ timeLimit: 0 }).timeLimit === 0, 'settings: lives 1-5 whole, health 50/100/150, a time limit of 0 = OFF');
+    const T = cleanSettings({ teams: true });
+    ok(T.seats.length === 4 && T.seats.filter(q => q.team === 1).length === 2 && T.seats.filter(q => q.team === 2).length === 2, 'settings: TEAMS = four seats, two a side');
+    const T2 = cleanSettings({ teams: true, seats: [{ team: 1 }, { team: 1 }, { team: 1 }, { team: 1 }] }); ok(T2.seats.some(q => q.team === 2), '...an all-one-team list is repaired (both teams get a body)');
+    for (const raw of [undefined, null, 5, 'x', [], { seats: [null, 7, { hero: 'Bad Hero!' }] }]) { let o = null, err = ''; try { o = cleanSettings(raw); } catch (e) { err = String(e); } ok(!err && o.seats.length >= 2 && o.seats.length <= 4 && o.seats.every(q => q.hero === 'random' || q.hero === '' || /^[a-z]{2,12}$/.test(q.hero)), 'settings: ' + JSON.stringify(raw) + ' reads whole'); }
+    const mem = new Map(), ls = { getItem: k => mem.has(k) ? mem.get(k) : null, setItem: (k, v) => mem.set(k, String(v)) };
+    saveSettings(ls, 'slot2', { ...D, lives: 3, health: 150, level: 'your' }); const back = loadSettings(ls, 'slot2'), other = loadSettings(ls, 'slot1');
+    ok(back.lives === 3 && back.health === 150 && back.level === 'your' && other.lives === 1 && mem.has(SET_KEY) && mem.size === 1, 'settings: REMEMBERED per save slot in one device key (' + SET_KEY + '), never inside a save');
+    mem.set(SET_KEY, '{nope'); ok(loadSettings(ls, 'slot2').lives === 1, '...a broken store reads as the defaults');
+    const o3 = matchOpts(cleanSettings({ rounds: 1, timeLimit: 0 })), o5 = matchOpts(cleanSettings({ rounds: 5, timeLimit: 60 })), o0 = matchOpts(D);
+    ok(o3.toWin === 1 && o3.fightT === Infinity && o5.toWin === 3 && o5.fightT === 60 && o0.toWin === 2 && o0.maxRounds === DUEL.round.maxRounds, 'match options: rounds 1/3/5 = first to 1/2/3, time limit 0 = no sudden death, 90 s default'); }
+  { const m = newMatch([1, 2], { toWin: 1, fightT: Infinity, timeUp: 240 }); const run = (secs, st, sh) => { for (let i = 0; i < secs * 60; i++) stepMatch(m, 1 / 60, st, sh); };
+    run(DUEL.round.count + 0.1, [1, 2]); run(200, [1, 2], { 1: 1, 2: 1 }); ok(m.phase === 'fight' && !suddenDeath(m.clock, m.fightT) && sdMul(m.clock, m.fightT) === 1, 'time limit OFF: 200 s in and no sudden death');
+    run(41, [1, 2], { 1: 0.9, 2: 0.2 }); ok(m.phase === 'ko' && m.wins[1] === 1, '...the round still ends at its cap (240 s) on health');
+    run(DUEL.round.ko + 0.1, [1, 2]); ok(m.phase === 'over' && m.winner === 1, 'ROUNDS 1: one round wins the match'); }
+  { const m = newMatch([1, 2], { fightT: 60 }); ok(suddenDeath(60, m.fightT) && !suddenDeath(59, m.fightT) && pvpDamage(10, 1, 70, 60) > pvpDamage(10, 1, 0, 60), "time limit 60 s: sudden death from 60 s (and the ramp follows the match's limit)"); }
+  { const m = newMatch([1, 2]); stepMatch(m, 4, [1, 2]); stepMatch(m, 1, [1, 2]); stepMatch(m, 0.1, [2]); ok(m.wins[2] === 1 && m.last.win === 2, 'teams: the round goes to the team with someone left standing (the ids are the teams)'); }
+  { const easy = BOT_DIFF.easy, hard = BOT_DIFF.hard, norm = BOT_DIFF.normal;
+    ok(norm.think === 0.1 && norm.cd === 0.22 && norm.block === 0.45 && norm.dodge === 0.18 && norm.react === 0, 'bot difficulty: NORMAL is exactly the old bot');
+    ok(easy.react > hard.react && easy.block < norm.block && norm.block < hard.block && easy.cd > norm.cd && norm.cd > hard.cd && easy.think > hard.think, 'bot difficulty: easy is slower to think, swing and answer; hard is quicker and guards more');
+    const count = d => { const r = rng(11), me = { x: 100, y: 272, face: 1, ground: true, atk: -1, hero: 'knight' }; const s = freshBot(d); let a = 0, b = 0; for (let i = 0; i < 3600; i++) { const o = botThink(me, { x: 114, y: 272, atk: i % 40 < 14 ? 0 : -1 }, s, r, 1 / 60); if (o.press.atk) a++; if (o.keys.block || o.press.dodge) b++; } return { a, b }; };
+    const e = count('easy'), n = count('normal'), h = count('hard');
+    ok(h.a >= n.a * 0.8 && n.a > e.a * 1.4 && h.b > n.b && n.b > e.b, 'bot difficulty over a minute in reach: swings easy ' + e.a + ' < normal ' + n.a + ' < hard ' + h.a + '; guards easy ' + e.b + ' < normal ' + n.b + ' < hard ' + h.b); }
+  { const T = { AIR: 0, SOLID: 1, ONEWAY: 2 }, painter = (W, H) => { const grid = new Uint8Array(W * H), ents = [], set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) grid[y * W + x] = v; };
+      return { W, H, grid, ents, set, block: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); }, plat: (x, y, l) => { for (let i = 0; i < l; i++) set(x + i, y, T.ONEWAY); }, ent: (t, x, y, e = {}) => ents.push({ t, x, y, ...e }) }; };
+    const L = buildDuelPit({ painter, T }), W = L.W, rows = []; for (let y = 0; y < L.H; y++) { let x = 0; while (x < W) { if (L.grid[y * W + x] === T.ONEWAY) { let e = x; while (e + 1 < W && L.grid[y * W + e + 1] === T.ONEWAY) e++; rows.push({ y, x0: x, x1: e }); x = e + 1; } else x++; } }
+    ok(rows.length >= 2 && rows.length <= 3, 'the ring has 2-3 floating planks (' + rows.length + ')');
+    const JUMP = 3; /* tiles: a flat jump peaks 51 px = 3.2 tiles; the floor's top is row DP.FLOOR */
+    const reach = new Set([DP.FLOOR]); let grew = true; while (grew) { grew = false; for (const r of rows) if (!reach.has(r.y) && [...reach].some(h => h - r.y <= JUMP && h - r.y >= 1 && (h === DP.FLOOR || rows.some(q => q.y === h && q.x1 + 4 >= r.x0 && q.x0 - 4 <= r.x1)))) { reach.add(r.y); grew = true; } }
+    ok(rows.every(r => reach.has(r.y)), 'every plank is a jump (<= ' + JUMP + ' tiles) from the floor or from another plank: ' + rows.map(r => 'row ' + r.y + ' x' + r.x0 + '-' + r.x1).join(', '));
+    ok(!L.ents.some(e => !['deco'].includes(e.t)), 'no hazard or gimmick in the ring'); }
+  { /* THE RUNTIME on a mock game: lives, health, teams, stamina, the level option, sudden death */
+    let now = 0, cur = null; const players = [], enemies = [], floats = [], mk = (hero, extra = {}) => ({ hero, n: players.length + 1, x: 0, y: 272, down: 0, dead: 0, hp: 100, maxHp: 100, maxSt: 100, st: 100, flasks: 0, face: 1, ...extra });
+    const api = { L: () => ({ duelPit: { floor: 17, spots: [5, 20, 9, 16] }, W: 26 }), players: () => players, time: () => now, TS: 16, P: () => cur,
+      asPlayer: (p, fn) => { const w = cur; cur = p; try { return fn(); } finally { cur = w; } }, passOn: () => cur, upright: p => !(p.down > 0) && !(p.dead > 0), enemies: () => enemies, owned: () => [],
+      goDown: (p) => { p.down = 1; }, seatAdd: sp => { if (players.length >= 4) return null; const p = mk(sp.hero, { src: sp.src }); players.push(p); return p; }, seatDrop: p => { const i = players.indexOf(p); if (i > 0) { players.splice(i, 1); players.forEach((q, k) => { q.n = k + 1; }); } },
+      float: (x, y, t) => floats.push(t), callout() {}, hint() {}, sfx() {}, colourOf: n => ({ c: '#fff', name: 'C' + n }), tagOf: p => 'P' + p.n, heroName: h => String(h).toUpperCase(), heroes: () => [], text() {}, board() {}, bar() {},
+      damage: (v, fx, probe) => ({ r: 'hit', landed: probe }), norm: () => 0.5, hand: p => ({ base: 10, add: p.lvlAdd || 0 }), rankOf: p => p === players[0] ? { key: 'slot1', name: 'SAVE 1' } : null, ls: () => null, leave() {}, enter() {}, pressRead: () => ({}), eatPress() {}, keysWrite() {}, pressWrite() {} };
+    const D = makeDuel(api); const reset = () => { players.length = 0; enemies.length = 0; players.push(mk('knight', { lvlAdd: 12 })); };
+    const fresh = (settings, o = {}) => { reset(); now = 0; return D.begin({ settings, seed: 5, ...o }); };
+    const blow = (att, vic, dmg = 20) => { const e = D.st.prox.get(vic); cur = att; const r = D.hit(e, dmg, att.x); cur = null; return r; };
+    const step = (secs) => { for (let i = 0; i < secs * 60; i++) { now += 1 / 60; D.tick(1 / 60); } };
+    ok(fresh(cleanSettings({ lives: 2, health: 150, stamina: 'unlimited' })), 'runtime: a duel begins on the mock game');
+    let [A, B] = players; step(DUEL.round.count + 0.2);
+    ok(D.debug().m.phase === 'fight' && A.duelHp === 150 && A.duelMax === 150 && A.duelLives === 2 && B.duelLives === 2, 'options: HEALTH 150% = 150 PvP health, LIVES 2');
+    A.x = 100; B.x = 140; A.st = 5; step(0.1); ok(A.st === 100, 'options: STAMINA unlimited refills every frame');
+    blow(A, B, 20); ok(B.duelHp < 150 && B.duelHp > 0, 'a landed blow takes PvP health (' + B.duelHp + '/150)');
+    B.duelGrace = 0; B.duelHp = 1; blow(A, B, 20); step(0.05); ok(B.down > 0 && B.duelLives === 1 && D.debug().m.phase === 'fight', 'LIVES: a K.O. with a life left does NOT end the round (lives ' + B.duelLives + ')');
+    step(1.9); ok(B.down === 0 && B.duelHp === 150 && B.duelGrace > now, 'LIVES: he is back up at full health with a moment of grace');
+    B.duelGrace = 0; B.duelHp = 1; blow(A, B, 20); step(0.05); step(2); ok(B.duelLives === 0 && B.down > 0 && D.debug().m.phase === 'ko' && D.debug().m.last.win === A.n, 'LIVES: the last life gone ends the round for the other');
+    ok(fresh(cleanSettings({ level: 'even' })), 'runtime: level EVEN begins'); [A, B] = players; ok(D.st.norm.get(A) === 0.5 && D.st.lvl.get(A) === 1, "LEVEL even: today's normalised hand (norm from the game, no level mul)");
+    ok(fresh(cleanSettings({ level: 'your' })), 'runtime: level YOUR begins'); [A, B] = players; ok(D.st.norm.get(A) === 1 && D.st.lvl.get(A) === 1 && D.st.lvl.get(B) > 1, "LEVEL your: the human at his own hand, the bot lifted to the highest human's level (x" + D.st.lvl.get(B).toFixed(2) + ')');
+    ok(fresh(cleanSettings({ teams: true })), 'runtime: a 2v2 begins'); step(DUEL.round.count + 0.2);
+    ok(players.length === 4 && players.map(p => p.duelTeam).join() === '1,1,2,2' && D.st.m.ids.join() === '1,2', 'teams: four seats, two a side, the match counts teams');
+    { const [a1, a2, b1, b2] = players; a1.x = 100; a2.x = 110; b1.x = 150; b2.x = 160; const h0 = a2.duelHp; const r = blow(a1, a2, 30); ok(r === true && a2.duelHp === h0, "teams: a teammate's blow does nothing"); blow(a1, b1, 30); ok(b1.duelHp < b1.duelMax, "teams: a foe's blow lands");
+      for (const p of [b1, b2]) { p.duelGrace = 0; p.duelHp = 1; blow(a1, p, 30); } step(0.2); ok(D.debug().m.phase === 'ko' && D.debug().m.last.win === 1, 'teams: both foes down = TEAM 1 takes the round'); }
+    ok(fresh(cleanSettings({ timeLimit: 60 })), 'runtime: a 60 s limit begins'); [A, B] = players; step(DUEL.round.count + 0.2); step(59); ok(A.duelHp === 100 && B.duelHp === 100, 'sudden death: not yet at 59 s'); step(2); ok(A.duelHp === 1 && B.duelHp === 1, 'sudden death: at the limit everyone is on 1 health (ONE HIT)');
+    A.x = 100; B.x = 140; B.duelGrace = 0; blow(A, B, 5); step(0.1); ok(B.down > 0 && D.debug().m.last && D.debug().m.last.win === A.n, 'sudden death: the next landed blow ends it');
+    ok(fresh(cleanSettings({ botDifficulty: 'hard', seats: [{}, { hero: 'ranger', isBot: true, botDifficulty: 'easy' }] })), 'runtime: per-seat bot difficulty begins'); ok(D.debug().seats[1].diff === 'easy' && D.debug().seats[1].hero === 'ranger', 'a bot seat keeps its own hero and difficulty (' + D.debug().seats[1].hero + ', ' + D.debug().seats[1].diff + ')');
+    D.setSettings({ lives: 4, level: 'your' }); D.setSeat(1, { hero: 'pyro', botDifficulty: 'hard' }); const g = D.getSettings(); ok(g.lives === 4 && g.level === 'your' && g.seats[1].hero === 'pyro' && g.seats[1].botDifficulty === 'hard', 'API: setSettings / setSeat / getSettings round-trip');
+    D.setSettings({ teams: true }); ok(D.getSettings().seats.length === 4, 'API: teams on makes it four seats'); D.setSeatCount(3); ok(D.getSettings().seats.length === 4, '...and teams hold it at four');
+    ok(fresh(cleanSettings({ rounds: 5, seats: [{}, { hero: 'random' }, { hero: 'random' }] })), 'runtime: three seats with random heroes begins'); ok(players.length === 3 && players.slice(1).every(p => BOT_HEROES.includes(p.hero)), 'random hero: each bot seat gets a real hero (' + players.map(p => p.hero).join(',') + ')'); }
 }
 
 if (WANT.includes('sim')) {
