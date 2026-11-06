@@ -134,6 +134,7 @@ export function buildDeep3(R, T, TS = 16) {
   // over the landing's lip; a settling stone over the third step; the rot vent in the east wall
   const St = D3.stair, steps = [];
   fill(St.landing[0], St.landing[1], St.landing[2] + 1, St.landing[2] + 1);   /* the landing under F3's crack */
+  fill(St.landing[0] + 1, St.landing[0] + 2, St.landing[2] + 2, f4.slab - 1);   /* on a pier down to the floor (nothing floats), through the rot pit */
   for (const [a, b, y] of St.steps) steps.push({ id: 'step' + steps.length, x0: a, x1: b, y0: y + 1, y1: y + 1, kind: 'step' });
   for (const s of steps) cut(s.x0, s.x1, s.y0, s.y1);   /* (laid back by the hands, as the cracks are) */
   fill(St.east[0], St.east[1], St.east[2] + 1, f4.slab - 1);   /* the east landing: solid down to the floor, the hatch's lip */
