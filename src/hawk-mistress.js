@@ -85,7 +85,7 @@ export const HAWK_MOVES = { rake: 1, snatch: 2 };               /* the hawk's: t
        she is BARE) or it drops you INTO HER BLADE (a told HM2.bladeTell s cut: block it). Strike-answerable, never a mash (mash 0/6).
    (d) RAZOR MOULT (renamed from FEATHER VOLLEY; P3, the hawk's new move): the hawk takes station past you (told HM2.moultTell s, '!', a hard wing-beat) and fires
        three bladed feathers flat at head height - DUCK them, or BLOCK. */
-export const HM2 = { moultTell: 0.9, moultGap: 0.16, moultY: 24, moultV: 200, moultFrom: 110, liftT: 1.0, liftH: 34, bladeTell: 0.45, oilBurn: 6.0, oilTick: 0.5, oilPad: 8, smokePad: 18, smokeT: 2.6, smokeR: 80,
+export const HM2 = { moultTell: 0.9, moultGap: 0.16, moultY: 11,   /* head height on a 14 px hero box (a duck is 8 px: under it) */ moultV: 200, moultFrom: 110, liftT: 1.0, liftH: 34, bladeTell: 0.45, oilBurn: 6.0, oilTick: 0.5, oilPad: 8, smokePad: 18, smokeT: 2.6, smokeR: 80,
   dmg: { moult: 30, oil: 8 } };
 export const CYCLES2 = { 1: CYCLES[1], 2: CYCLES[2], 3: [['keg', 'moult', 'rake', 'fan'], ['snatch', 'keg', 'moult', 'snare'], ['moult', 'fan', 'call', 'lash']] };
 export const HAWK_MOVES2 = { rake: 1, snatch: 2, moult: 3 };   /* (claude/ksar3) the hawk's in HM2: its TALON SNATCH from P2, RAZOR MOULT from P3 */
@@ -433,7 +433,7 @@ function stepHawk(e, S, dt, P, c) {
       if (k.t <= 0) { S.snatch = null; k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break; }
     /* (claude/ksar3) HM2: THE TALON LIFT (strike it free, or it drops you into her blade), THE RAZOR MOULT, GROUNDED IN SMOKE */
     case 'lift': { const Lf = S.lift; if (!Lf) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; break; }
-      lerpTo(Lf.x, G.floorY - HM2.liftH - 22, 6);
+      lerpTo(Lf.x, G.floorY - HM2.liftH - 16, 6);   /* just over the held hero: a blade finds it */
       if (c.hawkStruck && c.hawkStruck()) { S.n.liftBroke++; S.lift = null; if (c.drop) c.drop('free'); flinch(e, S, c, k.x, k.y); break; }
       if (k.t <= 0) { S.lift = null; const bx = clampRoof(G, e.x + (e.face || 1) * 26, e.x); if (c.drop) c.drop('blade', bx); S.n.blades++; k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y;
         if (!hmOpen(e) && !(S.pend > 0) && !STRIKE.has(e.mode)) { e.face = Math.sign(bx - e.x) || e.face; tell(e, S, c, 'cutTell', HM2.bladeTell); } } break; }

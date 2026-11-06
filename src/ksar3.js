@@ -137,12 +137,13 @@ export function ksar3Tail(api) {
 
   const fix = out => {
     out.ksar3 = true; out.mini = gm.mini; out.mirages = mirages; out.k3 = k3;
+    out.zipTransfer = true;   /* the reach fill rides rope to rope (src/reachcore.js: the hops) */
     out.sections = Object.fromEntries([...Object.entries(out.sections).filter(([, x]) => x < X0), ...K3.sections]);
     out.sun = [{ x0: 0, x1: 584 }, { x0: X0, x1: AX - 1 }];
     out.squadBands = [...(out.squadBands || []).filter(b => b.lo < 800), { lo: 800, hi: W - 1, spots: 0,
       why: 'KSAR 3: THE LINES OVER THE SOUQ and THE HIGH LINES are rope rides between roofs (each roof holds one SHADE stalker or the street a stall), 924-963 THE GONG YARD (a mini arena: no squad), 1031-1101 the tallest tower and HER ROOF (a boss arena)' }];
     out.unlocks = [...(out.unlocks || []), { kind: 'ksgong', opens: 'THE GONG-MASTER silenced: a cut rope in his yard opens him (he re-hangs it, told)', hud: 'THE ROPE IS CUT: HE IS SILENCED' }];
-    out.checkRun = 200;
+    out.checkRun = 300;   /* (Daniel 11-06: fewer checkpoints) the filler adds none between Ksar 3's five */
   };
   return { stage, shafts: stage.shafts, fix };
 }

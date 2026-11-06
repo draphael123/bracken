@@ -26,7 +26,7 @@ export const GM = {
   walk: 58, keep: 34, turn: 0.4, gap: [0.95, 0.75],
   strikeTell: 0.9, strikeReach: 30, waveV: 150, waveH: 10, waveW: 10, waveLife: 1.6, addCap: 2, adds: [1, 2],
   slamTell: 0.95, slamT: 0.2, slamReach: 46, slamH: 34,
-  cymTell: 0.7, cymV: 170, cymOut: 0.75, cymR: 6, cymHigh: 24, cymLow: 5,
+  cymTell: 0.7, cymV: 170, cymOut: 0.75, cymR: 3, cymHigh: 12, cymLow: 3,   /* (a hero's box is 14 px tall, 8 ducked: HIGH flies at 9-15 px - over a duck; LOW at 0-6 - under a jump) */
   swingTell: 1.0, swingT: 0.7, swingR: 26, swingH: 40, swingLock: 0.35,
   p2: 0.5,
   dmg: { wave: 26, slam: 62, cym: 30, swing: 54, gong: 0 },
