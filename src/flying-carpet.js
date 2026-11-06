@@ -61,6 +61,7 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   const gateWall = (x, hy) => { block(x, x + 1, 0, H - 1); air(x, x + 1, hy, hy + 1); arches.push({ x, hy }); decor.push({ kind: 'arch', x, hy }); ent('crarch', x, hy + 1); };
   const hawk = (x, y, x0, x1) => ent('hawkscout', x, y, { x0, x1, face: -1 });
   const kite = (x, top) => ent('vulture', x, top - 1);   /* THE VULTURE over a spire top: it circles there and stoops on your spot (its perch is the spire) */
+  const sling = (x, top) => ent('slinger', x, top - 1, { face: -1 });   /* THE ROOFTOP SLINGER (the desert's bandit) on a spire's top: his red arc falls on your line - the one ranged foe */
 
   /* (the painter starts all AIR: what is not built below is sky, and under the spires the abyss goes to the bottom row) */
 
@@ -83,6 +84,7 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   thermal(90, 94, 10, duneTop(92) - 1);
   tell(92, 'A ROCK ARCH: LIE FLAT (HOLD BLOCK) AND STEER THROUGH THE HOLE - OR RIDE THE THERMAL OVER IT. STONE FRAYS THE CARPET.');
   hawk(124, 12, 110, 140);
+  sling(100, 18);
   ent('silver', 101, 15);                                                    /* over the arch's crown: only a thermal climb gets there */
   block(136, 147, 36, H - 1); decor.push({ kind: 'mesa', x0: 136, x1: 147, top: 36 });   /* the dunes end at a mesa's lip */
   tell(140, 'PAST THIS CLIFF THERE IS NO SAND: ONLY THE MIST. LOW OVER THE MIST A DROP IS A FALL.');
@@ -94,7 +96,7 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   thermal(218, 222, 12, MIST - 1); spire(226, 4, 36);
   gateWall(236, 20);
   spire(244, 3, 38); thermal(248, 252, 14, MIST - 1); spire(256, 3, 40);
-  kite(167, 34); kite(227, 36); hawk(182, 12, 168, 200); hawk(226, 12, 210, 248);
+  kite(167, 34); kite(227, 36); sling(228, 36); hawk(182, 12, 168, 200); hawk(226, 12, 210, 248);
   for (const [x, y] of [[158, 30], [161, 28], [164, 28], [197, 27], [206, 26], [209, 26], [212, 26], [237, 21], [250, 24], [253, 24]]) ent('coin', x, y);
   ent('silver', 209, 29);                                                    /* in the tomb bridge's tunnel, low on the crypt roofs: dip for it */
 
@@ -104,7 +106,7 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   thermal(299, 304, 18, MIST - 1);   /* a thermal straight after the low arch: it lifts you to the tomb bridge */
   block(308, 320, 28, H - 1); block(308, 320, 0, 17); decor.push({ kind: 'tombbridge', x0: 308, x1: 320, y: 17, floor: 28 });
   thermal(324, 328, 10, MIST - 1); spire(332, 3, 34); gateWall(340, 22); spire(346, 3, 38);
-  kite(279, 28); kite(333, 34); hawk(296, 12, 282, 312); hawk(338, 12, 326, 350);
+  kite(279, 28); kite(333, 34); sling(347, 38); hawk(296, 12, 282, 312); hawk(338, 12, 326, 350);
   for (const [x, y] of [[271, 26], [274, 24], [297, 35], [310, 22], [314, 22], [318, 22], [326, 20], [341, 23]]) ent('coin', x, y);
 
   // ================= 4. THE FIRST LEDGE (352-364): CHECKPOINT ONE =================
@@ -121,12 +123,12 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   spire(o + 326, 3, 34); thermal(o + 332, o + 336, 14, MIST - 1); spire(o + 340, 3, 30); thermal(o + 343, o + 346, 16, MIST - 1, -90); spire(o + 350, 4, 38);
   gateWall(o + 362, 30);
   spire(o + 372, 3, 36); thermal(o + 378, o + 382, 12, MIST - 1); spire(o + 388, 3, 38); spire(o + 396, 3, 42);
-  kite(o + 299, 32); hawk(o + 330, 12, o + 316, o + 346); hawk(o + 384, 12, o + 370, o + 398);
+  kite(o + 299, 32); sling(o + 299, 32); hawk(o + 330, 12, o + 316, o + 346); hawk(o + 384, 12, o + 370, o + 398);
   for (const [x, y] of [[292, 22], [295, 20], [319, 25], [334, 24], [337, 22], [363, 31], [380, 22], [383, 20]]) ent('coin', o + x, y);
   // ---- the storm's second field (492-571): two arches in the sand, the thermals between ----
   spire(496, 3, 34); thermal(501, 505, 12, MIST - 1); gateWall(512, 26); spire(520, 4, 30); thermal(525, 528, 16, MIST - 1, -90);
   spire(534, 3, 38); thermal(540, 544, 12, MIST - 1); gateWall(556, 28); spire(562, 3, 36); spire(566, 3, 40);
-  kite(521, 30); hawk(540, 12, 528, 556);
+  kite(521, 30); sling(522, 30); hawk(540, 12, 528, 556);
   for (const [x, y] of [[502, 24], [505, 22], [513, 27], [541, 24], [544, 22], [557, 29]]) ent('coin', x, y);
   ent('silver', 542, 8);                                                     /* high over the storm's last thermal: ride it all the way up */
 
@@ -145,6 +147,9 @@ export function buildFlyingCarpet({ painter, T, TS }) {
   // ================= 8. THE KSAR'S CLIFF GATE (620-639) =================
   block(CR.gateX, W - 1, 0, H - 1); air(CR.gateX, W - 2, CR.apron - 5, CR.apron - 1); decor.push({ kind: 'cliffgate', x: CR.gateX, y0: CR.apron - 5, y1: CR.apron - 1 });
   ent('gate', CR.gateX + 1, CR.apron - 1);                                   /* THE LEVEL'S GATE: it opens once she is down (gateAfterBoss) */
+
+  /* THE ENCOUNTERS: what flies or throws within forty columns of each other is one squad (they come at the carpet together) */
+  for (const e of L.ents) if (e.t === 'hawkscout' || e.t === 'vulture' || e.t === 'slinger') e.squad = 'cr' + Math.floor(e.x / 40);
 
   const START = { x: 4, y: CR.launchF - 1 };
   const px = c => c * TS;

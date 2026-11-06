@@ -49,7 +49,7 @@ function level() {
   ok(L.ents.filter(e => e.t === 'sphinx').length === 1 && L.arena.boss === 'sphinx' && L.arena.y0 !== undefined, 'one Sphinx, in a sky arena (y0 set: a flying hero wakes her)');
   ok(L.ents.some(e => e.t === 'gate') && L.gateAfterBoss, 'the level gate (the Ksar\'s cliff gate) opens on her death');
   const foes = L.ents.filter(e => ['hawkscout', 'vulture', 'kiterider', 'harpy', 'kite', 'slinger', 'cutthroat', 'shield', 'archer'].includes(e.t));
-  ok(foes.length >= 8 && foes.every(e => e.t === 'hawkscout' || e.t === 'vulture'), '0 new foes (plan s1.6): the cast is the hawk scout + the vulture (' + foes.length + ')');
+  ok(foes.length >= 8 && foes.every(e => e.t === 'hawkscout' || e.t === 'vulture' || e.t === 'slinger'), '0 new foes (plan s1.6): the cast is the hawk scout, the vulture and the rooftop slinger (' + foes.length + ')');
   ok(!L.ents.some(e => /gob/i.test(e.t + (e.cnSkin || ''))), 'no goblins (theme fit)');
   ok(!L.grid.some(t => t === T.PLANK || t === T.CRATE || t === T.PALISADE), 'no wood: no planks, crates or palisade tiles (stone only)');
   for (const a of L.cr.arches) { const top = at(a.x, a.hy - 1), bot = at(a.x, a.hy + 2), hole = at(a.x, a.hy) === T.AIR && at(a.x, a.hy + 1) === T.AIR;
