@@ -15,7 +15,9 @@
 // file); guests, online guests and bots are not ranked. Online leaderboard: LATER (needs a backend).
 // BOTS: botThink (pure) drives a 'duelbot' seat - the opponent when one person duels alone, and the hands of tools/pvp-duel.mjs's AI-vs-AI runs.
 
-export const PVP_SHIPS = false;   /* (proof146b 11-05) OFF until the warden bot-duel edge (16/16, 24/24) is settled; one line to flip, everything else proven */   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
+const PVP_SHIP_FLAG = false;   /* THE SHIP SWITCH (one line): true = every player sees DUEL (BETA) */
+export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && (!!globalThis.__DUELBETA || (!!globalThis.location && /[?&]duelbeta(=|&|$)/.test(String(globalThis.location.search)))));   /* (pvpduel2) DEV/URL SWITCH: open the game with ?duelbeta (or a tool sets window.__DUELBETA) to see the mode while the ship flag is off */
+void 0;   /* (proof146b 11-05) OFF until the warden bot-duel edge (16/16, 24/24) is settled; one line to flip, everything else proven */   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
 export const DUEL = {
   hp: 100, scale: 0.8, probe: 40, iframe: 0.4,
   heroMul: {},   /* (proof146b) per-hero PvP trim hook (empty): a warden trim of x0.8 and x0.5 did NOT move the bot-duel warden win rate (24/24, 7/8): the edge is not blow weight */
