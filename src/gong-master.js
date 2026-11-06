@@ -53,6 +53,7 @@ export function stageGongMaster(W, T, TS, sx, R) {
   air(sx, ex - 1, R - 14, R - 1);
   block(sx - 1, sx - 1, R - 16, R - GM_STAGE.door - 1);   /* the west wall over the door you came in by */
   block(ex, ex, R - 16, R - 1);                            /* the east wall: its gate is the mini's (main.js opens it when he falls) */
+  for (let y = R - GM_STAGE.door; y <= R - 1; y++) set(ex, y, T.PORT);   /* THE GATE: a portcullis in the east wall (main.js lifts L.mini.gate's PORT cells when he falls) */
   block(sx, ex - 1, R - 16, R - 15);                        /* the yard's high wall walk (roofed: shade) */
   for (let x = sx + 2; x <= ex - 3; x++) set(x, R - GM_STAGE.archH, T.ONEWAY);   /* THE ARCH: a mud-brick lintel the gongs hang from (one-way: the angle from above) */
   for (const l of GM_STAGE.ledges) for (let x = sx + l.x0; x <= sx + l.x1; x++) set(x, R - l.dy, T.ONEWAY);

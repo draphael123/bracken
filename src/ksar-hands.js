@@ -121,8 +121,10 @@ export function makeKsarHands(ctx) {
     if (g.great) { if (K.clock - (g.chainSaid || -9) > 3) { g.chainSaid = K.clock; number(gx(g), gy(g) - 56, 'THE GREAT GONG HANGS ON A CHAIN', '#9aa39a'); ctx.sfx.clank && ctx.sfx.clank(); } return; }   /* (no soft lock: its call is the only way the gatehouse empties) */
     g.cut = true; K.n.cuts++; if (g.bridge) lowerBridge(g); ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(gx(g), gy(g) - 30, 10, ['#d9b36a', '#8a6a3a', '#ffd36b'], 60, 0.6);
     number(gx(g), gy(g) - 56, 'THE ROPE IS CUT: THE GONG IS SILENT', '#8fd160');
-    for (const e of foes()) if (e.ks.gong === g.id && (e.ks.st === 'run' || e.ks.st === 'strike')) { e.ks.st = 'fight'; number(e.x, e.y - 30, 'THE ROPE IS CUT!', '#ff9a5c'); } }
+    for (const e of foes()) if (e.ks.gong === g.id && (e.ks.st === 'run' || e.ks.st === 'strike')) { e.ks.st = 'fight'; number(e.x, e.y - 30, 'THE ROPE IS CUT!', '#ff9a5c'); }
+    if (g.gm && ctx.bossCut) ctx.bossCut(g); }   /* (claude/ksar3) THE GONG-MASTER's yard: a cut rope SILENCES him (src/ksar3-hands.js) */
   H.cutGong = id => cut(gongOf(id));
+  H.rehangGong = id => { const g = gongOf(id); if (g && g.cut && g.gm) { g.cut = false; g.hum = 0; ctx.burst(gx(g), gy(g) - 40, 6, ['#d9b36a', '#8a6a3a'], 40, 0.5); } };   /* (claude/ksar3) the Gong-Master hauls a new rope (only his yard's gongs) */
   /* THE ROOF BRIDGE (fix pass, review MUST 3: CUT REQUIRED): the bridge gong's rope holds the bridge up on the far side of the widest drop; cut, the bridge comes down for good */
   function lowerBridge(g) { const [x0, x1, row] = g.bridge, ts = TS(); for (let x = x0; x <= x1; x++) { ctx.cellSet(x, row, T().ONEWAY); ctx.burst(x * ts + 8, row * ts, 3, ['#8a6a3a', '#c9a060'], 50, 0.5); } ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(3); K.n.bridges = (K.n.bridges || 0) + 1;
     number((x0 + x1) / 2 * ts, row * ts - 30, 'THE ROPE IS CUT: THE BRIDGE COMES DOWN', '#8fd160'); }
@@ -333,7 +335,8 @@ export function makeKsarHands(ctx) {
     for (const q of K.reeds) if (q.st === 'whole' && nearCells(q, x, y, r)) burnReed(q);
     for (const q of K.ropes) if (q.st === 'raised' && nearCells({ x0: q.x, x1: q.x, y0: q.y0, y1: q.y1 }, x, y, r + 4)) { q.st = 'burning'; q.t = KS.ropeBurn; ctx.sfx.puff && ctx.sfx.puff(); if (once('rope')) number(q.x * ts, q.y0 * ts - 20, 'THE ROPE BURNS', '#ff9a5c'); }
     for (const t of K.trails) if (t.st === 'dry' && Math.abs(y - ((t.y + 1) * ts - 4)) < Math.max(14, r * 0.6) && x > t.x0 * ts - 6 && x < (t.x1 + 1) * ts + 6) lightTrail(t, x);
-    if (by === 'torch') for (const k of K.setKegs) if (k.st === 'set' && !k.caged && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 8 - y) < r) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss(); } }
+    if (by === 'torch') for (const k of K.setKegs) if (k.st === 'set' && !k.caged && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 8 - y) < r) { k.st = 'lit'; k.t = KS.kickFuse; k.by = 'kick'; K.n.kicks++; ctx.sfx.hiss && ctx.sfx.hiss(); }
+    if (ctx.bossIgnite) ctx.bossIgnite(x, y, r); }   /* (claude/ksar3) HAWK-MISTRESS 2's oil channels (src/hawk-mistress.js oilIgnite; nothing without HM2's roof) */
   function stepFire(dt) { const ts = TS();
     for (const r of K.reeds) if (r.st === 'burning') { r.t -= dt; if (Math.random() < dt * 30) ctx.burst((r.x0 + Math.random() * (r.x1 - r.x0 + 1)) * ts, (r.y0 + Math.random() * (r.y1 - r.y0 + 1)) * ts, 1, ['#ff9a3c', '#ffd36b', '#3a2a12'], 50, 0.5);
       if (r.t <= 0) { r.st = 'burnt'; for (let y = r.y0; y <= r.y1; y++) for (let x = r.x0; x <= r.x1; x++) { ctx.cellOpen(x, y); ctx.burst(x * ts + 8, y * ts + 8, 3, ['#3a2a12', '#8a6a3a'], 40, 0.6); } number((r.x0 + 0.5) * ts, r.y0 * ts - 20, 'THE REED BURNS AWAY', '#8fd160'); } }

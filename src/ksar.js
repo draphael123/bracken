@@ -37,13 +37,14 @@ export const ARCS = {
   throw: { teach: [56, 80], test: [300, 330], remix: [392, 446], exam: [540, 576], boss: [584, 623] }, /* the bricked arch; a keg on the squad; THE POWDER STORE (required); the roof squad; the flasks */
 };
 
-export function buildKsar({ painter, T, TS }) {
-  const { W, H, base: B, wall: WW } = KSAR;
+export function buildKsar({ painter, T, TS, k3 }) {   /* (claude/ksar3) k3: KSAR 3's hook (src/ksar3.js: its width, the checkpoints it keeps, its tail) - absent, this is master's Ksar exactly */
+  const { H, base: B, wall: WW } = KSAR, W = k3 ? k3.W : KSAR.W;
   const L = painter(W, H), { set, block, ent } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const boards = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const ground = (x0, x1, top) => block(x0, x1, top, H - 1);
   const sign = (x, y, text) => ent('sign', x, y, { text });
+  const check = (x, y) => { if (!k3 || k3.keep.includes(x)) ent('check', x, y); };   /* (claude/ksar3, Daniel 11-06: fewer checkpoints) KSAR 3 keeps three of these seven (+ two of its own) */
   const foe = (t, x, y, squad, o) => ent(t, x, y, Object.assign({ face: -1, squad }, o || {}));
   /* THE CAST (every one a proven machine under a skin but the hawk scout; src/ksar-hands.js gives each its twist - and EVERY fort bandit answers the gongs):
      ks: the role in the gong rule - post (stands, answers calls), lookout (runs for his gong when he sees you), planted (holds his gong, rings it on the
@@ -127,7 +128,7 @@ export function buildKsar({ painter, T, TS }) {
   stack('wallFlasks', 143, WW - 1, 'flask', 2);
   /* TOWER THREE: a wall slinger on its top (THE RANGED ONE); its top drops onto the sentry's ledge */
   block(158, 164, 21, WW - 1); slinger(161, 20, 'towerSling', { face: -1 }); boards(152, 154, 26); boards(155, 157, 24);   /* (over it, as tower two) */
-  ent('check', 168, WW - 1);                                                     /* CHECKPOINT ONE, at tower three's foot */
+  check(168, WW - 1);                                                     /* CHECKPOINT ONE, at tower three's foot */
   boards(165, 186, 24);                                                          /* the ledge over the sentry: drop in behind him */
   /* THE SHIELD SENTRY, PLANTED before gong three (he rings it himself on the alarm): go round him - over the ledge, or a jump - to its rope */
   sentry(180, WW - 1, 'g3Sentry', 'g3', { face: -1 }); gong('g3', 183, WW - 1, { ear: 20 });
@@ -165,7 +166,7 @@ export function buildKsar({ painter, T, TS }) {
 
   // ================= 4. THE SOUQ YARD (273-357): REMIX - RING A GONG TO DRAW A SQUAD ONTO A KEG =================
   ground(273, 357, B);
-  ent('check', 276, B - 1);                                                      /* CHECKPOINT TWO, past the gate */
+  check(276, B - 1);                                                      /* CHECKPOINT TWO, past the gate */
   boards(282, 300, 27); boards(330, 346, 27); slinger(332, 26, 'souqSling', { face: -1 });   /* (claude/ksarfoes) the souq's slinger on the far roof walk (was 296, over the falconer's teach) */ ent('silver', 284, 26);   /* the souq's roof walks (a second height): a slinger on one, a silver on the other end */
   for (const [x0, x1] of [[281, 284], [290, 293], [334, 337]]) { boards(x0, x1, 30); decor.push({ kind: 'stall', x0, x1, y: 30 }); }   /* the souq's stalls: their awnings are ledges */
   /* THE SOUQ GONG under its roof; the roof (a two-row hop off the ledge) carries a keg stack over it */
@@ -191,7 +192,7 @@ export function buildKsar({ painter, T, TS }) {
   boards(358, 363, 16); slinger(360, 15, 'minaretSling', { face: -1 });          /* the minaret's balcony and its slinger */
   hut(382, 388, 19, 25); blade(384, 24, 'terraceHut', { ks: 'reserve', face: -1 }); blade(386, 24, 'terraceHut', { ks: 'reserve', face: 1 });   /* the terrace's guard hut: its sleepers answer the terrace gong */
   gong('terrace', 380, 24, { ear: 24, earY: 9 });
-  ent('check', 392, 24);                                                         /* CHECKPOINT THREE, at the store's door */
+  check(392, 24);                                                         /* CHECKPOINT THREE, at the store's door */
   stack('storeKegs', 389, 24, 'keg', 2);
   sign(394, 24, 'THE POWDER STORE. A BLOW LIGHTS A KEG; ONE BLAST SETS OFF THE NEXT.');
   /* THE CHAIN: six kegs set along the roof; kicked (or blasted) the first lights the next in reach, keg by keg, and the last blows THE BRICKED ARCH
@@ -222,7 +223,7 @@ export function buildKsar({ painter, T, TS }) {
   block(482, 490, 19, H - 1);                                                    /* THE NARROW ROOF: a planted shield on its lip, a slinger on the parapet over it */
   sentry(483, 18, 'roofSentry', 'roofA', { face: -1 });
   boards(485, 489, 15); slinger(488, 14, 'parapetSling', { face: -1 });
-  ent('check', 489, 18);                                                         /* CHECKPOINT FOUR, past the gauntlet */
+  check(489, 18);                                                         /* CHECKPOINT FOUR, past the gauntlet */
   drop(491, 493);                                                                /* THE THIRD GAP, down to roof two */
   /* THE CLIMAX: ROOF TWO and THE ROOF BRIDGE */
   block(494, 523, 21, H - 1);
@@ -249,7 +250,7 @@ export function buildKsar({ painter, T, TS }) {
   air(569, 574, 30, B - 1); interiors.push([569, 574, 30, B - 1, 'ksStrongroom']); block(575, 575, 30, B - 1); vaultDoors.push({ id: 'strongroom', x: 575, y0: 30, y1: B - 1, seals: 5 });
   ent('silver', 571, B - 1); ent('ksvault', 575, B - 1, { id: 'strongroom' });
   sign(578, B - 1, 'THE STRONGROOM. FIVE CARAVAN SEALS OPEN ITS DOOR.');
-  ent('check', 581, B - 1);                                                      /* CHECKPOINT FIVE, at the courtyard door: after the climax */
+  check(581, B - 1);                                                      /* CHECKPOINT FIVE, at the courtyard door: after the climax */
 
   // ================= THE FORT'S POWDER (single kegs set by its posts: a blow lights one - a squad's ruin, or a careless swing's) =================
   /* (fix pass: 21 post kegs cut to 6, each by a squad you can read - kick it into them and step back; a careless swing beside it blasts you. The store's chain stays the set piece) */
@@ -311,7 +312,7 @@ export function buildKsar({ painter, T, TS }) {
   sign(686, B - 1, 'A POWDER TRAIL: A TORCH LIGHTS IT, AND THE FIRE RUNS TO THE KEG.');
   block(694, 701, 22, 26); barricade('trailBars', 695, 695, 27, B - 1); kegAt('trailKeg', 696, B - 1, { caged: true }); barricade('trailWall', 697, 698, 27, B - 1);
   trails.push({ id: 'trail', x0: 687, x1: 696, y: B - 1, keg: 'trailKeg' });
-  ent('check', 702, B - 1);                                                      /* CHECKPOINT SIX, past the quarter */
+  check(702, B - 1);                                                      /* CHECKPOINT SIX, past the quarter */
   // ---- 9. THE KEG ALLEY (705-789): THE EXAM - a CHAIN of kegs down an alley full of the fort's men, raiders on a line off the tower, a broken floor ----
   sign(706, B - 1, 'THE KEG ALLEY: THE FLOOR IS BROKEN - A FALL IS THE END.');
   torches('alleyTorches', 708, B - 1);
@@ -332,11 +333,12 @@ export function buildKsar({ painter, T, TS }) {
   for (let i = 0; i < 8; i++) boards(i % 2 ? 786 : 783, i % 2 ? 789 : 786, 31 - i * 2);   /* the stair up the tower's west face: two-row steps, side to side */
   raid('alleyRaid', 790, 15, 759, B - 1, 'alley', 2);
   sign(757, B - 1, 'A RAIDER LINE: A BLADE ON ITS POST CUTS IT.');
+  if (!k3) {   /* (claude/ksar3) KSAR 3's tail (src/ksar3.js) lays its own lines from the alley's tower */
   // ---- 10. THE LINE TO THE ROOFS (796-811): the rope from the tower top over the last chasm to the rooftops' door ----
   drop(796, 803);
   sign(794, 15, 'THE LINE TO HER ROOFS: UP TAKES IT.');
   lineRope(795.5, 15, 807, B - 1, { speed: 200 });   /* (from the tower lip: the first column past it is the chasm) */
-  ent('check', 808, B - 1);                                                      /* CHECKPOINT SEVEN, at the rooftops' door (after the exam and the line) */
+  check(808, B - 1); }                                                      /* CHECKPOINT SEVEN, at the rooftops' door (after the exam and the line) */
   shadeBox(584, 589, 30, B - 1);
   /* THE SHADE (THE SUN v2: no walk on the route over SUN.maxWalk): (resume) an awning over the fourth breach's far lip - the shield's shove into the spikes was fought in full sun, the warden walker died there twice; awnings over the alley's squads and gong, the stair's lee, the tower top's parapet awning, the landing's */
   awning(700, 704, 28, B); awning(710, 714, 28, B); awning(727, 731, 28, B); awning(745, 749, 28, B); shadeBox(754, 758, 30, B - 1); awning(768, 772, 28, B); shadeBox(781, 789, 27, B - 1);
@@ -345,16 +347,18 @@ export function buildKsar({ painter, T, TS }) {
   awning(399, 402, 19, 25); awning(352, 355, 20, 26); awning(616, 619, 21, 27); awning(371, 374, 19, 25); awning(30, 33, 28, 34); awning(87, 90, 22, 28); awning(130, 133, 22, 28); awning(148, 151, 22, 28); awning(244, 247, 20, 26); awning(568, 571, 15, 21); awning(602, 605, 28, 34);
   awning(646, 649, 28, 34); awning(170, 173, 18, 24); awning(302, 305, 28, 34); awning(339, 342, 28, 34); awning(657, 660, 28, 34); awning(737, 740, 28, 34); awning(452, 455, 19, 25); awning(525, 528, 15, 21); awning(719, 722, 28, 34); awning(66, 69, 24, 30); awning(421, 424, 19, 25);
   // ================= THE HAWK-MISTRESS's COURTYARD (src/hawk-mistress.js) =================
-  const AX = 812;
-  const stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);
+  const AX = 812; let stage, shafts, K3T = null;
+  if (k3) { K3T = k3.tail({ set, block, ent, air, boards, ground, sign, blade, lookout, slinger, smoke, plated, gong, stack, torches, lineRope, raid, shadeBox, awning, drop, gongs, stacks, decor, shade, zipLines, T, TS, W, H, B, WW }); stage = K3T.stage; shafts = K3T.shafts; }   /* (claude/ksar3) the new tail + HAWK-MISTRESS 2 on the tallest tower */
+  else {
+  stage = stageHawkMistress({ set, block, ent, air }, T, TS, AX, B);
   ground(AX, AX + HM_STAGE.W - 1, B);
   block(AX + HM_STAGE.W, W - 1, 0, H - 1);
-  stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks); const shafts = stage.shafts;   /* (claude/ksar2) THE ROOFTOP SHAFTS (src/ksar-hands.js: the spikes bite, the updraft throws you up) */   /* the courtyard's gongs and flask racks are the level's (src/ksar-hands.js rings, cuts and hands them out) */
-  ent('gate', stage.exit.gate, B - 1);   /* (claude/ksarhawk) in the exit alcove behind her east wall (it stood on her roof over the guard door and the gong: the back-of-room clutter) */
+  stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks); shafts = stage.shafts;   /* (claude/ksar2) THE ROOFTOP SHAFTS (src/ksar-hands.js: the spikes bite, the updraft throws you up) */   /* the courtyard's gongs and flask racks are the level's (src/ksar-hands.js rings, cuts and hands them out) */
+  ent('gate', stage.exit.gate, B - 1); }   /* (claude/ksarhawk) in the exit alcove behind her east wall (it stood on her roof over the guard door and the gong: the back-of-room clutter) */
 
   /* the rule's gadgets the level tools read as ents are placed above (ksgong, kskegs, ksflasks, kskeg, ksbarricade, kswinch, ksvault) */
   const START = { x: 3, y: 37 };
-  return {
+  const OUT = {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
     ksar: true, caravan: true,   /* caravan: the desert's hands in main.js (the bandits' machines, the sand and stone skins, THE SUN: the act's backdrop - the courtyard is shade, src/ksar-hands.js noSun) */
@@ -382,4 +386,6 @@ export function buildKsar({ painter, T, TS }) {
     palette: { set: 'desert', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(220,170,110,0.10)' },
     duskStart: -1, duskLen: 1,
   };
+  if (K3T) K3T.fix(OUT);   /* (claude/ksar3) */
+  return OUT;
 }
