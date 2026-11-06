@@ -13,7 +13,7 @@ import { canvas, rect, mulberry } from '../px.js';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), lerp = (a, b, k) => a + (b - a) * k, ease = k => k * k * (3 - 2 * k);
-const MT = ['#0a0e16', '#141c2a', '#202c40', '#324258', '#4a6078', '#6c8498', '#a8bccc', '#e8f0f8'];       /* the mountain, shadow to snow */
+const MT = ['#080b12', '#101722', '#1a2433', '#2a384c', '#3e5068', '#5a7088', '#9ab0c4', '#e8f0f8'];       /* the mountain, shadow to snow */
 const FARC = ['#7a8eac', '#92a4c0', '#aab8d0'];                                                              /* the far range: hazed */
 const STONE = ['#10141c', '#1e2530', '#313c4a', '#4a586a', '#6a7a8c', '#90a0b2', '#bccad8'];                 /* the portal's cut stone */
 const IRON = ['#0c0e12', '#1a1e24', '#2a3038', '#424a56', '#646e7c', '#8e98a6'];
@@ -23,31 +23,31 @@ const ROPE = ['#1a140c', '#3a2e1c', '#6c5c38', '#a89460'];
 const MISTC = '#c8d4e4';
 
 /* ---------- the mountain with its cave mouth ---------- */
-export const MW = 320, MH = 300, MOUTH = { cx: 160, base: 262, hw: 52, top: 168 };   /* the portal: centre x, floor row, half-width, the arch's crown row */
-const ridge = (y, k) => 160 + (k - 2) * (y - 10) * 0.34 + Math.sin(y * 0.09 + k * 2.1) * 9;
+export const MW = 480, MH = 300, MOUTH = { cx: 240, base: 262, hw: 52, top: 168 };   /* the portal: centre x, floor row, half-width, the arch's crown row */
+const ridge = (y, k) => 240 + (k - 2) * (y - 10) * 0.34 + Math.sin(y * 0.09 + k * 2.1) * 9;
 export function bakeMountain() {
   return once('mountain', () => {
     const [c, g] = canvas(MW, MH), r = mulberry(1101);
     const edge = y => 0.92 * (y - 14) + Math.sin(y * 0.11) * 6 + Math.sin(y * 0.31) * 2;                       /* half-width of the massif at row y */
-    for (let y = 8; y < MH; y++) { const hw = Math.max(0, edge(y)); const x0 = Math.floor(160 - hw), x1 = Math.ceil(160 + hw);
+    for (let y = 8; y < MH; y++) { const hw = Math.max(0, edge(y)); const x0 = Math.floor(240 - hw), x1 = Math.ceil(240 + hw);
       for (let x = Math.max(0, x0); x < Math.min(MW, x1 + 1); x++) {
         let f = 0; for (let k = 0; k < 5; k++) if (x > ridge(y, k)) f++;                                      /* which facet: left of every ridge is lit */
         const lit = f < 3 ? 1 : 0, strata = Math.floor(y / 6), bt = (hash(strata, 5) % 3) - 1, gr = (hash(x, y) >> 7) % 13 === 0 ? 1 : (hash(x, y * 3) >> 8) % 19 === 0 ? -1 : 0;
-        const fx = Math.abs(x - 160) / Math.max(1, hw), shade = fx > 0.82 ? -1 : 0;
+        const fx = Math.abs(x - 240) / Math.max(1, hw), shade = fx > 0.82 ? -1 : 0;
         let idx = clamp(3 + (lit ? 1 : -1) * (f === 2 || f === 3 ? 0 : 0) + (lit ? 0 : -1) + bt + gr + shade - (y > 200 ? ((y - 200) >> 5) : 0), 0, 6);
         const snowline = 78 + Math.sin(x * 0.17) * 9 + ((hash(x >> 2, 9) % 5) * 3), gully = (hash(x >> 1, 4) % 6) === 0 && y < snowline + 38 + (hash(x >> 1, 3) % 30);
         if (y < snowline || gully) idx = clamp(lit ? 7 : 6, 0, 7) - (gully && y >= snowline ? 1 : 0);
         if (x === x0 || x === x1) idx = Math.min(idx, 2);
         rect(g, x, y, 1, 1, MT[idx]); } }
-    for (let k = 0; k < 40; k++) { const x = (r() * MW) | 0, y = 60 + ((r() * 220) | 0), hw = edge(y); if (Math.abs(x - 160) < hw - 4) { rect(g, x, y, 2 + ((r() * 4) | 0), 1, MT[Math.min(6, 2 + ((r() * 3) | 0))]); } }   /* ledges and crags */
+    for (let k = 0; k < 40; k++) { const x = (r() * MW) | 0, y = 60 + ((r() * 220) | 0), hw = edge(y); if (Math.abs(x - 240) < hw - 4) { rect(g, x, y, 2 + ((r() * 4) | 0), 1, MT[Math.min(6, 2 + ((r() * 3) | 0))]); } }   /* ledges and crags */
     /* THE PORTAL */
     const { cx, base, hw, top } = MOUTH, rad = hw, cy = top + rad;
     for (let y = top - 10; y <= base + 2; y++) for (let x = cx - hw - 12; x <= cx + hw + 12; x++) {                                    /* the stone frame, then the throat */
       const dx = x - cx, inFrame = y < cy ? Math.hypot(dx, y - cy) <= rad + 11 : Math.abs(dx) <= rad + 11, inThroat = y < cy ? Math.hypot(dx, y - cy) <= rad : Math.abs(dx) <= rad;
       if (!inFrame) continue;
       if (inThroat) { const d = y < cy ? Math.hypot(dx, y - cy) / rad : Math.abs(dx) / rad, far = 1 - Math.abs(dx) / rad;
-        const lit = y > base - 52 && y < base - 8 && Math.abs(dx) < 22 ? 4 : y > base - 62 && Math.abs(dx) < 12 ? 3 : d > 0.85 ? 2 : 1;                   /* a faint warm far end */
-        rect(g, x, y, 1, 1, CAVE[Math.min(5, Math.round(lit + (hash(x, y) % 9 === 0 && lit > 2 ? 1 : 0) - (d > 0.92 ? 0 : 0) + (far > 0.9 ? 1 : 0)))]); continue; }
+        const eg = Math.hypot(dx / 34, (y - (base - 34)) / 44), lit = eg < 0.32 ? 5 : eg < 0.55 ? 4 : eg < 0.85 ? 3 : d > 0.85 ? 2 : 1;                    /* a faint warm far end: a soft glow round the far lamps */
+        rect(g, x, y, 1, 1, CAVE[Math.min(5, lit + ((hash(x, y) % 9 === 0 && lit > 2 && lit < 5) ? 1 : 0) - ((hash(x, y) % 7 === 0 && lit > 3) ? 1 : 0))]); void far; continue; }
       const ring = y < cy ? Math.floor(Math.atan2(y - cy, dx) * 9) : Math.floor(y / 11), blk = hash(ring, Math.floor((y < cy ? Math.hypot(dx, y - cy) : Math.abs(dx)) / 6)),   /* voussoir joints */
         e = (y < cy ? Math.hypot(dx, y - cy) - rad : Math.abs(dx) - rad);
       const joint = (y < cy ? (Math.floor(Math.atan2(y - cy, dx) * 24) % 3 === 0 && false) : false);
@@ -65,7 +65,7 @@ export function bakeMountain() {
     wheel(g, cx, gy - 12, 9, 0);                                                                                         /* the sheave wheel (a still frame; the live one turns) */
     for (const lx of [cx - 46, cx + 46]) { rect(g, lx - 1, gy + 4, 2, 10, IRON[2]); rect(g, lx - 3, gy + 14, 6, 6, IRON[1]); rect(g, lx - 2, gy + 15, 4, 4, LAMP[1]); rect(g, lx - 1, gy + 16, 2, 2, LAMP[3]); }   /* lamps on the portal's shoulders */
     /* the ore road's rails running in under the arch, and the sleepers */
-    for (let y = base - 52; y <= base; y++) { const t = (y - (base - 52)) / 52, wd = lerp(2, 36, t * t); rect(g, Math.round(cx - wd), y, 1, 1, IRON[4]); rect(g, Math.round(cx + wd), y, 1, 1, IRON[3]); if (y % 4 === 0) rect(g, Math.round(cx - wd - 2), y, Math.round(wd * 2 + 5), 1, '#2a2218'); }
+    for (let y = base - 52; y <= base; y++) { const t = (y - (base - 52)) / 52, wd = lerp(1, 40, t); rect(g, Math.round(cx - wd), y, 1, 1, IRON[4]); rect(g, Math.round(cx + wd), y, 1, 1, IRON[3]); if (y % 4 === 0) rect(g, Math.round(cx - wd - 2), y, Math.round(wd * 2 + 5), 1, '#2a2218'); }
     for (const dx of [-30, -14, 14, 30]) { rect(g, cx + dx, base - 38 + Math.abs(dx) / 3, 1, 3, IRON[3]); rect(g, cx + dx - 1, base - 41 + Math.abs(dx) / 3, 3, 3, LAMP[1]); }   /* the far lamps */
     rect(g, cx - rad - 12, base + 1, rad * 2 + 24, 3, STONE[2]); rect(g, cx - rad - 12, base + 1, rad * 2 + 24, 1, STONE[5]);   /* the sill / landing stones */
     return c; });
@@ -116,8 +116,9 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full = true) {
     const M = bakeMountain(), G = mouthGeom(p, VW, VH, cx), top = Math.round(G.y - (MOUTH.base - 30) * G.s + 0), left = Math.round(G.x - MW * G.s / 2);
     g.imageSmoothingEnabled = false; g.globalAlpha = 1 - sa;
     g.drawImage(M, 0, 0, MW, MH, left, top, G.w, G.h);
-    if (top + G.h < VH) { g.fillStyle = MT[2]; g.fillRect(Math.max(0, left), top + G.h - 1, Math.min(VW, G.w), VH - (top + G.h) + 1); }                       /* the mountain's foot runs on below the sprite */
-    if (left > 0) { g.fillStyle = MT[2]; }
+    if (top + G.h < VH) { const y0 = top + G.h, ex = VH - y0;   /* the foot: strata run on down, the slopes flare to the screen edge */
+      for (let yy = 0; yy < ex; yy += 2) { const fl = Math.round(yy * 0.92), st = Math.floor((y0 + yy) / 6), tone = (hash(st, 7) % 3 === 0) ? MT[2] : MT[1]; g.fillStyle = yy > ex * 0.5 && tone === MT[2] ? MT[1] : tone; g.fillRect(left - fl, y0 + yy, G.w + fl * 2, 2); } }
+    /* the slopes' flare beside the sprite at its own foot: the massif's base is wider than the sprite */
     /* the lintel's anchor, on screen */
     const ax = Math.round(left + MOUTH.cx * G.s), ay = Math.round(top + (MOUTH.top - 8) * G.s), mouthX = ax, mouthY = Math.round(top + (MOUTH.base - 20) * G.s);
     /* the live sheave wheel */
@@ -128,9 +129,9 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full = true) {
       cable(g, sx, sy, tx, ty, 5 + 12 * G.s, k === 1 ? ROPE[3] : ROPE[2], 1);
       for (let b = 0; b < 3; b++) { const t = ((time * (0.035 + k * 0.006) + b / 3 + k * 0.21) % 1); const bx = lerp(sx, tx, t), by = lerp(sy, ty, t) + Math.sin(t * Math.PI) * (5 + 12 * G.s); if (t > 0.04 && t < 0.97) bucket(g, Math.round(bx), Math.round(by) + 1, 0.5 + G.s * 0.6); } }
     /* the lamps at the mouth flicker */
-    g.globalAlpha = (1 - sa) * (0.18 + 0.05 * Math.sin(time * 9)); g.fillStyle = '#ffb23c'; const lw = Math.round(40 * G.s); g.fillRect(mouthX - lw, mouthY - Math.round(30 * G.s), lw * 2, Math.round(26 * G.s));
+    g.globalAlpha = (1 - sa) * (0.07 + 0.02 * Math.sin(time * 9)); g.fillStyle = '#ffb23c'; for (let k = 0; k < 3; k++) { const lw = Math.round((30 - k * 9) * G.s), lh = Math.round((22 - k * 6) * G.s); g.fillRect(mouthX - lw, mouthY - Math.round(26 * G.s) - lh / 2, lw * 2, lh); }
     /* spindrift off the peak */
-    g.globalAlpha = (1 - sa) * 0.55; g.fillStyle = '#ffffff'; const px0 = Math.round(left + 160 * G.s), py0 = Math.round(top + 14 * G.s);
+    g.globalAlpha = (1 - sa) * 0.55; g.fillStyle = '#ffffff'; const px0 = Math.round(left + 240 * G.s), py0 = Math.round(top + 14 * G.s);
     for (let k = 0; k < 14; k++) { const t = (time * 0.4 + k * 0.071) % 1; g.fillRect(px0 + Math.round(t * 60 * G.s) + k, py0 + Math.round(Math.sin(t * 6 + k) * 3) + k % 4, Math.max(1, Math.round(4 * G.s * (1 - t))), 1); }
     g.globalAlpha = 1;
     /* the distance blues everything: a haze that thins as you come up to it */

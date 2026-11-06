@@ -138,7 +138,7 @@ function weightPair(g, W, kit, cx, cy, time) {
   rc(g, R(16 - cx), sy - 6, R(Math.max(ax1, bx1) - 16 + 10), 4, HP.iron[2]); rc(g, R(16 - cx), sy - 6, R(Math.max(ax1, bx1) - 16 + 10), 1, HP.iron[5]);                                  /* the head beam, out from the cliff */
   for (let k = 0; k < Math.max(ax1, bx1) - 16; k += 12) { ln(g, R(16 - cx) + k, sy - 2, R(16 - cx) + k + 6, sy - 6, HP.iron[3]); }
   rc(g, R(16 - cx), sy - 12, 6, 24, HP.iron[3]); rc(g, R(16 - cx), sy - 12, 6, 1, HP.iron[5]); dot(g, R(16 - cx) + 2, sy - 8, HP.iron[6]); dot(g, R(16 - cx) + 2, sy + 4, HP.iron[6]);        /* the wall plate */
-  const ph = W.k * 5; rc(g, sx - 14, sy - 14, 28, 28, HP.iron[1]);
+  const ph = W.k * 5; for (let yy = -13; yy <= 13; yy++) { const hw2 = Math.round(Math.sqrt(169 - yy * yy)); rc(g, sx - hw2, sy + yy, hw2 * 2 + 1, 1, HP.iron[1]); }   /* the sheave disc */
   for (let a = 0; a < 6.3; a += 0.1) rc(g, sx + Math.cos(a) * 13, sy + Math.sin(a) * 13, 1, 1, HP.iron[4]);
   for (let k = 0; k < 6; k++) { const a = ph + k * Math.PI / 3; ln(g, sx, sy, sx + Math.cos(a) * 12, sy + Math.sin(a) * 12, k % 2 ? HP.iron[3] : HP.iron[5]); }
   rc(g, sx - 2, sy - 2, 4, 4, HP.iron[6]); rc(g, sx - 1, sy - 1, 2, 2, HP.iron[0]);

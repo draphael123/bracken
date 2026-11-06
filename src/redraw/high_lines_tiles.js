@@ -35,8 +35,8 @@ const isSolid = (t, T) => t === T.SOLID;
 function depth(at, T, x, y) { let d = 9; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { let k = 1; while (k < 5 && isSolid(at(x + dx * k, y + dy * k), T)) k++; d = Math.min(d, k - 1); } return d; }
 /* one granite pixel: world-row beds, wind flutes, grit; base = ramp step; lit pushes the left edge up a step */
 function granite(zone, ax, ay, base, litL) {
-  const Z = ZONE[zone], bed = Math.floor(ay / 5), bt = (hash(bed, zone + 11) % 3) - 1, flute = (hash(ax >> 1, 5) % 7) === 0 ? -1 : 0, grit = (hash(ax * 3 + 1, ay) >> 7) % 17 === 0 ? 1 : (hash(ax, ay * 3) >> 8) % 23 === 0 ? -1 : 0;
-  if (ay % 5 === 4 && (hash(bed, 3) & 1)) return Z.s[Math.max(0, base - 1)];                           /* a bed line */
+  const Z = ZONE[zone], bed = Math.floor(ay / 7), bt = (hash(bed, zone + 11) % 3) - 1, flute = (hash(ax >> 2, 5) % 11) === 0 && (ay & 3) !== 0 ? -1 : 0, grit = (hash(ax * 3 + 1, ay) >> 7) % 17 === 0 ? 1 : (hash(ax, ay * 3) >> 8) % 23 === 0 ? -1 : 0;
+  if (ay % 7 === 6 && (hash(bed, 3) % 3) === 0) return Z.s[Math.max(0, base - 1)];                           /* a bed line */
   return Z.s[Math.max(0, Math.min(6, base + bt + flute + grit + (litL ? 1 : 0)))];
 }
 function fillGranite(g, zone, x, y, base, litL, y0 = 0, y1 = 16) { for (let py = y0; py < y1; py++) for (let p = 0; p < 16; p++) px2(g, p, py, granite(zone, x * 16 + p, y * 16 + py, base, litL && p < 3)); }
@@ -128,7 +128,7 @@ export function hlTile(t, x, y, at, T, L) {
    A BRACKET is a jib from the cliff: a wall plate bolted into the rock, an I-beam under the deck run to the plate, a knee brace and a tie rod up to the wall. A PYLON is the line crews' lattice mast under a deck
    hung in the shaft: two legs, X bracing, a ballast shoe - with a guy cable out to each cliff. Drawn in the world, over the tiles. */
 export function drawGantry(g, p, cx, cy) {
-  const X = Math.round(p.x * 16 - cx), Y = Math.round(p.y * 16 - cy);
+  const X = Math.round(p.x * 16 - cx), Y = Math.round(p.y * 16 - cy) + (p.drop || 0);
   const rn = p.run || [p.x, p.x], XL = rn[0] * 16 - cx - 120, XR = (rn[1] + 1) * 16 - cx + 120;
   if (XR < 0 || XL > g.canvas.width || Y < -120 || Y > g.canvas.height + 40) return;
   const len = Math.max(2, p.len || 3) * 16, run = p.run || [p.x, p.x];

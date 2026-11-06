@@ -132,16 +132,16 @@ export const HL_DATA = {
    CORBELS; an iron deck beside rock (a cliff wall, the head station's arch) hangs from a wall BRACKET (an I-beam from a bolted plate, a knee brace and a tie rod at the tip); a deck in the open shaft stands on a lattice PYLON
    with guy cables to the cliffs. No tile changes: the route, the walker and the sweep are untouched. */
 export const ROCK_LANDINGS = [14, 15, 16, 17, 18, 19, 20, 21, 22, 29, 30, 31, 32, 33];
-export const FLOOR_LANDINGS = [0, 34];   /* solid rock under them already (the line-yard, the head station floor) */
+export const FLOOR_LANDINGS = [0];   /* solid rock under it already (the line-yard); the head station floor (34) is a 1-thick slab over the shaft and gets its girder */
 export function hlSupports(D, at, solid) {
   const out = [], runs = [];
   D.landings.forEach((b, i) => { if (!FLOOR_LANDINGS.includes(i)) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: ROCK_LANDINGS.includes(i) }); });
   for (const b of D.nets) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: false, net: true });
   for (const r of runs) {
     const wl = solid(at(r.x0 - 1, r.y)) || solid(at(r.x0 - 1, r.y + 1)), wr = solid(at(r.x1 + 1, r.y)) || solid(at(r.x1 + 1, r.y + 1)), run = [r.x0, r.x1];
-    const xs = new Set([r.x0, r.x1]); for (let x = r.x0 + 8; x < r.x1 - 3; x += 8) xs.add(x);
+    const step = r.rock && r.x1 - r.x0 > 20 ? 3 : 8, xs = new Set([r.x0, r.x1]); for (let x = r.x0 + step; x < r.x1 - (step > 3 ? 3 : 1); x += step) xs.add(x);   /* a long rock shelf stands on a corbel table (every 3 tiles: the post-reach rule) */
     for (const x of [...xs].sort((a, b) => a - b)) {
-      const base = { x, y: r.y, kind: 'hlgantry', run };
+      const base = { x, y: r.y, kind: 'hlgantry', run, ...(solid(at(x, r.y)) ? { drop: 8 } : {}) };   /* drop: the deck is a 16-px granite slab, so the iron hangs 8 px lower */
       if (r.rock) out.push({ ...base, bottom: r.y + 3, st: 'corbel', len: 3 });
       else if (wl || wr) { const s = wl ? 'bracketL' : 'bracketR', wallX = wl ? r.x0 - 1 : r.x1 + 1, nearEnd = wl ? r.x0 : r.x1, farEnd = wl ? r.x1 : r.x0; out.push({ ...base, bottom: r.y + 3, st: s, len: 3, wallX, first: x === nearEnd, tip: x === farEnd }); }
       else out.push({ ...base, bottom: r.y + 6, st: 'pylon', len: 6 });

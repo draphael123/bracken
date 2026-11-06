@@ -37,8 +37,8 @@ function boatHook(hx, hy, tx, ty, o = {}) {
 /* =============================================================== THE HOOKJACK =============================================================== */
 /* pose = { lean, crouch, legs: [[kx, ky, fx, fy] x2], head: [dx, dy], hand: [x, y], tip: [x, y] (the hook head), off: [x, y], grip: bool (both hands up to the trolley), eyes } in his frame (dx forward, dy down from his feet) */
 const HP = {
-  ride0: { legs: [[-2, -5, -3, 0], [2, -5, 4, -1]], hand: [4, -17], tip: [-5, -12], off: [-2, -17], grip: true },
-  ride1: { legs: [[-1, -5, 1, -1], [2, -5, -2, 0]], hand: [4, -17], tip: [-5, -13], off: [-2, -17], grip: true, bob: 1 },
+  ride0: { legs: [[-2, -5, -3, 0], [2, -5, 4, -1]], hand: [4, -23], tip: [-5, -12], off: [-2, -23], grip: true },
+  ride1: { legs: [[-1, -5, 1, -1], [2, -5, -2, 0]], hand: [4, -23], tip: [-5, -13], off: [-2, -23], grip: true, bob: 1 },
   tell0: { lean: -0.2, legs: [[-2, -5, -4, 0], [2, -5, 1, -1]], hand: [-3, -20], tip: [-9, -31], off: [5, -15], grip: true, back: true },     /* THE TELL: the hook back over the shoulder */
   tell1: { lean: -0.3, legs: [[-2, -5, -5, 0], [2, -5, 2, -1]], hand: [-4, -21], tip: [-11, -32], off: [5, -15], grip: true, back: true, shake: 1 },
   swipe: { lean: 0.3, legs: [[-2, -5, -2, 0], [3, -6, 7, -2]], hand: [9, -15], tip: [27, -14], off: [3, -14], grip: true, reach: true },         /* THE SWIPE: out at full reach */
@@ -98,9 +98,8 @@ const lineSag = (fr) => fr;
 export function drawHookjack(g, e, cx, cy, time) {
   const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, name = hookjackPose(e, time), P = HP[name], hang = !!P.grip && !P.guard && !P.saw && !P.free, flash = e.flash > 0;
   begin(g, x, y, f);
-  if (hang) { trolley(0, -30 - (P.bob || 0), Math.floor(time * 6)); ln(1, -27, 2, -22, CP.rope[1], 1); }                                                         /* the crank-trolley on the rope, and its strap down to his hands */
-  if (hang) { ln(P.off[0], P.off[1] - 1, 0, -28, CP.iron[3], 1); }
-  const h = hookjackBody(P, flash, time);
+  if (hang) { trolley(0, -36 - (P.bob || 0), Math.floor(time * 6)); ln(-2, -33, -2, -24, CP.rope[2], 1); ln(4, -33, 4, -24, CP.rope[1], 1); }                                                         /* the crank-trolley on the rope, and its strap down to his hands */
+    const h = hookjackBody(P, flash, time);
   if (P.saw !== undefined) {                                                                                                                                            /* THE SAW: a pull-saw blade at the cable's pylon, sparks of rope */
     const k = P.saw; ln(h.hx + 2, h.hy - 3, h.hx + 9, h.hy - 3 + k, CP.iron[4], 1); ln(h.hx + 2, h.hy - 2, h.hx + 9, h.hy - 2 + k, CP.iron[2], 1); for (let i = 0; i < 4; i++) dot(h.hx + 3 + i * 2, h.hy - 3 + k + ((i + k) & 1), CP.iron[5]);
     dot(h.hx + 10, h.hy - 5 + k, CP.rope[3]); dot(h.hx + 12, h.hy - 4 - k, CP.rope[2]); }
