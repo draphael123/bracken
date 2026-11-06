@@ -716,6 +716,9 @@ const HEROES = [
    overheating her); the paladin's aegis roots him until MOVING FORTRESS is taken, so it is a wall he plants; the pistol
    is reloaded by gold picked up (reloadPistol); the ward and the nova are DK_KEYS in fewer words. Two lines of forty-five
    at size 6: that is the hero card's plate (270 px, six a character), and the pick screen is wider. */
+/* THE PICK'S ROLE LINE (claude/onboard1, Daniel 11-06): one line a hero, written from his kit, in the weapon's own words; it takes the place of the plain weapon line on the pick card. THE KNIGHT is marked RECOMMENDED FOR FIRST RUN (the default hero, the one the roadside lesson is written for). */
+const HERO_ROLE = { knight: 'SWORD, SHIELD. TOUGH. SIMPLE.', warden: 'SPEAR. REACH. MIND YOUR SPACING.', geomancer: 'STAFF. SLOW, HEAVY. STONE.', ranger: 'BOW. RANGED. FRAGILE. TRICKY.', berserker: 'TWIN AXES. NO SHIELD. ALL ATTACK.', pyro: 'STAFF, FIRE. FRAGILE. NO SHIELD.', paladin: 'MAUL. SLOW, HEAVY. VERY TOUGH.', pirate: 'CUTLASS, PISTOL. QUICK. LIGHT.', reaper: 'GREATSWORD. RISKY. FOR EXPERTS.' };
+const HERO_FIRST = 'knight';
 const HERO_LOOP = {
   knight: 'THE SHIELD TURNS YELLOW BLOWS; A PERFECT TURN OPENS HIM. THREE CUTS, THE THIRD HARDEST.',
   pyro: 'TAP C: THE WARD. HOLD C: A FIREBALL. HER FIRE MARKS; A FULL BAR ERUPTS THE MARKED.',   /* (claude/pyrokit) */
@@ -6740,6 +6743,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
       g.fillStyle = C.mid; g.fillRect(bx, bt, bw, floorY + 1 - bt); g.fillStyle = C.dark; g.fillRect(bx, floorY + 1, bw, bb - floorY - 1);
       g.fillStyle = C.dark; g.fillRect(bx, bt, bw, 2); if (C.trim) { g.fillStyle = C.trim; g.fillRect(bx, bt + 2, bw, 1); g.fillRect(bx, floorY + 1, bw, 1); }
       g.fillStyle = C.hi; g.globalAlpha *= 0.5; g.fillRect(bx, floorY, bw, 1); g.globalAlpha = 1;
+      if (h === HERO_FIRST && !locked) { g.globalAlpha = sel ? 1 : 0.8; g.fillStyle = '#ffd36b'; g.fillRect(bx + 4, bt + 4, 1, 5); g.fillRect(bx + 2, bt + 6, 5, 1); g.fillRect(bx + 3, bt + 5, 3, 3); g.globalAlpha = locked ? 0.28 : sel ? 1 : 0.55; }   /* (claude/onboard1) a gold star: the recommended first hero, visible while you browse */
       if (sel) { g.strokeStyle = C.hi; g.lineWidth = 1; g.strokeRect(bx - 0.5, bt - 0.5, bw + 1, bb - bt + 1); g.fillStyle = C.hi; g.fillRect(mid - 16, floorY - 1, 32, 2); }
       else { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 11, floorY, 22, 1); } }
     g.globalAlpha = sel ? 1 : locked ? 0.8 : 0.5;
@@ -6771,10 +6775,11 @@ function drawHeroPick() { const PICK = NEW_PICK;
     if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = HC.hi; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
     const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + i * BODY_LH, UI.text, 'center', 6));
     /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
-    const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
+    const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length; if (HERO_ROLE[h]) body[0] = HERO_ROLE[h];   /* (claude/onboard1) the role line leads the kit lines */
     body.forEach((ln, i) => { const yy = y0 + 3 + (loop.length + i) * BODY_LH;
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(TX - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
-      else text(ln, TX, yy, UI.dim, 'center', 6); }); }
+      else text(ln, TX, yy, i === 0 && HERO_ROLE[h] ? UI.text : UI.dim, 'center', 6); });
+    if (h === HERO_FIRST) { const ry = y0 + 4 + (loop.length + body.length) * BODY_LH; text('* RECOMMENDED FOR FIRST RUN *', TX, ry, '#ffd36b', 'center', 6); } }   /* (claude/onboard1) */
   if (heroOpen(PICK[heroPick.i]) && SC.heroLine(PICK[heroPick.i])) text(SC.heroLine(PICK[heroPick.i]), VW / 2, VH - 29, '#c8b6ff', 'center', 6);   /* (claude/secrets) */
   text(heroOpen(PICK[heroPick.i]) ? 'LEFT/RIGHT choose    Z take this hero' : 'LEFT/RIGHT choose    LOCKED', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('others: 10 silver each. a second opens co-op', VW / 2, VH - 11, UI.dim, 'center', 6);   /* (a row up: the bottom row sat on the screen edge) */
