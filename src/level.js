@@ -47,6 +47,7 @@ import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's tar
 import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './frog-court.js';
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+import { buildSirenRocks, SR_RULE } from './siren-rocks.js';   /* (claude/sirenrocks) SIREN ROCKS: the Naga Queen's sea caves (hidden until its art pass: dev only, ?level=sirenrocks) */
 import { highcrownTwo } from './highcrown2.js';
 import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
@@ -8122,6 +8123,10 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
+/* SIREN ROCKS (claude/sirenrocks, the OPUS GREYBOX, 11-06; scratch/plan-water-1105.md item 4, pulled forward 11-06 with Daniel's OK): APPENDED (saves count levels by index). HIDDEN, no map node:
+   OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=sirenrocks). Its place when it goes live (plan Q1 rec)
+   is the main road REEF -> SIREN ROCKS -> FLOTILLA: needs 'reef' is that link; the Flotilla's needs moves through src/route-insert.js (claude/greatdune) when SR_SHIPS flips. THE NAGA QUEEN is its boss */
+LEVELS.push({ id: 'sirenrocks', name: 'SIREN ROCKS', sub: 'the song pulls you', rule: SR_RULE, build: () => buildSirenRocks({ painter, T, TS }), hidden: true, needs: 'reef' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

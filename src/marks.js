@@ -951,3 +951,5 @@ export function markOf(e) {
   return '';
 }
 export const marksMissed = () => [...MISSED];
+/* (claude/sirenrocks) THE NAGA GUARD (src/naga-guard.js NG_TELLS) and THE NAGA QUEEN (src/naga-queen.js NQ_TELLS): MARK / ANSWER / HEIGHT rows */
+for (const [t, m, mk, an, ht] of [['nagaguard', 'spearTell', '!', 'block', 'low'], ['nagaguard', 'coilTell', '!!', 'jump', 'low'], ['nagaqueen', 'songTell', '!!', 'dodge', 'low'], ['nagaqueen', 'sweepTell', '!!', 'jump', 'low'], ['nagaqueen', 'venomTell', '!', 'block', 'low'], ['nagaqueen', 'drownTell', '!!', 'dodge', 'low'], ['nagaqueen', 'surfaceTell', '!', 'block', 'low'], ['nagaqueen', 'sinkTell', '', '', '']]) { MARK[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }

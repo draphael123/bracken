@@ -27,6 +27,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   reefmaw: 6, champion: 6, admiral: 6, grapnel: 3, powdermonkey: 2, aimgun: 0, signalhoist: 0, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, wickling: 2, oilcask: 0, oilvalve: 0, tarnet: 0,   /* (claude/lamplit3) THE WICKLING: a touch that steals your fire and a burst you set off; the oil casks, the valves and the tar nets are the street's machines */
   dummy: 0, bale: 0.5, fisher: 0,
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
+  nagaguard: 2.5, nagaqueen: 6, singstone: 0, blowhole: 0, tidebell: 0,   /* (claude/sirenrocks) THE NAGA GUARD (a spear and a told lunge, the song never moves it: a tideguard's weight); THE NAGA QUEEN; SIREN ROCKS' stones, blowholes and tide bell are gadgets */
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,
   /* THE ORE ROAD'S OWN THREE, weighed against the men already here rather than invented. A rockfall is a 2 and a
      javelineer 2.5, and the TIPPLER is a rockfall with a mind, so 2.5. A soldier is a 3 and the SHEARGOB does
