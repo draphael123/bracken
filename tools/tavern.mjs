@@ -171,6 +171,18 @@ if (PAGE.length) {
       /* (claude/coopclarity) THE SAVES SIGN: READ opens the co-op guide on its HOW CO-OP SAVES WORK page, closing returns to the inn */
       const sg = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'saves').x});BK.sim(3);__talk(p);BK.sim(2);const o={st:BK.state,page:BK.ui.coopHelp.page,title:BK.ui.coopHelp.pages()[BK.ui.coopHelp.page].title,seen:__st('saves').seen};BK.state='play';return o;})()`);
       ok(sg.st === 'coophelp' && /HOW CO-OP SAVES WORK/.test(sg.title) && sg.seen, 'THE SAVES SIGN opens the co-op guide on the saves page: ' + JSON.stringify(sg));
+      /* (claude/innsaves) THE GUEST BOOK: P1 only; a seated guest is asked first; YES sends the party out cleanly; NO / ESC closes the book */
+      const gb = STATIONS.find(s => s.id === 'guestbook'), cr = STATIONS.find(s => s.id === 'saves');
+      ok(gb && gb.verb === 'SAVES' && gb.name === 'THE GUEST BOOK' && cr && cr.name === 'CO-OP RULES', 'the stations: THE GUEST BOOK (SAVES) and the renamed CO-OP RULES (id saves)');
+      const g1 = await E(`(()=>{const o={n0:BK.players().length};const b=__P(2);__at(b,${gb.x},true);BK.sim(3);__talk(b);BK.sim(2);o.p2state=BK.state;o.p2hint=BK.tavern.hint().msg;const a=__P(1);__at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);o.st=BK.state;o.book=BK.book;o.seen=__st('guestbook').seen;BK.press('confirm');BK.sim(1);o.noState=BK.state;o.noN=BK.players().length;return o;})()`);
+      ok(g1.n0 > 1 && g1.p2state === 'play' && /P1 KEEPS THE BOOK/.test(g1.p2hint), 'a guest at the book is told P1 KEEPS THE BOOK and nothing opens: ' + JSON.stringify(g1));
+      ok(g1.st === 'slots' && g1.book.inn && g1.book.ask && g1.seen, 'P1 at the book with a guest seated: the save screen opens behind THE PARTY LEAVES THE INN? : ' + JSON.stringify(g1.book));
+      ok(g1.noState === 'play' && g1.noN === g1.n0, 'NO on the question closes the book and the party stays (' + g1.noN + ')');
+      const g2 = await E(`(()=>{const o={};const a=__P(1);__at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);BK.press('left');BK.sim(1);BK.press('confirm');BK.sim(1);o.n=BK.players().length;o.ask=BK.book.ask;o.st=BK.state;BK.press('pause');BK.sim(1);o.back=BK.state;o.inn=!!BK.L.tavern;o.book=BK.book.inn;BK.tavern.join({kind:'pad',pad:3});BK.sim(80);o.n2=BK.players().length;
+        __at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);o.st2=BK.state;o.ask2=BK.book.ask;BK.press('pause');BK.sim(1);o.back2=BK.state;return o;})()`);
+      ok(g2.n === 1 && !g2.ask && g2.st === 'slots', 'YES sends the party out of the inn (' + g2.n + ' left) and the five slots show: ' + JSON.stringify(g2));
+      ok(g2.back === 'play' && g2.inn && !g2.book, 'ESC backs out to the inn untouched');
+      ok(g2.n2 > 1 && g2.st2 === 'slots' && g2.ask2 && g2.back2 === 'play', 'a guest joins again; the book asks again; ESC closes it: ' + JSON.stringify(g2));
       /* the bell + revive drill */
       const bl = await E(`(()=>{const a=__P(1),b=__P(2),o={};for(const q of [a,b]){q.hp=q.maxHp;q.down=0;}__at(a,${STATIONS.find(s => s.id === 'bell').x});__at(b,${STATIONS.find(s => s.id === 'bell').x + 3},true);BK.sim(3);const d0=BK.stats().deaths;__talk(a);o.down=b.down;o.d0=d0;
         b.x=a.x+4;b.y=a.y;for(let i=0;i<150&&b.down>0;i++)BK.sim(1);o.up=!(b.down>0);o.hp=b.hp;o.rev=BK.tavern.debug().tavern.drills.revive;
