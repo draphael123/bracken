@@ -1,5 +1,6 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
+import * as SPI from './redraw/sun_priest_icons.js';   /* (claude/priestart) his ten icons */
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
@@ -240,7 +241,7 @@ import * as HV from './hanging-village.js';   /* THE HANGING VILLAGE: each floor
 import * as MON from './redraw/monastery.js';   /* THE MONASTERY ON THE CLIFF: its stone, rooms, bells, wheels, baskets and braziers, the fledgling and the temple guardian */
 import { bakeVillageTiles } from './village_tiles.js';
 import { bakeSwornSword, bakeHedgeKnight, bakeRunner, bakeCrossbowman, bakeClosedHelm,
-  bakeBoneGob, bakePrise, bakeHoldfast, bakeDrownedKing, bakePropman, bakeClinger, bakeSweep, bakePaladin, bakeFreebooter, bakeReaper, bakeReaperBoss, bakeWarden, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeTemperer, bakeCutter, bakeAssassin, bakeBerserker, bakeGrandmother, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeTippler, bakeSheargob, bakeGaffer, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman, bakeSeaWitch, bakeMerrowCaller, bakeMerrowBrute } from './chars.js';
+  bakeBoneGob, bakePrise, bakeHoldfast, bakeDrownedKing, bakePropman, bakeClinger, bakeSweep, bakePaladin, bakeFreebooter, bakeReaper, bakeReaperBoss, bakeWarden, bakeGoblinLance, bakeCrow, bakeHornblower, bakeBale, bakeCook, bakeSnuffer, bakeSailer, bakeHearthGob, bakeTemperer, bakeCutter, bakeAssassin, bakeBerserker, bakeGrandmother, bakeLance, bakeShardling, bakeSuncatcher, bakeRoc, bakeSentry, bakeGoblinQueen, bakeThrone, bakeKeeper, bakeBard, bakeOldKnight, bakeMiner, bakeTippler, bakeSheargob, bakeGaffer, bakeBat, bakeForeman, bakeLamplighter, bakeKingBig, bakeChandelier, bakeForgemaster, bakeForgemasterBig, bakeRockGoblin, bakeGolem, bakeHare, bakeWight, bakePyro, bakeSunPriest, bakeCragRam, bakeSpider, bakeSquirrel, bakeOwl, bakeWoodsman, bakeFerryman, bakeSquire, bakeElder, bakeGoatRider, bakeShepherd, bakeSheep, bakeKnight, bakeSprig, bakeShield, bakeSpitter, bakeSpitterParts, bakeWasp, bakeSeed, bakeArcher, bakeBird, HOPPER_COLORS, bakeSapper, bakeBomb, bakeBrute, bakeFox, bakeSporeling, bakeLurker, bakeSpitcap, bakeWeaver, bakeShaman, bakeThief, bakePike, bakeFolk, bakeMaster, bakeKing, bakeGoblinShaman, bakeSeaWitch, bakeMerrowCaller, bakeMerrowBrute } from './chars.js';
 import { bakeQueen, bakeChief } from './redraw/queenchief.js';
 import { bakeWindcaller, bakeRamLord } from './redraw/callerram.js';
 import * as WCFX from './redraw/windcaller_fx.js';   /* (claude/windcaller4art) his attacks, the pit, the stone vents, the flags and the chimes: draw only */
@@ -912,7 +913,7 @@ function regear() { /* a level-up crossed a tier, or the setting flipped: bake t
   if (K && K.gearT !== gearNow(hero())) { applySkin(); if (players.length > 1) players[0].set = K; }
   for (const p of players.slice(1)) if (p.set && p.set.gearT !== gearNow(p.hero)) { const wasH = PROG.hero; PROG.hero = p.hero; try { p.set = heroSet(PROG.skin, PROG.sword); } finally { PROG.hero = wasH; } } }
 function heroSet(skinId, swordId, previewOnly = false, h = hero(), tier = previewOnly ? 0 : gearNow(h)) { const sk = skinById(skinId); const pal = h === 'pyro' ? (PYRO_SETS[sk.id] || sk.pal) : sk.pal;   /* the skin dresses the hero; the weapon's palette goes to the weapon alone (chars.js withWeapon) */
-  const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : h === 'berserker' ? bakeBerserkerHero(WARD_SETS[sk.id] || {}, previewOnly) : h === 'ranger' ? bakeRanger(WARD_SETS[sk.id] || {}, previewOnly) : h === 'sunpriest' ? bakePyro(SP_PAL, previewOnly) : bakeKnight(pal, false, previewOnly))); set.gearT = tier; return previewOnly ? set : FA.addDrink(set, h); }   /* (claude/flasks2art) the five drink frames of this hero, baked off his own idle */
+  const set = withGear(tier, () => withWeapon((swordId && swordId.pal ? swordId : swordById(swordId)).pal, () => h === 'pyro' ? bakePyro(pal, previewOnly) : h === 'paladin' ? bakePaladin(PAL_SETS[sk.id] || {}, previewOnly) : h === 'pirate' ? bakeFreebooter(FREE_SETS[sk.id] || {}, previewOnly) : h === 'reaper' ? bakeReaper(REAP_SETS[sk.id] || {}, previewOnly) : h === 'warden' ? bakeWarden(WARD_SETS[sk.id] || {}, previewOnly) : h === 'geomancer' ? bakeGeomancer(WARD_SETS[sk.id] || {}, previewOnly) : h === 'berserker' ? bakeBerserkerHero(WARD_SETS[sk.id] || {}, previewOnly) : h === 'ranger' ? bakeRanger(WARD_SETS[sk.id] || {}, previewOnly) : h === 'sunpriest' ? bakeSunPriest(previewOnly) : bakeKnight(pal, false, previewOnly))); set.gearT = tier; return previewOnly ? set : FA.addDrink(set, h); }   /* (claude/flasks2art) the five drink frames of this hero, baked off his own idle */
 function applyUpgrades() { const growth = grow(hero(), heroLevel()); P.maxHp = growth.hp + (PROG.items.heart ? 25 : 0); P.maxSt = growth.stamina + (PROG.items.wind ? 30 : 0);
   GEO_K.stone.gnaw = GEO_LIFE0 * (1 + 0.04 * prk('gstone')); GEO_K.ward.perfect = GEO_PERFECT0 + 0.012 * prk('gward'); BZ_K.perk.rage = 1 + 0.04 * prk('bzstoke'); BZ_K.perk.brace = 1 + 0.04 * prk('bzstout'); RG_K.perk.quiver = 1 + 0.04 * prk('rgquiver'); RG_K.perk.focus = 1 + 0.04 * prk('rgfocus'); DP_K.perk.fill = 1 + 0.04 * prk('spsun'); DP_K.perk.flare = 1 + 0.04 * prk('spflare'); }   /* (LEVELING2: LASTING STONE, WIDE RUNE - the hero's own, read where her kit reads its numbers) */
 let statFlash = 0; // the HUD plate flashes when a rank lands
@@ -1048,7 +1049,8 @@ const RG_ICONS = {   /* (claude/rangerart) redrawn: the same nine, with the arro
   rgHeart: pixIcon(['....rr....', '...rRRr...', '..r....r..', '.r......r.', 'ddddddddUt', '.r......r.', '..r....r..', '...rRRr...', '....rr....', '..........', '..........', '..........']),
   rgWildHunt: pixIcon(['U........U', '.U......U.', '....yy....', '...yoooy..', '..yoyyooy.', '..yoooyyy.', '...yooy...', '....yy....', '.U......U.', 'U........U', '..........', '..........']),
 };
-const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
+const SP_ICONS = SPI.bakeIcons();   /* (claude/priestart) THE DESERT PRIEST'S ten actives (src/redraw/sun_priest_icons.js) */
+const skillIcon = k => SP_ICONS[k] || k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
 let meteors = [], fireRings = [], lanceBeams = [], moons = []; // FIRE LANCE (id meteor), RING OF FIRE, SPEAR OF LIGHT in flight, and the HARVEST MOON standing where he planted it
 function updateSkillFx(dt) {
@@ -6732,7 +6734,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
       : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
       : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
       : h === 'geomancer' ? preview('pick:geomancer', () => bakeGeomancer({}))
-      : h === 'berserker' ? preview('pick:berserker', () => bakeBerserkerHero({})) : h === 'ranger' ? preview('pick:ranger', () => bakeRanger({})) : h === 'sunpriest' ? preview('pick:sunpriest', () => bakePyro(SP_PAL))
+      : h === 'berserker' ? preview('pick:berserker', () => bakeBerserkerHero({})) : h === 'ranger' ? preview('pick:ranger', () => bakeRanger({})) : h === 'sunpriest' ? preview('pick:sunpriest', () => bakeSunPriest())
       : preview('pick:knight', () => bakeKnight({}));
     pickSets[h] = set;
     const locked = !heroOpen(h);
@@ -6808,7 +6810,7 @@ function heroPreviewSet(h) {
     : h === 'reaper' ? preview('pick:reaper', () => bakeReaper({}))
     : h === 'warden' ? preview('pick:warden', () => bakeWarden({}))
     : h === 'geomancer' ? preview('pick:geomancer', () => bakeGeomancer({}))
-    : h === 'berserker' ? preview('pick:berserker', () => bakeBerserkerHero({})) : h === 'ranger' ? preview('pick:ranger', () => bakeRanger({})) : h === 'sunpriest' ? preview('pick:sunpriest', () => bakePyro(SP_PAL))
+    : h === 'berserker' ? preview('pick:berserker', () => bakeBerserkerHero({})) : h === 'ranger' ? preview('pick:ranger', () => bakeRanger({})) : h === 'sunpriest' ? preview('pick:sunpriest', () => bakeSunPriest())
     : preview('pick:knight', () => bakeKnight({}));
 }
 function coopPickBack() { return coopPickFrom === 'pause' ? 'menu' : 'map'; }   /* 'title' and 'map' both answer to the map */

@@ -2,6 +2,7 @@
 import { kingFrames, KING_AX, KING_AY } from './king_swim.js';
 import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
+import { priestFrame, priestPoses, SUN_PAL } from './redraw/sun_priest_rig.js';   /* (claude/priestart) THE DESERT PRIEST'S OWN RIG */
 
 const KP0 = { // knight palette
   s: '#c9d1dc', S: '#7c8797', b: '#3d5aa8', B: '#243a78', r: '#c9463d', k: '#f1c9a0',
@@ -1781,7 +1782,9 @@ const COWL = [
   ['SSS........', '.SSsss.....', '..Ssssss...', '.Sssssss...', '.SssbBBBs..', 'SssbBrBrs..', '.SsbBBBBs..', '..SSbbbS...'],
   ['...........', '..SSs......', '.Sssssss...', 'SSssssss...', '.SssbBBBs..', 'SssbBrBrs..', '.SsbBBBBs..', '..SSbbbS...'],
 ];
+let PRIEST = false;   /* (claude/priestart) true while bakeSunPriest runs: pyroFrame draws HIS body (src/redraw/sun_priest_rig.js) on the same pose geometry */
 function pyroFrame(o = {}) {
+  if (PRIEST) return priestFrame(o, { W, H, KP });
   const { lean = 0, dy = 0, trail = 0, hemW = 11, bell = 0, feet = [[11, 18], [15, 18]], arm = null, arm2 = null,
     staff = null, cowl = 0, flick = 0, sit = 0, flare = null, palm = null, flame = null, sparks = null, top: headroom = 0, wide = 0 } = o;
   const [c, g] = canvas(W + wide, H + headroom); g.translate(0, headroom);
@@ -2238,7 +2241,7 @@ export function bakePyro(skin = {}, previewOnly = false) {
       () => (pyroFrame({ staff: up(), arm: hand, cowl: 0 }))
     ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.fire);
+  if (previewOnly) return storeFrames(card, false, previewOnly, PRIEST ? SMEAR_COL.gold : SMEAR_COL.fire);
   const F = {
     /* HER BREATH: the shoulders and the cowl settle a pixel while the hem and the boots stay where they stand, the robe
        swings a beat behind them, and the fire in the cage licks a new way on every beat. The staff is planted at a lean
@@ -2388,7 +2391,8 @@ export function bakePyro(skin = {}, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'staff', { pyro: true });
   pyroKitPoses(F, up);
-  smearPass(F, SMEAR_COL.fire);   /* the strike beats get their arc (claude/herokeys) */
+  if (PRIEST) priestPoses(F, up, o => pyroFrame({ top: ATTACK_HEADROOM, ...o }));   /* (claude/priestart) his fifteen own poses */
+  smearPass(F, PRIEST ? SMEAR_COL.gold : SMEAR_COL.fire);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);
@@ -2398,6 +2402,9 @@ export function bakePyro(skin = {}, previewOnly = false) {
      the ground and the butt of the staff a pixel into it. */
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay - 2 + ATTACK_HEADROOM };
 }
+
+/* (claude/priestart) THE DESERT PRIEST: the Pyromancer's pose geometry, his own body (src/redraw/sun_priest_rig.js) */
+export function bakeSunPriest(previewOnly = false) { PRIEST = true; try { return bakePyro(Object.assign({}, SUN_PAL), previewOnly); } finally { PRIEST = false; } }
 
 // The keeper — an old badger merchant: spectacles, striped snout, a leather apron with a coin pouch, sleeves rolled. 14×16. Frames: idle, talk (a paw raised over the counter).
 // The scullion - Gorm's cook-boy, an apron, a ladle and a worried face. 12x13. Frames: idle, talk.

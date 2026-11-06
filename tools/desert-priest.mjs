@@ -124,7 +124,7 @@ ok(REFLECT_ROW.beat === DP.flare.beat && REFLECT_ROW.r === DP.flare.r && REFLECT
   once(main, "HEROES.filter(h => h.id !== 'sunpriest' || SP_OPEN)", 'the store only when open'); once(main, "if (isSp() && SPK) { SPK.charge(", 'HOLD X -> the beam');
   once(main, 'if (isSp() && SPK) SPK.update(', 'his C'); once(main, 'SPK.wardTakes() || SPK.flareTakes(', 'the flare/ward before TOO STRONG'); once(main, 'SPK.discTakes(', 'the disc parry');
   once(main, "isSp() ? !!(SPK && SPK.onBeat())", 'rpAnswerUp'); once(main, "ultRegister('sunpriest'", 'SUNRISE ult'); once(main, 'SPK.thirdFlash()', 'the third blow'); once(main, 'mul *= SPK.blowMul(e)', 'radiance on blows');
-  once(main, 'priestKit(dt, canAct, tired);', 'the actives'); once(main, 'SPK.clear()', 'cleared on a level'); once(main, 'SPK.draw(g, cx, cy)', 'drawn'); once(main, "h === 'sunpriest' ? bakePyro(SP_PAL, previewOnly)", 'his set (placeholder rig)');
+  once(main, 'priestKit(dt, canAct, tired);', 'the actives'); once(main, 'SPK.clear()', 'cleared on a level'); once(main, 'SPK.draw(g, cx, cy)', 'drawn'); once(main, "h === 'sunpriest' ? bakeSunPriest(previewOnly)", 'his set (his own rig, claude/priestart)');
   once(main, 'spk: () => SPK', 'BK.spk for the bots'); once(lab, "sunpriest: 30 }", 'LAB_REACH'); once(lab, "h === 'sunpriest') { const S = BK.spk", 'ULT_BOT');
   ok(lab.includes("|| h === 'sunpriest';"), 'DEFLECTS: the bot taps the disc on the beat'); }
 

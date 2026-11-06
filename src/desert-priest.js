@@ -21,6 +21,7 @@
 /* THE REFLECT-KIT ROW (claude/reflectkit src/reflect-kit.js: the Demon King's bolt-return table, row `sunpriest`): his normal returns are the staff, THE BEAM
    through the bolt and the SUNFALL ring; his POWER return is THE FLARE going off as the bolt lands (flareAnswer(age, dx, dy): age <= FLARE_BEAT 0.2 s, within 3
    tiles). The kit's side of that contract: P.spFlareAt (when it went off) and DP.flare.beat / DP.flare.r are the same numbers; flareTakes turns the blow. */
+import * as FX from './redraw/sun_priest_fx.js';   /* (claude/priestart) his light, drawn */
 export const REFLECT_ROW = { id: 'sunpriest', beat: 0.2, r: 3 * 16 };
 
 export const DP = {
@@ -100,7 +101,7 @@ export function makePriest(api) {
         p.spBeamHitT = 0.35; }
       if (ln.hit.length) api.sparks(ln.x1, ln.y1, -p.face, 2); }
   }
-  function beamOn(p, up) { if (!api.spend(DP.beam.plant * (T().longPlant ? 2 / 3 : 1))) { api.tired(); return false; } p.spBeam = { up: !!up, line: null }; p.spBeamT = 0; p.spBeamTick = 0; api.kitPose(p, 'flash', 0.3); api.SFX.lightFull && api.SFX.lightFull(); api.noteVerb('heavy'); return true; }
+  function beamOn(p, up) { if (!api.spend(DP.beam.plant * (T().longPlant ? 2 / 3 : 1))) { api.tired(); return false; } p.spBeam = { up: !!up, line: null }; p.spBeamT = 0; p.spBeamTick = 0; api.kitPose(p, 'spBeam', 0.3); api.SFX.lightFull && api.SFX.lightFull(); api.noteVerb('heavy'); return true; }
   function beamOff(p, why) { if (!p.spBeam) return; p.spBeam = null; p.spBeamT = 0; if (why === 'tired') api.number(p.x, p.y - 26, 'THE BEAM GOES OUT', '#9aa39a'); }
   /* HOLD X (main.js updateCharge hands the hold here and does nothing else for him): the beam is planted at DP.beam.start s and burns while X is held */
   function charge(dt, keys, can) { const p = P(); ensure(p);
@@ -123,13 +124,13 @@ export function makePriest(api) {
   // ---- C: THE DISC, THE FLARE, CONSECRATE ----
   const beatW = () => api.tap() * (T().longBeat ? 4 / 3 : 1) * (1 + 0.1 * U('udisc'));
   const onBeat = (p = P()) => { ensure(p); return api.time - p.spDiscAt <= beatW(); };
-  function disc(p) { p.spDiscAt = api.time; p.spDiscRec = DP.disc.rec; api.kitPose(p, 'ring', 0.18); api.SFX.aegis && api.SFX.aegis(); api.ringAt(p.x + p.face * 8, p.y - 14, 8, '#ffe89a', 0.16); }
+  function disc(p) { p.spDiscAt = api.time; p.spDiscRec = DP.disc.rec; api.kitPose(p, 'spDisc', 0.18); api.SFX.aegis && api.SFX.aegis(); api.ringAt(p.x + p.face * 8, p.y - 14, 8, '#ffe89a', 0.16); }
   function consecrate(p) { const C = DP.consecrate; if (p.spRad < C.cost - 1e-9) { api.number(p.x, p.y - 26, 'TOO LITTLE LIGHT', '#9aa39a'); api.SFX.buzz && api.SFX.buzz(); return false; }
     p.spRad -= C.cost; lay(p, C.half + (T().wideHoly ? 1 : 0), (C.t + (T().longHoly ? 3 : 0) + U('uhallow')) * (K('spnoon') ? 1.5 : 1), 'consecrate'); stats.consecrates++;
-    api.kitPose(p, 'wall', 0.4); api.ringAt(p.x, p.y - 2, 24, '#ffe89a', 0.4); api.SFX.lightFull && api.SFX.lightFull(); api.trialEvent('consecrate'); return true; }
+    api.kitPose(p, 'spConsec', 0.4); api.ringAt(p.x, p.y - 2, 24, '#ffe89a', 0.4); api.SFX.lightFull && api.SFX.lightFull(); api.trialEvent('consecrate'); return true; }
   const flareCost = () => Math.max(0.3, (T().cheapFlare ? 0.4 : DP.flare.cost) - 0.05 * U('uquick')) / DP.perk.flare;
   function flare(p) { const F = DP.flare, c = flareCost(); if (p.spRad < c - 1e-9) { api.number(p.x, p.y - 26, 'TOO LITTLE LIGHT', '#9aa39a'); return false; }
-    p.spRad -= c; p.spFlareAt = api.time; p.spFlareRec = F.rec; stats.flares++; api.kitPose(p, 'ring', 0.35); api.SFX.lightFull && api.SFX.lightFull(); api.hitstop(0.04); api.shakeCam(2);
+    p.spRad -= c; p.spFlareAt = api.time; p.spFlareRec = F.rec; stats.flares++; api.kitPose(p, 'spFlare', 0.35); api.SFX.lightFull && api.SFX.lightFull(); api.hitstop(0.04); api.shakeCam(2);
     api.ringAt(p.x, p.y - 12, F.r, '#fff6c8', 0.35); api.ringAt(p.x, p.y - 12, F.r * 0.5, '#ffffff', 0.2); api.burst(p.x, p.y - 12, 10, ['#ffffff', '#ffe89a'], 90, 0.35, 0, 1); p.spFlashT = Math.max(p.spFlashT, 0.4);
     for (const e of api.enemies) { if (!live(e) || Math.abs(e.x - p.x) > F.r || Math.abs((e.y - (e.h || 16) / 2) - (p.y - 10)) > F.r) continue;
       const last = p.spLocks.get(e); if (last !== undefined && api.time - last < F.lock) continue;
@@ -160,7 +161,7 @@ export function makePriest(api) {
   /* SUNRISE (the ultimate: main.js ultRegister) */
   const sunriseReady = () => { const p = P(); ensure(p); return full(p) && !(p.spSunrise > 0); };
   function sunrise() { const p = P(); ensure(p); if (!sunriseReady()) return false; p.spRad = 0; p.spSunrise = DP.sunrise.t * (K('spdawn') ? 10 / 6 : 1); stats.sunrises++;
-    api.kitPose(p, 'storm', 0.5); api.shakeCam(5); api.zoomKick(1.06, 0.3); api.ringAt(p.x, p.y - 12, 70, '#fff6c8', 0.6); api.number(p.x, p.y - 34, 'SUNRISE', '#fff6c8'); api.SFX.lightFull && api.SFX.lightFull(); api.trialEvent('meter'); p.spFallDue = K('spfallsun'); return true; }
+    api.kitPose(p, 'spRise', 0.5); api.shakeCam(5); api.zoomKick(1.06, 0.3); api.ringAt(p.x, p.y - 12, 70, '#fff6c8', 0.6); api.number(p.x, p.y - 34, 'SUNRISE', '#fff6c8'); api.SFX.lightFull && api.SFX.lightFull(); api.trialEvent('meter'); p.spFallDue = K('spfallsun'); return true; }
   function sunsetFall(p) {   /* THE FALLING SUN (L50 B): SUNRISE ends in a sun dropped on the room - every foe on screen */
     const F = DP.tech.fall; api.shakeCam(8); api.zoomKick(1.1, 0.4); api.number(p.x, p.y - 34, 'THE FALLING SUN', '#ffd36b');
     for (const e of api.enemies) { if (!live(e) || Math.abs(e.x - p.x) > 170 || Math.abs(e.y - p.y) > 110) continue; const k = F.k * (big(e) ? F.boss / F.k : 1) * (undead(e) ? 2 : 1);
@@ -222,36 +223,37 @@ export function makePriest(api) {
   }
   /* THE TEN BOUGHT ACTIVES (main.js priestKit presses them: skillPress / cdReady / spend, like everyone's) */
   const kit = {
-    shard() { const p = P(); shards.push({ x: p.x + p.face * 8, y: p.y - 12, vx: p.face * DP.kit.shard.vx, t: 0, hit: new Set() }); api.kitPose(p, 'flash', 0.25); api.SFX.lightFull && api.SFX.lightFull(); },
-    step() { const p = P(); lay(p, 0, 2, 'sunfall'); let d = 0; while (d < DP.kit.step.dist && !api.isSolid(tile(p.x + p.face * (d + 6)), tile(p.y - 8))) d += 4; p.x += p.face * d; p.inv = Math.max(p.inv || 0, DP.kit.step.inv); lay(p, 0, 2, 'sunfall'); api.streaks(p.x, p.y - 10, 6, ['#fff6c8', '#ffd36b'], 160); },
-    lamp() { const p = P(); lamps.push({ x: p.x, y: p.y - 8, t: DP.kit.lamp.t, r: DP.kit.lamp.r }); api.kitPose(p, 'wall', 0.3); api.ringAt(p.x, p.y - 8, 20, '#ffe89a', 0.3); },
-    ward() { const p = P(); p.spWardT = DP.kit.ward.t; api.ringAt(p.x, p.y - 12, 18, '#fff6c8', 0.3); },
+    shard() { const p = P(); shards.push({ x: p.x + p.face * 8, y: p.y - 12, vx: p.face * DP.kit.shard.vx, t: 0, hit: new Set() }); api.kitPose(p, 'spShard', 0.25); api.SFX.lightFull && api.SFX.lightFull(); },
+    step() { const p = P(); api.kitPose(p, 'spStep', 0.22); lay(p, 0, 2, 'sunfall'); let d = 0; while (d < DP.kit.step.dist && !api.isSolid(tile(p.x + p.face * (d + 6)), tile(p.y - 8))) d += 4; p.x += p.face * d; p.inv = Math.max(p.inv || 0, DP.kit.step.inv); lay(p, 0, 2, 'sunfall'); api.streaks(p.x, p.y - 10, 6, ['#fff6c8', '#ffd36b'], 160); },
+    lamp() { const p = P(); lamps.push({ x: p.x, y: p.y - 8, t: DP.kit.lamp.t, r: DP.kit.lamp.r }); api.kitPose(p, 'spLamp', 0.3); api.ringAt(p.x, p.y - 8, 20, '#ffe89a', 0.3); },
+    ward() { const p = P(); api.kitPose(p, 'spWard', 0.3); p.spWardT = DP.kit.ward.t; api.ringAt(p.x, p.y - 12, 18, '#fff6c8', 0.3); },
     pillar() { const p = P(); let x = p.x + p.face * 60; let bd = DP.kit.pillar.range; for (const e of api.enemies) if (live(e) && (e.x - p.x) * p.face > 0 && Math.abs(e.x - p.x) < bd && Math.abs(e.y - p.y) < 60) { bd = Math.abs(e.x - p.x); x = e.x; }
-      pillars.push({ x, y: p.y, t: DP.kit.pillar.delay }); api.kitPose(p, 'storm', 0.4); },
-    mercy() { const p = P(); p.spMendT = DP.kit.mercy.t; p.spMendPer = p.maxHp * DP.kit.mercy.pct / DP.kit.mercy.t; api.ringAt(p.x, p.y - 10, 22, '#dfffb0', 0.4); },
-    glare() { const p = P(), G = DP.kit.glare; api.ringAt(p.x + p.face * 30, p.y - 12, G.r * 0.6, '#ffffff', 0.25);
+      pillars.push({ x, y: p.y, t: DP.kit.pillar.delay }); api.kitPose(p, 'spPillar', 0.4); },
+    mercy() { const p = P(); api.kitPose(p, 'spMercy', 0.4); p.spMendT = DP.kit.mercy.t; p.spMendPer = p.maxHp * DP.kit.mercy.pct / DP.kit.mercy.t; api.ringAt(p.x, p.y - 10, 22, '#dfffb0', 0.4); },
+    glare() { const p = P(), G = DP.kit.glare; api.kitPose(p, 'spGlare', 0.3); api.ringAt(p.x + p.face * 30, p.y - 12, G.r * 0.6, '#ffffff', 0.25);
       for (const e of api.enemies) if (live(e) && (e.x - p.x) * p.face > -8 && Math.abs(e.x - p.x) < G.r && Math.abs(e.y - p.y) < 40) { if (big(e)) api.poiseLean(e, G.poise); else e.stagger = Math.max(e.stagger || 0, G.dazzle); } },
-    wind() { const p = P(), W = DP.kit.wind; api.dust(p.x + p.face * 12, p.y, 6); api.streaks(p.x + p.face * 20, p.y - 6, 8, ['#fff6c8', '#e8c24a'], 240);
+    wind() { const p = P(), W = DP.kit.wind; api.kitPose(p, 'spWind', 0.25); api.dust(p.x + p.face * 12, p.y, 6); api.streaks(p.x + p.face * 20, p.y - 6, 8, ['#fff6c8', '#e8c24a'], 240);
       for (const e of api.enemies) if (live(e) && (e.x - p.x) * p.face > -4 && Math.abs(e.x - p.x) < W.len && Math.abs(e.y - p.y) < 24) { api.hurtAs('shot', e, Math.max(1, Math.round(api.swordDmg() * W.k * api.amul('spWind'))), p.x, false); if (!big(e) && !api.knockSkip(e)) e.vx = p.face * W.push; } },
-    halo() { const p = P(); p.spHaloT = DP.kit.halo.t; api.ringAt(p.x, p.y - 26, 10, '#ffe89a', 0.4); },
-    eye() { const p = P(); p.spEyeT = DP.kit.eye.t; p.spEyeTick = 0.2; api.ringAt(p.x, p.y - 30, 10, '#ffd36b', 0.4); },
+    halo() { const p = P(); api.kitPose(p, 'spHalo', 0.4); p.spHaloT = DP.kit.halo.t; api.ringAt(p.x, p.y - 26, 10, '#ffe89a', 0.4); },
+    eye() { const p = P(); api.kitPose(p, 'spEye', 0.3); p.spEyeT = DP.kit.eye.t; p.spEyeTick = 0.2; api.ringAt(p.x, p.y - 30, 10, '#ffd36b', 0.4); },
   };
   /* DAWN WARD: the next blow that reaches him in its time is turned (main.js asks before the disc) */
   function wardTakes() { const p = P(); ensure(p); if (!(p.spWardT > 0)) return null; p.spWardT = 0; api.number(p.x, p.y - 28, 'DAWN WARD', '#fff6c8'); api.ringAt(p.x, p.y - 12, 20, '#fff6c8', 0.3); api.SFX.aegis && api.SFX.aegis(); return 'blocked'; }
 
-  // ---- DRAWN (placeholder light: the art pass owes his own beam/patch/flare sprites) ----
-  function draw(g, cx, cy) { const p = P(); if (!p || p.spRad === undefined) return;
-    for (const q of p.spPatches || []) { const a = Math.min(1, q.t / 0.6) * (q.kind === 'sunfall' ? 0.45 : 0.6), x = q.x0 * api.TS - cx, y = (q.y + 1) * api.TS - cy;
-      g.globalAlpha = a * 0.35; g.fillStyle = '#ffe89a'; g.fillRect(x, y - 10, (q.x1 - q.x0 + 1) * api.TS, 10); g.globalAlpha = a; g.fillStyle = '#fff6c8'; g.fillRect(x, y - 2, (q.x1 - q.x0 + 1) * api.TS, 2); g.globalAlpha = 1; }
-    for (const l of lamps) { g.globalAlpha = 0.25; g.fillStyle = '#ffe89a'; g.beginPath(); g.arc(l.x - cx, l.y - cy, l.r * 0.7, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(l.x - cx) - 1, Math.round(l.y - cy) - 3, 3, 4); }
-    if (p.spBeam && p.spBeam.line) { const ln = p.spBeam.line, w = 3 + (p.spSunrise > 0 ? 2 : 0), fl = Math.floor(api.time * 20) % 2;
-      g.fillStyle = fl ? '#fff2b0' : '#ffe89a'; if (ln.up) g.fillRect(Math.round(ln.x1 - cx - w / 2), Math.round(ln.y1 - cy), w, Math.round(ln.y0 - ln.y1)); else g.fillRect(Math.round(Math.min(ln.x0, ln.x1) - cx), Math.round(ln.y0 - cy - w / 2), Math.round(Math.abs(ln.x1 - ln.x0)), w);
-      g.fillStyle = '#ffffff'; if (ln.up) g.fillRect(Math.round(ln.x1 - cx), Math.round(ln.y1 - cy), 1, Math.round(ln.y0 - ln.y1)); else g.fillRect(Math.round(Math.min(ln.x0, ln.x1) - cx), Math.round(ln.y0 - cy), Math.round(Math.abs(ln.x1 - ln.x0)), 1); }
-    for (const s of shards) { g.fillStyle = '#fff6c8'; g.fillRect(Math.round(s.x - cx) - 2, Math.round(s.y - cy) - 1, 5, 3); g.fillStyle = '#ffd36b'; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy), 3, 1); }
-    for (const q of pillars) { const k = q.t > 0 ? 0.25 : 0.8; g.globalAlpha = k; g.fillStyle = q.t > 0 ? '#ffe89a' : '#fff6c8'; g.fillRect(Math.round(q.x - cx) - (q.t > 0 ? 1 : 6), 0, q.t > 0 ? 2 : 12, Math.round(q.y - cy)); g.globalAlpha = 1; }
-    if (p.spEyeT > 0) { const ex = Math.round(p.x - cx), ey = Math.round(p.y - 34 - cy); g.fillStyle = '#ffd36b'; g.fillRect(ex - 2, ey - 2, 5, 5); g.fillStyle = '#fff6c8'; g.fillRect(ex - 1, ey - 1, 3, 3);
-      if (p.spEyeLine) { g.strokeStyle = '#fff2b0'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex + 0.5, ey + 0.5); g.lineTo(Math.round(p.spEyeLine.x - cx) + 0.5, Math.round(p.spEyeLine.y - cy) + 0.5); g.stroke(); } }
-    if (p.spSunrise > 0) { g.globalAlpha = 0.08 + 0.03 * Math.sin(api.time * 4); g.fillStyle = '#fff2b0'; g.fillRect(0, 0, 9999, 9999); g.globalAlpha = 1; }
+  // ---- DRAWN (claude/priestart: src/redraw/sun_priest_fx.js) ----
+  function draw(g, cx, cy) { const p = P(); if (!p || p.spRad === undefined) return; const t = api.time;
+    for (const q of p.spPatches || []) FX.patch(g, q, cx, cy, api.TS, t);
+    for (const l of lamps) FX.lamp(g, l, cx, cy, t);
+    if (p.spBeam && p.spBeam.line) FX.beam(g, p.spBeam.line, cx, cy, t, { wide: p.spSunrise > 0 });
+    for (const s of shards) FX.shard(g, s, cx, cy, t);
+    for (const q of pillars) FX.pillar(g, q, cx, cy, t);
+    if (p.spEyeT > 0) FX.eye(g, Math.round(p.x - cx), Math.round(p.y - 34 - cy), p.spEyeLine ? { x: Math.round(p.spEyeLine.x - cx), y: Math.round(p.spEyeLine.y - cy) } : null, t);
+    const fa = flareAge(p); if (fa >= 0 && fa < 0.35) FX.flareBurst(g, Math.round(p.x - cx), Math.round(p.y - 12 - cy), fa, DP.flare.r);
+    const da = t - p.spDiscAt; if (da >= 0 && da < 0.2) FX.discShield(g, Math.round(p.x - cx), Math.round(p.y - 14 - cy), p.face, da);
+    if (p.spHaloT > 0) FX.haloRing(g, Math.round(p.x - cx), Math.round(p.y - 33 - cy), t);
+    if (p.spWardT > 0) FX.wardRing(g, Math.round(p.x - cx), Math.round(p.y - 14 - cy), t);
+    if (p.spMendT > 0) FX.mend(g, Math.round(p.x - cx), Math.round(p.y - 4 - cy), t);
+    if (p.spSunrise > 0) FX.sunrise(g, g.canvas.width, g.canvas.height, t, Math.min(1, p.spSunrise / 0.6));
   }
   /* what the HUD bar shows */
   const hud = () => { const p = P(); ensure(p); return { rad: p.spRad, full: full(p), sunrise: p.spSunrise > 0, lit: lightsHere(p), mul: radMult(p) }; };

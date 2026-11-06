@@ -59,6 +59,22 @@ export const POSE_BEATS = {
   cinder: [0.1, 0.22],         /* CINDER STEP: a low flat dash with the embers coming off the hem, and the pull-up */
   meteor: [0.12],              /* FIRE LANCE (id meteor): the staff drawn back at the hip, then thrown level */
   ring: [0.1],                 /* RING OF FIRE: the staff lifted in both hands, and driven butt-first into the ground */
+  /* THE DESERT PRIEST (claude/priestart: his own fifteen poses, src/redraw/sun_priest_rig.js priestPoses) */
+  spShard: [0.1],              /* SUN SHARD: the palm lifted to the eye with a spark, then the arm thrown out and the disc leaving it */
+  spStep: [0.1, 0.22],         /* HALLOWED STEP: low and flat through the gap with the light streaming off the hem, and the pull-up */
+  spLamp: [0.1, 0.25],         /* SUN-LAMP: the lit palm lifted high, then down on a knee setting it on the floor */
+  spWard: [0.12],              /* DAWN WARD: drawn in with the sleeves crossed, then flung wide with the ring of morning going off */
+  spPillar: [0.14],            /* PILLAR OF NOON: the staff overhead in both hands, then thrust out and up at the foe */
+  spMercy: [0.12, 0.28],       /* MERCY: palms together, opened out and up with green-gold light rising, the settle */
+  spGlare: [0.08, 0.2],        /* GLARE: the head and sleeves drawn up, the palm thrown flat with a white sun in it, the recover */
+  spWind: [0.1],               /* SOLAR WIND: the staff taken back low, then swept along the floor with the wind streaming off the disc */
+  spHalo: [0.12, 0.3],         /* HALO OF NOON: the sleeves raised round the head, up on the toes under a ring of sun, the settle */
+  spEye: [0.2],                /* THE BURNING EYE: the head back and a hand to the brow, the eye opening over him */
+  spBeam: [0.12],              /* THE SUNBEAM (hold X): braced low with the staff levelled, the disc burning */
+  spDisc: [0.09],              /* THE DISC (tap C): the staff stood level before him, the disc raised like a shield; the settle */
+  spFlare: [0.1, 0.26],        /* THE FLARE (hold C): drawn in over the chest, flung wide with the sun going off round him, the afterglow */
+  spConsec: [0.15],            /* CONSECRATE (DOWN+C): down on both knees with the staff in the ground and the palm flat, the gold running along the floor */
+  spRise: [0.15, 0.35],        /* SUNRISE (ultimate): gathered low, up on the toes with the staff overhead, held under the whole sun */
   /* THE FREEBOOTER */
   spot: [0.1, 0.3],            /* THE BLACK SPOT: the cutlass point levelled at him, the spot on it, and the blade taken back */
   haul: [0.07, 0.16],          /* KEELHAUL: the hook flung out, the line hauled back hand over hand, and over the shoulder */
