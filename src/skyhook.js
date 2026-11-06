@@ -34,7 +34,7 @@ export const SH = {
   sweep: { tell: [0.75, 0.65], t: 0.25, reach: 80, h: 14, dmg: 10, chance: [0.4, 0.5] },
   climb: { tell: 0.3, t: 0.6 },
   slip: { fall: 0.45, restring: 5, span: 1 / 3, land: 44 },        // land: he comes down this far from the lever that slipped the line (on the middle side): the striker is beside him                  // span: the share of the line, round its middle, over which a lever slips him
-  downed: { t: [3.6, 3.0], mul: 2.0, cap: 0.2 },
+  downed: { t: [4.2, 3.5], mul: 2.0, cap: 0.25 },
   rise: { tell: 0.6, r: 40, dmg: 6, push: 180, ward: 2.5 },
   shove: { tell: 0.6, t: 0.2, reach: 34, dmg: 8, push: 200, range: 44 },
   cut: { tell: 1.4, restring: 6 },
