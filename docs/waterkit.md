@@ -4,7 +4,7 @@ Two shared systems for the sea arc (scratch/plan-water-1105.md §3a/3b). Both ar
 main.js hands in its pieces (poolLevel, the attack box, the seats, a collision-aware move) and draws from the events. Worked example of both:
 `src/waterkit-lab.js` (THE TIDE BASIN, a data-only test room). Proof: `node tools/tide-kit.mjs`, `node tools/pull-field.mjs` (Node only, no browser).
 
-**Status:** modules + tests only. Nothing on the road uses them yet, and main.js does not call them yet (see "Wiring" below — the first sea level lane does it).
+**Status:** WIRED (claude/water1, 11-05): `src/pirate-fleet-hands.js` runs the kit for ANY level that declares `L.tides` / `L.pulls` (main.js `PFH`: clear on load/respawn, update, strike, mover, draw, hud). First user: THE PIRATE FLEET (hidden, dev only). The kit tools now lint the BUILT level of every LEVELS row. Not yet folded: the old per-level tides listed at the end.
 
 ## TIDE KIT — `src/tide-kit.js`
 
