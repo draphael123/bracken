@@ -1,5 +1,5 @@
 /* tools/hl-art-sheet.mjs - THE HIGH LINES' ART as PNG contact sheets, NODE ONLY (claude/hlart): a tiny software raster stands in for the canvas (fillRect with alpha, drawImage of a baked layer), so the art can be
-   LOOKED AT with no browser (the method of tools/pf-art-sheet.mjs).   node tools/hl-art-sheet.mjs [outdir]
+   LOOKED AT with no browser (the method of the Pirate Fleet art lane, claude/pfart).   node tools/hl-art-sheet.mjs [outdir]
    writes: hookjack.png (every pose, x4), skyhook.png (every pose + trolley, hook, lever, rag, x3), tiles.png (the kit on the real level, x2), backdrop.png (the cave mouth at five heights, x2),
    scenes.png (composed stills: tiles + supports + dressing + lines + foes at 7 camera spots, x2), machinery.png (winch, points, post, hopper, cab, cage + ballast, grip, parted line, x3) */
 import { deflateSync } from 'node:zlib';
