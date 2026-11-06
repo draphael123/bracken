@@ -1,4 +1,4 @@
-TRANSLAND DONE 11-06 16:03 READY tip 0940dd519
+TRANSLAND DONE 11-06 16:03 READY tip 0ad7b27a5
 
 PART 1 - float fix (src/main.js trnBegin/trnUpdate/draw)
 Cause: the transition walk-out is kinematic (tr.pos[i] copied the hero's x,y at trnBegin and only x moved), so a hero airborne at that moment (jump, dash, plunge, cling, swim, ladder/rope) was drawn at that frozen y for the whole cutscene.
