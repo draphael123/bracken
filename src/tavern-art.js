@@ -216,3 +216,22 @@ export function tag(g, x, y, c, d, text, label, ai) {
   text(label, x, y, col, 'center', 6);
 }
 
+
+/* ---------------------------------------------------------------- THE STORYTELLER (claude/scenes-gallery) ---------------------------------------------------------------- */
+/* an old storyteller in a high-backed chair by the fire: a rug, a hooded robe, a white beard, a book open on his knee, one hand raised mid-tale (2 frames) and a few sparks of story rising */
+export function storyteller(g, x, fy, time) {
+  const f = Math.floor(time * 1.6) & 1, k = 0.5 + 0.5 * Math.sin(time * 2.3);
+  R(g, x - 17, fy - 2, 34, 2, '#5a2424'); R(g, x - 17, fy - 2, 34, 1, '#8a3c30'); for (let i = -15; i <= 13; i += 4) R(g, x + i, fy - 2, 2, 1, '#c9a24a');   /* the rug */
+  R(g, x - 10, fy - 40, 20, 38, TP.o3); R(g, x - 10, fy - 40, 20, 1, TP.o6); R(g, x - 10, fy - 40, 2, 38, TP.o5); R(g, x + 8, fy - 40, 2, 38, TP.o1);   /* the high back */
+  R(g, x - 8, fy - 38, 16, 2, TP.o4); R(g, x - 3, fy - 44, 6, 4, TP.o3); R(g, x - 3, fy - 44, 6, 1, TP.o6);                                             /* its crest */
+  R(g, x - 12, fy - 18, 4, 14, TP.o2); R(g, x + 8, fy - 18, 4, 14, TP.o2); R(g, x - 12, fy - 18, 4, 1, TP.o5); R(g, x + 8, fy - 18, 4, 1, TP.o5);       /* the arms */
+  R(g, x - 10, fy - 12, 20, 4, TP.o4); R(g, x - 10, fy - 12, 20, 1, TP.o6); R(g, x - 11, fy - 8, 3, 8, TP.o2); R(g, x + 8, fy - 8, 3, 8, TP.o2);       /* the seat and its legs */
+  R(g, x - 6, fy - 26, 12, 15, '#5a4a7a'); R(g, x - 6, fy - 26, 2, 15, '#7a68a0'); R(g, x + 4, fy - 26, 2, 15, '#3a2e54');                               /* the robe */
+  R(g, x - 4, fy - 33, 8, 8, '#4a3c68'); R(g, x - 3, fy - 31, 6, 5, '#d9b08c'); P(g, x - 2, fy - 30, '#2a2018'); P(g, x + 1, fy - 30, '#2a2018');   /* the hood and the face */
+  R(g, x - 3, fy - 28, 6, 5, '#ece8dc'); R(g, x - 2, fy - 23, 4, 2, '#d8d2c2'); R(g, x - 3, fy - 28, 1, 5, '#c9c4b4');                                    /* the white beard */
+  R(g, x - 7, fy - 17, 14, 3, '#3a2e54');                                                                                                                   /* his lap */
+  R(g, x - 5, fy - 20, 10, 4, '#8a6a3c'); R(g, x - 5, fy - 20, 10, 1, '#c4a674'); R(g, x - 5, fy - 19, 4, 2, '#ece8dc'); R(g, x + 1, fy - 19, 4, 2, '#ece8dc'); R(g, x, fy - 20, 1, 4, '#5a4228');   /* the book */
+  const hy = fy - 27 - f * 4; R(g, x + 5, hy, 3, 3, '#d9b08c'); R(g, x + 4, hy + 3, 2, 8 + f * 4, '#5a4a7a');                                               /* the raised hand */
+  g.globalAlpha = 0.35 + 0.45 * k; P(g, x + 9, fy - 36 - ((time * 9) % 10), '#ffd36b'); P(g, x - 9, fy - 33 - ((time * 7 + 4) % 12), '#fff6c8'); P(g, x + 11, fy - 30 - ((time * 6 + 7) % 11), '#ffe9a8'); g.globalAlpha = 1;   /* sparks of story */
+  GLOW(g, x, fy - 24, 24, 20, '#ff9a4a', 0.04);
+}

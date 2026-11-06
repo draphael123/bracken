@@ -223,6 +223,7 @@ import { bossZooms, miniZooms } from './boss-view.js';
 import * as AC from './act-cards.js';
 import * as SC from './secrets.js';   /* THE SECRETS SYSTEM (claude/secrets): one registry for every hidden path - toasts, the map's '?', the journal, the hero line */
 import * as TRM from './transitions.js';   /* (claude/transwm) THE LEVEL TRANSITIONS: the timeline and the table */
+import * as SG from './scenes-gallery.js';   /* (claude/scenes-gallery) THE SCENES GALLERY: the unlocked transitions, in road order */
 import * as TRA from './transitions-art.js';   /* (claude/actcards) ACT CARDS + THE BOSS-KILL BEAT */
 import { hallHolds } from './tower-hall.js';   /* THE FALLING TOWER's hall at the top of the tower: nothing from the crown wanders into it (round 3) */   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
 import * as DPP from './deep_props.js';
@@ -7366,7 +7367,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  scenes: () => { if (state === 'play') scenesOpen('inn'); },   /* (claude/scenes-gallery) THE STORYTELLER */ openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -11845,7 +11846,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], scenesRowOn() ? ['SCENES'] : [], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -32444,15 +32445,20 @@ function trnEnv() {
     drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
     drawFerryman: (x, y, face, frame) => { if (SPR.ferryman) drawSet(SPR.ferryman, null, frame, x, y, face, false); } };
 }
-function trnBegin() {
-  if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
+function trnBegin(replay) {   /* replay: a table row (the SCENES gallery, scenesPlay): runs the row as it is, never reads or writes the save */
+  if (TRN || !L || !LEVELS[levelIndex] || (!replay && (rushOn() || bossSelectFight || edTesting || L.trial || L.shop))) return false;
+  if (replay) { state = 'win'; slowT = 0; stop = 0; bannerT = 0; const tg = replay.walk && replay.walk.to ? replay.walk.to * TS : LW * TS + 16;
+    TRN = { entry: replay, to: -1, tl: TRM.start(replay, { reduce: SET.reduceMotion }), opened: false, loading: false, target: tg, scene: false, replay: true,
+      pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, tg - p.x)) })) };
+    BUG.evlog('scene replay ' + SG.keyOf(replay)); return true; }
   const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
   if (DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
   if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
-  if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
-  PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
+  const plays = TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) });
+  if (SG.markSeen(PROG, key) || plays) saveProgress();   /* (claude/scenes-gallery) SEEN is recorded when it plays AND when the setting or an earlier watch skips it: the road went through it, the gallery unlocks it */
+  if (!plays) return false;
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
     pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
@@ -32493,6 +32499,7 @@ function trnUpdate(dt) {
 let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE MAP: the spur node pulses until a level starts */
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
+  if (tr.replay) { scenesEnd(); return; }   /* (claude/scenes-gallery) a replay ends on the card: no level loads, nothing is credited or saved */
   if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
@@ -32534,6 +32541,75 @@ function trnDrawOverlay() {
     if (TRM.canSkip(tl)) { const thin = !!TRN.entry.bar; g.globalAlpha = Math.min(thin ? 0.45 : 0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - (thin ? 13 : 15), '#d9d2b8', 'right', thin ? 5 : 6); g.globalAlpha = 1; } }
   else if (TRN) { g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, VH); }
   else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur));
+}
+/* ===== (claude/scenes-gallery, Daniel 11-06) THE SCENES GALLERY (src/scenes-gallery.js: names, road order, unlock rules). The title's SCENES row and the inn's THE STORYTELLER open one card listing every
+   transition the save has SEEN (or walked past), in road order; ENTER replays the picked one. THE REPLAY is a sandbox exactly like Boss Select: bossJumpOn is set FIRST, so saveProgress (the only writer
+   of a slot) returns at once; no winLevel runs (no clear, no medal, no XP, no coins); the row's own beats run through the same runner (trnBegin(row), TRN.replay) and trnFinish ends on the card
+   (scenesEnd re-reads the save). SEEN is never written by a replay. Hidden ?scenes=all unlocks every row for review. ===== */
+function scenesAll() { return q.get('scenes') === 'all'; }
+function scnHide(e) { const to = LEVELS.findIndex(l => l.id === e.to); return !!(DS.DEMO && to >= 0 && DS.demoLocked(LEVELS[to])); }
+function scnRows() { return SG.rows(PROG, { all: scenesAll(), hide: scnHide }); }
+function scenesRowOn() { if (scenesAll()) return true; const raw = readSlot(slot); return !!raw && SG.anyUnlocked(raw, { hide: scnHide }); }
+const SCN = { from: 'title', i: 0, run: null };
+function scenesOpen(from = 'title') {
+  if (from === 'title') { loadSlot(slot); applySkin(); applyUpgrades(); }
+  SCN.from = from; SCN.i = 0; SCN.run = null; state = 'scenes'; music.play(menuTrack()); SFX.uiSel();
+}
+function scenesClose() {
+  SFX.menuClose();
+  if (SCN.from === 'inn') { if (L && L.tavern) { state = 'play'; music.play('store'); } else { state = 'play'; enterTavern(); } }   /* (a replay left the room: back in, the party with us) */
+  else if (SCN.from === 'map') state = 'map'; else state = 'title';
+}
+function scenesPlay(row) {
+  if (!row || !row.unlocked) { SFX.buzz(); return false; }
+  const e = row.entry, li = LEVELS.findIndex(l => l.id === e.from); if (li < 0) { SFX.buzz(); return false; }
+  bossJumpOn = true;   /* FIRST: nothing below, and nothing in the replay that follows, can reach a save */
+  if (SCN.from === 'inn') partyToWant();
+  SCN.run = row.key; SFX.uiSel();
+  loadThen(li, () => { startGame(); scenesStand(e); trnBegin(e); });
+  return true;
+}
+/* the heroes stand on the arena's floor a few tiles short of the way out, the level's creatures gone (the boss is "down"), the camera on them */
+function scenesStand(e) {
+  enemies.length = 0; boss = null; bossActive = false; bossWon = 0; camLock = null; bannerT = 0;
+  const col = SG.standCol(e, LW), A = L.arena || L.mini, fr = A && A.floor ? Math.round(A.floor / TS) : L.START.y + 1; let row = -1;
+  for (let d = 0; d <= 14 && row < 0; d++) for (const r of [fr - d, fr + d]) if (r > 1 && r < LH - 1 && !isSolid(col, r - 1) && !isSolid(col, r - 2) && isSolid(col, r)) { row = r; break; }
+  const x0 = col * TS + 8, y0 = (row < 0 ? L.START.y + 1 : row) * TS;
+  players.forEach((p, i) => { p.x = x0 + i * 12; p.y = y0; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
+  camX = P.x - VW * 0.4; camY = P.y - 100;
+}
+function scenesEnd() {
+  TRN = null; trnArrive = null; SCN.run = null; setView('normal');
+  loadSlot(slot); bossJumpOn = false; applySkin(); applyUpgrades();   /* the sandbox is over: the save is read back as it was */
+  state = 'scenes'; music.play(menuTrack()); transT = 1; transKind = 'fade';
+}
+function updateScenes() {
+  const rows = scnRows(), n = rows.length;
+  if (pausePress || atkPress) { scenesClose(); return; }
+  if (!n) return;
+  if (upPress) { SCN.i = (SCN.i + n - 1) % n; SFX.ui(); }
+  if (downPress) { SCN.i = (SCN.i + 1) % n; SFX.ui(); }
+  SCN.i = Math.max(0, Math.min(n - 1, SCN.i));
+  if (confirmPress) scenesPlay(rows[SCN.i]);
+}
+function drawScenes() {
+  const inRoom = SCN.from === 'inn' && L && L.tavern;
+  g.fillStyle = inRoom || SCN.from !== 'inn' ? 'rgba(10,14,12,0.84)' : '#0a0e0c'; g.fillRect(0, 0, VW, VH);
+  const x = 16, y = 6, w = VW - 32, h = VH - 12; panel(x, y, w, h, UI.border, 'iron');
+  const rows = scnRows(), n = rows.length, shown = 9, start = Math.max(0, Math.min(Math.max(0, n - shown), SCN.i - 4)), have = rows.filter(r => r.unlocked).length;
+  text('SCENES', VW / 2, y + 6, UI.title, 'center', TYPE.head);
+  text(have + '/' + n, x + w - 8, y + 6, UI.dim, 'right', 6);
+  for (let i = start; i < Math.min(n, start + shown); i++) {
+    const r = rows[i], yy = y + 21 + (i - start) * 12, sel = i === SCN.i;
+    if (sel) { g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(x + 5, yy - 2, w - 10, 11); text('>', x + 8, yy, UI.sel, 'left', 6); }
+    TCH.hit(x + 5, yy - 2, w - 10, 11, () => { SCN.i = i; confirmPress = true; initAudio(); });
+    text(String(r.n), x + 16, yy, UI.dim, 'left', 6);
+    text(r.unlocked ? fitText(r.name, 140, 6) : '???', x + 29, yy, r.unlocked ? (sel ? UI.title : UI.text) : '#666c70', 'left', 6);
+    if (r.unlocked && r.cinematic) text('FILM', x + w - 10, yy, UI.gold, 'right', 6);   /* the scenes with a picture of their own: the ferry, the laid road, the smoke */
+  }
+  text(fitText(touchOn ? 'TAP A SCENE   BACK: ESC' : 'UP/DOWN pick   Z play   ESC back', w - 16, 6), VW / 2, y + h - 21, UI.dim, 'center', 6);
+  text(fitText('replays only: nothing is credited or saved', w - 16, 6), VW / 2, y + h - 11, UI.dim, 'center', 6);
+  if (!n) text('NO SCENES YET', VW / 2, VH / 2, UI.dim, 'center');
 }
 /* (claude/actcards) THE BOSS-KILL BEAT. Every boss death sets bossWon; the first frame it is up this runs once (bossBeat stays set, cleared only by a level load). Stinger always; slow-mo + camera push unless reduce-motion or ?nobeat=1. */
 function startBossBeat() {
@@ -32663,6 +32739,7 @@ function update(dt) {
         else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
         else if (k === 'DUEL (BETA)' && PVP_SHIPS) { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => duelAtPit(true)); }   /* (claude/pvpduel) the inn is the lobby: P1 stands at the DUEL PIT with its card up (friends join as in co-op) */
         else if (k === 'BOSS SELECT') bossSelectOpen('title');
+        else if (k === 'SCENES') scenesOpen('title');   /* (claude/scenes-gallery) */
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */
         else if (k === 'THE EDITOR') edEnter();
@@ -32712,6 +32789,7 @@ function update(dt) {
   if (state === 'herocard') { if (confirmPress) yardEnter(false); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
   if (state === 'bossselect') { updateBossSelect(); return; }
+  if (state === 'scenes') { updateScenes(); return; }   /* (claude/scenes-gallery) */
   if (state === 'whatsnew') { const step = 5;
     if (upPress || leftPress) { wnScroll = Math.max(0, wnScroll - 1); SFX.ui(); } if (downPress || rightPress) { wnScroll = Math.min(wnLimit, wnScroll + 1); SFX.ui(); }
     if (confirmPress) { if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + step); SFX.ui(); } }
@@ -36811,8 +36889,8 @@ function render() {
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */
   if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH, openingHeroCloth());
-  else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
-  else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
+  else if (state === 'title' || state === 'slots' || state === 'bossjump' || (state === 'scenes' && SCN.from === 'title')) drawTitle(cx, cy);
+  else if (state === 'map' || (state === 'scenes' && SCN.from === 'map')) { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
   else if (state === 'win' && TRN && TRN.scene && !TRN.loading && (TRM.isSceneBeat(TRN.tl.beats[TRN.tl.i]) || (TRM.phase(TRN.tl) === 'fade' && !TRN.tl.skipped))) trnDrawScene();   /* (claude/transwm) scenes: 'ferry' / (claude/demotransitions) 'road', 'smoke' */
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
@@ -37191,6 +37269,7 @@ function render() {
   if (state === 'whatsnew') drawWhatsNew();
   if (state === 'bossjump') drawBossJump();
   if (state === 'bossselect') drawBossSelect();
+  if (state === 'scenes') drawScenes();
   if (state === 'controls') drawControls();
   if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
@@ -37342,6 +37421,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   mapSpurLit: () => (mapSpurLit ? mapSpurLit.id : null), get map() { return map; },
+  scenes: { rows: () => scnRows().map(({ entry, ...v }) => v), open: scenesOpen, play: i => scenesPlay(scnRows()[i]), close: scenesClose, get cursor() { return SCN.i; }, set cursor(v) { SCN.i = v; }, get from() { return SCN.from; }, get run() { return SCN.run; }, get sandbox() { return bossJumpOn; }, SG },
   trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */

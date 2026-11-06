@@ -202,6 +202,9 @@ if (PAGE.length) {
       ok(dp.st === 'map' && dp.seats === 1, 'THE DOOR, for player one: out to the map, the party with him: ' + JSON.stringify(dp));
       ok(dp.back === 2, '...and back into the inn the party comes in with him: ' + dp.back);
       ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE ARENA YARD DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
+      /* (claude/scenes-gallery, Daniel 11-06) THE STORYTELLER: SCENES - the gallery card (a state of its own), listing the road's transitions; ESC closes it back into the room (NOT run in the lane: no browser) */
+      const sy = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'storyteller').x});BK.sim(3);__talk(b);BK.sim(2);const o={st:BK.state,from:BK.scenes.from,n:BK.scenes.rows().length,seen:__st('storyteller').seen};BK.scenes.close();BK.sim(2);o.back=BK.state;return o;})()`);
+      ok(sy.st === 'scenes' && sy.from === 'inn' && sy.n >= 11 && sy.seen && sy.back === 'play', 'THE STORYTELLER opens the SCENES card (every transition row listed) and closes back into the room: ' + JSON.stringify(sy));
       /* (claude/tutorial1, Daniel 11-05) THE LESSON BOARD: the opening lesson again, the party with him; its way out is the inn */
       const lp = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'lesson').x});BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.opening);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}const o={ls:BK.L&&BK.L.opening?'lesson':BK.state,party:BK.players().length,trial:BK.L&&BK.L.trial!==undefined};BK.state='play';return o;})()`);
       ok(lp.ls === 'lesson' && lp.party === 2 && !lp.trial, 'THE LESSON BOARD replays the roadside lesson, the party with him (no trial flag): ' + JSON.stringify(lp));
