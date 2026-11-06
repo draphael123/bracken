@@ -1,0 +1,17 @@
+{
+  "time": "2026-11-06T23:06:55.265Z",
+  "kind": "fixed-cohort-catalogue-nov06",
+  "scope": "Standalone source-specific SPR opt-in backend protocol. Original seven-case integrity component is byte-exact;26added native-intrinsic/descriptor and ordinary object controls. No Game module imports this prepared component. No factory or Game memory/FPS proof.",
+  "sourceSha256": "cdff8b1a7019a22f13e32b9f75fe8c85062b0177c31b17ab274ad71b3ca798c6",
+  "priorFixtureSha256": "9c0cca96f9aa7d96e0a3b09ab63223e0d294eef8abea4d3a54f63ecaea540872",
+  "priorFixtureSource": "1af90edf16412c1ebd3f4245c4abbd23b14b8ff4:tools/per-sprite-integrity-nov03/check.mjs",
+  "priorCases": 7,
+  "additionalCases": 26,
+  "rootFrontier": "Explicit trusted initial native intrinsics; no universal hostile pre-root reflection/namespace Proxy authentication claim. Initial changes after root must decline admission; late operations use captured native methods/null descriptor records.",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "originalGameAndAll921ToolsUnchanged": true,
+  "GameIntegration": false,
+  "adopted": false,
+  "overallWorkComplete": false
+}
