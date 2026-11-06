@@ -116,15 +116,16 @@ export function buildWhale({ painter, T, TS }) {
   // ================= 1. THE MAW (0-49): TEACH SAFE =================
   block(0, 49, 0, 24);                                                   /* the roof of the mouth */
   rock(0, 49, 36);                                                       /* the root of the tongue: the floor */
-  block(9, 9, 25, 29); block(15, 15, 25, 28); block(38, 38, 25, 29);     /* BALEEN hanging from the roof */
+  block(2, 2, 25, 29); block(17, 17, 25, 28); block(36, 36, 25, 28);     /* BALEEN hanging from the roof */
   sign(2, 35, WH_SIGNS.lore); sign(6, 35, WH_RULE); sign(12, 35, WH_SIGNS.breath);
   coins([8, 35], [11, 35]);
+  plat(4, 33, 4); plat(9, 30, 4); plat(14, 33, 3); plat(26, 33, 4); plat(33, 30, 4); plat(39, 27, 3); ent('silver', 40, 26);   /* BALEEN SHELVES up the cheek: the first silver, high over the membrane (a pocket) */
   air(18, 25, 36, 37); net(18, 36, 37); bile('maw', 18, 25, 38, 38, 36); sign(16, 35, WH_SIGNS.dip);   /* a shallow bile dip: two rows, it cannot kill */
   coins([21, 37], [24, 37]);
   sign(29, 35, WH_SIGNS.nerve); nerve('n1', 32, 35);                     /* TEACH: the first nerve, on the floor, nothing near it */
   sign(41, 35, WH_SIGNS.membrane);
   membrane('m1', 44, 45, 25, 35);                                        /* the first membrane: roof to floor - it opens on the inhale */
-  coins([47, 35]);
+  coins([47, 35]); foe('crab', 47, 35);   /* the first foe waits past the membrane: a barnacle crab */
 
   // ================= 2. THE TONGUE AND TEETH (50-125) =================
   block(50, 125, 0, 18);
@@ -133,22 +134,22 @@ export function buildWhale({ painter, T, TS }) {
   lift('tongue', 'tg1', 53, 67, 40, 36);                                 /* THE TONGUE: heaves to row 36 (level) on the exhale, drops to 40 on the inhale */
   net(53, 37, 41); net(67, 37, 41);                                      /* sinew up both walls: fall in, climb out */
   sign(50, 35, WH_SIGNS.tongue); nerve('n2', 51, 35);                    /* TEST: call the exhale and the tongue lifts level */
-  rock(68, 75, 36); coins([70, 35], [72, 35]);
+  rock(68, 75, 36); coins([70, 35], [72, 35]); plat(69, 33, 3); plat(72, 30, 3);
   foe('crab', 71, 35);
   /* REMIX 1: THE DEBRIS RAFT - a raft of swallowed wreck in a well; the exhale lifts it to the high ledge */
   block(76, 84, 42, BED - 1); bile('well', 76, 84, 42, 41, 33); net(76, 37, 41);
   raft('well', 'raft1', 78, 81, 41, 33);
   sign(73, 35, WH_SIGNS.raft); nerve('n3', 74, 35);
   rock(85, 103, 33);                                                     /* the high ledge */
-  coins([87, 32], [90, 32]);
-  foe('gastricpolyp', 89, 32, { face: 1 });                              /* the polyp taught on the ledge (art owed: a stalk out of the flesh floor) */
+  coins([87, 32], [90, 32]); plat(86, 30, 4); plat(97, 29, 4);
+  foe('gastricpolyp', 89, 32, { face: 1, squad: 'comb-court' });                              /* the polyp taught on the ledge (art owed: a stalk out of the flesh floor) */
   sign(86, 32, WH_SIGNS.polyp);
   /* REMIX 2: THE BALEEN COMB - a membrane only an inhale parts */
   sign(91, 32, WH_SIGNS.comb);
   block(93, 94, 19, 29); membrane('m2', 93, 94, 30, 32);
   /* REMIX 3: THE GUST TAKES THEM - two crabs on the ledge's lip; the exhale blows them back into the comb well */
   gust('g1', [95, 26, 103, 32], [1, 0], WH.gust, { fall: 1, rise: -1 });
-  sign(96, 32, WH_SIGNS.gust); foe('crab', 99, 32); foe('crab', 102, 32);
+  sign(96, 32, WH_SIGNS.gust); foe('crab', 99, 32, { squad: 'comb-court' }); foe('crab', 102, 32, { squad: 'comb-court' });
   /* EXAM: THE COMB CLIMB - baleen plates up out of a well the exhale floods (the line reaches row 30: the first plate goes under) */
   block(104, 121, 44, BED - 1); bile('comb', 104, 121, 44, 43, 30);
   sign(101, 32, WH_SIGNS.climb);
@@ -163,22 +164,22 @@ export function buildWhale({ painter, T, TS }) {
   block(122, 170, 0, 16);
   block(130, 152, 44, BED - 1); bile('gullet', 130, 152, 44, 43, 37);   /* the gullet's sump: the exhale floods it to row 37 */
   sign(127, 22, WH_SIGNS.gullet);
-  block(146, 152, 28, 28); block(130, 135, 33, 33); block(144, 152, 38, 38); net(143, 38, 43);   /* sinew shelves on its walls; sinew up the last one from the sump */
+  block(146, 152, 28, 28); block(130, 138, 33, 33); block(144, 152, 38, 38); net(143, 38, 43);   /* sinew shelves on its walls; sinew up the last one from the sump */
   gust('g2', [130, 17, 152, 43], [0, 1], WH.gust, { fall: 1, rise: -1 });   /* the inhale pulls you down it; the exhale breathes up at you */
   foe('gastricpolyp', 132, 32, { face: 1 }); foe('gastricpolyp', 150, 27, { face: -1 });
-  coins([133, 32], [148, 27], [146, 37]);
+  coins([133, 32], [148, 27], [146, 37]); ent('silver', 151, 27);   /* the second silver: on the gullet's high shelf (the way down misses it) */
   block(153, 170, 17, 35); rock(153, 170, 40);                           /* the east wall, and the passage to the stomach under it */
   sign(145, 37, WH_SIGNS.cardia); nerve('nreq', 149, 37);                /* THE REQUIRED STRIKE: the cardia only opens to a breath you call */
   membrane('cardia', 153, 154, 36, 39, 'sealed');
-  sign(158, 39, WH_SIGNS.log);
+  sign(158, 39, WH_SIGNS.log); foe('crab', 166, 39);
 
   // ================= 4. THE STOMACH (171-262) =================
   block(171, 262, 0, 14);
   block(171, 205, 44, BED - 1); bile('gutA', 171, 205, 44, 43, 37); net(171, 40, 43);   /* BASIN A: walk its bed at the inhale, swim it at the exhale */
-  plat(175, 40, 5); plat(183, 38, 5); plat(191, 40, 5);                  /* DROWNED HULLS (swallowed ships: tarred, barnacled - art owed) */
+  plat(174, 40, 7); plat(182, 38, 7); plat(190, 40, 7); plat(198, 39, 5);                  /* DROWNED HULLS (swallowed ships: tarred, barnacled - art owed) */
   sign(173, 39, WH_SIGNS.leech);
-  foe('leech', 179, 43); foe('leech', 195, 43);
-  foe('gastricpolyp', 186, 37, { face: -1 });
+  foe('leech', 179, 43, { squad: 'gut-brood' }); foe('leech', 195, 43, { squad: 'gut-brood' });
+  foe('gastricpolyp', 186, 37, { face: -1, squad: 'gut-brood' });
   ent('silver', 200, 43); coins([198, 43], [202, 43]); sign(197, 43, WH_SIGNS.strongbox);   /* THE SAILOR'S STRONGBOX (one of the level's three silvers) */
   rock(206, 212, 36); net(205, 36, 43);
   sign(207, 35, WH_SIGNS.rafts); nerve('nst', 210, 35);
@@ -190,7 +191,7 @@ export function buildWhale({ painter, T, TS }) {
   rock(235, 262, 33);
   foe('merrowbrute', 248, 32, { elite: true });                         /* THE ELITE: a swallowed merrow brute on the ledge (the void of the ribs behind him) */
   foe('gastricpolyp', 241, 32, { face: 1 });
-  coins([238, 32], [255, 32], [259, 32]);
+  coins([238, 32], [255, 32], [259, 32]); plat(238, 30, 5); plat(244, 27, 4); plat(248, 30, 4); plat(253, 30, 5); plat(258, 30, 4);   /* bone shelves over the ledge */
 
   // ================= 5. THE RIB CAGE (263-322): THE GUST EXAM OVER THE VOID =================
   block(263, 322, 0, 14);
@@ -198,7 +199,8 @@ export function buildWhale({ painter, T, TS }) {
   for (const [x0, top] of [[266, 32], [272, 30], [278, 32], [284, 30], [290, 31], [296, 29], [302, 31], [308, 30]]) block(x0, x0 + 2, top, H - 1);   /* THE RIBS */
   gust('g3', [263, 16, 313, 34], [1, 0], WH.ribGust, { fall: 0.4, rise: -1 });   /* the exhale throws you back toward the maw; the inhale draws you gently on */
   sign(260, 32, WH_SIGNS.ribs); nerve('nr1', 267, 31); nerve('nr2', 291, 30);
-  coins([273, 29], [285, 29], [297, 28]);
+  coins([273, 29], [285, 29], [297, 28]); plat(272, 26, 3); plat(284, 26, 3); plat(296, 25, 3); plat(308, 26, 3);   /* the high ribs: a second way over (the gust blows hardest up here: nothing shelters you) */
+  foe('gastricpolyp', 285, 29, { face: -1 });
   ent('silver', 309, 29);
   rock(314, 322, 32); ent('check', 318, 31);                             /* SHRINE TWO: the boss door */
   sign(320, 31, WH_SIGNS.boss);
@@ -208,6 +210,7 @@ export function buildWhale({ painter, T, TS }) {
   block(AS, 399, 0, 12);
   block(AS, 399, AF, BED - 1);                                           /* the chamber floor (row 40) */
   block(AS, 328, 36, AF - 1); block(381, AE, 36, AF - 1); block(343, 346, 35, AF - 1);   /* THE SHELVES (top 36) and THE VALVE (top 35) */
+  plat(331, 34, 6); plat(349, 33, 6); plat(372, 34, 6); plat(324, 32, 4); plat(343, 31, 4); plat(382, 32, 4);   /* THE RIBS OF THE CHAMBER: the way up off the floor at the exhale, and off the HEART CRUSH */
   bile('heart', AS, AE, AF, AF, 37.5, { breath: false });               /* the heart's own breath floods the floor 2.5 rows; the shelves and the valve stay dry */
   nerve('A1', 325, 35, { tides: 'heart', arena: true }); nerve('A2', 345, 34, { tides: 'heart', arena: true }); nerve('A3', 384, 35, { tides: 'heart', arena: true });
   ent('parasitequeen', 362, AF - 1, { face: -1 });
