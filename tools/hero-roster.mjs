@@ -24,7 +24,7 @@ class Fake { constructor(cap = Infinity) { this.m = new Map(); this.cap = cap; }
   setItem(k, v) { const was = this.m.has(k) ? k.length + this.m.get(k).length : 0; if (this.used() - was + k.length + v.length > this.cap) throw Object.assign(new Error('quota exceeded'), { name: 'QuotaExceededError' }); this.m.set(k, String(v)); } }
 assert.equal(howTo('pyro', false), 'BUY IN THE STORE - 10 SILVER'); assert.equal(howTo('paladin', true), 'BEAT HIM, THEN 10 SILVER', 'the hook: the unlock rule changes the line');
 /* (claude/ranger, Daniel 10-12 - a deliberate design change: THE RANGER is the fourth free starter and the berserker is bought; a roster or a slot that holds him keeps him) */
-assert.deepEqual(STARTERS, ['knight', 'warden', 'geomancer', 'ranger']); assert.equal(HERO_IDS.length, 9);
+assert.deepEqual(STARTERS, ['knight', 'warden', 'geomancer', 'ranger']); assert.ok(HERO_IDS.length >= 9 && STARTERS.every(s => HERO_IDS.includes(s)), "the roster holds every starter plus the bought heroes (count grows as heroes ship)");
 assert.deepEqual(parseRoster(rosterText(['pyro'])), ['knight', 'warden', 'geomancer', 'ranger', 'pyro'], 'the four starters are always in it, in hero order');
 assert.deepEqual(parseRoster(JSON.stringify({ v: 1, heroes: ['knight', 'warden', 'geomancer', 'berserker'] })), ['knight', 'warden', 'geomancer', 'ranger', 'berserker'], 'an old roster (written when the berserker was a starter) keeps him, and gains the ranger');
 assert.deepEqual(parseRoster(rosterText(['nobody', 'reaper'])), [...STARTERS, 'reaper'], 'an unknown id is dropped');
