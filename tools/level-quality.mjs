@@ -222,6 +222,10 @@ export function measure(lv) {
      this - and on a tall level its row is its place, as the ents' are (an item with no row stays by column, as before) */
   for (const k of SYSTEM_ARRAYS) { const v = L[k]; if (!Array.isArray(v) || !v.length) continue; for (const it of v) { const x = it && (it.col !== undefined ? it.col : it.x !== undefined ? it.x : it.x0 !== undefined ? it.x0 / TS : Array.isArray(it) ? it[0] : undefined); if (x !== undefined && Number.isFinite(x)) add('arr:' + k, Math.round(x), it && Number.isFinite(it.row) ? it.row : undefined); } }
   if (L.mage && Array.isArray(L.mage.locks)) for (const k of L.mage.locks) add('mage:lock', Math.round((k.x !== undefined ? k.x : k.x0 || 0)));
+  /* (claude/suntemple) THE DESERT KIT's SUN ROOMS (src/sun-puzzle.js L.sunRooms - the Glass Sea's glyph court, the Sun Temple's halls): each piece a gadget where it stands - a turnable mirror,
+     a sun-door (a HOLD door its own kind), a priest cache, a sun-lamp, a fixed shaft, a row of moving-sun windows. They are not ents, so this tool never saw them (the colossus4 lane's 'tool gap') */
+  for (const r of L.sunRooms || []) { for (const m of r.mirrors || []) if (m.turnable !== false) add('sun:mirror', m.x, m.y); for (const d of r.doors || []) add('sun:' + d.kind + (d.mode === 'hold' ? ':hold' : ''), d.eye[0], d.eye[1]);
+    for (const q of r.sources || []) if (q.windows && q.windows.length) add('sun:windows', q.windows[0].x, q.windows[0].y); else if (q.x !== undefined) add('sun:shaft', q.x, q.y); }
   const gadgets = [...kinds].map(([k, xs]) => ({ k, n: xs.length, places: setSpan(xs) })).sort((a, b) => b.places - a.places || b.n - a.n);
   const developed = gadgets.filter(g => g.places >= 3);
 

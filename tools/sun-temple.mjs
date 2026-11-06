@@ -73,6 +73,8 @@ const checks = L.ents.filter(e => e.t === 'check');
 ok(checks.length === 2 && checks.every(c => open(c.x, c.y)), `TWO checkpoints (fewer, Daniel), both on the way: ${checks.map(c => c.x).join(', ')}`);
 ok(checks.some(c => c.x > L.sections['THE HIGH ALTAR'] && c.x < A.x0 / 16), 'a shrine before the boss');
 
+{ const PC = await import('./pacing.mjs'); const p = PC.platforming(PC.pacing(lv));
+  ok(p.jumpSections >= 1 && p.sections.some(q => q.c0 >= 96 && q.c0 <= 104), `A14: THE SUNDIAL COURT is a PLATFORMING SECTION (pacing.mjs: ${p.sections.map(q => q.beats + ' beats / ' + q.len + ' tiles from ' + q.c0).join('; ')})`); }
 console.log('THE DUSK SIEGE');
 { const am = L.ambushes[0]; ok(am && am.dusk && am.waves.length === 2, 'THE DUSK SIEGE: an ambush room of two waves of the dead'); ok(open(am.wallL + 3, am.row), 'its trigger is on the way');
   const dr = room('duskHall'); ok(ST.DUSK.out.every(o => dr.sources.some(s => s.id === o.id)) && !ST.DUSK.out.some(o => o.id === 'duskW'), 'the windows go out one by one (east, centre); the west is the last light');

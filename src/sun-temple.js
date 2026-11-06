@@ -104,7 +104,7 @@ export function buildSunTemple({ painter, T, TS }) {
   block(101, 104, 24, 24); block(101, 104, 21, 21); block(104, 104, 22, 23); ent('silver', 102, 23, { cache: 'priestCache' });
   decor.push({ kind: 'sunseal', x: 107, y: 21 }, { kind: 'gnomon', x: 120, y0: 6, y1: 23 });
   sign(102, 29, 'THE SUNDIAL COURT. TWO MIRRORS, ONE HOUR: THE LOW ONE THROWS THE LIGHT ACROSS, THE HIGH ONE SENDS IT UP.');
-  jackal(103, 29, 'courtJackal'); acolyte(121, 23, 'courtLedge'); foe('bonearcher', 136, 20, 'courtArcher');
+  /* (no foe inside the climb: THE SUNDIAL COURT is the level's PLATFORMING SECTION - its exam is the chain, timed to the sun, over the spikes) */
 
   // ================= 3. THE CLOISTER OF NOON (140-199): floor 13 / 12, a sunken garden, the roof at row 4 =================
   air(140, 199, 0, 12); block(140, 199, 4, 4); block(200, 200, 0, 8);   /* (the noon door's wall stands to the sky too) */
@@ -117,7 +117,7 @@ export function buildSunTemple({ painter, T, TS }) {
   for (let x = 186; x <= 188; x++) set(x, 11, T.SPIKE);                  /* the sun-spikes in the walk before the noon door: jump them */
   ent('check', 143, 12);                                                  /* CHECKPOINT ONE: the court climbed */
   sign(145, 12, 'THE CLOISTER OF NOON. THE NOON DOOR STANDS OPEN ONLY WHILE THE SUN IS ON IT.');
-  acolyte(152, 11, 'clWest'); foe('deadpaladin', 166, 16, 'clGuard', { elite: true }); acolyte(190, 11, 'clEast'); mummy(195, 11, 'clEast');
+  foe('bonearcher', 147, 12, 'clWest'); acolyte(155, 11, 'clWest'); foe('deadpaladin', 166, 16, 'clGuard', { elite: true }); acolyte(190, 11, 'clEast'); mummy(195, 11, 'clEast');
 
   // ================= 4. THE DUSK HALL (200-250): floor 20, roof 8 =================
   air(201, 202, 9, 11); air(203, 204, 9, 13); air(205, 206, 9, 15); air(207, 208, 9, 17); air(209, 250, 9, 19);
@@ -166,8 +166,7 @@ export function buildSunTemple({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,
     unlocks: [
-      { kind: 'mirror', opens: 'a sun-door: a mirror under the window the sun stands in turns its light to the door\'s eye (any blow turns it)', hud: 'THE SUN OPENS THE DOOR (the dial: where the sun is, and when it comes to your mirror)' },
-      { kind: 'priestcache', opens: 'THE PRIEST CACHE in the Sundial Court: a sun-seal only THE DESERT PRIEST\'s beam breaks (a silver)', hud: "THE PRIEST'S LIGHT BREAKS THE SUN-SEAL" },
+      { kind: 'sunRooms', opens: "every hall's sun-door (a mirror under the window the sun stands in turns its light to the door's eye: any blow turns it), and THE PRIEST CACHE in the Sundial Court (a sun-seal only THE DESERT PRIEST's beam breaks: a silver)", hud: "THE SUN OPENS THE DOOR (the dial: where the sun is, and when it comes to your mirror) / THE PRIEST'S LIGHT BREAKS THE SUN-SEAL" },
     ],
     music: 'glasssea',   /* TODO (art/music lane): THE SUN TEMPLE's own track and his. Borrowed from the Glass Sea until then (level-quality's music row: WARN) */
     ambient: [{ x0: 0, x1: 99999, kind: 'glassday' }],
