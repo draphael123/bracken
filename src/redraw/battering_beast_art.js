@@ -233,7 +233,7 @@ function bakeFrame(mode, cut, step, ph, solo) {
   if (!cut) { handler(dBody, -22, -45, p.hand, step, cut, false);   /* (claude/beast3) the second handler is THE HORNSMAN: the horn up for an order (or a flagged order's word), reeling when it is lost; gone when knocked off (solo) */
     if (!solo) handler(dBody, -6, -45, p.horn === 'reel' ? 'reel' : p.hand, step + 1, cut, p.horn === 'blast' ? 'blast' : (p.horn === 'up' || (!!p.flag && (p.hand === 'whip' || p.hand === 'hold')))); }
   if (p.splinters) for (let k = 0; k < 9; k++) { const a = 58 + k * 3 + (k % 3) * 2, b = -20 - (k * 7) % 30, st = step & 1; d0.line(a, b, a + 5 + (k % 4) * 2, b - 8 - (k % 3) * 5 - st * 3, k & 1 ? FR[4] : FR[2], k % 3 ? 1 : 2); }   /* (claude/beast3) the slam: timber flying off the wall, every shard its own way */
-  if (cut && !p.dead && !p.lie) chain(p.chain ? dBody : d0, p.chain || 'drag', step);   /* (claude/palisade2) unchained: the broken chain */
+  if (cut && !p.dead && !p.lie && p.chain) chain(dBody, p.chain, step);   /* (claude/palisade2) unchained: the broken chain, coiled or whipped out; (claude/palboss) the DRAGGING chain and its ball are no longer baked: src/battering-beast.js stepBall, drawn by drawBoss (the baked one's end flicked a pixel on every step and swapped with every frame) */
   if (p.whirl) for (let k = 0; k < 14; k++) { const a = -2.6 + k * 0.28, rr = k & 1 ? 'rgba(220,220,235,0.55)' : 'rgba(170,170,190,0.4)'; d0.dot(20 + Math.cos(a) * 30, -52 + Math.sin(a) * 15, rr); }   /* (claude/palisade2art) the chain whirling over his head: the swing it is about to make */
   if (p.impact) { g.fillStyle = '#fff6d0'; for (const [a, b] of [[-56, -58], [-60, -50], [-52, -64]]) g.fillRect(AX + R(a * K), AY + R(b * K), 2, 2); g.fillStyle = '#ffd36b'; for (const [a, b] of [[-62, -57], [-57, -66], [-48, -68]]) g.fillRect(AX + R(a * K), AY + R(b * K), 1, 1); }   /* (claude/palisade2art) the hooves land: sparks */
   if (p.snap) for (let k = 0; k < 4; k++) { d0.line(-20 + k * 9, -70 + (k & 1) * 4, -14 + k * 9, -78 - (k & 1) * 3, IRON[3]); }   /* the chains snapping */
@@ -451,7 +451,9 @@ export function drawScaf(g, s, X, Y, floorY, time, lineCol, lineOf, up, shakeK =
   const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   const fy = Y(floorY), x0 = X(s.x0), x1 = X(s.x1), dy = Y(s.deckY);
   if (s.st === 'stand' || s.st === 'fall') { const k = s.st === 'fall' ? 1 - s.t / up : 0;
-    g.save(); g.translate(s.dir > 0 ? x1 : x0, fy); g.rotate(s.dir * k * k * Math.PI / 2); g.translate(-(s.dir > 0 ? x1 : x0), -fy);
+    /* (claude/palboss) THE FALL: the frame's long face is toward you, so it cannot swing round a foot like a felled tree (the old 90-degree turn about the inner foot stood the 80 px frame on its end). Its prop is out on the CLEARING side, so it RACKS over that way: the feet stay put, the top leans out over where the prop stood and the whole frame flattens onto the floor, reaching ~1.6 x its height out (the wreck's line). A creak first: a small rock back, then the lean takes it. */
+    const ang = (Math.min(1, k) ** 2.2) * Math.PI / 2, rock = k > 0 && k < 0.22 ? Math.sin(k / 0.22 * Math.PI) * 0.05 : 0;
+    g.save(); g.translate(0, fy); g.transform(1, 0, -s.dir * (1.6 * Math.sin(ang) - rock), Math.cos(ang), 0, 0); g.translate(0, -fy);
     rc(x0 - 3, dy - 1, x1 - x0 + 6, 6, OUT); rc(x0 - 2, dy, x1 - x0 + 4, 1, FR[4]); rc(x0 - 2, dy + 1, x1 - x0 + 4, 3, FR[2]); rc(x0 - 2, dy + 4, x1 - x0 + 4, 1, MD[0]);   /* the deck */
     for (let x = x0 + 4; x < x1 - 4; x += 12) rc(x, dy + 1, 1, 3, MD[1]); for (const nx of [x0, x1 - 2]) rc(nx, dy + 2, 1, 1, IRON[3]);
     for (const px of [x0 + 2, x1 - 7]) { rc(px - 1, dy + 5, 7, fy - dy - 5, OUT); rc(px, dy + 5, 1, fy - dy - 5, FR[4]); rc(px + 1, dy + 5, 3, fy - dy - 5, FR[2]); rc(px + 4, dy + 5, 1, fy - dy - 5, FR[0]); rc(px - 1, dy + 12, 7, 3, ROPE[1]); rc(px - 1, dy + 28, 7, 3, ROPE[1]); }   /* two posts, lashed */
@@ -462,11 +464,14 @@ export function drawScaf(g, s, X, Y, floorY, time, lineCol, lineOf, up, shakeK =
       if (shakeK > 0.4) { rc(mid - 5, dy + 1, 10, 3, OUT); rc(mid - 4, dy + 4, 8, 1, MD[0]); rc(mid - 3, dy - 1, 1, 2, FR[4]); rc(mid + 2, dy - 2, 1, 3, FR[4]); }
       if (shakeK > 0.6) for (const px of [x0 + 2, x1 - 7]) { rc(px - 1, dy + 12, 7, 3, MD[0]); rc(px - 3, dy + 13, 2, 1, ROPE[1]); rc(px + 6, dy + 15, 2, 1, ROPE[1]); } }
     g.restore();
+    if (s.st === 'fall') drawProp(g, X(s.x), fy, 0, false, time, s.id * 7 + 3);   /* (claude/palboss) the brace kicked out: it lies where it stood */
     if (s.st === 'fall') { const kk = 1 - s.t / up; if (kk > 0.55) { const ex = s.dir > 0 ? x1 : x0; for (let q = 0; q < 12; q++) { const dd = s.dir * (6 + q * 7 * kk), rr = (q * 7) % 5; g.fillStyle = q % 3 ? 'rgba(190,160,112,0.65)' : 'rgba(230,206,160,0.5)'; g.fillRect(R(ex + dd), R(fy - 2 - rr - (q % 3) * 3), 5, 3); } } }   /* (claude/palisade2art) the collapse throws up dust along its fall line */
-    if (s.st === 'stand') { const px = X(s.x); drawProp(g, px, fy, s.dir, true, time, s.id * 7 + 3);   /* THE PROP at its inner foot: the wedge, the rope, the strain, the glint */
+    if (s.st === 'stand') { const px = X(s.x), inner = X(s.dir > 0 ? s.x1 : s.x0) - s.dir * 3;   /* (claude/palboss) THE PROP is a raking brace: its foot on a wedge on the floor, its head lashed and strapped to the INNER POST (before: the shore leaned away from the frame, its head in mid-air) */
+      drawProp(g, px, fy, -s.dir, true, time, s.id * 7 + 3, { dx: inner - px, h: 36 });   /* THE PROP at its inner foot: the wedge, the rope, the strain, the glint */
       if (lineCol) { const [lo, hi] = lineOf(s); g.fillStyle = lineCol; for (let q = lo; q < hi; q += 8) g.fillRect(X(q), fy - 1, 5, 2); } }
     return; }
   if (s.st === 'down' || s.st === 'pin') { const [lo, hi] = lineOf(s);   /* THE WRECK */
+    drawProp(g, X(s.x), fy, 0, false, time, s.id * 7 + 3);
     for (let q = lo; q < hi; q += 11) { const h = 6 + ((q / 11) % 2) * 4; rc(X(q) - 1, fy - h - 4, 14, 6, OUT); rc(X(q), fy - h - 3, 12, 4, FR[2]); rc(X(q), fy - h - 3, 12, 1, FR[4]); rc(X(q) + 4, fy - 15, 4, 15, MD[1]); rc(X(q) + 4, fy - 15, 1, 15, FR[3]); rc(X(q) + 6, fy - h - 2, 2, 2, IRON[3]); }
     for (let q = lo + 6; q < hi; q += 24) { rc(X(q), fy - 3, 18, 3, MD[0]); rc(X(q) + 2, fy - 4, 2, 1, FR[4]); } return; }
   if (s.st === 'spent') { rc(x0 + 2, fy - 5, 4, 5, MD[0]); rc(x1 - 6, fy - 5, 4, 5, MD[0]); rc(x0 + 1, fy - 6, 2, 1, FR[4]);
@@ -494,3 +499,15 @@ export function drawPitch(g, fx, fy, r, a, time) {
   g.globalAlpha = 1;
 }
 export const _mix = mix;
+
+/* (claude/palboss) THE BROKEN CHAIN and its BALL, in the world (screen px; ax,ay = his collar, bx,by = the ball's centre, L = the chain's length): links along a sagging line (slack hangs, taut runs straight),
+   the torn shackle at the collar, and an iron ball (8 px, lit top-left, a dark rim, two rust flecks) - drawn from the live position every frame, so it never snaps */
+export function drawBall(g, ax, ay, bx, by, L, time) {
+  const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), w, h); };
+  const d = Math.hypot(bx - ax, by - ay), slack = Math.max(0, L - d) * 0.45, n = Math.max(3, Math.round(d / 5));
+  for (let i = 1; i < n; i++) { const t = i / n, x = ax + (bx - ax) * t, y = ay + (by - ay) * t + Math.sin(t * Math.PI) * slack; rc(x - 1, y - 1, 3, 2, i & 1 ? IRON[1] : IRON[3]); if (!(i & 1)) rc(x, y - 1, 1, 1, IRON[4]); }
+  rc(ax - 2, ay - 2, 5, 5, OUT); rc(ax - 1, ay - 1, 3, 3, IRON[2]); rc(ax - 1, ay - 1, 3, 1, IRON[4]);   /* the shackle at the collar */
+  const r = 4; for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) { const q = xx * xx + yy * yy; if (q > r * r + 1) continue; const edge = q > (r - 1) * (r - 1) + 1, lit = xx + yy < -2;
+    rc(bx + xx, by + yy, 1, 1, edge ? OUT : lit ? IRON[4] : xx + yy > 2 ? IRON[0] : IRON[2]); }
+  rc(bx - 2, by - 2, 1, 1, '#f0f0fa'); rc(bx + 1, by + 1, 1, 1, RUST[1] || IRON[1]); rc(bx - 1, by + 2, 1, 1, RUST[1] || IRON[1]);
+}

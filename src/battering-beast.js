@@ -135,7 +135,33 @@ export function flailBox(e, S) { const f = e.face || 1, half = BB.w / 2, fy = S.
 /* THE BUCK's box (px): behind him (he turned his rump on you) */
 export function kickBox(e, S) { const f = e.face || 1, half = BB.w / 2, fy = S.G.floorY, a = e.x - f * (half - 8), b = e.x - f * (half + BB.kick.reach); return [Math.min(a, b), Math.max(a, b), fy - 30, fy]; }
 /* ---------- ONE FRAME OF HIM. heroes: [{ x, y, ground, alive, pp }]; w: the world (src/battering-beast-hands.js world()) ---------- */
-export function stepBeast(e, S, dt, heroes, w) {
+/* (claude/palboss) THE BROKEN CHAIN's BALL (P2): the iron shackle on the end of his torn ram chain. It used to be BAKED into his sprite (the 'drag' chain: its end flicked a pixel every walk step - the spaz - and it
+   was part of a frame that is swapped and flipped every mode change). It is a thing in the world now: it hangs from his collar (a point out in front of his chest), falls, drags on the floor and is held by the
+   chain's length, so it TRAILS him through a charge and swings round at a turn. Always simulated; drawn in every P2 mode except the flail's, where the baked whirl/lash IS the chain (the ball is pinned to that
+   chain's end then, so it picks up from the same place after). */
+export const BALL = { anchor: [27, -18], L: 36, r: 4, g: 900, pull: 700, far: 150, out: [77, -12], coil: [19, -21] };
+export const ballBaked = e => e.mode === 'flailTell' || e.mode === 'flail';
+export const ballAnchor = e => { const f = e.face || 1; return [e.x + f * BALL.anchor[0], e.y + BALL.anchor[1]]; };
+/* where it is and whether it is drawn: for the drawing and the check */
+export function ballGeom(e, S) { const B = S.ball, [ax, ay] = ballAnchor(e); if (!B) return { show: false, ax, ay, x: ax, y: ay, d: 0 };
+  return { show: !!(e.alive && S.harness.cut && e.mode !== 'sleep' && e.mode !== 'dead' && !ballBaked(e)), ax, ay, x: B.x, y: B.y, d: Math.hypot(B.x - ax, B.y - ay) }; }
+export function stepBall(e, S, dt) {
+  const B = S.ball || (S.ball = { x: 0, y: 0, vx: 0, vy: 0, init: false }), f = e.face || 1, [ax, ay] = ballAnchor(e), R0 = BALL.r;
+  if (!(dt > 0) || !Number.isFinite(e.x) || !Number.isFinite(e.y)) return;   /* (a bad frame never moves it) */
+  const dtr = Math.min(dt, 0.25); dt = Math.min(dt, 1 / 30);                   /* (a dt spike never throws it: the physics step is capped, the chain's pull uses the real time he moved in, so a hitch cannot leave it behind) */
+  if (ballBaked(e)) { const o = e.mode === 'flail' ? BALL.out : BALL.coil; B.x = e.x + f * o[0]; B.y = e.y + o[1]; B.vx = B.vy = 0; B.init = true; B.f = f; return; }
+  if (B.init && B.f && B.f !== f) { B.x = 2 * e.x - B.x; B.vx = -B.vx; }   /* a TURN: his sprite flips about his middle and the chain flips with it (the ball keeps its place on him), then it settles - the collar does not jump 54 px away from a ball left behind */
+  B.f = f;
+  if (!B.init || Math.hypot(B.x - ax, B.y - ay) > BALL.far) { B.x = ax + f * 30; B.y = e.y - R0; B.vx = B.vy = 0; B.init = true; return; }
+  B.vy += BALL.g * dt; B.x += B.vx * dt; B.y += B.vy * dt;
+  const floor = e.y - R0, onFloor = B.y >= floor; if (onFloor) { B.y = floor; B.vy = 0; B.vx *= Math.max(0, 1 - 9 * dt); } else B.vx *= Math.max(0, 1 - 1.2 * dt);
+  let dx = B.x - ax, dy = B.y - ay, d = Math.hypot(dx, dy);
+  if (d > BALL.L) { const k = Math.min(d - BALL.L, BALL.pull * dtr) / d; B.x -= dx * k; B.y -= dy * k;   /* the chain is taut: it is drawn in toward the collar (no more than BALL.pull px/s, so a turn swings it round rather than snapping it) */
+    dx = B.x - ax; dy = B.y - ay; d = Math.hypot(dx, dy) || 1; const vr = (B.vx * dx + B.vy * dy) / d; if (vr > 0) { B.vx -= vr * dx / d; B.vy -= vr * dy / d; }
+    if (B.y > floor) { B.y = floor; B.vy = Math.min(0, B.vy); } }
+}
+export function stepBeast(e, S, dt, heroes, w) { stepBeastCore(e, S, dt, heroes, w); stepBall(e, S, dt); }   /* (the ball after the move: he has turned and moved already, so the collar it hangs from is where he is DRAWN) */
+function stepBeastCore(e, S, dt, heroes, w) {
   const G = S.G, ph = S.ph, i = ph - 1, P = heroes.find(h => h.alive) || heroes[0];
   S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.wallCd = Math.max(0, (S.wallCd || 0) - dt);
   stepScafs(e, S, dt, heroes, w);
