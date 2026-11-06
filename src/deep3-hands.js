@@ -104,9 +104,9 @@ export function makeDeep3Hands(ctx) {
       for (const r of SC.ROLES) { bodies[r].maxHp = bodies[r].hp = S.crew[r].hp; } }
     if (e.mode === 'wake' && !S.woke) { SC.wake(S); ctx.number(S.G.mid, S.G.floor - 110, SC.SAY.wake, '#ffd36b'); sound('merge'); ctx.shake(3); }
     if (S.woke && !S.told.rule && S.t > 1.6) { S.told.rule = 1; ctx.number(S.G.mid, S.G.floor - 96, SC.SAY.rule, '#7ff0e0'); if (ctx.hint) ctx.hint(SC.SAY.rule + '. A SOUL LANTERN BURNS TEN SECONDS OVER A FALLEN SAILOR - CHIP THEM ALL LOW, THEN FELL THEM IN A ROW. STRIKE A MATE WHO STOOPS TO RAISE HIM.'); }
-    const w = world(), ph0 = S.ph;
+    const w = world();
     SC.stepFight(S, dt, heroes(), w);
-    if (ph0 === 1 && S.ph === 2) { for (const r of SC.ROLES) bodies[r].alive = false; e.phase = 2;
+    if (S.ph === 2 && !sailorBody && S.sailor) { for (const r of SC.ROLES) bodies[r].alive = false; e.phase = 2;   /* (the last fall can come from a blow - H.hit - or from the fight's own step) */
       sailorBody = { t: 'cursedsailor', x: S.sailor.x, y: S.sailor.y, w: SC.CREW.sailor.w, h: SC.CREW.sailor.h, hp: S.sailor.hp, maxHp: S.sailor.maxHp, alive: true, noGrav: true, face: -1, vx: 0, vy: 0, mode: 'merge' }; ctx.addEnemy(sailorBody); }
     if (S.ph === 1) for (const r of SC.ROLES) { const c = S.crew[r], b = bodies[r]; if (c.alive) { b.x = c.x; b.y = c.y; b.face = c.face; b.mode = c.mode; b.hp = c.hp; b.maxHp = c.maxHp; b.open = SC.crewOpen(c) ? 1 : 0; } else { b.x = -9999; b.y = -9999; } }
     else if (sailorBody && S.sailor) { const s = S.sailor; sailorBody.x = s.x; sailorBody.y = s.y; sailorBody.face = s.face; sailorBody.mode = s.mode; sailorBody.hp = s.hp; sailorBody.open = SC.sailorOpen(s) ? 1 : 0; }

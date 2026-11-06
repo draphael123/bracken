@@ -38,10 +38,10 @@ export const D3 = {
     { id: 'f4', name: 'THE COLLAPSING STAIR', y0: 214, y1: 233, slab: 234, crack: null },
   ],
   /* F4's stair: cracked steps, west landing to the east landing over the rot pit */
-  stair: { landing: [40, 53, 218], steps: [[54, 56, 220], [57, 59, 222], [60, 62, 224], [63, 65, 226]], east: [62, 69, 228] },
-  rotPit: [18, 61, 229, 233],
+  stair: { landing: [40, 53, 218], steps: [[54, 56, 220], [57, 59, 222], [60, 62, 224], [63, 65, 226]], east: [58, 69, 228] },   /* the east landing (its top row 229) with THE HATCH cut through it (the shaft's columns) */
+  rotPit: [18, 57, 229, 233],
   shaft: { x0: 62, x1: 67, y0: 236, y1: 273 },
-  bell: { x: 63, w: 4, y0: 234, y1: 292, speed: 52 },   /* the deck rides from flush with the tower's base to flush with the wreck's floor (rows, its top) */
+  bell: { x: 63, w: 4, y0: 229, y1: 292, speed: 52 },   /* the deck rides from flush with the east landing (in its hatch) to flush with the wreck's floor (rows, its top) */
   cavern: { x0: 40, x1: 156, y0: 274, y1: 291, floor: 292 },
   arena: { x0: 104, x1: 152, wallL: 103, wallR: 153, trigger: 106 },
   wreck: { deck: [70, 96, 286] },
@@ -120,7 +120,7 @@ export function buildDeep3(R, T, TS = 16) {
   ent('ballast', 64, f2.y1, { kind: 'stone', rack: true });   /* a spare, under F1's crack: a hero who lost his on the way down */
   vent(56, f2.y1, 7); pocket(52, 60, f2.y0, f2.y0 + 1);
   coins(32, 40, f2.y1 - 2);
-  ent('silver', Tw.x0 + 1, f2.y0 + 1);   /* (off-route) up in the window hall's west corner, over the rot: a light swimmer's prize */
+  coins(Tw.x0 + 1, Tw.x0 + 5, f2.y0 + 1);   /* (off-route) up in the window hall's west corner, over the rot: a light swimmer's purse. (NO NEW SILVER: the game counts three and a silver's place in the list is its save bit - src/level.js silverTrim, src/relics.js VAULT_SILVER - so master's three stay exactly where they are) */
   // F3 THE SETTLING ROOM (remix): THIS crack is too thick for a hero and his stone - a SETTLING STONE hangs over it. Stand under it and it falls (told):
   // step out, and it breaks the floor for you. The crusher is the weight
   curtain(29, 31, f3.y0, f3.y1 - 2); ent('walleel', 30, f3.y1 - 1, { dir: 'down', wall: f3.y1 - 2 });
@@ -142,7 +142,9 @@ export function buildDeep3(R, T, TS = 16) {
   ent('sign', 52, St.landing[2], { text: 'THE STAIR GIVES UNDER A HEAVY STEP. KEEP MOVING. THE PIT BELOW IS ROT.' });
   ent('jelly', 28, f4.y0 + 8); ent('urchin', 34, f4.slab - 1);
   vent(66, St.east[2], 5); vent(40, St.landing[2], 4); pocket(Tw.x0, 18, f4.y0, f4.y0 + 1);
-  ent('silver', 20, D3.rotPit[3]);   /* (off-route) on the pit's floor: pay the rot for it */
+  coins(20, 26, D3.rotPit[3]); ent('deco', 23, D3.rotPit[3], { kind: 'seaChest' });   /* (off-route) on the pit's floor: pay the rot for it */
+  ent('silver', 24, D3.rotPit[3]);   /* THE TRIBUTE SHIP's SILVER's STAND-IN: master's ship (dropped) carried the fourth raw silver; src/level.js silverTrim keeps the deepest, and
+     src/relics.js VAULT_SILVER moves it to the coral garden's vault (20,145) - so this one ends there too, and the level keeps master's three silvers in master's order (save bits) */
   coins(55, 66, St.steps[0][2] - 2);
   // THE ROT: the vents in the walls (F2's west wall, F3's east, F4's both) and F4's pit
   const rot = [
@@ -161,7 +163,7 @@ export function buildDeep3(R, T, TS = 16) {
 
   // ---- THE BELL SHAFT ----
   const Sh = D3.shaft, B = D3.bell;
-  cut(Sh.x0, Sh.x1, Tw.base, Sh.y1);   /* the hatch in the tower's base and the well under it */
+  cut(Sh.x0, Sh.x1, B.y0, Sh.y1);   /* the hatch through the east landing and the tower's base, and the well under it */
   out.currents.push({ x0: Sh.x0, x1: Sh.x1, y0: Sh.y0, y1: Sh.y1, fx: 0, fy: -150, kind: 'hot', d3: 'upwell' });   /* THE ROT UPWELLS: 'hot' = only weight sinks through it (main.js updateDeep) */
   for (const [x, y, face] of [[Sh.x0, 244, 1], [Sh.x1, 251, -1], [Sh.x0, 258, 1], [Sh.x1, 265, -1]]) ent('walleel', x, y, { face, wall: x - face, shaft: true });
   ent('sign', 58, St.east[2], { text: 'THE OLD BELL. THE ROT RISES UP HER WELL AND THROWS THE LIGHT BACK UP. STAND IN HER WITH A STONE AND SHE TAKES YOU DOWN.' });

@@ -19,7 +19,8 @@
 //   front, 1.5 in an opening. tools/deep3.mjs walks every mode and asserts the floor.
 
 export const CREW = {
-  hp: { cutlass: 140, shield: 170, harpoon: 130, heavy: 160 }, sailorHp: 600,
+  /* THE BRIEF said ~600 + ~600, from the Diving Bell's 740 - but the Bell took most blows SHUT (x0.4); the crew have no shell. x1.6 (the lane's placeholder, Q2): */
+  hp: { cutlass: 225, shield: 270, harpoon: 210, heavy: 255 }, sailorHp: 960,
   speed: { cutlass: 46, shield: 38, harpoon: 40, heavy: 30 },
   w: 18, h: 26, sailor: { w: 34, h: 46, speed: 34 },
   tokens: 2, atkCd: [2.2, 3.6], circle: [84, 120],
@@ -283,7 +284,7 @@ export function barWord(S) {
 
 /* ---- THE LAB BOT'S PLAN (the brief's "kill order, interrupt revives"): what a careful player does this frame.
    P = { x, y, hp, max }, returns { target (crewman / sailor / null), gx, gy, atk, block, dodge, jump } ---- */
-export function crewPlan(S, P) {
+export function crewPlan(S, P, o = {}) {   /* o.greedy: a player who fells whoever is lowest at once (no chip discipline): the lantern rule's victim */
   const out = { target: null, gx: P.x, gy: P.y, atk: false, block: false, dodge: false, jump: false };
   /* THE THREATS: a told move aimed at him */
   const actors = S.ph === 1 ? living(S) : (S.sailor ? [S.sailor] : []);
@@ -291,22 +292,23 @@ export function crewPlan(S, P) {
     if (!near) continue;
     if (a.mode === 'slamTell' || a.mode === 'slam') out.jump = true;
     else if (a.mode === 'throwTell' && a.modeT < 0.25) out.dodge = true;
+    else if (a.sailor && a.mode === 'reelTell' && a.modeT < 0.25) out.dodge = true;   /* phase 2: ROLL the reel - a miss sticks his harpoon (the opening) */
     else if (/^(lunge|flurry|bash|charge|reel)Tell$/.test(a.mode) && a.modeT < 0.3 && Math.abs(a.x - P.x) < 120) out.block = true;
     else if (/^(lunge|flurry|bash|charge)$/.test(a.mode) && Math.abs(a.x - P.x) < 60) out.block = true; }
   if (S.waves.some(v => Math.abs(v.x - P.x) < 50)) out.jump = true;
-  if (S.shots.some(q => Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 7)) < 30)) { const q = S.shots.find(q => Math.abs(q.x - P.x) < 60); if (q && CREW.moves[q.kind].block) out.block = true; else out.dodge = true; }
+  if (S.shots.some(q => Math.abs(q.x - P.x) < 60 && Math.abs(q.y - (P.y - 7)) < 30)) { const q = S.shots.find(q => Math.abs(q.x - P.x) < 60); if (q && CREW.moves[q.kind].block && !(q.kind === 'reel' && q.by.sailor)) out.block = true; else out.dodge = true; }
   /* THE TARGET */
   let t = null;
   if (S.ph === 2) t = S.sailor;
   else { const L = living(S);
     t = L.find(c => c.mode === 'raise' || c.mode === 'toRaise');   /* 1. break off a raising */
     if (!t && S.lanterns.length) t = L.filter(c => !guardOf(S, c)).sort((a, b) => a.hp - b.hp)[0] || L.sort((a, b) => a.hp - b.hp)[0];   /* 2. a lantern is lit: fell the rest, weakest first */
-    if (!t) { const ready = L.every(c => c.hp <= c.maxHp * 0.4);   /* 3. chip them ALL low, then start felling */
+    if (!t) { const ready = o.greedy || L.every(c => c.hp <= c.maxHp * 0.4);   /* 3. chip them ALL low, then start felling */
       t = ready ? L.sort((a, b) => a.hp - b.hp)[0] : L.filter(c => c.hp > c.maxHp * 0.4 && !guardOf(S, c)).sort((a, b) => (b.role === 'shield' && b.mode === 'guard') - (a.role === 'shield' && a.mode === 'guard') || b.hp / b.maxHp - a.hp / a.maxHp)[0] || L[0];
       /* a lone low man is left alone until the rest are low too (felling him starts the clock) */ } }
   if (t) { out.target = t; const side = t.role === 'shield' && t.mode !== 'guard' && !crewOpen(t) ? -t.face : (Math.sign(P.x - t.x) || 1);
     out.gx = t.x + side * 16; out.gy = t.y; out.atk = Math.abs(t.x - P.x) < 28 && Math.abs(t.y - P.y) < 24;
-    if (S.ph === 1 && !(t.mode === 'raise' || t.mode === 'toRaise') && t.hp <= t.maxHp * 0.4 && !S.lanterns.length && living(S).some(c => c.hp > c.maxHp * 0.4)) out.atk = false; }
+    if (!o.greedy && S.ph === 1 && !(t.mode === 'raise' || t.mode === 'toRaise') && t.hp <= t.maxHp * 0.4 && !S.lanterns.length && living(S).some(c => c.hp > c.maxHp * 0.4)) out.atk = false; }
   if (out.block || out.dodge) out.atk = false;
   return out;
 }
