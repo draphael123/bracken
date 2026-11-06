@@ -191,6 +191,8 @@ export function lureSpot(S, P) { const G = S.G, ls = G.levers.filter(l => S.slui
 /* the lure's crouch: lureTell, and longer the further you stand from a full lever (she waits for you to get there: lureWalk s a px, to lureMax) */
 export const lureT = (S, P) => { const ls = S.G.levers.filter(l => S.sluice[l.id]), d = ls.length ? Math.min(...ls.map(l => Math.abs(l.x - P.x))) : 0; return Math.min(MAT.lureMax, MAT.lureTell + d * MAT.lureWalk); };
 export function holdDmg(e, S, d) { if (!S || S.ph !== 1 || (S.n.sluiceStuns || 0) > 0) return d; const floor = e.maxHp * MAT.p2 + 1; if (e.hp < floor - 0.5) return d; return Math.max(0, Math.min(d, e.hp - floor)); }   /* (already under the line - a script set her there - no hold) */
+/* (claude/redgorge3, B15 - the boss law: never fully invulnerable) A BLOW IN HER WARD: on THE FALLS x MAT.talonMul (told WARDED, never nothing); RG2 keeps its 0 (flag off) */
+export const wardTake = (S, d) => (S && S.G && S.G.falls ? d * MAT.talonMul : 0);
 export const holding = (e, S) => !!S && S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp <= e.maxHp * MAT.p2 + 1.5;
 /* ---------- THE WATER (the hands tell her what the gorge's clock does: c.horn(), c.flood()) ---------- */
 /* E AT A LEVER: the sluice lets the banked flood go. Returns 'released' | 'empty' | 'busy' */

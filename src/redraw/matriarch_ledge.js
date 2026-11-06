@@ -38,7 +38,7 @@ const gateArch = (open) => once('gatearch' + (open ? 1 : 0), () => { const [c, g
 
 /* ---------------- THE STATIC SET ---------------- */
 export function drawNestBackdrop(g, cx, cy, VW, VH, L, time) {
-  const q = L.arena && L.arena.mat; if (!q) return; const x0 = q.sx * TS, x1 = (q.sx + STAGE.W) * TS, yT = CREST_Y, yB = (q.R + 1) * TS, sx0 = Math.max(0, R(x0 - cx)), sx1 = Math.min(VW, R(x1 - cx));
+  const q = L.arena && L.arena.mat; if (!q) return; const x0 = q.sx * TS, x1 = (q.sx + (q.W || STAGE.W)) * TS, yT = CREST_Y, yB = (q.R + 1) * TS, sx0 = Math.max(0, R(x0 - cx)), sx1 = Math.min(VW, R(x1 - cx));
   if (sx1 <= sx0 || yB - cy < 0 || yT - cy > VH) return;
   g.save(); g.beginPath(); g.rect(sx0, 0, sx1 - sx0, VH); g.clip();
   const fx = R(x0 - cx), fy = R(yT - cy), fw = x1 - x0, fh = yB - yT;

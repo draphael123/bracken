@@ -33,7 +33,7 @@
 //                                                     long rope IN the channel under raptors and a slinger - ride on the flood, then hold the next
 //   22-42    THE SUMMIT           (the old nest)      the last climb (CHECKPOINT TWO at the dam's door); the old nest's vault west, off the route
 //   ...then THE OLD DAM, the plateau east of the summit: THE GREAT RED CRAB (src/gorge-crab.js), and the road on to THE GLASS SEA.
-import { stageMatriarch, STAGE as MSTAGE } from './raptor-matriarch.js';   /* (claude/redgorge2) THE RAPTOR MATRIARCH keeps the nest by the spillway; THE GREAT RED CRAB (src/gorge-crab.js) is benched, intact and unplaced */
+import { stageMatriarch, STAGE as MSTAGE0 } from './raptor-matriarch.js'; import { rg3On, STAGE3 } from './gorge-falls.js';   /* (claude/redgorge3) RED GORGE 3: her new arena, THE THREE FALLS, behind ?rg3=1 (src/gorge-falls.js) */   /* (claude/redgorge2) THE RAPTOR MATRIARCH keeps the nest by the spillway; THE GREAT RED CRAB (src/gorge-crab.js) is benched, intact and unplaced */
 
 export const REDGORGE = { W: 144, H: 230, floor: 166, ch: [22, 26], summit: 22, rapids: { x0: 80, x1: 129, surf: 220, bed: 225 }, climb: { x0: 48, x1: 78, foot: 218, top: 165 }, spill: [60, 62],
   /* (claude/redgorgerework, Daniel 10-13: "a second water-based PLATFORMING section: climbing cliffs with raptors right before the boss") THE SPILLWAY: east of the
@@ -55,7 +55,8 @@ export const ARCS = {
 };
 
 export function buildRedGorge({ painter, T, TS }) {
-  const { W, H } = REDGORGE, F = REDGORGE.floor, [C0, C1] = REDGORGE.ch, CX = 24;
+  const RG3 = rg3On(), MSTAGE = RG3 ? STAGE3 : MSTAGE0;   /* (claude/redgorge3) flag OFF = this level cell for cell; ON = the 48-wide arena of THE THREE FALLS (the level 8 columns wider east, for it) */
+  const { H } = REDGORGE, W = RG3 ? REDGORGE.W + (STAGE3.W - MSTAGE0.W) : REDGORGE.W, F = REDGORGE.floor, [C0, C1] = REDGORGE.ch, CX = 24;
   const L = painter(W, H), { set, block, ent } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const ledge = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
@@ -302,7 +303,7 @@ export function buildRedGorge({ painter, T, TS }) {
   }
 
   // ================= THE NEST LEDGE: THE RAPTOR MATRIARCH by the old dam's spillway (src/raptor-matriarch.js) =================
-  const MX = REDGORGE.matX, mat = stageMatriarch({ set, block, ent, air }, T, TS, MX);
+  const MX = REDGORGE.matX, mat = RG3 ? stageMatriarch({ set, block, ent, air }, T, TS, MX, 4, STAGE3) : stageMatriarch({ set, block, ent, air }, T, TS, MX);
   for (const b of MSTAGE.baskets) { const bx = (MX + b.x0) * TS; moversExtra.push({ kind: 'mbasket', mbasket: b.id, x: bx, x0: bx, x1: bx, y: MSTAGE.R * TS - 4, y0: MSTAGE.R * TS - 4, w: 32, h: 6 }); }   /* (claude/redgorgerework) THE STANDPIPE BASKETS by the banks: a lever's water lifts one to her wall in phase two */
   for (const c of MSTAGE.planks) moversExtra.push({ kind: 'mplank', mplank: true, x: (MX + c) * TS, x0: (MX + c) * TS, x1: (MX + c) * TS, y: MSTAGE.R * TS - 6, y0: MSTAGE.R * TS - 6, w: 32, h: 6 });   /* the dam's loose timbers in the channel's two wide reaches (they float up when the dam cracks) */
   decor.push({ kind: 'plume', x: 40, y: 21 }, { kind: 'plume', x: 44, y: 21 });             /* (B8) her plumes thicken at the dam's door */
@@ -341,7 +342,8 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'jam', opens: 'the bridge it seals (a released burst washes it out)', hud: 'A JAM: ONLY A RELEASED BURST MOVES IT' },
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
       { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
-      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a wave: caught in the channel by it she is STUNNED); in phase two its basket's standpipe (the basket lifts you to her wall: a blow from it knocks her off, STUNNED)", hud: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL' },
+      ...(RG3 ? [{ kind: 'mlever', opens: "its own FALL (three falls, three sluices, three levers: low / on the ledge / across the floor): kite her under it and pull - the fall crashes on her: STUNNED; in phase two any full lever fills THE STANDPIPE (its basket lifts you to her wall)", hud: 'KITE HER UNDER A FALL, THEN PULL THAT FALL\'S LEVER' }] : [
+      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a wave: caught in the channel by it she is STUNNED); in phase two its basket's standpipe (the basket lifts you to her wall: a blow from it knocks her off, STUNNED)", hud: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL' }]),
     ],
     music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
     ambient: [{ x0: 0, x1: 99999, kind: 'canyon' }],   /* (claude/redgorge2 art pass) its own bed: the wind down the gorge, the river's roar, the spillway's hiss, a raptor on the wall (src/audio.js SYNTH_BEDS.canyon) */
