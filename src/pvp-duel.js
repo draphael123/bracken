@@ -20,7 +20,7 @@ export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && 
 void 0;   /* (proof146b 11-05) OFF until the warden bot-duel edge (16/16, 24/24) is settled; one line to flip, everything else proven */   /* THE FLAG: false hides the title row, the tavern pit's DUEL card and the RANKINGS board (the pit goes back to COMING SOON) */
 export const DUEL = {
   hp: 100, scale: 0.8, probe: 40, iframe: 0.4,
-  heroMul: { warden: 0.35 },   /* (proof146b) per-hero PvP trim hook (empty): a warden trim of x0.8 and x0.5 did NOT move the bot-duel warden win rate (24/24, 7/8): the edge is not blow weight */
+  heroMul: { warden: 0.35, reaper: 0.7, geomancer: 0.75, pyro: 1.3, paladin: 1.25 },   /* (proof146b) per-hero PvP trim hook (empty): a warden trim of x0.8 and x0.5 did NOT move the bot-duel warden win rate (24/24, 7/8): the edge is not blow weight */
   juggle: { n: 3, t: 1.5, inv: 1.1 },
   round: { count: 3, fightT: 90, sdLen: 45, timeUp: 150, ko: 2.4, toWin: 2, maxRounds: 5 },
   sd: { from: 1.5, to: 3 },
