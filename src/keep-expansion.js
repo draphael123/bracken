@@ -7,6 +7,7 @@
 // Keeper of the Vault and the Leadfoot are gone (Daniel: "we don't need one", "the single scuba enemy").
 import {buildKeepNarrows} from './keep-passages.js';
 import {drownedKnight,drownedCaptain} from './drowned-knights.js';
+import {kfOn,floodKeep} from './keep-floods.js';   /* (claude/keepfloods) KEEP 2: THE FLOODGATES, behind KF_SHIPS (off = this file's keep, cell for cell) */
 export const KEEP_APPROACH=560;
 /* THE TWO AIR HALLS, in tiles: the columns they take, the row their floor stands on (you walk on row FLOOR-1), the room's top */
 export const KEEP_HALLS=[{name:'THE DRY CLOISTER',x0:187,x1:222,floor:44,top:31,room:'keepCloister'},{name:'THE GUARDROOM',x0:321,x1:350,floor:44,top:31,room:'keepGuard'}];
@@ -165,5 +166,6 @@ export function expandKeep(R,T,TS,crop){
     sprinkler will only put a swimmer in a wet spot - so the keep's own dead were the one roster it could not place. */
  K.swimGarrison=['wight','tideguard','watch','merrowspear','merrowbrute','merrowcaller'];
  K.keepSections=sections.map(([name,x0,x1])=>({name,x0,x1})).concat([{name:'THE INNER KEEP',x0:N,x1:633},{name:'THE KING\'S DOOR',x0:634,x1:672},{name:'THE THRONE ROAD',x0:673,x1:N+199}]);
+ if(kfOn())floodKeep(K,T,TS);   /* (claude/keepfloods) the whirlpools out, the three floodgate chambers, the throne's water */
  return K;
 }
