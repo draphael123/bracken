@@ -5,7 +5,7 @@ CODE-ONLY (no browser, no check.mjs). Not merged, not deployed. Art before live:
 GATES (new KIT[kind] = rail / post / head drawers inside drawWayGate; each in its level's own materials, GATE_PAL kept so the kind lint still passes; the pine path is untouched):
 - rope (hanging>spire, the Hanging Village): hemp-wrapped planks, rope coils on the posts, a pulley block + hemp lashings on the lintel, swinging rope ends.
 - bell (spire>moor, Monastery): dark oak door leaves with bronze straps + rivets + ring-pull, stone jambs with bronze caps, stone lintel with a bronze bell.
-- crumble (rookery>skyroad; also rows 9 and 12 no longer use it): rough grey blocks with cracks, chipped pillars, ragged rubble lintel.
+- crumble (rows 5 rookery>skyroad, 9 storm>undercrown, 12 crown>longwater): rough grey blocks with cracks, chipped pillars, ragged rubble lintel.
 - adit (oreroad>minecart): cribbing timbers, iron plates + rivets, ore dust, iron-banded mine props, cap timber with a mine lamp.
 - arch (undercrown>kitchengate): moss-stained brick infill, dressed-stone jambs, voussoir lintel with a keystone.
 - hatch (kitchengate>crown): vertical oak serving-door boards with brass hinge strap + pull, framed posts, lintel hung with a copper pan and ladle.
