@@ -125,7 +125,7 @@ export function makeLesson(api) {
   /* the hooks main.js calls */
   function dummyHit(P) { if (!on()) return; st.ev.hit++; if (P && P.heavySwing && !P.heavy) st.ev.third++; }
   function blow(res, dodging) { if (!on()) return; if (res === 'blocked') st.ev.blocked++; else if (res === false && dodging) st.ev.dodged++; }
-  function innCard(secs) { st.card = { t: 0, dur: secs || 9 }; }
+  function innCard(secs) { st.card = { t0: api.time(), dur: secs || 9 }; }
   /* the step panel, on the screen: what to do (the hero's own keys), how far along, and how to skip */
   function drawStep(g, VW, VH) {
     if (!on()) return;
@@ -139,9 +139,9 @@ export function makeLesson(api) {
     api.text((done ? STEPS.length : n + 1) + ' OF ' + STEPS.length + (done ? '' : '  ' + step.name), x + w - 6, yy, col, 'right', 6);
   }
   /* the inn's welcome: once, on the first arrival (PROG.innTold), fading out */
-  function drawCard(g, VW, VH, dt) {
-    const c = st.card; if (!c) return; c.t += dt; if (c.t >= c.dur) { st.card = null; return; }
-    const a = Math.min(1, c.t / 0.4, (c.dur - c.t) / 0.6), w = VW - 40, lines = api.wrap(INN_CARD.body, w - 12, 6).slice(0, 3), h = lines.length * 8 + 22, x = 20, y = 22;
+  function drawCard(g, VW, VH) {
+    const c = st.card; if (!c) return; c.t = api.time() - c.t0; if (c.t >= c.dur) { st.card = null; return; }
+    const a = Math.min(1, c.t / 0.4, (c.dur - c.t) / 0.6), w = VW - 40, lines = api.wrap(INN_CARD.body, w - 12, 6).slice(0, 3), h = lines.length * 8 + 22, x = 20, y = 40;
     g.globalAlpha = a; api.board(x, y, w, h);
     api.text(INN_CARD.title, x + w / 2, y + 4, '#ffd36b', 'center', 6);
     lines.forEach((ln, i) => api.text(ln, x + w / 2, y + 14 + i * 8, '#fff6e0', 'center', 6));

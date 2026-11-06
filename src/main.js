@@ -5417,7 +5417,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN: CO-OP, TRAINING  G ONLINE', x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN: CO-OP  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-dots.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -7435,7 +7435,8 @@ YARD = makeArenaYard({ TS, L: () => L, players: () => players, time: () => time,
 VERB_HOOKS.push(c => { if (YARD && YARD.on() && c.P) { const s = YARD.spotNear(c.P); if (s) return { verb: YARD.VERB[s], key: 'talk' }; } return null; });
 VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
 /* ===== (claude/tutorial1, Daniel 11-05 22:05) THE ROADSIDE LESSON: the generic opening for a new save (src/opening-tutorial.js), replayable from the inn ===== */
-let opnFromInn = false;
+let opnFromInn = false, opnSaying = false;
+const opnHint = (m, t) => { opnSaying = true; try { return hintSay('tip', t, m); } finally { opnSaying = false; } };
 const opnIndex = () => LEVELS.findIndex(l => l.id === 'lesson');
 /* the CURRENT hero's own words for each key: keyboard (binds, the swapped Z/X), the pad (its own buttons), touch (its buttons) */
 function opnWords() {
@@ -7450,16 +7451,16 @@ function opnEnter(fromInn) { const i = opnIndex(); if (i < 0) return false; opnF
 /* OUT of it - the door, or SKIP: always into the inn (the first arrival there says what it is). PROG.lesson: 1 finished, 2 skipped */
 function opnLeave(skipped) { setView('normal'); const done = OPN && OPN.st.i >= OT.STEPS.length; PROG.lesson = skipped && !done ? 2 : 1; if (skipped && !done) OPN.st.stats.skipped++; else OPN.st.stats.finished++; saveProgress(); if (opnFromInn) { partyToWant(); opnFromInn = false; } enterTavern(); }
 const OPN = OT.makeLesson({ L: () => L, P: () => P, enemies: () => enemies, guarding: q => yardGuarding(q), time: () => time, TS, shrines: () => shrines, words: () => opnWords(), openGate: c => openGate(c, 0, LH - 1), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
-  say: (m, col) => number(P.x, P.y - 34, m, col), taught: k => { PROG.taught = PROG.taught || {}; PROG.taught[k] = 1; saveProgress(); }, hint: (m, t) => hintSay('tip', t, m),
-  hurtMe: () => { P.hp = Math.min(P.hp, Math.max(1, Math.ceil(P.maxHp * 0.45))); P.flasks = Math.max(P.flasks | 0, 1); hintSay('tip', 3, 'THE ROAD HAS BITTEN YOU.'); }, save: () => saveProgress(), leave: s => opnLeave(s),
+  say: (m, col) => number(P.x, P.y - 34, m, col), taught: k => { PROG.taught = PROG.taught || {}; PROG.taught[k] = 1; saveProgress(); }, hint: (m, t) => opnHint(m, t),
+  hurtMe: () => { P.hp = Math.min(P.hp, Math.max(1, Math.ceil(P.maxHp * 0.45))); P.flasks = Math.max(P.flasks | 0, 1); opnHint('THE ROAD HAS BITTEN YOU.', 3); }, save: () => saveProgress(), leave: s => opnLeave(s),
   text: (...a) => text(...a), wrap: (t, w, z) => wrap(t, w, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'), VW, VH });
 function opnFrame(dt) { OPN.tick(dt); if (OPN.st.nearDoor && state === 'play' && P && !P.dead && pressRead().talk) { talkPress = false; opnLeave(false); } }
 VERB_HOOKS.push(c => (OPN.on() && OPN.st.nearDoor ? { verb: 'ENTER', key: 'talk' } : null));
 /* the inn's door at the road's end: the tavern's own door art and a plate over it */
 function drawLessonProps(cx, cy) { const o = L.opening, fy = o.floor * TS - cy, x = Math.round(o.door * TS + TS / 2 - cx); if (x < -80 || x > VW + 80) return;
   TVA.door(g, x, fy, OPN.st.nearDoor, time);
-  const w = 132, h = 13, px = x - (w >> 1), py = fy - 84; g.fillStyle = '#2a1a0e'; g.fillRect(px, py, w, h); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, py + 1, w - 2, h - 2); g.fillStyle = '#2a3a20'; g.fillRect(px + 3, py + 3, w - 6, h - 6);
-  text(OT.INN_SIGN, x, py + 4, '#ffe9a8', 'center', 6); if (OPN.st.nearDoor) text('UP: ENTER THE INN', x, py - 9 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
+  const w = inkW(OT.INN_SIGN, 6) + 14, h = 13, px = x - (w >> 1), py = fy - 84; g.fillStyle = '#2a1a0e'; g.fillRect(px, py, w, h); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, py + 1, w - 2, h - 2); g.fillStyle = '#2a3a20'; g.fillRect(px + 3, py + 3, w - 6, h - 6);
+  text(OT.INN_SIGN, x, py + 4, '#ffe9a8', 'center', 6); if (OPN.st.nearDoor) text(opnWords().talk + ': ENTER THE INN', x, py - 9 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
 /* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
 /* TWO PASSES: 'back' (before the heroes) is the ring's far half and the leash rope; 'front' (after the near layer, which paints over the floor line in
    the halls) is the ring's near half - under his feet, never over his legs - and the tags, so neither is ever hidden */
@@ -8186,7 +8187,8 @@ function flaskObjSay(id) { SFX.medal(); toastNow(F2.OBJ_LINE[id], 5); }
 function toastNow(msg, t) { hintSay('tip', t, msg); }
 /* THE ONE DOOR EVERY HINT BOX GOES THROUGH (src/hints.js, Settings: Hints): hintSay(tier, seconds, text) puts the line in the hint box if the player's Hints level lets that tier through (HIGH: always, as before). Notices (level-up, XP, gate open) are not hints and set hintMsg/hintT themselves. */
 function hintGate(tier, id) { if (HINTS.hintLevel() !== 'high') PROG.hintSeen = HINTS.setSeenStore(PROG.hintSeen); return HINTS.hintAllowed(tier, id); }   /* (the "told once" map lives in the save, only while Hints is below HIGH) */
-function hintSay(tier, t, msg) { if (tier === 'mechanic' && L && L.chase3 && boss && boss.t === 'undeadmage' && boss.alive && (boss.leg === 'ascent' || (boss.leg === 'chase' && inChase3(L, P.x, P.y)))) return false;   /* (claude/ft4a) the crouch lessons' box covered a third of the core: not in THE CHASE, its core or THE ASCENT */
+function hintSay(tier, t, msg) { if (L && L.opening && !opnSaying) return false;   /* (claude/tutorial1) the roadside lesson speaks only through its own panel: the wood's crouch / guard / shrine lessons stay quiet in it */
+  if (tier === 'mechanic' && L && L.chase3 && boss && boss.t === 'undeadmage' && boss.alive && (boss.leg === 'ascent' || (boss.leg === 'chase' && inChase3(L, P.x, P.y)))) return false;   /* (claude/ft4a) the crouch lessons' box covered a third of the core: not in THE CHASE, its core or THE ASCENT */
   if (HINTS.takeStall()) tier = 'stall'; if (!hintGate(tier, msg)) return false; hintMsg = msg; hintT = t; return true; }
 const stanceKeyName = () => TCH.on ? 'THE BOW BUTTON' : padLast ? CTL.labelFor(SET.binds, 'pad1', 'stance', 1) : String(KEYS.stance[0] || '2').toUpperCase();   /* (claude/rangerhud) the key her swap answers to, whichever hand is in use */
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
@@ -36881,7 +36883,7 @@ function render() {
       flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6, 'outline');   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
     if (coop()) drawCoopHud();
-    if (TAVO) TAVO.drawHud(VW, VH); if (L && L.tavern) OPN.drawCard(g, VW, VH, 1 / 60); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
+    if (TAVO) TAVO.drawHud(VW, VH); if (L && L.tavern) OPN.drawCard(g, VW, VH); if (DUELO) DUELO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards; (claude/pvpduel) the pit's card, the duel's bars, count, banners and winner screen */   // and player two's small plate beside his
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
@@ -37159,7 +37161,7 @@ function render() {
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(bx + 8, my + mh - 13, mw - 16, 1);
-      text(items[titleI] === 'LOCAL CO-OP' || items[titleI] === 'ONLINE CO-OP' ? 'THE INN: CO-OP, LOOK, TRAIN' : sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
+      text(items[titleI] === 'LOCAL CO-OP' || items[titleI] === 'ONLINE CO-OP' ? 'INN: CO-OP, LOOK, TRAIN' : sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 

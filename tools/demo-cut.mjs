@@ -19,9 +19,9 @@ const byId = Object.fromEntries(LEVELS.map(l => [l.id, l]));
 const CHAIN = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings'];
 CHAIN.forEach((id, i) => { assert.ok(byId[id], 'the chain level exists: ' + id); if (i) assert.equal(byId[id].needs, CHAIN[i - 1], id + ' needs ' + CHAIN[i - 1] + ' (the live chain moved: update the slice on purpose)'); });
 assert.equal(byId.burning.opensOn && byId.burning.opensOn.level, 'kings', 'the Burning Village spur opens on Gorm (Kingswood)');
-assert.deepEqual([...DEMO_IDS].sort(), [...CHAIN, 'burning', 'arena_yard'].sort(), 'DEMO_IDS is the chain + the spur + the arena yard');
+assert.deepEqual([...DEMO_IDS].sort(), [...CHAIN, 'burning', 'arena_yard', 'lesson'].sort(), 'DEMO_IDS is the chain + the spur + the arena yard + the roadside lesson');
 for (const id of DEMO_IDS) assert.ok(byId[id], 'the demo level exists: ' + id);
-console.log('ok  SLICE   ' + CHAIN.join(' > ') + ' + burning (spur) + arena_yard: the live needs chain');
+console.log('ok  SLICE   ' + CHAIN.join(' > ') + ' + burning (spur) + arena_yard + lesson: the live needs chain');
 /* ---- LOCKED (flag ON) ---- */
 const on = lv => F.outOfSlice(lv);
 const lockedIds = LEVELS.filter(on).map(l => l.id);

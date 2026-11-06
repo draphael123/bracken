@@ -20,7 +20,7 @@ import { LEVELS, T } from '../src/level.js';
 import { runsOf as runsOfL, floating, DECK_W, REACH } from '../src/demo-supports.js';
 import { findSlots, hovers, slotAt } from '../src/demo-slots.js';
 
-export const DEMO = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning', 'arena_yard'];
+export const DEMO = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning', 'arena_yard', 'lesson'];
 /* id -> [{ x0, x1, y, why }]: runs that float on purpose, each with a reason a player can read on screen. The ratchet is the length of the list. */
 const BARN = 'an upper floor inside the burning barn: its great frame (wall timbers, rafters, ladders) is drawn behind and round it, it is a building interior and not a deck over open air';
 /* id -> [how many props the grounding rule sets down at load, why they are still in the data]. The count may only go down. */
