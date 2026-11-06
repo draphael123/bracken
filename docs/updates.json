@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-11-05",
+    "batch": 146,
+    "lines": [
+      "Knight: a full-charge quake, and a shield bash on a double tap of block",
+      "Kingswood's Great Hound is tougher, with a feeding gallery to strike from",
+      "The Windcaller on Gale Moor hits harder, and every hero can answer his blade",
+      "The Queen's Lance is sturdier and no longer glides on planted feet",
+      "The Foreman and the great drill have new tells and polish",
+      "Duel mode is sturdier behind the scenes; clearer Hound hints"
+    ]
+  },
+  {
+    "date": "2026-11-05",
     "batch": 145,
     "lines": [
       "The world map is repainted: plates, a clearer header, DANGER pips and living campfires",
