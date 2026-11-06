@@ -72,7 +72,7 @@ export function buildDeep3(R, T, TS = 16) {
   const keepPt = p => above(p.y);
   const keepRect = r => r[3] <= K;   /* [x0,x1,y0,y1] */
   const keepZonePx = z => z.y1 <= (K + 1) * TS;
-  const ents = R.ents.filter(keepPt).filter(e => e.t !== 'check' || e.x === 76);   /* master's kelp-forest shrine stays; its ship / cold-road shrines go with the ship */
+  const ents = R.ents.filter(keepPt);   /* master's ents above the cut, every raw shrine too (src/checkpoint-thin.js CHECK_DROP thins them exactly as on master: the kelp forest's stays); its ship / cold-road shrines go with the ship */
   const ent = (t, x, y, o = {}) => ents.push({ t, x, y, ...o });
   const D = R.deep, out = {};
   for (const k of ['vents', 'clams', 'bulbs', 'wrecks', 'jellies', 'kelp', 'fish', 'props', 'banners']) out[k] = (D[k] || []).filter(keepPt);
@@ -148,6 +148,7 @@ export function buildDeep3(R, T, TS = 16) {
   coins(55, 66, St.steps[0][2] - 2);
   // THE ROT: the vents in the walls (F2's west wall, F3's east, F4's both) and F4's pit
   const rot = [
+    { id: 'r0', kind: 'vent', x: Tw.x1, dir: -1, y0: f1.y0 + 7, y1: f1.y0 + 11, ph: 0.4 },   /* F1: the first rot, shown off the route (the east wall, over the crack's far side) */
     { id: 'r1', kind: 'vent', x: Tw.x0, dir: 1, y0: f2.y1 - 4, y1: f2.y1, ph: 0 }, { id: 'r2', kind: 'vent', x: Tw.x0, dir: 1, y0: f2.y0 + 4, y1: f2.y0 + 8, ph: 1.3 },
     { id: 'r3', kind: 'vent', x: Tw.x1, dir: -1, y0: f3.y1 - 4, y1: f3.y1, ph: 0.6 },
     { id: 'r4', kind: 'vent', x: Tw.x1, dir: -1, y0: f4.y0 + 4, y1: f4.y0 + 8, ph: 2.0 },
@@ -181,6 +182,7 @@ export function buildDeep3(R, T, TS = 16) {
   ent('sign', A.trigger - 4, C.y1, { text: 'A SOUL LANTERN OVER A FALLEN SAILOR BURNS TEN SECONDS. FELL THE REST BEFORE IT GOES OUT, OR HIS MATES RAISE HIM.' });
   ent('crab', 82, dy - 1, { face: -1 }); ent('lamprey', 90, 280);
   coins(72, 94, dy - 1);
+  out.currents.push({ x0: C.x0 + 4, x1: A.wallL - 2, y0: C.y1 - 6, y1: C.y1, fx: 30, fy: 0, kind: 'cold', d3: 'coldroad' });   /* the cold road runs on along the seabed, east to her grave (master's cold current, the wreck's floor) */
   for (const x of [112, 128, 144]) vent(x, C.y1, 9);   /* the arena's air: three vents (the Bell Grave had three) */
   vent(54, C.y1, 8); clam(98, dy - 1);
   out.zones.push({ name: "THE CREW'S WRECK", x0: C.x0, x1: A.wallL, y0: C.y0, y1: C.y1, col: [120, 160, 190], a: 0.08 });
@@ -202,7 +204,10 @@ export function buildDeep3(R, T, TS = 16) {
     hullZones: (R.hullZones || []).filter(keepRect), cabins: [], routeSupports: (R.routeSupports || []).filter(s => s.bottom <= K),
     tall: { ...(R.tall || {}), bottom: (H - 5) * TS },
     arena: { x0: A.x0 * TS, x1: A.x1 * TS, floor: C.floor * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'sunkencrew', music: 'bellcrab', tint: '#143a34', tintA: 0.12, fx: 'motes', y0: C.y0 * TS, y1: C.floor * TS },
-    deep3: { slabs, steps, rot, settle, bell: { ...B }, shaft: { ...Sh }, floors: D3.floors.map(f => ({ ...f })) } };
+    deep3: { slabs, steps, rot, settle, bell: { ...B }, shaft: { ...Sh }, floors: D3.floors.map(f => ({ ...f })) },
+    /* the machines as tools/level-quality.mjs counts them (col / row: a tall level's place is its row) - read by no game code */
+    d3Cracks: slabs.concat(steps).map(c => ({ col: c.x0, row: c.y0, id: c.id })), d3Stones: settle.map(c => ({ col: c.x0, row: c.y0, id: c.id })),
+    d3Rot: rot.map(r => ({ col: r.kind === 'pit' ? r.x0 : r.x, row: r.y0, id: r.id })), d3Currents: out.currents.filter(c => c.d3).map(c => ({ col: c.x0, row: c.y0, id: c.d3 })) };
   /* the floors' names on the deep's place line (L.deep.zones) */
   for (const f of D3.floors) out.zones.push({ name: f.name, x0: Tw.x0, x1: Tw.x1, y0: f.y0, y1: f.slab + 1, col: [120, 170, 120], a: 0.05 });
   return L;

@@ -238,6 +238,7 @@ export const MARK = {
   'drummer|shoveTell': '!', 'drunk|bottleTell': '!!', 'drunk|lobTell': '!', 'duneworm|breathTell': '!', 'duneworm|lungeTell': '!!', 'duneworm|rippleTell': '!!',
   'duneworm|swallowTell': '!!', 'duneworm|sweepTell': '!!', 'eel|leapTell': '!', 'eel|lungeTell': '!', 'eel|pinchTell': '!', 'eel|shockTell': '!!',
   'eel|snapTell': '!', 'eel|strikeTell': '!', 'eel|thrustTell': '!', 'emberwisp|dartTell': '!', 'emberwisp|flareTell': '!!', 'familiar|slamTell': '!!',
+  'walleel|bubble': '!', 'sunkencrew|lungeTell': '!', 'sunkencrew|flurryTell': '!', 'sunkencrew|bashTell': '!', 'sunkencrew|reelTell': '!', 'sunkencrew|chargeTell': '!', 'sunkencrew|throwTell': '!!', 'sunkencrew|slamTell': '!!',   /* (claude/deep3) THE WALL EEL's bubbles are its tell (src/wall-eel.js); THE SUNKEN CREW -> THE CURSED SAILOR (src/sunken-crew.js CREW.moves .mark) */
   'familiar|spitTell': '!', 'familiar|swipeTell': '!', 'familiar|walk': '!', 'farmhand|swingTell': '!', 'feeler|lashTell': '!', 'fledgling|peckTell': '!',
   'fogknight|cutTell': '!', 'fogknight|doubleTell': '', 'fogknight|lashTell': '!!', 'fogknight|lungeTell': '!!', 'fogknight|plungeTell': '!!', 'fogknight|shroudTell': '',
   'fogknight|sinkTell': '!!', 'fogknight|spearTell': '!!', 'fogknight|stanceTell': '', 'fogknight|stepTell': '!', 'fogknight|surgeTell': '!!', 'fogwraith|smotherTell': '!',
@@ -434,6 +435,7 @@ export const ANSWER = {
   'duneworm|sweepTell': 'jump',   // THE DUNE WORM (a boss, claude/duneworm2): his tail sweeps the floor from behind you - jump it
   'duneworm|breathTell': 'block',   // (claude/caravan2) his SAND BREATH: a cone from his mouth to the floor - the shield takes it (or be behind him)
   'eel|leapTell': 'block', 'eel|lungeTell': 'block', 'eel|pinchTell': 'block', 'eel|snapTell': 'block', 'eel|strikeTell': 'block', 'eel|thrustTell': 'block', 'eel|shockTell': 'dodge',
+  'walleel|bubble': 'block', 'sunkencrew|lungeTell': 'block', 'sunkencrew|flurryTell': 'block', 'sunkencrew|bashTell': 'block', 'sunkencrew|reelTell': 'block', 'sunkencrew|chargeTell': 'block', 'sunkencrew|throwTell': 'dodge', 'sunkencrew|slamTell': 'jump',   /* (claude/deep3) THE WALL EEL: let it strike your shield (or stop short), cut it as it hangs; THE SUNKEN CREW / THE CURSED SAILOR */
   'farmhand|swingTell': 'block',
   'feeler|lashTell': 'block',
   'fledgling|peckTell': 'block',
@@ -716,6 +718,7 @@ export const HEIGHT = {
   'drownedknight|comboTell': 'low', 'drownedknight|lungeTell': 'low',
   'drunk|bottleTell': 'low', 'drunk|lobTell': 'low',
   'eel|leapTell': 'low', 'eel|lungeTell': 'low', 'eel|pinchTell': 'low', 'eel|snapTell': 'low', 'eel|strikeTell': 'low', 'eel|thrustTell': 'low', 'eel|shockTell': 'low',
+  'walleel|bubble': 'low', 'sunkencrew|lungeTell': 'low', 'sunkencrew|flurryTell': 'low', 'sunkencrew|bashTell': 'low', 'sunkencrew|reelTell': 'low', 'sunkencrew|chargeTell': 'low', 'sunkencrew|throwTell': 'low', 'sunkencrew|slamTell': 'low',   /* (claude/deep3) the wall eel reaches the floor (a curtain's eel strikes down at a walker; a wall's at a swimmer's middle): a duck does not let it over; the crew's moves all reach the floor */
   'emberwisp|flareTell': 'low',
   'farmhand|swingTell': 'high',
   'feeler|lashTell': 'low',
