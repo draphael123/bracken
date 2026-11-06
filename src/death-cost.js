@@ -30,7 +30,7 @@ export function normalizeDeathCost(p) {
   const had = isObj(p.deathCost) && p.deathCost.v === DC_VERSION, d = isObj(p.deathCost) ? p.deathCost : {}, out = freshDeathCost();
   if (isObj(d.carried)) { if (isObj(d.carried.xp)) for (const h of Object.keys(d.carried.xp)) { const n = Math.min(num(d.carried.xp[h]), num((p.xp || {})[h])); if (n) out.carried.xp[h] = n; }
     out.carried.purse = Math.min(num(d.carried.purse), num(p.coins)); }
-  out.bundle = cleanBundle(d.bundle); if (num(d.told)) out.told = num(d.told);   /* (how many times the game has SAID what a death costs: it says it twice, not every death) */
+  out.bundle = cleanBundle(d.bundle); if (num(d.told)) out.told = num(d.told); if (d.card) out.card = 1;   /* (card = the first-death card was shown, src/salt-card.js; told: how many times the game has SAID what a death costs: it says it twice, not every death) */
   const changed = !had || JSON.stringify(out) !== JSON.stringify(d);
   p.deathCost = out; return changed;
 }
