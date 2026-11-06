@@ -15,11 +15,11 @@ import * as CT from './carry-throw.js';
 import * as BP from './beam-path.js';
 
 const C = { stone: '#2a2620', stoneHi: '#4a4236', gold: '#e8c24a', goldDk: '#9a7a2a', linen: '#e8dcc0', crack: '#8a7a5a', press: '#5a5248', spike: '#c8c0b0', sun: '#fff6c8', keg: '#7a4a26', fire: '#ff9a5c', dead: '#b8a888', priest: '#c8a0ff' };
-CT.addKind('kpkeg', { aims: { low: { vx: 100, vy: -100 }, mid: { vx: 165, vy: -170 }, high: { vx: 115, vy: -290 } }, g: 600, r: 4, ring: 14, dots: 14 });
 export const KEG = { fuseThrown: 1.3, fuseStruck: 1.6, rackEvery: 4 };
 export const BRAND = { lie: 4.0, burnFoe: 3.0, burnLinen: 5.0 };
 
 export function makeKpHands(ctx) {
+  if (!CT.KINDS.kpkeg) CT.addKind('kpkeg', { aims: { low: { vx: 100, vy: -100 }, mid: { vx: 165, vy: -170 }, high: { vx: 115, vy: -290 } }, g: 600, r: 4, ring: 14, dots: 14 });   /* the keg's throw (a row, not a second system) */
   let R = null, Lref = null, S = null, objs = [], fx = [], saidOnce = {};
   const H = {}, TS = ctx.TS, Rd = Math.round;
   const L = () => ctx.L;

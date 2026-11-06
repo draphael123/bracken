@@ -66,7 +66,7 @@ export function buildKingsPyramid({ painter, T, TS }) {
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
   /* THE CAST (proven machines under skins; the guard is the one new foe; kp tags are read by src/kp-hands.js) */
-  const gilded = (x, y, o) => foe('shield', x, y, Object.assign({ kp: 'gilded' }, o || {}));
+  const gilded = (x, y, o) => foe('shield', x, y, Object.assign({ kp: 'gilded', cnSkin: 'shieldguard' }, o || {}));   /* (the plated man's skin until the art lane's GILDED GUARD: the bare shield machine is drawn a goblin) */
   const dead = (x, y, x0, x1, o) => foe('mummy', x, y, Object.assign({ guard: [x0, x1] }, o || {}));
   const skel = (x, y, x0, x1, o) => dead(x, y, x0, x1, Object.assign({ cnSkin: 'tombskel' }, o || {}));
   const archer = (x, y, o) => foe('archer', x, y, Object.assign({ cnSkin: 'dartblower', kp: 'archer' }, o || {}));
@@ -103,7 +103,8 @@ export function buildKingsPyramid({ painter, T, TS }) {
   archer(66, UP - 1);                                              /* a gilded archer on the gallery (the ranged one) */
   /* THE GREAT DOOR (110-111, rows 38..43): five keyholes; the hands open it when all five keys are carried */
   const greatDoor = { x0: 110, x1: 111, y0: 38, y1: HF - 1, holes: KEY_ORDER.slice() };
-  block(greatDoor.x0, greatDoor.x1, greatDoor.y0, greatDoor.y1); decor.push({ kind: 'greatdoor', ...greatDoor });
+  for (let y = greatDoor.y0; y <= greatDoor.y1; y++) for (let x = greatDoor.x0; x <= greatDoor.x1; x++) set(x, y, T.PORT);   /* a barred door (T.PORT): the reach model reads it open (L.reachDoors) - the five keys are on the way */
+  decor.push({ kind: 'greatdoor', ...greatDoor });
   air(112, 112, 29, UP - 1);                                       /* the doorway from the east gallery into the room of fire */
 
   // ================= 2a. THE ROOM OF MIRRORS (up, west): fixed mirrors, the sun's port, the key door, THE PRIEST CACHE =================
@@ -212,6 +213,7 @@ export function buildKingsPyramid({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [lift], interiors,
     arena, gateAfterBoss: true, kingspyramid: true,
+    rigBands: [[SX0, SX0 + 3, HF, SF - 1]], reachDoors: [{ x0: greatDoor.x0, x1: greatDoor.x1, y0: greatDoor.y0, y1: greatDoor.y1 }],   /* THE LIFT is a ride between its two stops for the reach model (src/reachcore.js: board it at either, leave it at either) */
     /* THE KIT (src/kp-rooms.js + src/kp-hands.js): every room's pieces as data */
     kp: { rooms: ROOMS, keys, greatDoor, shafts, linen, cressets, cracked, hung, racks, weights, gates, presses, switches, spikeFloors, shutters, alcoves, keyOrder: KEY_ORDER },
     sunRooms: [mirrorRoom],   /* THE MIRRORS (src/sun-puzzle.js, wired by src/sunroom-hands.js since claude/colossus4; drawn with src/beam-path.js) */

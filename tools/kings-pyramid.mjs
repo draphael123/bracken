@@ -69,7 +69,8 @@ function played(open) {
     const gd = K.greatDoor; for (let y = gd.y0; y <= gd.y1; y++) for (let x = gd.x0; x <= gd.x1; x++) set(x, y, T.AIR);
     for (let y = KPL.KP.shaftTop; y < KPL.KP.shaftFoot; y++) set(KPL.KP.shaftX[0], y, T.NET);   /* (the lift: the model cannot ride a mover, a rung column stands in for it) */
   }
-  return { ...L, grid: g };
+  if (!open) { const gd = K.greatDoor; for (let y = gd.y0; y <= gd.y1; y++) for (let x = gd.x0; x <= gd.x1; x++) set(x, y, T.SOLID); }   /* (the model reads a PORT as a gate it can pass: as built the door is stone to it) */
+  return open ? { ...L, grid: g } : { ...L, grid: g, reachDoors: [] };   /* (as built: the great door barred - the keys are what open it) */
 }
 function reach() {
   const Lp = played(true), Rp = floodReach(Lp, T, { rides: true }), K = L.kp;
