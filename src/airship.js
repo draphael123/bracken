@@ -112,8 +112,10 @@ export function buildAirship({ T, TS }) {
   ent('brazier', 9, deckFeet); braziers.push({ x: 9, y: deckFeet });
   /* the quarterdeck (a raised step at the bow end of the launch deck) */
   fill(56, 68, D - 3, D - 1, T.SOLID); set(54, D - 1, T.SOLID); set(55, D - 1, T.SOLID); set(55, D - 2, T.SOLID);
+  fill(27, 28, D - 2, D - 1, T.SOLID); masonry.push([27, 28, D - 2, D - 1, 'cargo']);   /* lashed cargo on the launch deck (brass-strapped chests) */
   for (let i = 0; i < 5; i++) ent('coin', 30 + i * 2, deckFeet - 1);
   sign(40, deckFeet, 'A WHISTLE ON THE WIND: SKY RAIDERS BOARD FROM THEIR GLIDERS.');
+  zipLines.push({ x0: 67 * TS + 8, y0: (D - 3) * TS - 10, x1: 82 * TS + 8, y1: D * TS - 12, id: 'quarterZip' });   /* the raiders' boarding line, quarterdeck to the waist (past the hatch) */
 
   /* ==== 2. THE CARGO HOLD (71-150) - TEST (LOW): down the hatch; the keel brushes the dunes through the breaches; stoke to rise above it ==== */
   fill(71, 149, holdTop, holdFloor - 1, T.AIR);                 /* the hold's air (the deck over it, rows D..D+1, stays) */
@@ -146,6 +148,8 @@ export function buildAirship({ T, TS }) {
   banded(236, 243, 9, 'high', 'spar C-forecastle');
   climb(251, 9, D - 1);                                         /* the forecastle's far-side net down to the deck */
   ent('coin', 176, 8); ent('coin', 180, 8); ent('silver', 247, 8);
+  for (const x of [176, 204, 232]) { fill(x, x + 1, D - 2, D - 1, T.SOLID); masonry.push([x, x + 1, D - 2, D - 1, 'cargo']); }   /* deck cargo under the rigging (a second height on the deck road) */
+  climb(190, 5, 8); fill(188, 192, 5, 5, T.ONEWAY); ent('silver', 190, 4);   /* THE CROW'S NEST over mast B: a silver for the climb past the yard (off the route) */
 
   /* ==== 4. THE CLOUD LINE (251-340) - EXAM + PLATFORMING 2: both bands twice; then the wyrmlings on the open deck ==== */
   visZones.push({ x0: 255, x1: 326, k: 0.55, why: 'the cloud bank (src/desert-rules.js sandstorm visibility, reused - plan s3d)' });
@@ -167,6 +171,7 @@ export function buildAirship({ T, TS }) {
   climb(326, 12, D - 1);
   for (let i = 0; i < 4; i++) ent('coin', 264 + i * 2, 9);
   ent('silver', 300, holdFloor - 1);
+  fill(315, 316, D - 2, D - 1, T.SOLID); masonry.push([315, 316, D - 2, D - 1, 'cargo']);
   /* the wyrmlings' deck (327-340): open, a brazier for the shock (a warm station cleanses it) */
   ent('brazier', 330, deckFeet); braziers.push({ x: 330, y: deckFeet });
   for (const [x, y] of [[327, 20], [331, 18], [335, 21], [338, 19]]) ent('wyrmling', x, y, { el: 'shock', squad: 'brood' });
@@ -176,6 +181,9 @@ export function buildAirship({ T, TS }) {
   ent('brazier', 352, deckFeet); braziers.push({ x: 352, y: deckFeet });
   sign(356, deckFeet, "THE CAPTAIN'S CHART: A STORM SERPENT COILS THE SKY ROUND THE SHIP. HIS BOLTS FIND THE HOTTEST THING ON DECK.");
   for (let i = 0; i < 6; i++) ent('coin', 360 + i * 2, deckFeet - 1);
+  fill(362, 363, D - 1, D - 1, T.SOLID); masonry.push([362, 363, D - 1, D - 1, 'chart table']);
+  zipLines.push({ x0: 346 * TS + 8, y0: 18 * TS - 10, x1: 366 * TS + 8, y1: D * TS - 12, id: 'cabinZip' });   /* off the cabin roof (up its stern post net) to the chart */
+  climb(344, 18, D - 1);
   ent('check', 372, deckFeet);
   sign(378, deckFeet, 'A BOLT ON A STOKED BURNER GROUNDS IN THE HULL - AND IN HIM.');
 
@@ -191,11 +199,16 @@ export function buildAirship({ T, TS }) {
 
   /* ---- THE CAST: sky raiders (bandit reskins on existing AIs: goggles, harnesses, glider cloaks - art owed) ---- */
   const raider = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1, skyRaider: true }, o || {}));
-  raider('cutthroat', 44, deckFeet); raider('cutthroat', 50, deckFeet); raider('slinger', 62, D - 4); raider('archer', 66, D - 4);
-  raider('cutthroat', 100, holdFloor - 1); raider('cutthroat', 107, holdFloor - 1); raider('slinger', 112, holdFloor - 5); raider('cutthroat', 134, holdFloor - 1);
-  raider('archer', 328, deckFeet); raider('cutthroat', 336, deckFeet);
-  raider('cutthroat', 343, deckFeet); raider('slinger', 349, deckFeet);
+  /* each knot is a SQUAD (one designed encounter): the boarders off the gliders, the quarterdeck's shooters, the hold's three knots, the cloud deck's raid, the bridge door */
+  const sq = (t, x, y, squad, o) => raider(t, x, y, Object.assign({ squad }, o || {}));
+  sq('cutthroat', 34, deckFeet, 'boarders'); sq('cutthroat', 40, deckFeet, 'boarders');
+  sq('slinger', 60, D - 4, 'quarterdeck'); sq('archer', 66, D - 4, 'quarterdeck');
+  sq('cutthroat', 98, holdFloor - 1, 'holdFore'); sq('shield', 102, holdFloor - 1, 'holdFore');   /* THE PLATED BOARDER: the bandit shield's AI in a sky raider's harness (the Plated Bandit's skin is Ksar-bound: Q) */
+  sq('slinger', 112, holdFloor - 5, 'holdShelf'); sq('cutthroat', 108, holdFloor - 1, 'holdShelf');
+  sq('archer', 130, holdFloor - 3, 'holdAft'); sq('cutthroat', 135, holdFloor - 1, 'holdAft');
   raider('cutthroat', 254, deckFeet, { face: 1 });   /* the boarder waiting at the forecastle's foot (after the rigging, before the cloud line's climbs) */
+  sq('archer', 329, deckFeet, 'brood'); sq('cutthroat', 337, deckFeet, 'brood');   /* the cloud deck's raid fights beside the brood (one encounter) */
+  sq('cutthroat', 343, deckFeet, 'bridgeDoor'); sq('shield', 347, deckFeet, 'bridgeDoor'); sq('slinger', 350, deckFeet, 'bridgeDoor');
 
   const START = { x: 3, y: deckFeet };
   return {
