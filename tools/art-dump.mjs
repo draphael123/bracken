@@ -70,9 +70,10 @@ if (what === 'gates' || what === 'all') {
   }
 }
 if (what === 'scenes' || what === 'all') {
-  const mk = (fn, name, ss, nHeroes = 3, reduce = false) => { for (const s of ss) { const c = mkScreen(VW, VH), g = c.getContext('2d'); const env = { g, VW, VH, time: s * 5.3, n: nHeroes, reduce, drawHero: heroStub(g), drawFerryman() {} }; fn(env, s); save(name + '-' + String(Math.round(s * 100)).padStart(3, '0') + (reduce ? '-reduce' : ''), c, 2); } };
-  mk(TRA.drawDaylightScene, 'S1', [0.2, 0.5, 0.75, 1]); mk(TRA.drawDropScene, 'S2', [0.3, 0.55, 0.75, 0.95]); mk(TRA.drawDescentScene, 'S3', [0.15, 0.4, 0.7, 1]);
-  for (const [f, nm] of [[TRA.drawDaylightScene, 'S1'], [TRA.drawDropScene, 'S2'], [TRA.drawDescentScene, 'S3']]) for (let r = 0; r < 2; r++) for (let k = 0; k <= 20; k++) for (const nh of [1, 4]) { const c = mkScreen(VW, VH), g = c.getContext('2d'); f({ g, VW, VH, time: k * 0.25, n: nh, reduce: !!r, drawHero: heroStub(g), drawFerryman() {} }, k / 20); }
+  const mk = (fn, name, ss, nHeroes = 3, reduce = false) => { for (const s of ss) { const c = mkScreen(VW, VH), g = c.getContext('2d'); const env = { g, VW, VH, time: s * 5.3, n: nHeroes, reduce, drawHero: heroStub(g), drawFerryman() {} }; fn(env, s); save(name + '-' + String(Math.round(s * 10)).padStart(3, '0') + (reduce ? '-reduce' : ''), c, 2); } };
+  /* s is in SECONDS of the scene (TRM.DAYLIGHT.dur ...): stills at hand-picked beats, then a dry run of every 1/20 of each scene x 1-4 seats x reduce */
+  mk(TRA.drawDaylightScene, 'S1', [1.0, 2.4, 3.3, 4.2, 5.5]); mk(TRA.drawDropScene, 'S2', [0.8, 1.4, 1.8, 2.6, 4.2]); mk(TRA.drawDescentScene, 'S3', [1.0, 2.6, 3.8, 5.0, 6.4]); mk(TRA.drawDescentScene, 'S3', [3.8, 6.4], 3, true);
+  for (const [f, nm, dur] of [[TRA.drawDaylightScene, 'S1', TRM.DAYLIGHT.dur], [TRA.drawDropScene, 'S2', TRM.DROP.dur], [TRA.drawDescentScene, 'S3', TRM.DESCENT.dur]]) for (let r = 0; r < 2; r++) for (let k = 0; k <= 20; k++) for (const nh of [1, 4]) { const c = mkScreen(VW, VH), g = c.getContext('2d'); f({ g, VW, VH, time: k * 0.25, n: nh, reduce: !!r, drawHero: heroStub(g), drawFerryman() {} }, dur * k / 20); }
   { const c = mkScreen(200, 100), g = c.getContext('2d'); g.fillStyle = '#5a6a70'; g.fillRect(0, 0, 200, 100); g.fillStyle = '#4a4034'; g.fillRect(0, 70, 200, 30); TRA.drawArrivalRaft({ g, VW: 200, VH: 100 }, 0, 0, 70, 1.0); save('raft-arrival', c, 3); }
 }
 console.log('art-dump: ' + n + ' stills in ' + out + ' (no throw, no NaN)');

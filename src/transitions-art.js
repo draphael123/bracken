@@ -849,129 +849,259 @@ export function drawSmokeScene(env, s) {
 }
 
 /* =====================================================================================================================================================================================================
-   LANE C (claude/act2tr): THE THREE BIG SCENES OF ACT II - GREYBOX-PLUS (rects, gradients, the existing halo + hero sprites; an ART lane redraws them with real kits). No text in this file (the caption is main.js's).
+   LANE C (claude/act2tr): THE THREE BIG SCENES OF ACT II - ART PASS DONE (claude/act2trart: baked sprites, real kits). No text in this file (the caption is main.js's).
    S1 drawDaylightScene (minecart > storm): in the tunnel on the last cart, torch flecks and timbers going by, the mouth ahead a growing white-gold coin, then OUT: dawn, the gorge, Stormhold across it, the Long Bridge up out of the haze.
    S2 drawDropScene (storm > undercrown): the Long Bridge cracks, the deck lets go, the world scrolls UP past the falling party: the castle's underside, torch windows, ash, the grey light going out.
    S3 drawDescentScene (crown > longwater, THE ACT HAND-OFF): out of the broken gate onto the stair, the pull up and back (the castle small on its peak), the raft on the river widening into sea-grey water.
    drawArrivalRaft: the raft the Long Water begins on (world space, beached on its first bank). Everything is hashed, bounded, and calm under reduce-motion. */
 const grad = (g, y0, y1, stops) => { const gr = g.createLinearGradient(0, y0, 0, y1); stops.forEach(([k, c]) => gr.addColorStop(k, c)); return gr; };
 const lerpC = (a, b, k) => 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',') + ')';
-/* a mine cart (body, rim, two wheels, ore heap) with its left edge at x and its rails at y */
-function cart(g, x, y, w) {
-  R(g, '#2a2630', x + 6, y - 4, 7, 5); R(g, '#2a2630', x + w - 13, y - 4, 7, 5); R(g, '#6a6a74', x + 8, y - 3, 3, 3); R(g, '#6a6a74', x + w - 11, y - 3, 3, 3);   /* wheels */
-  R(g, '#3a3640', x, y - 20, w, 17); R(g, '#5a5662', x, y - 20, w, 2); R(g, '#1e1a24', x, y - 4, w, 1); R(g, '#4a4654', x + 2, y - 18, 1, 13); R(g, '#4a4654', x + w - 3, y - 18, 1, 13);
-  for (let i = 0; i < 5; i++) R(g, i % 2 ? '#8a5a34' : '#b07a48', x + 10 + i * 9, y - 22 - (i % 3), 6, 3);   /* the last of the ore */
+/* ART PASS (claude/act2trart): every sprite below is baked ONCE (once/mk, memoised per viewport where the height matters) and blitted; the per-frame work is drawImage, a few 1 px rects and the gradients. Palettes follow the levels
+   the scenes join: Deep Rails' dark rock + ore + iron -> Stormhold's dawn blues; the Long Bridge's pale masonry over the Undercrown's cold shadow; Highcrown's plum stone on a grey mountain -> the Long Water's sea-grey. */
+const ORE = ['#2a1e16', '#5a3a24', '#8a5a34', '#c8783a', '#f0b070'];
+/* the plates of a cart's body (w x h): iron panels with seams, rivet rows, rust streaks */
+function cartPlates(g, w, h, seed) {
+  R(g, '#2c2834', 0, 0, w, h); R(g, '#4a4654', 1, 1, w - 2, h - 3); R(g, '#5a5664', 1, 1, w - 2, 1);
+  for (let x = 20; x < w - 4; x += 20) { R(g, '#1e1a24', x, 0, 1, h); R(g, '#5a5664', x + 1, 1, 1, h - 3); for (const y of [2, h - 5]) { P(g, '#9a96a6', x - 2, y); P(g, '#9a96a6', x + 2, y); } }
+  for (const x of [3, w - 5]) for (const y of [2, h - 5]) P(g, '#9a96a6', x, y);
+  for (let k = 0; k < 6; k++) { const x = 2 + Math.floor(hash(k + seed) * (w - 4)), y0 = 1 + Math.floor(hash(k + seed + 9) * 3); R(g, '#6a3a24', x, y0, 1, 2 + (k % 3)); P(g, '#8a4a2c', x, y0); }
+  R(g, '#1e1a24', 0, h - 2, w, 2);
 }
+/* THE ORE CART (88 x 36, rails on its row 34): rim lip, plated body, heaped ore with glints, two spoked wheels, couplers */
+const cartSprite = () => once('cartS', () => mk(88, 36, g => {
+  g.save(); g.translate(4, 12); cartPlates(g, 80, 17, 3); g.restore();
+  R(g, '#2a2630', 2, 10, 84, 4); R(g, '#7a7686', 2, 10, 84, 3); R(g, '#a8a4b4', 2, 10, 84, 1); R(g, '#4a4654', 2, 13, 84, 1);   /* the rim */
+  for (let i = 0; i < 15; i++) { const x = 8 + i * 5 + Math.floor(hash(i) * 3), w = 4 + (i % 3), h = 3 + (i % 3 === 1 ? 1 : 0), y = 10 - h - Math.floor(hash(i + 5) * 3) * (i > 2 && i < 12 ? 1 : 0), t = 1 + (i % 4 === 0 ? 2 : i % 2);
+    R(g, ORE[0], x, y - 1, w + 1, h + 1); R(g, ORE[t], x, y, w, h); R(g, ORE[Math.min(4, t + 1)], x, y, w - 1, 1); if (i % 5 === 2) P(g, '#8ac8e8', x + 1, y + 1); if (i % 4 === 1) P(g, ORE[4], x + 2, y); }   /* the heap, a blue-green vein now and then */
+  R(g, '#3c424a', 0, 21, 4, 3); R(g, '#7d868f', 0, 21, 4, 1); R(g, '#3c424a', 84, 21, 4, 3); R(g, '#7d868f', 84, 21, 4, 1);
+  for (const cx of [22, 66]) { R(g, '#16141c', cx - 5, 26, 10, 9); R(g, '#3a3a46', cx - 4, 27, 8, 7); R(g, '#6a6a78', cx - 4, 27, 8, 1); R(g, '#9a9aa8', cx - 1, 29, 3, 3); R(g, '#16141c', cx, 28, 1, 5); R(g, '#16141c', cx - 3, 30, 7, 1); P(g, '#c8c8d4', cx, 30); }
+}));
+/* the rock of the tunnel (64 wide, tiles sideways): near-black strata, a vein or two of ore, wet drips */
+const rockWall = h => once('rockWall' + h, () => mk(64, h, g => {
+  R(g, '#0a080e', 0, 0, 64, h);
+  for (let y = 0; y < h; y += 5) for (let x = 0; x < 64;) { const w = 6 + Math.floor(hash(x + y * 3.3) * 20), t = hash(y * 0.7 + x * 1.9); if (t > 0.35) R(g, t > 0.8 ? '#1c1626' : (t > 0.6 ? '#141020' : '#100c18'), x, y + Math.floor(hash(x + y) * 3), Math.min(w, 64 - x), 1 + (t > 0.9 ? 1 : 0)); x += w; }
+  for (let k = 0; k < 5; k++) { const x = Math.floor(hash(k + 70) * 60), y = Math.floor(hash(k + 90) * h); R(g, '#3a2418', x, y, 3, 1); P(g, '#7a4a26', x + 1, y); P(g, '#c8783a', x + 2, y - 1 < 0 ? 0 : y - 1); }   /* ore in the seam */
+  for (let k = 0; k < 4; k++) { const x = 4 + Math.floor(hash(k + 120) * 56), y = Math.floor(hash(k + 130) * h * 0.6); R(g, '#1e2c3a', x, y, 1, 3 + k % 3); P(g, '#4a6a84', x, y + 3 + k % 3); }   /* a wet drip */
+}, false));
+/* a TIMBER SET (52 x h): two posts and a cap, grain, diagonal braces, iron straps, a wedge at each joint, a lamp hook */
+const timberSet = h => once('timberSet' + h, () => mk(52, h, g => {
+  const post = x => { R(g, '#1c140e', x, 0, 7, h); R(g, '#4a3626', x + 1, 0, 5, h); R(g, '#6a4e34', x + 1, 0, 1, h); R(g, '#34261a', x + 5, 0, 1, h); for (let y = 6; y < h; y += 9) P(g, '#2a1e14', x + 2 + (y % 3), y);
+    for (let y = 20; y < h - 6; y += 40) { R(g, '#22262c', x - 1, y, 9, 3); R(g, '#7d868f', x - 1, y, 9, 1); P(g, '#a8b0b8', x, y + 1); P(g, '#a8b0b8', x + 6, y + 1); } };
+  post(2); post(42); R(g, '#1c140e', 0, 0, 52, 6); R(g, '#5a4430', 1, 1, 50, 3); R(g, '#7a5e40', 1, 1, 50, 1); R(g, '#34261a', 1, 4, 50, 1);
+  for (let i = 0; i < 12; i++) { P(g, '#4a3626', 9 + i, 6 + i); P(g, '#2a1e14', 10 + i, 6 + i); P(g, '#4a3626', 42 - i, 6 + i); P(g, '#2a1e14', 41 - i, 6 + i); }   /* the braces */
+  R(g, '#22262c', 22, 5, 8, 2); R(g, '#7d868f', 22, 5, 8, 1); R(g, '#22262c', 25, 7, 2, 4);   /* the lamp hook */
+}));
+/* far RANGE (512 wide, tiles): pale blue ridges lit pink on top, a dusting of snow, shaded below */
+const farRange = () => once('farRange', () => mk(512, 80, g => {
+  const top = x => 40 - Math.round(Math.sin(x / 512 * 6.2832 * 3 + 1) * 14 + Math.sin(x / 512 * 6.2832 * 7) * 8 + Math.sin(x / 512 * 6.2832 * 13) * 3);
+  for (let x = 0; x < 512; x++) { const t = top(x); R(g, '#7a7a9c', x, t, 1, 80 - t); R(g, '#6a6a8c', x, t + 10 + (x % 3), 1, 80); R(g, '#9a98b8', x, t, 1, 2); if (t < 34) R(g, '#f0e0e0', x, t, 1, 1 + (hash(x) > 0.5 ? 1 : 0)); P(g, '#f0b8a8', x, t - 1);
+    if ((x * 5) % 9 === 0) R(g, '#5a5a7c', x, t + 4, 1, 6 + (x % 4)); }
+}, false));
+/* STORMHOLD on its far rim (200 x 110): a long curtain wall with crenels, four towers with pointed slate roofs, a keep and a gatehouse, lit windows, banners; it is drawn small, in haze, so it is shapes and light */
+const stormholdSky = () => once('stormholdSky', () => mk(200, 110, g => {
+  const S = ['#1e2038', '#2e3252', '#444a72', '#62689a'];
+  const wall = (x, y, w, h) => { R(g, S[0], x, y, w, h); R(g, S[1], x + 1, y + 1, w - 2, h - 1); R(g, S[2], x + 1, y + 1, 1, h - 1); for (let cx = x; cx < x + w - 3; cx += 6) R(g, S[1], cx, y - 3, 3, 3), R(g, S[2], cx, y - 3, 1, 3); };
+  const tower = (x, y, w, h, roof, fl) => { wall(x, y, w, h); for (let r = 0; r < roof; r++) { const ins = Math.round(r * (w / 2) / roof); R(g, '#3a3e60', x - 1 + ins, y - 3 - r, w + 2 - ins * 2, 1); R(g, '#52587e', x - 1 + ins, y - 3 - r, 1, 1); }
+    R(g, '#5a5e7a', x + (w >> 1), y - 3 - roof - 7, 1, 8); if (fl) R(g, '#c8503e', x + (w >> 1) + 1, y - 3 - roof - 7, 6, 3); P(g, '#ffd36b', x + (w >> 1) - 1, y + 5); R(g, '#12122a', x + (w >> 1) - 1, y + 8, 2, 4); };
+  wall(8, 74, 184, 36); tower(2, 40, 16, 70, 12, true); tower(40, 52, 14, 58, 10, false); tower(150, 46, 16, 64, 12, true); tower(184, 58, 14, 52, 9, false);
+  wall(76, 30, 46, 80); R(g, S[2], 77, 31, 2, 78);   /* the keep */
+  for (let r = 0; r < 16; r++) { const ins = Math.round(r * 23 / 16); R(g, '#3a3e60', 75 + ins, 27 - r, 48 - ins * 2, 1); } R(g, '#5a5e7a', 99, 4, 1, 8); R(g, '#c8503e', 100, 4, 8, 4);
+  R(g, '#0c0c1c', 92, 84, 16, 26); R(g, '#1e2038', 92, 82, 16, 3); for (let x = 93; x < 107; x += 3) R(g, '#7d868f', x, 86, 1, 24);   /* the gatehouse arch and its portcullis */
+  for (let i = 0; i < 26; i++) { const x = 12 + Math.floor(hash(i + 4) * 176), y = 50 + Math.floor(hash(i + 8) * 50); if (x > 88 && x < 112 && y > 80) continue; P(g, hash(i + 2) > 0.3 ? '#ffd36b' : '#ff9a48', x, y); if (hash(i + 3) > 0.6) P(g, '#ffd36b', x, y + 1); }
+}));
+/* THE LONG BRIDGE (200 x 22), seen from the side: a deck with a low parapet over a row of arches and piers, drawn once and stretched to the span */
+const longBridge = () => once('longBridge', () => mk(200, 22, g => {
+  R(g, '#1e2038', 0, 2, 200, 5); R(g, '#62689a', 0, 2, 200, 1); R(g, '#444a72', 0, 3, 200, 3); for (let x = 3; x < 200; x += 8) R(g, '#2e3252', x, 0, 4, 2);   /* the parapet */
+  for (let x = 0; x < 200; x += 25) { R(g, '#2e3252', x, 7, 6, 15); R(g, '#444a72', x, 7, 1, 15); for (let k = 0; k < 7; k++) { const w = 19 - k * 2; if (w > 1) R(g, '#12122a', x + 6 + (19 - w) / 2, 7 + k, w, 1); } }
+}));
+/* a CLIFF FACE of the gorge (96 x 72, tiles sideways): strata, fallen ledges, pale river light low down */
+const gorgeWall = () => once('gorgeWall', () => mk(96, 72, g => {
+  R(g, '#2a2838', 0, 0, 96, 72);
+  for (let y = 0; y < 72; y += 4) for (let x = 0; x < 96;) { const w = 10 + Math.floor(hash(x + y * 2.1) * 26), t = hash(y * 1.3 + x * 0.7); R(g, t > 0.6 ? '#3e3a52' : (t > 0.3 ? '#34304a' : '#1e1c2c'), x, y, Math.min(w, 96 - x), 3); if (t > 0.75) R(g, '#5a5672', x, y, Math.min(w, 96 - x), 1); x += w; }
+  for (let k = 0; k < 7; k++) { const x = Math.floor(hash(k + 3) * 90), y = Math.floor(hash(k + 17) * 64); R(g, '#12101c', x, y, 2, 6 + k % 4); }
+}, false));
+/* the TRESTLE (52 x h): a post and the cross-bracing to the next one (repeat every 44 px) */
+const trestle = h => once('trestle' + h, () => mk(52, h, g => {
+  R(g, '#241e2a', 5, 0, 5, h); R(g, '#4a4054', 5, 0, 1, h);
+  for (let y = 4; y < h - 20; y += 26) for (let i = 0; i < 22; i++) { const x = 10 + Math.round(i * 40 / 22); P(g, '#3a3244', x, y + i); P(g, '#3a3244', 49 - (x - 10) - 0, y + i); }
+}));
 /* ------------------------------------------------------------------ S1 */
 export function drawDaylightScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, rl = Math.round(VH * 0.68), sc = daylightScroll(s, calm), out = daylightOut(s), lit = daylightLight(s), tw = daylightTown(s);
   const cx = Math.round(VW * 0.20);
   /* OUTSIDE (fades in as the cart leaves the mouth): dawn sky, a far range, the gorge, Stormhold across it, the Long Bridge out of the haze */
   if (out > 0.01) { g.globalAlpha = out;
-    g.fillStyle = grad(g, 0, rl, [[0, '#6a7aa2'], [0.55, '#d8a888'], [1, '#f4d09a']]); g.fillRect(0, 0, VW, rl + 2);
-    g.globalAlpha = out * 0.8; g.drawImage(halo(70, '255,226,160'), Math.round(VW * 0.72) - 70, rl - 96); g.globalAlpha = out;
-    const far = x => rl - 34 - Math.round(Math.sin(x * 0.03 + 2) * 12 + Math.sin(x * 0.011) * 10); g.fillStyle = '#7a7a98'; g.beginPath(); g.moveTo(0, rl); for (let x = 0; x <= VW; x += 8) g.lineTo(x, far(x)); g.lineTo(VW, rl); g.fill();
-    /* Stormhold on the far rim (grows out of the haze), its towers and lit windows; the Long Bridge a low dark line from its gate down to the cart's side */
-    const k = 0.4 + 0.6 * tw, bx = Math.round(VW * 0.74), by = rl - 12;
-    g.globalAlpha = out * (0.35 + 0.65 * tw); const tower = (dx, w, h) => { R(g, '#34385a', bx + dx - Math.round(w * k / 2), by - Math.round(h * k), Math.round(w * k), Math.round(h * k)); R(g, '#4a4e74', bx + dx - Math.round(w * k / 2), by - Math.round(h * k), Math.max(1, Math.round(k * 2)), Math.round(h * k)); R(g, '#34385a', bx + dx - Math.round(w * k / 2) - 1, by - Math.round(h * k) - 2, Math.round(w * k) + 2, 2); };
-    tower(-34, 14, 30); tower(-14, 18, 46); tower(8, 12, 36); tower(28, 20, 28); R(g, '#34385a', bx - 44 * k, by - 10 * k, 90 * k, 10 * k);
-    for (let i = 0; i < 7; i++) P(g, '#ffd36b', bx - 36 * k + hash(i + 4) * 70 * k, by - (6 + hash(i + 8) * 38) * k);
-    g.globalAlpha = out * tw; R(g, '#2a2a46', Math.round(VW * 0.40), rl - 3, Math.round(VW * 0.34), 2); for (let i = 0; i < 9; i++) R(g, '#2a2a46', Math.round(VW * 0.42 + i * VW * 0.036), rl - 1, 2, 4);   /* the Long Bridge's deck and piers */
-    g.globalAlpha = out;
-    /* the gorge under the trestle: dark, a pale river at the bottom */
+    g.fillStyle = grad(g, 0, rl, [[0, '#5a6a96'], [0.5, '#c8a0a0'], [0.8, '#f0c898'], [1, '#f8dca8']]); g.fillRect(0, 0, VW, rl + 2);
+    g.globalAlpha = out * 0.85; g.drawImage(halo(80, '255,230,170'), Math.round(VW * 0.74) - 80, rl - 100); g.globalAlpha = out;
+    for (let i = 0; i < 5; i++) { g.fillStyle = 'rgba(255,214,190,' + (0.16 + (i % 2) * 0.08).toFixed(2) + ')'; const x = Math.round(((hash(i + 6) * VW * 1.3) - sc * 0.04 + VW * 2) % (VW + 120)) - 60; g.fillRect(x, 16 + i * 14, 60 + i * 14, 2); }   /* dawn cloud bars */
+    { const rg = farRange(), o = -(Math.round(sc * 0.05) % 512 + 512) % 512; for (let x = o; x < VW; x += 512) g.drawImage(rg, x, rl - rg.height + 4); }
+    /* Stormhold on the far rim (it grows out of the haze), the Long Bridge a span from its gate towards the cart */
+    { const k = 0.4 + 0.6 * tw, spr = stormholdSky(), w = Math.round(spr.width * k), h = Math.round(spr.height * k), bx = Math.round(VW * 0.74);
+      g.globalAlpha = out * (0.35 + 0.65 * tw); g.drawImage(spr, bx - (w >> 1), rl - 8 - h, w, h);
+      g.globalAlpha = out * tw; const bw = Math.round(VW * 0.34), bs = longBridge(); g.drawImage(bs, Math.round(VW * 0.40), rl - 14, bw, bs.height);
+      g.globalAlpha = out * (0.85 - 0.5 * tw); { const hz = g.createLinearGradient(0, rl - 46, 0, rl - 6); hz.addColorStop(0, 'rgba(244,214,180,0)'); hz.addColorStop(1, 'rgba(244,214,180,1)'); g.fillStyle = hz; g.fillRect(0, rl - 46, VW, 40); }   /* the haze it grows out of (a soft band) */
+      g.globalAlpha = out; }
+    /* the gorge: cliff faces slide past under the trestle, dark at the bottom, a pale river */
     g.fillStyle = grad(g, rl + 2, VH, [[0, '#4a4658'], [0.5, '#262432'], [1, '#14121c']]); g.fillRect(0, rl + 2, VW, VH - rl);
-    for (let i = 0; i < 10; i++) { const y = rl + 20 + i * 5; g.fillStyle = 'rgba(226,230,236,0.10)'; g.fillRect(Math.round(((hash(i + 3) * VW * 1.4) - sc * 0.3 - (calm ? 0 : time * 6)) % VW + VW) % VW, y, 10 + i % 4 * 6, 1); }
+    { const gw = gorgeWall(), o = -(Math.round(sc * 0.3 + (calm ? 0 : time * 6)) % 96 + 96) % 96; g.globalAlpha = out * 0.7; for (let x = o; x < VW; x += 96) g.drawImage(gw, x, rl + 8); g.globalAlpha = out; }
+    for (let i = 0; i < 10; i++) { const y = rl + 30 + i * 4; g.fillStyle = 'rgba(226,230,236,0.14)'; g.fillRect(Math.round(((hash(i + 3) * VW * 1.4) - sc * 0.3 - (calm ? 0 : time * 6)) % VW + VW) % VW, y, 10 + i % 4 * 6, 1); }
     g.globalAlpha = 1; }
-  /* INSIDE (the tunnel): black rock, timber arches going by at the cart's speed, torch flecks, and ahead the mouth */
+  /* INSIDE (the tunnel): the rock wall slides past slower than the timber sets (which go at the cart's speed), lamps on every second set, and ahead the mouth */
   if (out < 0.99) { g.globalAlpha = 1 - out; g.fillStyle = '#0a080e'; g.fillRect(0, 0, VW, VH);
-    for (let x = -((sc * 1.0) % 64) - 64; x < VW + 64; x += 64) { const k = Math.round((x + sc) / 64);
-      R(g, '#3a2a1e', x, 12, 6, rl - 10); R(g, '#3a2a1e', x + 40, 12, 6, rl - 10); R(g, '#4a3626', x - 2, 10, 50, 5); R(g, '#5a4430', x, 12, 1, rl - 10);
-      if (k % 2 === 0) { g.globalAlpha = (1 - out) * (0.55 + (calm ? 0 : Math.sin(time * 7 + k) * 0.12)); g.drawImage(halo(18, '255,170,70'), x + 3 - 18, rl - 40 - 18); g.globalAlpha = 1 - out; R(g, '#ffd36b', x + 2, rl - 42, 2, 3); } }
-    /* the mouth ahead: a coin of light on the right that grows as the cart rolls */
-    const mr = 6 + lit * 110, mx = VW * 0.93 + lit * 20, my = rl - 34; const rg = g.createRadialGradient(mx, my, 0, mx, my, mr); rg.addColorStop(0, 'rgba(255,244,214,' + (0.4 + 0.6 * lit).toFixed(3) + ')'); rg.addColorStop(0.55, 'rgba(255,214,150,' + (0.3 * lit).toFixed(3) + ')'); rg.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = rg; g.fillRect(0, 0, VW, VH);
+    { const rw = rockWall(VH), o = -(Math.round(sc * 0.55) % 64 + 64) % 64; for (let x = o; x < VW; x += 64) g.drawImage(rw, x, 0); }
+    { const ts = timberSet(rl + 4); for (let x = -((sc * 1.0) % 64) - 64; x < VW + 64; x += 64) { const k = Math.round((x + sc) / 64);
+      g.drawImage(ts, Math.round(x) - 2, 10);
+      if (k % 2 === 0) { g.globalAlpha = (1 - out) * (0.55 + (calm ? 0 : Math.sin(time * 7 + k) * 0.12)); g.drawImage(halo(20, '255,170,70'), Math.round(x) + 26 - 20, 29 - 20 + 8); g.globalAlpha = 1 - out; R(g, '#22262c', Math.round(x) + 24, 17, 5, 1); R(g, '#ffd36b', Math.round(x) + 25, 18, 3, 4); R(g, '#fff2b0', Math.round(x) + 26, 19, 1, 2); R(g, '#22262c', Math.round(x) + 24, 22, 5, 1); } } }
+    /* the mouth ahead: a coin of light on the right that grows as the cart rolls, with the rock's dark lip around it */
+    const mr = 6 + lit * 110, mx = VW * 0.93 + lit * 20, my = rl - 34; const rg = g.createRadialGradient(mx, my, 0, mx, my, mr); rg.addColorStop(0, 'rgba(255,248,224,' + (0.45 + 0.55 * lit).toFixed(3) + ')'); rg.addColorStop(0.5, 'rgba(255,220,160,' + (0.34 * lit).toFixed(3) + ')'); rg.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = rg; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 1; }
-  /* the rails (ties go by, the rail line catching the light), then the cart and the party on it */
-  { const tie = 22, off = sc % tie; g.fillStyle = out > 0.5 ? '#3a2e28' : '#2a2018'; for (let x = -tie - off; x < VW + tie; x += tie) g.fillRect(Math.round(x), rl + 1, 14, 3);
-    R(g, '#8a8a98', 0, rl - 1, VW, 1); R(g, '#5a5a68', 0, rl, VW, 1); R(g, '#1a1620', 0, rl + 4, VW, 1);
-    if (out > 0.4) { g.globalAlpha = (out - 0.4) / 0.6; for (let x = -tie - off; x < VW + tie; x += tie * 2) R(g, '#241e2a', Math.round(x) + 5, rl + 4, 3, VH - rl); g.globalAlpha = 1; } }   /* the trestle's posts show once they are over the gorge */
-  const bob = calm ? 0 : Math.round(Math.sin(time * 14) * 0.6); cart(g, cx, rl - 1 + bob, 80);
+  /* the rails (ties go by with gravel between, the rail line catching the light), then the cart and the party on it */
+  { const tie = 22, off = sc % tie; g.fillStyle = out > 0.5 ? '#3a2e28' : '#2a2018'; for (let x = -tie - off; x < VW + tie; x += tie) { g.fillRect(Math.round(x), rl + 1, 14, 3); g.fillStyle = out > 0.5 ? '#54463c' : '#3a2e22'; g.fillRect(Math.round(x), rl + 1, 14, 1); g.fillStyle = out > 0.5 ? '#3a2e28' : '#2a2018'; }
+    R(g, '#c8c8d6', 0, rl - 1, VW, 1); R(g, '#7a7a8a', 0, rl, VW, 1); R(g, '#1a1620', 0, rl + 4, VW, 1);
+    for (let x = -tie - off; x < VW + tie; x += 7) if (hash(x * 0.31) > 0.55) R(g, '#4a4250', Math.round(x) + 3, rl + 5, 2, 1);   /* ballast */
+    if (out > 0.4) { g.globalAlpha = (out - 0.4) / 0.6; const tr = trestle(VH - rl); for (let x = -tie * 2 - (off % (tie * 2)); x < VW + 44; x += 44) g.drawImage(tr, Math.round(x) - 2, rl + 4); g.globalAlpha = 1; } }   /* the trestle shows once they are over the gorge */
+  const bob = calm ? 0 : Math.round(Math.sin(time * 14) * 0.6), cs = cartSprite(); g.drawImage(cs, cx - 4, rl - 34 + bob);
   const up = 10 * smooth((s - 0.3) / 0.6);   /* they climb aboard as they come in, then stand on the cart's floor */
   for (let i = 0; i < n; i++) { const h = daylightHero(i, n, s, VW); env.drawHero(i, h.x, rl - 1 - up + bob, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
-  if (up > 8) { R(g, '#3a3640', cx, rl - 12 + bob, 80, 9); R(g, '#5a5662', cx, rl - 12 + bob, 80, 2); R(g, '#1e1a24', cx, rl - 4 + bob, 80, 1); }   /* the cart's front panel, over their legs */
+  if (up > 8) { const fp = once('cartFront', () => { const [c, gg] = canvas(80, 9); cartPlates(gg, 80, 9, 8); return c; }); g.drawImage(fp, cx, rl - 12 + bob); }   /* the cart's front panel, over their legs */
   /* the flash as they come out, a fine warm grade, and the fade in out of the dark the walk left on */
   { const f = Math.sin(Math.PI * out) * (calm ? 0.12 : 0.3); if (f > 0.01) { g.fillStyle = 'rgba(255,240,200,' + f.toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
     g.fillStyle = 'rgba(60,30,14,' + (0.05 * out).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
     const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
 }
 /* ------------------------------------------------------------------ S2 */
+/* THE CASTLE'S UNDERSIDE, one tile (96 x 112, repeats): blocks in running courses, a buttress down the left, a barred window (centre 57,51) and an iron torch bracket (flame at 76,56), stains */
+const WIN_AT = [57, 51], TORCH_AT = [76, 56];
+const castleTile = () => once('castleTile', () => mk(96, 112, g => {
+  R(g, '#262838', 0, 0, 96, 112);
+  for (let row = 0; row < 8; row++) { const y = row * 14, off = (row % 2) * 12; for (let x = -off; x < 96; x += 24) { const t = hash(x * 0.9 + row * 5.1); R(g, t > 0.66 ? '#3a3c52' : (t > 0.33 ? '#34364a' : '#2c2e40'), x + 1, y + 1, 22, 12); R(g, '#454860', x + 1, y + 1, 22, 1); R(g, '#1a1c28', x, y, 1, 14); R(g, '#1a1c28', x, y + 13, 24, 1); if (t > 0.85) P(g, '#1a1c28', x + 6 + (row % 5), y + 6); } }
+  R(g, '#3a3c52', 0, 0, 11, 112); R(g, '#4e5170', 1, 0, 2, 112); R(g, '#1a1c28', 11, 0, 1, 112); for (let y = 54; y < 112; y += 56) { R(g, '#4e5170', 0, y, 13, 3); R(g, '#1a1c28', 0, y + 3, 13, 1); }   /* the buttress and its set-offs */
+  R(g, '#4a4c64', WIN_AT[0] - 9, WIN_AT[1] - 3, 18, 28); R(g, '#14121c', WIN_AT[0] - 6, WIN_AT[1], 12, 25); R(g, '#14121c', WIN_AT[0] - 4, WIN_AT[1] - 2, 8, 3); R(g, '#2a2a36', WIN_AT[0] - 1, WIN_AT[1], 2, 25); R(g, '#2a2a36', WIN_AT[0] - 6, WIN_AT[1] + 10, 12, 2);   /* the window, its surround, the bars */
+  R(g, '#22262c', TORCH_AT[0] - 1, TORCH_AT[1] + 4, 3, 8); R(g, '#7d868f', TORCH_AT[0] - 1, TORCH_AT[1] + 4, 1, 8); R(g, '#5a3a20', TORCH_AT[0] - 1, TORCH_AT[1] + 1, 3, 4); R(g, '#22262c', TORCH_AT[0] - 3, TORCH_AT[1] + 8, 7, 2);
+  for (let k = 0; k < 6; k++) { const x = 14 + Math.floor(hash(k + 3) * 76), y = Math.floor(hash(k + 11) * 70); R(g, '#1c2a2a', x, y, 2, 10 + k % 5); P(g, '#2c4040', x, y + 10 + k % 5); }   /* wet stains */
+}, false));
+/* a BRIDGE-DECK SLAB (w x 13): pale paving over a masonry course, joints, wear; it is the whole deck before the break and the pieces after */
+const deckSeg = w => once('deckSeg' + w, () => mk(w, 13, g => {
+  R(g, '#3a3c50', 0, 0, w, 13); R(g, '#7a7e94', 0, 0, w, 8); R(g, '#a4a8bc', 0, 0, w, 1); R(g, '#8a8ea4', 0, 1, w, 1); for (let x = 7; x < w - 2; x += 9) { R(g, '#5a5e74', x, 1, 1, 7); }
+  for (let k = 0; k < w / 6; k++) P(g, '#5a5e74', 2 + Math.floor(hash(k + w) * (w - 4)), 2 + k % 5);
+  R(g, '#4a4c64', 0, 8, w, 5); R(g, '#2a2c3c', 0, 8, w, 1); for (let x = 5; x < w - 3; x += 12) { R(g, '#5a5c76', x, 9, 10, 3); R(g, '#2a2c3c', x + 10, 9, 1, 4); }
+  R(g, '#14121c', w - 1, 0, 1, 13);
+}));
+/* a PIER (14 x 60, stacked to the depth): course lines, a lit left edge, a dark right, green on the weather side */
+const pierSprite = () => once('pierS', () => mk(14, 60, g => {
+  R(g, '#2e3048', 0, 0, 14, 60); R(g, '#4a4c64', 0, 0, 14, 60); R(g, '#5e6280', 0, 0, 2, 60); R(g, '#2a2c3c', 11, 0, 3, 60); for (let y = 0; y < 60; y += 10) { R(g, '#2a2c3c', 0, y, 14, 1); R(g, '#6e7290', 2, y + 1, 9, 1); }
+  for (let k = 0; k < 4; k++) P(g, '#3a5a46', 2 + k * 2 % 8, 8 + k * 13);
+}, false));
+const rubble = v => once('rubble' + v, () => mk(8, 7, g => { const W = 4 + v % 4, H = 3 + (v >> 1) % 3; R(g, '#3a3c50', 0, 1, W, H); R(g, '#6a6e84', 1, 1, W - 2, H - 1); R(g, '#a4a8bc', 1, 1, W - 2, 1); if (v % 2) P(g, '#2a2c3c', 2, 2 + (v % 2)); }));
 export function drawDropScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, crack = dropCrack(s), fall = dropFall(s, calm), dark = dropDark(s);
   const by = Math.round(VH * 0.60);   /* the deck's top, before it goes */
   const sy = y => Math.round(y - fall);   /* the world scrolls UP as they fall */
-  /* the storm sky, the castle's shoulder on the right (above the fall: it leaves the top of the screen) */
-  g.fillStyle = grad(g, 0, VH, [[0, '#4a5468'], [0.6, '#8a94a4'], [1, '#a8b0bc']]); g.fillRect(0, 0, VW, VH);
-  for (let i = 0; i < 6; i++) { const x = Math.round(hash(i + 2) * VW), y = sy(18 + hash(i + 9) * 60); g.fillStyle = 'rgba(46,54,70,0.35)'; g.fillRect(x - 40, y, 90, 8); }
-  /* the castle's underside: a masonry wall under the bridge going down a long way, torch windows and iron brackets, bands of shadow */
-  { const top = sy(by + 6); R(g, '#2c2e3c', 0, top, VW, VH * 8); for (let y = by + 6; y < by + 1500; y += 14) { const yy = sy(y); if (yy < -14 || yy > VH + 14) continue; const row = Math.round(y / 14); R(g, row % 2 ? '#34364a' : '#262838', 0, yy, VW, 1); for (let x = (row % 2) * 12; x < VW; x += 24) R(g, '#202230', x, yy, 1, 14); }
-    for (let i = 0; i < 40; i++) { const wy = sy(by + 70 + i * 52 + hash(i) * 14), wx = Math.round(30 + hash(i + 40) * (VW - 60)); if (wy < -20 || wy > VH + 20) continue;
-      R(g, '#14121c', wx - 5, wy, 10, 16); R(g, '#3a3a4e', wx - 6, wy - 1, 12, 1); g.globalAlpha = 0.6 + (calm ? 0 : Math.sin(time * 6 + i) * 0.15); g.drawImage(halo(22, '255,160,60'), wx - 22, wy + 6 - 22); g.globalAlpha = 1; R(g, '#ffb050', wx - 2, wy + 7, 4, 6); } }
-  /* the Long Bridge: its piers go down under the deck (they scroll away); the deck is a band that CRACKS from the middle and, at breakAt, goes in pieces */
-  { for (let i = 0; i < 5; i++) { const x = Math.round(VW * (0.1 + i * 0.2)); R(g, '#3a3c50', x, sy(by + 6), 12, 400); R(g, '#4a4c64', x, sy(by + 6), 2, 400); }
-    const whole = s < DROP.breakAt, seg = 8, cell = VW / seg;
+  /* the storm sky: layered cloud bars, torn */
+  g.fillStyle = grad(g, 0, VH, [[0, '#46506a'], [0.55, '#808aa0'], [1, '#aab2c0']]); g.fillRect(0, 0, VW, VH);
+  for (let i = 0; i < 9; i++) { const x = Math.round(hash(i + 2) * VW), y = sy(10 + hash(i + 9) * 70); g.fillStyle = i % 2 ? 'rgba(40,48,66,0.4)' : 'rgba(150,158,176,0.35)'; g.fillRect(x - 50, y, 100 + (i % 3) * 20, 6 + i % 3 * 2); g.fillRect(x - 20, y - 3, 60, 3); }
+  /* the castle's underside: tiles of masonry going down a long way, buttress, barred windows with torchlight, brackets */
+  { const top = sy(by + 6), ct = castleTile(); for (let k = Math.max(0, Math.floor(-top / 112)); top + k * 112 < VH; k++) { const ty = top + k * 112;
+      for (let x0 = 0; x0 < VW; x0 += 96) { g.drawImage(ct, x0, ty);
+        if (k > 0 || ty > -60) { const wx = x0 + WIN_AT[0], wy = ty + WIN_AT[1] + 12; g.globalAlpha = 0.5 + (calm ? 0 : Math.sin(time * 6 + x0 + k * 3) * 0.12); g.drawImage(halo(24, '255,160,60'), wx - 24, wy - 24); g.globalAlpha = 0.8; R(g, '#ffb050', wx - 4, wy - 2, 8, 12); R(g, '#ffe090', wx - 2, wy, 4, 8); R(g, '#2a2a36', wx - 1, wy - 2, 2, 12); g.globalAlpha = 0.55; g.drawImage(halo(14, '255,150,50'), x0 + TORCH_AT[0] - 14, ty + TORCH_AT[1] - 14); g.globalAlpha = 1; R(g, '#ffd36b', x0 + TORCH_AT[0] - 1, ty + TORCH_AT[1] - 3, 3, 4); R(g, '#fff2b0', x0 + TORCH_AT[0], ty + TORCH_AT[1] - 2, 1, 2); } } } }
+  /* the Long Bridge: its piers go down under the deck (they scroll away); the deck is a run of slabs that CRACKS from the middle and, at breakAt, goes in pieces */
+  { { const ps = pierSprite(); for (let i = 0; i < 5; i++) { const x = Math.round(VW * (0.1 + i * 0.2)); for (let y = 0; y < 6; y++) { const yy = sy(by + 6 + y * 60); if (yy > -60 && yy < VH) g.drawImage(ps, x, yy); } } }
+    const whole = s < DROP.breakAt, seg = 8, cell = VW / seg, sg = deckSeg(Math.ceil(cell));
     for (let i = 0; i < seg; i++) { const x0 = Math.round(i * cell), mid = Math.abs(i + 0.5 - seg / 2) / (seg / 2);   /* mid 0 at the crack, 1 at the ends */
-      if (whole) { R(g, '#6a6e84', x0, by, Math.ceil(cell), 8); R(g, '#8a8ea4', x0, by, Math.ceil(cell), 2); R(g, '#4a4c64', x0, by + 8, Math.ceil(cell), 4); R(g, '#2a2c3c', x0 + Math.ceil(cell) - 1, by, 1, 12); }
+      if (whole) g.drawImage(sg, x0, by);
       else { const t = s - DROP.breakAt, dl = mid * 0.5, tt = Math.max(0, t - dl), rot = (i % 2 ? 1 : -1) * Math.min(6, tt * 6); const ry = Math.round(by + 0.5 * 330 * 0.8 * tt * tt - fall * 0.35 + rot);
-        if (ry < VH + 20) { g.globalAlpha = Math.max(0, 1 - tt * 0.5); R(g, '#6a6e84', x0, ry, Math.ceil(cell) - 1, 8); R(g, '#8a8ea4', x0, ry, Math.ceil(cell) - 1, 2); R(g, '#3a3c50', x0 + 2, ry + 8, Math.ceil(cell) - 5, 4); g.globalAlpha = 1; } } }
+        if (ry < VH + 20) { g.globalAlpha = Math.max(0, 1 - tt * 0.5); g.drawImage(sg, x0, ry); g.globalAlpha = 1; } } }
     if (whole) { const cxp = Math.round(VW * 0.5), len = Math.round(crack * 34); g.fillStyle = '#14121c'; let x = cxp, y = by;
       for (let j = 0; j < len; j++) { const dx = Math.round((hash(j + 5) - 0.5) * 4), dy = j % 3 === 0 ? 1 : 0; x += dx; y += dy; g.fillRect(x, Math.min(by + 7, y), 1, 1); if (j % 4 === 0) { g.fillRect(x - 1, Math.min(by + 7, y), 1, 1); } }
-      for (let j = 0; j < Math.round(crack * 18); j++) g.fillRect(cxp + Math.round((hash(j + 70) - 0.5) * 90 * crack), by + (j % 2) * 3 + 1, 1 + (j % 3), 1); }   /* the cracks race out along the deck */
+      for (let j = 0; j < Math.round(crack * 18); j++) g.fillRect(cxp + Math.round((hash(j + 70) - 0.5) * 90 * crack), by + (j % 2) * 3 + 1, 1 + (j % 3), 1);
+      if (crack > 0.3) for (let j = 0; j < 5; j++) { const rx = cxp + Math.round((hash(j + 90) - 0.5) * 60 * crack), ry = by + 9 + Math.round(((time * 30 + j * 9) % 14) * (calm ? 0 : 1)); g.drawImage(rubble(j), rx, ry); } }   /* the cracks race out along the deck, grit shaking loose */
     /* loose stones: they float up past the party as the camera falls faster than they do */
-    if (!whole) for (let i = 0; i < 16; i++) { const tt = Math.max(0, s - DROP.breakAt - hash(i + 20) * 0.3), x = Math.round(VW * (0.1 + hash(i + 30) * 0.8)), ry = Math.round(by + 4 + 0.5 * 330 * 0.45 * tt * tt - fall * 0.8 + (i % 4) * 10); if (ry > -8 && ry < VH + 8) { R(g, '#5a5e74', x, ry, 3 + i % 4, 3 + i % 3); R(g, '#8a8ea4', x, ry, 3 + i % 4, 1); } } }
+    if (!whole) for (let i = 0; i < 18; i++) { const tt = Math.max(0, s - DROP.breakAt - hash(i + 20) * 0.3), x = Math.round(VW * (0.1 + hash(i + 30) * 0.8)), ry = Math.round(by + 4 + 0.5 * 330 * 0.45 * tt * tt - fall * 0.8 + (i % 4) * 10); if (ry > -8 && ry < VH + 8) g.drawImage(rubble(i), x, ry); } }
   /* THE PARTY: stand on the deck, then drop (a jump frame held, a little sway); the camera keeps them near the middle */
   for (let i = 0; i < n; i++) { const h = dropHero(i, n, s, VW), falling = s > DROP.breakAt, y = by + 1 + (falling ? h.sink : 0); env.drawHero(i, h.x, y, 1, falling ? 'jump' : 'idle', falling ? 0 : Math.floor(time * 4.5) + i); }
   /* ash and torch flecks rising past (they are what shows the speed); dust off the deck at the break */
-  if (!calm) for (let i = 0; i < 26; i++) { const sp = 0.6 + hash(i + 3) * 1.1, x = Math.round(hash(i) * VW + Math.sin(time * 1.3 + i) * 4), y = Math.round(((hash(i + 7) * VH * 2 - fall * sp) % (VH + 12) + (VH + 12)) % (VH + 12)) - 6; g.fillStyle = i % 4 === 0 ? 'rgba(255,170,80,0.7)' : 'rgba(190,190,200,0.45)'; g.fillRect(x, y, i % 4 === 0 ? 1 : 2, 1); }
+  if (!calm) for (let i = 0; i < 30; i++) { const sp = 0.6 + hash(i + 3) * 1.1, x = Math.round(hash(i) * VW + Math.sin(time * 1.3 + i) * 4), y = Math.round(((hash(i + 7) * VH * 2 - fall * sp) % (VH + 12) + (VH + 12)) % (VH + 12)) - 6; g.fillStyle = i % 4 === 0 ? 'rgba(255,170,80,0.75)' : 'rgba(190,190,200,0.45)'; g.fillRect(x, y, i % 4 === 0 ? 1 : 2, 1); }
   { const k = s > DROP.breakAt && s < DROP.breakAt + 0.5 ? 1 - (s - DROP.breakAt) / 0.5 : 0; if (k > 0) { g.fillStyle = 'rgba(214,210,200,' + (0.35 * k).toFixed(3) + ')'; g.fillRect(0, by - 6, VW, 18); } }
   g.fillStyle = 'rgba(4,3,8,' + (0.85 * dark).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);   /* the grey light goes out */
   const a = s < 0.4 ? 1 - s / 0.4 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 /* ------------------------------------------------------------------ S3 */
-/* a castle on a peak, scaled k, its base centre at (x, y): curtain wall, two towers, a keep, lit windows, the broken gate a dark gap in the wall */
-function peakCastle(g, x, y, k, time, calm) {
-  const u = v => Math.max(1, Math.round(v * k)), S = '#3a3250', S2 = '#544a70';
-  R(g, S, x - u(60), y - u(34), u(120), u(34)); R(g, S2, x - u(60), y - u(34), u(120), u(2)); R(g, S, x - u(74), y - u(56), u(26), u(56)); R(g, S, x + u(48), y - u(60), u(26), u(60)); R(g, S, x - u(22), y - u(84), u(44), u(50));
-  R(g, S2, x - u(74), y - u(56), u(3), u(56)); R(g, S2, x - u(22), y - u(84), u(3), u(50)); R(g, '#241e36', x - u(74), y - u(60), u(26), u(4)); R(g, '#241e36', x + u(48), y - u(64), u(26), u(4)); R(g, '#241e36', x - u(22), y - u(88), u(44), u(4));
-  R(g, '#0e0a18', x + u(34), y - u(26), u(16), u(26));   /* the broken gate */
-  for (let i = 0; i < 6; i++) { g.globalAlpha = calm ? 0.9 : 0.7 + Math.sin(time * 3 + i) * 0.2; R(g, '#ffb860', x - u(66) + (i % 3) * u(8) + (i > 2 ? u(80) : 0), y - u(44) - (i % 2) * u(14), Math.max(1, u(3)), Math.max(1, u(4))); g.globalAlpha = 1; }
-  R(g, '#5a5470', x - u(2), y - u(112), Math.max(1, u(2)), u(24)); R(g, '#8a2a2a', x, y - u(112), u(10), u(6));   /* the banner on the keep, torn */
-}
+/* HIGHCROWN'S CASTLE (160 x 116, base on its row 115): plum stone, a curtain wall with crenels, two conical-roofed towers, a tall keep with a slate roof and a torn crimson banner, lit windows, the broken gate a dark breach with teeth of portcullis */
+const highCastle = () => once('highCastle', () => mk(160, 116, g => {
+  const S = ['#1c1630', '#2e2648', '#443a64', '#5e5484'];
+  const blocks = (x, y, w, h) => { R(g, S[0], x, y, w, h); R(g, S[1], x + 1, y + 1, w - 2, h - 1); R(g, S[2], x + 1, y + 1, 2, h - 1); for (let yy = y + 5; yy < y + h - 2; yy += 6) { R(g, S[0], x + 1, yy, w - 2, 1); for (let xx = x + 3 + ((yy / 6 | 0) % 2) * 4; xx < x + w - 2; xx += 8) P(g, S[0], xx, yy + 1); } };
+  const cren = (x, y, w) => { for (let cx = x; cx < x + w - 2; cx += 5) { R(g, S[0], cx, y - 4, 4, 5); R(g, S[2], cx + 1, y - 3, 2, 4); } };
+  const roof = (x, y, w, h, c0, c1) => { for (let r = 0; r < h; r++) { const ins = Math.round(r * (w / 2 - 1) / h); R(g, c0, x + ins, y - r, w - ins * 2, 1); R(g, c1, x + ins, y - r, 1, 1); } };
+  blocks(10, 78, 140, 38); cren(10, 78, 140);
+  blocks(2, 36, 28, 80); cren(2, 36, 28); roof(0, 32, 32, 20, '#5a2a44', '#8a4a66'); blocks(130, 44, 28, 72); cren(130, 44, 28); roof(128, 40, 32, 20, '#5a2a44', '#8a4a66');
+  blocks(52, 16, 56, 100); cren(52, 16, 56); roof(50, 12, 60, 28, '#34304a', '#5a5478'); 
+  R(g, '#5a5470', 80, 0, 1, 18); R(g, '#a82a34', 81, 1, 12, 6); R(g, '#7a1a26', 81, 6, 9, 3); P(g, '#a82a34', 93, 3);   /* the keep's banner, torn at its tail */
+  R(g, '#0a0614', 112, 92, 18, 24); R(g, '#1c1630', 112, 90, 18, 3); for (let x = 114; x < 130; x += 4) { R(g, '#7d868f', x, 92, 1, 8); P(g, '#a8b0b8', x, 92); }   /* the breach and the portcullis's teeth */
+  R(g, S[2], 106, 108, 8, 8); R(g, S[1], 124, 110, 9, 6);   /* fallen blocks at its foot */
+  for (const [x, y] of [[12, 56], [18, 70], [138, 62], [144, 76], [60, 44], [96, 44], [68, 64], [88, 64], [76, 30], [20, 96], [40, 94]]) { R(g, '#ffb860', x, y, 2, 4); P(g, '#fff0b0', x, y); }
+}));
+/* THE MOUNTAIN (490 x 130): a pale-grey-violet massif with a lit right face (the sun is that side), strata, snow in the high gullies; the apex is x 235 */
+const highMountain = () => once('highMountain', () => mk(490, 130, g => {
+  const top = x => { const d = Math.abs(x - 235) / 235; return Math.round(4 + d * 124 + Math.sin(x * 0.11) * 3 * (0.3 + d) + Math.sin(x * 0.037 + 1) * 5 * d); };
+  for (let x = 0; x < 490; x++) { const t = Math.max(0, top(x));
+    for (let y = t; y < 130; y++) { const edge = 238 + (y - t) * 0.18 + Math.sin(y * 0.09 + 2) * 7 + Math.sin(y * 0.31) * 2, right = x > edge, h = hash(x * 0.19 + y * 1.7);
+      let c = right ? '#4a4468' : '#2a2640'; if (h > 0.74) c = right ? '#5e5882' : '#3a3456'; else if (h < 0.1) c = right ? '#363052' : '#1e1a30'; if ((y + (x >> 3)) % 11 === 0 && h > 0.3) c = right ? '#6a6490' : '#2e2a48';   /* strata */
+      P(g, c, x, y); }
+    if (t < 70) R(g, '#dcd8ea', x, t, 1, 2 + (hash(x * 0.4) > 0.55 ? 2 : 0)); R(g, x > 238 ? '#8a82b0' : '#4a4468', x, t, 1, 1); }
+  for (let k = 0; k < 14; k++) { const x = 40 + Math.floor(hash(k + 5) * 410), y = top(x) + 8 + Math.floor(hash(k + 15) * 40); if (y < 126) for (let i = 0; i < 10 + k % 6; i++) P(g, x > 235 ? '#363052' : '#1a1628', x + (i % 3) - 1, y + i); }   /* gullies */
+}, false));
+/* the mountain's own pines (760 x 60, dark cold green against the plum): they stand along its foot */
+const mtnPines = () => once('mtnPines', () => mk(760, 60, g => {
+  for (let i = 0; i < 46; i++) { const x = 4 + i * 16 + Math.round(hash(i + 70) * 8), h = 22 + Math.round(hash(i + 73) * 22); pine(g, x, 58, h, '#3a5a54', '#2a423e', '#1c2e2c', false); }
+  fogOver(g, 760, 60, 'rgba(120,112,150,0.25)');
+}, false));
+/* THE RAFT (92 x 30): four lashed logs side by side as a deck, end-grain at both ends, rope lashings, a crate and a coil at the bow, a pole with a lantern at the stern; its deck-top is row 12 */
+const raftSprite = () => once('raftS', () => mk(92, 30, g => {
+  for (let r = 0; r < 5; r++) { const y = 12 + r * 3, dk = r % 2 ? '#5a3c22' : '#6e4a2a';
+    R(g, '#2a1a10', 2, y, 88, 3); R(g, dk, 3, y, 86, 2); R(g, '#9a7448', 3, y, 86, 1); for (let x = 6; x < 86; x += 11) P(g, '#3a2414', x + (r * 3) % 7, y + 1);
+    R(g, '#d8b078', 0, y, 3, 3); P(g, '#7a5430', 1, y + 1); R(g, '#d8b078', 89, y, 3, 3); P(g, '#7a5430', 90, y + 1); }
+  for (const x of [14, 44, 74]) { R(g, '#9a8a58', x, 11, 3, 16); R(g, '#6a5a38', x + 2, 11, 1, 16); for (let y = 12; y < 26; y += 3) P(g, '#c8b480', x, y); }   /* the lashings */
+  R(g, '#7a5a34', 3, 5, 9, 7); R(g, '#a07a46', 3, 5, 9, 1); R(g, '#4a3420', 3, 8, 9, 1); R(g, '#4a3420', 7, 5, 1, 7);   /* the crate */
+  R(g, '#c8b480', 14, 9, 7, 3); R(g, '#8a7848', 15, 10, 5, 1); R(g, '#c8b480', 16, 8, 3, 1);   /* a rope coil */
+  R(g, '#3a2818', 80, 0, 2, 12); R(g, '#6a4a2c', 80, 0, 1, 12); R(g, '#22262c', 76, 1, 6, 1); R(g, '#22262c', 76, 1, 1, 6); R(g, '#ffd36b', 77, 3, 3, 3); R(g, '#fff2b0', 78, 4, 1, 1); R(g, '#22262c', 76, 6, 5, 1);   /* the stern pole and lantern */
+}));
+const stairTile = h => once('stairT' + h, () => mk(36, h, g => {
+  R(g, '#4a4660', 0, 0, 36, h); R(g, '#8a86a8', 0, 0, 36, 1); R(g, '#6e6a88', 0, 1, 36, 2); R(g, '#2a2638', 0, 3, 36, 1);
+  for (let y = 4, row = 0; y < h; y += 9, row++) { for (let x = (row % 2) * 9; x < 36; x += 18) { R(g, '#5e5a78', x, y, 17, 8); R(g, '#7a7698', x, y, 17, 1); R(g, '#2a2638', x + 17, y, 1, 9); } R(g, '#2a2638', 0, y + 8, 36, 1); }
+  for (let k = 0; k < 4; k++) { const x = Math.floor(hash(k + 1) * 34); P(g, '#4a6a3a', x, 1); P(g, '#6e9a4c', x, 0); }   /* moss in the joints */
+}, false));
+const bankRock = v => once('bankRock' + v, () => mk(34, 16, g => { const W = 26 + v * 4; R(g, '#2a2638', 0, 5, W, 11); R(g, '#3e3a54', 1, 4, W - 3, 4); R(g, '#5a5674', 2, 3, W - 6, 2); R(g, '#1a1626', 3, 11, W - 6, 4); P(g, '#5a5674', 8, 8); }));
 export function drawDescentScene(env, s) {
   const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, pull = descentPull(s, calm), wat = descentWater(s), rsc = descentScroll(s, calm);
   const wl = Math.round(VH * (0.46 + 0.14 * pull));   /* the horizon sinks as the camera pulls up and back */
-  /* the sky: the mountain's storm grey, going to the sea's pale grey as the water takes over */
-  g.fillStyle = grad(g, 0, wl, [[0, lerpC([90, 96, 128], [116, 134, 156], wat)], [0.7, lerpC([176, 150, 140], [190, 202, 208], wat)], [1, lerpC([224, 188, 150], [214, 224, 226], wat)]]); g.fillRect(0, 0, VW, wl + 2);
-  g.globalAlpha = 0.5; g.drawImage(halo(80, '255,236,200'), Math.round(VW * 0.78) - 80, wl - 90); g.globalAlpha = 1;
-  /* THE MOUNTAIN: a big dark slope with the castle on its peak. At pull 0 it fills the upper-left (the stair is the foot of it); the pull shrinks it and moves it up and left */
-  { const k = 1.05 - 0.78 * pull, px = Math.round(VW * (0.62 - 0.30 * pull)), py = Math.round(wl + 6 + 40 * (1 - pull) + 70 * pull * 0.0), baseY = wl + Math.round(30 * (1 - pull)) + 4;
-    g.fillStyle = '#2c2a44'; g.beginPath(); g.moveTo(px - 230 * k, baseY); g.lineTo(px - 10 * k, baseY - 128 * k); g.lineTo(px + 20 * k, baseY - 128 * k); g.lineTo(px + 260 * k, baseY); g.closePath(); g.fill();
-    g.fillStyle = '#3a3858'; g.beginPath(); g.moveTo(px - 60 * k, baseY - 80 * k); g.lineTo(px - 10 * k, baseY - 128 * k); g.lineTo(px + 20 * k, baseY - 128 * k); g.lineTo(px + 40 * k, baseY - 96 * k); g.closePath(); g.fill();
-    peakCastle(g, px, baseY - 124 * k, k * 0.5, time, calm);
-    g.fillStyle = 'rgba(200,200,214,0.18)'; g.fillRect(0, baseY - 20, VW, 24); }   /* haze at the foot */
-  /* the far shore of the sea: a pale line that comes up as the water widens */
-  if (wat > 0.02) { g.globalAlpha = wat * 0.7; R(g, '#9aa8b0', 0, wl - 1, VW, 2); g.globalAlpha = wat * 0.4; R(g, '#c8d2d6', 0, wl - 3, VW, 2); g.globalAlpha = 1; }
-  /* THE GROUND under them: the stair (stone steps going down to the right) until the river takes the screen; the river (stream, banks narrowing away) then the broad water */
+  /* the sky: the mountain's storm grey and dawn gold, going to the sea's pale grey as the water takes over */
+  g.fillStyle = grad(g, 0, wl, [[0, lerpC([84, 92, 126], [116, 134, 156], wat)], [0.7, lerpC([176, 150, 144], [190, 202, 208], wat)], [1, lerpC([232, 192, 150], [216, 226, 228], wat)]]); g.fillRect(0, 0, VW, wl + 2);
+  g.globalAlpha = 0.55; g.drawImage(halo(90, '255,236,200'), Math.round(VW * 0.78) - 90, wl - 100); g.globalAlpha = 1;
+  for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(' + (wat > 0.5 ? '226,232,236' : '200,170,170') + ',' + (0.2 + (i % 2) * 0.1).toFixed(2) + ')'; const x = Math.round(((hash(i + 3) * VW * 1.4) - rsc * 0.05 - (calm ? 0 : time * 2) + VW * 3) % (VW + 100)) - 50; g.fillRect(x, 14 + i * 12, 50 + i * 12, 2); }   /* cloud bars, drifting */
+  /* THE MOUNTAIN: a big massif with the castle on its peak. At pull 0 it fills the upper-left (the stair is the foot of it); the pull shrinks it and moves it up and left */
+  { const k = 1.05 - 0.78 * pull, px = Math.round(VW * (0.62 - 0.30 * pull)), baseY = wl + Math.round(30 * (1 - pull)) + 4, ms = highMountain(), cs = highCastle(), kk = k * 0.52;
+    g.drawImage(ms, Math.round(px + 5 * k - 235 * k), Math.round(baseY - 128 * k), Math.round(490 * k), Math.round(130 * k));
+    g.drawImage(cs, Math.round(px + 5 * k - 80 * kk), Math.round(baseY - 124 * k - 112 * kk), Math.round(160 * kk), Math.round(116 * kk));   /* the castle on its peak */
+    if (!calm) { g.globalAlpha = 0.5 + Math.sin(time * 3) * 0.15; g.drawImage(halo(10, '255,184,96'), Math.round(px + 5 * k - 10), Math.round(baseY - 124 * k - 40 * kk - 10)); g.globalAlpha = 1; }
+    { const ps = mtnPines(); g.drawImage(ps, Math.round(px - 380 * k + 40), Math.round(baseY - 48 * k + 6), Math.round(760 * k), Math.round(60 * k)); }   /* the mountain's pines along its foot */
+    g.fillStyle = 'rgba(200,200,214,0.2)'; g.fillRect(0, baseY - 20, VW, 24); }   /* haze at the foot */
+  /* the far shore of the sea: a pale line that comes up as the water widens, and gulls over it */
+  if (wat > 0.02) { g.globalAlpha = wat * 0.7; R(g, '#9aa8b0', 0, wl - 1, VW, 2); g.globalAlpha = wat * 0.4; R(g, '#c8d2d6', 0, wl - 3, VW, 2); g.globalAlpha = 1;
+    if (wat > 0.5) { g.fillStyle = '#4a5260'; for (let i = 0; i < 4; i++) { const x = Math.round(((hash(i + 40) * VW) + rsc * 0.2 + (calm ? 0 : time * (6 + i * 2))) % (VW + 20)), y = wl - 22 - i * 7 + (calm ? 0 : Math.round(Math.sin(time * 2 + i) * 2)); g.fillRect(x, y, 2, 1); g.fillRect(x + 2, y + 1, 1, 1); g.fillRect(x + 3, y, 2, 1); } } }
+  /* THE GROUND under them: the stair (paved landing going down) until the river takes the screen; the river (a stream, banks narrowing away) then the broad water */
   const gy = Math.round(VH * 0.76);
   { g.fillStyle = grad(g, wl, VH, [[0, lerpC([66, 62, 80], [96, 126, 138], wat)], [1, lerpC([30, 28, 42], [44, 64, 76], wat)]]); g.fillRect(0, wl + 2, VW, VH - wl);
     for (let i = 0; i < 18; i++) { const y = wl + 6 + i * 6 + (i % 2), x = ((hash(i + 9) * VW * 1.6 - rsc * (0.4 + i * 0.05) - (calm ? 0 : time * (5 + i % 3))) % (VW + 40) + VW + 40) % (VW + 40) - 20; g.fillStyle = 'rgba(' + (wat > 0.5 ? '226,236,240' : '190,186,200') + ',' + (0.08 + wat * 0.1 + (i % 3) * 0.03).toFixed(2) + ')'; g.fillRect(Math.round(x), y, 12 + (i % 4) * 7, 1); }
+    if (wat > 0.3) { g.globalAlpha = Math.min(1, (wat - 0.3) * 1.5) * 0.5; for (let i = 0; i < 14; i++) { const y = wl + 4 + i * 4, w = 16 - i; if (w > 2) { g.fillStyle = 'rgb(255,236,200)'; g.fillRect(Math.round(VW * 0.78 - w / 2 + Math.sin(i * 1.7 + (calm ? 0 : time * 2)) * 3), y, w, 1); } } g.globalAlpha = 1; }   /* the sun's path on the water */
     const stair = 1 - smooth(wat * 1.6);   /* the stair under their feet: gone by the time the raft is afloat */
-    if (stair > 0.02) { g.globalAlpha = stair; R(g, '#4a4660', 0, gy, VW, VH - gy); for (let x = 0; x < VW; x += 18) { R(g, '#5e5a78', x, gy + (x / 18 % 2) * 2, 18, 3); R(g, '#2a2638', x + 17, gy, 1, VH - gy); } R(g, '#6e6a88', 0, gy, VW, 1); g.globalAlpha = 1; } }
+    if (stair > 0.02) { g.globalAlpha = stair; const st = stairTile(VH - gy), o = -(Math.round(rsc * 1.0) % 36 + 36) % 36; for (let x = o; x < VW; x += 36) g.drawImage(st, x, gy); g.globalAlpha = 1; } }
   /* THE RAFT: lashed logs under the party, afloat once the water is up; the party walks out onto the stair, then stands to the pole */
   { const rx = Math.round(VW * 0.26), ry = Math.round(gy + (VH * 0.80 - gy) * smooth(wat * 1.2)), bob = calm ? 0 : Math.sin(time * 2.2) * 1.2 * wat;
-    if (wat > 0.05) { g.globalAlpha = Math.min(1, wat * 2); for (let i = 0; i < 4; i++) { R(g, i % 2 ? '#6a4a2c' : '#7a5834', rx, Math.round(ry + 1 + i * 3 + bob), 82, 3); R(g, '#9a7448', rx, Math.round(ry + 1 + i * 3 + bob), 82, 1); } R(g, '#2a1e14', rx + 18, Math.round(ry + bob), 2, 12); R(g, '#2a1e14', rx + 60, Math.round(ry + bob), 2, 12); R(g, '#c8b480', rx + 18, Math.round(ry + 3 + bob), 44, 1);
-      if (!calm) { g.fillStyle = 'rgba(236,244,246,0.5)'; for (let i = 0; i < 5; i++) g.fillRect(rx - 6 - i * 7 + Math.round(((time * 20 + i * 5) % 8)), Math.round(ry + 13 + (i % 2) + bob), 5, 1); } g.globalAlpha = 1; }
+    if (wat > 0.05) { g.globalAlpha = Math.min(1, wat * 2); g.drawImage(raftSprite(), rx - 2, Math.round(ry + bob) + 1 - 12);
+      if (!calm) { g.fillStyle = 'rgba(236,244,246,0.5)'; for (let i = 0; i < 5; i++) g.fillRect(rx - 6 - i * 7 + Math.round(((time * 20 + i * 5) % 8)), Math.round(ry + 16 + (i % 2) + bob), 5, 1); } g.globalAlpha = 1; }
     for (let i = 0; i < n; i++) { const h = descentHero(i, n, s, VW), onR = wat > 0.3, y = Math.round((onR ? ry : gy) + bob) + 1; env.drawHero(i, onR ? Math.max(h.x, rx + 14 + i * 13) : h.x, y, 1, h.walking ? 'run' : 'idle', h.walking ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); } }
   /* near rocks along the bank that slide away, mist, the dip (reduce) and the fade in */
-  if (wat > 0.05) { g.globalAlpha = 0.5 * (1 - wat * 0.6); for (let i = 0; i < 5; i++) { const x = ((i * 97 - rsc * 1.3) % (VW + 80) + VW + 80) % (VW + 80) - 40; R(g, '#2a2638', Math.round(x), VH - 10 - (i % 2) * 3, 26 + (i % 3) * 8, 14); } g.globalAlpha = 1; }
+  if (wat > 0.05) { g.globalAlpha = 0.6 * (1 - wat * 0.6); for (let i = 0; i < 5; i++) { const x = ((i * 97 - rsc * 1.3) % (VW + 80) + VW + 80) % (VW + 80) - 40; g.drawImage(bankRock(i % 3), Math.round(x), VH - 14 - (i % 2) * 3); } g.globalAlpha = 1; }
   g.fillStyle = 'rgba(210,216,222,' + (0.10 + 0.12 * wat).toFixed(3) + ')'; g.fillRect(0, wl - 6, VW, 30);
   { const d = descentDip(s, calm); if (d > 0.01) { g.fillStyle = 'rgba(8,6,14,' + d.toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   const a = s < 0.4 ? 1 - s / 0.4 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
@@ -979,7 +1109,5 @@ export function drawDescentScene(env, s) {
 /* THE RAFT the Long Water begins on: world space, beached at the start of the first bank (the party steps off it). cx, cy: the camera; floorY: the bank's top (px). */
 export function drawArrivalRaft(env, cx, cy, floorY, time) {
   const { g } = env, x = 2 - cx, y = Math.round(floorY - cy);
-  for (let i = 0; i < 3; i++) { R(g, i % 2 ? '#6a4a2c' : '#7a5834', x, y - 1 + i * 3, 88, 3); R(g, '#9a7448', x, y - 1 + i * 3, 88, 1); }
-  R(g, '#2a1e14', x + 80, y - 12, 2, 12); R(g, '#c8b480', x + 66, y - 9, 16, 1);
-  R(g, '#5a4228', x + 86, y - 26, 2, 22);   /* the pole, left leaning on the bank */
+  g.drawImage(raftSprite(), x - 2, y + 1 - 12);
 }
