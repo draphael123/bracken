@@ -13,7 +13,7 @@ NOT RUN. A first n=6 run was started and killed on the coordinator's RAM order (
 ## Browser owed (one at a time, >=1500 MB free)
 - PORT=<p> node tools/windcaller-reflect.mjs   (all heroes, ~2 min) - expect ok; failures list which hero's answer misses
 - PORT=<p> node tools/boss-rates.mjs moor --ways=practiced --seeds=6 --heroes=knight,warden,pyro,ranger,geomancer,paladin --jobs=1
-- node tools/windcaller-gusts.mjs and tools/gale-stair.mjs (regression), tools/moor-shots/bosszoom for gust + halo screenshots
+- node tools/windcaller-gusts.mjs and tools/gale-stair.mjs (regression), tools/moor-shots.mjs (bosszoom) for gust + halo screenshots
 - Eyeball: gust streaks/tell flash, halo not too heavy (tune alpha in main.js near 'HIM READABLE AGAINST THE SKY')
 
 ## Questions (rec first)
