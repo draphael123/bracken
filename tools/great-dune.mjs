@@ -41,7 +41,7 @@ const L = LEVELS.find(l => l.id === 'greatdune').build();
 const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H ? T.SOLID : L.grid[y * L.W + x]);
 
 /* ---------- THE LEVEL ---------- */
-function level() {
+async function level() {
   ok(L.greatdune && L.dune && L.boardZones.length === 1 && L.sun && L.caravan, 'the level builds (W ' + L.W + '), sun + quicksand on (L.caravan), one board zone');
   const bad = GDM.lintGreatDune(L, T); ok(bad.length === 0, 'lintGreatDune clean: ' + bad.join('; '));
   const xs = [L.START.x].concat(L.ents.filter(e => e.t === 'check').map(e => e.x)).concat([L.W - 2]).sort((a, b) => a - b), gaps = xs.slice(1).map((x, i) => x - xs[i]);
@@ -62,6 +62,7 @@ function level() {
   ok(L.ents.filter(e => e.t === 'coin').every(e => at(e.x, e.y) === T.AIR), 'every coin of the arcs hangs in air (' + L.ents.filter(e => e.t === 'coin').length + ' coins)');
   ok(L.quicksand.length >= 7 && L.dune.sinkSand.length >= 5, 'quicksand basins ' + L.quicksand.length + ', soft-sand runs ' + L.dune.sinkSand.length);
   const ob = L.dune.obelisk; ok(at(ob.x, ob.foot - 1) === T.SOLID && at(ob.x, ob.foot - ob.h) === T.SOLID && L.ents.some(e => e.t === 'gate' && e.x > ob.x), 'the obelisk stands ' + ob.h + ' rows; the gate past it');
+  { const { lintMirages } = await import('../src/mirage-kit.js'); const mb = lintMirages(L, at); ok(L.mirages.length === 2 && mb.length === 0, 'two mirages (a false ledge over a basin, a false oasis): lintMirages clean - a trick, never a trap ' + mb.join('; ')); }
   ok(GDM.obeliskBonus(200).coins === 50 && GDM.obeliskBonus(120).coins === 25 && GDM.obeliskBonus(70).coins === 10 && GDM.obeliskBonus(2).coins === 3, 'the obelisk pays by height (capstone 50 / high 25 / mid 10 / low 3)');
 }
 
@@ -71,7 +72,7 @@ function board() {
   let b = SB.newBoard();
   ok(SB.boardStep(b, 1 / 60, { kind: SLOPE.L1, ground: true, down: false, zone: z }) === null && !b.on, 'no DOWN, no board');
   ok(SB.boardStep(b, 1 / 60, { kind: SLOPE.L1, ground: true, down: true, zone: null }) === null && !b.on, 'out of a zone, no board (the butt-slide is the hill\'s)');
-  ok(SB.boardStep(b, 1 / 60, { kind: 0, ground: true, down: true, vx: 40, zone: z }) === null, 'on the flat it wants a run (mount ' + SB.BOARD.sand.mount + ')');
+  ok(SB.boardStep(b, 1 / 60, { kind: 0, ground: true, down: true, vx: 200, zone: z }) === null, 'on the flat DOWN at a run is the running slide, not the board (a slope mounts it)');
   ok(SB.boardStep(b, 1 / 60, { kind: SLOPE.L1, ground: true, down: true, vx: 0, zone: z }) === 'mount' && b.on && b.vx > 0, 'a standing mount on a slope tips you downhill (L1 falls to the right)');
   for (let i = 0; i < 120; i++) SB.boardStep(b, 1 / 60, { kind: SLOPE.L1, ground: true, zone: z });
   ok(Math.abs(b.vx - SB.BOARD.sand.topSteep) < 1, 'two seconds down a steep dune: the top speed ' + b.vx.toFixed(0));
@@ -230,5 +231,5 @@ function paceChecks() {
 }
 
 if (args.includes('--pace')) { pace({ log: true }); pace({ walkOnly: true, log: true }); process.exit(0); }
-flag(); level(); board(); hands(); skiff(); paceChecks();
+flag(); await level(); board(); hands(); skiff(); paceChecks();
 console.log(`great-dune: ${n} ok`);

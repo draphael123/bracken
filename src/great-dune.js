@@ -173,13 +173,17 @@ export function buildGreatDune({ T, TS }) {
   for (const c of caves) ent('gdsinkhole', c.swirl[0], c.row - 1);
   ent('gdobelisk', ob.x, ob.foot - 1);
 
+  /* ---- MIRAGES (plan s3c: 'Great Dune crests', a light touch; src/mirage-kit.js data - DRAWN once the 11-06 mirage/SHADE wiring (claude/ksar3's hands) merges; inert here):
+     a false ledge over the skiff road's basin (walk onto it and you drop two rows into the quicksand: a trick, never a trap) and a false oasis on the first
+     skiff's flat (shade that does not cool). ---- */
+  const mirages = [{ id: 'gdBasinLedge', kind: 'ledge', box: [marks.qs4, top(marks.qs4) - 2, marks.qs4 + 3, top(marks.qs4) - 2] }, { id: 'gdFalseOasis', kind: 'oasis', box: [marks.skiff1 + 4, top(marks.skiff1 + 4) - 2, marks.skiff1 + 8, top(marks.skiff1 + 4) - 1] }];
   const START = { x: 3, y: on(3) };
   return {
     W, H, grid, ents, START, pools: [], falls: [], moversExtra: [], interiors: [],
-    quicksand: qs, shade, decor, rockZones, masonry, facades, masonryKit: 'limestone', ledgeKit: 'desert',
+    quicksand: qs, shade, decor, rockZones, masonry, facades, ledgeKit: 'desert',
     sections, marks, greatdune: true,
     dune: { sinkSand, caves, scarabs, obelisk: ob, chief, still: STILL, ground: cols.map((c, x) => top(x)).concat([top(cols.length - 1), top(cols.length - 1)]) },   /* ground: the dune's surface row per column (under any outcrop) */
-    boardZones, softSand: sinkSand, sinkholes: caves, scarabs,   /* the same pieces at the top level, where tools/level-quality.mjs counts gadgets (SYSTEM_ARRAYS) */
+    mirages, boardZones, softSand: sinkSand, sinkholes: caves, scarabs,   /* the same pieces at the top level, where tools/level-quality.mjs counts gadgets (SYSTEM_ARRAYS) */
     duneSlides: [],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,

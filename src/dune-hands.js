@@ -184,7 +184,7 @@ export function makeDuneHands(ctx) {
   };
   /* ---------- GREYBOX DRAWING (the art lane redraws all of it: plan s4 gold dunes, heat shimmer, the obelisk) ---------- */
   H.draw = (g, cx, cy, time) => {
-    if (!H.on() || !S) return; const D = ctx.L.dune, VW = g.canvas ? g.canvas.width : 640;
+    if (!H.on() || !S) return; const D = ctx.L.dune, VW = ctx.VW ? ctx.VW() : 640;
     const vis = (x0, x1) => x1 - cx > -40 && x0 - cx < VW + 40;
     g.save();
     for (const s of D.sinkSand) { const x0 = s.x0 * TS, x1 = (s.x1 + 1) * TS; if (!vis(x0, x1)) continue; g.fillStyle = 'rgba(214,160,86,0.55)'; g.fillRect(R(x0 - cx), R(s.row * TS - cy), x1 - x0, 3);

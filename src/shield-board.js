@@ -4,7 +4,8 @@
    WHAT WAS ALREADY THERE (not rebuilt): the BUTT-SLIDE - hold DOWN on any slope and you go down it on your back (src/slopes.js slideStep), feet first,
    bowling weak foes and bouncing off strong ones (src/slide.js buttUpdate). It ends at the foot of the hill: it is a hill's verb.
    WHAT THIS ADDS: THE BOARD - in a BOARD ZONE (L.boardZones, a level's data) you drop onto your SHIELD and RIDE it: a road, not a hill.
-     - MOUNT: in a zone, on the ground, press/hold DOWN on a slope (any speed) or on the flat at a run (>= mount px/s).
+     - MOUNT: in a zone, on the ground, press/hold DOWN on a slope (any speed). On the flat DOWN at a run stays the RUNNING SLIDE (src/run-slide.js) unless
+       the surface sets mountFlat (then >= mount px/s). Riding, the running slide stands down (main.js RSL busy reads P.dBoardOn).
      - THE RIDE: downhill it gathers speed (acc x grade) to its top (steep/gentle); uphill the hill takes it back (up x grade), so a dune's height is
        paid for with speed - a crest you carry speed into you ride over; the flat bleeds it slowly (flat). Holding FORWARD pumps (pump, up to pumpTop).
        Holding BACK brakes. It does NOT end at the foot of a hill (the butt-slide does): it ends when the speed is gone (< end), on a hurt, an attack,
@@ -38,7 +39,7 @@ export function boardStep(b, dt, { kind = 0, ground = true, down = false, move =
     if (!zone || !ground || !down || hurt || attack || block) return null;
     const S = surfaceOf(zone.surface);
     const downhill = kind ? -slopeRise(kind) : 0;
-    if (!kind && Math.abs(vx) < S.mount) return null;   /* on the flat it wants a run */
+    if (!kind && !(S.mountFlat && Math.abs(vx) >= S.mount)) return null;   /* a slope only (DOWN at a run on the flat is the RUNNING SLIDE's, src/run-slide.js); a level may allow a flat mount (mountFlat) */
     b.on = true; b.surface = zone.surface || 'sand'; b.t = 0; b.air = false; b.why = '';
     b.vx = kind && Math.abs(vx) < 30 ? downhill * 40 : vx;   /* a standing mount on a slope tips you downhill */
     return 'mount';

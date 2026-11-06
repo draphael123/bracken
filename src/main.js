@@ -11444,7 +11444,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   /* THE RUNNING SLIDE (claude/slope, src/run-slide.js): DOWN pressed while running on the flat - low, under a high blow, a SWEEP into their legs. Before the sand slide:
      a slope met this frame is the butt-slide's (DOWN held) or the hill's (let go) from this frame on */
   if (GS > 0 && !P.dead) RSL.update({ P, dt, time, keys, move, run: MOVE.RUN, slopeAhead: SLOPES_ON && P.ground ? footSlope(tileAt, P) : 0,
-    busy: P.atk >= 0 || CM.inRecovery(P) || dodging || stunned || P.swim || P.climb || P.cling || P.block || P.aegis || P.warding || !!P.carry || P.plunge || P.fly || P.slideOn || !!P.onMover || !!(MCH && MCH.riding(P)) || P.jet,
+    busy: P.atk >= 0 || CM.inRecovery(P) || dodging || stunned || P.swim || P.climb || P.cling || P.block || P.aegis || P.warding || !!P.carry || P.plunge || P.fly || P.slideOn || !!P.dBoardOn || !!P.onMover || !!(MCH && MCH.riding(P)) || P.jet,
     spend, enemies, box, overlap, poiseMax, swordDmg, hurtAs, SFX, dust, parts, sparks, hitstop, lowParts: SET.parts === 'low', number,
     trip: e => { if (e.glancedAt === time) return; const sk = P.swingKind, ct = P.caTrip, cp = P.caPoke; P.swingKind = 'sweep'; P.caTrip = P.caPoke = false; swingKindHit(e); P.swingKind = sk; P.caTrip = ct; P.caPoke = cp; },
     seen: () => { PROG.rslTold = PROG.rslTold || {}; if (PROG.rslTold[hero()]) return true; PROG.rslTold[hero()] = 1; saveProgress(); return false; } });
@@ -30037,7 +30037,7 @@ PWH = makePalisadeHands({ get L() { return L; }, TS, T, sfx: SFX, players: () =>
   asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), hurt: (e, d, x) => hurtEnemy(e, d, x, false), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
   solidAt: (tx, ty) => isSolid(tx, ty), tileAt: (tx, ty) => tileAt(tx, ty), text: (s, x, y, c, a) => text(s, x, y, c, a), talking: () => state === 'talk' });
 /* (claude/gorm2) KING GORM 2's HANDS (src/gorm-hands.js), his AI's context (src/gorm-king.js) and THE ROYAL BOAR's (src/royal-boar.js) */
-DNH = makeDuneHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, keys: () => keys,   /* (claude/greatdune) */
+DNH = makeDuneHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, VW: () => VW, hero: () => P, enemies: () => enemies, time: () => time, keys: () => keys,   /* (claude/greatdune) */
   tileAt: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), overlap: (a, b) => overlap(a, b), box: b => box(b), hurtFoe: (e, d, x) => hurtEnemy(e, d, x, false), knockFoe: (e, d, p) => knockFoe(e, d, p),
   poiseMax: e => poiseMax(e), swordDmg: () => swordDmg(), dust: (x, y, n) => dust(x, y, n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), sparks: (x, y, d, n) => sparks(x, y, d, n), hitstop: t => hitstop(t), shake: n => shakeCam(n),
