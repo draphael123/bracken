@@ -19,7 +19,7 @@ try {
   assert.ok(files.includes('index.html') && !files.some(f => f.startsWith('src/')), 'index.html at the root, no src/ folder shipped');
   assert.ok(files.length < 1000, files.length + ' files (itch allows 1000)'); assert.ok(report.bytes < 500 * 1048576, 'well under 500 MB: ' + report.mb + ' MB');
   assert.deepEqual(adblockHits(files), [], 'no ad-block word in a shipped path');
-  const page = readFileSync(join(site, 'index.html'), 'utf8'); assert.ok(!/modulepreload|serviceWorker|manifest\.webmanifest/.test(page) && /\.\/main\.js/.test(page) && /\.\/loading-screen\.js/.test(page), 'the page loads the bundle only');
+  const page = readFileSync(join(site, 'index.html'), 'utf8'); const pre = [...page.matchAll(/rel="modulepreload" href="([^"]+)"/g)].map(m => m[1]); assert.ok(pre.length > 5 && pre.every(h => /^\.\/(main|c-[A-Z0-9]+)\.js$/.test(h)), 'modulepreload lists only the bundle (main.js + its chunks), never src/ (claude/onboard1)'); assert.ok(!/serviceWorker|manifest\.webmanifest/.test(page) && /\.\/main\.js/.test(page) && /\.\/loading-screen\.js/.test(page), 'the page loads the bundle only');
   const main = readFileSync(join(site, 'main.js'), 'utf8'); assert.ok(!/\/src\/[a-z0-9_-]+\.js/.test(main.replace(/"\/src\/[a-z]+lab\.js"/g, '')), 'no unbundled src/ import left in main.js');
   /* the zip: parse the end record and the central directory, inflate and CRC every entry */
   const z = readFileSync(join(out, 'thornroad-demo-' + report.sha + '.zip')), e = z.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06])), n = z.readUInt16LE(e + 10); let p = z.readUInt32LE(e + 16); const names = [];
