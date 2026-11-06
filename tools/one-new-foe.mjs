@@ -61,7 +61,8 @@ assert.ok(EHP.size > 80, 'only ' + EHP.size + ' creatures read out of EHP: the p
    leaves them wherever the array put them - so campaign-order.mjs reads all three gates. */
 const rows = [];
 for (const lv of LEVELS) {
-  if (/^(shop|trial|custom|tavern|arena_yard|duel_pit)/.test(lv.id)) continue;   /* (rel141: the Arena Yard is hidden, gate-less, off the road - a yard like the trial yards) */
+  if (/^(shop|trial|custom|tavern|arena_yard|duel_pit)/.test(lv.id)) continue;
+  if (lv.dev) continue;   /* (claude/highlines1) a DEV-ONLY level (hidden, no needs, reached with ?level=) is off the road until its art lane puts it on - it is held to F10 then */   /* (rel141: the Arena Yard is hidden, gate-less, off the road - a yard like the trial yards) */
   let L; try { L = lv.build(); } catch { continue; }
   const roster = new Set((L.ents || []).filter(e => e && e.t && EHP.has(e.t)).map(e => e.t));
   for (const r of (L.garrison || [])) if (Array.isArray(r) && EHP.has(r[0])) roster.add(r[0]);

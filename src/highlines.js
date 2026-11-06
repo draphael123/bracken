@@ -30,7 +30,7 @@ export const HL_DATA = {
     [30, 220, 40, 221],  // 1  L1
     [58, 208, 72, 209],  // 2  L2
     [38, 195, 46, 196],  // 3  L3  the junction station
-    [40, 206, 45, 207],  // 4  Ls2 SILVER ONE's ledge (the points' side glide)
+    [47, 204, 52, 205],  // 4  Ls2 SILVER ONE's ledge (the points' side glide)
     [1, 202, 8, 203],    // 5  L4  the glides' west station
     [24, 189, 34, 190],  // 6  L5
     [1, 177, 12, 178],   // 7  L6  the gorge's west lee rock
@@ -64,7 +64,7 @@ export const HL_DATA = {
   ],
   nets: [[15, 234, 33, 235], [41, 222, 60, 223]],   /* the cargo nets under band 1 (rope nets: art owed). The exam has none */
   checkpoints: [{ x: 4, y: 232 }, { x: 75, y: 134 }, { x: 5, y: 58 }],
-  secrets: [[42, 205], [27, 142]],
+  secrets: [[49, 203], [27, 142]],
   exit: [30, 44, 40, 48],
   arena: { x0: 2, x1: 40, floor: 48, boss: 'skyhook', stub: true },   /* SKYHOOK's landing: a LATER lane builds the fight here */
   lineKit: {
@@ -75,7 +75,7 @@ export const HL_DATA = {
       { id: 'W2', kind: 'winch', a: [38, 219], b: [60, 206] },
       /* 2 JUNCTIONS */
       { id: 'W3', kind: 'winch', a: [70, 207], b: [46, 194], points: [{ at: 58, to: 'S2' }] },
-      { id: 'S2', kind: 'glide', a: [61, 199.536], b: [44, 205], secret: true },
+      { id: 'S2', kind: 'glide', a: [61, 199.536], b: [50, 203.07], secret: true },
       { id: 'F1', kind: 'glide', a: [40, 194], b: [26, 198] },
       { id: 'F2', kind: 'glide', a: [21, 198.5], b: [6, 201] },
       { id: 'W4', kind: 'winch', a: [4, 201], b: [24, 188] },
@@ -146,7 +146,7 @@ export function buildHighLines({ painter, T, TS }) {
   sign(66, 207, 'POINTS: HOLD UP AS YOU PASS THE BOARD AND YOU TAKE THE BRANCH.');
   sign(41, 194, 'THE GLIDE IS FAST. JUMP TO KICK OFF ACROSS TO THE NEXT LINE.');
   foe('harpy', 14, 190, { face: 1 });                              /* a crag harpy dives at the glide riders */
-  coinOn('S2', 50); coinOn('F2', 14); ent('coin', 30, 188);
+  coinOn('S2', 55); coinOn('F2', 14); ent('coin', 30, 188);
   /* ---- 3 THE WIND GORGE ---- */
   sign(9, 176, 'THE GORGE WIND IS TOLD. RIDE WITH IT AND YOU FLY; AGAINST IT YOU CRAWL. THE LEE ROCKS ARE CALM.');
   foe('crossbow', 33, 188, { face: 1 });
@@ -178,9 +178,9 @@ export function buildHighLines({ painter, T, TS }) {
   for (const hj of D.hookjacks) { const d = D.lineKit.lines.find(q => q.id === hj.line), k = (hj.x - d.a[0]) / (d.b[0] - d.a[0]), ly = d.a[1] + (d.b[1] - d.a[1]) * k;
     const land = hj.role === 'cutter' ? D.landings.find(b => hj.x >= b[0] && hj.x <= b[2] && b[1] >= ly && b[1] - ly <= 3) : null;
     ent('hookjack', hj.x, land ? land[1] - 1 : Math.floor(ly), { line: hj.line, role: hj.role, dir: hj.dir }); }
-  /* the kit's moving floors as main.js movers (tagged lk: src/highlines-hands.js mover copies their place from the kit every frame; main.js carries whoever stands on them) */
+  /* the kit's moving floors as main.js movers (tagged lk: src/highlines-hands.js mover copies their place from the kit every frame; main.js carries whoever stands on them; fair: matched where it stood before this frame's move, as the fair's rides - the cab falls fast) */
   const lkMovers = [{ lk: 'cab:GD', x0: 24.5, x1: 27.5, top: 102 }, { lk: 'w:lift:A', x0: 3, x1: 7, top: 102 }, { lk: 'w:lift:B', x0: 9, x1: 13, top: 118 }]
-    .map(m => ({ kind: 'lift', lk: m.lk, x: m.x0 * TS, y: m.top * TS, w: (m.x1 - m.x0) * TS, h: 6, y0: m.top * TS, y1: m.top * TS, speed: 0 }));
+    .map(m => ({ kind: 'lift', lk: m.lk, fair: 'lk', x: m.x0 * TS, y: m.top * TS, w: (m.x1 - m.x0) * TS, h: 6, y0: m.top * TS, y1: m.top * TS, speed: 0 }));
   const START = { x: 4, y: 231 };
   const arena = { x0: D.arena.x0 * TS, x1: (D.arena.x1 + 1) * TS, floor: D.arena.floor * TS, stub: true, boss: null };   /* NO boss yet: the stub (a later lane) */
   return {
@@ -193,6 +193,11 @@ export function buildHighLines({ painter, T, TS }) {
     checkRun: 99999,                /* three checkpoints (Daniel: fewer); src/level.js must not fill between them */
     tall: true, climbCam: true,
     sections: SECTIONS.map(([name, y0, y1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, y0, y1, x0: 0, x1: W - 1 })),
+    /* what L.unlocks names, as data (tools/level-quality.mjs reads L[kind]): the winches, the points boards, the hopper, the gondola */
+    winch: D.lineKit.lines.filter(d => d.kind === 'winch').map(d => ({ x: d.a[0], row: Math.round((d.a[1] + d.b[1]) / 2), id: d.id })),
+    points: D.lineKit.lines.flatMap(d => (d.points || []).map(p => ({ x: p.at, id: d.id, to: p.to }))),
+    hopper: D.lineKit.weights.map(w => ({ x: w.hopper[0], row: w.hopper[1], id: w.id })),
+    gondola: D.lineKit.lines.filter(d => d.cab).map(d => ({ x: d.a[0], row: Math.round(d.a[1]), id: d.id, onto: d.cab.onto })),
     unlocks: [
       { kind: 'winch', opens: 'the way up: every blow while hanging hauls the line', hud: 'STRIKE TO HAUL' },
       { kind: 'points', opens: 'the side line to a silver (hold UP at the board)', hud: 'HOLD UP AT THE BOARD' },
