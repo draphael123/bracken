@@ -24,21 +24,21 @@
 //   FAIR: no move without a tell; never two blows of his inside one tell of another (one move at a time); a cut line drops you onto the station floor (no hp).
 //   CO-OP: every seat is a target (the nearest, standing); a lever is anyone's; a downing's purse is shared; his blows are keyed once a hero a move.
 export const SH = {
-  hp: 1100, w: 18, h: 32, markH: 44, hang: 40,                      // hang: from his line to his feet while he rides it (px)
+  hp: 1500, w: 18, h: 32, markH: 44, hang: 40,                      // hang: from his line to his feet while he rides it (px)
   chip: 0.5, wardMul: 0.4, p2: 0.5,                                 // B15: x0.5 outside openings (>= 0.4), x0.4 warded
   rest: [0.9, 0.7],                                                 // on a gallery between moves
-  ride: { tell: [0.6, 0.5], v: [140, 175], trolley: 16, dmg: 10 },  // trolley: a rider on his line this close is knocked off (told by the ride's tell)
-  hook: { tell: [0.75, 0.65], lock: 0.25, v: 420, r: 10, dmg: 12, pull: 200, life: 1.2, range: 300 },
-  drop: { tell: [0.95, 0.85], track: 0.4,  trackV: 200, fall: 0.3, r: 24, dmg: 20, kick: -260, chance: [0.55, 0.7], land: [1.0, 0.8] },
+  ride: { tell: [0.6, 0.5], v: [140, 175], trolley: 16, dmg: 7 },  // trolley: a rider on his line this close is knocked off (told by the ride's tell)
+  hook: { tell: [0.75, 0.65], lock: 0.25, v: 420, r: 10, dmg: 8, pull: 200, life: 1.2, range: 300 },
+  drop: { tell: [0.95, 0.85], track: 0.4,  trackV: 200, fall: 0.3, r: 24, dmg: 14, kick: -260, chance: [0.55, 0.7], land: [1.0, 0.8] },
   jarred: { t: [1.2, 1.0], mul: 1.5, cap: 0.08 },
-  sweep: { tell: [0.75, 0.65], t: 0.25, reach: 80, h: 14, dmg: 15, chance: [0.4, 0.5] },
+  sweep: { tell: [0.75, 0.65], t: 0.25, reach: 80, h: 14, dmg: 10, chance: [0.4, 0.5] },
   climb: { tell: 0.3, t: 0.6 },
   slip: { fall: 0.45, restring: 5, span: 1 / 3, land: 44 },        // land: he comes down this far from the lever that slipped the line (on the middle side): the striker is beside him                  // span: the share of the line, round its middle, over which a lever slips him
   downed: { t: [3.6, 3.0], mul: 2.0, cap: 0.2 },
   rise: { tell: 0.6, r: 40, dmg: 6, push: 180, ward: 2.5 },
-  shove: { tell: 0.6, t: 0.2, reach: 34, dmg: 12, push: 200, range: 44 },
+  shove: { tell: 0.6, t: 0.2, reach: 34, dmg: 8, push: 200, range: 44 },
   cut: { tell: 1.4, restring: 6 },
-  swing: { tell: 0.9, t: 1.1, low: 6, dmg: 18, push: 220, every: 3 },
+  swing: { tell: 0.9, t: 1.1, low: 6, dmg: 12, push: 220, every: 3 },
   phase: { tell: 1.4 },
   leverHook: { tell: [0.7, 0.6], range: 64 },                      // riding, a hook at whoever waits by a lever (both phases: the lever is read, not camped)
 };
