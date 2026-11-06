@@ -80,7 +80,7 @@ export function buildLesson({ painter, T }) {
 /* which step a column belongs to (or the last one past the end) */
 export const stepAtCol = col => STEPS.findIndex(s => col >= s.x0 && col <= s.x1);
 
-/* THE RUNTIME. api: { L(), P(), enemies(), time(), TS, shrines(), words(), openGate(col), sfx(k), say(msg, col), taught(kind), hint(msg, secs), hurtMe(), save(), leave(), text, wrap, board, VW, VH } */
+/* THE RUNTIME. api: { L(), P(), enemies(), guarding(p), time(), TS, shrines(), words(), openGate(col), sfx(k), say(msg, col), taught(kind), hint(msg, secs), hurtMe(), save(), leave(), text, wrap, board, VW, VH } */
 export function makeLesson(api) {
   const st = { i: 0, done: {}, ev: { hit: 0, third: 0, blocked: 0, dodged: 0 }, inStep: 0, jumped: false, drunk: false, prime: false, card: null, t: 0, stats: { skipped: 0, finished: 0, stalls: 0 }, nearDoor: false, rollAt: -9 };
   const on = () => !!api.L() && !!api.L().opening;
@@ -114,7 +114,7 @@ export function makeLesson(api) {
     if (P.dodge > 0) st.rollAt = api.time();   /* the last frame you were rolling */
     if (P.drinkT > 0 && P.drunk) st.drunk = true;
     /* A ROLL THROUGH HIS BLOW: his swing lands only on a hero in front of him within reach, so a roll that carries you through never calls damagePlayer - read his own swing (mode 'cut', once) against your roll */
-    for (const e of api.enemies()) { if (e.t !== 'swornsword' || !e.trainer) continue; if (e.mode === 'cut') { if (!e.lessonCut) { e.lessonCut = true; if (api.time() - st.rollAt < ROLL_GRACE && Math.abs(e.x - P.x) < 70 && Math.abs(e.y - P.y) < 24) st.ev.dodged++; } } else e.lessonCut = false; }
+    for (const e of api.enemies()) { if (e.t !== 'swornsword' || !e.trainer) continue; if (e.mode === 'cut') { if (!e.lessonCut) { e.lessonCut = true; if (api.time() - st.rollAt < ROLL_GRACE && Math.abs(e.x - P.x) < 70 && Math.abs(e.y - P.y) < 24) st.ev.dodged++; else if (api.guarding(P) && Math.abs(e.x - P.x) < 56 && Math.abs(e.y - P.y) < 24 && Math.sign(e.x - P.x) === (P.face || 1)) st.ev.blocked++; } } else e.lessonCut = false; }
     if (st.i >= STEPS.length) { st.nearDoor = Math.abs(c - (OT.W > 0 ? api.L().opening.door : 0)) < 1.6 && P.ground; return; }
     const step = STEPS[st.i];
     if (step.id === 'flask' && !st.prime && c >= step.x0 + 1) { st.prime = true; api.hurtMe(); }   /* the road has bitten you: 45% health and at least one flask, once, when you reach it */

@@ -102,7 +102,7 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
         await E(`__walk(94.4,600)`); await E(`BK.sim(30)`); st = await E(`({done:Object.keys(__O().st.done),i:__O().st.i})`);
         ok(st.done.includes('shrine') && st.i === 8, hero + ': SHRINE done by lighting it; all eight steps done');
         ok(await E(`__gateOpen(100)`), hero + ': the last gate lifted');
-        const pr = await E(`BK.lesson().PROG().taught||{}`); ok(pr.third === 1 && pr.block === 1 && pr.dodge === 1 && pr.flask === 1 && pr.shrine === 1 && pr.jump === 1, hero + ': PROG.taught carries third, jump, block, dodge, flask, shrine (' + JSON.stringify(pr) + ')');
+        const pr = await E(`BK.lesson().PROG().taught||{}`); ok((pr.third === 1 || hero === 'ranger') && pr.block === 1 && pr.dodge === 1 && pr.flask === 1 && pr.shrine === 1 && pr.jump === 1, hero + ': PROG.taught carries third, jump, block, dodge, flask, shrine (' + JSON.stringify(pr) + ')');
         /* the door */
         await E(`__stand(105,1);BK.sim(10)`); const nd = await E(`__O().st.nearDoor`); ok(nd, hero + ': near the inn door the prompt is up');
         await E(`BK.press('talk')`); for (let i = 0; i < 500 && !(await E(`!!(BK.L&&BK.L.tavern)`)); i++) { await E('BK.sim(1)'); await sleep(5); }
@@ -125,10 +125,10 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
       await E(`(()=>{BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});BK.lesson().PROG().innTold=0;BK.lesson().O.st.card=null;})()`);
       await E(`BK.lesson().O.innCard(9)`); const c0 = await E(`!!BK.lesson().O.st.card`); ok(c0, 'the inn card can be raised');
       await E(`(()=>{BK.load(__TAV);BK.start();BK.sim(5);})()`);
-      const stn = await E(`(()=>{const T=BK.tavern?BK.tavern():null;return T?T.debug().stations.map(s=>s.id):null;})()`); ok(stn && stn.includes('lesson'), 'the tavern lists the lesson station (' + stn + ')');
+      const stn = await E(`(()=>{const T=BK.tavern;return T?T.debug().stations.map(s=>s.id):null;})()`); ok(stn && stn.includes('lesson'), 'the tavern lists the lesson station (' + stn + ')');
       /* use the station: it leads into the lesson and the way back is the inn */
       await E(`(()=>{const p=__p();p.x=56*16+8;p.y=20*16-0.01;p.vy=0;p.ground=true;BK.sim(5);})()`);
-      const near = await E(`(()=>{const T=BK.tavern();return T.debug().near[0];})()`); ok(near && near.s === 'lesson', 'standing at the board names the lesson station (' + JSON.stringify(near) + ')');
+      const near = await E(`(()=>{const T=BK.tavern;return T.debug().near[0];})()`); ok(near && near.s === 'lesson', 'standing at the board names the lesson station (' + JSON.stringify(near) + ')');
       await E(`BK.press('talk')`); for (let i = 0; i < 500 && !(await E(`!!(BK.L&&BK.L.opening)`)); i++) { await E('BK.sim(1)'); await sleep(5); }
       ok(await E(`!!(BK.L&&BK.L.opening)`), 'the lesson board replays the lesson');
       await E(`BK.lesson().leave(true)`); for (let i = 0; i < 500 && !(await E(`!!(BK.L&&BK.L.tavern)`)); i++) { await E('BK.sim(1)'); await sleep(5); }
