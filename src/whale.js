@@ -3,7 +3,7 @@
 // A NEW level, built from nothing. OFF THE ROAD until its art pass merges and the browser proofs run (art before live): an APPENDED, HIDDEN row in src/level.js (no map
 // node, not on the demo list; dev only ?level=whale). WH_SHIPS is the road switch: false = the live game is unchanged (the row is hidden, nothing needs it, every
 // main.js hunk is behind WHH.on() = L.whale). Its place when it ships: the main road THE UNDERWATER KEEP -> THE WHALE -> THE DROWNED CAUSEWAY, through claude/greatdune's
-// road-insert table (src/route-insert.js is not on this base - the row to add is in the lane report). Old saves: the brief's rule (a save past the Keep keeps the
+// road-insert table (its route-insert module is not on this base - the row to add is in the lane report). Old saves: the brief's rule (a save past the Keep keeps the
 // Causeway open; the Whale shows unplayed, never a wall) is the route-insert table's job - no save migration is written here.
 //
 // THE RULE (L.rule): THE WHALE BREATHES. THE BREATH IS YOURS TO CALL.
