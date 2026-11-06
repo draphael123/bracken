@@ -117,7 +117,7 @@ if (PAGE.length) {
       }
       const mf = await E(`(async()=>{BK.load(0);BK.state='map';BK.step(1);BK.press('throw');BK.step(1);for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),foot:BK.mapFooter()[0].map(f=>f.t)};})()`);
       ok(mf.st === 'play' && mf.tav, "the map's F goes to the inn: " + JSON.stringify(mf));
-      ok(mf.foot.some(t => /F TAVERN/.test(t)), '...and the map footer says so: ' + mf.foot.join(' | '));
+      ok(mf.foot.some(t => /F INN/.test(t)), '...and the map footer says so (claude/tutorial1: F INN: CO-OP): ' + mf.foot.join(' | '));
       await E('__fresh()');
       const j = await E(`(()=>{const o={};BK.ui.pollPad();__setPads([__pad(2,[])]);BK.ui.pollPad();BK.sim(1);__setPads([__pad(2,[0])]);BK.ui.pollPad();BK.sim(1);
         const p=BK.players()[1];o.n=BK.players().length;o.src=p&&p.src;o.walk=p&&p.walkIn;o.x0=p&&p.x;o.door=__st('door').x;
@@ -202,6 +202,9 @@ if (PAGE.length) {
       ok(dp.st === 'map' && dp.seats === 1, 'THE DOOR, for player one: out to the map, the party with him: ' + JSON.stringify(dp));
       ok(dp.back === 2, '...and back into the inn the party comes in with him: ' + dp.back);
       ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE ARENA YARD DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
+      /* (claude/tutorial1, Daniel 11-05) THE LESSON BOARD: the opening lesson again, the party with him; its way out is the inn */
+      const lp = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'lesson').x});BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.opening);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}const o={ls:BK.L&&BK.L.opening?'lesson':BK.state,party:BK.players().length,trial:BK.L&&BK.L.trial!==undefined};BK.state='play';return o;})()`);
+      ok(lp.ls === 'lesson' && lp.party === 2 && !lp.trial, 'THE LESSON BOARD replays the roadside lesson, the party with him (no trial flag): ' + JSON.stringify(lp));
       const seen = await E('BK.tavern.debug().stations.filter(s=>!s.seen).map(s=>s.id)');
       ok(seen.length === 0, 'every station used once: no glint left: ' + seen.join(','));
       const touchVerb = await E(`(()=>{BK.state='play';const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});BK.sim(2);return BK.touchVerb?BK.touchVerb():null;})()`).catch(() => null);
@@ -333,7 +336,7 @@ if (PAGE.length) {
         localStorage.setItem('bracken.progress.4',JSON.stringify(Object.assign({},OLDS,{tavern:{colours:'red',seen:[1,2],drills:{throw:'lots'},ring:'yes'}})));BK.coopEnd();BK.loadSlot(4);await BK.tavern.enter();BK.sim(10);o.broken={st:BK.state,tav:BK.tavern.debug().tavern};return o;})()`.replace(/OLDS/g, JSON.stringify(OLD)));
       ok(sv.loadedTav === 'none' && sv.st === 'play' && sv.tav, 'an OLD save (no tavern record) loads and walks into the inn: ' + JSON.stringify({ l: sv.loadedTav, st: sv.st }));
       ok(sv.written && Array.isArray(sv.written.colours) && sv.written.colours.length === 4 && sv.written.colours[1] !== 'green' && typeof sv.written.ring === 'boolean', 'the tavern record is written back whole (P2\'s wardrobe colour kept): ' + JSON.stringify(sv.written));
-      ok(sv.keep && sv.moved.every(k => /^(coopTips|heardMusic|crouchFirst|hintSeen)$/.test(k)), 'nothing else in the old save moved (heroes, coins, clears, its own fields - only play bookkeeping: music heard, the co-op tips, first-crouch; vs the same save loaded and saved without the inn): ' + JSON.stringify([sv.keep, sv.moved, sv.raw]));
+      ok(sv.keep && sv.moved.every(k => /^(coopTips|heardMusic|crouchFirst|hintSeen|innTold)$/.test(k)), 'nothing else in the old save moved (heroes, coins, clears, its own fields - only play bookkeeping: music heard, the co-op tips, first-crouch; vs the same save loaded and saved without the inn): ' + JSON.stringify([sv.keep, sv.moved, sv.raw]));
       ok(sv.broken.st === 'play' && sv.broken.tav.colours.length === 4 && sv.broken.tav.drills.throw === 0, 'a save with a BROKEN tavern record loads and is read whole: ' + JSON.stringify(sv.broken.tav));
     }
     ok(pg.errors.length === 0, 'no page error: ' + pg.errors.slice(0, 3).join(' | '));

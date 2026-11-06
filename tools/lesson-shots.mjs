@@ -11,7 +11,7 @@ try {
     window.__go=(id,h)=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();BK.load(LEVELS.findIndex(l=>l.id===id));BK.start();BK.sim(30);};
     window.__stand=(col,face)=>{const p=BK.players()[0];p.x=col*16+8;p.y=20*16-0.01;p.vx=0;p.vy=0;p.face=face||1;p.ground=true;};})()`);
   const want = (process.argv[2] || 'tavern,lesson,inn').split(',');
-  if (want.includes('tavern')) { await E(`__go('tavern','${HERO}')`); await E(`__stand(56,1);BK.sim(260)`); await shot('tavern-board'); }
+  if (want.includes('tavern')) { await E(`__go('tavern','${HERO}')`); await E(`__stand(55,1);BK.sim(260)`); await shot('tavern-board'); }
   if (want.includes('lesson')) {
     await E(`__go('lesson','${HERO}')`);
     for (const [n, col, f, i] of [['move', 6, 90, 0], ['jump', 21, 90, 1], ['attack', 42, 90, 3], ['block', 55, 260, 4], ['door', 104, 90, 8]]) { await E(`BK.lesson().O.st.i=${i};__stand(${col},1);BK.sim(${f})`); await shot('lesson-' + n); }

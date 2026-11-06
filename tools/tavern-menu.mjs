@@ -13,6 +13,7 @@ const lv = LEVELS.find(l => l.id === 'tavern');
 ok(lv && lv.name === 'THE TAVERN', 'the hidden level is named THE TAVERN: ' + (lv && lv.name));
 const bad = [];
 for (const f of fs.readdirSync('src').filter(f => f.endsWith('.js')).concat(fs.readdirSync('src/redraw').filter(f => f.endsWith('.js')).map(f => 'redraw/' + f))) {
+  if (f === 'opening-tutorial.js') continue;   // (claude/tutorial1, Daniel 11-05 22:07: the lesson names the building, WAYMEET'S CROSSROADS INN, on its door plate, in the first-arrival card and in the loading tips - 'INN - CO-OP, WARDROBE, TRAINING' approved; the rest of src/ keeps THE TAVERN)
   const t = fs.readFileSync('src/' + f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1');   // strings only: comments may keep the history
   for (const m of t.match(/'[^'\n]*'|"[^"\n]*"/g) || []) if (/co-?op tavern|co-?op inn|crossroads inn|the inn is full: four/i.test(m)) bad.push(f + " " + m);
 }

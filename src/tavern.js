@@ -32,7 +32,7 @@ export const STATIONS = [
   { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
-  { id: 'lesson', x: 56, name: 'THE LESSON BOARD', verb: 'LESSON', first: 'THE LESSON BOARD: THE OPENING LESSON AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
+  { id: 'lesson', x: 55, name: 'THE LESSON BOARD', verb: 'LESSON', first: 'THE LESSON BOARD: THE OPENING LESSON AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
   { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
   { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: PVP_SHIPS ? 'THE DUEL PIT: FRIENDS AGAINST FRIENDS (OR A BOT), BEST OF THREE - AND THE RANKINGS.' : 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
