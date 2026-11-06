@@ -1,0 +1,42 @@
+name: Owned explicit canopy native ownership qualification
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/owned-canopy-native-import-nov06/manifest.json
+      - tools/owned-canopy-native-import-nov06-page.mjs
+      - tools/owned-canopy-native-import-nov06-cases.mjs
+      - tools/owned-canopy-native-import-nov06.mjs
+      - .github/workflows/owned-canopy-native-import-nov06.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.11.1"
+      - name: New exact CPU/GPU native graphs, original observer fallbacks, original Node fixtures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/owned-canopy-native-import-nov06.mjs
+        env:
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/owned-canopy-native-import-nov06
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/eager-opaque-fixed-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owned-canopy-native-import-nov06
+          path: |
+            ${{ runner.temp }}/owned-canopy-native-import-nov06/
+            ${{ runner.temp }}/eager-opaque-fixed-strict-profile.jsonl
+          if-no-files-found: error
