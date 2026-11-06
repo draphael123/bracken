@@ -177,7 +177,7 @@ function hm2() {
   const G = HMM.geom(L.arena), mk = () => ({ x: (G.x0 + G.x1) / 2, y: G.floorY, hp: HM.hp, maxHp: HM.hp, mode: 'walk', modeT: 0.3, face: -1, alive: true, open: 0, phase: 1 });
   ok(G.v2 && G.oil.length === 3, 'geom carries v2 + the oil (px)'); ok(!HMM.geom({ hm: { sx: 812, R: 34 } }).v2, 'the live courtyard (no hm.v2) has no v2: master\'s fight untouched');
   ok(HMM.HAWK_MOVES2.rake === 1 && HMM.HAWK_MOVES2.snatch === 2 && HMM.HAWK_MOVES2.moult === 3 && HMM.CYCLES2[3].every(s => s.includes('moult')) && !HMM.CYCLES2[2].some(s => s.includes('moult')), 'one new hawk move a phase: rake P1, TALON SNATCH P2, RAZOR MOULT P3');
-  ok(HMM.MOVES.moultTell.mark === '!' && HMM.MOVES.moultTell.answer === 'duck' && HM2.moultTell >= 0.6, 'RAZOR MOULT is told (! ' + HM2.moultTell + ' s, duck or block)');
+  ok(HMM.MOVES2.moultTell.mark === '!' && HMM.MOVES2.moultTell.answer === 'duck' && HM2.moultTell >= 0.6, 'RAZOR MOULT is told (! ' + HM2.moultTell + ' s, duck or block)');
   /* HER HAWK BURNS */
   { const e = mk(), S = HMM.newFight(G), c = hmWorld(); for (let i = 0; i < 20; i++) HMM.stepHawkMistress(e, S, 1 / 60, [{ x: e.x + 60, y: G.floorY, ground: true, alive: true }], c);
     const r = HMM.fireAt(e, S, c, S.hawk.x, S.hawk.y, 'fire'); for (let i = 0; i < 20; i++) HMM.stepHawkMistress(e, S, 1 / 60, [{ x: e.x + 60, y: G.floorY, ground: true, alive: true }], c);
@@ -190,7 +190,7 @@ function hm2() {
     for (let i = 0; i < 30; i++) HMM.stepHawkMistress(e, S, 1 / 60, [{ x: o[1] + 60, y: G.floorY, ground: true, alive: true }], c);
     ok(HMM.hmOpen(e) && S.openKind === 'bare' && c.log.said.some(s => /SMOKE GROUNDS HER HAWK/.test(s)), 'grounded in smoke: she is BARE (x' + HM.bareMul + ', ' + HM.bareT + ' s)');
     ok(!HMM.hawkGuards(S), 'the grounded hawk does not guard her');
-    ok(c.log.hits.some(h => h.name === HMM.MOVE_NAME.oil), 'the fire line ticks a hero standing in it');
+    ok(c.log.hits.some(h => h.name === HMM.MOVE_NAME2.oil), 'the fire line ticks a hero standing in it');
     const e2 = mk(), S2 = HMM.newFight(G), c2 = hmWorld(); e2.x = o[0] - 60; HMM.oilIgnite(e2, S2, c2, mx, G.floorY);
     let maxX = e2.x; for (let i = 0; i < 60 * 5; i++) { HMM.stepHawkMistress(e2, S2, 1 / 60, [{ x: o[1] + 50, y: G.floorY, ground: true, alive: true }], c2); maxX = Math.max(maxX, e2.x); S2.oil[1].burn = Math.max(S2.oil[1].burn, 1); }
     ok(maxX <= o[0] - 9, 'SHE CANNOT CROSS THE FIRE: she stops at its edge (' + (o[0] - maxX).toFixed(0) + ' px short) while it burns');

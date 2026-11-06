@@ -89,8 +89,8 @@ export const HM2 = { moultTell: 0.9, moultGap: 0.16, moultY: 11,   /* head heigh
   dmg: { moult: 30, oil: 8 } };
 export const CYCLES2 = { 1: CYCLES[1], 2: CYCLES[2], 3: [['keg', 'moult', 'rake', 'fan'], ['snatch', 'keg', 'moult', 'snare'], ['moult', 'fan', 'call', 'lash']] };
 export const HAWK_MOVES2 = { rake: 1, snatch: 2, moult: 3 };   /* (claude/ksar3) the hawk's in HM2: its TALON SNATCH from P2, RAZOR MOULT from P3 */
-MOVES.moultTell = { mark: '!', answer: 'duck' };
-MOVE_NAME.moult = 'THE RAZOR MOULT'; MOVE_NAME.oil = 'THE FIRE LINE';
+export const MOVES2 = { moultTell: { mark: '!', answer: 'duck' } };   /* HM2's own rows (master's MOVES / MOVE_NAME tables untouched: tools/ksar.mjs walks them) */
+export const MOVE_NAME2 = { moult: 'THE RAZOR MOULT', oil: 'THE FIRE LINE' };
 export const POSES2 = { moultTell: ['hawkMoultWind', 'hawkMoultRel'], lift: ['hawkTalonLift', 'hawkTalonDrop'], oil: ['oilFlare', 'oilSmoke'] };   /* (claude/ksar3) the art lane's pose names (greybox: the name is drawn) */
 
 /* ---------- THE ROOFTOPS ---------- */
@@ -172,7 +172,7 @@ function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 16, Math.min(G.x1 - 16, x));
 /* she keeps to the roof she stands on (a lunge or a step never carries her over a shaft's lip) */
 const clampRoof = (G, x, from) => { const r = G.roofs ? G.roofs[roofOf(G, from)] : [G.x0, G.x1]; return Math.max(r[0] + 10, Math.min(r[1] - 10, clampX(G, x))); };
-function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
+function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode] || MOVES2[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
 function endOpen(e, S, c) { e.open = 0; e.openKind = S.openKind = ''; S.ward = HM.wardT; S.n.wards++; S.openTaken = 0; S.hawk.mode = 'home'; S.hawk.t = HM.wardT; c.number(e.x, e.y - 70, 'THE HAWK IS HOME: SHE GUARDS', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
 /* OPEN (claude/ksarhawk): DOWN (the hawk burnt out of the air, or her own keg under her) - x HM.openMul for HM.openT s; BARE (a gong, a flash, a flinch) - x HM.bareMul
    for HM.bareT s. Either way the same read (B10: the gold ring and the timer bar; the bar says OPEN or BARE), and she stands still, whistling (B4) */
@@ -261,7 +261,7 @@ export function oilIgnite(e, S, c, x, y) {
 }
 function stepOil(e, S, dt, c) { const G = S.G;
   for (const [i, o] of (S.oil || []).entries()) { if (!(o.burn > 0)) continue; o.burn -= dt; o.tick -= dt;
-    if (o.tick <= 0) { o.tick = HM2.oilTick; c.hit([o.x0, o.x1, G.floorY - 16, G.floorY + 2], HM2.dmg.oil, MOVE_NAME.oil, { key: 'oil' + i + '_' + Math.round(c.time() * 2), noKnock: true }); } }
+    if (o.tick <= 0) { o.tick = HM2.oilTick; c.hit([o.x0, o.x1, G.floorY - 16, G.floorY + 2], HM2.dmg.oil, MOVE_NAME2.oil, { key: 'oil' + i + '_' + Math.round(c.time() * 2), noKnock: true }); } }
 }
 function stepHawkMistress1(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];

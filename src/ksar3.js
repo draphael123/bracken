@@ -73,7 +73,7 @@ export function ksar3Tail(api) {
   /* R2: THE STALKER IN THE GLARE (the test): his shimmer is the only read; the awning by the stair is where you can see him */
   block(846, 862, 19, B - 1); k3.roofs.push([846, 862, 19]);
   stalker(851, 18, 847, 856, 'k3sk2'); k3.stalkers.push('k3sk2');
-  awning(857, 862, 13, 19);
+  awning(846, 849, 13, 19);                                                      /* the landing in shade: his beat runs out of it into the glare */
   stair(854, 862, 13, 17);                                                       /* up to T2's crown (row 13) */
   /* T2 and THE HOP: Z3 off its crown runs out over the street and ENDS IN THE AIR; Z4 hangs under its last stretch - JUMP or DROP off Z3 onto Z4 (src/zipline.js: a kick
      or a drop shuts only the rope just left - the hop to the next line). Ride Z3 to its end and its end lets you fall: the street (here, a walk back up) */
@@ -86,7 +86,7 @@ export function ksar3Tail(api) {
   awning(884, 888, 28, B);
   /* R3: the roof over THE GONG YARD's door - CHECKPOINT (Ksar 3's fourth) */
   block(905, 920, 24, B - 1); k3.roofs.push([905, 920, 24]);
-  awning(909, 915, 18, 24);
+  awning(904, 911, 18, 24);
   ent('check', K3.checks[0][0], K3.checks[0][1]);
   sign(916, 23, 'THE GONG YARD: THE FORT\'S BELL-KEEPER. CUT HIS ROPES.');
 
@@ -134,6 +134,22 @@ export function ksar3Tail(api) {
   stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks);
   stage.arena.name = 'HAWK-MISTRESS 2'; stage.arena.high = true;                 /* (the art lane's sky + the town below: arena.high) */
   ent('gate', stage.exit.gate, R - 1);
+
+  // ================= THE SHADE (ksarfix 10-14: shade within running-pace reach on every outdoor stretch - tools/ksar-sun.mjs: none over the drain's 2 s) =================
+  /* the roofs' own: a minaret's / a tower's afternoon SHADOW across a stair, cloth strung over a rope's run (CLOTH LINES: a striped sheet between two poles - art owed),
+     awnings on the crowns. The stalkers' spots stay in the glare: the shade is where you READ him */
+  const cloth = (x0, x1, r0, r1) => { shadeBox(x0, x1, r0, r1); decor.push({ kind: 'clothline', x0, x1, y: r0 }); };
+  cloth(802, 805, 12, 19);                                                       /* over Z1 */
+  shadeBox(819, 826, 10, 18); decor.push({ kind: 'shadow', x0: 819, x1: 826, y: 10 });   /* the minaret's shadow over R1's stair */
+  awning(827, 831, 6, 12);                                                       /* M1's crown */
+  cloth(837, 840, 11, 18);                                                       /* over Z2 */
+  shadeBox(855, 862, 12, 18); decor.push({ kind: 'shadow', x0: 855, x1: 862, y: 12 });   /* T2's shadow over R2's stair */
+  awning(863, 867, 7, 13);                                                       /* T2's crown */
+  cloth(876, 880, 12, 20); cloth(890, 895, 17, 24);                              /* over THE HOP (Z3, then Z4) */
+  cloth(983, 989, 10, 24);                                                       /* over Z5 / Z6 */
+  shadeBox(995, 1001, 14, 23); decor.push({ kind: 'shadow', x0: 995, x1: 1001, y: 14 });   /* THE TALLEST TOWER's shadow across the high lines */
+  shadeBox(1023, 1030, 8, 25); decor.push({ kind: 'shadow', x0: 1023, x1: 1030, y: 8 });   /* ...and over R6's stair */
+  cloth(1040, 1044, 4, 16);                                                      /* over the last line */
 
   const fix = out => {
     out.ksar3 = true; out.mini = gm.mini; out.mirages = mirages; out.k3 = k3;

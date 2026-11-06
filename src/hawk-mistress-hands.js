@@ -70,7 +70,7 @@ export function makeHawkMistressHands(ctx) {
       knife: k => { let res = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res === 'hit' || !ctx.upright(pp) || P.dead || keyed2(pp, k.key)) return;
           const b = ctx.box(P), kb = { l: k.x - HM.knifeR, r: k.x + HM.knifeR, t: k.y - 2, b: k.y + 2 }; if (!ctx.overlap(kb, b)) return;
           if (k.ht === 'high' && P.ducking) { keyed(pp, k.key); if (!(S.underSaid > ctx.time())) { S.underSaid = ctx.time() + 1; ctx.number(P.x, P.y - 22, 'UNDER THE KNIFE', '#bfe6f5'); } res = res || 'under'; return; }
-          keyed(pp, k.key); const fe = k.kind === 'feather', kn = fe ? HMM.MOVE_NAME.moult : HMM.MOVE_NAME.knife, hp0 = P.hp, r = ctx.damagePlayer(k.x - Math.sign(k.vx) * 8, fe ? HMM.HM2.dmg.moult : HM.dmg.knife, { who: e, name: kn });   /* (claude/ksar3) a RAZOR MOULT feather */
+          keyed(pp, k.key); const fe = k.kind === 'feather', kn = fe ? HMM.MOVE_NAME2.moult : HMM.MOVE_NAME.knife, hp0 = P.hp, r = ctx.damagePlayer(k.x - Math.sign(k.vx) * 8, fe ? HMM.HM2.dmg.moult : HM.dmg.knife, { who: e, name: kn });   /* (claude/ksar3) a RAZOR MOULT feather */
           hurtTally(kn, hp0 - Math.max(0, P.hp)); res = r === 'blocked' ? 'blocked' : P.hp < hp0 ? 'hit' : (res || null); }); return res; },
       /* her rolling keg: a blade on it strikes it back; a body in its way sets it off */
       keg: K => { let res = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res || !ctx.upright(pp) || P.dead) return;
