@@ -205,8 +205,9 @@ function drawBreach(g, lv, ctx, cx, cy, VW, VH, TS, time) {
   /* burnt stumps: a ring-cut top, a charred skin, a split */
   for (const [a, b, row] of BR.stumps) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS);
     rc(x - 2, y - 3, w + 4, 6, CHAR[0]); rc(x - 1, y - 2, w + 2, 4, '#8a6a44'); rc(x - 1, y - 2, w + 2, 1, '#c49a5c'); rc(x + 2, y - 1, w - 4, 2, '#6a4a2c'); rc(x + 5, y - 1, w - 10, 1, '#c49a5c');   /* the cut top, a ring */
-    for (let k = 0; k < w; k += 5) rc(x + k, y + 2, 2, (b - a + 1) * TS * 0 + 14 + (strHash('c' + a + k) % 20), CHAR[1 + (k & 1)] );
-    rc(x + 3, y + 3, 1, 16, CHAR[0]); rc(x + w - 6, y + 8, 1, 14, CHAR[0]);
+    /* (claude/demoaudit 11-06, Daniel's live photo) the stump is a charred TRUNK all the way down to the crater floor: the old skin was 14-33 px of streaks, so a 9-row pillar ended in a ragged edge with the wood behind showing below it */
+    { const bot = Y((BR.pit[2] + 1) * TS); rc(x - 1, y + 2, w + 2, bot - y - 2, CHAR[0]); rc(x, y + 2, w, bot - y - 2, CHAR[1]); for (let k = 2; k < w - 2; k += 4) rc(x + k, y + 2, 2, bot - y - 2, CHAR[2 + (k & 1 ? 0 : 0)]); rc(x + 1, y + 2, 1, bot - y - 2, CHAR[3]);
+      for (let yy = y + 12; yy < bot - 4; yy += 13 + (strHash('c' + a + yy) % 7)) rc(x + 3 + (yy & 7), yy, 1, 7, CHAR[0]); }
     if (Math.floor(time * 2 + a) % 3) rc(x + 6, y - 3, 1, 1, EMBER[1]); }
   /* the standing towers */
   for (const [a, b, row] of BR.towers) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS), bot = Y(33 * TS);
