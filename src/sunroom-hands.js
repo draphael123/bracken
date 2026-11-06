@@ -5,7 +5,7 @@
 // main.js calls: on, clear, update(dt), strike(hb), burn(body, dt), draw(g, cx, cy, time), read.
 //   ctx: { L (getter), T, TS, tileAt(x, y), cellSet(x, y, t), isSlope(t), number(x, y, text, col), text(...), sfx, players, priestBeams() -> [{ x, y, dir }] tiles }
 import { sunRoomsInit, sunRoomsStep, strikeMirrors, sunBurn } from './sun-puzzle.js';
-import { makeOpaque } from './light.js';
+import { makeOpaque, litBox } from './light.js';
 import * as BP from './beam-path.js';
 
 export function makeSunRoomHands(ctx) {
@@ -32,6 +32,11 @@ export function makeSunRoomHands(ctx) {
   /* a landed blow (any hero, any seat - main.js runs it per hero) turns a mirror it covers; one turn a swing (sun-puzzle's cooldown) */
   H.strike = hb => { if (!hb || !H.on()) return; for (const m of strikeMirrors(R, [hb.l, hb.t, hb.r, hb.b])) { try { ctx.sfx.clank && ctx.sfx.clank(); } catch {} ctx.number(m.x * TS + 8, m.y * TS - 8, 'THE MIRROR TURNS', '#fff6c8'); } };
   H.burn = (body, dt) => (R ? sunBurn(R, body, dt) : 0);
+  /* (claude/suntemple) READS for the Sun Temple's hands and THE FALLEN SUN PRIEST: a live room by id (its def's sources carry `off` - a shut window), and whether a
+     pixel box [l, r, t, b] (light.js litBox order) stands in a room's SUN light this frame (any room, or the one named) */
+  H.room = id => (H.on() ? R.rooms.find(r => r.def.id === id) || null : null);
+  H.rooms = () => (H.on() ? R.rooms : []);
+  H.litBox = (box, id) => { if (!H.on()) return false; for (const r of R.rooms) { if (id && r.def.id !== id) continue; if (r.res && litBox(r.res, box)) return true; } return false; };
   /* THE DRAWING: the sun's path (and the priest's, lilac) the whole way, each mirror's slant on its post, each eye: a sun-glyph (lamp: gold when lit), a sun-door's eye, the
      cache's silver seal glyph (it says whose light it wants) */
   H.draw = (g, cx, cy, time) => {

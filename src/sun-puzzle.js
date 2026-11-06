@@ -96,16 +96,29 @@ export function solveRoom(def, tileAt, opaque) {
   const turnable = def.mirrors.map((m, i) => i).filter(i => def.mirrors[i].turnable !== false);
   if (turnable.length > 12) throw new Error('solveRoom: too many mirrors');
   const sunDoors = def.doors.filter(d => d.kind === 'sun').length; let best = null;
-  for (let mask = 0; mask < (1 << turnable.length); mask++) {
+  for (const hr of hoursOf(def)) for (let mask = 0; mask < (1 << turnable.length); mask++) {
     const R = sunRoomsInit({ sunRooms: [def] }), room = R.rooms[0];
     turnable.forEach((mi, b) => { if ((mask >> b) & 1) { const m = room.mirrors[mi]; m.state = m.state === '/' ? '\\' : '/'; } });
-    sunRoomsStep(R, 0, { tileAt, opaque });
+    room.clock = hr.clock; sunRoomsStep(R, 0, { tileAt, opaque });
     if (room.doors.filter(d => d.kind === 'sun' && d.open).length === sunDoors) {
       const turns = turnable.filter((_, b) => (mask >> b) & 1).length;
-      if (!best || turns < best.turns) best = { turns, turn: turnable.filter((_, b) => (mask >> b) & 1).map(i => [def.mirrors[i].x, def.mirrors[i].y]) };
+      if (!best || turns < best.turns) best = { turns, hour: hr.hour, turn: turnable.filter((_, b) => (mask >> b) & 1).map(i => [def.mirrors[i].x, def.mirrors[i].y]) };
     }
   }
   return best;
+}
+/* (claude/suntemple) THE MOVING SUN's HOURS: a room whose source is a row of windows (the Sun Temple's "THE SUN MOVES") is solved at every hour of its day - the
+   window the sun stands in - not only at clock 0. A room with fixed sources has one hour (clock 0), exactly as before. */
+export function hoursOf(def) {
+  const s = (def.sources || []).find(q => q.windows && q.windows.length && q.day > 0);
+  if (!s) return [{ hour: 0, clock: 0 }];
+  return s.windows.map((_, i) => ({ hour: i, clock: (i + 0.5) * s.day / s.windows.length }));
+}
+/* every hour a room's sun-doors can be opened at, and the fewest turns at each (the Sun Temple's lint: timing matters - some hours, not all) */
+export function hoursOpen(def, tileAt, opaque) {
+  const out = [];
+  for (const hr of hoursOf(def)) { const one = solveRoom({ ...def, sources: def.sources.map(s => (s.windows ? { ...s, windows: [s.windows[hr.hour]], day: 1e9 } : s)) }, tileAt, opaque); if (one) out.push({ hour: hr.hour, turns: one.turns }); }
+  return out;
 }
 /* THE LEVEL CHECK */
 export function lintSunRooms(L, tileAt, opaque, o = {}) {
