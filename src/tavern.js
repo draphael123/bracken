@@ -32,7 +32,7 @@ export const STATIONS = [
   { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
-  { id: 'lesson', x: 55, name: 'THE LESSON BOARD', verb: 'LESSON', first: 'THE LESSON BOARD: THE OPENING LESSON AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
+  { id: 'lesson', x: 55, name: 'THE TUTORIAL BOARD', verb: 'TUTORIAL', first: 'THE TUTORIAL BOARD: THE TUTORIAL AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
   { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
   { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: PVP_SHIPS ? 'THE DUEL PIT: FRIENDS AGAINST FRIENDS (OR A BOT), BEST OF THREE - AND THE RANKINGS.' : 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
@@ -55,7 +55,7 @@ export const TAVERN_ART = [
   ['bell', 'THE SPARRING BELL: a small brass bell on a post with a pull rope (rest / swinging frames)'],
   ['dummies', 'two tavern straw dummies (sack heads, a dented pot helm) - the training yard\'s own, not the open yard\'s'],
   ['target', 'THE HAY TARGET: a ring of hay bales on the yard floor with a painted bullseye'],
-  ['lesson', 'THE LESSON BOARD: a plank sign on a post in the yard, LESSON chalked on it (replays the opening lesson)'],
+  ['lesson', 'THE TUTORIAL BOARD: a plank sign on a post in the yard, TUTORIAL chalked on it (replays the tutorial)'],
   ['practice', 'THE ARENA YARD DOOR: an arched yard gate with a hung ARENA YARD board and the arena\' light behind it'],
   ['arena', 'THE DUEL PIT: a sunken sanded pit behind a rope on posts, a COMING SOON board and a stage board beside it (empty frame for the VERSUS lane)'],
   ['dressing', 'the warm room: the fireplace (lit, a cauldron), long tables with benches and Waymeet\'s drinkers, the bar with casks and the barkeep, a window onto the road (day/night), hanging lanterns, a hearth glow light'],

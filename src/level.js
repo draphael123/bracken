@@ -8126,7 +8126,7 @@ LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw 
 /* THE DUEL PIT (claude/pvpduel, Daniel 11-05): APPENDED (saves count levels by index). DUEL (BETA)'s one ring, entered from the tavern's pit (src/pvp-duel.js); hidden, pays nothing */
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
 /* THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): APPENDED (saves count levels by index). The short generic opening a NEW save starts in (and the inn's training yard replays); it ends at the inn's door. src/opening-tutorial.js */
-LEVELS.push({ id: 'lesson', name: 'THE ROADSIDE LESSON', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
+LEVELS.push({ id: 'lesson', name: 'THE TUTORIAL', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

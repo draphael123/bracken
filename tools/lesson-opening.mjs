@@ -46,7 +46,7 @@ if (WANT.includes('pure')) {
   ok(/HOLD Z|HOLD THE JUMP/.test(stepLine('high', WORDS.kb) + stepLine('high', WORDS.touch)), 'the held jump is taught');
   ok(INN_CARD.body.length <= 110 && INN_SIGN === "THE CROSSROADS INN", 'the inn card and sign');
   ok(LESSON_TIPS.length === 3, 'three loading tips');
-  const lesson = STATIONS.find(s => s.id === 'lesson'); ok(lesson && lesson.verb === 'LESSON' && !STATIONS.some(s => s !== lesson && Math.abs(s.x - lesson.x) < 3), 'the inn has a LESSON BOARD station, three tiles clear of any other');
+  const lesson = STATIONS.find(s => s.id === 'lesson'); ok(lesson && lesson.verb === 'TUTORIAL' && !STATIONS.some(s => s !== lesson && Math.abs(s.x - lesson.x) < 3), 'the inn has a TUTORIAL BOARD station, three tiles clear of any other');
   const { TIPS } = await import('../src/loading-screen.js'); ok(LESSON_TIPS.every(t => TIPS.includes('TIP: ' + t)), 'the loading screen carries the three tips');
 }
 

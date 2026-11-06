@@ -12,7 +12,7 @@ export const OT = { W: 112, H: 26, FLOOR: 20, START: 4 };
 /* the stations, by column (x0..x1 is where a step is "the one you are on"). gate: the column of the port that lifts when it is done (null = the ground itself is the gate).
    taught: the PROG.taught key it writes - 'third' is main.js lessonHint's (written only if a heavy third blow was struck); the rest are this lesson's own marks (jump, highjump, block, dodge, flask, shrine) for later hints to read. */
 export const STEPS = [
-  { id: 'move',   name: 'MOVE',        x0: 2,  x1: 14,  gate: null, taught: null,    sign: 'THE ROADSIDE LESSON. WALK ON.' },
+  { id: 'move',   name: 'MOVE',        x0: 2,  x1: 14,  gate: null, taught: null,    sign: 'THE TUTORIAL. WALK ON.' },
   { id: 'jump',   name: 'JUMP',        x0: 15, x1: 27,  gate: null, taught: 'jump',  sign: 'A CURB AND A DITCH. JUMP THEM.' },
   { id: 'high',   name: 'HIGHER',      x0: 28, x1: 38,  gate: null, taught: 'highjump', sign: 'A HIGH LEDGE. HOLD THE JUMP.' },
   { id: 'attack', name: 'ATTACK',      x0: 39, x1: 50,  gate: 51,   taught: 'third', sign: 'STRAW MEN. THREE BLOWS IN A RUN: A HEAVY THIRD.', need: 3 },
@@ -26,7 +26,7 @@ export const ROLL_GRACE = 0.45;   /* s: a roll that ended up to this long before
 export const STALL_S = 40;   /* s in one station with no headway: its gate opens anyway ("ON WE GO"): a lesson never traps anybody (a step opened this way teaches nothing) */
 export const INN_SIGN = "THE CROSSROADS INN";
 export const INN_CARD = { title: "THE CROSSROADS INN", body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
-export const LESSON_TIPS = ["THE CROSSROADS INN: PRESS F ON THE MAP. FRIENDS JOIN, THE WARDROBE, TRAINING.", "THE ARENA YARD IS THROUGH THE INN'S TRAINING YARD: EVERY MOVE YOUR HERO HAS.", "WANT THE OPENING LESSON AGAIN? THE LESSON BOARD IN THE INN'S YARD REPLAYS IT."];
+export const LESSON_TIPS = ["THE CROSSROADS INN: PRESS F ON THE MAP. FRIENDS JOIN, THE WARDROBE, TRAINING.", "THE ARENA YARD IS THROUGH THE INN'S TRAINING YARD: EVERY MOVE YOUR HERO HAS.", "WANT THE TUTORIAL AGAIN? THE TUTORIAL BOARD IN THE INN'S YARD REPLAYS IT."];
 
 /* THE PROMPT of a step, from the hero's own words k = { move, jump, atk, block, dodge, flask, pause }. Pure. Every line fits three rows of the step panel. */
 export function stepLine(id, k) {
@@ -42,7 +42,7 @@ export function stepLine(id, k) {
     default: return '';
   }
 }
-export const SKIP_LINE = k => 'SKIP: ' + k.pause + ', THEN SKIP LESSON';
+export const SKIP_LINE = k => 'SKIP: ' + k.pause + ', THEN SKIP TUTORIAL';
 export const stepCount = () => STEPS.length;
 
 /* THE LEVEL: painter + tile ids handed in by level.js (the way src/arena-yard.js is). One floor, a curb, a ditch, a ledge, straw, a gate after each station, a door to the inn. */

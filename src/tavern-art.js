@@ -82,12 +82,12 @@ export function saves(g, x, fy, time, text) {
 }
 
 /* ---------------------------------------------------------------- THE LESSON BOARD (claude/tutorial1) ---------------------------------------------------------------- */
-export function lesson(g, x, fy, time, text) {
-  const L = x - 17, T = fy - 40;
-  R(g, L + 15, T + 18, 4, 22, TP.o2); R(g, L + 15, T + 18, 1, 22, TP.o4); R(g, L + 12, T + 38, 10, 2, TP.o1);   /* the post */
-  R(g, L, T, 34, 20, TP.o3); R(g, L, T, 34, 1, TP.o6); R(g, L, T + 19, 34, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 33, T, 1, 20, TP.o1);   /* the plank */
-  R(g, L + 2, T + 2, 30, 16, '#2a2418'); R(g, L + 2, T + 2, 30, 1, '#5a4a32');
-  text('LESSON', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 6, T + 13, 22, 1, '#ffd36b'); if (Math.floor(time * 2) & 1) P(g, L + 30, T + 4, '#fff');
+export function lesson(g, x, fy, time, text) {   /* (claude/shrinekey) the plank is wider for TUTORIAL */
+  const L = x - 23, T = fy - 40;
+  R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);   /* the post */
+  R(g, L, T, 46, 20, TP.o3); R(g, L, T, 46, 1, TP.o6); R(g, L, T + 19, 46, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 45, T, 1, 20, TP.o1);   /* the plank */
+  R(g, L + 2, T + 2, 42, 16, '#2a2418'); R(g, L + 2, T + 2, 42, 1, '#5a4a32');
+  text('TUTORIAL', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 10, T + 13, 26, 1, '#ffd36b'); if (Math.floor(time * 2) & 1) P(g, L + 42, T + 4, '#fff');
 }
 
 /* ---------------------------------------------------------------- THE DRILLS TALLY ---------------------------------------------------------------- */

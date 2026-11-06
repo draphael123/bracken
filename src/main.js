@@ -6557,7 +6557,7 @@ let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the sessio
 const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Arena Yard', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
 /* (claude/shrinekey) WHERE THERE IS NO SHRINE TO GO BACK TO: the roadside lesson, the Arena Yard, the duel pit, a trial, a shop, the inn, the rush */
 const noShrineHere = () => !L || !!(L.opening || L.arenaYard || L.duelPit || L.trial || L.shop || L.openYard || L.tavern) || rushOn();
-const menuItems = () => menuItems0().map(k => k === 'Return to map' && L && L.opening ? 'Skip lesson' : k).filter(k => k !== 'Swap hero' || swapMenuOk()).filter(k => k !== 'Arena Yard' || !(L && L.arenaYard));   /* (claude/yardswap) the row is the way IN: not offered inside the yard */
+const menuItems = () => menuItems0().map(k => k === 'Return to map' && L && L.opening ? 'Skip tutorial' : k).filter(k => k !== 'Swap hero' || swapMenuOk()).filter(k => k !== 'Arena Yard' || !(L && L.arenaYard));   /* (claude/yardswap) the row is the way IN: not offered inside the yard */
 const menuItems0 = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
@@ -6620,7 +6620,7 @@ function menuConfirm() {
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
   else if (k === 'Return to map' && L && L.duelPit) { duelLeave(); }   /* (claude/pvpduel) out of the duel pit: back to the inn */
-  else if (k === 'Skip lesson') { state = 'play'; opnLeave(true); }   /* (claude/tutorial1) the roadside lesson's SKIP: out to the inn */
+  else if (k === 'Skip tutorial') { state = 'play'; opnLeave(true); }   /* (claude/tutorial1) the roadside lesson's SKIP: out to the inn */
   else if (k === 'Return to map' && L && L.arenaYard) { yardLeave(); }   /* (claude/arenayard) out of the yard: back to the inn it was entered from, else the map */
   else if (k === 'Return to map' && L && L.tavern) { tavernToMap(); }   /* (claude/tavernname) out of the inn's door, to the map */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
@@ -6713,7 +6713,7 @@ function updateHeroPick() {
 }
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
-  if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT LESSON', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
+  if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT TUTORIAL', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'TAP C: THE FLAME WARD', '88 health', 'HARDER'],   /* (claude/pyrokit) */
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
