@@ -111,12 +111,12 @@ export function buildKingsPyramid({ painter, T, TS }) {
   air(2, 3, 30, 31);                                               /* the cache's alcove (the silver lies behind the sun-seal) */
   ledge(8, 12, 29); ledge(20, 26, 29); ledge(15, 19, 26); ledge(21, 26, 23);   /* footing under each mirror (struck from the ledge, sun-puzzle's reach) */
   air(10, 10, 0, 17);                                              /* the sun's port: a shaft from the apex */
-  air(37, 38, 28, UP - 1);                                         /* the key niche behind the sun-door (column 36) */
+  block(36, 38, 22, 27); ledge(27, 35, 22);                        /* the key niche, high in the east corner on its stone shelf (37-38, rows 18-21), shut by the sun-door (column 36); a walk of ledge to it */
   const mirrorRoom = { id: 'kpMirrors', box: [4, 18, 38, UP - 1], sources: [{ x: 10, y: 18, dir: 'S' }],
     mirrors: [{ x: 10, y: 27, state: '/' }, { x: 24, y: 27, state: '\\' }, { x: 24, y: 21, state: '\\' }],
-    doors: [{ id: 'mirrorKeyDoor', kind: 'sun', eye: [34, 21], opens: [36, 28, 36, UP - 1], mode: 'latch' },
+    doors: [{ id: 'mirrorKeyDoor', kind: 'sun', eye: [34, 21], opens: [36, 18, 36, 21], mode: 'latch' },
       { id: 'priestCache', kind: 'cache', eye: [5, 29], opens: [4, 30, 4, 31], optional: true }] };
-  set(36, 28, T.SOLID); set(36, 29, T.SOLID); set(36, 30, T.SOLID); set(36, 31, T.SOLID);   /* the key door (the sun lifts it) */
+  block(36, 36, 18, 21);                                           /* the key door (the sun lifts it) */
   set(4, 30, T.SOLID); set(4, 31, T.SOLID);                        /* the priest's sun-seal */
   ent('silver', 2, 31);                                            /* THE PRIEST CACHE: a silver (plan Q5) */
   sign(7, UP - 1, 'STRIKE A MIRROR TO TURN IT. CARRY THE SUN TO THE GLYPH AND THE DOOR LIFTS.');
@@ -137,10 +137,10 @@ export function buildKingsPyramid({ painter, T, TS }) {
   // ================= 2c. THE ROOM OF KEGS (down, east): the rack, the cracked wall, the hung ledge =================
   air(100, 101, HF, 46); rope(101, HF, LO - 1);                    /* the way down from the hub floor, and back up */
   air(78, 111, 47, LO - 1); interiors.push([78, 111, 47, LO - 1, 'kpKegs']);
-  block(78, 83, 51, LO - 1);                                       /* the key's plinth: its top is row 51 (seven rows over the floor) */
-  const cracked = [{ id: 'kegWall', x0: 96, x1: 97, y0: 52, y1: LO - 1, kind: 'wall' }, { id: 'bracket', x0: 90, x1: 90, y0: 50, y1: 50, kind: 'bracket', drops: 'hungLedge' }];
+  block(78, 83, 52, LO - 1);                                       /* the key's plinth: its top is row 52 (six rows over the floor) */
+  const cracked = [{ id: 'kegWall', x0: 96, x1: 97, y0: 52, y1: LO - 1, kind: 'wall' }, { id: 'bracket', x0: 89, x1: 89, y0: 50, y1: 50, kind: 'bracket', drops: 'hungLedge' }];
   for (const c of cracked) block(c.x0, c.x1, c.y0, c.y1);
-  const hung = [{ id: 'hungLedge', x0: 86, x1: 89, y: 50, to: 54 }];
+  const hung = [{ id: 'hungLedge', x0: 85, x1: 88, y: 50, to: 55 }];
   for (const h of hung) ledge(h.x0, h.x1, h.y);
   const racks = [{ id: 'rack1', x: 108, y: LO - 1, every: 4 }];
   sign(106, LO - 1, 'A POWDER KEG. E TAKES IT; ATTACK THROWS IT LIT. SET IT DOWN AND STRIKE IT TO LIGHT IT WHERE IT STANDS.');
@@ -173,7 +173,7 @@ export function buildKingsPyramid({ painter, T, TS }) {
   deathless(56, TP - 1, 53, 64, 'd1'); deathless(70, TP - 1, 64, 78, 'd2'); deathless(88, TP - 1, 82, 95, 'd3');
 
   /* THE KEYS: one per room, each behind its room's own exam (the hands draw it and count it; carried across a death) */
-  const keys = [{ id: 'mirrors', x: 37, y: UP - 1 }, { id: 'fire', x: 145, y: 26 }, { id: 'bombs', x: 80, y: 50 }, { id: 'switches', x: 75, y: LO - 1 }, { id: 'deathless', x: 99, y: TP - 1 }];
+  const keys = [{ id: 'mirrors', x: 37, y: 21 }, { id: 'fire', x: 145, y: 26 }, { id: 'bombs', x: 80, y: 51 }, { id: 'switches', x: 75, y: LO - 1 }, { id: 'deathless', x: 99, y: TP - 1 }];
 
   // ================= 3. THE DESCENT (112-140): the great door's passage, the shaft, the lift, the foot =================
   air(112, 121, 38, HF - 1);                                       /* the passage past the great door, over the shaft's head */
@@ -197,8 +197,16 @@ export function buildKingsPyramid({ painter, T, TS }) {
   for (const [x0, x1] of A.ledges) ledge(AX + x0, AX + x1, AF - A.ledgeDy);
   ent('kingseals', AX + A.start, AF - 1, { face: -1 });
   air(AX + A.W, W - 2, 79, AF - 1); ent('gate', AX + A.W + 1, AF - 1);   /* THE LEVEL'S GATE: it opens once the King is down (gateAfterBoss) */
-  const arena = { x0: AX * TS, x1: (AX + A.W) * TS, floor: AF * TS, trigger: (AX + 4) * TS, wallL: AX - 1, wallR: AX + A.W, boss: 'kingseals', music: 'kingseals',
+  const arena = { x0: AX * TS, x1: (AX + A.W) * TS, floor: AF * TS, trigger: (AX + 4) * TS, wallL: AX - 1, wallR: AX + A.W, boss: 'kingseals', music: 'tombking',   /* (placeholder: the Coffin King's track until the art lane's own - REPORT-ONLY music) */
     tint: '#e8c24a', tintA: 0.07, start: [AX + 4, AF - 1], y0: (AF - A.roof) * TS, y1: (AF + 1) * TS, ks: { x0: AX, floor: AF } };
+
+  /* DATA MARKERS for the level tools (tools/level-quality.mjs counts gadgets and unlocks from ents): main.js spawns nothing for an unknown kind, and src/kp-hands.js reads L.kp, not these */
+  for (const s of switches) ent('kpswitch', s.x, s.y, { id: s.id });
+  for (const w of weights) ent('kpweight', w.cleat[0], w.cleat[1], { id: w.id });
+  for (const k of keys) ent('kpkey', k.x, k.y, { id: k.id });
+  ent('kpkeylock', greatDoor.x0, greatDoor.y1, { holes: 5 });
+  ent('kpglyph', 34, 21, { id: 'mirrorKeyDoor' });
+  ent('silver', 82, 15);                                           /* a second silver: on the deathless room's east perch (off the route) */
 
   const START = { x: 3, y: HF - 1 };
   return {

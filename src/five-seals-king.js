@@ -303,6 +303,6 @@ export function ksPlan(S, h) {
     return { goX: S.x + (h.x < S.x ? -90 : 90), act: 'throw' }; }
   if (can('press')) { const p = S.presses.find(q => { const [l, r] = pressLane(S, q); return S.x > l && S.x < r; }), sw = p && S.switches.find(s => s.press === p.id);
     if (p && sw && p.st === 'idle' && p.cd <= 0 && sw.lock <= 0) return { goX: G.px(sw.x), act: 'switch', id: sw.id, perch: true };
-    const lure = S.presses[(S.n.opens) % 2], swl = S.switches.find(s => s.press === lure.id); return { goX: G.px(swl.x), act: 'lure', perch: true }; }
+    const swl = S.switches.filter(s => s.lock <= 0).sort((a, b) => Math.abs(G.px(a.x) - h.x) - Math.abs(G.px(b.x) - h.x))[0] || S.switches[0]; return { goX: G.px(swl.x), act: 'lure', perch: true }; }   /* the nearer free switch: wait on its ledge, he walks into its lane */
   return { goX: S.x + (h.x < S.x ? -50 : 50), act: 'attack' };
 }

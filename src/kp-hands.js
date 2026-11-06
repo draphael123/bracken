@@ -112,7 +112,7 @@ export function makeKpHands(ctx) {
         if (P.hurt > 0 && !q.hurtWas) { P.carry = null; q.state = 'rest'; q.holder = null; q.y = P.y; if (q.kind === 'brand') q.lie = 1.0; say(P.x, P.y - 30, 'KNOCKED OUT OF YOUR HANDS', '#ff9a5c'); }
         q.hurtWas = P.hurt > 0; continue; }
       if (q.state === 'fly') {
-        if (!q.flown) { q.flown = true; if (q.kind === 'keg') { q.lit = true; q.fuse = KEG.fuseThrown; } }
+        if (!q.flown) { q.flown = true; if (q.kind === 'keg') { q.lit = true; q.fuse = KEG.fuseThrown; } while (solidPx(q.x, q.y, false) && q.y > 0) q.y -= 4; }   /* (it leaves the hand, never the floor) */
         const nx = q.x + q.vx * dt, ny = q.y + q.vy * dt; q.vy += (CT.KINDS[q.thrKind] || CT.KINDS.torch).g * dt;
         /* a firebrand catches what it touches in flight: a foe, the King */
         if (q.kind === 'brand') { const f = ctx.enemies().find(e => e.alive && Math.abs(e.x - nx) < (e.w || 10) / 2 + 4 && ny > e.y - (e.h || 14) - 4 && ny < e.y + 2);
