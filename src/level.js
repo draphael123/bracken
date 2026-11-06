@@ -48,6 +48,7 @@ import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './fro
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 import { highcrownTwo } from './highcrown2.js';
+import { buildPirateFleet, PF_RULE } from './pirate-fleet.js';   /* (claude/water1) THE PIRATE FLEET: the Freebooter's sea, off the Flotilla (hidden until its art pass: dev only, ?level=piratefleet) */
 import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
@@ -8124,6 +8125,10 @@ LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds t
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 /* THE DUEL PIT (claude/pvpduel, Daniel 11-05): APPENDED (saves count levels by index). DUEL (BETA)'s one ring, entered from the tavern's pit (src/pvp-duel.js); hidden, pays nothing */
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
+/* THE PIRATE FLEET (claude/water1, the OPUS GREYBOX, 11-05; scratch/plan-water-1105.md section 5 lane A, Daniel 11-05 14:56): APPENDED (saves count levels by index). HIDDEN, no map node:
+   OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=piratefleet). Its place when it goes live
+   is a hidden spur off THE FLOTILLA (brief-piratefleet.md); needs 'flotilla' is that link for the gate chain. THE FREEBOOTER is its boss (src/freebooter-boss.js) */
+LEVELS.push({ id: 'piratefleet', name: 'THE PIRATE FLEET', sub: 'open sea, the swell, and the Freebooter', rule: PF_RULE, build: () => buildPirateFleet({ painter, T, TS }), hidden: true, needs: 'flotilla' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

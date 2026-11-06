@@ -93,10 +93,10 @@ export function buildPirateFleet({ painter, T, TS }) {
   hull(27, 50);                                                   /* THE CUTTER */
   sign(28, 29, PF_SIGNS.net);
   foe('cutlass', 36, 29); foe('cutlass', 45, 29);
-  mast(40, 19); coins([39, 18], [41, 18]); ent('deco', 40, 12, { kind: 'pennant', v: 0 });
+  mast(40, 19); ent('silver', 40, 18); coins([41, 18]);   /* SILVER: the cutter's fighting top */ ent('deco', 40, 12, { kind: 'pennant', v: 0 });
   sign(49, 29, PF_SIGNS.two);
   boat('b2', 'swell', 53, 56); boat('b3', 'swellB', 58, 61);      /* TEST: two boats on two swells */
-  coins([54, 30], [59, 30]);
+  coins([54, 30], [59, 30]); foe('petrel', 57, 25);   /* a gull-petrel over the boats: it stoops while you wait on the swell */
   hull(63, 96);                                                   /* THE SLOOP-O'-WAR */
   ent('cannon', 66, 29, { deck: true, aim: 1 });                  /* her bow chaser down her own deck: strike the breech, the shot clears her men */
   foe('cutlass', 72, 29); foe('netter', 76, 29);
@@ -109,7 +109,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   sign(93, 29, PF_SIGNS.grapple);
   winch('g1', 95, 29, 'p1');                                      /* TEACH: a winch on a hull, a prize riding out there */
   prize('p1', 'swell', 98, 108);
-  coins([100, 30], [103, 30], [106, 30]);
+  coins([100, 30], [103, 30], [106, 30]); foe('petrel', 104, 24);
   hull(111, 150);                                                 /* THE BRIGANTINE */
   foe('cutlass', 118, 29); foe('bosun', 126, 29);
   mast(132, 18); foe('marine', 132, 17, { cnSkin: 'pistoleer' }); coins([131, 17], [133, 17]);
@@ -120,22 +120,24 @@ export function buildPirateFleet({ painter, T, TS }) {
   sign(141, 25, PF_SIGNS.channel);
   winch('g2', 148, 25, 'p2');                                     /* TEST: from the castle, over a channel that runs with the swell */
   prize('p2', 'swellB', 152, 162);
-  coins([155, 30], [159, 30]);
+  coins([155, 30], [159, 30]); foe('petrel', 158, 24);
   hull(165, 196);                                                 /* THE GALLEON'S WAIST */
   sign(166, 29, PF_SIGNS.boarders);
   mast(176, 20, DECK, 3);
-  foe('grapnel', 172, 29); foe('grapnel', 181, 29); foe('powdermonkey', 189, 29);
-  coins([169, 29], [178, 29], [186, 29]);
-  ent('check', 194, 29);                                          /* SHRINE ONE */
+  foe('grapnel', 172, 29); foe('grapnel', 181, 29);
+  block(186, 196, 25, 29); plat(183, 28, 2); plat(184, 27, 2);   /* her quarterdeck, five rows up: the shrine on it */
+  foe('powdermonkey', 189, 24);
+  coins([169, 29], [178, 29], [185, 26]);
+  ent('check', 194, 24);                                          /* SHRINE ONE */
 
   // ================= 3. THE SINKING PRIZE (197-296): REMIX =================
-  sign(196, 29, PF_SIGNS.longboat);
+  sign(196, 24, PF_SIGNS.longboat);
   boat('L1', 'swell', 198, 203);                                  /* her longboat, and a winch on it */
   winch('g3', 202, 0, 'p3', 'L1');
   prize('p3', 'swellB', 206, 215);
   sign(214, 29, PF_SIGNS.sinking);
   boat('b8', 'swell', 218, 221); boat('b9', 'swellB', 224, 227);  /* over the whirl: two boats on two swells */
-  coins([219, 30], [225, 30]);
+  coins([219, 30], [225, 30]); foe('petrel', 210, 26); foe('petrel', 224, 25);
   ent('silver', 222, 39);                                         /* SILVER: in the eye of the sinking - dive it in the release window */
     hull(229, 262);                                                 /* THE POWDER HULK */
   sign(230, 29, PF_SIGNS.hulk);
@@ -146,11 +148,12 @@ export function buildPirateFleet({ painter, T, TS }) {
   plat(252, 28, 2); plat(253, 27, 1);
   ent('silver', 256, 29); coins([257, 29], [259, 29]);            /* SILVER: THE CAPTAIN'S CABIN */
   boat('b10', 'swell', 264, 267); boat('b11', 'swellB', 269, 271);
-  coins([265, 30], [270, 30]);
+  coins([265, 30], [270, 30]); foe('petrel', 268, 25);
   hull(273, 296);                                                 /* THE GUN BRIG */
-  mast(280, 20); foe('marine', 280, 19, { cnSkin: 'pistoleer' });
-  foe('bosun', 288, 29); foe('cutlass', 284, 29);
-  coins([276, 29], [286, 29], [292, 29]);
+  block(283, 288, 19, 29); net(282, 18, 29);                     /* her GREAT CABIN, stacked three decks high: up her shrouds and over it (the rigging's band) */
+  foe('marine', 286, 18, { cnSkin: 'pistoleer' }); coins([284, 18], [287, 18]);
+  foe('bosun', 292, 29); foe('cutlass', 278, 29);
+  coins([276, 29], [290, 29], [294, 29]);
 
   // ================= 4. THE STORM SWELL (297-378): EXAM =================
   sign(295, 29, PF_SIGNS.storm);
@@ -161,10 +164,12 @@ export function buildPirateFleet({ painter, T, TS }) {
   winch('g4', 321, 29, 'p4');
   prize('p4', 'storm', 324, 336, 36, 30);
     hull(339, 352);                                                 /* EXAM DECK TWO */
-  foe('powdermonkey', 344, 29); foe('bosun', 349, 29);
-  coins([341, 29], [347, 29]);
+  foe('powdermonkey', 342, 29); foe('sapper', 345, 29, { cnSkin: 'kegroller' });
+  block(348, 352, 25, 29); plat(346, 28, 1); plat(347, 27, 1);   /* her forecastle */
+  foe('bosun', 350, 24);
+  coins([341, 29], [349, 24]);
   boat('s2', 'storm', 355, 358, 36, 30); boat('s3', 'stormB', 360, 363, 36, 30);
-  coins([356, 30], [361, 30]);
+  coins([356, 30], [361, 30]); foe('petrel', 359, 24);
   hull(365, 378, DECK, { net: false });                           /* THE FREEBOOTER'S TENDER (no net: his flagship's wall is the next thing east) */
   sign(367, 29, PF_SIGNS.boss);
   ent('check', 373, 29);                                          /* SHRINE TWO */
@@ -209,7 +214,7 @@ export function buildPirateFleet({ painter, T, TS }) {
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     tints: [[0, 196, [200, 220, 255], 0.06], [197, 296, [214, 170, 120], 0.10], [297, 378, [70, 80, 120], 0.22], [379, 440, [40, 40, 90], 0.25]],
-    arena: { x0: AS * TS, x1: (AS + PF.AW) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + PF.AW, boss: 'freebooter', music: 'admiral', tint: '#2a2a5a', tintA: 0.08, fx: 'motes',
+    arena: { x0: AS * TS, x1: (AS + PF.AW) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + PF.AW, boss: 'freebooter', music: 'boss2', tint: '#2a2a5a', tintA: 0.08, fx: 'motes',
       start: [AS + 6, AR - 1], deck: [AS, 411], gap: [412, 415], sloop: [416, 431], sloopId: 'fbsloop' },
   };
 }

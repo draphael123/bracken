@@ -111,7 +111,8 @@ function escapes(L, c, h, seatsN, start) { const kit = tideInit(L); run(kit, sta
 
 /* 12. EVERY LEVEL THAT DECLARES A TIDE lints clean (none yet on master: the sea lanes add them) */
 { let lv = []; try { ({ LEVELS: lv } = await import('../src/level.js')); } catch (e) { console.log('  (level.js not importable in Node: ' + e.message.slice(0, 80) + ')'); }
-  const users = (lv || []).filter(L => L && L.tides); for (const L of users) { const p = lintTide(L, { run: RUN * 0.8 }); ok(!p.length, L.id + ': ' + p.join('; ')); }
+  /* (claude/water1) a LEVELS row carries its tides in what it BUILDS, not on the row: build each (rows that throw in Node are skipped) */
+  const users = (lv || []).map(d => { if (d && d.tides) return d; try { const B = d && d.build ? d.build() : null; return B && B.tides ? Object.assign(B, { id: d.id }) : null; } catch { return null; } }).filter(Boolean); for (const L of users) { const p = lintTide(L, { run: RUN * 0.8 }); ok(!p.length, L.id + ': ' + p.join('; ')); }
   console.log('  levels using the tide kit: ' + (users.map(L => L.id).join(', ') || 'none yet')); }
 
 console.log('tide-kit: ' + n + ' checks ok');

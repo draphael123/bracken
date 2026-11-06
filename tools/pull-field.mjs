@@ -102,7 +102,7 @@ function swim(F, b, vx, s, io = {}, vy = 0) { for (let i = 0; i < s / DT; i++) {
   bad(L => { field(L, 'drift').id = 'eddy'; }, /used twice/); bad(L => { field(L, 'eddy').posts = [[10, 10]]; }, /outside its field/); bad(L => { field(L, 'drift').curve = 'wobble'; }, /curve/); }
 
 /* 11. EVERY LEVEL THAT DECLARES PULL FIELDS lints clean (none yet on master) */
-{ const { LEVELS } = await import('../src/level.js'); const users = LEVELS.filter(L => L && L.pulls);
+{ const { LEVELS } = await import('../src/level.js'); /* (claude/water1) the pulls are on the BUILT level, not the row */ const users = LEVELS.map(d => { if (d && d.pulls) return d; try { const B = d && d.build ? d.build() : null; return B && B.pulls ? Object.assign(B, { id: d.id }) : null; } catch { return null; } }).filter(Boolean);
   for (const L of users) { const p = lintPulls(L); ok(!p.length, L.id + ': ' + p.join('; ')); } console.log('  levels using pull fields: ' + (users.map(L => L.id).join(', ') || 'none yet')); }
 
 console.log('pull-field: ' + n + ' checks ok');
