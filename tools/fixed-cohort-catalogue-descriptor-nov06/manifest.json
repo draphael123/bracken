@@ -1,0 +1,42 @@
+{
+  "time": "2026-11-06T23:30:14.904Z",
+  "kind": "fixed-cohort-catalogue-descriptor-nov06",
+  "scope": "Correct demonstrated incoming descriptor inheritance bug. Identical original7integrity/all26observer assertions plus2native caller-descriptor semantics controls. No Game integration or material saving.",
+  "sourceSha256": "60cccc86252edbd23a92cf68c302b071ef45a7f8ed8d0ed7df159154c4bbd40d",
+  "priorFixtureSha256": "9c0cca96f9aa7d96e0a3b09ab63223e0d294eef8abea4d3a54f63ecaea540872",
+  "priorFixtureSource": "1af90edf16412c1ebd3f4245c4abbd23b14b8ff4:tools/per-sprite-integrity-nov03/check.mjs",
+  "priorCases": 7,
+  "additionalCases": 26,
+  "rootFrontier": "Explicit trusted initial native intrinsics; no universal hostile pre-root reflection/namespace Proxy authentication claim. Initial changes after root must decline admission; late operations use captured native methods/null descriptor records.",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "originalGameAndAll921ToolsUnchanged": true,
+  "GameIntegration": false,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "parentFailedResult": "outputs/receipts/fixed-cohort-catalogue-array-guard-result-nov06.json",
+  "parentFailedResultSha256": "537edb28e2ef719bf713d5993d224b86fb45a8e9a7a4ce50f808f0224324aba2",
+  "exactUndoToFailedSource": true,
+  "allAssertionsByteExact": true,
+  "descriptorSourceEdit": {
+    "before": "traps.defineProperty=function(object,key,descriptor){materialize(key);return reflect.define(object,key,descriptor);};",
+    "after": "traps.defineProperty=function(object,key,descriptor){materialize(key);S(descriptor,null);return reflect.define(object,key,descriptor);};",
+    "scope": "Only normalize the engine-created Proxy trap descriptor before its second native conversion. Preserve caller descriptor aliases/fields and every native invariant."
+  },
+  "priorEditsPreserved": [
+    {
+      "before": "watch(globalThis,['Map','Set'",
+      "after": "watch(globalThis,['Array','Map','Set'"
+    },
+    {
+      "before": "const nativeRoot=native(P)",
+      "after": "const nativeRoot=native(Array)&&native(P)"
+    },
+    {
+      "before": "watch(Object.prototype,K(Object.prototype),true);",
+      "after": "watch(Object.prototype,K(Object.prototype),true);watch(Array,['from','prototype',Symbol.species]);watch(Array.prototype,K(Array.prototype),true);"
+    }
+  ],
+  "allPrior33AssertionsByteExact": true,
+  "additionalDescriptorCases": 2
+}
