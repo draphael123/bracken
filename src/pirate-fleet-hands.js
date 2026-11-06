@@ -1,6 +1,6 @@
 // src/pirate-fleet-hands.js - THE WATER KIT IN THE GAME + THE PIRATE FLEET's own pieces (claude/water1, 2026-11-05). The first level wiring of src/tide-kit.js and
 // src/pull-field.js (docs/waterkit.md "Wiring"): ANY level that declares L.tides / L.pulls gets them run here - the kit's cycle stepped and written into the level's pools
-// (poolLevel), its floats moved, its verbs struck, every seat and every foe pushed by the pull fields, the flow specks, the foam line and the A3 gauge (GREYBOX).
+// (poolLevel), its floats moved, its verbs struck, every seat and every foe pushed by the pull fields, the flow streaks, the foam line and the A3 gauge (drawn by src/redraw/pirate_fleet_art.js, claude/pfart).
 // On top, THE PIRATE FLEET's (L.pirateFleet, src/pirate-fleet.js):
 //   SWELL BOATS (movers pf 'float')  a tide-kit float as a moving deck: main.js's mover code carries whoever stands on it (m.dy).
 //   PRIZES (movers pf 'prize')       a float that rides OUT AT SEA (drawn small in the background, m.broken = not footing) until a GRAPPLE WINCH hauls her ALONGSIDE:
@@ -9,6 +9,7 @@
 //   GRAPPLE WINCHES (ents)           a blow on the drum fires its line at its prize. A winch on a boat (on: float id) rides the boat.
 // main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawBack, drawMover, drawOver, hud, read, haul(id), unhaul(id), prizeK(id), deckY(id).
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
+import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
 import { pullInit, pullStep, pullBodies, pullShots, flowParts, postNear } from './pull-field.js';
 const R = Math.round;
 export const PFH = { haulT: 2.2, lineT: 0.45, haulKey: id => 'pf:haul:' + id, farScale: 0.45, farLift: 70 };
@@ -64,7 +65,7 @@ export function makePirateFleetHands(ctx) {
       if (e.t === 'grab') { ctx.sound('grab'); if (!S.told.grab) { S.told.grab = 1; ctx.number(e.b.x, e.b.y - 30, PF_SAY.grab, '#ffd36b'); } } }
     for (const e of pev) if (e.t === 'off') { const P = ctx.hero(); if (P && P.swim && !S.told['off' + e.id]) { S.told['off' + e.id] = 1; ctx.number(P.x, P.y - 30, PF_SAY.slack, '#8fd160'); } }
     if (ctx.shots) pullShots(PF, ctx.shots(), dt);
-    const V = ctx.view(); for (const p of flowParts(PF, dt, V)) ctx.parts().push(p);
+    /* (claude/pfart: the flow specks (flowParts) are retired - src/redraw/pirate_fleet_art.js drawStreaks draws the currents) */
     /* the prizes coming in */
     for (const id in S.prizes) { const p = S.prizes[id]; if (!p.hauling) continue;
       if (p.lineT > 0) { p.lineT -= dt; continue; }
@@ -95,62 +96,51 @@ export function makePirateFleetHands(ctx) {
       if (startHaul(w.hauls, p)) { ctx.sparks && ctx.sparks(p.x, p.y - 10, 1, 6); ctx.shake(2); } }
   };
 
-  /* ---------- DRAWING (GREYBOX - the art pass owes the swell boats, the prizes far and near, the winch, the line, the posts, the foam, the gauge) ---------- */
-  const hullCol = '#2e2620', hullL = '#4a3c30', deckCol = '#8a7454', tar = '#1a1612';
-  function drawHull(g, x, y, w, depth, scale = 1, alpha = 1) {
-    g.globalAlpha = alpha; const d = R(depth * scale);
-    g.fillStyle = hullCol; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w - R(6 * scale), y + d); g.lineTo(x + R(6 * scale), y + d); g.closePath(); g.fill();
-    g.fillStyle = tar; g.fillRect(x + R(4 * scale), y + d - R(3 * scale), w - R(8 * scale), R(3 * scale));
-    g.fillStyle = hullL; g.fillRect(x, y + R(3 * scale), w, 1);
-    g.fillStyle = deckCol; g.fillRect(x, y, w, Math.max(1, R(3 * scale))); g.globalAlpha = 1; }
+  /* ---------- DRAWING (claude/pfart: src/redraw/pirate_fleet_art.js - tarred hulls in five liveries, rigged and sailed prizes, the capstan winch + grapnel line, mast-stump and anchor-chain posts, foam, gauge, flow streaks) ---------- */
+  const zoneAt = m => PFT.zoneOf(R(m.x0 / TS) + 2, 30), seedOf = m => (m.fid || '').split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) & 255;
   H.drawBack = (g, cx, cy, t) => {
     if (!S) return; const L = lv();
     for (const m of L.moversExtra || []) { if (m.pf !== 'prize') continue; const p = S.prizes[m.fid]; if (!p || p.k >= 1) continue;
       /* out at sea: small, high on the horizon, coming in as k grows */
       const k = p.k, sc = PFH.farScale + (1 - PFH.farScale) * k, y = (fpos(m.fid) || m.y) - PFH.farLift * (1 - k), w = m.w * sc, x = m.x0 + (m.w - w) / 2;
-      const sx = R(x - cx), sy = R(y - cy);
-      drawHull(g, sx, sy, R(w), 26, sc, 0.55 + 0.45 * k);
-      g.globalAlpha = 0.55 + 0.45 * k; g.fillStyle = '#6a5a44'; g.fillRect(sx + R(w / 2), sy - R(40 * sc), 2, R(40 * sc)); g.fillStyle = '#d8d0c0'; g.fillRect(sx + R(w / 2) - R(10 * sc), sy - R(36 * sc), R(20 * sc), R(18 * sc)); g.globalAlpha = 1;
-      if (!p.boss && k === 0 && Math.sin(t * 3) > 0.6) { g.fillStyle = '#ffd36b'; g.fillRect(sx + R(w / 2) - 1, sy - R(52 * sc), 3, 3); }   /* a glint: she is the winch's */
+      PFA.drawFarPrize(g, R(x - cx), R(y - cy), R(w), sc, 0.55 + 0.45 * k, t, { seed: seedOf(m), zone: zoneAt(m), boss: !!p.boss, glint: !p.boss && k === 0 });
     }
+    /* the whirl's wreck: the prize that went down, over the ring (the posts are her mast stumps) */
+    for (const f of L.pulls || []) if (f.kind === 'whirl' && f.ring) PFA.drawWreck(g, f.ring[0] * TS + 8 - cx, f.ring[1] * TS - 2 - cy, t);
   };
   H.drawMover = (g, m, cx, cy, t) => {
     if (!S || m.broken) return; const x = R(m.x - cx), y = R(m.y - cy);
     const sea = seaLineAt(m.x0 + m.w / 2), depth = Math.max(10, Math.min(40, (sea != null ? sea - m.y : 14) + 10));
-    drawHull(g, x, y, R(m.w), depth);
-    if (m.pf === 'prize') { g.fillStyle = '#6a5a44'; g.fillRect(x + R(m.w / 2), y - 46, 2, 46); g.fillStyle = 'rgba(216,208,192,0.85)'; g.fillRect(x + R(m.w / 2) - 12, y - 42, 24, 20); }
     /* a float on the OTHER swell: its own crest under it (the visible sea is the first swell's) */
-    const f = (m.tide || '').endsWith('B'); if (f) { const sy = R(m.y - cy) + 4; g.fillStyle = 'rgba(223,242,248,0.55)'; g.beginPath(); g.ellipse(x + R(m.w / 2), sy + 8, R(m.w / 2) + 10, 7, 0, Math.PI, 0); g.fill(); }
+    const f = (m.tide || '').endsWith('B'); if (f && sea != null) PFA.drawCrest(g, x + R(m.w / 2), R(sea - cy) + 1, R(m.w / 2) + 6, t);
+    if (m.fid === 'L1') { PFA.drawLongboat(g, x, y, R(m.w), { t }); return; }
+    PFA.drawSwellHull(g, x, y, R(m.w), { depth, seed: seedOf(m), zone: zoneAt(m), prize: m.pf === 'prize', boss: !!m.boss });
+    if (m.pf === 'prize') PFA.drawRig(g, x, y, R(m.w), { sc: 1, seed: seedOf(m), boss: !!m.boss, t });
   };
   function seaLineAt(x) { for (const p of lv().pools || []) if (x >= p.x0 && x <= p.x1) return p.y; return null; }
   H.drawOver = (g, cx, cy, t) => {
-    if (!S) return; const L = lv();
+    if (!S) return; const L = lv(), VWd = ctx.VW();
     /* THE FOAM: the warn - the sea's surface runs white before the swell comes up */
     for (const T of L.tides || []) { const gg = gauge(TK, T.id); if (!gg || !(gg.ph === 'warn' || gg.ph === 'turn')) continue;
-      for (const p of L.pools || []) { if (!(T.pools || []).includes(p.id)) continue; const y = R(p.y - cy) - 1, x0 = Math.max(0, R(p.x0 - cx)), x1 = Math.min(ctx.VW(), R(p.x1 - cx));
-        g.fillStyle = gg.ph === 'warn' ? 'rgba(255,255,255,0.85)' : 'rgba(223,242,248,0.6)'; for (let x = x0 - (x0 % 6) + R(t * 20) % 6; x < x1; x += 6) g.fillRect(x, y, 3, 1); } }
-    /* THE WINCHES: a drum on a post; its line while it flies and while she comes in */
+      for (const p of L.pools || []) { if (!(T.pools || []).includes(p.id)) continue; PFA.drawFoam(g, Math.max(0, R(p.x0 - cx)), Math.min(VWd, R(p.x1 - cx)), R(p.y - cy), t, gg.ph); } }
+    /* THE CURRENTS: flow streaks over every field (a told nudge, then a bite) */
+    for (const fs of PF ? PF.fields : []) PFA.drawStreaks(g, fs, cx, cy, t, VWd);
+    /* THE WINCHES: a capstan on a bedplate; its line while it flies and while she comes in */
     for (const w of L.pfWinches || []) { const p = winchAt(w), x = R(p.x - cx), y = R(p.y - cy), pr = S.prizes[w.hauls];
-      g.fillStyle = '#3a3a44'; g.fillRect(x - 2, y - 14, 4, 14); g.fillStyle = '#6a6a74'; g.fillRect(x - 6, y - 18, 12, 7); g.fillStyle = '#c9b27c'; g.fillRect(x - 5, y - 16, 10, 3);
-      const spin = pr && pr.hauling; g.fillStyle = '#e8dcc0'; g.fillRect(x + 6, y - 15 + (spin ? R(Math.sin(t * 20) * 2) : 0), 4, 2);
-      if (pr && pr.k < 1 && !pr.hauling && Math.sin(t * 4) > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 24, 3, 3); }   /* strike me */
+      PFA.drawWinch(g, x, y, t, { hauling: !!(pr && pr.hauling), ready: !!(pr && pr.k < 1 && !pr.hauling) });
       if (pr && (pr.hauling || (pr.k > 0 && pr.k < 1))) { const m = L.moversExtra.find(q => q.fid === pr.id); if (m) { const k = pr.k, sc = PFH.farScale + (1 - PFH.farScale) * k,
-          tx = m.x0 + m.w / 2 - cx, ty = (fpos(pr.id) || m.y) - PFH.farLift * (1 - k) - cy, f = pr.lineT > 0 ? 1 - pr.lineT / PFH.lineT : 1;
-          g.strokeStyle = '#d8c8a0'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x + (tx - x) * f, y - 14 + (ty - (y - 14)) * f); g.stroke(); } } }
+          tx = m.x0 + m.w / 2 - cx, ty = (fpos(pr.id) || m.y) - PFH.farLift * (1 - k) - cy - 30 * sc, f = pr.lineT > 0 ? 1 - pr.lineT / PFH.lineT : 1;
+          PFA.drawLine(g, x, y - 14, tx, ty, f, t, { taut: pr.hauling && pr.lineT <= 0 }); } } }
     /* the posts (mast stumps over the sinking, anchor chains under the storm's prize): hold UP in reach */
-    for (const f of L.pulls || []) for (const [px, py] of f.posts || []) { const x = R(px * TS + 8 - cx), y = R(py * TS + 8 - cy);
-      g.fillStyle = '#4a4e58'; g.fillRect(x - 2, y - 10, 4, 22); g.fillStyle = '#a8aeb8'; g.fillRect(x - 3, y - 12, 6, 3); }
+    for (const f of L.pulls || []) for (const [px, py] of f.posts || []) PFA.drawStump(g, px * TS + 8 - cx, py * TS + 8 - cy, f.id === 'rip' ? 'chain' : 'stump', t, ctx.players.some(pp => pp.pullGrab && !pp.dead && Math.abs(pp.x - (px * TS + 8)) < 30));
     /* a held seat: a word */
     for (const pp of ctx.players) if (pp.pullGrab && !pp.dead) { g.fillStyle = '#ffd36b'; g.fillRect(R(pp.x - cx) - 1, R(pp.y - cy) - 30, 3, 3); }
   };
-  /* THE A3 GAUGE (one drawing for every sea level - art owed): the swell's height, its phase, the tell flashing */
+  /* THE A3 GAUGE (one drawing for every sea level, PFA.drawGauge): the swell's height, its phase, the tolls, the coming arrow */
   H.hud = (g, t) => {
     if (!TK) return; const P = ctx.hero(); if (!P) return;
     const T = (lv().tides || []).find(q => (q.pools || []).some(id => { const p = (lv().pools || []).find(pp => pp.id === id); return p && P.x >= p.x0 && P.x <= p.x1; })); if (!T) return;
-    const gg = gauge(TK, T.id); if (!gg) return; const x = 6, y = 30, h = 24;
-    g.fillStyle = 'rgba(10,14,22,0.7)'; g.fillRect(x, y, 10, h + 4);
-    g.fillStyle = gg.tell && Math.sin(t * 16) > 0 ? '#ffffff' : '#7cc8e8'; const fh = R(h * gg.k); g.fillRect(x + 2, y + 2 + h - fh, 6, Math.max(1, fh));
-    if (gg.coming === 'in') { g.fillStyle = '#ffd36b'; g.fillRect(x + 11, y + 2, 3, 3); }
+    const gg = gauge(TK, T.id); if (!gg) return; PFA.drawGauge(g, 6, 30, gg, t);
   };
   H.read = () => S && { tides: (lv().tides || []).map(T => ({ id: T.id, ...gauge(TK, T.id), line: R(lineY(TK, T.id)) })), prizes: Object.values(S.prizes).map(p => ({ id: p.id, k: +p.k.toFixed(2), hauling: p.hauling, boss: !!p.boss })),
     pulls: PF.fields.map(f => ({ id: f.id, ph: f.ph, s: +f.s.toFixed(2), dirK: f.dirK })), floats: Object.fromEntries((lv().moversExtra || []).filter(m => m.pf).map(m => [m.fid, R(fpos(m.fid) || 0)])) };

@@ -209,9 +209,9 @@ export function buildPirateFleet({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 29 }, pools, falls: [], moversExtra: movers,
-    music: 'flotilla', night: false, rule: PF_RULE, pirateFleet: true, rigBands, tides, pulls, pfPrizes: prizes, pfWinches: winches,
+    music: 'flotilla', night: false, rule: PF_RULE, pirateFleet: true, pfKit: true, rigBands, tides, pulls, pfPrizes: prizes, pfWinches: winches,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(170,200,230,0.08)',
+    palette: { set: 'ship', sky: 'pfleet', far: 'pfleet', mid: 'pfleet', near: 'none', fg: 'pfleet', dress: 'ship', haze: 'rgba(170,200,230,0.08)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     tints: [[0, 196, [200, 220, 255], 0.06], [197, 296, [214, 170, 120], 0.10], [297, 378, [70, 80, 120], 0.22], [379, 440, [40, 40, 90], 0.25]],

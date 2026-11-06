@@ -1,9 +1,9 @@
 // src/freebooter-hands.js - THE FREEBOOTER's HANDS (claude/water1, the greybox). src/freebooter-boss.js is the fight (pure); this binds it to the world: his deck and HIS
 // SLOOP (a prize of src/pirate-fleet-hands.js, riding the second swell - in phase two HE hauls her alongside), his told blows on every seat (keyed once a blow; a guard
 // turns the ! moves, the pistol goes through it), the sea gap between the decks (a hero who goes in is HAULED OUT onto his deck - the Admiral's rule, a hazard's share),
-// every blow on him (take: guard by angle, never under 0.4x), and the drawing (GREYBOX poses: windup and release per move - the art pass owes his sheet).
+// every blow on him (take: guard by angle, never under 0.4x), and the drawing (claude/pfart: his sheet, src/redraw/freebooter_art.js - a pose per mode, windup and release for every move).
 // main.js calls: spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, read, clear.
-import * as FBM from './freebooter-boss.js';
+import * as FBM from './freebooter-boss.js'; import * as FBA from './redraw/freebooter_art.js'; import * as PFA from './redraw/pirate_fleet_art.js';
 const { FB } = FBM;
 const R = Math.round;
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), slash: s => (s.foeSlash || s.slash)(), open: s => (s.bell || s.clank)(), pistol: s => (s.gun || s.musket || s.crack || s.boom)(),
@@ -49,7 +49,7 @@ export function makeFreebooterHands(ctx) {
         ctx.burst(L.x0, L.y0, 8, ['#fff6c8', '#ffd36b', '#9aa39a'], 90, 0.3, -10); },
       floorAt, clampX, deckOf, sloopIn,
       haul: () => { if (ctx.pfh) ctx.pfh.haul(S.G.sloopId); },
-      flash: ee => { ctx.burst(ee.x, ee.y - 14, 22, ['#fff6c8', '#ff9a5c', '#9aa39a', '#3a3a44'], 120, 0.5, -30); ctx.ring(ee.x, ee.y - 14, 26, '#ff9a5c'); },
+      flash: ee => { flashes.push({ x: ee.x, y: ee.y, t: ctx.time() }); ctx.burst(ee.x, ee.y - 14, 22, ['#fff6c8', '#ff9a5c', '#9aa39a', '#3a3a44'], 120, 0.5, -30); ctx.ring(ee.x, ee.y - 14, 26, '#ff9a5c'); },
       ringWard: ee => ctx.ring(ee.x, ee.y - 18, 32, '#9ab0c0'),
       fx: (k, x, y) => { if (k === 'land') { ctx.shake(5); ctx.burst(x, y - 2, 18, ['#c9b27c', '#6a5a44', '#e8dcc0'], 110, 0.6, -60); } },
     };
@@ -74,41 +74,39 @@ export function makeFreebooterHands(ctx) {
     if (blow) FBM.landed(e, S, ctx.time(), world(e));
     return dmg * Math.max(FB.k.floor, r.k); };
   H.barName = e => 'THE FREEBOOTER' + (e.mode === 'reload' && e.open > 0 ? '  RELOADING' : e.mode === 'stuck' && e.open > 0 ? '  STUCK IN THE DECK' : S && S.ward > 0 ? '  WARDED' : '');
-  H.end = e => { if (S && e && (!e.alive || e.hp <= 0)) { S.dead = { x: e.x, y: e.y, f: e.face || 1 }; ctx.number(e.x, e.y - 70, FBM.FB_SAY.down, '#ffd36b'); } if (S) { S.mark = null; S.aim = null; S.shot = null; } };
+  H.end = e => { if (S && e && (!e.alive || e.hp <= 0)) { S.dead = { x: e.x, y: e.y, f: e.face || 1, t0: ctx.time() }; ctx.number(e.x, e.y - 70, FBM.FB_SAY.down, '#ffd36b'); } if (S) { S.mark = null; S.aim = null; S.shot = null; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, sloopIn: sloopIn(), n: { ...S.n }, hurt: { ...S.hurt }, plan: FBM.fbPlan(ctx.boss, S) };
 
-  /* ---------- DRAWING (GREYBOX) ---------- */
+  /* ---------- DRAWING (claude/pfart: src/redraw/freebooter_art.js - his sheet: a pose per mode, windup and release for every move) ---------- */
+  /* how long each timed mode runs (the pose's progress p = how much of it is gone); modes not here hold p = 0 */
+  const DUR = { pistolTell: FB.pistol.tell, pistolFire: 0.3, cutsTell: FB.cuts.tell, cuts: FB.cuts.n * FB.cuts.gap + 0.1, cutsRec: FB.cuts.rec, bootTell: FB.boot.tell, boot: 0.25, bootRec: FB.boot.rec,
+    riposteTell: FB.riposte.tell, riposte: 0.25, riposteRec: FB.riposte.rec, haulTell: FB.haul.tell, boardTell: FB.board.tell, boardAir: FB.board.air, plungeTell: FB.plunge.tell, plungeAir: FB.plunge.air, plungeRec: FB.plunge.rec, wake: 1.2 };
+  const progress = e => (DUR[e.mode] ? Math.max(0, Math.min(1, 1 - (e.modeT || 0) / DUR[e.mode])) : 0);
+  const flashes = [];
   H.drawBoss = (g, e, cx, cy, t) => {
-    const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, tell = /Tell$/.test(m), stuck = m === 'stuck';
-    /* coat, sash, boots, tricorn: a pirate, the Freebooter's own colours */
-    g.fillStyle = '#2a1e1a'; g.fillRect(x - 5, y - 6, 4, 6); g.fillRect(x + 1, y - 6, 4, 6);
-    g.fillStyle = '#7a1e22'; g.fillRect(x - 7, y - (stuck ? 18 : 24), 14, stuck ? 12 : 18);
-    g.fillStyle = '#c9a83a'; g.fillRect(x - 7, y - 12, 14, 2);
-    g.fillStyle = '#e0b890'; g.fillRect(x - 4, y - (stuck ? 26 : 32), 8, 8);
-    g.fillStyle = '#1a1612'; g.fillRect(x - 8, y - (stuck ? 28 : 34), 16, 3); g.fillRect(x - 4, y - (stuck ? 31 : 37), 8, 3);
-    /* the arm: WINDUP (raised back) in a tell, RELEASE (out) in the blow */
-    const arm = tell ? -1 : COMMIT.has(m) ? 1 : 0, ax = x + f * (arm > 0 ? 12 : arm < 0 ? -4 : 6), ay = y - (arm < 0 ? 30 : 18);
-    g.fillStyle = '#7a1e22'; g.fillRect(Math.min(x, ax), ay, Math.abs(ax - x) + 2, 3);
-    if (m === 'pistolTell' || m === 'pistolFire' || m === 'reload') { g.fillStyle = '#3a3a44'; g.fillRect(x + f * 8, y - 20, f * 8, 3); if (m === 'reload') { g.fillStyle = '#c9b27c'; g.fillRect(x + f * 4, y - 16 + R(Math.sin(t * 10) * 2), 2, 6); } }
-    else { g.fillStyle = '#d8d8e0'; g.fillRect(ax + (f > 0 ? 0 : -14), ay - (arm < 0 ? 12 : 0), arm < 0 ? 2 : 14, arm < 0 ? 14 : 2); }
-    if (m === 'plungeTell' || m === 'plungeAir') { g.fillStyle = '#d8d8e0'; g.fillRect(x - 1, y + 2, 2, 12); }   /* the cutlass point down */
-    if (stuck) { g.fillStyle = '#d8d8e0'; g.fillRect(x + f * 6, y - 6, 2, 8); }   /* the blade in the deck */
+    const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, m = e.mode, p = progress(e);
+    FBA.drawFreebooter(g, x, y, f, { mode: m, p, ward: !!(S && S.ward > 0) }, t);
     /* THE READ: gold ring + timer when open, grey when warded */
-    if (FBM.fbOpen(e)) { const k = e.open / (m === 'stuck' ? FB.plunge.stuck : FB.pistol.reload); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 16, 20, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      g.fillStyle = '#ffd36b'; g.fillRect(x - 14, y - 46, R(28 * k), 2); }
-    else if (S && S.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 16, 20, 0, Math.PI * 2); g.stroke(); }
-    if (WORD && ctx.text) { const M = FBM.MOVES[WORD.k]; ctx.text(FBM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 58, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
+    if (FBM.fbOpen(e)) { const k = e.open / (m === 'stuck' ? FB.plunge.stuck : FB.pistol.reload); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 16, 22, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#ffd36b'; g.fillRect(x - 14, y - 50, R(28 * k), 2); }
+    else if (S && S.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 16, 22, 0, Math.PI * 2); g.stroke(); }
+    if (WORD && ctx.text) { const M = FBM.MOVES[WORD.k]; ctx.text(FBM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 62, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
   };
-  const COMMIT = FBM.COMMITTED;
   H.drawOver = (g, cx, cy, t) => {
-    if (!S) return; const e = ctx.boss; if (!e || e.t !== 'freebooter' || !e.alive) return;
+    if (!S) return; const e = ctx.boss;
+    for (let i = flashes.length - 1; i >= 0; i--) { const k = (ctx.time() - flashes[i].t) / 0.5; if (k >= 1) { flashes.splice(i, 1); continue; } FBA.drawFlashBall(g, R(flashes[i].x - cx), R(flashes[i].y - cy), k, t); }
+    if (S.dead) { const d = S.dead; FBA.drawDeadFreebooter(g, R(d.x - cx), R(d.y - cy), d.f, (ctx.time() - (d.t0 || 0)) / 1.6, t); return; }
+    if (!e || e.t !== 'freebooter' || !e.alive) return;
+    /* HIS GRAPPLE: the line from his hand to the sloop while he hauls her in */
+    if (ctx.pfh && (e.mode === 'haulTell' || e.mode === 'haulWait')) { const G = S.G, tx = G.sloop[0] + 40 - cx, ty = (ctx.pfh.deckY(G.sloopId) || G.floor) - 34 - cy, f = e.mode === 'haulTell' ? Math.max(0.05, 1 - e.modeT / FB.haul.tell) : 1;
+      PFA.drawLine(g, R(e.x + (e.face || 1) * 6 - cx), R(e.y - 34 - cy), tx, ty, f, t, { taut: e.mode === 'haulWait' }); }
     /* the pistol's aim: dotted while it tracks, solid red when it LOCKS */
-    if (e.mode === 'pistolTell' && S.aim) { const lock = e.modeT <= FB.pistol.lock, x0 = R(e.x + e.face * 10 - cx), y0 = R(e.y - FB.pistol.y - cy), x1 = R(S.aim.x - cx), y1 = R(S.aim.y - cy);
-      g.strokeStyle = lock ? '#ff3b3b' : 'rgba(255,107,107,0.7)'; g.setLineDash && g.setLineDash(lock ? [] : [3, 3]); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + (x1 - x0) * 3, y0 + (y1 - y0) * 3); g.stroke(); g.setLineDash && g.setLineDash([]); }
-    if (S.shot && S.shot.t > 0) { S.shot.t -= 1 / 60; g.strokeStyle = 'rgba(255,246,200,0.9)'; g.beginPath(); g.moveTo(R(S.shot.x0 - cx), R(S.shot.y0 - cy)); g.lineTo(R(S.shot.x1 - cx), R(S.shot.y1 - cy)); g.stroke(); }
+    if (e.mode === 'pistolTell' && S.aim) { const lock = e.modeT <= FB.pistol.lock, x0 = R(e.x + e.face * 14 - cx), y0 = R(e.y - FB.pistol.y - cy), x1 = R(S.aim.x - cx), y1 = R(S.aim.y - cy);
+      FBA.drawAimLine(g, x0, y0, x0 + (x1 - x0) * 3, y0 + (y1 - y0) * 3, lock, t); }
+    if (S.shot && S.shot.t > 0) { S.shot.t -= 1 / 60; FBA.drawBallTrace(g, R(S.shot.x0 - cx), R(S.shot.y0 - cy), R(S.shot.x1 - cx), R(S.shot.y1 - cy)); }
     /* the plunge's mark: red on the deck where he will come down */
-    if ((e.mode === 'plungeTell' || e.mode === 'plungeAir') && S.mark) { const fy = floorAt(S.mark.x); if (fy != null) { const x = R(S.mark.x - cx), y = R(fy - cy), lock = e.mode === 'plungeAir' || e.modeT <= FB.plunge.tell - FB.plunge.track;
-      g.fillStyle = lock ? 'rgba(255,59,59,0.85)' : 'rgba(255,107,107,0.5)'; g.fillRect(x - FB.plunge.r, y - 2, FB.plunge.r * 2, 2); } }
+    if ((e.mode === 'plungeTell' || e.mode === 'plungeAir') && S.mark) { const fy = floorAt(S.mark.x); if (fy != null) { const lock = e.mode === 'plungeAir' || e.modeT <= FB.plunge.tell - FB.plunge.track;
+      FBA.drawPlungeMark(g, R(S.mark.x - cx), R(fy - cy), FB.plunge.r, lock, t); } }
   };
   return H;
 }

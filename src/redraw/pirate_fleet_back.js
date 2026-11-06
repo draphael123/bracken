@@ -46,7 +46,7 @@ function ship(g, w, x, base, s, o = {}) {
   for (let m = 0; m < masts; m++) { const mx = x + R(L * (masts === 1 ? 0.45 : 0.22 + m * (0.56 / (masts - 1)))), mh = R((o.mh || 40) * s * (m === masts - 1 && masts > 2 ? 0.8 : 1)), top = base - H - mh, sw = R((o.sw || 20) * s);
     rect(g, wr(mx), top, 1, mh + H, col);
     for (let k = 0; k < 3; k++) { const sy = top + R(mh * (0.05 + k * 0.3)), sh = R(mh * (k === 0 ? 0.26 : 0.28)), sk = sw * (1 - k * 0.22), x0 = R(mx - sk / 2);
-      for (let j = 0; j < sh; j++) { const bow = R(Math.sin(j / sh * Math.PI) * 1.6 * s); for (let i = 0; i < R(sk) + bow; i++) px(g, wr(x0 + i), sy + j, rim && i < 2 ? BP.rim[(j + k) % 3 === 0 ? 2 : 1] : (j + i) % 7 === 0 ? BP.sail[2] : sail); }
+      for (let j = 0; j < sh; j++) { const bow = R(Math.sin(j / sh * Math.PI) * 1.6 * s); for (let i = 0; i < R(sk) + bow; i++) px(g, wr(x0 + i), sy + j, rim && i < 2 ? BP.rim[(j + k) % 3 === 0 ? 2 : 1] : j % 5 === 4 ? BP.sail[2] : sail); }
       rect(g, wr(x0 - 1), sy - 1, 1, 1, col); line(g, w, x0 - 1, sy - 1, R(x0 + sk), sy - 1, col); }                    /* the yard */
     if (life && m === 0) life.flags.push([mx, top - 1, (o.red ? 1 : 0)]);
   }
@@ -101,7 +101,7 @@ export function bakeNear() {
     /* two hulls loom: x, width, top row. Dark, stern gallery windows lit, a quarter-badge, wales, chains; hung with rigging */
     for (const [x, W2, top, dir] of [[40, 150, 150, 1], [380, 170, 120, -1]]) {
       for (let i = 0; i < W2; i++) { const u = i / W2, sh = dir > 0 ? (u > 0.8 ? (u - 0.8) * 70 : 0) : (u < 0.2 ? (0.2 - u) * 70 : 0), tp = top + R(sh * 0.5);
-        for (let y = tp; y < h; y++) px(g, wr(x + i), y, y === tp ? BP.sil[3] : y < tp + 3 ? BP.sil[2] : (y - tp) % 6 === 5 ? BP.sil[0] : BP.sil[1]); }
+        for (let y = tp; y < h; y++) px(g, wr(x + i), y, y === tp ? BP.rim[0] : y < tp + 3 ? BP.sil[3] : (y - tp) % 6 === 5 ? BP.sil[0] : BP.sil[1]); }
       const gx = dir > 0 ? x + W2 - 46 : x + 8;                                                                          /* the stern gallery */
       for (let k = 0; k < 4; k++) { rect(g, wr(gx + k * 10), top + 20, 7, 10, BP.sil[0]); rect(g, wr(gx + k * 10 + 1), top + 21, 5, 8, k % 2 ? '#c8802e' : BP.lamp); rect(g, wr(gx + k * 10 + 3), top + 21, 1, 8, BP.sil[0]); life.lamps.push([gx + k * 10 + 3, top + 25]); }
       for (let k = 0; k < 6; k++) { const px0 = x + 12 + k * 22; rect(g, wr(px0), top + 60, 8, 8, BP.sil[0]); rect(g, wr(px0 + 1), top + 61, 6, 2, BP.sil[2]); }   /* gunports */
@@ -153,7 +153,7 @@ function lifeMid(g, lf, p, VW, t) {
     g.globalAlpha = 1; }
 }
 export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
-  const near = bakeNear(); g.globalAlpha = 0.55; const p = layer(g, near, 0.55, VH - 265, cx, dY, VW, VH); g.globalAlpha = 1;
+  const near = bakeNear(); g.globalAlpha = 0.82; const p = layer(g, near, 0.55, VH - 265, cx, dY, VW, VH); g.globalAlpha = 1;
   if (!p) return;
   for (let X = p.x0; X < VW; X += p.w) for (const [lx, ly] of near.life.lamps) { const k = 0.7 + 0.3 * Math.sin(time * 5 + lx * 0.2); g.globalAlpha = 0.25 * k; g.fillStyle = BP.lamp; g.fillRect(R(X) + lx - 4, p.y0 + ly - 6, 9, 12); g.globalAlpha = 1; }
 }

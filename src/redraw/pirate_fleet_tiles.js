@@ -29,7 +29,7 @@ export function zoneOf(x, y) {
   const xx = x + (hash(y >> 1, 17) % 5) - 2;
   return xx < 97 ? 0 : xx < 197 ? 1 : xx < 297 ? 2 : xx < 379 ? 3 : 4;
 }
-const copper = ['#10241e', '#1d4a3c', '#2f7a62', '#58b08c', '#9ad8b8'];      /* the sheathing gone green */
+const copper = ['#0a1814', '#143a30', '#22604e', '#3a8a70', '#6cb898'];      /* the sheathing gone green */
 const weed = ['#0a1a12', '#14301c', '#245030'];
 const silt = ['#0c1418', '#162226', '#22343a', '#3a5258'];
 const rope = ['#0f0c08', '#241c12', '#3e3220', '#6a5a3a', '#9a8856'];          /* tarred hemp */
@@ -66,6 +66,14 @@ function topTile(zone, x, y, eL, eR, stern) {
     if (eL) { rect(g, 0, 0, 1, 16, Z.s[5]); rect(g, 0, 0, 1, 1, Z.deck[3]); } if (eR) rect(g, 15, 0, 1, 16, Z.s[0]);
     return c; });
 }
+/* the sheathing: 8x8 copper plates gone green, tacks at the corners, a plate lifted bright here and there - the waterline band of a hull's end */
+function sheathe(g, x, y) {
+  const r = mulberry(hash(x & 3, y & 7) + 17);
+  for (let py = 0; py < 16; py++) for (let pxl = 0; pxl < 16; pxl++) { const qx = ((pxl + (((py >> 3) & 1) * 4)) % 8), qy = py & 7;
+    px2(g, pxl, py, qx === 0 || qy === 0 ? copper[0] : (qx === 1 && qy === 1) ? copper[3] : copper[(hash((x * 16 + pxl) >> 3, (y * 16 + py) >> 3) % 3) + 1 - (qy > 5 ? 1 : 0)]); }
+  for (let k = 0; k < 2; k++) rect(g, (r() * 12) | 0, (r() * 13) | 0, 3, 2, copper[4]);
+  g.globalAlpha = 0.3; rect(g, 0, 0, 16, 16, '#030406'); g.globalAlpha = 1;
+}
 /* A HULL's END (stem / sternpost) or a block's flank: strakes, lit on the left, an iron strap and rivets */
 function faceTile(zone, x, y, eL, eR, band) {
   return once('fa' + zone + '_' + (x & 3) + '_' + (y & 7) + (eL ? 'l' : '') + (eR ? 'r' : '') + (band ? 'w' : ''), () => {
@@ -73,6 +81,8 @@ function faceTile(zone, x, y, eL, eR, band) {
     fillStrakes(g, zone, x, y, 3, eL, 0, 16);
     if ((y & 3) === 1) { rect(g, 0, 6, 16, 3, '#2c3038'); rect(g, 0, 6, 16, 1, '#6a7280'); for (let k = 2; k < 16; k += 6) px2(g, k, 7, '#a8b0c0'); }   /* the iron strap */
     if (eL) { rect(g, 0, 0, 2, 16, Z.s[5]); rect(g, 0, 0, 1, 16, Z.s[6]); } if (eR) { rect(g, 14, 0, 2, 16, Z.s[1]); rect(g, 15, 0, 1, 16, Z.s[0]); }
+    if (y >= WATER_ROWS[0] && y <= WATER_ROWS[1]) sheathe(g, x, y);
+    else if (y > WATER_ROWS[1] && y < BED_ROW) { const r = mulberry(hash(x & 3, y & 7) + 5); for (let k = 0; k < 5; k++) { const bx = (r() * 16) | 0, l = 2 + ((r() * 6) | 0); for (let q = 0; q < l; q++) px2(g, bx + (q & 1), 15 - q, weed[q % 3]); } }
     if (band) paintBand(g, Z, 16);
     return c; });
 }
@@ -84,7 +94,7 @@ function ceilTile(zone, x, y, eL, eR) {
     rect(g, 0, 11, 16, 5, Z.s[2]); rect(g, 0, 11, 16, 1, Z.s[4]); rect(g, 0, 15, 16, 1, Z.joint);       /* a deck beam */
     if ((x & 3) === 1) { rect(g, 6, 7, 4, 5, Z.s[3]); rect(g, 6, 7, 4, 1, Z.s[5]); }                    /* a carline */
     if (eL) rect(g, 0, 0, 1, 16, Z.s[4]); if (eR) rect(g, 15, 0, 1, 16, Z.s[0]);
-    g.globalAlpha = 0.35; rect(g, 0, 0, 16, 16, '#000'); g.globalAlpha = 1; return c; });
+    g.globalAlpha = 0.35; rect(g, 0, 0, 16, 16, '#030406'); g.globalAlpha = 1; return c; });
 }
 function paintBand(g, Z, h) { rect(g, 0, 4, 16, 1, Z.paint); rect(g, 0, 5, 16, 1, Z.trim); rect(g, 0, 6, 16, 1, Z.paint); }
 /* PACKED STRAKES: darker the deeper into the hull; the waterline band is COPPER SHEATHING (green, with a bright lifted plate or two), weed under it, silt on the bed */
@@ -93,12 +103,7 @@ function massTile(zone, x, y, d) {
     const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y & 7) + 41 + zone);
     fillStrakes(g, zone, x, y, d <= 1 ? 2 : 1, false);
     g.globalAlpha = [0, 0.05, 0.1, 0.14, 0.18, 0.21, 0.24][Math.min(d, 6)]; rect(g, 0, 0, 16, 16, '#030406'); g.globalAlpha = 1;
-    if (y >= WATER_ROWS[0] && y <= WATER_ROWS[1] && d <= 3) {                                     /* the sheathing: 8x8 plates, tacks at the corners */
-      for (let py = 0; py < 16; py++) for (let pxl = 0; pxl < 16; pxl++) { const qx = ((pxl + (((py >> 3) & 1) * 4)) % 8), qy = py & 7;
-        px2(g, pxl, py, qx === 0 || qy === 0 ? copper[0] : (qx === 1 && qy === 1) ? copper[3] : copper[(hash((x * 16 + pxl) >> 3, (y * 16 + py) >> 3) % 3) + 1 - (qy > 5 ? 1 : 0)]); }
-      for (let k = 0; k < 3; k++) { const bx = (r() * 13) | 0, by = (r() * 13) | 0; rect(g, bx, by, 3, 2, copper[4]); }   /* a plate lifted bright */
-      g.globalAlpha = 0.28; rect(g, 0, 0, 16, 16, '#000'); g.globalAlpha = 1;
-    } else if (y > WATER_ROWS[1] && y < BED_ROW && d <= 2) { for (let k = 0; k < 7; k++) { const bx = (r() * 16) | 0, l = 2 + ((r() * 5) | 0); for (let q = 0; q < l; q++) px2(g, bx + (q & 1), 15 - q, weed[q % 3]); } }   /* weed streaming off the hull */
+    if (y > WATER_ROWS[1] && y < BED_ROW && d <= 2) { for (let k = 0; k < 7; k++) { const bx = (r() * 16) | 0, l = 2 + ((r() * 5) | 0); for (let q = 0; q < l; q++) px2(g, bx + (q & 1), 15 - q, weed[q % 3]); } }   /* weed streaming off the hull */
     if (zone === 3) { g.globalAlpha = 0.1; rect(g, 0, 0, 16, 16, '#2a5a7a'); g.globalAlpha = 1; }   /* the storm's wet light */
     return c; });
 }
@@ -121,7 +126,7 @@ function yardTile(zone, l, rr, v) {
     const bx = v & 1 ? 2 : 9; rect(g, bx, 0, 2, 5, '#2c3038'); rect(g, bx, 0, 1, 5, '#80889a');
     rect(g, bx + 5, 0, 3, 5, rope[3]); for (let k = 0; k < 5; k += 2) rect(g, bx + 5, k, 3, 1, rope[1]);   /* the seizing */
     if (v === 2) { rect(g, 6, 5, 1, 4, rope[3]); rect(g, 6, 9, 2, 1, rope[2]); }                          /* a rope end hanging */
-    g.globalAlpha = 0.28; rect(g, 0, 6, 16, 4, '#000'); g.globalAlpha = 1;
+    g.globalAlpha = 0.28; rect(g, 0, 6, 16, 4, '#030406'); g.globalAlpha = 1;
     if (l) rect(g, 0, 0, 2, 5, '#9a9aa8'); if (rr) rect(g, 14, 0, 2, 5, Z.s[0]);                        /* the spar's iron cap */
     return c; });
 }

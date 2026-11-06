@@ -17,11 +17,11 @@ import { ZONE, zoneOf } from './pirate_fleet_tiles.js';
 const R = Math.round;
 export const PAL = {
   tar: ['#0b0907', '#171210', '#241c16', '#34291f', '#4a3b2c'],
-  copper: ['#10241e', '#1d4a3c', '#2f7a62', '#58b08c', '#9ad8b8'],
+  copper: ['#0a1814', '#143a30', '#22604e', '#3a8a70', '#6cb898'],
   rope: ['#0f0c08', '#241c12', '#3e3220', '#6a5a3a', '#9a8856', '#d8c8a0'],
   iron: ['#14161a', '#2c3038', '#4a505c', '#80889a', '#b8c0d0'],
   brass: ['#4a3410', '#8a6a1c', '#c9a340', '#f0d070', '#fff0b0'],
-  canvas: ['#22222e', '#3e3c4e', '#66647a', '#9a96a8', '#c8c0bc', '#e8dcd0'],
+  canvas: ['#1a1822', '#2e2a38', '#4e4a5c', '#766e80', '#9c8c90', '#c8b0a4'],
   foam: ['#f6fbfc', '#c4e4ee', '#86bccf', '#4f8aa0'],
   sea: ['#04121a', '#08222e', '#0e3a48', '#1a5868'],
   gold: '#ffd36b', red: '#8a1e22', redL: '#c43a34',
