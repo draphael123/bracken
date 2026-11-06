@@ -20,7 +20,7 @@
 // POSES (B16, art owed ~14): twIdle, twStrikeWind, twStrikeRel, twSlamWind, twSlamRel, twRoarWind, twRoarRel, twTailWind, twTailRel, twBroodWind, twBroodRel,
 //   twReel (open), twWard, twHeadUp, twDie. SOUNDS: twStrikeTell, twBolt, twGround, twSlamTell, twSlam, twRoarTell, twRoar, twTailTell, twTail, twBrood, twReel, twWard, twDie.
 
-export const TW = { hp: 2800, w: 40, h: 30, markH: 64, floor: 0.45, openMul: 1.8, openCap: 0.09, openT: 4.0, wardT: 2.5, headT: 1.6, headMul: 1.0, p2At: 0.55,
+export const TW = { hp: 3400, w: 40, h: 30, markH: 64, floor: 0.45, openMul: 1.8, openCap: 0.09, openT: 4.0, wardT: 2.5, headT: 1.6, headMul: 1.0, p2At: 0.55,
   lureR: 44, markR: 18, strikeTell: 0.9, slamTell: 1.0, roarTell: 0.8, tailTell: 0.7, broodTell: 0.9, act: 0.3, tailRun: 0.55, rest: [1.1, 0.8], lowRest: 0.7,
   slamH: 16, tailH: 12, broodCap: 2, gutterT: 14, headOff: 72,
   dmg: { strike: 52, slam: 58, roar: 30, tail: 44 } };

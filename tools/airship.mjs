@@ -150,7 +150,7 @@ ok(/THE ROAD CONTINUES - FROSTFALL PASS/.test(readFileSync('src/airship-hands.js
    (re-stokes when it is out and he is not on a tell: STOKE.hold s still) and stands by it; on a strike tell he stays (lure) - a mark away from a hot burner
    he steps off (p dodge); slam: jump (p), tail: jump (p), roar: block (p). LOW stance unless two burners are hot (the bot keeps one: LOW/MID). */
 if (DUEL) {
-  const HERO = { hp: 420, flasks: 3, flask: 0.4, dmg: 34, swing: 0.45, reach: 36 }, P_OK = { strike: 0.9, slam: 0.85, tail: 0.8, roar: 0.8 };
+  const HERO = { hp: 420, flasks: 3, flask: 0.4, dmg: 34, swing: 0.45, reach: 36 }, P_OK = { strike: 0.85, slam: 0.8, tail: 0.75, roar: 0.75, lure: 0.7 };   /* a human-ish bot: it misreads a lure 3 times in 10 (stands off its burner) */
   const runs = []; for (let seed = 1; seed <= 12; seed++) {
     let rs = seed * 9301 + 49297; const rnd = () => ((rs = (rs * 9301 + 49297) % 233280) / 233280);
     const fuel = { storm0: 0, storm1: 0, storm2: 0, storm3: 0 }; const e = { hp: TW.TW.hp, maxHp: TW.TW.hp, mode: 'rest' }, S = TW.newFight(G);
@@ -165,6 +165,7 @@ if (DUEL) {
       for (const k in fuel) fuel[k] = Math.max(0, fuel[k] - dt);
       if (brood > 0) { broodT += dt; if (broodT > 6) { brood--; broodT = 0; } if (rnd() < dt * 0.25) { hp -= 9; hitsTaken++; } }   /* a brood pair nags (a spark now and then) until cut down (~6 s each) */
       const telling = /Tell$/.test(e.mode);
+      if (e.mode === 'strikeTell' && S.lureRoll !== S.n.strikes) { S.lureRoll = S.n.strikes; if (rnd() > P_OK.lure) { hero.x = myB.x + 70; for (const mk of S.marks) mk.x = hero.x; } }   /* a misread: off the burner when the marks land */
       if (!fuel[myB.id] && !telling) { stokeT += dt; hero.x = myB.x + 10; if (stokeT >= AS.STOKE.hold) { fuel[myB.id] = AS.STOKE.fuel; stokeT = 0; } }
       else { stokeT = 0; if (!telling) hero.x += (Math.max(myB.x + 10, Math.min(S.head.x - 20, myB.x + 40)) - hero.x) * Math.min(1, dt * 4); }
       TW.stepWyrm(e, S, dt, w);
