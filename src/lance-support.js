@@ -36,20 +36,24 @@ export const LANCE4 = {
   stones: { tell: 1.2, n: 3, spread: 46, hit: 14, w: 2 },   // P3: the castle's mangonel - three told rings on the deck; each breaks the planks it lands on
   vault: { tell: 0.95, up: 0.55, perch: 0.7, planted: 1.7, every: 9 },      // HEAVY (P2+)
   wall: { tell: 0.6, t: 3.0, sp: 38, push: 46, every: 10, turned: 1.4 },    // MEDIUM (P2 only: P3 has no shield)
-  bell: { tolls: 3, span: 1.2, rewind: 10, hold: 3.0, pin: 3.4, mul: 1.6, dmg: 40, catchX: 16 },   // a gate tower's bell and its portcullis
-  great: { pin: 4.0, mul: 2, dmg: 60, rewind: 12 },                         // the main gate's great bell (P3)
+  bell: { tolls: 3, span: 1.2, rewind: 10, hold: 3.0, pin: 3.4, mul: 3.5, dmg: 40, catchX: 16 },   // a gate tower's bell and its portcullis
+  great: { pin: 4.0, mul: 4, dmg: 60, rewind: 12 },                         // the main gate's great bell (P3)
   rung: 2.2, rungEvery: 6,       // HELM RUNG: dazed (x1.5); not twice inside rungEvery s
   whipped: 1.6, whipHurt: 6, fray: 0.5, restring: 14,   // CUT THE LINE: the fray, the whip (x1.5), the crew's re-stringing
   haul: 1.2,                     // THE STORM ARRIVES (P2.s turn, lance5; was HE STOPS THE BELLS): braced, not an opening
   split: 1.0, castOff: 8, bare: 0.7,   // THE SHIELD SPLIT (x1.5 while it goes), or cast off this long into P3; shieldless he takes x0.7 from anywhere
   open: { tossed: 1.6, buffeted: 1.5, overrun: 1.5, rung: 1.5, whipped: 1.5, wallTurned: 1.5, recover: 1.5, reel: 1.5, stumble: 1.5, planted: 1.6, split: 1.5 },   // his openings (B15: 1.5-2x; pinned reads its bell)
-  heroDmg: { knight: 1, pyro: 0.71 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
+  heroDmg: { knight: 1, geomancer: 1.3, pyro: 0.71 },   // (claude/lance4tune) a hero's blows against him, x (knight takes the reach, pyro stands off)
   /* (claude/lance5, Daniel 10-31 18:36) */
   pivot: 0.3,                    // NO BACKWARD CHARGE: a hero behind him - he plants and turns (a told 0.3 s pivot: the stamp and the pennant's swing), then moves
   skewer: { tell: 0.6, active: 0.22, rec: 0.9, recHit: 0.5, dx: 24, hitX: 18, low: 30, top: 124, every: 4.5 },   // RISING SKEWER (P2+, MEDIUM): braced, the point straight up at anyone over him (a rope rider, a lookout); a whiff leaves him looking up - drop on his helm then
   kb: { v: 80, t: 0.1 },         // P1 + P2: a landed blow knocks him back ~8 px (not braced, not pinned, not in the air); the gaps are the point of it
   footMul: 0.88,                 // a hero's own blows on him, x (on top of heroDmg): the devices, the gaps and the plunges are the main damage now
   storm: { spike: 0.05, lift: 480, tossed: 2.2, tossedEvery: 5, liftHero: 430, gust: { v: 165, t: 1.6, buffet: 1.2 } },   // P2 THE STORM: his fall onto the teeth (of his max), the UPDRAFT that throws him up (opening), the hero's lift; a rung bell's GUST
+  /* (claude/lance6, Daniel 11-04) STUNNED: a gate that catches him on a charge (the bars on him: pinned, or he runs into a dropped one) and a spear sent back at him leave him STUNNED -
+     the clock over his helm, a green ring, stars. The bell's pin pays x3.5 (was 1.6), the great bell's x4 (was 2). The bars' own blow (bell.dmg / great.dmg) still lands whole. */
+  stun: { gate: { t: 2.6, mul: 3.5, dmg: 30 },   // he RAN INTO a dropped tower gate (the third toll across his lane): stunned this long
+          spear: { t: 1.2, mul: 2, dmg: 45, fly: 0.5, near: 10, every: 7, strike: true } },   // a DODGED spear (rolled / dashed through it, or a miss by less than near px past the point) or a STUCK one you strike: it flies back to him in fly s and stuns him t s; at most one return every s
   gateClose: 40,                 // s the main gate takes to come down in P3 (it stops at 85% until he falls, then SLAMS)
 };
 export const HEAVY_MODES = new Set(['couch', 'vaultTell']);   // the moves of the HEAVY class (tempo rule: never two back to back)
@@ -57,7 +61,7 @@ export const HEAVY_MODES = new Set(['couch', 'vaultTell']);   // the moves of th
 /* WHAT HE SAYS (number() routes these: the short ones float as MOVE_WORDS, the teaching ones go to the hint box - src/hint-lines.js) */
 export const LANCE_WORD = { skewer: 'RISING SKEWER', gust: 'STORM GUST', gatehouse: 'THE GATEHOUSE', charges: 'HE CHARGES', spears: 'SPEARS', wall: 'SHIELD WALL', vaults: 'HE VAULTS', pennant: 'THE PENNANT', ballista: 'BALLISTA', oil: 'BOILING OIL', stones: 'STONES' };
 export const LANCE_SAY = {
-  answer: 'HE ANSWERS THE BELL', overrun: 'HE OVERRUNS: CUT HIM', gate: 'THE GATE HAS HIM: CUT HIM', intoGate: 'HE RUNS INTO THE GATE: CUT HIM',
+  answer: 'HE ANSWERS THE BELL', overrun: 'HE OVERRUNS: CUT HIM', gate: 'THE GATE HAS HIM: CUT HIM', intoGate: 'HE RUNS INTO THE GATE: STUNNED', stunned: 'STUNNED', sentBack: 'HIS SPEAR COMES BACK: CUT HIM', dodged: 'DODGED: IT GOES BACK', struck: 'SENT BACK',
   stops: 'THE STORM ARRIVES', torn: 'THE WIND TEARS HIS PENNANT AWAY', tossed: 'THE UPDRAFT THROWS HIM UP: CUT HIM', buffeted: 'THE GUST TAKES HIM: CUT HIM',
   gustBell: 'THE STORM ANSWERS THE BELL', lifted: 'THE UPDRAFT LIFTS YOU OUT', rung: 'HELM RUNG: CUT HIM', whipped: 'THE LINE WHIPS DOWN ON HIM: CUT HIM', frays: 'THE LINE FRAYS',
   split: 'THE BARS SPLIT HIS SHIELD', castOff: 'HE CASTS THE SHIELD OFF', great: 'THE GREAT BELL: THE GATE HAS HIM', point: 'THE POINT STICKS: CUT HIM',

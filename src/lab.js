@@ -215,6 +215,8 @@ export function crouchBPlan(BK, h) {
     if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
   return null; }   /* (claude/bloodknight) the Blood Knight draws no bodies: his harvest is gone */
 /* the hands for it: only the keys it names, every other action key let go (false, and nothing pressed, for no plan) */
+/* (rel146) the knight bot never presses C a second time inside 0.3 s of a SHORT first press (that would be the double-tap bash): true = hold off this frame. Called every frame the bot wants the shield; keeps its own press log on P. */
+export function knightWouldDoubleTap(P, f) { const was = P.labBlkOn === f - 1; if (!was) { const prev = P.labBlkPress; P.labBlkPress = f; P.labBlkOn = f; if (prev !== undefined && P.labBlkLen < 12 && f - prev <= 18) { P.labBlkPress = prev; P.labBlkOn = undefined; return true; } P.labBlkLen = 1; return false; } P.labBlkOn = f; P.labBlkLen = (P.labBlkLen || 0) + 1; return false; }
 export function crouchBKeys(BK, plan) { if (!plan) return false; const k = BK.keys; k.atk = k.block = k.jump = k.up = false; k.down = plan === 'down'; k.left = plan === 'left'; k.right = plan === 'right'; if (plan === 'down') BK.unpress(); return true; }
 /* THE CROUCH TWISTS, PART A, in the hands (claude/croucha, src/crouch-a.js). Each says, for one frame against one foe, "hold down":
      lowGuardNow  - THE KNIGHT: a YELLOW blow that is not a high one (a high one goes over him anyway), told near him and in its last
@@ -660,7 +662,7 @@ const LANCE_RT = o => o.t < 0.85;
       stands off in his guard, rung anyway (he answers with a charge, and runs into the gate). P2 A ROPE POST: struck when he stands under that
       rope's run and the post is a few strides off. P3 THE GREAT BELL: up the last lookout onto the gatehouse hoarding, rung when he is under the gate. */
 function lanceDuty(BK, boss, P, A, open) {
-  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'rung', 'whipped', 'split', 'haul', 'fallback', 'buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return null;
+  if (boss.t !== 'lance' || open || !boss.alive || ['pinned', 'stunned', 'rung', 'whipped', 'split', 'haul', 'fallback', 'buffeted', 'tossed', 'updraft', 'tossedAir'].includes(boss.mode)) return null;
   const bells = BK.props().filter(q => q.t === 'lancebell'), air = ['vaultUp', 'perch', 'stab'].includes(boss.mode);
   if (boss.phase === 1) { const b = bells.filter(q => !q.great && !q.up && !(q.rewind > 0) && !(q.ringT >= 0) && Math.abs(q.x - P.x) < 200 && Math.abs(boss.x - q.gx) > 24).sort((a, c) => Math.abs(a.x - P.x) - Math.abs(c.x - P.x))[0];
     if (!b) return null; const toward = boss.mode === 'charge' && Math.sign(b.gx - boss.x) === Math.sign(boss.vx || 0), eta = toward ? Math.abs(b.gx - boss.x) / 236 : 9;
@@ -2170,7 +2172,7 @@ async function runbossLab(BK, opts) {
         else if(pl.jump&&P.ground){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down&&P.ground)k.down=true;
-        if(pl.block&&!(h==='knight'&&pl.beat>0.08))k.block=true;   /* (claude/rel139fix) the knight raises it in the last 0.08 s of the told blow: a PERFECT GUARD is a link */
+        if(pl.block&&!(h==='knight'&&pl.beat>0.08)&&!(h==='knight'&&knightWouldDoubleTap(P,f)))k.block=true;   /* (claude/rel139fix) the knight raises it in the last 0.08 s of the told blow: a PERFECT GUARD is a link. (rel146) knightWouldDoubleTap: a second short press inside 0.3 s of a short one is the DOUBLE-TAP SHIELD BASH (claude/knightkit), which drops the shield and lunges; a human who means to guard does not double-tap, so the bot lets that second blow come */
         if(!pl.down&&!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>4)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.atk&&P.atk<0&&!pl.down){P.face=pl.face||P.face;BK.press('atk');swings++;}
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:boss.open>0,why:pl.why});if(f%600===599)await yieldNow();continue;

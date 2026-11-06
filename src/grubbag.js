@@ -59,7 +59,7 @@ export const GB = {
   line: { v: 34, every: [5.6, 5.0, 4.5], bombEvery: 4, first: 2.2, fuse: 5.6, batV: 250, blast: 34, blastDmg: 12, knockV: 120 },
   hungry: { t: 6, mul: 0.7, cd: 0.8 },
   stove: { cool: 12, box: 16 },
-  bz: { hurt: 1.5 }, dmgMul: 2.9,
+  bz: { hurt: 1.5 }, dmgMul: 3.3,   /* (claude/grubhook2) 3.4 -> 3.3 after the 12-seed confirm read 57% (3.2 read 78%); (claude/grubhook) 2.9 -> 3.4: the hook climb is an easier belt escape (built rates 63% -> 81%); HP untouched (Daniel 11-04) */
   heroMul: { knight: 1, pyro: 1.8 },   /* (claude/kitchengate4tune) his blows on each hero (as DUEL_HERO / LANCE4.heroDmg): n=12 human+flasks, knight 82% warden 50% pyro 100% at 1 each -> the pyro stands off the line, the warden misses flings */
 };
 export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'THE SERVING LINE FEEDS HIM: KNOCK THE DISHES OFF. LET THE BOMBS AND THE CHILLIES REACH HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
@@ -460,8 +460,12 @@ function gbPlan0(s) {
   /* (claude/kitchengate4) 11b. THE HOOK ROUTE: the drop is ready and he is himself - up on the line under the lower hook, UP to take it (then 0a flies it). Weighed per move of his
      (mem.hook, a roll) so it never starves the bombs, the chillies or the dishes */
   if (RA && S.cd.drop <= 0 && S.ward <= 0 && !gbOpen(e) && e.mode !== 'gulp' && !S.items.some(q => q.kind !== 'dish' && q.state !== 'fall')) { if (mem.hookAct !== S.act) { mem.hookAct = S.act; mem.hook = (S.made + 1) % GB.line.bombEvery !== 0 && rng() < (s.v2 ? 0.45 : 0.3); mem.hopK = undefined; }   /* (never when the next item out is a bomb) */
-    if (mem.hook) { const spot = Math.max(B.x0 + 10, RA.x0 + 18);
-      if (!onB) return toBelt(spot, 'to the hook');
+    if (mem.hook) { const PA = G.plats[1], PB = G.plats[2], ctr = p => (p.x0 + p.x1) / 2, on = p => P.ground && Math.abs(P.y - p.y) < 3 && P.x >= p.x0 - 2 && P.x <= p.x1 + 2;   /* (claude/grubhook) THE CLIMB: the line -> the low shelf -> the high shelf -> UP on the hook above it */
+      if (PA && PB) { if (on(PB)) { const hx = RB ? RB.x0 + 4 : ctr(PB); if (Math.abs(P.x - hx) < 12) { out.up = true; out.gx = P.x; out.why = 'take the hook (UP)'; return out; } out.gx = hx; out.why = 'under the hook'; return out; }
+        if (on(PA)) { const gx = ctr(PB); if (Math.abs(P.x - (PB.x0 - 6)) < 10 || (P.x >= PA.x1 - 14)) return jump('up to the high shelf', ctr(PB)); out.gx = PA.x1 - 10; out.why = 'to the high shelf'; return out; }
+        if (!onB) return toBelt(ctr(PA), 'to the shelves');
+        if (Math.abs(P.x - ctr(PA)) < 12) return jump('up to the low shelf', ctr(PA)); out.gx = bx(ctr(PA)); out.why = 'under the low shelf'; return out; }
+      const spot = Math.max(B.x0 + 10, RA.x0 + 18); if (!onB) return toBelt(spot, 'to the hook');
       if (Math.abs(P.x - spot) < 14) { out.up = true; out.gx = P.x; out.why = 'take the hook (UP)'; return out; }
       out.gx = bx(spot); out.why = 'under the hook'; return out; } }
   /* 12. NOTHING ON: chip him while he sits (well fed), or wait on the line */

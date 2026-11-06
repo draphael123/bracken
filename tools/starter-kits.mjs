@@ -25,7 +25,7 @@ try {
   if (WANT.includes('heavy')) out.heavy = await pg.evalp(`(()=>{const run=(frames,block)=>{const [e]=__kit('knight',[],[['swornsword',20]]);e.speed=0;BK.keys.atk=true;let st=0,guard=false;
       for(let i=0;i<frames;i++){if(block&&i===frames-10)BK.keys.block=true;BK.sim(1);guard=guard||BK.P.block;}BK.keys.atk=false;BK.keys.block=false;const x0=BK.P.x;
       for(let i=0;i<40;i++){BK.sim(1);st=Math.max(st,BK.P.cutStage||0);}return {st,guard,floored:e.floored>0,moved:Math.round(BK.P.x-x0),hp:5000-e.hp};};
-    return {chop:run(21,false),held:run(72,true)}})()`);
+    return {chop:run(21,false),held:run(40,true)}})()`);
   const W = async (name, js) => { if (WANT.includes(name)) out[name] = await pg.evalp('(()=>{' + js + '})()'); };
   await W('wheel', `const f=__kit('warden',['wheel'],[['sprig',-30],['sprig',24]]);BK.press('throw');BK.sim(30);return {down:f.map(e=>e.floored>0)}`);
   await W('javelin', `const [e]=__kit('warden',['javelin'],[['sprig',50]]);BK.press('throw');let pinned=false,bare=false;for(let i=0;i<40;i++){BK.sim(1);pinned=pinned||e.pinned>0;bare=bare||!!BK.wardJav();}
@@ -55,7 +55,7 @@ try {
   if (out.heavy) { const { chop, held } = out.heavy;
     assert.equal(chop.st, 0, 'held a third of a second, it is still no heavy cut: the heavy is ONE fixed weight at 0.5 s (claude/knightid; stage ' + chop.st + ')');
     assert(chop.moved < 16, 'and it is a cut where he stands, not a charge across the floor (moved ' + chop.moved + ' px)');
-    assert.equal(held.st, 2, 'held past half a second it comes down as THE HEAVY CUT, the one weight (stage 2 = the guard-break) (stage ' + held.st + ')');
+    assert.equal(held.st, 2, 'held past half a second (0.67 s here; a hold to 0.9 s is the QUAKE, stage 3, tools/knight-kit.mjs) it comes down as THE HEAVY CUT, the one weight (stage 2 = the guard-break) (stage ' + held.st + ')');
     assert(held.hp > 0 && held.moved < 16, 'and it lands where he stands (hp ' + held.hp + ', moved ' + held.moved + ' px)');
     assert(!held.guard, 'and the shield never came up while the sword was raised, though C was held'); }
   if (out.rise) { const r = out.rise;

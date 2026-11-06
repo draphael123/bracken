@@ -19,6 +19,7 @@
 // main.js owns the bodies, the room's load and the screens; this module owns the stations: makeTavern(api) -> { on, layout, tick, hands, draw,
 // drawHud, dummyHit, thrown, revived, debug }. The greybox furniture is drawn here with plain fills (ART list: TAVERN_ART below).
 import { DRILLS, DRILL_IDS, TEAM_WINDOW, cleanTavern, COLOURS, stepColour, colourOf } from './party.js';
+import { PVP_SHIPS } from './pvp-duel.js';   /* (claude/pvpduel) the pit is open when DUEL (BETA) ships */
 import * as TA from './tavern-art.js';   /* (claude/tavernart) the stations' art */
 
 /* THE ROOM, in tiles (src/level.js theTavern paints it from this): floor top at row FLOOR, everything stands on row FLOOR - 1 */
@@ -32,7 +33,7 @@ export const STATIONS = [
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
   { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
-  { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
+  { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: PVP_SHIPS ? 'THE DUEL PIT: FRIENDS AGAINST FRIENDS (OR A BOT), BEST OF THREE - AND THE RANKINGS.' : 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
 export const DUMMIES = [51, 54];   /* the straw men, in tiles */
 export const TARGET = { x: 56, r: 22 };   /* the hay target on the yard floor: its centre (tile) and how near (px) a thrown partner lands for a BULLSEYE */
@@ -91,6 +92,7 @@ export function makeTavern(api) {
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
     if (s.id === 'bell') { ringBell(p); return; }
     if (s.id === 'practice') { api.practice(); return; }
+    if (s.id === 'arena' && api.duel && api.duel(p)) return;   /* (claude/pvpduel) THE DUEL PIT is open: DUEL (BETA) - its card (seats, FIGHT, a bot when alone, RANKINGS); hidden again (COMING SOON below) when src/pvp-duel.js PVP_SHIPS is false */
     if (s.id === 'arena') { say(p, 'COMING SOON', '#ff9a5c'); api.hint('THE DUEL PIT IS ROPED OFF: FRIENDS AGAINST FRIENDS IS COMING SOON.', 4); api.sfx('ui'); if (wasNew) api.sfx('sting'); return; }
   }
   /* THE SPARRING BELL: a partner goes DOWN (the nearest other upright player); alone, it says it wants a partner */
@@ -176,7 +178,7 @@ export function makeTavern(api) {
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time, api.text);
     TA.target(g, X(TARGET.x), fy, time);
-    TA.arena(g, at('arena'), fy, time, api.text);
+    TA.arena(g, at('arena'), fy, time, api.text, PVP_SHIPS);
     TA.mirror(g, at('wardrobe'), fy, time);
     /* THE GLINTS: a bobbing gold plate and a sparkle over every station not used yet */
     for (const s of STATIONS) if (!seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);

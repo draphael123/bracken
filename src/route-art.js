@@ -5,6 +5,7 @@ import {lpSupportDraw} from './redraw/lamplit3_tiles.js';   /* (claude/lamplit3a
 import {drawSupport as drawStockadeSupport,STK_KINDS} from './redraw/stockade2_art.js';   /* (claude/stockade2art) THE STOCKADE 2's lashed poles, trestles, legs, props, mast and hand-lines */
 import {drawPile as drawFenPile} from './redraw/fen_road_art.js';   /* (claude/fenroadart) THE FEN ROAD's driven piles */
 import {drawChurchSupport,CHURCH_SUPPORT} from './church-supports.js';
+import {drawKgChain} from './redraw/kitchen_art.js';   /* (claude/grubhook2) the Kitchen Gate's hung shelves */
 import {drawDemoSupport} from './demo-supports-art.js';   /* (claude/floatfix) the demo levels' risers and knee braces */
 import {drawSupport as drawHcSupport} from './redraw/highcrown2_art.js';   /* (claude/highcrown2art) HIGHCROWN's castle piers and chains */   /* (claude/church2) LIT CHURCH 2: pew legs, piers, stalls, chains, bone columns, organ pipes */
 export function bakeRouteLedges(){
@@ -15,6 +16,7 @@ export function drawRouteSupports(g,L,cx,cy){
  if(p.kind==='torpost'){drawTorPost(g,p,cx,cy,L);continue;}
  if(p.kind==='pile'&&L.stormSummit&&p.x>=640)continue;   /* (claude/windcaller4art) the stair's and summit's auto piles: the stones stand on rock, the ledges on their carved pillars */
  if(p.kind==='lpiron'){lpSupportDraw(g,p,L,cx,cy);continue;}
+ if(p.kind==='kgchain'){drawKgChain(g,p,cx,cy);continue;}
  if(p.kind==='fenpile'){drawFenPile(g,p,cx,cy);continue;}
  if(STK_KINDS.has(p.kind)){drawStockadeSupport(g,p,cx,cy,L);continue;}
  if(p.kind==='hcpier'||p.kind==='hcchain'){drawHcSupport(g,p,cx,cy);continue;}
