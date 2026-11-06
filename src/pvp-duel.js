@@ -453,7 +453,7 @@ export function makeDuel(api) {
   }
   function drawHud(VW, VH) {
     const T = api.text;
-    if (st.card && st.card.roster) { if (api.L() && api.L().tavern) roster.draw(VW, VH); return; }
+    if (st.card && st.card.roster) return;   /* the roster is drawn last, over the whole frame (drawRoster) */
     if (st.card && api.L() && api.L().tavern) {
       const c = st.card, w = 196, rows = cardRows(), S = getSettings(), VIS = 8, hum = api.players();
       if (c.row < c.top) c.top = c.row; if (c.row >= c.top + VIS) c.top = c.row - VIS + 1;
@@ -499,5 +499,5 @@ export function makeDuel(api) {
   const g2 = (x, y, w, h, sh, c) => api.bar(x, y, w, h, sh, c);
 
   function debug() { return { on: on(), m: st.m ? JSON.parse(JSON.stringify({ ...st.m })) : null, seats: st.seats.map(p => ({ n: p.n, hero: p.hero, hp: p.duelHp, max: p.duelMax, lives: p.duelLives, team: p.duelTeam, diff: (st.bots.get(p) || {}).diff, bot: !!p.duelBot, up: api.upright(p), x: Math.round(p.x), dealt: p.duelDealt || 0 })), result: st.result, stats: { ...st.stats }, card: st.card ? { n: st.card.p.n, row: st.card.row, ranks: st.card.ranks } : null, cfg: st.cfg, lvl: st.seats.map(p => st.lvl.get(p) ?? 1), proxies: [...st.prox.values()].map(e => ({ n: e.pvpSeat.n, alive: e.alive, x: Math.round(e.x) })) }; }
-  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, roster, rosterOpen: () => !!(st.card && st.card.roster && roster.isOpen()), rosterMouse: (x, y, d) => roster.mouse(x, y, d), rosterEsc: () => roster.esc(), drawWorld, drawHud, debug, clearProxies, rematch, cardOpen: () => !!st.card };
+  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, roster, rosterOpen: () => !!(st.card && st.card.roster && roster.isOpen()), rosterMouse: (x, y, d) => roster.mouse(x, y, d), rosterEsc: () => roster.esc(), drawWorld, drawHud, drawRoster: (VW, VH) => { if (st.card && st.card.roster && api.L() && api.L().tavern) roster.draw(VW, VH); }, debug, clearProxies, rematch, cardOpen: () => !!st.card };
 }

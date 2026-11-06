@@ -181,7 +181,7 @@ export function makeRoster(ctx) {
           const rd = isReady(S, k), h = seatHero(S, k) || (sp.isBot ? 'random' : ''), shown = h || 'random';
           T(seatLabel(S, k), x + 2, sy + 2, col, 'left', 6); if (rd && isHumanSeat(S, k)) T('OK', x + sw - 2, sy + 2, '#a8e06e', 'right', 6);
           if (shown === 'random') T('?', x + sw / 2, sy + 18, '#ffd36b', 'center', 16); else ctx.icon(shown, x + 0, sy + 10, 18, 20, 2, 1);
-          const rows = [ctx.fit(shown === 'random' ? 'RANDOM' : ctx.heroName(shown), sw - 2, 6), isHumanSeat(S, k) ? (hs[k] && hs[k].ai ? 'AI' : 'HUMAN') : 'BOT', sp.isBot ? sp.botDifficulty.toUpperCase() : '-', S.teams ? 'TEAM ' + sp.team : '-'];
+          const rows = [ctx.fit(shown === 'random' ? 'RAND' : ctx.heroName(shown), sw - 2, 6), isHumanSeat(S, k) ? (hs[k] && hs[k].ai ? 'AI' : 'HUMAN') : 'BOT', sp.isBot ? sp.botDifficulty.toUpperCase().slice(0, 4) : '-', S.teams ? 'TEAM ' + sp.team : '-'];
           rows.forEach((r, j) => { const yy2 = sy + 52 + j * 11, sel = p1 && cur(p1).focus === 'strip' && cur(p1).scol === k && cur(p1).srow === j, drv = j === 0 && p1 && driveOf(p1) === k && cur(p1).drive >= 0;
             if (sel || drv) ctx.rect && ctx.rect(x + 1, yy2 - 2, sw - 2, 10, '#4a4431');
             T(r, x + sw / 2, yy2, j === 3 && S.teams ? TEAM_COL[sp.team] : sel || drv ? '#fff6e0' : '#c2c9c2', 'center', 6); R.hits.push({ k: 'seat', seat: k, row: SEAT_ROWS[j], x, y: yy2 - 2, w: sw, h: 11 }); });
@@ -189,7 +189,7 @@ export function makeRoster(ctx) {
       }
       /* help in the player's own keys */
       T(ctx.fit('ARROWS: MOVE   ' + k1('jump') + ': PICK = READY   ' + k1('dodge') + ': BACK   ' + k1('talk') + ': RULES', VW - 20, 6), VW / 2, VH - 24, '#8a8f80', 'center', 6);
-      T(ctx.fit('DOWN FROM THE GRID: SEATS (BOT SKILL, TEAM, +BOT)   ESC: LEAVE', VW - 20, 6), VW / 2, VH - 16, '#8a8f80', 'center', 6);
+      T(ctx.fit('DOWN: SEATS (BOT SKILL, TEAM)   ESC: LEAVE', VW - 20, 6), VW / 2, VH - 16, '#8a8f80', 'center', 6);
     }
     if (R.msgT > 0 && R.msg) T(ctx.fit(R.msg, VW - 20, 6), VW / 2, VH - 32, '#ffd36b', 'center', 6);
     if (R.fightT > 0) {

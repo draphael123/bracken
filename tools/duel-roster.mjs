@@ -105,13 +105,13 @@ console.log('roster: the campaign hero comes back');
 console.log('roster: text fits');
 { const w = world(), { D, players, calls } = w; const P2 = w.mk('warden'); players.push(P2); D.openCard(players[0]);
   const checkFit = label => { let bad = 0; for (const t of calls.text) { const wd = t.s.length * (t.z >= 16 ? 12 : t.z >= 8 ? 6 : 5), x0 = t.a === 'center' ? t.x - wd / 2 : t.a === 'right' ? t.x - wd : t.x; if (x0 < 3 || x0 + wd > 317) { bad++; console.log('    off-screen: "' + t.s + '" x=' + t.x + ' w~' + wd); } } ok(bad === 0, label + ': every line is on the 320 px screen (' + calls.text.length + ' lines)'); calls.text.length = 0; };
-  D.drawHud(320, 180); checkFit('FIGHTERS tab, 2 humans');
-  D.setSettings({ teams: true }); D.roster.pick(players[0], 5); D.roster.seatEdit(players[0], 3, 'HERO'); D.roster.pick(players[0], 9); D.drawHud(320, 180); checkFit('FIGHTERS tab, 2v2 with teams');
-  D.roster.R.tab = 1; D.roster.R.fightT = 0; D.drawHud(320, 180); checkFit('RULES tab');
-  D.roster.R.tab = 0; D.roster.R.fightT = 1; D.drawHud(320, 180); checkFit('FIGHT banner');
+  D.drawRoster(320, 180); checkFit('FIGHTERS tab, 2 humans');
+  D.setSettings({ teams: true }); D.roster.pick(players[0], 5); D.roster.seatEdit(players[0], 3, 'HERO'); D.roster.pick(players[0], 9); D.drawRoster(320, 180); checkFit('FIGHTERS tab, 2v2 with teams');
+  D.roster.R.tab = 1; D.roster.R.fightT = 0; D.drawRoster(320, 180); checkFit('RULES tab');
+  D.roster.R.tab = 0; D.roster.R.fightT = 1; D.drawRoster(320, 180); checkFit('FIGHT banner');
   ok(D.roster.R.hits.length > 0, 'the draw registers mouse hit boxes (' + D.roster.R.hits.length + ')'); }
 console.log('roster: the mouse');
-{ const w = world(), { D, players: [P1] } = w; D.openCard(P1); D.drawHud(320, 180);
+{ const w = world(), { D, players: [P1] } = w; D.openCard(P1); D.drawRoster(320, 180);
   const tile = D.roster.R.hits.find(h => h.k === 'tile' && h.i === 5); ok(D.rosterMouse(tile.x + 3, tile.y + 3, true) && D.getSettings().seats[0].hero === 'pyro' && st(D).ready[1], 'a click on a hero tile picks and readies P1');
-  D.roster.R.fightT = 0; D.roster.R.ready.clear(); D.drawHud(320, 180); const tab = D.roster.R.hits.find(h => h.k === 'tab' && h.i === 1); D.rosterMouse(tab.x + 2, tab.y + 2, true); ok(st(D).tab === 1, 'a click on the RULES tab flips to it'); }
+  D.roster.R.fightT = 0; D.roster.R.ready.clear(); D.drawRoster(320, 180); const tab = D.roster.R.hits.find(h => h.k === 'tab' && h.i === 1); D.rosterMouse(tab.x + 2, tab.y + 2, true); ok(st(D).tab === 1, 'a click on the RULES tab flips to it'); }
 console.log(fails.length ? '\nduel-roster: ' + fails.length + ' FAILED' : '\nduel-roster: all ok'); process.exit(fails.length ? 1 : 0);
