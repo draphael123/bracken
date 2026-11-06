@@ -47,8 +47,8 @@ export function priestFrame(o, env) {
   /* THE NIMBUS: a gold ring stood behind the head (squashed to fit the frame), brighter when the cowl-state is 2 */
   const top = 8 + sit, hx = 8 + lean, hy = top - 8 + dy, ncx = hx + 5.2, ncy = hy + 4;
   { const n = 22; for (let i = 0; i < n; i++) { const t = i / n * Math.PI * 2, x = Math.round(ncx + Math.cos(t) * 6.4), y = Math.round(ncy + Math.sin(t) * 4.2);
-      put(x, y, (i + flick) % 3 === 0 || cowl === 2 ? 'r' : (i % 2 ? 'y' : 'G')); }
-    if (cowl === 2) for (let i = 0; i < 8; i++) { const t = i / 8 * Math.PI * 2 + 0.2; put(Math.round(ncx + Math.cos(t) * 8), Math.round(ncy + Math.sin(t) * 5.6), 'y'); } }
+      put(x, y, (i + flick) % 3 === 0 || (cowl === 2 && i % 2) ? 'r' : (i % 2 ? 'y' : 'G')); }   /* (looks1) cast poses: half-bright only, no outer dot ring - it blobbed into the gold cloth */
+}
   // sandals, under the hem
   for (const [fx, fy] of feet) { put(fx, fy + dy, 'W'); put(fx + 1, fy + dy, 'W'); put(fx + 1, fy + dy - 1, 'y'); }
   // the robe: shoulders to hem, flaring, leaning with the body and trailing behind it
