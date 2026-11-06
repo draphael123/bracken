@@ -59,6 +59,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
   const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
+  const rigBands = [];   /* (the reach model: a swell boat is a ride between its HIGH deck and its LOW deck - src/reachcore.js L.rigBands, both stops footing) */
   const movers = [], floatsBy = { swell: [], swellB: [], storm: [], stormB: [] }, prizes = [], winches = [];
   /* A HULL: x0..x1 with its deck on row `deck`, solid to the sea bed (a hull in the play plane is a wall to swim round, not under). The NET hangs down its EAST side
      (the side you came from): the current carries a swimmer back to it */
@@ -67,10 +68,10 @@ export function buildPirateFleet({ painter, T, TS }) {
   const mast = (x, top, deck = DECK, topW = 3) => { fill(x, x, top + 1, deck - 1, T.NET); plat(x - Math.floor(topW / 2), top, topW); ent('deco', x, deck - 1, { kind: 'mastTall', v: x % 2 }); };
   /* A SWELL BOAT (a float of the tide kit): x0..x1, rides `tide` between rest row `rest` (low) and `top` (high). The mover's y is its HIGH deck (the reach model reads
      the crossing the swell makes) and src/pirate-fleet-hands.js moves it with the kit every frame */
-  const boat = (id, tide, x0, x1, rest = 35, top = 31) => { floatsBy[tide].push({ id, x0, x1, y: rest, top, free: 4 });
+  const boat = (id, tide, x0, x1, rest = 35, top = 31) => { floatsBy[tide].push({ id, x0, x1, y: rest, top, free: 4 }); rigBands.push([x0, x1, top + 1, rest]);
     movers.push({ kind: 'swellboat', pf: 'float', fid: id, tide, x: x0 * TS, x0: x0 * TS, x1: x0 * TS, y: (top + 1) * TS - 4, w: (x1 - x0 + 1) * TS, h: 8 }); };
   /* A PRIZE: a float that rides out at sea until a GRAPPLE WINCH hauls her ALONGSIDE (into the play plane at x0..x1); boss: true = the Freebooter hauls her himself */
-  const prize = (id, tide, x0, x1, rest = 35, top = 31, o = {}) => { floatsBy[tide].push({ id, x0, x1, y: rest, top, free: 4 }); prizes.push({ id, tide, x0, x1, ...o });
+  const prize = (id, tide, x0, x1, rest = 35, top = 31, o = {}) => { floatsBy[tide].push({ id, x0, x1, y: rest, top, free: 4 }); rigBands.push([x0, x1, top + 1, rest]); prizes.push({ id, tide, x0, x1, ...o });
     movers.push({ kind: 'prize', pf: 'prize', fid: id, tide, x: x0 * TS, x0: x0 * TS, x1: x0 * TS, y: (top + 1) * TS - 4, w: (x1 - x0 + 1) * TS, h: 8, boss: !!o.boss }); };
   /* A GRAPPLE WINCH at x on feet row y (or riding a boat: on = float id, x = its column on that boat) - what it hauls */
   const winch = (id, x, y, hauls, on) => { winches.push({ id, x, y, hauls, on: on || null }); ent('grapplewinch', x, y, { id, hauls, on: on || undefined }); };
@@ -96,7 +97,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   mast(40, 19); ent('silver', 40, 18); coins([41, 18]);   /* SILVER: the cutter's fighting top */ ent('deco', 40, 18, { kind: 'pennant', v: 0 });
   sign(49, 29, PF_SIGNS.two);
   boat('b2', 'swell', 53, 56); boat('b3', 'swellB', 58, 61);      /* TEST: two boats on two swells */
-  coins([54, 30], [59, 30]); foe('petrel', 57, 25);   /* a gull-petrel over the boats: it stoops while you wait on the swell */
+  coins([54, 30], [59, 30]); foe('petrel', 57, 25, { fly: true });   /* a gull-petrel over the boats: it stoops while you wait on the swell */
   hull(63, 96);                                                   /* THE SLOOP-O'-WAR */
   ent('cannon', 66, 29, { deck: true, aim: 1 });                  /* her bow chaser down her own deck: strike the breech, the shot clears her men */
   foe('cutlass', 72, 29); foe('netter', 76, 29);
@@ -109,7 +110,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   sign(93, 29, PF_SIGNS.grapple);
   winch('g1', 95, 29, 'p1');                                      /* TEACH: a winch on a hull, a prize riding out there */
   prize('p1', 'swell', 98, 108);
-  coins([100, 30], [103, 30], [106, 30]); foe('petrel', 104, 24);
+  coins([100, 30], [103, 30], [106, 30]); foe('petrel', 104, 24, { fly: true });
   hull(111, 150);                                                 /* THE BRIGANTINE */
   foe('cutlass', 118, 29); foe('bosun', 126, 29);
   mast(132, 18); foe('marine', 132, 17, { cnSkin: 'pistoleer' }); coins([131, 17], [133, 17]);
@@ -120,7 +121,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   sign(141, 25, PF_SIGNS.channel);
   winch('g2', 148, 25, 'p2');                                     /* TEST: from the castle, over a channel that runs with the swell */
   prize('p2', 'swellB', 152, 162);
-  coins([155, 30], [159, 30]); foe('petrel', 158, 24);
+  coins([155, 30], [159, 30]); foe('petrel', 158, 24, { fly: true });
   hull(165, 196);                                                 /* THE GALLEON'S WAIST */
   sign(166, 29, PF_SIGNS.boarders);
   mast(176, 20, DECK, 3);
@@ -137,7 +138,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   prize('p3', 'swellB', 206, 215);
   sign(193, 24, PF_SIGNS.sinking);
   boat('b8', 'swell', 218, 221); boat('b9', 'swellB', 224, 227);  /* over the whirl: two boats on two swells */
-  coins([219, 30], [225, 30]); foe('petrel', 210, 26); foe('petrel', 224, 25);
+  coins([219, 30], [225, 30]); foe('petrel', 210, 26, { fly: true }); foe('petrel', 224, 25, { fly: true });
   ent('silver', 222, 39);                                         /* SILVER: in the eye of the sinking - dive it in the release window */
     hull(229, 262);                                                 /* THE POWDER HULK */
   sign(230, 29, PF_SIGNS.hulk);
@@ -148,7 +149,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   plat(252, 28, 2); plat(253, 27, 1);
   ent('silver', 256, 29); coins([257, 29], [259, 29]);            /* SILVER: THE CAPTAIN'S CABIN */
   boat('b10', 'swell', 264, 267); boat('b11', 'swellB', 269, 271);
-  coins([265, 30], [270, 30]); foe('petrel', 268, 25);
+  coins([265, 30], [270, 30]); foe('petrel', 268, 25, { fly: true });
   hull(273, 296);                                                 /* THE GUN BRIG */
   block(283, 288, 19, 29); net(282, 18, 29);                     /* her GREAT CABIN, stacked three decks high: up her shrouds and over it (the rigging's band) */
   foe('marine', 286, 18, { cnSkin: 'pistoleer' }); coins([284, 18], [287, 18]);
@@ -169,7 +170,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   foe('bosun', 350, 24);
   coins([341, 29], [349, 24]);
   boat('s2', 'storm', 355, 358, 36, 30); boat('s3', 'stormB', 360, 363, 36, 30);
-  coins([356, 30], [361, 30]); foe('petrel', 359, 24);
+  coins([356, 30], [361, 30]); foe('petrel', 359, 24, { fly: true });
   hull(365, 378, DECK, { net: false });                           /* THE FREEBOOTER'S TENDER (no net: his flagship's wall is the next thing east) */
   sign(367, 29, PF_SIGNS.boss);
   ent('check', 373, 29);                                          /* SHRINE TWO */
@@ -208,7 +209,7 @@ export function buildPirateFleet({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 29 }, pools, falls: [], moversExtra: movers,
-    music: 'flotilla', night: false, rule: PF_RULE, pirateFleet: true, tides, pulls, pfPrizes: prizes, pfWinches: winches,
+    music: 'flotilla', night: false, rule: PF_RULE, pirateFleet: true, rigBands, tides, pulls, pfPrizes: prizes, pfWinches: winches,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
     palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(170,200,230,0.08)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
