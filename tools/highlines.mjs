@@ -76,6 +76,8 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
   ok(!B.ents.some(e => /gob|goblin/.test(e.t) || ['archer', 'shield', 'spear', 'slinger', 'miner', 'sprig', 'brute'].includes(e.t)), 'no goblins (theme): ' + [...new Set(B.ents.map(e => e.t))].join(' '));
   for (const e of B.ents.filter(q => ['goat', 'crossbow', 'check', 'silver', 'gate', 'sign'].includes(q.t))) { const fy = e.y + 1; const on = HL_DATA.landings.some(b => fy === b[1] && e.x >= b[0] && e.x <= b[2]) || at(e.x, fy) === T.SOLID;
     ok(on, e.t + ' at ' + e.x + ',' + e.y + ' stands on a deck'); }
+  for (const hj of B.ents.filter(e => e.t === 'hookjack')) ok(HL_DATA.lineKit.lines.some(d => d.id === hj.line), 'a hookjack on a real line (' + hj.line + ')');
+  ok(B.ents.filter(e => e.t === 'hookjack').length === HL_DATA.hookjacks.length && B.moversExtra.length === 3 && B.moversExtra.every(m => m.lk), 'the hookjacks are foes in the level; the cab and the weights are movers');
   ok(B.music === 'skysail' && !B.arenaStub.boss, 'its own music (skysail, free since the Sky Ship left); the arena is a STUB (SKYHOOK is a later lane)');
 }
 

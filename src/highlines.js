@@ -174,10 +174,17 @@ export function buildHighLines({ painter, T, TS }) {
   /* ---- THE CAVE MOUTH ---- */
   sign(9, 57, 'THE CAVE MOUTH. THE ORE ROAD RUNS INTO THE MOUNTAIN FROM HERE.');
   sign(20, 47, "SKYHOOK'S LANDING.");
+  /* THE HOOKJACKS as foes in main.js's list (src/highlines-hands.js spawn): a rider hangs on his line; a cutter stands at his station */
+  for (const hj of D.hookjacks) { const d = D.lineKit.lines.find(q => q.id === hj.line), k = (hj.x - d.a[0]) / (d.b[0] - d.a[0]), ly = d.a[1] + (d.b[1] - d.a[1]) * k;
+    const land = hj.role === 'cutter' ? D.landings.find(b => hj.x >= b[0] && hj.x <= b[2] && b[1] >= ly && b[1] - ly <= 3) : null;
+    ent('hookjack', hj.x, land ? land[1] - 1 : Math.floor(ly), { line: hj.line, role: hj.role, dir: hj.dir }); }
+  /* the kit's moving floors as main.js movers (tagged lk: src/highlines-hands.js mover copies their place from the kit every frame; main.js carries whoever stands on them) */
+  const lkMovers = [{ lk: 'cab:GD', x0: 24.5, x1: 27.5, top: 102 }, { lk: 'w:lift:A', x0: 3, x1: 7, top: 102 }, { lk: 'w:lift:B', x0: 9, x1: 13, top: 118 }]
+    .map(m => ({ kind: 'lift', lk: m.lk, x: m.x0 * TS, y: m.top * TS, w: (m.x1 - m.x0) * TS, h: 6, y0: m.top * TS, y1: m.top * TS, speed: 0 }));
   const START = { x: 4, y: 231 };
   const arena = { x0: D.arena.x0 * TS, x1: (D.arena.x1 + 1) * TS, floor: D.arena.floor * TS, stub: true, boss: null };   /* NO boss yet: the stub (a later lane) */
   return {
-    W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors: [],
+    W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: lkMovers, interiors: [],
     highlines: true, lineKit: JSON.parse(JSON.stringify(D.lineKit)), hookjacks: D.hookjacks.map(h => ({ ...h })),
     landings: D.landings.map(b => b.slice()), nets: D.nets.map(b => b.slice()), checkpoints: D.checkpoints.map(c => ({ ...c })), secrets: D.secrets.map(s => s.slice()), exit: D.exit.slice(), w: W, h: H,
     arenaStub: arena,

@@ -19,7 +19,7 @@ import { buildUnderleaf3, UL3_RULE } from './underleaf3.js'; import { buildRootw
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
-import { buildOreRoad } from './ore-road.js';
+import { buildOreRoad } from './ore-road.js'; import { buildHighLines, RULE as HL_RULE } from './highlines.js';   /* THE HIGH LINES (claude/highlines1, the greybox, DEV ONLY) */
 import { reworkScree } from './scree-rework.js';
 import { applyReachGaps, GAPS } from './reach-gaps.js';
 import { chaseScree } from './scree-chase.js';
@@ -8124,6 +8124,8 @@ LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds t
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 /* THE DUEL PIT (claude/pvpduel, Daniel 11-05): APPENDED (saves count levels by index). DUEL (BETA)'s one ring, entered from the tavern's pit (src/pvp-duel.js); hidden, pays nothing */
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
+/* THE HIGH LINES (claude/highlines1, the OPUS GREYBOX, 11-05): APPENDED (saves count levels by index). DEV ONLY - on no road, in no demo slice: hidden, no needs, reached with ?level=highlines - until its art lane and proof land (art before live; Daniel 11-05 15:27: Sky Road -> THE HIGH LINES -> Ore Road). src/highlines.js, src/highlines-hands.js, src/hookjack.js */
+LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to the cave mouth', rule: HL_RULE, build: () => buildHighLines({ painter, T, TS }), hidden: true, dev: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
