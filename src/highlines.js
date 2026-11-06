@@ -127,6 +127,29 @@ export const HL_DATA = {
   ],
 };
 
+/* ---------------- THE DRAWN SUPPORTS (claude/hlart): every deck stands on the line crews' iron or the cliff's own stone ---------------- */
+/* L.routeSupports kind 'hlgantry' (drawn by src/redraw/high_lines_tiles.js drawGantry through src/route-art.js): per landing / net run, posts at both ends and every 8 tiles. The rock lips (ROCK_LANDINGS) stand on granite
+   CORBELS; an iron deck beside rock (a cliff wall, the head station's arch) hangs from a wall BRACKET (an I-beam from a bolted plate, a knee brace and a tie rod at the tip); a deck in the open shaft stands on a lattice PYLON
+   with guy cables to the cliffs. No tile changes: the route, the walker and the sweep are untouched. */
+export const ROCK_LANDINGS = [14, 15, 16, 17, 18, 19, 20, 21, 22, 29, 30, 31, 32, 33];
+export const FLOOR_LANDINGS = [0, 34];   /* solid rock under them already (the line-yard, the head station floor) */
+export function hlSupports(D, at, solid) {
+  const out = [], runs = [];
+  D.landings.forEach((b, i) => { if (!FLOOR_LANDINGS.includes(i)) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: ROCK_LANDINGS.includes(i) }); });
+  for (const b of D.nets) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: false, net: true });
+  for (const r of runs) {
+    const wl = solid(at(r.x0 - 1, r.y)) || solid(at(r.x0 - 1, r.y + 1)), wr = solid(at(r.x1 + 1, r.y)) || solid(at(r.x1 + 1, r.y + 1)), run = [r.x0, r.x1];
+    const xs = new Set([r.x0, r.x1]); for (let x = r.x0 + 8; x < r.x1 - 3; x += 8) xs.add(x);
+    for (const x of [...xs].sort((a, b) => a - b)) {
+      const base = { x, y: r.y, kind: 'hlgantry', run };
+      if (r.rock) out.push({ ...base, bottom: r.y + 3, st: 'corbel', len: 3 });
+      else if (wl || wr) { const s = wl ? 'bracketL' : 'bracketR', wallX = wl ? r.x0 - 1 : r.x1 + 1, nearEnd = wl ? r.x0 : r.x1, farEnd = wl ? r.x1 : r.x0; out.push({ ...base, bottom: r.y + 3, st: s, len: 3, wallX, first: x === nearEnd, tip: x === farEnd }); }
+      else out.push({ ...base, bottom: r.y + 6, st: 'pylon', len: 6 });
+    }
+  }
+  return out;
+}
+
 /* ---------------- THE GAME'S LEVEL (src/level.js calls this) ---------------- */
 export function buildHighLines({ painter, T, TS }) {
   const { W, H } = HL, D = HL_DATA, L = painter(W, H), { set, block, ent } = L;
@@ -202,7 +225,7 @@ export function buildHighLines({ painter, T, TS }) {
     line: { id: hl.id, xa: la[0] * TS, ya: la[1] * TS, xb: lb[0] * TS, yb: lb[1] * TS }, winch: { ...Ar.winch }, swingY: Ar.swingY * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: lkMovers, interiors: [],
-    highlines: true, lineKit: JSON.parse(JSON.stringify(D.lineKit)), hookjacks: D.hookjacks.map(h => ({ ...h })),
+    highlines: true, hlKit: true, routeSupports: hlSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? T.SOLID : L.grid[y * W + x]), t => t === T.SOLID), lineKit: JSON.parse(JSON.stringify(D.lineKit)), hookjacks: D.hookjacks.map(h => ({ ...h })),
     landings: D.landings.map(b => b.slice()), nets: D.nets.map(b => b.slice()), checkpoints: D.checkpoints.map(c => ({ ...c })), secrets: D.secrets.map(s => s.slice()), exit: D.exit.slice(), w: W, h: H,
     arena,
     squadBands: [{ lo: 0, hi: 99999, spots: 0, why: 'THE HIGH LINES: every foe is placed by hand on its line or station (nothing sprinkled)' }],
@@ -224,7 +247,7 @@ export function buildHighLines({ painter, T, TS }) {
     music: 'skysail',   /* "Ile Flotante / Village In The Air", Le Mandrill, CC0 (audio/CREDITS.txt) - free since the Sky Ship left the road; Daniel may pick another */
     ambient: [{ x0: 0, x1: 99999, kind: 'highair' }],
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    palette: { sky: [[120, 150, 196], [226, 214, 196]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, haze: 'rgba(220,228,240,0.14)', grass: '#7a8a6a', grassL: '#9aa888', grassD: '#4a5a42', dirt: '#6a6a72', dirtL: '#8a8a94', dirtD: '#44444c', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },   /* PLACEHOLDER: blue-grey granite and rime (art owed: the CAVE MOUTH backdrop that grows as you climb) */
+    palette: { sky: [[86, 112, 160], [196, 206, 222]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, haze: 'rgba(220,228,240,0.14)', grass: '#7a8a6a', grassL: '#9aa888', grassD: '#4a5a42', dirt: '#6a6a72', dirtL: '#8a8a94', dirtD: '#44444c', canopy: ['#5a6a7a', '#7a8a9a', '#9aa8b8', '#c8d0d8'] },   /* PLACEHOLDER: blue-grey granite and rime (art owed: the CAVE MOUTH backdrop that grows as you climb) */
     duskStart: -1, duskLen: 1, night: false, glowNight: false,
     reachExact: false,
   };

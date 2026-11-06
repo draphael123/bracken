@@ -12,6 +12,7 @@
 //   shoveRider(P, vx) a gale harpy's beat on a rider swings him on his line (it does not tear him off)
 //   drawWorld / drawRider / drawHook   the greybox pictures (art owed: docs/linekit.md, zipclimb-plan.md 6)
 import * as LKT from './line-kit.js';
+import * as HLA from './redraw/high_lines_art.js'; import { drawHookjack } from './redraw/line_crew_art.js';   /* (claude/hlart) the hand-drawn line machinery, grip and Hookjack */
 import { HK, HK_SAY, newHook, hookStep, hookTake as hkTake, drawHook as hkDraw } from './hookjack.js';
 
 export const HLX_SAY = { take: 'STRIKE TO HAUL. THE RATCHET HOLDS YOU.', glide: 'JUMP KICKS OFF. DOWN DROPS. HOLD BACK TO BRAKE.', points: 'THE POINTS: YOU TOOK THE BRANCH', parted: 'THE LINE PARTS', creak: 'THE LINE CREAKS', gust: 'THE GUST IS COMING' };
@@ -80,12 +81,9 @@ export function makeHighLinesHands(c) {
   /* ---------- DRAWING (greybox) ---------- */
   function drawWorld(g, cx, cy, VW, VH, time) {
     if (!on()) return;
-    const L = c.L, TS = c.TS;
-    for (const nb of L.nets || []) { const x = nb[0] * TS - cx, y = nb[1] * TS - cy, w = (nb[2] + 1 - nb[0]) * TS; if (x > VW || x + w < 0 || y > VH + 8 || y < -8) continue;   /* the cargo nets: a rope mesh (art owed) */
-      g.fillStyle = '#8a7a5a'; for (let i = 0; i < w; i += 4) g.fillRect(Math.round(x + i), Math.round(y) + ((i >> 2) % 2), 1, 3); g.fillRect(Math.round(x), Math.round(y), w, 1); }
-    LKT.drawLines(g, kit, cx, cy, VW, VH, time);
+    HLA.drawLines(g, kit, cx, cy, VW, VH, time, c.players().filter(p => p && p.lk).map(p => ({ id: p.lk.id, x: p.lk.x, haul: p.lk.haul, buf: p.lk.buf, sway: p.lk.sway })));   /* (claude/hlart) winches, ropes, anchors, points boards, posts, hopper, cab, weights, gusts (the cargo nets are tiles now) */
   }
-  function drawRider(g, P, cx, cy) { if (on() && P && P.lk) LKT.drawRider(g, kit, P, cx, cy); }
-  function drawHook(g, e, cx, cy, time) { if (e.alive) hkDraw(g, e, cx, cy, time); }
+  function drawRider(g, P, cx, cy) { if (on() && P && P.lk) HLA.drawGrip(g, kit, P.lk, cx, cy, c.time()); }
+  function drawHook(g, e, cx, cy, time) { if (e.alive) drawHookjack(g, e, cx, cy, time); }
   return { on, load, reset, world, seat, held, mover, owns, spawn, hookUpdate, hookTake, shoveRider, drawWorld, drawRider, drawHook, kit: () => kit, HK, HK_SAY };
 }

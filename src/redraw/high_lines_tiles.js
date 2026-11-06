@@ -124,12 +124,13 @@ export function hlTile(t, x, y, at, T, L) {
 }
 
 /* ---------------------------------------------------------------- SUPPORTS: the iron gantry's pylons and wall brackets (L.routeSupports kind 'hlgantry') ---------------------------------------------------------------- */
-/* p = { x, y (the deck's row), bottom, kind: 'hlgantry', st: 'pylon' | 'bracketL' | 'bracketR', len, wall (tiles to the cliff), first, run: [x0, x1] }.
+/* p = { x, y (the deck's row), bottom, kind: 'hlgantry', st: 'pylon' | 'bracketL' | 'bracketR' | 'corbel', len, wallX (the column of rock a bracket bolts to), first, tip, run: [x0, x1] }.
    A BRACKET is a jib from the cliff: a wall plate bolted into the rock, an I-beam under the deck run to the plate, a knee brace and a tie rod up to the wall. A PYLON is the line crews' lattice mast under a deck
    hung in the shaft: two legs, X bracing, a ballast shoe - with a guy cable out to each cliff. Drawn in the world, over the tiles. */
 export function drawGantry(g, p, cx, cy) {
   const X = Math.round(p.x * 16 - cx), Y = Math.round(p.y * 16 - cy);
-  if (X < -40 || X > g.canvas.width + 40 || Y < -120 || Y > g.canvas.height + 40) return;
+  const rn = p.run || [p.x, p.x], XL = rn[0] * 16 - cx - 120, XR = (rn[1] + 1) * 16 - cx + 120;
+  if (XR < 0 || XL > g.canvas.width || Y < -120 || Y > g.canvas.height + 40) return;
   const len = Math.max(2, p.len || 3) * 16, run = p.run || [p.x, p.x];
   if (p.st === 'pylon') {
     const lx = X + 3, rx = X + 11;
@@ -142,18 +143,26 @@ export function drawGantry(g, p, cx, cy) {
     for (const s of [-1, 1]) { const wallD = (s < 0 ? p.x : 79 - p.x) * 16, run_ = Math.min(wallD, 110); for (let q = 0; q < run_; q += 2) { const t = q / run_; rect(g, X + 8 + s * q, Y + 8 - Math.round(t * t * 34 + t * 10), 1, 1, q % 6 < 4 ? IRON[5] : IRON[3]); } }   /* guy cables up and out to the cliffs */
     return;
   }
-  const s = p.st === 'bracketL' ? -1 : 1, wallX = Math.round((s < 0 ? 1 : 79) * 16 - cx + (s < 0 ? 0 : 0)) , tipX = X + (s < 0 ? 0 : 15);
-  const span = Math.abs(tipX - wallX);
-  if (p.first !== false) {                                                                                                              /* the I-beam under the deck run, from the plate */
-    const bx0 = Math.round((s < 0 ? 1 : run[0]) * 16 - cx), bx1 = Math.round((s < 0 ? run[1] + 1 : 79) * 16 - cx);
-    rect(g, Math.min(bx0, bx1), Y + 8, Math.abs(bx1 - bx0), 3, IRON[2]); rect(g, Math.min(bx0, bx1), Y + 8, Math.abs(bx1 - bx0), 1, IRON[4]); rect(g, Math.min(bx0, bx1), Y + 10, Math.abs(bx1 - bx0), 1, IRON[0]);
-    const plateX = s < 0 ? wallX : wallX - 4; rect(g, plateX, Y + 3, 5, 14, IRON[3]); rect(g, plateX, Y + 3, 5, 1, IRON[5]); for (const yy of [Y + 5, Y + 9, Y + 13]) { px2x(g, plateX + 1, yy, IRON[6]); px2x(g, plateX + 3, yy, IRON[1]); }   /* the wall plate and its bolts */
+  if (p.st === 'corbel') {                                                                                                                                              /* a granite corbel: a wedge of the cliff's own stone pinned under the lip with iron dowels */
+    const z = zoneOf(p.x, p.y), S = ZONE[z].s, d = Math.max(2, p.len || 3) * 16 - 4;
+    for (let y = 0; y < d; y++) { const w = Math.max(3, Math.round(15 - y * 11 / d)), x0 = X + 8 - (w >> 1); rect(g, x0, Y + 8 + y, w, 1, S[(y + (p.x & 1)) % 5 === 0 ? 1 : 2]); rect(g, x0, Y + 8 + y, 2, 1, S[4]); rect(g, x0 + w - 2, Y + 8 + y, 2, 1, S[0]); }
+    rect(g, X + 1, Y + 8, 14, 1, S[5]); rect(g, X + 2, Y + 11, 12, 2, IRON[2]); rect(g, X + 2, Y + 11, 12, 1, IRON[4]); px2x(g, X + 3, Y + 12, IRON[6]); px2x(g, X + 12, Y + 12, IRON[6]);   /* the iron strap and its dowels */
+    return;
   }
-  const kx = tipX - s * Math.min(span - 2, 40);                                                                                          /* the knee brace: tip to a point back along the beam, down */
-  for (let q = 0; q <= 22; q++) { const t = q / 22; rect(g, Math.round(tipX - s * 3 + (kx - tipX + s * 3) * t), Y + 11 + Math.round(t * 16), 2, 2, IRON[3]); }
-  rect(g, Math.round(kx) - 1, Y + 27, 3, 3, IRON[4]);
-  for (let q = 0; q <= 30; q++) { const t = q / 30; px2x(g, Math.round(tipX - s * 1 - s * Math.min(span, 60) * t), Y + 4 - Math.round(t * 18), (q & 1) ? IRON[5] : IRON[3]); }   /* the tie rod up and back into the cliff */
-  rect(g, tipX - (s < 0 ? 1 : 3), Y + 3, 4, 8, IRON[3]); rect(g, tipX - (s < 0 ? 1 : 3), Y + 3, 4, 1, IRON[6]);                         /* the tip bracket */
+  const s = p.st === 'bracketL' ? -1 : 1;                                                                                                                                  /* s: the way to the wall (the cliff or the rock arch the bracket is bolted to) */
+  const wc = p.wallX != null ? p.wallX : (s < 0 ? 0 : 79), wallPx = Math.round((s < 0 ? wc + 1 : wc) * 16 - cx);
+  if (p.first) {                                                                                                                                                        /* the I-beam under the deck run, from its wall plate to the far end */
+    const bx0 = s < 0 ? wallPx : Math.round(run[0] * 16 - cx), bx1 = s < 0 ? Math.round((run[1] + 1) * 16 - cx) : wallPx;
+    rect(g, bx0, Y + 8, bx1 - bx0, 3, IRON[2]); rect(g, bx0, Y + 8, bx1 - bx0, 1, IRON[4]); rect(g, bx0, Y + 10, bx1 - bx0, 1, IRON[0]);
+    const plateX = s < 0 ? wallPx : wallPx - 4; rect(g, plateX, Y + 2, 5, 15, IRON[3]); rect(g, plateX, Y + 2, 5, 1, IRON[5]); for (const yy of [Y + 4, Y + 9, Y + 14]) { px2x(g, plateX + 1, yy, IRON[6]); px2x(g, plateX + 3, yy, IRON[1]); }   /* the wall plate and its bolts */
+  }
+  const tipX = X + (s < 0 ? 15 : 0), reach = Math.max(4, Math.min(64, Math.abs(wallPx - tipX) - 6));
+  if (p.tip) {
+    for (let q = 0; q <= 24; q++) { const t = q / 24; rect(g, Math.round(tipX + s * (reach * 0.7) * t) - (s < 0 ? 1 : 0), Y + 11 + Math.round(t * 17), 2, 2, IRON[3]); }          /* the knee brace: down and back toward the wall */
+    rect(g, Math.round(tipX + s * reach * 0.7) - 1, Y + 28, 4, 3, IRON[4]);
+    for (let q = 0; q <= 32; q++) { const t = q / 32; px2x(g, Math.round(tipX + s * reach * t), Y + 3 - Math.round(t * 20), (q & 1) ? IRON[5] : IRON[3]); }                       /* the tie rod up and back into the cliff */
+    rect(g, tipX - (s < 0 ? 2 : 1), Y + 2, 4, 9, IRON[3]); rect(g, tipX - (s < 0 ? 2 : 1), Y + 2, 4, 1, IRON[6]);                                                          /* the tip bracket */
+  } else { rect(g, X + 4, Y + 11, 8, 5, IRON[2]); rect(g, X + 4, Y + 11, 8, 1, IRON[4]); px2x(g, X + 5, Y + 13, IRON[6]); px2x(g, X + 10, Y + 13, IRON[6]); }   /* a gusset under the beam */
 }
 function px2x(g, x, y, c) { rect(g, x, y, 1, 1, c); }
 
