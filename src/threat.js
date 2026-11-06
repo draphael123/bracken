@@ -19,6 +19,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   goat: 2, ram: 1.5, harpy: 2.5, troll: 4, spider: 3, sailer: 2, snuffer: 2.5, cutter: 3, hearthgob: 3,
   shardling: 2, fledgling: 2, suncatcher: 3, sentry: 2, lookout: 1.5, bosun: 3, cutlass: 2.5, boarder: 3, marine: 2.5,
   eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
+  walleel: 2, sunkencrew: 6, crewman: 0, cursedsailor: 0,   /* (claude/deep3) THE WALL EEL (an eel's told strike out of a wall: an eel's 2); THE SUNKEN CREW is a boss (6) - its four bodies and the Sailor are the anchor's, counted once */
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
   assassin: 3.5, berserker: 5, grandmother: 6,
   heronfoe: 2, badger: 2.5, royalboar: 3.5, gar: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2, logpile: 0,

@@ -30,7 +30,7 @@ import {stormShipPolish} from './storm-ship.js';
 import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
-import {crabTrench,underwaterKeep} from './deep-split.js';
+import {crabTrench,underwaterKeep} from './deep-split.js'; import { buildDeep3, deep3On } from './deep3.js';   /* (claude/deep3) THE DEEP 3, behind DEEP3_SHIPS / ?deep3=1 (src/deep3.js) */
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
@@ -8006,7 +8006,7 @@ export const LEVELS = [
   retiredYard('trial_reaper'),   /* (claude/yardswap) was: "THE BLOOD KNIGHT'S TRIAL", sub: 'greatsword and blood' */
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
-  { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },
+  { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: () => (deep3On() ? buildDeep3(theDeep(), T, TS) : theDeep()), needs: 'lamplit' },
   { id: 'keep', name: 'THE UNDERWATER KEEP', sub: 'his court beneath the waves', rule: 'FOLLOW THE AIR THROUGH THE FLOODED VAULTS.', build: theUnderwaterKeep, needs: 'deep' },
   /* THE SECOND ROAD. The sea arc closes in the trench; this opens the one that goes inland, which is
      why it is allowed to be quieter than the boss before it - see the arc rule in tools/curve.mjs. */
