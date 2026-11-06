@@ -8,40 +8,41 @@
 //   NEVER INVULNERABLE (B15): every blow or shot lands - x0.5 on him anywhere outside an opening (his rigger's coat; told: a clank and the word), x0.4 in his
 //     ward. Ranged heroes chip him on the line; melee heroes chip him on a gallery (climb a winch line), on the floor after a drop, and as he swings by.
 //   THE LEVEL'S VERB IS HIS OPENING (B1): the station's HIGH LINE is held taut by two TENSION LEVERS on the floor, one under each gallery. While he RIDES it
-//     (told: he hooks his trolley on, the levers glow amber), strike a lever - any blow, any shot - and THE LINE SLIPS: he falls onto the rock DOWN (the shared
-//     OPEN read, B10: a gold ring and a timer bar), blows x2 up to a purse (SH.downed.cap of him), then he gets up (a told white ring) into a ward (B3).
+//     out over the MIDDLE third of the station (told: he hooks his trolley on, the levers glow amber; over the middle they blink gold), strike a lever - any
+//     blow, any shot - and THE LINE SLIPS: he falls onto the rock DOWN (the shared
+//     OPEN read, B10: a gold ring and a timer bar) - the slack end swings him down beside the lever that slipped it - blows x2 up to a purse (SH.downed.cap of him), then he gets up (a told white ring) into a ward (B3).
 //     The line is strung again in SH.slip.restring s. Struck while he is not on the line, a lever only clanks.
 //   A SECOND, SMALLER OPENING: THE DROP. From his line he drops on a hero below (a red ring that follows, then SETS). Step out of the ring and he lands on
 //     nothing: JARRED (x1.5, a short purse) - the melee heroes' answer as much as the lever is.
 //   2 PHASES, one new thing in the second (B5), every move TOLD with its own windup and release pose (B16) and its own sound:
 //     P1 (100-50%)  THE RIDE (the opening's carrier), THE HOOK (thrown on its chain at a hero: yellow, a shield turns it; it pulls you in and off a line),
 //                   THE DROP (red ring under his line; jump/step out) -> on the floor THE SWEEP (the hook swung low round him, red: JUMP it), THE SHOVE (a hero
-//                   on his gallery: the hook's butt, yellow - off you go).
+//                   on his gallery: the hook's butt, yellow - off you go). Riding, he hooks at whoever waits by a lever (yellow: the lever is read, not camped).
 //     P2 (50-0%)    HE DRAWS HIS CUTTER (told, warded): HE CUTS YOUR LINE (a hero hauling up a winch to his gallery: a red !! and a fray bar, 1.4 s - top out,
 //                   kick off or drop), THE LOW SWING (he swings across the station on the hanging rope, the arc drawn red: jump him at its low point, roll
-//                   through, or stand near a wall where the arc is high), and on a ride he hooks at whoever waits at a lever (yellow: the denial you read).
+//                   through, or stand near a wall where the arc is high); his rides, drops and hooks come quicker.
 //   FAIR: no move without a tell; never two blows of his inside one tell of another (one move at a time); a cut line drops you onto the station floor (no hp).
 //   CO-OP: every seat is a target (the nearest, standing); a lever is anyone's; a downing's purse is shared; his blows are keyed once a hero a move.
 export const SH = {
-  hp: 900, w: 18, h: 32, markH: 44, hang: 40,                       // hang: from his line to his feet while he rides it (px)
+  hp: 1100, w: 18, h: 32, markH: 44, hang: 40,                      // hang: from his line to his feet while he rides it (px)
   chip: 0.5, wardMul: 0.4, p2: 0.5,                                 // B15: x0.5 outside openings (>= 0.4), x0.4 warded
   rest: [0.9, 0.7],                                                 // on a gallery between moves
   ride: { tell: [0.6, 0.5], v: [140, 175], trolley: 16, dmg: 10 },  // trolley: a rider on his line this close is knocked off (told by the ride's tell)
   hook: { tell: [0.75, 0.65], lock: 0.25, v: 420, r: 10, dmg: 12, pull: 200, life: 1.2, range: 300 },
-  drop: { tell: [0.85, 0.75], track: 0.45, trackV: 200, fall: 0.3, r: 24, dmg: 20, kick: -260, chance: [0.55, 0.7], land: [1.0, 0.8] },
+  drop: { tell: [0.95, 0.85], track: 0.4,  trackV: 200, fall: 0.3, r: 24, dmg: 20, kick: -260, chance: [0.55, 0.7], land: [1.0, 0.8] },
   jarred: { t: [1.2, 1.0], mul: 1.5, cap: 0.08 },
   sweep: { tell: [0.75, 0.65], t: 0.25, reach: 80, h: 14, dmg: 15, chance: [0.4, 0.5] },
   climb: { tell: 0.3, t: 0.6 },
-  slip: { fall: 0.45, restring: 5 },
+  slip: { fall: 0.45, restring: 5, span: 1 / 3, land: 44 },        // land: he comes down this far from the lever that slipped the line (on the middle side): the striker is beside him                  // span: the share of the line, round its middle, over which a lever slips him
   downed: { t: [3.6, 3.0], mul: 2.0, cap: 0.2 },
   rise: { tell: 0.6, r: 40, dmg: 6, push: 180, ward: 2.5 },
   shove: { tell: 0.6, t: 0.2, reach: 34, dmg: 12, push: 200, range: 44 },
   cut: { tell: 1.4, restring: 6 },
   swing: { tell: 0.9, t: 1.1, low: 6, dmg: 18, push: 220, every: 3 },
   phase: { tell: 1.4 },
-  leverHook: { tell: 0.6, range: 64 },
+  leverHook: { tell: [0.7, 0.6], range: 64 },                      // riding, a hook at whoever waits by a lever (both phases: the lever is read, not camped)
 };
-export const SKY_SAY = { wake: 'SKYHOOK', rule: 'STRIKE A LEVER WHILE HE RIDES: THE LINE SLIPS', slip: 'THE LINE SLIPS', downed: 'DOWN ON THE ROCK', jarred: 'JARRED',
+export const SKY_SAY = { wake: 'SKYHOOK', rule: 'STRIKE A LEVER AS HE RIDES OVER THE MIDDLE', notYet: 'WAIT TILL HE IS OVER THE MIDDLE', slip: 'THE LINE SLIPS', downed: 'DOWN ON THE ROCK', jarred: 'JARRED',
   p2: 'HE DRAWS HIS CUTTER', cut: 'HE CUTS YOUR LINE', swing: 'HE SWINGS LOW', ward: 'HE SHRUGS IT OFF', offLine: 'HE IS NOT ON THE LINE', hooked: 'HOOKED', rise: 'HE GETS UP',
   guard: 'RIGGER\'S COAT' };
 export const OPEN_NAME = { downed: 'DOWN', jarred: 'JARRED' };
@@ -51,6 +52,8 @@ export const skyTelling = e => TELLS.has(e.mode);
 /* ON THE LINE: the modes in which his trolley hangs from the high line (a lever slips it) */
 export const ON_LINE = new Set(['ride', 'dropTell']);
 export const skyOnLine = e => !!e && ON_LINE.has(e.mode);
+/* SLIPPABLE: on the line AND out over the middle span (the levers blink gold) - a lever slips him only then */
+export const skySlippable = (e, S) => skyOnLine(e) && Math.abs(e.x - S.G.mid) <= (S.G.end.E - S.G.end.W) * SH.slip.span / 2;
 /* THE MOVES' POSES: every told move a windup and a release that differ (B16) - src/skyhook-hands.js draws them */
 export const MOVES = [['rideTell', 'ride'], ['hookTell', 'hook'], ['dropTell', 'drop'], ['sweepTell', 'sweep'], ['cutTell', 'cut'], ['swingTell', 'swing'], ['shoveTell', 'shove'], ['rise', 'climb'], ['phaseTell', 'perch']];
 
@@ -79,6 +82,8 @@ export function stepSky(e, S, dt, heroes, w) {
   const G = S.G, i = S.ph - 1;
   S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.lineDown = Math.max(0, S.lineDown - dt);
   stepHooks(S, dt, heroes, w);
+  /* P2: the hook at whoever waits by a lever, told at the ride's start - thrown from the line (if he leaves the line first, it never comes) */
+  if (S.leverHook) { if (!skyOnLine(e)) S.leverHook = null; else { S.leverHook.t -= dt; if (S.leverHook.t <= 0) { const lh = S.leverHook; S.leverHook = null; throwHook(e, S, lh.tx, G.floorY - 8, lh.key, w); } } }
   if (e.mode === 'sleep') { atPerch(e, S); return; }
   e.modeT -= dt;
   const P = near(heroes, e.x, e.y), face = x => { e.face = Math.sign(x - e.x) || e.face; };
@@ -93,17 +98,16 @@ export function stepSky(e, S, dt, heroes, w) {
     case 'phaseTell': atPerch(e, S); if (e.modeT <= 0) { e.mode = 'perch'; S.restT = 0.4; } return;
     /* THE RIDE: hooked on at his gallery (told: the levers glow), across the high line to the other gallery */
     case 'rideTell': atPerch(e, S); if (e.modeT <= 0) { e.mode = 'ride'; e.rideTo = other(S.side); hangAt(e, S, G.end[S.side]); S.dropsThisRide = 0; S.n.ride++; e.hitKey = 'tr' + S.act; w.sound('ride');
-        if (S.ph > 1) { const lv = G.levers.map(l => ({ l, h: near(heroes.filter(q => onFloor(G, q)), l.x, G.floorY) })).filter(o => o.h && Math.abs(o.h.x - o.l.x) < SH.leverHook.range)[0];
-          if (lv) { S.leverHook = { t: SH.leverHook.tell, tx: lv.h.x, lever: lv.l.id, key: 'lh' + S.act }; S.n.leverHook++; w.sound('hookTell'); w.number(lv.l.x, G.floorY - 40, '!', '#ffd36b'); } } }
+        { const lv = G.levers.map(l => ({ l, h: near(heroes.filter(q => onFloor(G, q)), l.x, G.floorY) })).filter(o => o.h && Math.abs(o.h.x - o.l.x) < SH.leverHook.range)[0];
+          if (lv) { S.leverHook = { t: SH.leverHook.tell[i], tx: lv.h.x, lever: lv.l.id, key: 'lh' + S.act }; S.n.leverHook++; w.sound('hookTell'); w.number(lv.l.x, G.floorY - 40, '!', '#ffd36b'); } } }
       return;
     case 'ride': {
       const to = G.end[e.rideTo], dir = Math.sign(to - e.x) || 1; e.face = dir;
       hangAt(e, S, e.x + dir * Math.min(Math.abs(to - e.x), SH.ride.v[i] * dt));
       w.hit([e.x - SH.ride.trolley, e.x + SH.ride.trolley, e.y - SH.h - SH.hang, e.y - SH.h + 4], SH.ride.dmg, 'trolley', { key: e.hitKey, ridersOnly: G.line.id });
-      if (S.leverHook) { S.leverHook.t -= dt; if (S.leverHook.t <= 0) { const lh = S.leverHook; S.leverHook = null; throwHook(e, S, lh.tx, G.floorY - 8, lh.key, w); } }
       /* THE DROP: over a standing hero, once a ride at most */
       const below = heroes.find(h => onFloor(G, h) && Math.abs(h.x - e.x) < 10);
-      if (below && S.dropsThisRide === 0 && Math.abs(e.x - to) > 40) { S.dropsThisRide = 1; if (Math.random() < SH.drop.chance[i]) { e.mode = 'dropTell'; e.modeT = SH.drop.tell[i]; e.locked = false; e.lockX = e.x; S.act++; S.n.drop++; w.mark('!!'); w.sound('dropTell'); return; } }
+      if (below && S.dropsThisRide === 0 && Math.abs(e.x - to) > 24) { S.dropsThisRide = 1; if (Math.random() < SH.drop.chance[i]) { e.mode = 'dropTell'; e.modeT = SH.drop.tell[i]; e.locked = false; e.lockX = e.x; S.act++; S.leverHook = null;   /* one threat at a time: a drop calls off the lever hook */ S.n.drop++; w.mark('!!'); w.sound('dropTell'); return; } }
       if (Math.abs(e.x - to) < 1) { S.side = e.rideTo; e.mode = 'perch'; S.restT = SH.rest[i]; atPerch(e, S); w.sound('perch'); }
       return; }
     case 'dropTell': {   /* on the line over you: the ring follows, then SETS (red) */
@@ -131,7 +135,7 @@ export function stepSky(e, S, dt, heroes, w) {
     case 'climb': { const p = G.perch[e.climbTo], k = 1 - Math.max(0, e.modeT) / SH.climb.t; e.x = e.cx0 + (p.x - e.cx0) * k; e.y = e.cy0 + (p.y - e.cy0) * k - Math.sin(k * Math.PI) * 18;
       if (e.modeT <= 0) { S.side = e.climbTo; e.mode = 'perch'; S.restT = SH.rest[i]; atPerch(e, S); } return; }
     /* THE LINE SLIPS: off the line onto the rock (src/skyhook.js leverStruck starts it) */
-    case 'slip': { const k = 1 - Math.max(0, e.modeT) / SH.slip.fall; e.y = e.vy0 + (G.floorY - e.vy0) * k * k;
+    case 'slip': { const k = 1 - Math.max(0, e.modeT) / SH.slip.fall; e.y = e.vy0 + (G.floorY - e.vy0) * k * k; e.x = e.sx0 + (e.sx1 - e.sx0) * k;   /* the slack end swings him down toward the lever that slipped it */
       if (e.modeT <= 0) { e.y = G.floorY; e.mode = 'downed'; e.modeT = SH.downed.t[i]; e.openT0 = e.modeT; S.purse = e.maxHp * SH.downed.cap; S.n.downed++; w.shake(9); w.sound('downed'); w.fx('open', e.x, G.floorY); w.number(e.x, G.floorY - 50, SKY_SAY.downed, '#ffd36b'); }
       return; }
     case 'downed': e.y = G.floorY; if (e.modeT <= 0) { e.mode = 'rise'; e.modeT = SH.rise.tell; e.hitKey = 'ri' + S.act; S.act++; w.sound('rise'); w.mark('!'); w.number(e.x, G.floorY - 50, SKY_SAY.rise, '#ff9a5c'); } return;
@@ -199,15 +203,15 @@ function pick(e, S, heroes, w) {
   switch (k) {
     case 'ride': e.mode = 'rideTell'; e.modeT = SH.ride.tell[i]; w.sound('rideTell'); break;   /* no mark: hooking on throws no blow (the levers glow: src/skyhook-hands.js) */
     case 'hook': e.mode = 'hookTell'; e.modeT = SH.hook.tell[i]; e.target = P; e.aimX = P ? P.x : e.x; e.aimY = P ? P.y - 8 : G.floorY - 8; w.mark('!'); w.sound('hookTell'); break;
-    case 'shove': e.face = Math.sign(besideMe.x - e.x) || e.face; e.mode = 'shoveTell'; e.modeT = SH.shove.tell; w.mark('!'); w.sound('shoveTell'); break;
+    case 'shove': e.face = Math.sign(besideMe.x - e.x) || e.face; e.mode = 'shoveTell'; e.modeT = SH.shove.tell; S.n.shove++; w.mark('!'); w.sound('shoveTell'); break;
     case 'cut': e.mode = 'cutTell'; e.modeT = SH.cut.tell; w.mark('!!'); w.sound('cutTell'); break;
     case 'swing': e.mode = 'swingTell'; e.modeT = SH.swing.tell; w.mark('!!'); w.sound('swingTell'); w.number(G.mid, G.floorY - 70, SKY_SAY.swing, '#ff6b6b'); break;
   }
 }
-/* ---------- A LEVER STRUCK (any blow, any shot): on the line he slips; off it, a clank ---------- */
+/* ---------- A LEVER STRUCK (any blow, any shot): over the middle on his line he slips; anywhere else, a clank (told once why) ---------- */
 export function leverStruck(e, S, id, w) {
-  if (!skyOnLine(e)) { S.n.clank++; if (w) { w.sound('clank'); if (!S.told.offLine) { S.told.offLine = 1; w.number(e.x, S.G.floorY - 60, SKY_SAY.offLine, '#c8d8e8'); } } return false; }
-  S.n.slip++; S.leverHook = null; e.mode = 'slip'; e.modeT = SH.slip.fall; e.vy0 = e.y; e.x = Math.max(S.G.x0 + 20, Math.min(S.G.x1 - 20, e.x)); S.lineDown = SH.slip.restring; S.act++;
+  if (!skySlippable(e, S)) { S.n.clank++; const on = skyOnLine(e), k = on ? 'notYet' : 'offLine'; if (w) { w.sound('clank'); if (!S.told[k]) { S.told[k] = 1; w.number(e.x, S.G.floorY - 60, SKY_SAY[k], '#c8d8e8'); } } return false; }
+  S.n.slip++; S.leverHook = null; e.mode = 'slip'; e.modeT = SH.slip.fall; e.vy0 = e.y; e.sx0 = e.x; { const l = S.G.levers.find(q => q.id === id) || { x: e.x }, sd = Math.sign(e.x - l.x) || 1; e.sx1 = Math.max(S.G.x0 + 20, Math.min(S.G.x1 - 20, l.x + sd * SH.slip.land)); } S.lineDown = SH.slip.restring; S.act++;
   if (w) { w.cutLine(S.G.line.id, SH.slip.restring); w.sound('slip'); w.shake(5); w.number(e.x, e.y - 60, SKY_SAY.slip, '#ffd36b'); }
   return true;
 }
@@ -263,9 +267,9 @@ export function skyPlan(s) {
   /* 7. THE LEVER: while he rides (or hooks on), at the nearest lever and strike it */
   const lev = G.levers.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   const leverSpot = l => clamp(l.x + (P.x < l.x ? -1 : 1) * (s.ranged ? 40 : Math.max(10, reach - 6)));
-  if (lev && (e.mode === 'rideTell' || skyOnLine(e))) { const key = 'l' + S.n.ride + e.mode;
-    if (skyOnLine(e) && seenFor(key, s.v2 ? 0.05 : 0.15) && !roll(key + 'm', s.v2 ? 0 : PLAN.missLever)) { const sx = leverSpot(lev); out.gx = sx;
-      if (Math.abs(P.x - sx) < 8 && P.ground) { out.face = Math.sign(lev.x - P.x) || 1; out.atk = P.atk < 0; } out.why = 'strike the lever: he rides'; return out; }
+  if (lev && (e.mode === 'rideTell' || skyOnLine(e))) { const key = 'l' + S.n.ride + e.mode + (skySlippable(e, S) ? 'm' : '');
+    if (skySlippable(e, S) && seenFor(key, s.v2 ? 0.05 : 0.15) && !roll(key + 'm', s.v2 ? 0 : PLAN.missLever)) { const sx = leverSpot(lev); out.gx = sx;
+      if (Math.abs(P.x - sx) < 8 && P.ground) { out.face = Math.sign(lev.x - P.x) || 1; out.atk = P.atk < 0; } out.why = 'strike the lever: he is over the middle'; return out; }
     out.gx = leverSpot(lev); out.face = Math.sign(lev.x - P.x) || 1; out.why = 'to the lever: he hooks on'; return out; }
   /* 8. HE IS ON THE FLOOR (landed, jarred over, climbing): a cut while he is in reach */
   if (['landed', 'climbTell', 'climb'].includes(e.mode) && e.y > G.floorY - 30) { const sd = s.ranged ? 60 : SH.w / 2 + Math.max(6, reach - 8); out.gx = clamp(e.x + side * sd); if (dx < sd + 10) swingAtHim(); out.why = 'a cut while he is down here'; return out; }

@@ -166,12 +166,14 @@ export function makeSkyhookHands(ctx) {
     drawRigger(g, p, flash, time, S.ph);
     g.restore(); };
   function drawLever(g, l, cx, cy, time) {
-    const x = R(l.x - cx), y = R(l.y - cy), e = live(), hot = e && ctx.bossActive && (e.mode === 'rideTell' || SKM.skyOnLine(e));
+    const x = R(l.x - cx), y = R(l.y - cy), e = live(), hot = e && ctx.bossActive && (e.mode === 'rideTell' || SKM.skyOnLine(e)), now = hot && S && SKM.skySlippable(e, S);
     rect(g, x - 7, y - 10, 14, 10, C.iron); rect(g, x - 7, y - 10, 14, 2, '#6a7078'); rect(g, x - 2, y - 14, 4, 4, '#2a2e34');   /* the drum housing and the pawl */
     const a = l.swing > 0 ? 0.9 : -0.5; limb(g, x, y - 12, x + Math.sin(a) * 14, y - 12 - Math.cos(a) * 14, C.lever, 3); rect(g, x + R(Math.sin(a) * 14) - 2, y - 12 - R(Math.cos(a) * 14) - 2, 4, 4, C.cap);
-    if (hot) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); g.strokeStyle = C.gold; g.lineWidth = 2; g.strokeRect(x - 9, y - 26, 18, 26); g.lineWidth = 1; g.globalAlpha = 1; }
+    if (hot) { g.globalAlpha = now ? 0.6 + 0.4 * Math.sin(time * 24) : 0.45; g.strokeStyle = now ? '#fff3a0' : '#ffb347'; g.lineWidth = now ? 3 : 1; g.strokeRect(x - 9, y - 26, 18, 26); g.lineWidth = 1; g.globalAlpha = 1; }   /* amber while he is on the line; blinking gold over the middle: NOW */
   }
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss; const G = S.G, X = v => R(v - cx), Y = v => R(v - cy);
+    /* THE MIDDLE SPAN: two rag markers tied on the high line where a lever starts to slip him (art owed: the crew's red rags) */
+    { const half = (G.end.E - G.end.W) * SH.slip.span / 2; for (const sx of [G.mid - half, G.mid + half]) { rect(g, X(sx) - 1, Y(G.ropeY(sx)) - 1, 3, 3, C.cap); rect(g, X(sx), Y(G.ropeY(sx)) + 2, 1, 4, C.cap); } }
     /* THE SWING ROPE (it hangs over the middle of the station) */
     if (!e || (e.mode !== 'swing' && e.mode !== 'swingTell')) { g.globalAlpha = 0.8; limb(g, X(G.mid), Y(G.swingY), X(G.mid) + R(Math.sin(time * 1.3) * 2), Y(G.floorY - 60), C.rope, 1); g.globalAlpha = 1; }
     if (!ctx.bossActive || !e || e.t !== 'skyhook') return;
