@@ -1,0 +1,35 @@
+{
+  "time": "2026-11-06T23:17:18.749Z",
+  "kind": "fixed-cohort-catalogue-array-guard-nov06",
+  "scope": "One missing Array/Array.prototype guard repair. Identical original seven integrity cases and all26added assertions. New source is not qualified until this fresh cloud run passes. No Game integration.",
+  "sourceSha256": "d8aa5e9e456950af9d6a195246c7b61c3a6a297dabf93b331edce4942abb3d3b",
+  "priorFixtureSha256": "9c0cca96f9aa7d96e0a3b09ab63223e0d294eef8abea4d3a54f63ecaea540872",
+  "priorFixtureSource": "1af90edf16412c1ebd3f4245c4abbd23b14b8ff4:tools/per-sprite-integrity-nov03/check.mjs",
+  "priorCases": 7,
+  "additionalCases": 26,
+  "rootFrontier": "Explicit trusted initial native intrinsics; no universal hostile pre-root reflection/namespace Proxy authentication claim. Initial changes after root must decline admission; late operations use captured native methods/null descriptor records.",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "originalGameAndAll921ToolsUnchanged": true,
+  "GameIntegration": false,
+  "adopted": false,
+  "overallWorkComplete": false,
+  "parentFailedResult": "outputs/receipts/fixed-cohort-catalogue-result-nov06.json",
+  "parentFailedResultSha256": "b49a8704c65f93c85aacebd79a03ccfde8d2817ce6d8bea9715c87cf1b381717",
+  "exactUndoToFailedSource": true,
+  "edits": [
+    {
+      "before": "watch(globalThis,['Map','Set'",
+      "after": "watch(globalThis,['Array','Map','Set'"
+    },
+    {
+      "before": "const nativeRoot=native(P)",
+      "after": "const nativeRoot=native(Array)&&native(P)"
+    },
+    {
+      "before": "watch(Object.prototype,K(Object.prototype),true);",
+      "after": "watch(Object.prototype,K(Object.prototype),true);watch(Array,['from','prototype',Symbol.species]);watch(Array.prototype,K(Array.prototype),true);"
+    }
+  ],
+  "allAssertionsByteExact": true
+}

@@ -1,0 +1,27 @@
+name: Tightened array guard catalogue protocol
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/fixed-cohort-catalogue-array-guard-nov06/**
+      - .github/workflows/fixed-cohort-catalogue-array-guard-nov06.yml
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original integrity assertions plus captured observer and descriptor contracts
+        run: node tools/fixed-cohort-catalogue-array-guard-nov06/run.mjs
+        env:
+          FIXED_COHORT_CATALOGUE_OUT: ${{ runner.temp }}/fixed-cohort-catalogue-array-guard-nov06
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fixed-cohort-catalogue-array-guard-nov06
+          path: ${{ runner.temp }}/fixed-cohort-catalogue-array-guard-nov06/
+          if-no-files-found: error
