@@ -94,6 +94,11 @@ export async function buildItch({ out = join(ROOT, 'dist-itch'), zip = true, log
   html = html.replace('src="./src/loading-screen.js"', 'src="./loading-screen.js"').replace("import('./src/online-guest.js')", "import('./online-guest.js')").replace("import('./src/main.js')", "import('./main.js')");
   if (/\.\/src\//.test(html.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('index.html still points into src/');
   html = html.replace('<title>THORNROAD</title>', '<title>THORNROAD (demo)</title>\n<meta name="thornroad-build" content="demo ' + sha + '">');
+  /* (claude/onboard1) MODULEPRELOAD for the bundle: main.js and the chunks it imports statically are fetched IN PARALLEL from the first byte of the page, not as a second wave after the 8 MB main.js has arrived and been scanned. Only the static closure (online-guest.js and on-demand chunks stay out). */
+  { const seen = new Set(), walk = f => { if (seen.has(f) || !existsSync(join(site, f))) return; seen.add(f); const src = readFileSync(join(site, f), 'utf8'); for (const m of src.matchAll(/(?:^|[;}\s])(?:import|export)\s*(?:[^'"`;()]*?from\s*)?["']\.\/([^"']+)["']/g)) walk(m[1]); };
+    walk('loading-screen.js'); walk('main.js');
+    const links = [...seen].filter(f => f !== 'loading-screen.js').sort().map(f => '<link rel="modulepreload" href="./' + f + '">').join('\n');
+    const tag = '<script type="module" src="./loading-screen.js"></script>'; if (!html.includes(tag)) throw new Error('index.html: the loading-screen script tag not found'); html = html.replace(tag, links + '\n' + tag); }
   writeFileSync(join(site, 'index.html'), html);
   /* ---- static files ---- */
   const put = (rel, from = rel) => { mkdirSync(dirname(join(site, rel)), { recursive: true }); copyFileSync(join(ROOT, from), join(site, rel)); };
