@@ -131,7 +131,7 @@ function release(S, who, w) {
 }
 function stepMoveAct(S, who, dt, hs, w) {
   const M = CREW.moves[who.move], sc = who.sailor ? CREW.p2.scale : 1, bw = who.sailor ? CREW.sailor.w : CREW.w, bh = who.sailor ? CREW.sailor.h : CREW.h, G = S.G;
-  const hitAll = (box, dmg, key, o = {}) => { for (const h of hs) if (h.alive && over(box, heroBox(h))) { const r = w.hit(h, Math.round(dmg * (who.sailor ? 1.25 : 1)), MOVE_NAME[who.move], key, { blockable: M.block, ...o }); if (r) who.hit++; if (r === 'blocked' && o.onBlock) o.onBlock(h); } };
+  const hitAll = (box, dmg, key, o = {}) => { for (const h of hs) if (h.alive && over(box, heroBox(h))) { const r = w.hit(h, Math.round(dmg * (who.sailor ? 1.25 : 1)), MOVE_NAME[who.move], key, { blockable: M.block, fromX: who.x, ...o }); if (r) who.hit++; if (r === 'blocked' && o.onBlock) o.onBlock(h); } };
   switch (who.move) {
     case 'lunge': case 'bash': case 'charge': {
       const v = M.speed * (who.move === 'charge' ? 1 : 1); who.x = clamp(who.x + who.face * v * dt, G.x0 + bw / 2, G.x1 - bw / 2);
@@ -246,7 +246,7 @@ function stepShots(S, dt, hs, w) {
   for (const q of S.shots) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt;
     const box = { l: q.x - 5 * q.sc, r: q.x + 5 * q.sc, t: q.y - 3 * q.sc, b: q.y + 3 * q.sc };
     for (const h of hs) if (h.alive && !q.done && over(box, heroBox(h))) { const M = CREW.moves[q.kind];
-      const r = w.hit(h, Math.round(M.dmg * (q.by.sailor ? 1.25 : 1)), MOVE_NAME[q.kind], q.key, { blockable: M.block });
+      const r = w.hit(h, Math.round(M.dmg * (q.by.sailor ? 1.25 : 1)), MOVE_NAME[q.kind], q.key, { blockable: M.block, fromX: q.x - Math.sign(q.vx || 1) * 8 });
       if (r) { q.done = true; if (r === 'hit' && q.kind === 'reel') w.pull && w.pull(h, q.by.x, q.by.y, M.pull * q.sc); } }
     if (q.y >= G.floor - 1 || q.x < G.x0 || q.x > G.x1 || q.y < G.top) { q.done = true; q.miss = true; }
     if (q.done && !q.reported) { q.reported = true; const by = q.by;
@@ -255,7 +255,7 @@ function stepShots(S, dt, hs, w) {
   S.shots = S.shots.filter(q => !q.done && q.t > 0);
   for (const v of S.waves) { v.t -= dt; v.x += v.dir * CREW.moves.slam.waveV * dt;
     const box = { l: v.x - 8, r: v.x + 8, t: G.floor - CREW.moves.slam.waveH * v.sc, b: G.floor + 2 };
-    for (const h of hs) if (h.alive && over(box, heroBox(h))) w.hit(h, Math.round(CREW.moves.slam.wave * v.sc), 'THE SHOCKWAVE', v.key, { blockable: false }); }
+    for (const h of hs) if (h.alive && over(box, heroBox(h))) w.hit(h, Math.round(CREW.moves.slam.wave * v.sc), 'THE SHOCKWAVE', v.key, { blockable: false, fromX: v.x - v.dir * 8 }); }
   S.waves = S.waves.filter(v => v.t > 0 && v.x > G.x0 && v.x < G.x1);
 }
 /* THE LANTERNS: each burns its ten seconds; at nought the nearest free mate swims over to raise him */

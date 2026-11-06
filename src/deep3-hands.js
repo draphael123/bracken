@@ -90,7 +90,7 @@ export function makeDeep3Hands(ctx) {
   const onScreen = (x, y) => { const P = ctx.hero(); return !P || (Math.abs(P.x - x) < 360 && Math.abs(P.y - y) < 240); };
   function world() {
     return {
-      hit: (h, dmg, name, key, o = {}) => { const pp = h.pp; if (!pp || keyed(pp, key)) return null; const r = hurt(pp, A0 ? (S.ph === 2 && S.sailor ? S.sailor.x : pp.x - (o.knock || 0) * 10) : pp.x, dmg, { who: A0, name, unblockable: !o.blockable });
+      hit: (h, dmg, name, key, o = {}) => { const pp = h.pp; if (!pp || keyed(pp, key)) return null; const r = hurt(pp, o.fromX != null ? o.fromX : pp.x, dmg, { who: A0, name, unblockable: !o.blockable });   /* (from the attacker's side: a shield must face it) */
         return r === 'hit' || r === 'blocked' ? r : null; },
       pull: (h, x, y, v) => { if (h.pp) h.pp.d3Pull = { x, y, t: 0.45, v: v / 0.45 }; },
       say: (x, y, t, c) => ctx.number(x, y, t, c), mark: (who, m) => ctx.number(who.x, who.y - (who.sailor ? 58 : 36), m, m === '!!' ? '#ff6b6b' : '#ffd36b'),
@@ -158,7 +158,10 @@ export function makeDeep3Hands(ctx) {
     /* THE BELL's air rides with her */
     const bell = ctx.movers ? ctx.movers().find(m => m.d3bell) : null, boxes = ctx.deepBoxes ? ctx.deepBoxes() : null;
     if (bell && boxes) { if (!bellBox) bellBox = { l: 0, r: 0, t: 0, b: 0, kind: 'bell' }; if (!boxes.includes(bellBox)) boxes.push(bellBox);
-      bellBox.l = bell.x + 6; bellBox.r = bell.x + bell.w - 6; bellBox.t = bell.y - 40; bellBox.b = bell.y; bell.d3Ride = !!(ctx.hero() && ctx.hero().onMover === bell); }
+      bellBox.l = bell.x + 6; bellBox.r = bell.x + bell.w - 6; bellBox.t = bell.y - 40; bellBox.b = bell.y; bell.d3Ride = !!(ctx.hero() && ctx.hero().onMover === bell);
+      /* SHE CARRIES HER RIDER THROUGH THE RISING ROT: the upwelling runs only BELOW her (a rider is never lifted off her deck by it) */
+      const cur = ctx.deepCurrents ? ctx.deepCurrents() : null, up = cur && cur.find(c => c.kind === 'hot' && c.l === d.shaft.x0 * TS && !c.vent);
+      if (up) { if (up.t0 === undefined) up.t0 = up.t; up.t = Math.max(up.t0, bell.y + 10); } }
   };
   const rotBox = r => r.kind === 'pit' ? { l: r.x0 * TS, r: (r.x1 + 1) * TS, t: r.y0 * TS, b: (r.y1 + 1) * TS }
     : r.dir > 0 ? { l: r.x * TS, r: (r.x + 3) * TS, t: r.y0 * TS, b: (r.y1 + 1) * TS } : { l: (r.x - 2) * TS, r: (r.x + 1) * TS, t: r.y0 * TS, b: (r.y1 + 1) * TS };
