@@ -1,5 +1,16 @@
 [
   {
+    "date": "2026-11-07",
+    "batch": 148,
+    "lines": [
+      "THE DUEL PIT (BETA) is open: pick your fighter from the roster, then set lives, health, rounds, teams and the bot",
+      "THE GUEST BOOK at THE INN: your five save slots, with the co-op rules on the board",
+      "The lesson is now the TUTORIAL; R no longer returns you to a shrine - use the pause menu, then confirm",
+      "First-time help: a card after your first death, hero pick guidance, boss hints, and short explainers",
+      "Fixes: a new save now CONTINUEs correctly; heroes land before the walk-out; the Battering Beast falls and braces properly"
+    ]
+  },
+  {
     "date": "2026-11-06",
     "batch": 147,
     "lines": [
