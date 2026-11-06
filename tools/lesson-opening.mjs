@@ -55,7 +55,7 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
   const pg = await openPage({ audio: false, fonts: false, seed: 11 }); const E = e => pg.evalp(e); const sleep = ms => new Promise(r => setTimeout(r, ms));
   try {
     await E(`(async()=>{const {LEVELS,T}=await import('/src/level.js');window.__LV=LEVELS;window.__T=T;window.__IDX=LEVELS.findIndex(l=>l.id==='lesson');window.__TAV=LEVELS.findIndex(l=>l.id==='tavern');
-      window.__go=(h)=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();BK.load(__IDX);BK.start();BK.god=false;BK.sim(30);};
+      window.__go=(h)=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();BK.load(__IDX);BK.start();BK.lesson().O.reset();BK.god=false;BK.sim(30);};
       window.__p=()=>BK.players()[0];
       window.__stand=(col,face)=>{const p=__p();p.x=col*16+8;p.y=20*16-0.01;p.vx=0;p.vy=0;p.face=face||1;p.ground=true;};
       window.__O=()=>BK.lesson().O;
@@ -119,7 +119,7 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
       ok(Object.values(sv).some(v => v.lesson === 2 && v.innTold === 1), 'the save carries PROG.lesson and PROG.innTold (' + JSON.stringify(sv) + ')');
       /* the stall rule: a gate opens by itself and teaches nothing */
       await E(`__go('knight')`); await E(`__walk(38.5,1500)`);
-      const stall = await E(`(()=>{const O=__O();O.st.i=3;O.st.inStep=${STALL_S - 0.2};__stand(45,1);BK.sim(40);return {i:O.st.i,stalls:O.st.stats.stalls,third:(BK.lesson().PROG().taught||{}).third||0,done:O.st.done.attack};})()`);
+      const stall = await E(`(()=>{const O=__O();BK.lesson().PROG().taught={};O.st.i=3;O.st.inStep=${STALL_S - 0.2};__stand(45,1);BK.sim(40);return {i:O.st.i,stalls:O.st.stats.stalls,third:(BK.lesson().PROG().taught||{}).third||0,done:O.st.done.attack};})()`);
       ok(stall.done === 'stall' && stall.stalls === 1 && stall.third === 0, 'forty seconds with no headway opens the gate and teaches nothing (' + JSON.stringify(stall) + ')');
     }
     if (WANT.includes('inn')) {
