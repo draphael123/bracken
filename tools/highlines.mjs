@@ -21,7 +21,7 @@ import { HK, newHook, hookStep, hookTake, hookOpen } from '../src/hookjack.js';
 import { MOVE, HERO_MOVE_IDS, heroRunMul } from '../src/hero-move.js';
 import { T } from '../src/level.js';
 
-const QUICK = process.argv.includes('--quick');
+const QUICK = process.argv.includes('--quick'), ONLY = (process.argv.find(a => a.startsWith('--hero=')) || '').slice(7);
 const DT = 1 / 60;
 const lvl = () => JSON.parse(JSON.stringify(HL_DATA));
 let n = 0; const ok = (c, m) => { assert(c, m); n++; };
@@ -134,8 +134,8 @@ function sweep(hero, seats) {
     const scripts = [
       () => (q, st) => { st.armed = true; return st.t < 0.3 ? { up: true } : {}; },
       () => (q, st) => { st.armed = st.t > 0.05; return { up: !q.ground, jumpPress: st.t === 0 }; },
-      () => (q, st) => { st.armed = st.t > 0.05; const air = st.t <= 0.05 || !q.ground; return { up: air && st.t > 0, left: air, jumpPress: st.t === 0 }; },   /* a run-jump: the stick held till he lands (a player stops on the lip) */
-      () => (q, st) => { st.armed = st.t > 0.05; const air = st.t <= 0.05 || !q.ground; return { up: air && st.t > 0, right: air, jumpPress: st.t === 0 }; },
+      () => (q, st) => { st.armed = st.t > 0.05; const air = st.t <= 0.05 || !q.ground || (q.on && q.on.plat); return { up: air && st.t > 0, left: air, jumpPress: st.t === 0 }; },   /* a run-jump: the stick held till he lands (a player stops on the lip) */
+      () => (q, st) => { st.armed = st.t > 0.05; const air = st.t <= 0.05 || !q.ground || (q.on && q.on.plat); return { up: air && st.t > 0, right: air, jumpPress: st.t === 0 }; },
       () => (q, st) => { st.armed = !q.ground || st.t > 4; return st.t < 4 && q.ground ? { left: true } : {}; },
       () => (q, st) => { st.armed = !q.ground || st.t > 4; return st.t < 4 && q.ground ? { right: true } : {}; },
     ];
@@ -151,7 +151,7 @@ function sweep(hero, seats) {
           const el = st.t - st.on; if (strike && el > 0.2 && el < 0.3) { if (striker) q.face = Math.sign(post.x - q.x) || 1; return { strike: !!striker }; }
           if (el < wait) return {}; st.armed = true; const side = out.endsWith('L') ? 'left' : 'right';
           return { [side]: el - wait < 0.6, up: true, jumpPress: out.startsWith('j') && Math.abs(el - wait) < DT / 2 }; };
-        add('L:' + i, simulate(startAt(ex), sc, 0)); } }
+        { const r = simulate(startAt(ex), sc, 0); if (process.env.HL_LAND && +process.env.HL_LAND === i) console.log('   L' + i + ' plat ' + p.id + ' strike ' + strike + ' wait ' + wait + ' ' + out + ' -> ' + r); add('L:' + i, r); } } }
   }
   function expandLine(key) {
     const [, id, bk] = key.split(':'); const kit0 = lineInit(lvl()), z = kit0.lines[id]; const x0 = Math.max(z.xa + 9, Math.min(z.xb - 9, +bk * 32 + 16));
@@ -180,7 +180,7 @@ function sweep(hero, seats) {
   const secretI = L0.secrets.map(([sx, sy]) => 'L:' + L0.landings.findIndex(b => sx >= b[0] && sx <= b[2] && Math.abs(sy - b[1]) <= 2));
   return { nodes: seen.size, exitFrom: cps.filter(k => canExit.has(k)).length, cps: cps.length, lock, deathOnly, stuck, secrets: secretI.filter(k => seen.has(k)).length, nSecrets: secretI.length, edges, seen, canExit };
 }
-{ const rows = [], runs = QUICK ? [['knight', 1]] : [...HERO_MOVE_IDS.map(h => [h, 1]), ['knight', 2], ['knight', 3], ['knight', 4]];
+{ const rows = [], runs = ONLY ? [[ONLY.split('x')[0], +(ONLY.split('x')[1] || 1)]] : QUICK ? [['knight', 1]] : [...HERO_MOVE_IDS.map(h => [h, 1]), ['knight', 2], ['knight', 3], ['knight', 4]];
   for (const [hero, seats] of runs) { const ts = Date.now(), R = sweep(hero, seats); rows.push(hero + 'x' + seats + ' ' + R.nodes + 'n ' + ((Date.now() - ts) / 1000).toFixed(0) + 's');
     if (process.env.HL_DEBUG) { const miss = HL_DATA.landings.map((b, i) => 'L:' + i).filter(k => !R.seen.has(k)); console.log('  unreached landings: ' + miss.join(' ')); console.log('  can-not-exit: ' + [...R.seen].filter(k => !R.canExit.has(k)).join(' ')); }
     if (process.env.HL_DEBUG) console.log('  edges: ' + [...R.edges].filter(([k]) => k.startsWith('L:')).map(([k, s]) => k + '>' + [...s].filter(t => t.startsWith('L:') || t.startsWith('Z:')).map(t => t.replace(/:d+$/, '')).filter((t, i, a) => a.indexOf(t) === i).join(',')).join('  '));
