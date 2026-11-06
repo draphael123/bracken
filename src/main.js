@@ -7449,7 +7449,7 @@ function opnWords() {
 function opnEnter(fromInn) { const i = opnIndex(); if (i < 0) return false; opnFromInn = !!fromInn; rush = null; loadThen(i, () => { introSeen = true; startGame(); OPN.reset(); SFX.uiSel(); }); return true; }
 /* OUT of it - the door, or SKIP: always into the inn (the first arrival there says what it is). PROG.lesson: 1 finished, 2 skipped */
 function opnLeave(skipped) { setView('normal'); const done = OPN && OPN.st.i >= OT.STEPS.length; PROG.lesson = skipped && !done ? 2 : 1; if (skipped && !done) OPN.st.stats.skipped++; else OPN.st.stats.finished++; saveProgress(); if (opnFromInn) { partyToWant(); opnFromInn = false; } enterTavern(); }
-const OPN = OT.makeLesson({ L: () => L, P: () => P, time: () => time, TS, shrines: () => shrines, words: () => opnWords(), openGate: c => openGate(c, 0, LH - 1), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
+const OPN = OT.makeLesson({ L: () => L, P: () => P, enemies: () => enemies, time: () => time, TS, shrines: () => shrines, words: () => opnWords(), openGate: c => openGate(c, 0, LH - 1), sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
   say: (m, col) => number(P.x, P.y - 34, m, col), taught: k => { PROG.taught = PROG.taught || {}; PROG.taught[k] = 1; saveProgress(); }, hint: (m, t) => hintSay('tip', t, m),
   hurtMe: () => { P.hp = Math.min(P.hp, Math.max(1, Math.ceil(P.maxHp * 0.45))); P.flasks = Math.max(P.flasks | 0, 1); hintSay('tip', 3, 'THE ROAD HAS BITTEN YOU.'); }, save: () => saveProgress(), leave: s => opnLeave(s),
   text: (...a) => text(...a), wrap: (t, w, z) => wrap(t, w, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'), VW, VH });
@@ -37491,6 +37491,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */
 window.BK.duel = () => ({ D: DUELO, debug: () => DUELO.debug(), enter: bot => duelEnter(bot), begin: o => DUELO.begin(o), leave: () => duelLeave(), atPit: open => duelAtPit(open), index: duelIndex(), ships: PVP_SHIPS, state: () => state });   /* (claude/pvpduel) tools/pvp-duel.mjs */
+window.BK.lesson = () => ({ O: OPN, enter: fromInn => opnEnter(fromInn), leave: sk => opnLeave(sk), words: () => opnWords(), state: () => state, hp: () => ({ hp: P.hp, max: P.maxHp, flasks: P.flasks }), PROG: () => PROG });   /* (claude/tutorial1) tools/lesson-opening.mjs */
 window.BK.yard = () => ({ Y: YARD, seeds: () => seeds, enter: fromInn => yardEnter(fromInn), leave: () => yardLeave(), inn: () => yardFromInn, open: p => yardBoardOpen(p || players[0]), nums: () => nums, state: () => state });   /* (claude/arenayard) tools/arena-yard.mjs */
 window.BK.hvr = () => (HVR && HVR.on() ? HVR.read() : null); window.BK.hvrHands = () => HVR;   /* (claude/hanging3) the ropes, for the tools and the bot */
 window.BK.hoists = () => hoistDecks(); window.BK.hoistLoad = (m, n) => { hoistOf(m).load += (n || 1); return hoistOf(m).load; }; window.BK.cutHoist = m => cutHoist(m);

@@ -10,18 +10,19 @@
 
 export const OT = { W: 112, H: 26, FLOOR: 20, START: 4 };
 /* the stations, by column (x0..x1 is where a step is "the one you are on"). gate: the column of the port that lifts when it is done (null = the ground itself is the gate).
-   taught: the PROG.taught key it writes (main.js lessonHint ids: 'third', 'heavyblow', 'parry' ...) - only for a thing the wood would otherwise teach again. */
+   taught: the PROG.taught key it writes - 'third' is main.js lessonHint's (written only if a heavy third blow was struck); the rest are this lesson's own marks (jump, highjump, block, dodge, flask, shrine) for later hints to read. */
 export const STEPS = [
   { id: 'move',   name: 'MOVE',        x0: 2,  x1: 14,  gate: null, taught: null,    sign: 'THE ROADSIDE LESSON. WALK ON.' },
-  { id: 'jump',   name: 'JUMP',        x0: 15, x1: 27,  gate: null, taught: null,    sign: 'A CURB AND A DITCH. JUMP THEM.' },
-  { id: 'high',   name: 'HIGHER',      x0: 28, x1: 38,  gate: null, taught: null,    sign: 'A HIGH LEDGE. HOLD THE JUMP.' },
+  { id: 'jump',   name: 'JUMP',        x0: 15, x1: 27,  gate: null, taught: 'jump',  sign: 'A CURB AND A DITCH. JUMP THEM.' },
+  { id: 'high',   name: 'HIGHER',      x0: 28, x1: 38,  gate: null, taught: 'highjump', sign: 'A HIGH LEDGE. HOLD THE JUMP.' },
   { id: 'attack', name: 'ATTACK',      x0: 39, x1: 50,  gate: 51,   taught: 'third', sign: 'STRAW MEN. THREE BLOWS IN A RUN: A HEAVY THIRD.', need: 3 },
-  { id: 'block',  name: 'BLOCK',       x0: 52, x1: 63,  gate: 64,   taught: 'parry', sign: 'A STRAW SWORDSMAN. NOTHING HERE HURTS YOU.', need: 2 },
-  { id: 'dodge',  name: 'DODGE',       x0: 65, x1: 76,  gate: 77,   taught: 'dashatk', sign: 'ANOTHER. THIS TIME, GET OUT OF THE WAY.', need: 2 },
-  { id: 'flask',  name: 'FLASK',       x0: 78, x1: 88,  gate: 89,   taught: null,    sign: 'THE ROAD HAS BITTEN YOU. A FLASK MENDS IT.' },
-  { id: 'shrine', name: 'SHRINE',      x0: 90, x1: 99,  gate: 100,  taught: null,    sign: 'A SHRINE. LIGHT IT.' },
+  { id: 'block',  name: 'BLOCK',       x0: 52, x1: 63,  gate: 64,   taught: 'block', sign: 'A STRAW SWORDSMAN. NOTHING HERE HURTS YOU.', need: 1 },
+  { id: 'dodge',  name: 'DODGE',       x0: 65, x1: 76,  gate: 77,   taught: 'dodge', sign: 'ANOTHER. THIS TIME, GET OUT OF THE WAY.', need: 1 },
+  { id: 'flask',  name: 'FLASK',       x0: 78, x1: 88,  gate: 89,   taught: 'flask', sign: 'THE ROAD HAS BITTEN YOU. A FLASK MENDS IT.' },
+  { id: 'shrine', name: 'SHRINE',      x0: 90, x1: 99,  gate: 100,  taught: 'shrine', sign: 'A SHRINE. LIGHT IT.' },
 ];
-export const GEO = { curb: 19, pit: [23, 25], ledge: [32, 34], door: 106, shrine: 94, dummies: [43, 46, 48], block: { foe: 61, lx: [56, 63] }, dodge: { foe: 74, lx: [69, 76] }, inn: { x0: 101, x1: 109 } };
+export const GEO = { curb: 19, pit: [23, 25], ledge: [32, 34], door: 106, shrine: 94, dummies: [43, 46, 48], block: { foe: 56, lx: [53, 63] }, dodge: { foe: 69, lx: [66, 76] }, inn: { x0: 101, x1: 109 } };
+export const ROLL_GRACE = 0.45;   /* s: a roll that ended up to this long before his blow still counts (a dodge is 0.2 s; the flash is the beat, not a frame) */
 export const STALL_S = 40;   /* s in one station with no headway: its gate opens anyway ("ON WE GO"): a lesson never traps anybody (a step opened this way teaches nothing) */
 export const INN_SIGN = "WAYMEET'S CROSSROADS INN";
 export const INN_CARD = { title: 'THE CROSSROADS INN', body: 'YOUR HOME BETWEEN ROADS: FRIENDS JOIN HERE, CHANGE YOUR LOOK, TRAIN, THEN TAKE THE ROAD.' };
@@ -62,9 +63,9 @@ export function buildLesson({ painter, T }) {
   for (const x of GEO.dummies) ent('dummy', x, gy);
   // ---- BLOCK and DODGE: a straw swordsman each, slow (tells twice as long), never down, kept to his own station ----
   ent('swornsword', GEO.block.foe, gy, { face: -1, trainer: 'drill', lx0: GEO.block.lx[0], lx1: GEO.block.lx[1], yardPace: 2.0 });
-  ent('swornsword', GEO.dodge.foe, gy, { face: -1, trainer: 'drill', lx0: GEO.dodge.lx[0], lx1: GEO.dodge.lx[1], yardPace: 2.0 });
+  ent('swornsword', GEO.dodge.foe, gy, { face: -1, trainer: 'drill', lx0: GEO.dodge.lx[0], lx1: GEO.dodge.lx[1], yardPace: 1.5, yardTell: true });   /* his sword flashes at the beat: roll as it flashes */
   // ---- the shrine ----
-  ent('shrine', GEO.shrine, gy);
+  ent('check', GEO.shrine, gy);   /* a shrine is the 'check' ent */
   // ---- the gates: a port from row 14 to the floor with stone above, so no jump gets over one ----
   const gates = [];
   for (const s of STEPS) if (s.gate) { for (let y = 14; y <= gy; y++) set(s.gate, y, T.PORT); block(s.gate, s.gate, 0, 13); gates.push({ id: s.id, col: s.gate }); }
@@ -79,15 +80,15 @@ export function buildLesson({ painter, T }) {
 /* which step a column belongs to (or the last one past the end) */
 export const stepAtCol = col => STEPS.findIndex(s => col >= s.x0 && col <= s.x1);
 
-/* THE RUNTIME. api: { L(), P(), time(), TS, shrines(), words(), openGate(col), sfx(k), say(msg, col), taught(kind), hint(msg, secs), hurtMe(), save(), leave(), text, wrap, board, VW, VH } */
+/* THE RUNTIME. api: { L(), P(), enemies(), time(), TS, shrines(), words(), openGate(col), sfx(k), say(msg, col), taught(kind), hint(msg, secs), hurtMe(), save(), leave(), text, wrap, board, VW, VH } */
 export function makeLesson(api) {
-  const st = { i: 0, done: {}, ev: { hit: 0, third: 0, blocked: 0, dodged: 0 }, inStep: 0, jumped: false, drunk: false, prime: false, card: null, t: 0, stats: { skipped: 0, finished: 0, stalls: 0 }, nearDoor: false };
+  const st = { i: 0, done: {}, ev: { hit: 0, third: 0, blocked: 0, dodged: 0 }, inStep: 0, jumped: false, drunk: false, prime: false, card: null, t: 0, stats: { skipped: 0, finished: 0, stalls: 0 }, nearDoor: false, rollAt: -9 };
   const on = () => !!api.L() && !!api.L().opening;
   const col = () => { const P = api.P(); return P ? P.x / api.TS : 0; };
   const reset = () => { st.i = 0; st.done = {}; st.ev = { hit: 0, third: 0, blocked: 0, dodged: 0 }; st.inStep = 0; st.jumped = false; st.drunk = false; st.prime = false; st.nearDoor = false; };
   function finish(step, why) {
     st.done[step.id] = why || 'ok'; st.inStep = 0; if (step.gate && api.L().opening.gates.some(g => g.id === step.id)) api.openGate(step.gate);
-    if (why !== 'stall') { api.sfx('coin'); api.say(step.name + ' DONE', '#8fd160'); if (step.taught) api.taught(step.taught); } else { st.stats.stalls++; api.say('ON WE GO', '#ffd36b'); }
+    if (why !== 'stall') { api.sfx('coin'); api.say(step.name + ' DONE', '#8fd160'); if (step.taught && (step.id !== 'attack' || st.ev.third > 0)) api.taught(step.taught); } else { st.stats.stalls++; api.say('ON WE GO', '#ffd36b'); }
     st.i = Math.min(STEPS.length, STEPS.findIndex(s => !st.done[s.id]) < 0 ? STEPS.length : STEPS.findIndex(s => !st.done[s.id]));
   }
   /* each step's own test, from the world: what the hero did, polled; the hooks (hit / blow) only count */
@@ -110,7 +111,10 @@ export function makeLesson(api) {
     const P = api.P(); if (!P || P.dead) return; st.t += dt;
     const c = col(), here = stepAtCol(Math.floor(c));
     if (!P.ground && P.vy < -120 && here === 1) st.jumped = true;
+    if (P.dodge > 0) st.rollAt = api.time();   /* the last frame you were rolling */
     if (P.drinkT > 0 && P.drunk) st.drunk = true;
+    /* A ROLL THROUGH HIS BLOW: his swing lands only on a hero in front of him within reach, so a roll that carries you through never calls damagePlayer - read his own swing (mode 'cut', once) against your roll */
+    for (const e of api.enemies()) { if (e.t !== 'swornsword' || !e.trainer) continue; if (e.mode === 'cut') { if (!e.lessonCut) { e.lessonCut = true; if (api.time() - st.rollAt < ROLL_GRACE && Math.abs(e.x - P.x) < 70 && Math.abs(e.y - P.y) < 24) st.ev.dodged++; } } else e.lessonCut = false; }
     if (st.i >= STEPS.length) { st.nearDoor = Math.abs(c - (OT.W > 0 ? api.L().opening.door : 0)) < 1.6 && P.ground; return; }
     const step = STEPS[st.i];
     if (step.id === 'flask' && !st.prime && c >= step.x0 + 1) { st.prime = true; api.hurtMe(); }   /* the road has bitten you: 45% health and at least one flask, once, when you reach it */
