@@ -8125,7 +8125,7 @@ LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds t
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
 /* SIREN ROCKS (claude/sirenrocks, the OPUS GREYBOX, 11-06; scratch/plan-water-1105.md item 4, pulled forward 11-06 with Daniel's OK): APPENDED (saves count levels by index). HIDDEN, no map node:
    OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=sirenrocks). Its place when it goes live (plan Q1 rec)
-   is the main road REEF -> SIREN ROCKS -> FLOTILLA: needs 'reef' is that link; the Flotilla's needs moves through src/route-insert.js (claude/greatdune) when SR_SHIPS flips. THE NAGA QUEEN is its boss */
+   is the main road REEF -> SIREN ROCKS -> FLOTILLA: needs 'reef' is that link; the Flotilla's needs moves through claude/greatdune's road-insert table when SR_SHIPS flips. THE NAGA QUEEN is its boss */
 LEVELS.push({ id: 'sirenrocks', name: 'SIREN ROCKS', sub: 'the song pulls you', rule: SR_RULE, build: () => buildSirenRocks({ painter, T, TS }), hidden: true, needs: 'reef' });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

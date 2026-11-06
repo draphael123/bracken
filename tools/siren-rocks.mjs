@@ -189,3 +189,26 @@ for (const [song, lip, landX0, landRow] of CROSS) {
 
 console.log(songReport.join('\n'));
 console.log('siren-rocks: ' + n + ' checks ok');
+
+/* ---------- 9. THE HANDS RUN (a stub world, no page): load, every frame for a minute in the level and in the fight, every draw call, a stone broken, the read ---------- */
+{ const { makeSirenRocksHands } = await import('../src/siren-rocks-hands.js');
+  const g = new Proxy({}, { get: (o, k) => (k in o ? o[k] : (o[k] = typeof k === 'string' && /Style|Width|Alpha|font|textAlign/.test(k) ? undefined : () => {})), set: (o, k, v) => { o[k] = v; return true; } });
+  const L2 = row.build(), P = { x: 20 * TS, y: 28 * TS, vx: 0, vy: 0, w: 10, h: 14, dead: false }, enemies = [], parts = [], said = [];
+  let boss = null, bossActive = false;
+  const ctx = { get L() { return L2; }, get players() { return [P]; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP: { nagaguard: NGM.NG.hp, nagaqueen: NQM.NQ.hp }, hero: () => P, time: () => 0,
+    poolLevel: (p, y) => { p.y = y; }, moveBody: (b, dx, dy) => { b.x += dx; b.y += dy; return { ground: false }; }, enemies: () => enemies, parts: () => parts, isSolid: (x, y) => solid(x, y), VW: () => 480, view: () => ({ x0: P.x - 240, y0: 0, x1: P.x + 240, y1: 640 }),
+    number: (x, y, t) => said.push(t), text: () => {}, burst: () => {}, shake: () => {}, ring: () => {}, turned: () => {}, damagePlayer: () => 'hit', asPlayer: (p, fn) => fn(), upright: p => !p.dead, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, box: b => ({ l: b.x - 5, r: b.x + 5, t: b.y - 14, b: b.y }), sound: () => {} };
+  const SRH = makeSirenRocksHands(ctx); ok(SRH.on(), 'the hands are on in Siren Rocks');
+  SRH.clear(); for (const e of L2.ents) { const q = SRH.spawnEnt({ x: e.x * TS + 8, y: (e.y + 1) * TS, alive: true, face: e.face || 1 }, e); if (q) { enemies.push(q); if (q.t === 'nagaqueen') boss = q; } }
+  ok(enemies.filter(e => e.t === 'nagaguard').length === L2.ents.filter(e => e.t === 'nagaguard').length && boss, 'every naga and the Queen spawn');
+  for (const x of [20, 104, 200, 245, 258, 300]) { P.x = x * TS; for (let i = 0; i < 300; i++) { SRH.update(DT); for (const e of enemies) SRH.updateEnt(e, DT); for (const m of L2.moversExtra) SRH.mover(m, DT); } SRH.drawBack(g, P.x - 240, 0, 1); SRH.drawOver(g, P.x - 240, 0, 1); for (const m of L2.moversExtra) SRH.drawMover(g, m, 0, 0, 1); for (const e of enemies) SRH.drawEnt(g, e, 0, 0, 1); }
+  P.x = 256 * TS + 8; P.y = 28 * TS; SRH.strike({ l: P.x - 12, r: P.x + 12, t: P.y - 20, b: P.y }); ok(SRH.read().stones.find(s => s.id === 'hs').broken, 'a blow on the holding stone breaks it');
+  ok(SRH.read().songs.find(s => s.id === 'hs').still, 'its song is stilled');
+  bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; P.x = 370 * TS; P.y = 30 * TS;
+  let sawP2 = false; for (let i = 0; i < 60 * 120; i++) { SRH.update(DT); SRH.updateEnt(boss, DT); if (i % 30 === 0) boss.hp -= 60 * SRH.take(boss, 1, 'test'); const r = SRH.read(); if (r.queen.ph === 2) sawP2 = true;
+    if (r.queen.singing && i % 20 === 0) { SRH.breakStone('A1'); SRH.breakStone('A2'); } if (i % 60 === 0) { SRH.drawEnt(g, boss, 0, 0, i * DT); SRH.drawOver(g, 0, 0, i * DT); SRH.barName(boss); } if (boss.hp <= 0) break; }
+  ok(sawP2, 'the fight reaches phase two through the hands'); ok(SRH.read().tides.find(t => t.id === 'spire'), 'the spire tide is in the kit');
+  SRH.end(boss); ok(true, 'end runs');
+  const H0 = makeSirenRocksHands({ ...ctx, get L() { return LEVELS.find(d => d.id === 'reef').build(); } }); H0.clear(); ok(!H0.on(), 'inert on any other level (the Reef)');
+}
+console.log('siren-rocks (with the hands): ' + n + ' checks ok');

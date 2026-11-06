@@ -2,7 +2,7 @@
 // the water arc pulled forward 11-06 with Daniel's OK; the concept brief scratch/brief-sirenrocks-1024.md, Daniel 10-24 07:55 - the 11-05 plan wins where they differ).
 // A NEW level, built from nothing. OFF THE ROAD until its art pass merges and the browser proofs run (art before live): an APPENDED, HIDDEN row in src/level.js
 // (no map node, not on the demo list; dev only ?level=sirenrocks). SR_SHIPS is the road switch: false = the live game is unchanged (the row is hidden, nothing
-// moves). Its place when it ships (plan Q1 rec): the main road REEF -> SIREN ROCKS -> FLOTILLA, through src/route-insert.js's table (claude/greatdune; not on this
+// moves). Its place when it ships (plan Q1 rec): the main road REEF -> SIREN ROCKS -> FLOTILLA, through claude/greatdune's road-insert table (not on this
 // base - the row to add is in the lane report).
 //
 // THE RULE (L.rule): THE SONG PULLS YOU.
