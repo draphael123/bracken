@@ -235,6 +235,9 @@ async function pageTextFit(input) {
     for (let i = 0; i < 5; i++) frame('slots full #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
     for (const i of [1, 4]) ls.removeItem('bracken.progress.' + i);   /* and empty ones among full ones */
     for (let i = 0; i < 5; i++) frame('slots mixed #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
+    /* (claude/innsaves) THE GUEST BOOK: the same five slots from the inn, and the PARTY LEAVES THE INN question over them */
+    for (const i of [0, 3]) frame('guest book #' + i, () => { BK.state = 'slots'; BK.ui.slotInn = true; BK.ui.bookAsk = false; BK.ui.slotI = i; }, { settle: 20 });
+    frame('guest book party ask', () => { BK.state = 'slots'; BK.ui.slotInn = true; BK.ui.bookAsk = true; BK.ui.slotI = 0; }, { settle: 20 }); BK.ui.bookAsk = false; BK.ui.slotInn = false;
     /* (claude/shipfix) A DAMAGED SLOT is a row of its own words (CORRUPT / NEWER SAVE) and a FIX IT list over the picker */
     ls.setItem('bracken.progress.1', '{"hero":"knight","coins":1'); ls.setItem('bracken.progress.4', JSON.stringify({ hero: 'pyro', progressionVersion: 99 }));
     for (let i = 0; i < 5; i++) frame('slots damaged #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.fixAsk = -1; }, { settle: 20 });
