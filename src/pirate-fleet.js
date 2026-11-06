@@ -93,7 +93,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   hull(27, 50);                                                   /* THE CUTTER */
   sign(28, 29, PF_SIGNS.net);
   foe('cutlass', 36, 29); foe('cutlass', 45, 29);
-  mast(40, 19); ent('silver', 40, 18); coins([41, 18]);   /* SILVER: the cutter's fighting top */ ent('deco', 40, 12, { kind: 'pennant', v: 0 });
+  mast(40, 19); ent('silver', 40, 18); coins([41, 18]);   /* SILVER: the cutter's fighting top */ ent('deco', 40, 18, { kind: 'pennant', v: 0 });
   sign(49, 29, PF_SIGNS.two);
   boat('b2', 'swell', 53, 56); boat('b3', 'swellB', 58, 61);      /* TEST: two boats on two swells */
   coins([54, 30], [59, 30]); foe('petrel', 57, 25);   /* a gull-petrel over the boats: it stoops while you wait on the swell */
@@ -116,7 +116,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   block(140, 150, 26, 29);                                        /* her stern castle (four rows up), a stair of steps to it */
   plat(137, 28, 2); plat(138, 27, 2);
   coins([139, 25], [143, 25]);
-  ent('silver', 150, 15); plat(149, 16, 2); mast(146, 16, 26, 1);  /* SILVER: up her mizzen from the castle, out on its yard */
+  ent('silver', 150, 15); mast(146, 16, 26, 1); plat(147, 16, 4);  /* SILVER: up her mizzen from the castle, out on its yard */
   sign(141, 25, PF_SIGNS.channel);
   winch('g2', 148, 25, 'p2');                                     /* TEST: from the castle, over a channel that runs with the swell */
   prize('p2', 'swellB', 152, 162);
@@ -135,7 +135,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   boat('L1', 'swell', 198, 203);                                  /* her longboat, and a winch on it */
   winch('g3', 202, 0, 'p3', 'L1');
   prize('p3', 'swellB', 206, 215);
-  sign(214, 29, PF_SIGNS.sinking);
+  sign(193, 24, PF_SIGNS.sinking);
   boat('b8', 'swell', 218, 221); boat('b9', 'swellB', 224, 227);  /* over the whirl: two boats on two swells */
   coins([219, 30], [225, 30]); foe('petrel', 210, 26); foe('petrel', 224, 25);
   ent('silver', 222, 39);                                         /* SILVER: in the eye of the sinking - dive it in the release window */
@@ -165,7 +165,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   prize('p4', 'storm', 324, 336, 36, 30);
     hull(339, 352);                                                 /* EXAM DECK TWO */
   foe('powdermonkey', 342, 29); foe('sapper', 345, 29, { cnSkin: 'kegroller' });
-  block(348, 352, 25, 29); plat(346, 28, 1); plat(347, 27, 1);   /* her forecastle */
+  block(348, 352, 25, 29); block(347, 347, 27, 29); block(346, 346, 28, 29);   /* her forecastle */
   foe('bosun', 350, 24);
   coins([341, 29], [349, 24]);
   boat('s2', 'storm', 355, 358, 36, 30); boat('s3', 'stormB', 360, 363, 36, 30);
@@ -183,7 +183,7 @@ export function buildPirateFleet({ painter, T, TS }) {
   ent('freebooter', AS + 24, AR - 1, { face: -1 });
   prize('fbsloop', 'swellB', 416, 431, 35, 31, { boss: true });
   hull(433, W - 1, AR, { net: false }); net(432, AR + 1, BED - 1);
-  ent('gate', 437, 29); ent('deco', 436, 12, { kind: 'pennant', v: 1 });
+  ent('gate', 437, 29); mast(435, 20); ent('deco', 435, 19, { kind: 'pennant', v: 1 });
 
   const tides = [
     { id: 'swell', pools: ['sea', 'sea2'], lo: 35, hi: 32, cycle: SWELL, rate: 1, safe: 'low', grace: 3, floats: floatsBy.swell },
