@@ -35,7 +35,7 @@ export const FB = {
   plunge: { tell: 1.15, track: 0.7, air: 0.45, r: 26, dmg: 22, stuck: 2.8, rec: 0.6 },
   haul: { tell: 1.4 }, board: { tell: 0.7, air: 0.6 },
   wardT: 1.6, idle: [0.55, 0.95],
-  k: { floor: 0.4, guard: 0.4, flank: 0.6, open: 1.0, stuck: 1.25, ward: 0.4 },
+  k: { floor: 0.4, guard: 0.5, flank: 0.6, open: 1.0, stuck: 1.25, ward: 0.4 },
 };
 export const FB_SAY = { woke: 'THE FREEBOOTER: "COME ABOARD, THEN."', rule: 'HIS PISTOL GOES THROUGH ANY GUARD - THEN HE MUST RELOAD', reload: 'RELOADING: CUT HIM',
   parried: 'PARRIED: GET ROUND HIM, OR OVER HIM', stuck: 'STUCK IN THE DECK: CUT HIM', flash: 'POWDER FLASH', haul: 'HE HAULS HIS SLOOP ALONGSIDE', p2: 'TWO DECKS ON THE SWELL',
