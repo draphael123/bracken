@@ -99,6 +99,44 @@ const sr = room('sanctum');
 const fsChecks = FS.selfCheck(A, 16);
 for (const [c, m] of fsChecks) ok(c, m);
 
+
+console.log('THE HANDS, IN NODE (a stub world: no page) - src/sunroom-hands.js + src/sun-temple-hands.js + src/fallen-sun-hands.js');
+{ const { makeSunRoomHands } = await import('../src/sunroom-hands.js'); const { makeFallenSunHands } = await import('../src/fallen-sun-hands.js'); const { makeSunTempleHands } = await import('../src/sun-temple-hands.js');
+  const L2 = lv.build(), TS = 16, said = [], calls = { n: 0 };
+  const g = new Proxy({}, { get: (o, k) => (k in o ? o[k] : (...a) => { calls.n++; }), set: (o, k, v) => { o[k] = v; return true; } });
+  const tileAt = (x, y) => (x < 0 || y < 0 || x >= L2.W || y >= L2.H ? T.SOLID : L2.grid[y * L2.W + x]), cellSet = (x, y, t) => { L2.grid[y * L2.W + x] = t; };
+  const P = { x: 0, y: 0, hp: 100, maxHp: 100, ground: true, face: 1, atk: 0, dead: false };
+  const players = [P], enemies = []; let boss = null, time = 0;
+  const number = (x, y, t) => said.push(t), text = () => { calls.n++; };
+  const SRH = makeSunRoomHands({ get L() { return L2; }, T, TS, tileAt, cellSet, isSlope, number, text, sfx: {}, get players() { return players; }, priestBeams: () => [] });
+  const ctx = { get L() { return L2; }, get players() { return players; }, get boss() { return boss; }, bossActive: true, TS, T, EHP: { fallensun: FS.FS.hp }, sfx: {}, hero: () => P, time: () => time, VW: () => 320, VH: () => 180,
+    number, text, burst: () => {}, sparks: () => {}, shake: () => {}, ring: () => {}, damagePlayer: (fx, d) => { P.hp -= d; return 'hit'; }, asPlayer: (pp, fn) => fn(), upright: () => true,
+    overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, box: q => ({ l: q.x - 4, r: q.x + 4, t: q.y - 20, b: q.y }), answered: () => false, srh: () => SRH, say: (m) => said.push('#' + m),
+    enemies: () => enemies, hurtFoe: (e, d) => { e.hp -= d; if (e.hp <= 0) e.alive = false; }, undead: e => /mumm|skel|dead/.test(e.t), tileAt, isSlope };
+  const FSH = makeFallenSunHands(ctx), STH = makeSunTempleHands(ctx);
+  const frame = dt => { time += dt; SRH.update(dt); STH.update(dt); if (boss && boss.alive) FSH.update(boss, dt); };
+  const draw = () => { SRH.draw(g, 0, 0, time); STH.drawWorld(g, 0, 0, time); STH.drawHud(g); FSH.drawOver(g, 0, 0, time); };
+  /* THE HALL OF WINDOWS, played: strike its mirror, wait for the sun - the door opens (the live grid's door tiles go to air) */
+  P.x = 84 * TS + 8 + 14; P.y = 30 * TS; SRH.strike({ l: 84 * TS, r: 84 * TS + 16, t: 28 * TS, b: 29 * TS });
+  for (let i = 0; i < 30 * 30; i++) { frame(1 / 30); if (i % 15 === 0) draw(); }
+  ok(tileAt(100, 28) === T.AIR && said.includes('THE SUN OPENS THE DOOR'), 'the hall played through the hands: mirror struck, the sun came round, the door opened (told)');
+  ok(calls.n > 50, 'the dial, the glint and the sun rooms drew (' + calls.n + ' calls)');
+  /* a mummy in a shaft burns */
+  const mum = { t: 'mummy', x: 60 * TS + 8, y: 30 * TS, w: 10, h: 16, hp: 60, alive: true }; enemies.push(mum); const r0 = SRH.room('hallOfWindows'); r0.clock = 1; for (let i = 0; i < 60; i++) frame(1 / 30);
+  ok(mum.hp < 60 && said.includes('THE SUN BURNS THE DEAD'), 'an undead body in a sun shaft burns (' + (60 - mum.hp) + ' in 2 s)');
+  P.hp = 50; P.x = 92 * TS + 8; P.y = 30 * TS; r0.clock = 25; for (let i = 0; i < 30; i++) frame(1 / 30);
+  ok(P.hp > 50, 'a hero standing in the sun mends (' + P.hp + ')');
+  /* THE SANCTUM: him, the cords, the shutters on the room, the read, the beat */
+  P.x = 286 * TS; P.y = 20 * TS; P.hp = 100; boss = FSH.spawnBoss({ x: 302 * TS + 8, y: 20 * TS }); ok(!!boss && boss.t === 'fallensun' && boss.maxHp === FS.FS.hp, 'he spawns from the arena (hp ' + boss.maxHp + ')');
+  boss.alive = true; boss.mode = 'wake'; boss.modeT = 1.6; let took = 0;
+  for (let i = 0; i < 60 * 30 && boss.alive; i++) { frame(1 / 30); if (i % 10 === 0) draw();
+    if (i % 14 === 0) { P.atk = 0.2; const cd = FSH.show().G.cords.find(q => Math.abs(q.x - boss.x) < 40); if (cd) FSH.strike({ l: cd.l, r: cd.r, t: cd.t, b: cd.b });
+      P.x = boss.x - 24; const d = FSH.take(boss, 14, { k: 1 }); took += d; boss.hp -= d; if (boss.hp <= 0) boss.alive = false; } else P.atk = 0; if (P.hp < 30) P.hp = 100; }
+  const st = FSH.read(); ok(took > 0 && st.n.cords > 0, 'blows on him land through the hands (' + took + ' hp), cords struck ' + st.n.cords + ' (opens ' + st.n.opens + ', phase ' + st.ph + ')');
+  ok(SRH.room('sanctum').def.sources.some(q => q.off) || st.shut.every(t => t === 0), 'a shut shutter is the room source off (the light really goes)');
+  boss.alive = false; FSH.end(boss); for (let i = 0; i < 60; i++) { frame(1 / 30); draw(); }
+  ok(said.includes('#THE DESERT PRIEST WILL WALK WITH YOU') && SRH.room('sanctum').def.sources.every(q => !q.off), 'THE BEAT: the card, and every window relit'); }
+
 if (args.sim) { const N = +args.sim || 6; console.log(`THE NODE BOT FLOW SIM (n=${N}): a pace read, not the rate`); const r = FS.simFights(A, 16, N, { sanctum: sr, at, opaque });
   console.log('  ' + JSON.stringify(r)); }
 console.log(`\nSUN TEMPLE: ${n} ok`);
