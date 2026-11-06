@@ -47,7 +47,7 @@ export function makeFreebooterHands(ctx) {
           vx = L.x1 - L.x0, vy = L.y1 - L.y0, u = Math.max(0, Math.min(1, ((px - L.x0) * vx + (py - L.y0) * vy) / (vx * vx + vy * vy || 1))), dd = Math.hypot(L.x0 + vx * u - px, L.y0 + vy * u - py);
           if (dd < 9) hitOne(pp, null, d, name, { key: 'shot' + S.n.pistol }); }
         ctx.burst(L.x0, L.y0, 8, ['#fff6c8', '#ffd36b', '#9aa39a'], 90, 0.3, -10); },
-      floorAt, clampX, deckOf, sloopIn,
+      floorAt, clampX, deckOf, sloopIn, nearest: () => { const P = ctx.hero(); return P ? { x: P.x, y: P.y } : null; },
       haul: () => { if (ctx.pfh) ctx.pfh.haul(S.G.sloopId); },
       flash: ee => { flashes.push({ x: ee.x, y: ee.y, t: ctx.time() }); ctx.burst(ee.x, ee.y - 14, 22, ['#fff6c8', '#ff9a5c', '#9aa39a', '#3a3a44'], 120, 0.5, -30); ctx.ring(ee.x, ee.y - 14, 26, '#ff9a5c'); },
       ringWard: ee => ctx.ring(ee.x, ee.y - 18, 32, '#9ab0c0'),
