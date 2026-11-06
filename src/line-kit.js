@@ -157,7 +157,7 @@ export function riderStep(kit, P, inp = {}, dt) {
     else {   /* GRIP: every blow while hanging is a crank stroke; the ratchet holds between */
       if (inp.strike) r.buf = Math.min(LK.STROKE_BUF, r.buf + 1);
       if (r.haul <= 0 && r.buf > 0) { r.buf--; r.haul = LK.STROKE; ev.push({ t: 'stroke', id: z.id }); }
-      if (r.haul > 0) { v = LK.STROKE / LK.STROKE_T; r.haul = Math.max(0, r.haul - v * dt); }
+      if (r.haul > 0) { const step = Math.min(r.haul, LK.STROKE / LK.STROKE_T * dt); r.haul -= step; v = step / dt; }
     }
   } else {
     v = z.speed; if (W && W.blow && z.d.wind !== false) v *= W.dir === r.dir ? LK.TAIL : LK.HEAD;
@@ -225,10 +225,10 @@ export function kitStep(kit, bodies, dt) {
     W.rel = Math.max(0, W.rel - dt);
     const span = Math.max(1, px(d.a.bot - d.a.top)), k0 = W.k;
     W.emptyT = sA + sB ? 0 : W.emptyT + dt;
-    if (W.emptyT >= LK.CW_RETURN) { if (W.stones) ev.push({ t: 'stonesOut', id: W.id }); W.stones = 0; const home = d.rest || 0; W.k = home > W.k ? Math.min(home, W.k + LK.CW_HOME / span * dt) : Math.max(home, W.k - LK.CW_HOME / span * dt); }
+    if (W.emptyT >= LK.CW_RETURN) { if (W.stones) ev.push({ t: 'stonesOut', id: W.id }); W.stones = 0; const home = d.rest || 0; if (W.k !== home) W.k = home > W.k ? Math.min(home, W.k + LK.CW_HOME / span * dt) : Math.max(home, W.k - LK.CW_HOME / span * dt); }
     else if ((sA + sB > 0 || W.stones > 0) && !(d.brake && !(W.rel > 0))) {
       const diff = sA + (d.tare ?? LK.TARE) + W.stones - (sB + (d.tareB || 0));
-      if (Math.abs(diff) >= 0.5) { const tg = diff > 0 ? 1 : 0; W.k = tg > W.k ? Math.min(1, W.k + LK.CW_SPEED / span * dt) : Math.max(0, W.k - LK.CW_SPEED / span * dt); }
+      if (Math.abs(diff) >= 0.5 && W.k !== (diff > 0 ? 1 : 0)) { const tg = diff > 0 ? 1 : 0; W.k = tg > W.k ? Math.min(1, W.k + LK.CW_SPEED / span * dt) : Math.max(0, W.k - LK.CW_SPEED / span * dt); }
     }
     const mv = W.k !== k0; if (mv !== W.moving) { ev.push({ t: mv ? 'cwStart' : 'cwStop', id: W.id }); W.moving = mv; }
     if (mv) { const T1 = weightTops(W); carry(bodies, Ax0, Ax1, T0.A, 0, T1.A - T0.A, 'w:' + W.id + ':A'); carry(bodies, Bx0, Bx1, T0.B, 0, T1.B - T0.B, 'w:' + W.id + ':B'); }

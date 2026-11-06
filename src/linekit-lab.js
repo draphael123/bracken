@@ -25,7 +25,7 @@ export const LINEKIT_LAB = {
     [0, 25, 1, 26],     // 9 LA1 beside weight A at the top
     [0, 41, 1, 42],     // 10 LA2 beside weight A at the bottom
   ],
-  nets: [[19, 78, 40, 79], [44, 66, 70, 67]],
+  nets: [[19, 78, 40, 79], [43, 66, 70, 67]],
   checkpoints: [{ x: 3, y: 76 }, { x: 16, y: 41 }, { x: 66, y: 27 }],
   secrets: [[67, 60]],
   exit: [37, 5, 44, 9],
@@ -41,7 +41,7 @@ export const LINEKIT_LAB = {
       { id: 'W3', kind: 'winch', a: [38, 51], b: [20, 40] },
       { id: 'GD', kind: 'free', a: [25, 22.5], b: [58, 8], dir: 1, snap: { at: 40 }, cab: { onto: 'LO' } },
       { id: 'LO', kind: 'glide', a: [36, 20.5], b: [64, 24] },
-      { id: 'W4', kind: 'winch', a: [66, 26], b: [44, 8], cut: true },
+      { id: 'W4', kind: 'winch', a: [69, 26], b: [44, 8], cut: true },
     ],
     weights: [{ id: 'lift', a: { x0: 2, x1: 5, top: 25, bot: 41 }, b: { x0: 8, x1: 11, top: 25, bot: 41 }, rest: 0, tare: 0.5, hopper: [12, 40] }],
     winds: [{ id: 'gorge', box: [42, 38, 60, 49], dir: -1, period: 4, on: 2, told: 1.2, shove: 240, sway: 10 }],
