@@ -105,4 +105,4 @@ Decision (the rec): new level data in the same slot. Master's Ksar 0-795 is kept
 7. **Mirages:** REC two light touches on the exam (a fake shade where the stalker stays hidden, and a fake roof that drops you 3 rows). Alt: none (keep the mirage for the Great Dune).
 
 ## Final tip
-claude/ksar3 - see `git log -1` (pushed). Not merged, not deployed. Play: ?ksar3=1&level=ksar. Proofs: `node tools/ksar3.mjs` (93 ok, ~1 min).
+claude/ksar3 FINAL TIP 4726b0462 (pushed; the report commit itself). Not merged, not deployed. Play: ?ksar3=1&level=ksar. Proofs: `node tools/ksar3.mjs` (93 ok, ~1 min).
