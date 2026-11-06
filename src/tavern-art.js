@@ -93,11 +93,11 @@ export function guestbook(g, x, fy, time, text) {
 
 /* ---------------------------------------------------------------- THE SAVES SIGN (claude/coopclarity) ---------------------------------------------------------------- */
 export function saves(g, x, fy, time, text) {
-  const L = x - 14, T = fy - 40;
-  R(g, L + 12, T + 18, 4, 22, TP.o2); R(g, L + 12, T + 18, 1, 22, TP.o4); R(g, L + 9, T + 38, 10, 2, TP.o1);   /* the post */
-  R(g, L, T, 28, 20, TP.o3); R(g, L, T, 28, 1, TP.o6); R(g, L, T + 19, 28, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 27, T, 1, 20, TP.o1);   /* the plank */
-  R(g, L + 2, T + 2, 24, 16, '#2a2418'); R(g, L + 2, T + 2, 24, 1, '#5a4a32');
-  text('SAVES', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 5, T + 13, 18, 1, '#8fd160'); if (Math.floor(time * 2) & 1) P(g, L + 24, T + 4, '#fff');
+  const L = x - 17, T = fy - 40;
+  R(g, L + 15, T + 18, 4, 22, TP.o2); R(g, L + 15, T + 18, 1, 22, TP.o4); R(g, L + 12, T + 38, 10, 2, TP.o1);   /* the post */
+  R(g, L, T, 34, 20, TP.o3); R(g, L, T, 34, 1, TP.o6); R(g, L, T + 19, 34, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 33, T, 1, 20, TP.o1);   /* the plank */
+  R(g, L + 2, T + 2, 30, 16, '#2a2418'); R(g, L + 2, T + 2, 30, 1, '#5a4a32');
+  text('CO-OP', x, T + 3, '#e8f0e8', 'center', 6); text('RULES', x, T + 10, '#8fd160', 'center', 6); if (Math.floor(time * 2) & 1) P(g, L + 30, T + 4, '#fff');   /* (claude/innsaves: SAVES moved to the guest book) */
 }
 
 /* ---------------------------------------------------------------- THE LESSON BOARD (claude/tutorial1) ---------------------------------------------------------------- */

@@ -6433,7 +6433,7 @@ function fixDo(i, o) {
 /* (claude/innsaves) THE GUEST BOOK: P1 opens the save screen from the inn; seated guests are asked first, and leave cleanly on YES */
 function bookOpen() {
   if (!players || state !== 'play') return;
-  saveProgress(); slotInn = true; state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = ''; slotMsgT = 0; eraseAsk = -1; fixAsk = -1;
+  saveProgress(); slotInn = true; state = 'slots'; slotI = slot; slotMsg = ''; slotMsgT = 0; eraseAsk = -1; fixAsk = -1;
   bookAsk = players.length > 1; bookYes = false; SFX.uiSel();
 }
 function bookClose() { slotInn = false; bookAsk = false; eraseAsk = -1; fixAsk = -1; state = 'play'; SFX.menuClose(); }
@@ -6448,10 +6448,10 @@ function drawSlots() {
   const levels = LEVELS.filter(l => !l.hidden).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
-    if (eraseAsk < 0 && fixAsk < 0) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
+    if (eraseAsk < 0 && fixAsk < 0 && !(slotInn && bookAsk)) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.globalAlpha = 1; }
     board(x, y, w, h, sel ? '#ffd36b' : '#8a7a5c', undefined, false, 'parchment');   /* a parchment slip a slot; the picked one is gilt */
-    if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
+    if (eraseAsk >= 0 || fixAsk >= 0 || (slotInn && bookAsk)) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
     text('SAVE ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
       if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER THORNROAD   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
@@ -37495,7 +37495,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     get treeTab() { return treeBranch; }, set treeTab(v) { treeBranch = v === 1 ? 1 : 0; treeI = 0; treePage = 0; },
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get slotInn() { return slotInn; }, set slotInn(v) { slotInn = !!v; }, get bookAsk() { return bookAsk; }, set bookAsk(v) { bookAsk = !!v; bookYes = false; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleWin: () => { const it = titleItems(), ts = titleSlots(); return touchOn ? { ...titleWin(it.length, Math.min(ts.n, Math.max(it.length, titleTop().length, 7)), titleI, titleOff), rh: ts.rh, css: S / (DPR || 1) } : null; }, titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleOpts; }, set titleOpts(v) { titleOpts = !!v; },
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
