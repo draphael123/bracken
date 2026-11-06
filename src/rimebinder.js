@@ -115,7 +115,7 @@ export function makeRimebinder(api) {
     for (const b of p.rmBolts) { b.life -= dt; b.x += b.vx * dt; b.y += (b.vy || 0) * dt;
       if (Math.abs(b.x - b.x0) > b.range || api.isSolid(Math.floor(b.x / api.TS), Math.floor(b.y / api.TS))) { b.life = 0; puff(b.x, b.y, b.tier); continue; }
       for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e)) continue;
-        if (Math.abs(e.x - b.x) < (e.w || 12) / 2 + 4 && b.y > e.y - (e.h || 14) - 4 && b.y < e.y + 4) { b.hit.add(e);
+        if (Math.abs(e.x - b.x) < (e.w || 12) / 2 + 4 && b.y > e.y - (e.h || 14) - 10 && b.y < e.y + 6) { b.hit.add(e);
           if (b.mark) e.rmMarkT = now() + 0.5;            /* RIME-MAKER: a kill off this lance leaves a corpse, warm or not */
           chillFoe(p, e, b.chill); api.hurtAs('shot', e, Math.round(b.dmg * brittle(e)), b.x - Math.sign(b.vx) * 10, false);
           api.sparks(b.x, b.y, Math.sign(b.vx), 3 + b.tier); api.burst(b.x, b.y, 4 + 2 * b.tier, ['#bfe6f5', '#ffffff'], 50, 0.3, 0, 1);
@@ -253,7 +253,7 @@ export function makeRimebinder(api) {
     for (const s of shards) { if (!mine(s.o, p)) continue; s.life -= dt; s.vy += (s.grav || 0) * dt; s.x += s.vx * dt; s.y += s.vy * dt;
       if (api.isSolid(Math.floor(s.x / api.TS), Math.floor(s.y / api.TS))) { s.life = 0; continue; }
       for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || s.hit.has(e)) continue;
-        if (Math.abs(e.x - s.x) < (e.w || 12) / 2 + 3 && s.y > e.y - (e.h || 14) - 3 && s.y < e.y + 3) { s.hit.add(e); chillFoe(p, e, s.chill); api.hurtAs('shot', e, Math.round(s.dmg * brittle(e)), s.x, false); if (s.one) { s.life = 0; break; } } } }
+        if (Math.abs(e.x - s.x) < (e.w || 12) / 2 + 3 && s.y > e.y - (e.h || 14) - 8 && s.y < e.y + 6) { s.hit.add(e); chillFoe(p, e, s.chill); api.hurtAs('shot', e, Math.round(s.dmg * brittle(e)), s.x, false); if (s.one) { s.life = 0; break; } } } }
     shards = shards.filter(s => s.life > 0); }
   /* ---------------- THE MIST STEP ---------------- */
   function mist(p) { ensure(p); const W = T().mist ? RIME.mist.wide : 1; mists.push({ o: p, x: p.x, y: p.y - 8, r: RIME.mist.r * W, life: RIME.mist.life * W, max: RIME.mist.life * W, through: new Set() }); stats.mists++;
