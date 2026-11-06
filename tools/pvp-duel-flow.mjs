@@ -5,7 +5,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 const R = {};
 const out = resolve(process.argv[2] || 'duelflow'); mkdirSync(out, { recursive: true });
-const pg = await openPage({ audio: false, fonts: false }); const sleep = ms => new Promise(r => setTimeout(r, ms)); const E = (e, t) => pg.evalp(e, t || 120000);
+const pg = await openPage({ duelBeta: true, audio: false, fonts: false }); const sleep = ms => new Promise(r => setTimeout(r, ms)); const E = (e, t) => pg.evalp(e, t || 120000);
 const key = async (k, code) => { await pg.send('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code }); await sleep(60); await pg.send('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code }); await sleep(250); };
 const ec = () => pg.errors.length; const shot = async name => { R.ec = R.ec || {}; R.ec[name] = ec(); const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(out, name + '.png'), Buffer.from(r.result.data, 'base64')); };
 const buf = async name => { R.ec = R.ec || {}; R.ec[name] = ec(); const d = await E(`(()=>{BK.step&&BK.step(1);const c=document.createElement('canvas');c.width=BK.view.VW*2;c.height=BK.view.VH*2;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,c.width,c.height);return c.toDataURL('image/png');})()`); writeFileSync(join(out, name + '.png'), Buffer.from(d.split(',')[1], 'base64')); };
