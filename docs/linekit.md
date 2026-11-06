@@ -5,7 +5,9 @@ The one engine for THE HIGH LINES (Sky Road -> HIGH LINES -> Ore Road; scratch/l
 declares data; main.js hands in the seats, their keys and the attack box, and draws from the state + events. Worked example: `src/linekit-lab.js`
 (a data-only test room, on no level list). Proof: `node tools/line-kit.mjs` (Node only, no browser, ~55 s). Plan: `work/claude/highlines-kit-plan.md`.
 
-**Status:** module + lab + node proof only. main.js does not call it and no live level uses it (see "Wiring" — the HIGH LINES greybox lane does it).
+**Status (claude/highlines1, 11-05):** WIRED. THE HIGH LINES greybox (src/highlines.js, DEV ONLY: ?level=highlines) runs on the kit through src/highlines-hands.js (main.js: load/reset/world/seat/held/mover hooks, the Hookjack as a main.js foe). Proof: node tools/highlines.mjs. Still owed: the page (browser) proof below.
+
+_Was:_ module + lab + node proof only. main.js does not call it and no live level uses it (see "Wiring" — the HIGH LINES greybox lane does it).
 The kit's lines are its own (`L.lineKit.lines`), never pushed into `L.zipLines`, so `src/zipline.js` and the six levels riding it are untouched.
 
 ## Declaring lines
@@ -56,7 +58,7 @@ Foe hooks: `lineCut(kit, id, s)` (THE HOOKJACK: riders fall a level, strung agai
 in t s - a winch rider's lead stops where his strokes end; draw it as the mangonel's ring), `riderHit(kit, P, { guard, from })` (`guarded`: kept the
 grip, pushed back 24 px; `knocked`: off the line). Gust harpies (src/gale-harpy.js) read `windAt` / push `r.swayV` for their shove.
 
-## Wiring (main.js sketch — NOT done; the HIGH LINES greybox lane does it)
+## Wiring (main.js sketch — DONE in claude/highlines1: src/highlines-hands.js + 16 one-line hooks tagged claude/highlines1)
 
 ```js
 import * as LKT from './line-kit.js';

@@ -30110,7 +30110,7 @@ HVR = makeHangingRopes({ get L() { return L; }, TS, T, sfx: SFX, movers: () => m
   hurt: (e, d, x) => hurtEnemy(e, d, x, false), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, struck: b => ropeStruck(b),
   perchCut: (k, how) => owlPerchCut(k, how), owlOn: k => !!(boss && boss.t === 'owl' && boss.alive && bossActive && boss.perchI === k && OWL_PERCHED.has(boss.mode)) });
 /* THE HIGH LINES' HANDS (claude/highlines1, src/highlines-hands.js): main.js owns the world; the module owns the line kit on the level and THE HOOKJACK */
-HLX = makeHighLinesHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], P: () => P, keys: () => keys, presses: () => pressRead(), eatJump: () => { jumpPress = false; P.jbuf = 0; },
+HLX = makeHighLinesHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], P: () => P, keys: () => keys, presses: () => pressRead(), eatJump: () => { jumpPress = false; P.jbuf = 0; }, jumpUp: () => jumpUpKey,
   callout: t => callout(t), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), time: () => time, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), tileAt: (tx, ty) => tileAt(tx, ty) });
 /* KINGSWOOD 2's HANDS (claude/kingswood2, src/kingswood-hands.js): main.js owns the world; the module owns the royal ropes, the log traps, the procession and the oak */
 /* THE ROOKERY's HANDS (claude/rookery, src/rookery-hands.js): its cracked rocks and their roosts, the shrieker's marks, the landmark */

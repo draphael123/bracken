@@ -50,8 +50,9 @@ export function makeHighLinesHands(c) {
     const strike = !!pr.atk;   /* KIT Q1 (rec, accepted): ANY blow while hanging is a crank stroke - one button, every hero (the ranged ones too) */
     const hb = strike ? (P.face > 0 ? { l: P.x, r: P.x + 26, t: P.y - 22, b: P.y - 2 } : { l: P.x - 26, r: P.x, t: P.y - 22, b: P.y - 2 }) : null;
     if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb); if (post) { lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
+    /* a jump pressed on an UP key (ArrowUp / W, main.js jumpUpKey) is the take and the points, never the kick: the kick is Z / Space / the pad's A */
     const was = P.lk ? P.lk.id : null;
-    const ev = LKT.riderStep(kit, P, { up: !!k.up, down: !!k.down, left: !!k.left, right: !!k.right, upPress: !!pr.up, jumpPress: !!pr.jump, strike, hb }, dt);
+    const ev = LKT.riderStep(kit, P, { up: !!k.up, down: !!k.down, left: !!k.left, right: !!k.right, upPress: !!pr.up, jumpPress: !!pr.jump && !(c.jumpUp && c.jumpUp()), strike, hb }, dt);
     for (const e of ev) { lineSfx(e);
       if (e.t === 'take') { const z = kit.lines[e.id]; say(z.kind === 'winch' ? HLX_SAY.take : HLX_SAY.glide); }
       if (e.t === 'points') say(HLX_SAY.points); }
