@@ -263,7 +263,7 @@ import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { hasTrackFile, initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
-import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js';   /* THE ONE STORE's rules (claude/onestore) */
+import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js';   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
 import * as FC from './first-cards.js';   /* FIRST-TIME EXPLAINER + BOSS STUCK-HINT CARDS (claude/onboard2) */ import * as SCARD from './salt-card.js';   /* THE FIRST-DEATH CARD (claude/onboard1) */
@@ -639,7 +639,7 @@ const SKINS = [
   { id: 'frost', name: 'FROST PLATE', price: 8, silver: true, pal: { b: '#c9d8e8', B: '#7a9ab8', r: '#3d5aa8', y: '#bfe6f5' } },
   { id: 'shadow', name: 'SHADOW', price: 8, silver: true, pal: { b: '#3a2f4a', B: '#1e1828', r: '#6a3aa0', y: '#8a8a9a' } },
   { id: 'gilded', name: 'GILDED PLATE', price: 10, silver: true, pal: { b: '#d9a83a', B: '#8f6a1c', r: '#c9463d', y: '#fff6c8' } },
-  { id: 'iron', name: 'IRON KNIGHT', price: 0, pal: { b: '#7c8797', B: '#4a525e', r: '#c9d1dc', y: '#3a3040' }, feat: 'iron', featName: 'clear a level in Iron Knight' },
+  { id: 'iron', name: 'IRON KNIGHT', price: 0, pal: { b: '#7c8797', B: '#4a525e', r: '#c9d1dc', y: '#3a3040' }, feat: 'iron', featName: 'clear a level with the IRON KNIGHT setting on (three lives)' },
   { id: 'spore', name: 'SPOREBORN', price: 0, pal: { b: '#8a8a54', B: '#5a5a34', r: '#b8c060', y: '#9a5aa8' }, feat: 'spore', featName: 'clear Sporewood' },
   { id: 'dawn', name: 'DAWN', price: 6, silver: true, pal: { b: '#e8a0b0', B: '#a0606a', r: '#fff6e0', y: '#ffd36b' } },
   { id: 'emberplate', name: 'EMBER', price: 8, silver: true, pal: { b: '#3a3030', B: '#1e1818', r: '#ff9a5c', y: '#ffd36b' } },
@@ -5139,19 +5139,17 @@ function fireDim(x, y, tall) { const ps = coop() ? players : [P]; let wet = fals
 const gormFightLive = () => !!(L && L.gorm && ((GMH && GMH.persist && GMH.persist()) || (boss && boss.t === 'king' && boss.alive && bossActive)));
 function gormNoteDeath() { if (gormFightLive()) gormFell = true; }
 function gormBeaten() { if (!L || !L.gorm || bossSelectFight || rushOn() || LEVELS[levelIndex].id !== 'kings') return;
-  if (gormFell) { if (!PROG.burningOpen) hintSay('tip', 6, 'YOU FELL TO GORM: THE BURNING VILLAGE STAYS SHUT'); return; }
+  if (gormFell) { if (!PROG.burningOpen) hintSay('tip', 6, 'YOU DIED TO GORM: THE BURNING VILLAGE STAYS SHUT'); return; }
   /* (claude/smallfix8, Daniel 11-01) CO-OP: a clean party win credits EVERY seat's own save (the ledger's flag rides the credit; a seat already holding it takes nothing twice) */
   for (const p of players || []) if (p !== players[0] && p.prof && !p.ai) CS.noteFlag(p.prof.led, 'burningOpen');
   const had = !!PROG.burningOpen; PROG.burningOpen = 1;
   if (!had) { hintMsg = 'THE BURNING VILLAGE IS OPEN: A NEW ROAD OFF KINGSWOOD'; hintT = 6; }
   saveProgress(); try { creditAll(false); } catch {} }
-const gormWant = () => 'BEAT KING GORM WITHOUT FALLING';
-const spurReqText = lv => { const o = lv.opensOn; if (o && o.gorm) return gormWant(); if (lv.votiveLamps) return "LIGHT WAYMEET'S VOTIVE LAMPS " + votiveOwned() + '/' + VOTIVE_N; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
-  const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
-  return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
+const gormWant = () => UL.GORM_WANT;   /* (claude/unlocks, Daniel 11-07) plain words: WITHOUT DYING (src/unlocks.js is every lock line's wording) */
+const spurReqText = lv => UL.reqText(unlockReq(lv));   /* (claude/unlocks) the same plain words as the UNLOCKS screen: 'BEAT X IN 3:00 OR LESS', 'CLEAR X', 'BEAT KING GORM WITHOUT DYING' */
 /* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */
 const mapTip = { id: null, t: 0 };
-const spurTip = lv => { const o = lv.opensOn; if (o && o.gorm) return ['LOCKED: ' + gormWant(), PROG.kings && PROG.kings.cleared ? 'ONE LIFE, BOTH PHASES: FIGHT HIM AGAIN IN KINGSWOOD' : 'ONE LIFE, BOTH PHASES, IN KINGSWOOD']; if (lv.votiveLamps) return ['LOCKED: ' + spurReqText(lv), 'THREE DARK LAMPS ON LOFTS IN WAYMEET: A BRAZIER GIVES THE FLAME']; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
+const spurTip = lv => { const r = unlockReq(lv), o = lv.opensOn; if (o && o.gorm) return ['LOCKED: ' + gormWant(), r.kingsCleared ? 'BEATEN, BUT YOU DIED: TRY AGAIN IN KINGSWOOD' : 'BOTH PHASES, NO DEATHS, IN KINGSWOOD']; if (lv.votiveLamps) return ['LOCKED: ' + UL.reqText(r), UL.reqProgress(r) + '. THREE DARK LAMPS ON LOFTS IN WAYMEET: A BRAZIER GIVES THE FLAME']; return ['LOCKED: ' + UL.reqText(r), UL.reqProgress(r) || 'NOT YET']; };
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 /* THE ROADS THAT JOIN THE SHEETS (a seam leg is baked as road; tools/map-roads.mjs reads this list to prove every road of the chain is painted). (claude/maproad, Daniel 11-01: the first leg started at the old Kingswood spot [40,64], so the road from KINGSWOOD west to the crags' door was never painted - only the dotted unwalked-road overlay showed it) */
 const MAP_CONNECTORS = [[[141, 24 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']];
@@ -5215,7 +5213,7 @@ function updateMapPanel(dt) {
    into a buffer that was never going to hold them. */
 function drawMapPanel() {
   const [px] = mapPos(); const onRight = px < VW / 2;
-  const x0 = onRight ? VW - MAP_PANEL_W - 4 : 4, y0 = 21, h0 = VH - 12 - 21, rowH = 11, detailH = 15;
+  const x0 = onRight ? VW - MAP_PANEL_W - 4 : 4, y0 = 21, h0 = VH - 12 - 21, rowH = 11, detailH = 24;   /* (claude/unlocks) room for a lock line wrapped to three lines */
   const listH = h0 - 12 - detailH, rows = Math.max(1, Math.floor(listH / rowH));
   panel(x0, y0, MAP_PANEL_W, h0, UI.sel, 'parchment');
   g.fillStyle = 'rgba(10,8,16,0.55)'; g.fillRect(x0 + 1, y0 + 1, MAP_PANEL_W - 2, 10);
@@ -5240,7 +5238,7 @@ function drawMapPanel() {
   { const dy = y0 + h0 - detailH; g.strokeStyle = 'rgba(201,178,124,0.4)'; g.beginPath(); g.moveTo(x0 + 1, dy); g.lineTo(x0 + MAP_PANEL_W - 1, dy); g.stroke();
     const nd = NODES[vis[mapPanel.sel]], lk = nd && nodeLocked(nd);
     if (lk && nd.kind === 'level') { const need = LEVELS[nd.level].needs, nname = need && (NODES.find(n => n.level === LEVELS.findIndex(l => l.id === need)) || {}).name;
-      text(fitText((LEVELS[nd.level].opensOn || {}).gorm && PROG[need] && PROG[need].cleared ? gormWant() : nname ? 'NEEDS ' + nname : LEVELS[nd.level].locked ? 'LOCKED' : 'NOT YET', MAP_PANEL_W - 10, 6), x0 + 5, dy + 4, '#c9463d', 'left', 6); }
+      wrap(lockLine(nd), MAP_PANEL_W - 10, 6).forEach((s, i) => text(s, x0 + 5, dy + 3 + i * 7, '#c9463d', 'left', 6)); }   /* (claude/unlocks) the whole lock line, wrapped - never cut */
     else if (lk) text('SHUT', x0 + 5, dy + 4, '#c9463d', 'left', 6);
     else text('↑↓ SELECT  Z JUMP', x0 + 5, dy + 4, UI.dim, 'left', 6); }
 }
@@ -5343,10 +5341,10 @@ const nodeSecret = nd => demoOut(nd) || (nd.kind === 'level' && ((!!LEVELS[nd.le
 // because that is how it is stored and how it survives the garrison being retuned under it.
 function secretWants(lv) {
   if (lv.needsTime) { const p = PROG[lv.needsTime.id] || {}, nm = (LEVELS.find(q => q.id === lv.needsTime.id) || {}).name || '';
-    return ['WALK ' + nm + ' IN ' + fmt(lv.needsTime.t), p.best !== undefined ? 'YOUR BEST IS ' + fmt(p.best) : 'YOU HAVE NOT WALKED IT YET']; }
+    return ['BEAT ' + nm + ' IN ' + fmt(lv.needsTime.t) + ' OR LESS', p.best !== undefined ? 'YOUR BEST IS ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; }
   if (lv.needsKills) { const nm = (LEVELS.find(q => q.id === lv.needsKills.id) || {}).name || '';
-    return ['PUT DOWN ' + Math.round(lv.needsKills.pct * 100) + '% OF ' + nm, 'YOU HAVE PUT DOWN ' + Math.round(killPct(lv) * 100) + '%']; }
-  return ['SOMETHING IS STILL OWED', ''];
+    return ['DEFEAT ' + Math.round(lv.needsKills.pct * 100) + '% OF THE FOES IN ' + nm, 'YOU HAVE DEFEATED ' + Math.round(killPct(lv) * 100) + '%']; }
+  return ['NOT OPEN YET', ''];
 }
 /* A TAP ON THE MAP (src/touch.js): a node you are not on is walked to along the road (mapGoal steps updateMap takes), a side road is jumped to as the panel does, and a tap on the one you stand on goes in - the same as ENTER */
 let mapGoal = null;
@@ -5545,14 +5543,14 @@ function drawMap() {
      every junction on the sheet at once), and only while its own side road is still shut - once it opens this
      plate has nothing to say and stops drawing itself. 320x180 buffer: fitText, never a guessed width. */
   if (!map.walking) { const here = NODES[map.node], child = here && !here.spur && spurAt(here.id);
-    if (child && nodeLocked(child) && mapTip.t > 0 && mapTip.id === child.id) { const maxW = VW - 12, ls = spurTip(LEVELS[child.level]).map(m => fitText(m, maxW, 6)), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m, 6))) + 6);
-      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -33 : 14);
-      g.fillStyle = 'rgba(18,14,24,0.92)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 18); g.strokeStyle = '#c9463d'; g.strokeRect(Math.round(lx - tw / 2) + 0.5, ly + 0.5, Math.round(tw) - 1, 17);
-      text(ls[0], Math.round(lx), ly + 2, '#ff8a7a', 'center', 6); text(ls[1], Math.round(lx), ly + 10, '#e8dcc0', 'center', 6); }
-    else if (child && nodeLocked(child)) { const maxW = VW - 12, msg = fitText(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, textW(msg, 6) + 6);
-      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -24 : 14);
-      g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 9);
-      text(msg, Math.round(lx), ly + 1, '#c9463d', 'center', 6); } }
+    if (child && nodeLocked(child) && mapTip.t > 0 && mapTip.id === child.id) { const maxW = VW - 12, ls = spurTip(LEVELS[child.level]).flatMap((m, k) => wrap(m, maxW, 6).map(s => [s, k])), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m[0], 6))) + 6), bh = 2 + ls.length * 8;   /* (claude/unlocks) wrapped, never cut */
+      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -15 - bh : 14);
+      g.fillStyle = 'rgba(18,14,24,0.92)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh); g.strokeStyle = '#c9463d'; g.strokeRect(Math.round(lx - tw / 2) + 0.5, ly + 0.5, Math.round(tw) - 1, bh - 1);
+      ls.forEach((m, k) => text(m[0], Math.round(lx), ly + 2 + k * 8, m[1] ? '#e8dcc0' : '#ff8a7a', 'center', 6)); }
+    else if (child && nodeLocked(child)) { const maxW = VW - 12, ls = wrap(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m, 6))) + 6), bh = 1 + ls.length * 8;
+      const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -15 - bh : 14);
+      g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh);
+      ls.forEach((m, k) => text(m, Math.round(lx), ly + 1 + k * 8, '#c9463d', 'center', 6)); } }
   if (!map.walking && !map.glide) { const here = NODES[map.node]; if (here && !here.spur) for (const c of spursAt(here.id)) { if (nodeLocked(c)) continue;   /* THE WAY ONTO A SIDE ROAD: a few bright dots run out along its stub from the junction you stand on */
       const dx = c.x - here.x, dy = c.y - here.y, len = Math.hypot(dx, dy) || 1; for (let d = 8, k = 0; d < len - 8; d += 6, k++) { g.globalAlpha = 0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - k * 0.9)); g.fillStyle = '#fff4c8'; g.fillRect(Math.round(here.x + dx * d / len) - 1, Math.round(here.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1;
       /* THE KEY PROMPT: the key that enters, drawn beside the side road's node - an arrow cap on a keyboard (square), on a pad (round), and TAP on touch */
@@ -5904,9 +5902,7 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
 /* ====== (claude/hubpolish, Daniel 11-01) THE SWAP HERO PANEL: src/hero-swap.js draws and walks it; these are the facts it asks for ======
    Open it with F (the pad's throw, a tap on SWAP HERO) in the store, H on the map and in the store's SKILLS tab, the pause menu's Swap hero (the map, a shop room, the inn). A swap is
    the store's own (setEquip + applySkin + applyUpgrades), so every hero keeps his own level, skills and charm; a hero another seat plays is refused. */
-const swapWhy = k => { if (!k || !k.id) return ''; const lock = lockOfK(k); if (lock) return (lock + (k.silver ? ' (OR ' + k.price + ' SILVER)' : '')).toUpperCase();
-  const lv = k.coinNeeds && LEVELS.find(l => l.id === k.coinNeeds);
-  return k.silver ? ('BUY HIM AT THE STORE: ' + k.price + ' SILVER' + (k.coinPrice && lv ? ', OR ' + k.coinPrice + ' GOLD AFTER ' + String(lv.name).toUpperCase() : '')) : ('BUY HIM AT THE STORE: ' + k.price + ' GOLD'); };
+const swapWhy = k => (!k || !k.id) ? '' : UL.heroHow(heroFacts(k));   /* (claude/unlocks) the plain how-to (src/unlocks.js heroHow): beat him first, THEN buy; the old line said 'OR 10 SILVER' as if silver skipped the fight */
 function swapHeroTo(id, quiet) {   /* quiet (duelroster, Daniel 11-06): a DUEL's pick - nothing is saved and nothing plays; the duel puts the campaign's hero back when it ends */
   if (!heroOwned(id)) return null;   /* (claude/heroroster2) owned in this save OR anywhere on the device */
   if (players && players.slice(1).some(p => p.hero === id)) return { no: 'ANOTHER SEAT PLAYS HIM' };
@@ -5925,6 +5921,48 @@ const SWAPUI = HSWP.makeSwap({ g: () => g, VW: () => VW, VH: () => VH, time: () 
   icon: id => { try { const sid = equipped(PROG, id, heroLevel(id))[0]; return sid && skillFor(id, sid) && skillFor(id, sid).active ? skillIcon(sid) : null; } catch { return null; } },
   choose: swapHeroTo });
 let titleSay = '', titleSayT = 0;   /* (claude/heroroster2) the title's SWAP HERO row: what the swap said, drawn at the top of the title for a moment (the hint box is a level's) */
+/* ====== (claude/unlocks, Daniel 11-07 08:48) THE UNLOCKS SCREEN and THE PLAIN LOCK WORDS. src/unlocks.js is the wording and the screen (tools/unlocks.mjs holds it in Node); these are the facts it asks for.
+   Every lock line the game shows is built from src/unlocks.js (levelReq -> reqText / reqProgress, heroHow, featHow) and WRAPPED where it is drawn (the map panel's strip, the road tips, the swap-hero panel, the screen's rows). */
+const unlockNameOf = id => { const i = LEVELS.findIndex(l => l.id === id), n = NODES.find(q => q.kind === 'level' && q.level === i); return (n && n.name) || (LEVELS[i] && LEVELS[i].name) || String(id).toUpperCase(); };
+const unlockHelp = () => ({ nameOf: unlockNameOf, fmt, medalsFor: id => MEDALS[id], killPct });
+const unlockReq = lv => UL.levelReq(lv, PROG, unlockHelp());
+/* THE MAP PANEL'S STRIP for a shut node: the next step only (a road behind another one says to clear that one first) */
+const lockLine = nd => { const lv = LEVELS[nd.level]; if (!lv) return 'NOT YET'; return UL.stripLine(unlockReq(lv), lv.needs ? unlockNameOf(lv.needs) : '', !!(lv.needs && PROG[lv.needs] && PROG[lv.needs].cleared)); };
+/* the ONE hero-ownership read for the UNLOCKS screen (switched to the device roster in batch150) */
+const unlockHeroOwned = id => heroOwned(id);   /* (batch150) the roster is the account: a hero this DEVICE owns reads as owned (claude/heroroster2 heroOwned = god | this save | roster) */
+const heroFacts = k => { const sec = SC.forHero(k.id), lv = k.coinNeeds && LEVELS.find(l => l.id === k.coinNeeds);
+  return { id: k.id, name: k.name || String(k.id).toUpperCase(), owned: unlockHeroOwned(k.id), starter: HR.STARTERS.includes(k.id), hidden: !!(sec && !SC.isFound(sec, PROG)),
+    feat: k.feat ? (typeof k.featName === 'function' ? k.featName(PROG) : k.featName) : null, featDone: k.feat ? !!featDoneH(k.feat) : false,
+    silver: k.silver ? k.price : 0, coin: k.coinPrice || 0, coinLevel: lv ? lv.name : '', coinCleared: !!(k.coinNeeds && PROG[k.coinNeeds] && PROG[k.coinNeeds].cleared) }; };
+const unlockLevelRows = () => NODES.filter(n => n.kind === 'level' && n.level >= 0 && LEVELS[n.level] && !LEVELS[n.level].retired && (!LEVELS[n.level].hidden || LEVELS[n.level].secret)).map(n => { const lv = LEVELS[n.level], r = unlockReq(lv);
+  return UL.levelRow(lv, r.kind === 'pieces' && r.hidden ? '? ? ?' : n.name, r, !levelLocked(lv)); });
+const unlockFeatRow = (k, tabId) => { const words = typeof k.featName === 'function' ? k.featName(PROG) : k.featName, fd = !!featDone(k.feat), done = fd || owns(STORE_TABS.find(t => t.id === tabId), k.id);
+  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd }), done, { level: UL.featLevel(k.feat) }); };
+const unlockForSale = (list, tabId, what) => { const tab = STORE_TABS.find(t => t.id === tabId), free = list.filter(k => !k.feat), have = free.filter(k => k.price === 0 || owns(tab, k.id)).length;
+  return UL.perk(what + ' FOR SALE', 'BUY THEM AT THE STORE, WITH GOLD OR SILVER', have + ' OF ' + free.length + ' OWNED', have >= free.length); };
+const unlockOtherRows = () => { const out = [], cl = id => !!(PROG[id] && PROG[id].cleared), lvl = heroLevel();
+  out.push(UL.perk('SECOND SKILL SLOT', 'REACH LEVEL ' + SECOND_SLOT_LEVEL + ' WITH A HERO', 'YOUR HERO IS LEVEL ' + lvl, lvl >= SECOND_SLOT_LEVEL));
+  if (!MODES_PARKED) {   /* the title's BOSS RUSH row and the MASTER difficulty are parked until ?modes ships them (src/main.js MODES_PARKED): no row for what the player cannot reach */
+    out.push(UL.perk('BOSS RUSH', 'CLEAR ' + unlockNameOf('crown'), rushUnlocked() ? 'UNLOCKED' : 'NOT CLEARED YET', rushUnlocked(), { demoHide: true }));
+    out.push(UL.perk('MASTER DIFFICULTY', 'BEAT ' + unlockNameOf(CAMPAIGN_END) + ' ON NORMAL. THEN PICK MASTER WHEN YOU START A NEW SAVE', DFM.masterUnlocked() ? 'UNLOCKED' : 'NOT BEATEN YET', DFM.masterUnlocked(), { demoHide: true })); }
+  for (const k of CHARMS) if (k.feat) out.push(unlockFeatRow(k, 'charms'));
+  for (const k of UPGRADES) if (k.needs) out.push(UL.perk('THE SMITH: ' + k.name, 'CLEAR ' + String(k.needsName).toUpperCase(), cl(k.needs) ? 'UNLOCKED' : 'NOT CLEARED YET', cl(k.needs), { level: k.needs }));
+  return out; };
+const unlockDemo = () => DS.DEMO;
+const unlockTabs = () => UL.buildTabs({ demo: unlockDemo(), inSlice: id => { const lv = LEVELS.find(l => l.id === id); return !lv || DS.inSlice(lv); },
+  levels: unlockLevelRows(),
+  heroes: PICK.map(id => HEROES.find(h => h.id === id)).filter(Boolean).map(k => UL.heroRow(heroFacts(k))),
+  skins: SKINS.filter(k => k.feat).map(k => unlockFeatRow(k, 'skins')).concat(SWORDS.filter(k => k.feat).map(k => unlockFeatRow(k, 'weapons')), [unlockForSale(SKINS, 'skins', 'SKINS'), unlockForSale(SWORDS, 'weapons', 'WEAPON LOOKS')]),
+  other: unlockOtherRows() });
+const UNLUI = UL.makeUnlocks({ g: () => g, VW: () => VW, VH: () => VH, time: () => time, text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), panel: (x, y, w, h) => panel(x, y, w, h), hit: (x, y, w, h, fn) => TCH.hit(x, y, w, h, fn),
+  sfx: k => { const f = SFX[k]; if (f) f(); }, wrap: (s, w, z) => wrap(s, w, z), tabs: unlockTabs });
+/* open it: from the title the save in the chosen slot is read first (the title holds no progress of its own) */
+function UNLOCK_OPEN(from) { if (from === 'title') { try { if (!['corrupt', 'newer'].includes(slotHealthOf(slot).state)) loadSlot(slot); } catch {} } return UNLUI.open(from); }
+/* one frame of the screen's input (the caller returns after it): arrows walk it, ESC / X / Q / B / the pad's back close it; every press is used up */
+function unlockFrame() {
+  UNLUI.input({ left: leftPress, right: rightPress, up: upPress, down: downPress, back: pausePress || atkPress || talentsPress || dodgePress || throwPress || mapPress });
+  leftPress = rightPress = confirmPress = pausePress = upPress = downPress = throwPress = swapPress = atkPress = jumpPress = dodgePress = talentsPress = mapPress = talkPress = false;
+}
 /* one frame of the panel's input (the caller returns after it): the arrows walk it, confirm takes the hero, ESC closes it; what is said after a swap goes where that screen speaks */
 function swapFrame(dt) {
   SWAPUI.input({ left: leftPress, right: rightPress, confirm: confirmPress, back: pausePress }, dt);
@@ -6594,7 +6632,7 @@ let menuKind = 'pause';
 // one line each, so nobody has to guess what a switch does
 const SETTING_TIPS = {
   'Unlock everything': 'all open and free; save untouched', 'Unlock all levels': 'every level open on the map; heroes, gear and medals as earned', 'God mode': 'never hurt or tired. no medals',
-  'Skills': 'abilities and loadout (Q)', 'Level card': 'what each level gave you', 'Store': 'buy and equip anything (V on the map)', 'Swap hero': 'change who you play (H on the map)', 'Difficulty': 'how hard foes hit and last', 'Game speed': 'slow the whole game down, or speed it up (50-200%)', 'Jump assist': 'a longer coyote step off ledges',
+  'Skills': 'abilities and loadout (Q)', 'Level card': 'what each level gave you', 'Store': 'buy and equip anything (V on the map)', 'Swap hero': 'change who you play (H on the map)', 'Unlocks': 'what is locked, how to open it, how far you are', 'Difficulty': 'how hard foes hit and last', 'Game speed': 'slow the whole game down, or speed it up (50-200%)', 'Jump assist': 'a longer coyote step off ledges',
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Transitions': 'the cutscene between levels: ALWAYS / FIRST TIME / NEVER (any button skips)', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
@@ -6679,6 +6717,7 @@ function menuConfirm() {
   else if (k === 'Store') openStore('menu', 'heroes');
   else if (k === 'Swap hero') { if (!SWAPUI.open()) SFX.buzz(); }
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
+  else if (k === 'Unlocks') { UNLOCK_OPEN('pause'); }   /* (claude/unlocks) what is locked, how to open it, how far you are */
   else if (k === 'Secrets') { menuKind = 'secrets'; SFX.uiSel(); }   /* (claude/secrets) the journal: found X of Y per act */
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
   else if (k === 'Return to map' && L && L.duelPit) { duelLeave(); }   /* (claude/pvpduel) out of the duel pit: back to the inn */
@@ -7468,7 +7507,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openUnlocks: () => UNLOCK_OPEN('inn'), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -11976,7 +12015,7 @@ let titleOpts = false;
 /* (claude/demo-cut) an UNSTARTED save (the empty one written at boot: no hero picked, no level, no xp) reads NEW GAME; CONTINUE already routes it through the opening and hero pick */
 const saveUnstarted = r => !r || (!r.heroPicked && !LEVELS.some(l => r[l.id]) && !Object.values(r.xp || {}).some(v => v > 0));
 const titleTop = () => { const base = !saveUnstarted(readSlot(slot)) ? ['CONTINUE', 'CHOOSE A SAVE', 'SWAP HERO'] : ['NEW GAME', 'CHOOSE A SAVE'];   /* (claude/heroroster2, Daniel 11-07) SWAP HERO: only once this save has been started */
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'OPTIONS'] : ["WHAT'S NEW", 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [], ['ARENA YARD'], PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'], touchOn ? ["WHAT'S NEW", 'UNLOCKS', 'OPTIONS'] : ["WHAT'S NEW", 'UNLOCKS', 'OPTIONS', 'GIVE FEEDBACK', 'CREDITS']); };   /* (claude/touchrows) ON TOUCH GIVE FEEDBACK and CREDITS live under OPTIONS: two fewer rows for a thumb */
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -32820,6 +32859,7 @@ function update(dt) {
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
+  if (UNLUI.isOpen) { unlockFrame(dt); return; }   /* (claude/unlocks) THE UNLOCKS screen over the title, the pause menu, the inn */
   if (SWAPUI.isOpen && state !== 'store') { swapFrame(dt); return; }   /* (claude/hubpolish) the swap hero panel over the map or the pause menu */
   if (saltCard) {   /* (claude/onboard1) THE FIRST-DEATH CARD holds the world still until the confirm key (armed after SCARD.ARM_S, so a mashed attack key cannot skip it) */
     if (state !== 'play' || P.dead) saltCard = null; else { saltCard.t += dt; if (saltCard.t > SCARD.ARM_S && confirmPress) { saltCard = null; SFX.uiSel(); } leftPress = rightPress = upPress = downPress = jumpPress = atkPress = confirmPress = pausePress = false; if (saltCard) return; } }
@@ -32861,6 +32901,7 @@ function update(dt) {
         else if (k === 'SOUND TEST') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'title'; }
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
         else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
+        else if (k === 'UNLOCKS') { UNLOCK_OPEN('title'); }   /* (claude/unlocks) */
         else if (k === "WHAT'S NEW") { wnScroll = 0; WN.markSeen(); state = 'whatsnew'; }
       }
       }
@@ -37514,7 +37555,7 @@ function render() {
   trnChoiceDraw();   /* (claude/transchoice) ONWARD / RETURN TO THE MAP, over the level-complete card */
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   if (state === 'title' && titleSayT > 0 && !SWAPUI.isOpen) { titleSayT -= 1 / 60; const w = inkW(titleSay, 6) + 12; g.fillStyle = 'rgba(16,13,24,0.9)'; g.fillRect(Math.round((VW - w) / 2), 4, w, 11); g.strokeStyle = '#a8e06e'; g.strokeRect(Math.round((VW - w) / 2) + 0.5, 4.5, w - 1, 10); text(titleSay, VW / 2, 7, '#a8e06e', 'center', 6); }   /* (claude/heroroster2) what the title's SWAP HERO said */
-  if (SWAPUI.isOpen) SWAPUI.draw();   /* (claude/hubpolish) over the store, the map or the pause menu */
+  if (SWAPUI.isOpen) SWAPUI.draw(); if (UNLUI.isOpen) UNLUI.draw();   /* (claude/unlocks) */   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SAVE. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
@@ -37722,7 +37763,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
-  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/hero-swap.mjs, tools/textfit.mjs */
+  log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, unlocks: UNLUI, unlockTabs: () => unlockTabs(), shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/hero-swap.mjs, tools/textfit.mjs */
   parts: () => parts, bossBodies: () => bossBodies, get PROP() { return PROP; }, get FLYERS() { return FLYERS; }, get HAS_HURT() { return HAS_HURT; }, get EHP() { return EHP; },
 };
 /* THE HOIST, for the harnesses: the decks (each with its state in .hs), a way to put n loads in one's basket, and the Reeve's cut */

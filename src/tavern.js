@@ -29,6 +29,7 @@ export const STATIONS = [
   { id: 'board', x: 7, name: 'THE PARTY BOARD', verb: 'PARTY', first: 'THE PARTY BOARD: FILL A SEAT - JOIN HERE ON A SAVE OF YOUR OWN, OR INVITE A FRIEND ONLINE.' },
   { id: 'guestbook', x: 10, name: 'THE GUEST BOOK', verb: 'SAVES', first: 'THE GUEST BOOK: YOUR SAVES - SWITCH, START A NEW ONE, OR CLEAR ONE. P1 KEEPS THE BOOK.' },   /* (claude/innsaves, Daniel 11-06) the real SAVES station: the five-slot save screen, from the inn */
   { id: 'saves', x: 14, name: 'CO-OP RULES', verb: 'READ', first: 'CO-OP RULES: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
+  { id: 'unlocks', x: 27, name: 'THE UNLOCKS BOARD', verb: 'UNLOCKS', first: 'THE UNLOCKS BOARD: WHAT IS STILL LOCKED, HOW TO OPEN IT, AND HOW FAR YOU ARE.' },   /* (claude/unlocks, Daniel 11-07) the UNLOCKS screen, read-only: levels, heroes, skins, the rest */
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
   { id: 'wardrobe', x: 40, name: 'SWAP HERO', verb: 'SWAP', first: 'SWAP HERO: PICK ANY HERO YOU OWN - A HERO UNLOCKED ON ANY SAVE IS YOURS ON EVERY SAVE. ALSO YOUR WEAPON, COLOUR AND RINGS.' },   /* (claude/heroroster2, Daniel 11-07) the wardrobe station (id kept) is SWAP HERO: the verb is SWAP */
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
@@ -49,6 +50,7 @@ export const TAVERN_ART = [
   ['tiles', 'inn floorboards (worn oak, a hearth-stone patch before the fire), the plastered back wall with timber framing, the beamed ceiling, the yard\'s packed-sand floor and its open back wall'],
   ['door', 'the inn door in the west wall: oak with iron straps, a lamp over it, swung open while somebody walks in (2 frames: shut / open), the road and a signpost seen through it'],
   ['board', 'THE INVITE BOARD: a cork-and-timber notice board with pinned bills and a chalk slate for the four-letter room code (blank / chalked)'],
+  ['unlocks', 'THE UNLOCKS BOARD: a plank board on a post between the long tables and the bar, UNLOCKS chalked on it with a small padlock hung from a nail'],
   ['table', 'THE CAMPAIGN TABLE: a heavy map table with the world map spread on it, pins and a candle; the party standing round it reads as planning'],
   ['guestbook', 'THE GUEST BOOK: an open ledger on a wooden stand by the door side of the room with a small hanging SAVES sign (idle: a page edge stirs, 2 frames); opens the five save slots'],
   ['saves', 'CO-OP RULES (id saves): a painted board on a post by the party board, a chalked HOW CO-OP SAVES WORK (one page of the co-op guide opens on use)'],
@@ -92,6 +94,7 @@ export function makeTavern(api) {
     if (s.id === 'board') { (api.openParty || api.openOnline)(); return; }
     if (s.id === 'guestbook') { if (p.n !== 1) { say(p, 'P1 KEEPS THE BOOK', '#9aa39a'); api.hint('P1 KEEPS THE BOOK: ONLY PLAYER ONE CHANGES SAVES.', 4); api.sfx('ui'); return; } if (api.openBook) api.openBook(); return; }
     if (s.id === 'saves') { if (api.openSaves) api.openSaves(); return; }
+    if (s.id === 'unlocks') { if (api.openUnlocks) api.openUnlocks(); return; }
     if (s.id === 'table') { api.takeRoad(); return; }
     if (s.id === 'wardrobe') { st.cardFor.set(p, { row: 0 }); api.sfx('uiSel'); return; }
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
@@ -185,6 +188,7 @@ export function makeTavern(api) {
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time, api.text);
     TA.lesson(g, at('lesson'), fy, time, api.text);
+    TA.unlocks(g, at('unlocks'), fy, time, api.text);
     TA.target(g, X(TARGET.x), fy, time);
     TA.arena(g, at('arena'), fy, time, api.text, PVP_SHIPS);
     TA.mirror(g, at('wardrobe'), fy, time);

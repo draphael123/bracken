@@ -75,6 +75,7 @@ const PINNED = [
   [/^DS\.demoLocked\(lv\)$/, 'demohide: sliceLv - slot / hero card / title counts are the slice'],
   [/^DS\.DEMO\) \{ g\.fillStyle = 'rgba\(10,8,20/, 'demoend2 DEVOFF: the FPS / UPDATE / DRAW readout is not drawn in the demo, whatever SET.fps says'],
   [/^DS\.DEMO \|\| !SET\.boxes/, 'demoend2 DEVOFF: no hitbox overlay in the demo, whatever SET.boxes says'],
+  [/^DS\.DEMO$/, 'unlocks screen: the demo slice only (claude/unlocks, unlockDemo)'],
   [/^DS\.DEMO\b/, 'title: no boss rush'],
 ];
 const left = uses.slice();

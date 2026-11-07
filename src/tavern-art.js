@@ -101,6 +101,14 @@ export function saves(g, x, fy, time, text) {
 }
 
 /* ---------------------------------------------------------------- THE LESSON BOARD (claude/tutorial1) ---------------------------------------------------------------- */
+export function unlocks(g, x, fy, time, text) {   /* (claude/unlocks) a greybox plank board, UNLOCKS chalked on it and a padlock on a nail: the art lane paints it */
+  const L = x - 23, T = fy - 40;
+  R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);
+  R(g, L, T, 46, 20, TP.o3); R(g, L, T, 46, 1, TP.o6); R(g, L, T + 19, 46, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 45, T, 1, 20, TP.o1);
+  R(g, L + 2, T + 2, 42, 16, '#2a2418'); R(g, L + 2, T + 2, 42, 1, '#5a4a32');
+  text('UNLOCKS', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 10, T + 13, 26, 1, '#ffd36b');
+  R(g, L + 38, T + 20, 5, 4, '#8a8f80'); R(g, L + 39, T + 18, 1, 2, '#8a8f80'); R(g, L + 41, T + 18, 1, 2, '#8a8f80'); R(g, L + 39, T + 18, 3, 1, '#8a8f80'); if (Math.floor(time * 2) & 1) P(g, L + 42, T + 21, '#fff');
+}
 export function lesson(g, x, fy, time, text) {   /* (claude/shrinekey) the plank is wider for TUTORIAL */
   const L = x - 23, T = fy - 40;
   R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);   /* the post */
