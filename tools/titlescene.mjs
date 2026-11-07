@@ -25,7 +25,7 @@ try {
   console.log('ok  title          sign + tagline + ' + menu.length + ' menu items all whole on screen, tagline clear of the board, one menu size, no footer');
 
   /* ---- 1b. OPTIONS (Daniel 10-09): SETTINGS + SOUND TEST + CONTROLS are ONE row; the board has six rows; the list under OPTIONS holds the three and BACK ---- */
-  assert.equal(t.items.length, 11, 'the title board is eleven rows (an unstarted save reads NEW GAME where a started one reads CONTINUE; ARENA YARD and DUEL (BETA) are both there, with ONLINE CO-OP, BOSS SELECT, the what-is-new row, GIVE FEEDBACK and CREDITS): ' + t.items.join('|'));
+  assert.equal(t.items.length, 12, 'the title board is twelve rows (batch150: claude/unlocks added UNLOCKS; an unstarted save reads NEW GAME where a started one reads CONTINUE; ARENA YARD and DUEL (BETA) are both there, with ONLINE CO-OP, BOSS SELECT, the what-is-new row, GIVE FEEDBACK and CREDITS): ' + t.items.join('|'));
   assert.ok(t.items.includes('OPTIONS') && !t.items.some(k => ['SETTINGS', 'SOUND TEST', 'CONTROLS'].includes(k)), 'one OPTIONS row, the three are not top-level: ' + t.items.join('|'));
   const o = await pg.evalp(`(()=>{ BK.ui.titleI = BK.ui.titleItems().indexOf('OPTIONS'); BK.press('confirm'); BK.step(3); const sub = BK.ui.titleItems(); const opened = BK.ui.titleOpts; BK.press('pause'); BK.sim(2); BK.step(2); return { sub, opened, closed: !BK.ui.titleOpts, on: BK.ui.titleItems()[BK.ui.titleI] }; })()`);
   assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, REPORT A BUG, BACK');   /* (DELIBERATE DESIGN CHANGE, claude/shipfix, Daniel 10-11: REPORT A BUG is a row under OPTIONS, before BACK) */
