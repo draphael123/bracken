@@ -4,10 +4,10 @@
     "batch": 150,
     "lines": [
       "New save: choose LIVES (off, or 5 plus one per 100 coins) and your DIFFICULTY",
-      "Every hero starts with a first skill ready; the UNLOCKS screen shows how to open everything",
+      "Every hero starts with a first skill ready; UNLOCKS shows how to open everything",
       "SWAP HERO: heroes you unlock are yours in every save, with bonus XP to catch up",
-      "After a level: onward or back to the map. The tutorial teaches heavy, rising and low swings and the plunge",
-      "Sporewood shows how to grow the mushrooms; the store has a BACK button; loading is faster",
+      "After a level: onward or back to the map. The tutorial now teaches every swing",
+      "Sporewood shows how to grow the mushrooms; the store has a BACK button",
       "A hard-won win over King Gorm shows the burning wood; the level timer starts off"
     ]
   },

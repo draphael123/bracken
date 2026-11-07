@@ -15,7 +15,8 @@ try {
   const by = s => t.r.find(x => x.s === s), logo = t.r.filter(x => x.s === 'THORNROAD' && x.size >= 16), tag = by('a road, a crown, a mountain');
   assert.ok(logo.length >= 1 && tag, 'the sign and its tagline are drawn: ' + t.r.map(x => x.s).join(' / '));
   for (const x of t.r) assert.ok(x.x0 >= 4 && x.x0 + x.w <= t.VW - 4 && x.y0 >= 0 && x.y0 + x.h <= t.VH, 'on the screen, whole: ' + x.s + ' ' + JSON.stringify(x));
-  const menu = t.items.map(s => by(s)).filter(Boolean);
+  const LBL = { 'LOCAL CO-OP': 'PLAY TOGETHER (SAME SCREEN)', 'ONLINE CO-OP': 'PLAY ONLINE WITH A FRIEND' };   /* (batch150: claude/polish150 renamed the two co-op rows' labels; the row ids are unchanged) */
+  const menu = t.items.map(s => by(LBL[s] || s)).filter(Boolean);
   assert.equal(menu.length, t.items.length, 'every menu item is drawn: ' + t.items.join('|'));
   const mx0 = Math.min(...menu.map(m => m.x0)), mTop = Math.min(...menu.map(m => m.y0));
   assert.ok(tag.y0 + tag.h < mTop || tag.x0 + tag.w < mx0 - 4, 'the tagline does not meet the menu board');
