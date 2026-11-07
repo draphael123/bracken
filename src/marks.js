@@ -248,6 +248,7 @@ export const MARK = {
   'forgemaster|ladleTell': '!!', 'forgemaster|leapTell': '', 'forgemaster|pourTell': '!!', 'forgemaster|slamTell': '!!', 'forgemaster|sprayTell': '!', 'forgemaster|tongsTell': '!',
   'forgemaster|whirlTell': '!!', 'frog|crouch': '!', 'frog|flopTell': '!!', 'frog|snapTell': '!', 'frog|spitTell': '!', 'frog|swarmTell': '',
   'frog|tongueTell': '!', 'gaffer|ekHookTell': '!', 'gaffer|ekSpinTell': '!!', 'gaffer|haftTell': '!', 'gaffer|hookTell': '!!', 'galeharpy|aim': '!',
+  'gprincess|fanTell': '!!', 'gprincess|flurryTell': '!', 'gprincess|hopTell': '!', 'gprincess|lungeTell': '!', 'gprincess|stompTell': '!!', 'gprincess|tiaraTell': '!', 'gprincess|trinketTell': '!',
   'galeharpy|galeTell': '!', 'gangleader|crossTell': '!', 'gangleader|cut2Tell': '!', 'gangleader|cutTell': '!', 'gangleader|dashTell': '!!', 'gangleader|riposteTell': '!!',
   'gangleader|throwTell': '!', 'gangleader|whirlTell': '!!', 'gargoyle|breathTell': '!', 'gargoyle|diveTell': '!!', 'gargoyle|fireballTell': '!', 'gargoyle|flareTell': '!!',
   'gar|lungeTell': '!', 'goat|charge': '!', 'goat|ekButtTell': '!', 'goat|ekStampTell': '!!', 'gobmage|boltTell': '!', 'gobmage|lobTell': '!',
