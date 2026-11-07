@@ -76,6 +76,8 @@ export const CALL_LINES = new Set([
   'THE PIT WIND THROWS YOU OUT', 'YOU RIDE THE DEVIL UP', 'THE DEVIL LIFTS YOU', 'GALE BLADES: DUCK THE HIGH, JUMP THE LOW',
   /* claude/windcaller3: THE WINDCALLER 3 - the phases change the wind, his blast, his step away, the gale home, the falling ledge, and his opening */
   'THE WIND TURNS: READ THE FLAGS', 'THE STORM: THE EAST LEDGE GIVES', 'HE GATHERS THE WIND: STEP BACK', 'THE GALE TAKES YOU HOME', 'THE LEDGE FALLS', 'HIS OWN BOLT: HE FALLS - CUT HIM',
+  /* claude/windcaller5: a blade turned back (every hero's parry takes his bolt AND his blades) */
+  'TURNED BACK',
   /* claude/moorpyro: fire sends his bolt home (the pyromancer's answer to him) */
   'HIS BOLT BURNS HOME: HE FALLS - CUT HIM', 'YOUR FIRE SENDS HIS BOLT HOME',
   /* claude/moorpass: the ranger's snatch, the paladin's aegis, the Blood Knight's ward let go send his bolt home too */
@@ -115,7 +117,7 @@ export const CALL_LINES = new Set([
   'CUT HIM', 'HIT IT', 'HIT THE TALON', 
   'IN THE MUD: CUT HIM', 'DOWN: CUT HER', 'INTO THE STONE: CUT HER', 'THE RIME RUNS OFF IT: CUT IT',
   'IT FALLS - FINISH IT', 'IT SKIDS: HIT IT', 'IT LANDS: HIT IT', 'IT WHINES: HIT IT', 'INTO THE LANTERN: HIT IT', 'PINNED: HIT IT', 'ON THE GROUND: HIT IT',
-  'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE BOUGHS: GET CLEAR', 'HIS WARD: HE SHAKES IT OFF',
+  'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE BOUGHS: GET CLEAR', 'HIS WARD: HE SHAKES IT OFF', 'THE KENNEL HOUND BITES: HIT HIM', 'HE RISES', 'AGAIN', 'AT THE GALLERY', 'THE PACK BLOOD: HE POUNCES TWICE', 'POUNCE TWICE',   /* (claude/greathound) Kingswood's hound 2: the bite pays, phase two's double pounce told */
   /* claude/bosswave1: the boss wave's earned openings, told (src/main.js, src/boss-greed.js OPEN_RULE) */
   'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF', 'HE GATHERS HIMSELF', 'THE GATE HAS HIM: CUT HIM', 'HE DRAGS HIMSELF OUT', 'THE RUNE TURNS HIM OVER', 'THE GRATE COMES DOWN ON HER',   /* (claude/bosswave2) a mini's opening shut after a third of him (src/boss-greed.js miniCap) */
   'STUNG: HIS ARMS LIE STILL', 'HIS ARM FALLS - CLIMB IT', 'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL',

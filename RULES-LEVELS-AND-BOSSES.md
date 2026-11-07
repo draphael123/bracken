@@ -90,6 +90,8 @@ oath within 28, and his yard was eleven rows of open air over a flat street. Bot
 neither room had any. **Checkable:** an attack's guard conditions are in its resolve branch and the arena's standable
 rows are in the grid; a tool can read both and fail when nothing in the room satisfies a condition an attack tests.
 
+**A13. NO BOSS ABOVE 5,000 BASE HP (Daniel 2026-11-07, scratch/lane-reports/hpscale.md).** A boss's base health (the number in its module, before the difficulty, tier and co-op dials) is at most 5,000; the Demon King's 4 x 1,300 = 5,200 across four phases is the one cap for the whole game. A boss that needs a longer fight gets more openings or a better phase two, not more health. Fight length is the 60-70% win band's job (A10), and the number the player READS is the internal number / 10 (src/num-display.js: one decimal under 10, whole above), so a 5,000 boss reads about 450-750 on its bar. *Earned:* the bases grew from 430 (Hornet Queen) to 6,000 (the Ram Lord at hero L7) with no rule, one boss lane at a time.
+
 ---
 
 ## B. The room

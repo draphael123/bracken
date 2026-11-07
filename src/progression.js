@@ -1,5 +1,6 @@
 import {LEGACY_NODES, SKILLS} from './progression-catalog.js';
 import {levelOfXp, xpFloor, LV_MAX} from './xp.js';
+import {shownHp} from './num-display.js';   /* (claude/hpdisplay) health reads /10 */
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
 import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
@@ -55,9 +56,9 @@ export const skillScale = lv => 1 + Math.min(Math.max(0,lv),24) / 120;
    MILESTONES at 25, 30, 35, 40, 45 and 50 are a bigger card: one PERK from three, each perk once (PERKS). The save is
    p.card[hero] = {v, e, m, ms:{25:'perk',...}}; a hero with no card (an AI partner, a tool) reads an even spread (evenCard). */
 export const CARD = [
- { id: 'v', name: 'VIGOR', what: '+8 HEALTH', hp: 8 },
+ { id: 'v', name: 'VIGOR', what: '+' + shownHp(8) + ' HEALTH', hp: 8 },
  { id: 'e', name: 'ENDURANCE', what: '+12 STAMINA', stamina: 12 },
- { id: 'm', name: 'MIGHT', what: '+1 DAMAGE', damage: 1 },
+ { id: 'm', name: 'MIGHT', what: 'HARDER BLOWS', damage: 1 }   /* (claude/hpdisplay: MIGHT's number is hidden, VIGOR reads /10) */,
 ];
 export const CARD_CAP = 25;
 /* LATE-GAME TAPER (claude/lategamea, Daniel-approved 10-31 brief-lategame-1101 Q2A): the stat curve flattens so the L25+ milestone perks (real choices)
@@ -298,12 +299,28 @@ export function trimSlots(p){
  }
  return cut;
 }
+/* THE STARTER SKILL (claude/starterskill, Daniel 11-07: "every hero starts with his cheapest existing level-1 active skill OWNED + EQUIPPED"): per hero, the active ability with the lowest level, then the
+   lowest price, then the catalog's order (today each hero has ONE level-1 active at the entry price). A hero who owns NO ability gets it owned and in slot 1 - a fresh save, an old save whose hero
+   never bought one, a hero unlocked later (every hero is covered whether owned yet or not, so an unlock needs no hook). Never removes, never refunds, never touches a hero who owns anything:
+   one who owns abilities but has nothing equipped is left as he is, and one who unequips his starter keeps owning it (so it is never granted twice). */
+export const starterSkillFor = h => skillsFor(h).map((n,i)=>({n,i})).filter(x=>x.n.active).sort((a,b)=>a.n.level-b.n.level||a.n.price-b.n.price||a.i-b.i)[0]?.n.id||null;
+export const STARTER_SKILLS = Object.fromEntries(HERO_IDS.map(h=>[h,starterSkillFor(h)]));
+export function grantStarter(p,h){
+ const id=starterSkillFor(h);if(!id||!object(p))return false;
+ const own=object(p.skillOwned)&&object(p.skillOwned[h])?p.skillOwned[h]:null;
+ if(own&&Object.keys(own).some(k=>skillFor(h,k)?.active))return false;
+ if(!object(p.skillOwned))p.skillOwned={};p.skillOwned[h]=object(p.skillOwned[h])?p.skillOwned[h]:{};p.skillOwned[h][id]=true;
+ if(!object(p.loadouts))p.loadouts={};const lo=Array.isArray(p.loadouts[h])?p.loadouts[h]:[];
+ if(!lo.some(Boolean)){const out=[...lo];if(!out.length)out.push(null);out[0]=id;p.loadouts[h]=out;}
+ return true;
+}
+export function grantStarters(p){let n=0;for(const h of HERO_IDS)if(grantStarter(p,h))n++;return n;}
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */

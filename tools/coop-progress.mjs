@@ -40,7 +40,7 @@ const played = () => { const p = migrateProgress(null).progress; Object.assign(p
     ['an owned skill no catalog has', x => { x.data.skillOwned = { warden: { notASkill: true } }; }],
     ['negative XP', x => { x.data.xp.warden = -5; }],
     ['an unknown hero', x => { x.hero = 'dragon'; }],
-    ['a loadout of a skill not owned', x => { x.data.loadouts = { warden: ['skewer'] }; }],
+    ['a loadout of a skill not owned (a real warden skill; the starter IS owned now)', x => { x.data.loadouts = { warden: ['harrier'] }; }],
     ['an unsafe key', x => { x.data.items = JSON.parse('{"__proto__":{"heart":true}}'); x.data.card = JSON.parse('{"warden":{"__proto__":{"v":1}}}'); }],
     ['a card pick over the cap', x => { x.data.card.warden.v = 999; }],
     ['not an object', x => { x.data = 'nope'; }],

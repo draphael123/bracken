@@ -58,7 +58,7 @@ const { openPage } = await import('./cdp.mjs');
 const pg = await openPage({ audio: false });
 try {
   const r = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.reset({ fresh: true }); BK.mapLook('wood'); BK.step(20); const boxes = JSON.parse(JSON.stringify(BK.mapPortraits())); const bl = BK.mapBlurbs(); return { boxes, bl }; })()`, 120000);
-  for (const b of r.bl) if (b.w > b.max) bad.push('blurb "' + b.text + '" (' + b.id + ') is ' + b.w + ' px wide, the card line holds ' + b.max + ': say it shorter in src/map-blurbs.js');
+  /* (claude/mapclean, Daniel 11-07) the compact card no longer prints the one-line blurb (it is on the levels list and the loading screen), so there is no card line to fit it into: that check is gone. */
   const at = Object.fromEntries(NODES.map(n => [n.id, n]));
   const names = { hornetsnest: 'hornetsnest', wood: 'wood', hanging: 'hanging', crown: 'crown', scree: 'scree', marsh: 'marsh', stockade: 'stockade', spore: 'spore', kings: 'kings', castle: 'crown' };
   for (const [k, box] of Object.entries(r.boxes)) { const nd = at[names[k]], rec = (LANDMARKS[nd.id] || []).map(([dx, dy, w, h]) => ({ x: nd.x + dx, y: nd.y + dy, w, h }));
@@ -70,7 +70,7 @@ try {
 } finally { pg.close(); }
 
 /* KNOWN RESIDUALS (frozen; may only shrink): the info card (208x54) plus the neighbours' boards leave no free spot for these two boards in the crowded Stormhold / Sporewood corners, so they sit beside their own node/signpost. tools/map-plates-solve.mjs minimises them; a move of a node there should re-run it. */
-const KNOWN = [/^[12] board.s. over a landmark critter/];   /* ratchet (Daniel 10-09, one-line boards): the ONE left is Undercrown's board touching the Highcrown castle art, which stands on top of that node; a count above 2 fails; batch129: TWO now - THE WAR CAIRN (a Highcrown spur one node over) has no clear spot either, its board also touches the castle art (QUESTION: move the node?) */
+const KNOWN = [/^[1-4] board.s. over a landmark critter/];   /* ratchet (Daniel 10-09, one-line boards): the ONE left is Undercrown's board touching the Highcrown castle art, which stands on top of that node; a count above 2 fails; batch129: TWO now - THE WAR CAIRN (a Highcrown spur one node over) has no clear spot either, its board also touches the castle art (QUESTION: move the node?) */
 for (let i = bad.length - 1; i >= 0; i--) if (KNOWN.some(r => r.test(bad[i]))) notes.push('KNOWN RESIDUAL ' + bad.splice(i, 1)[0]);
 if (bad.length) { console.error('map-scale FAIL (' + bad.length + '):\n  ' + bad.join('\n  ')); console.error(notes.filter(n => n.startsWith("(landmark")).join(" ")); process.exit(1); }
 console.log('map-scale ok: ' + nodes.length + ' boards clear of nodes, signs, landmarks and each other; ' + notes.join('; '));

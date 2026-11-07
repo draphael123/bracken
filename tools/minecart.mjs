@@ -196,7 +196,11 @@ ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + 
     ok(FMG.takeBlade(S, 10) === 10, 'while you stand on his cart a blade is whole');
     for (let i = 0; i < 200 && !x.release; i++) FMG.stepForeman(S, e, 1 / 60, [], C(x)); ok(x.release === 'lurch' && S.ward > 0 && log.includes(FMG.FOREMAN_LINES.lurch), 'then a told LURCH throws you off - back into your own cart - and he braces');
     const y = {}; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 6 }], C(y)); ok(y.braced > 0 && !y.board && S.n.braced === 1, 'a landing on him while he is braced is turned (a clank, a sliver: B15)');
-    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.armour), 'and a blade from the cart is x' + F.armour + ' again');
+    ok(FMG.takeBlade(S, 10) === Math.round(10 * F.bracedPoke) && F.bracedPoke >= 0.4 && F.bracedPoke <= 0.5, 'braced: a blade from the cart is a small safe poke x' + F.bracedPoke + ' (foreman2: no dead time, never invulnerable)');
+    { const T = { ...S, ward: 0 }; ok(FMG.takeBlade(T, 10) === Math.round(10 * F.armour), 'and unbraced, off his cart, it is x' + F.armour + ' again'); }
+    ok(F.wardT >= 2.5 && F.wardT <= 3.2, 'the brace is ~3 s (foreman2: was 4.5): ' + F.wardT);
+    for (const [st, ch] of Object.entries(F.chain)) { const jumps = ch.filter(m => m === 'tip' || m === 'points').length, answers = ch.filter(m => m === 'pick' || m === 'ram' || m === 'boom').length;
+      ok(jumps <= 2 && ch.includes('boom') + ch.includes('ram') + ch.includes('pick') > 0 && answers >= 1 && ch.includes('drift'), 'chain stage ' + st + ': ' + jumps + ' jump threats (<= 2) and a brake/duck answer among ' + answers + ' (foreman2)'); }
     /* THE MISSED BOARDING (Daniel 10-12): once the spikes have RISEN (drawn, a sound, the word) a landing on his rim costs the full bump and throws you back */
     ok(log.includes(FMG.FOREMAN_LINES.spikesUp), 'the spikes come up TOLD: ' + FMG.FOREMAN_LINES.spikesUp);
     for (let i = 0; i < Math.ceil(F.spikeRise * 60) + 2; i++) FMG.stepForeman(S, e, 1 / 60, [], C({}));
@@ -407,6 +411,11 @@ ok(GD.DRILL.hp >= 1900 && GD.DRILL.jamCap >= 0.15, 'the drill\'s health is never
     for (let i = 0; i < 240; i++) FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(x[ORE] >= F.tipDmg && x.bounce >= 1, 'its lumps roll back down the line into a cart that holds');
     const y = {}, { S: S2, e: e2 } = mk5(); S2.stomps = 2; S2.i = F.chain[2].indexOf('tip'); for (let i = 0; i < 240; i++) FMG.stepForeman(S2, e2, 1 / 60, [hero5({ ground: false, y: G5.lowY - 30 })], C5(y, []));
     ok(!y[ORE], 'a cart in the air over them is clear'); }
+  /* (drpolish) THE POINTS: told, then a wide gap comes down the line; a cart on it falls in, a cart in the air is clear; he eases (no snap) out of his drift */
+  { const { S, e } = mk5(), x = {}, log = []; S.stomps = 1; S.i = F.chain[1].indexOf('points'); FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(S.mode === 'pointsTell' && log.includes(FMG.FOREMAN_LINES.points), 'THE POINTS: told first (' + FMG.FOREMAN_LINES.points + ')');
+    let hit = 0; const C = C5(x, log); const c2 = { ...C, hit: (...a) => { hit++; return C.hit(...a); } }; for (let i = 0; i < 300; i++) FMG.stepForeman(S, e, 1 / 60, [hero5()], c2); ok(hit >= 1 && S.n.pointsHits >= 1, 'a cart on the line falls into the gap');
+    const { S: S2, e: e2 } = mk5(); S2.stomps = 1; S2.i = F.chain[1].indexOf('points'); for (let i = 0; i < 300; i++) FMG.stepForeman(S2, e2, 1 / 60, [hero5({ ground: false, y: G5.lowY - 30 })], C5({}, [])); ok(S2.n.pointsHits === 0, 'a cart in the air over the gap is clear');
+    const { S: S3, e: e3 } = mk5(); S3.mode = 'driftTell'; S3.mT = 0.01; S3.dv = F.driftV; let v1 = null; for (let i = 0; i < 6; i++) { FMG.stepForeman(S3, e3, 1 / 60, [hero5()], C5({}, [])); if (S3.mode === 'drift' && v1 === null) v1 = S3.vr; } ok(v1 !== null && v1 < F.driftV && S3.vr > 0, 'his drift builds up to its pace (eased, not snapped)'); }
   { const { S } = mk5(); S.mode = 'boom'; S.mT = 0.2; S.n.boom = 1; const mem = {}, ask = t => FMG.foremanPlan({ P: { x: G5.x0 + 120, y: G5.lowY, ground: true, vy: 0, atk: -1, v: MC.cruise, lane: 0 }, S, rng: () => 0.9, mem, t });
     ask(1); ok(ask(1.5).duck, 'the bot ducks his boom');
     S.mode = 'idle'; S.lumps = [{ x: G5.x0 + 140, id: 4 }]; ask(2); ok(ask(2.5).jump, 'and jumps his ore'); } }

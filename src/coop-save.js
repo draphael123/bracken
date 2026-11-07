@@ -21,9 +21,10 @@
 //                 localStorage would change the whole-storage snapshots the save checks take): every page that holds slots (the game: its own slot
 //                 and its local co-op seats; a guest page: the slot it plays) says so on a BroadcastChannel, answers 'who', and re-says it every few
 //                 seconds; a claim nobody has repeated for LOCK_TTL is gone. claim() refuses a slot another page - or another seat of this page - holds.
-import { migrateProgress, loadProgress, validateProgress, DEFAULT_HEROES, HERO_IDS } from './progression.js';
+import { migrateProgress, loadProgress, validateProgress, grantStarter, DEFAULT_HEROES, HERO_IDS } from './progression.js';
 import { slotHealth, safeSet } from './save-safety.js';
 import { levelOfXp, xpCap } from './xp.js';
+import { rosterOwned } from './hero-roster.js';   /* ACCOUNT-WIDE UNLOCKS (claude/heroroster2): the device roster's heroes are every save's */
 
 export const SLOTS = 5;
 export const slotKey = i => 'bracken.progress.' + i;
@@ -40,20 +41,21 @@ export const FLAT = ['charm', 'items', 'coins'];
 export const OVERLAY_KEYS = [...PER_HERO, 'tech', ...FLAT];
 export const MAX_CREDIT_SESSIONS = 24;   /* the newest sessions a slot remembers (coopCredit); older ones cannot come back, their links are long gone */
 
-/* the heroes a save may take into co-op: what it owns, and the free starters (anybody may take one, as player two always could) */
-export function heroesOf(p) {
+/* the heroes a save may take into co-op: what it owns, the free starters (anybody may take one, as player two always could), and `extra` - the DEVICE ROSTER's heroes (src/hero-roster.js
+   rosterOwned: a hero bought or earned in any save is playable in every save, Daniel 11-07) */
+export function heroesOf(p, extra = []) {
   const own = object(p) && object(p.heroes) ? p.heroes : {};
-  return HERO_IDS.filter(h => own[h] === true || DEFAULT_HEROES.includes(h));
+  return HERO_IDS.filter(h => own[h] === true || DEFAULT_HEROES.includes(h) || (Array.isArray(extra) && extra.includes(h)));
 }
 /* A SLOT, IN A LINE: what the pickers show. state: empty / ok / corrupt / newer (save-safety's words) */
-export function slotSummary(raw, campaignIds = []) {
+export function slotSummary(raw, campaignIds = [], extra = []) {
   const h = slotHealth(raw, campaignIds);
   if (h.state !== 'ok') return { state: h.state, reason: h.reason, heroes: [] };
   const p = migrateProgress(raw, campaignIds).progress, hero = HERO_IDS.includes(p.hero) ? p.hero : 'knight';
   const lv = x => levelOfXp(((p.xp || {})[x]) || 0), levels = {};
-  for (const x of heroesOf(p)) levels[x] = lv(x);
+  for (const x of heroesOf(p, extra)) levels[x] = lv(x);
   const woods = new Set(); for (const d of Object.values(p.done || {})) if (object(d)) for (const k of Object.keys(d)) woods.add(k);
-  return { state: 'ok', hero, level: lv(hero), heroes: heroesOf(p), levels, coins: p.coins || 0, woods: woods.size };
+  return { state: 'ok', hero, level: lv(hero), heroes: heroesOf(p, extra), levels, coins: p.coins || 0, woods: woods.size };
 }
 /* WHAT A SEAT PICKER SAYS (claude/coopclarity, Daniel 10-20: "make it clearer in co-op how progression is saved and works"): every line says what happens.
    A save: what it earns and where it goes; an empty one starts a new save; a held one says so (held = true, or the words); a GUEST plays a lent hero. */
@@ -71,7 +73,7 @@ export const summaryLine = (i, s, name = h => String(h || '').toUpperCase(), hel
 export const savedTo = (slot, long = false) => (Number.isInteger(slot) && slot >= 0 ? 'SAVE ' + (slot + 1) : long ? 'GUEST - NOT SAVED' : 'GUEST');
 
 /* ===== THE SNAPSHOT (the partner's side) ===== */
-export function snapshotOf(p, hero, slot) {
+export function snapshotOf(p, hero, slot, extra = []) {
   if (!HERO_IDS.includes(hero)) throw Error('Unknown hero');
   const data = {};
   for (const k of PER_HERO) if (object(p[k]) && p[k][hero] !== undefined) data[k] = { [hero]: p[k][hero] };
@@ -79,7 +81,7 @@ export function snapshotOf(p, hero, slot) {
   if (typeof p.charm === 'string') data.charm = p.charm;
   if (object(p.items)) data.items = p.items;
   data.coins = Number.isFinite(p.coins) && p.coins >= 0 ? p.coins : 0;
-  return JSON.parse(JSON.stringify({ v: 1, slot: Number.isInteger(slot) ? slot : -1, hero, sword: typeof p.sword === 'string' ? p.sword : 'steel', heroes: heroesOf(p), data }));
+  return JSON.parse(JSON.stringify({ v: 1, slot: Number.isInteger(slot) ? slot : -1, hero, sword: typeof p.sword === 'string' ? p.sword : 'steel', heroes: heroesOf(p, extra), data }));
 }
 /* ===== THE SEAT PROFILE (the host's side): nothing in the snapshot is trusted ===== */
 export function cleanSnapshot(snap) {
@@ -92,6 +94,7 @@ export function cleanSnapshot(snap) {
     view.charm = typeof d.charm === 'string' && d.charm.length < 40 ? d.charm : null;
     view.items = {}; if (object(d.items)) for (const [k, v] of Object.entries(d.items)) if (typeof v === 'boolean' || Number.isFinite(v)) view.items[k] = v;
     view.coins = Number.isFinite(d.coins) && d.coins >= 0 ? Math.floor(d.coins) : 0;
+    grantStarter(view, hero);   /* (claude/starterskill) a snapshot from a client that predates the starter skill: the seat's hero still starts with his own, owned and in slot 1 (the view only; a save is never written from it) */
     validateProgress({ hero, ...view });   /* the save's own rules (owned skills, loadouts, card picks, unsafe keys) on the hero's part */
   } catch { return null; }
   const heroes = Array.isArray(snap.heroes) ? snap.heroes.filter(h => HERO_IDS.includes(h)) : [hero];
@@ -99,13 +102,14 @@ export function cleanSnapshot(snap) {
     heroes: heroes.includes(hero) ? heroes : [hero, ...heroes], view, base: { xp: view.xp[hero] || 0, coins: view.coins } };
 }
 /* a fresh hero's profile (a local seat on an EMPTY slot, a guest with no save): a new save's part for that hero */
-export function freshSeat(hero, slot) { return cleanSnapshot(snapshotOf(migrateProgress(null).progress, hero, slot)); }
+export function freshSeat(hero, slot, extra = []) { return cleanSnapshot(snapshotOf(migrateProgress(null).progress, hero, slot, extra)); }
 /* the profile straight from a slot on THIS browser (a local JOIN; a linked AI companion) - null when the slot cannot be read clean */
 export function seatFromSlot(storage, i, hero, campaignIds = []) {
   const raw = slotRawOf(storage, i), h = slotHealth(raw, campaignIds);
-  if (h.state === 'empty') return freshSeat(hero, i);
+  const extra = rosterOwned(storage);   /* the device roster: his seat may be any hero the device owns (Daniel 11-07) */
+  if (h.state === 'empty') return freshSeat(hero, i, extra);
   if (h.state !== 'ok') return null;
-  return cleanSnapshot(snapshotOf(migrateProgress(raw, campaignIds).progress, hero, i));
+  return cleanSnapshot(snapshotOf(migrateProgress(raw, campaignIds).progress, hero, i, extra));
 }
 
 /* ===== THE LEDGER (the host's side) ===== */
@@ -157,7 +161,7 @@ export function applyCredit(storage, key, credit, opts = {}) {
   if (dCoins) p.coins = (p.coins || 0) + dCoins;
   if (newClears.length) { p.done = object(p.done) ? p.done : {}; const d = p.done[h] = object(p.done[h]) ? p.done[h] : {};
     for (const id of newClears) { const lv = object(p[id]) ? p[id] : {}; p[id] = { ...lv, cleared: true }; d[id] = 1; const gw = object(p.xpGot) && object(p.xpGot[h]) ? p.xpGot[h][id] : null; if (object(gw)) delete gw.k; } }
-  if (DEFAULT_HEROES.includes(h) && !opts.xpOnly) { p.heroes = object(p.heroes) ? p.heroes : { knight: true }; p.heroes[h] = true; }   /* a free starter he played is his */
+  if ((DEFAULT_HEROES.includes(h) || rosterOwned(storage).includes(h)) && !opts.xpOnly) { p.heroes = object(p.heroes) ? p.heroes : { knight: true }; p.heroes[h] = true; }   /* a free starter he played is his - and so is a hero the device roster owns (the save adopts him, as swapHeroTo does) */
   if (fresh) { p.hero = h; p.perHero = 1; p.xpVersion = 1; }
   book[c.sid] = { seq: c.seq, hero: h, xp: Math.max(prev.xp || 0, c.xp), coins: opts.xpOnly ? (prev.coins || 0) : Math.max(prev.coins || 0, c.coins), clears: [...new Set([...had, ...newClears])], flags: [...new Set([...(Array.isArray(prev.flags) ? prev.flags : []), ...newFlags])], t: opts.now || Date.now() };
   const keep = Object.entries(book).sort((a, b) => (b[1].t || 0) - (a[1].t || 0)).slice(0, MAX_CREDIT_SESSIONS); p.coopCredit = Object.fromEntries(keep);

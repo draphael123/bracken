@@ -50,6 +50,24 @@ export async function demoTracks(audioJsText) {
   return { want: [...want], table, keepKeys, keepFiles: new Set(keepKeys.map(k => table.get(k))), synthOnly: [...want].filter(k => !table.has(k)) };
 }
 
+/* (claude/fastload) THE SLICE GUARD: everything the slice can reach is still shipped. Three independent passes, run by every build (so tools/itch-build-check.mjs runs them too):
+     1. every music name a slice level / arena / glade / mini / chase asks for is a SHIPPED file, or a name audio.js plays without a file (synth) - never a left-out file (that would be a silent 404 and the synth in its place)
+     2. every music.play('literal') / music.preload('literal') in src/ that names a track with a file is shipped, except the ones in NOT_IN_SLICE (each says why)
+     3. every shipped music file exists on disk (the build itself already throws when the bundle names an audio file that is not shipped)
+   Returns the guard's counts for build-report.json. */
+export const NOT_IN_SLICE = { gqjudge: "the Goblin Queen's judgment (main.js): the Goblin Queen's wood is past King Gorm" };
+export async function sliceGuard(T, audioJsText) {
+  const { musicKnown } = await import(pathToFileURL(join(ROOT, 'src', 'audio.js')).href);
+  const problems = [];
+  for (const name of T.want) { const file = T.table.get(name); if (file ? !T.keepFiles.has(file) : !musicKnown(name)) problems.push('slice music "' + name + '" is neither shipped nor a synth name'); }
+  const lits = new Set();
+  for (const f of readdirSync(join(ROOT, 'src')).filter(n => n.endsWith('.js') && n !== 'audio.js')) for (const m of readFileSync(join(ROOT, 'src', f), 'utf8').matchAll(/music\.(?:play|preload)\(\s*'([A-Za-z0-9_]+)'/g)) lits.add(m[1]);
+  for (const k of lits) { const file = T.table.get(k); if (file && !T.keepFiles.has(file) && !NOT_IN_SLICE[k]) problems.push('src plays "' + k + '" (' + file + ') but the demo leaves it out: ship it or add it to NOT_IN_SLICE with a reason'); }
+  for (const f of T.keepFiles) if (!existsSync(join(ROOT, 'audio', f))) problems.push('shipped music file missing on disk: ' + f);
+  if (problems.length) throw new Error('slice guard: ' + problems.slice(0, 8).join('; '));
+  return { sliceMusic: T.want.length, literalsChecked: lits.size, notInSlice: Object.keys(NOT_IN_SLICE) };
+}
+
 /* a minimal ZIP writer (stored for audio, deflate for text); forward-slash names, UTF-8 flag, no data descriptors */
 export function writeZip(zipPath, entries) {
   const chunks = [], central = []; let off = 0; const d = new Date(), dosT = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dosD = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
@@ -74,6 +92,7 @@ export async function buildItch({ out = join(ROOT, 'dist-itch'), zip = true, log
   const audioJs = readFileSync(join(ROOT, 'src', 'audio.js'), 'utf8');
   const T = await demoTracks(audioJs);
   const dropped = new Set();
+  const guard = await sliceGuard(T, audioJs);
   /* ---- the bundle: three small source rewrites, in memory only ---- */
   const plugin = {
     name: 'thornroad-demo', setup(b) {
@@ -94,6 +113,14 @@ export async function buildItch({ out = join(ROOT, 'dist-itch'), zip = true, log
   html = html.replace('src="./src/loading-screen.js"', 'src="./loading-screen.js"').replace("import('./src/online-guest.js')", "import('./online-guest.js')").replace("import('./src/main.js')", "import('./main.js')");
   if (/\.\/src\//.test(html.replace(/<!--[\s\S]*?-->/g, ''))) throw new Error('index.html still points into src/');
   html = html.replace('<title>THORNROAD</title>', '<title>THORNROAD (demo)</title>\n<meta name="thornroad-build" content="demo ' + sha + '">');
+  /* (claude/onboard1) MODULEPRELOAD for the bundle: main.js and the chunks it imports statically are fetched IN PARALLEL from the first byte of the page, not as a second wave after the 8 MB main.js has arrived and been scanned. Only the static closure (online-guest.js and on-demand chunks stay out). */
+  let bootFiles = {};
+  { const seen = new Set(), walk = f => { if (seen.has(f) || !existsSync(join(site, f))) return; seen.add(f); const src = readFileSync(join(site, f), 'utf8'); for (const m of src.matchAll(/(?:^|[;}\s])(?:import|export)\s*(?:[^'"`;()]*?from\s*)?["']\.\/([^"']+)["']/g)) walk(m[1]); };
+    walk('loading-screen.js'); walk('main.js');
+    /* (claude/fastload) the page's own script bytes, for the loading bar: window.__BOOT_FILES = { 'main.js': bytes, ... } (loading-screen.js reads it and moves the bar by bytes arrived) */
+    for (const f of seen) bootFiles[f] = statSync(join(site, f)).size;
+    const links = [...seen].filter(f => f !== 'loading-screen.js').sort().map(f => '<link rel="modulepreload" href="./' + f + '">').join('\n');
+    const tag = '<script type="module" src="./loading-screen.js"></script>'; if (!html.includes(tag)) throw new Error('index.html: the loading-screen script tag not found'); html = html.replace(tag, '<script>window.__BOOT_FILES=' + JSON.stringify(bootFiles) + ';</script>' + '\n' + links + '\n' + tag); }
   writeFileSync(join(site, 'index.html'), html);
   /* ---- static files ---- */
   const put = (rel, from = rel) => { mkdirSync(dirname(join(site, rel)), { recursive: true }); copyFileSync(join(ROOT, from), join(site, rel)); };
@@ -111,7 +138,11 @@ export async function buildItch({ out = join(ROOT, 'dist-itch'), zip = true, log
   const asked = new Set([...js.matchAll(/\.\/audio\/([A-Za-z0-9_.\/-]+\.(?:ogg|mp3))/g)].map(m => m[1])); const missing = [...asked].filter(f => !existsSync(join(site, 'audio', f)));
   if (missing.length) throw new Error('the bundle names audio files that are not shipped: ' + missing.slice(0, 8).join(', '));
   const sizes = files.map(f => statSync(join(site, f)).size), bytes = sizes.reduce((a, b) => a + b, 0);
-  const report = { sha, files: files.length, bytes, mb: +(bytes / 1048576).toFixed(1), jsFiles: files.filter(f => f.endsWith('.js')).length, sfxClips: sfx, musicShipped: T.keepKeys.length, musicFiles: [...T.keepFiles].sort(), musicLeftOut: dropped.size, musicSynthOnly: T.synthOnly, extra: EXTRA_TRACKS };
+  const sizeOf = rel => existsSync(join(site, rel)) ? statSync(join(site, rel)).size : 0, sumKeys = keys => keys.reduce((a, k) => a + sizeOf('audio/' + (T.table.get(k) || '')), 0);
+  const sfxBytes = Object.values(man).flat().reduce((a, u) => a + sizeOf(u.replace(/^\.\//, '')), 0), bootJs = Object.values(bootFiles).reduce((a, b) => a + b, 0);
+  /* the BOOT PAYLOAD: what has to arrive before the title is playable = the page's scripts + the title track (fetched at the first press); the rest streams after (sound clips, 8 at a time, low priority) or on demand (one music file per level / boss, fetched when the level or its arena is near) */
+  const boot = { scripts: Object.keys(bootFiles).length, scriptBytes: bootJs, titleTrackBytes: sumKeys(['theme']), bootBytes: bootJs + sumKeys(['theme']), sfxClipBytes: sfxBytes, musicBytesOnDemand: [...T.keepFiles].reduce((a, f) => a + sizeOf('audio/' + f), 0) - sumKeys(['theme']) };
+  const report = { boot, guard, sha, files: files.length, bytes, mb: +(bytes / 1048576).toFixed(1), jsFiles: files.filter(f => f.endsWith('.js')).length, sfxClips: sfx, musicShipped: T.keepKeys.length, musicFiles: [...T.keepFiles].sort(), musicLeftOut: dropped.size, musicSynthOnly: T.synthOnly, extra: EXTRA_TRACKS };
   if (zip) {
     const order = ['index.html', ...files.filter(f => f !== 'index.html')];
     const zipPath = join(out, 'thornroad-demo-' + sha + '.zip'); writeZip(zipPath, order.map(name => ({ name, data: readFileSync(join(site, name)) })));

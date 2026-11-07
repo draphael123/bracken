@@ -1,17 +1,29 @@
-# claude/knighttune (sonnet, 11-03) - KNIGHT RETUNE vs the demo bosses. NOT merged, NOT deployed.
-Branch off claude/batch140 5f856e7e. One change: src/main.js KNIGHT_DMG = 1.1 (knight-side x on swordDmg(), the pyro 0.7 pattern; skills scale with it). Bosses untouched; guard chain, windows, stamina, flasks, resist floors untouched.
-## Rates (knight, human profile, practiced, WITH campaign-kit flasks, normal; tools/boss-rates.mjs; logs scratch\kt\*.log)
-| boss (L) | before 1.0 n=6 | 1.2 n=6 / seeds 7-12 | 1.15 n=12 | 1.1 n=12 (KEPT) |
-| wood (3) | 6/6 | - | - | - (tutorial, trivially high) |
-| hornetsnest (3) | 2/6 33% | 4/6, 6/6 | 10/12 | 7/12 58% |
-| stockade (4) | 2/6 33% | 5/6, 5/6 | 10/12 | 8/12 67% |
-| burning (5) | 3/6 50% | 3/6, 5/6 | 8/12 | 7/12 58% |
-| pooled | 7/18 = 39% (13/24 = 54% with wood) | 28/36 = 78% | 28/36 = 78% | 22/36 = 61% IN BAND |
-swordDmg is rounded, so the cut steps by whole points at low level: 1.15 and 1.2 land on the same step (78%, high), 1.1 the step below (61%). 1.1 is the only value in band; it sits at the low edge, n=36 noise is about +-8 points.
-## Checks
-GREEN: tools/knight-chain.mjs, leveling.mjs, blow-tags.mjs. hero-pass knight: 2 FAILS (UP+C wind-up / shield charge) are IDENTICAL on untouched claude/batch140 - batch139 (781ef29e, which fixes hero-pass) is not merged into 140. puppeteer.mjs: knight salt 2 times out (4081 taken) on this tree - the salt 2->7 + bot fixes live in 139, not here; re-measure after 139 -> 140 is merged.
-## Open / owed
-1. Knight vs Hornet Queen: the bot's guard stats show 0 perfect guards on her stings, so the chain engine never runs there; the rate is carried by damage. Rec: leave (her tells are unblockable-style); note only.
-2. Bot perfect guard is more reliable than a human's (0.09 s lead inside a 0.11 s window); no change made - rates are as the gate measures them.
-3. Owed after the 139->140 merge: puppeteer knight rate, hero-pass knight green, ram lord knight (was 1/6 at hp 7200), Hornet Queen pooled (57%, knight is one cell), pyroboss/warden unaffected.
-4. Rec for Daniel: keep 1.1. Alt if a human feels it low: widen the perfect window 0.11 -> 0.13 in perfectWindow() (identity-positive, not measured).
+# KNIGHTTUNE (branch claude/knighttune-1106, off master 929cc4786) - READY (test-row calibration only; no game, boss or knight number changed)
+
+Note: the branch name claude/knighttune was already taken by an old unrelated lane (433d852c7, batch140), so this lane is claude/knighttune-1106. Old branch untouched.
+
+## What was wrong
+The "thin margin" (theatre knight row wins at 274 of 300 s) is not a knight-play bug. Two causes, both in the test row, not the game:
+1. tools/boss-navigation.mjs fought the THEATRE row with a LEVEL-22 knight. The comment says "the theatre's campaign depth" but that depth is 33 since the Kitchen Gate + Rookery (tools/puppeteer.mjs already uses depthsOf = 33). A 22 knight is under-levelled for where a player meets the Puppeteer.
+2. The row is ONE fight (the seed env has no effect; bossLab pins its own dice per row, salt picks the draw). This fight has a wide spread: slack openings (both puppets down) arrive 12-76 s apart, and the knight needs 4-5 openings (~150 of his 648 each). So any single draw is 100-300 s.
+Measured at depth 33 with the SAME current lab bot (n=12 salts, refill health, tools/boss-navigation.mjs with BN_THEATRE_SALT): 10 of 12 win; win times 96 / 107 / 107 / 175 / 175 / 187 / 202 / 231 / 268 s (salts 1,5,12,3,7,10,2,8,9...), median win 175 s; salts 6 and 11 time out with 3-4% of him left. The unsalted draw at L33 is a timeout (8% left) = an unlucky tail draw, 274 s at L22 was another.
+
+## Change (tools/boss-navigation.mjs only)
+- the theatre row's knight is the theatre campaign depth (depthsOf, 33; fallback 22) instead of a hard 22.
+- the theatre row pins bossLab salt 3 (BN_THEATRE_SALT overrides): 174.7 s, 125 s of margin (goal was <220 s).
+- No src change, no boss HP/damage, no knight kit number.
+
+## Tried and rejected (knight play)
+- HEAVY CUT in the Puppeteer's slack opening (the branch taps light cuts; every other opening rotates into a heavy): on the unsalted L22 row it cut 274 -> 212 s, but across salts it is not better: 3 heavies land ~155 vs lights ~114 per 3 s opening only when the knight is in range early; with only 2 heavies fitting it pays ~103. In tools/puppeteer.mjs's own harness (salt 12 etc.) the knight went 0/20 with heavies vs 3/8 without. Alternating heavy/cut (stale reset) and a lead-in wind-up were also not better (lead-in whiffs: a held swing slows the walk). Reverted; not in this branch.
+- The release146 double-tap-bash guard in src/lab.js is fine and untouched.
+- Knight reach (22 vs warden 40) costs ~0.7 s of walk per opening; that is the kit's shape, not a bug. If Daniel wants the knight stronger here, the smallest honest knob is a knight kit number (e.g. heavy dmg +5%: 3 heavies = 162 = a 4-opening kill), but at L33 the knight already wins 83% with flasks-free refill, so I did not.
+
+## Checks run (this worktree, one browser at a time, 4+ GB free each time)
+- tools/boss-navigation.mjs full: exit 0, theatre 174.7 s (was 273.9 s at L22 unsalted).
+- tools/puppeteer.mjs: exit 0 (unchanged; its own salt-12 bot row still wins).
+- tools/knight-kit.mjs: exit 0. tools/starter-kits.mjs: exit 0.
+- Not run: tools/puppeteer-bot21.mjs full table (puppeteer-bot21 owns it; I ran knight+warden n=6 at NORMAL health on the baseline: knight 0/6 (deaths 19-59 s, slam/harlequin/snare), warden 1/6 - that normal-health band is far below the 50-60% target and is the real rate problem; unchanged by this lane). Full gate not run.
+
+## Questions for Daniel (recommended answer first)
+1. Is a pinned-salt row OK as the guard here, given the fight's 10-in-12 win spread? REC: yes (that is how every row in this file works); puppeteer-bot21 should own the rate.
+2. The bot21 normal-health numbers (knight 0/6, warden 1/6 at L33, no flasks) are well under the 50-60% band: tune the Puppeteer's hazard damage (slam / harlequin / snare / prop drop) or the knight's block bot? REC: leave to puppeteer-bot21 (a boss change is out of this lane's scope); the knight bot's block play is not the cause.

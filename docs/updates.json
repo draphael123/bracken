@@ -1,5 +1,71 @@
 [
   {
+    "date": "2026-11-07",
+    "batch": 150,
+    "lines": [
+      "New save: choose LIVES (off, or 5 plus one per 100 coins) and your DIFFICULTY",
+      "Every hero starts with a first skill ready; UNLOCKS shows how to open everything",
+      "SWAP HERO: heroes you unlock are yours in every save, with bonus XP to catch up",
+      "After a level: onward or back to the map. The tutorial now teaches every swing",
+      "Sporewood shows how to grow the mushrooms; the store has a BACK button",
+      "A hard-won win over King Gorm shows the burning wood; the level timer starts off"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "batch": 149,
+    "lines": [
+      "Starting at the War Cairn boss now wakes the Chieftain right away",
+      "Picking the Undead Archmage from the boss list wakes him at once",
+      "Boss list: all 69 fights re-checked to start awake at the door"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "batch": 148,
+    "lines": [
+      "THE DUEL PIT (BETA) is open: pick a fighter, then set lives, health, rounds and the bot",
+      "THE GUEST BOOK at THE INN: your five save slots, with the co-op rules on the board",
+      "The lesson is now the TUTORIAL; R no longer returns you to a shrine (use the pause menu)",
+      "First-time help: a card after your first death, boss hints and short explainers",
+      "Fixes: a new save reads NEW GAME; heroes land before the walk-out; Battering Beast fixes"
+    ]
+  },
+  {
+    "date": "2026-11-06",
+    "batch": 147,
+    "lines": [
+      "New saves open with a short roadside lesson: move, jump, fight, drink, shrine",
+      "Replay the lesson any time from the board at THE INN",
+      "The tavern is now THE INN",
+      "New foes: the club goblin, plus fire, rock and venom archers",
+      "Fen Road, Stockade, Underleaf, Palisade Wood and Kingswood have a livelier cast"
+    ]
+  },
+  {
+    "date": "2026-11-05",
+    "batch": 146,
+    "lines": [
+      "Knight: a full-charge quake, and a shield bash on a double tap of block",
+      "Kingswood's Great Hound is tougher, with a feeding gallery to strike from",
+      "The Windcaller on Gale Moor hits harder, and every hero can answer his blade",
+      "The Queen's Lance is sturdier and no longer glides on planted feet",
+      "The Foreman and the great drill have new tells and polish",
+      "Duel mode is sturdier behind the scenes; clearer Hound hints"
+    ]
+  },
+  {
+    "date": "2026-11-05",
+    "batch": 145,
+    "lines": [
+      "The world map is repainted: plates, a clearer header, DANGER pips and living campfires",
+      "The Knight no longer doubles his shield while charging",
+      "Grubbag fights with a hook and chains, and hits harder",
+      "Lance reworked, and the Ranger bell and spear are fixed",
+      "Kingswood banner poles and spear racks now stand on the ground"
+    ]
+  },
+  {
     "date": "2026-11-05",
     "batch": 144,
     "lines": [
@@ -17,7 +83,7 @@
     "lines": [
       "Geomancer: walk through your own stones, tap DOWN to recall them",
       "Geomancer's ultimate is now Mountain Collapse: a wave of boulders",
-      "Old Tusker's stomp is a splintered shockwave you can read and jump",
+      "Old Tusker's stomp: a shockwave to jump",
       "The Hornet's Nest drips dark amber resin, not honey",
       "Sound on phones unlocks reliably, and the credits list the new music"
     ]

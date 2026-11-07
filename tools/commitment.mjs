@@ -22,8 +22,10 @@ const F = 1 / 60, TOL = 1;   /* frames */
 const HEROES = ['knight', 'warden', 'pyro', 'geomancer', 'paladin', 'pirate', 'reaper', 'berserker'];   /* (THE BERSERKER, claude/berserker 2026-10-04: src/commit.js COMMIT.berserker) */
 /* recovery added after the art (s): light, third, up/sweep, heavy (the freebooter's heavy is his pistol: the whole shot is 0.45 s) */
 /* WEIGHT-T (coordinator 10-04): the brief's recoveries x0.6, its rolls x0.9, the bar's regen 75 after 0.3 s, a 0.26 s roll grace, the shield 6 + 0.4 x the blow (cap 25), exhausted 0.6 s to 20% - tuned against the human-speed bot (the lane report has both sets) */
-const REC = { pirate: [0.06, 0.084, 0.06, null], knight: [0.084, 0.12, 0.084, 0.15], warden: [0.084, 0.12, 0.084, 0.132], pyro: [0.084, 0.12, 0.084, 0.15],
-  geomancer: [0.096, 0.132, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18], berserker: [0.06, 0.12, 0.084, 0.162] };   /* (claude/berserker2: THE FLURRY recovers in 0.06 - src/commit.js) */
+/* (fix149) TWO DESIGN CHANGES, the table follows src/commit.js: the WARDEN's third is 0.30 (was 0.12: the long thrust recovers slowly, the price of its reach - 9f1841add claude/wardenid)
+   and the GEOMANCER's third is 0.192 (was 0.132: the stone fist's knock-up, +0.06 - 31e956d30 claude/geoid). Measured late by 11 f and 3 f exactly; they were red since those merges. */
+const REC = { pirate: [0.06, 0.084, 0.06, null], knight: [0.084, 0.12, 0.084, 0.15], warden: [0.084, 0.30, 0.084, 0.132], pyro: [0.084, 0.12, 0.084, 0.15],
+  geomancer: [0.096, 0.192, 0.096, 0.168], paladin: [0.102, 0.132, 0.102, 0.18], reaper: [0.102, 0.132, 0.102, 0.18], berserker: [0.06, 0.12, 0.084, 0.162] };   /* (claude/berserker2: THE FLURRY recovers in 0.06 - src/commit.js) */
 const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geomancer: 0.42, paladin: 0.65, reaper: 0.65, berserker: 0.29 };   /* (claude/dkfeel 10-16: rhythm 0.46 -> 0.56 = the Paladin, 0.3/0.56 + 0.102; was 0.76) */   /* (claude/dk2b, Daniel 10-14 LATE: THE RED RHYTHM ~35% quicker - his art 0.3/0.46 + 0.102; was 0.98) */   /* (claude/berserker2: his FLURRY chop's art runs at BZ.swing.base 1.3: 0.231 s + 0.06; was 1.06: 0.283 + 0.084) */
 const DK_WARD_CUT = 0.25, PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3, berserker: 0.26 };
 const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
@@ -59,7 +61,7 @@ try {
         if(verb==='third'){for(let i=0;i<200&&t0<0;i++){const a0=P.atk;if(P.atk<0)BK.press('atk');BK.sim(1);if(P.atk>=0&&(a0<0||P.atk<a0)&&P.heavySwing&&!P.heavy)t0=0;__full();}}
         else if(verb==='light'){BK.press('atk');BK.sim(1);t0=0;}
         else if(verb==='up'||verb==='sweep'){K[verb==='up'?'up':'down']=true;BK.press('atk');BK.sim(1);K.up=K.down=false;t0=0;}
-        else if(verb==='heavy'){K.atk=true;for(let i=0;i<200&&t0<0;i++){BK.sim(1);if(h==='knight'&&(P.atkHeld||0)>0.32)K.atk=false;if((P.heavy&&P.atk>=0)||(h==='pirate'&&P.blastT>0.3))t0=0;}K.atk=false;}
+        else if(verb==='heavy'){/* (fix149) the knight's heavy cut is ONE fixed weight at 0.5 s (claude/knightid 0b5fa78d5; stage 2 = cutAt(0)): let go at 0.56 s - a release at 0.32 s is nothing, so no verb ever started */K.atk=true;for(let i=0;i<200&&t0<0;i++){BK.sim(1);if(h==='knight'&&(P.atkHeld||0)>0.56)K.atk=false;if((P.heavy&&P.atk>=0)||(h==='pirate'&&P.blastT>0.3))t0=0;}K.atk=false;}
         else if(verb==='plunge'){BK.press('jump');K.jump=true;BK.sim(14);K.jump=false;K.down=true;BK.press('atk');BK.sim(1);K.down=false;for(let i=0;i<120&&t0<0;i++){BK.sim(1);if(P.ground&&!P.plunge)t0=0;}}
         if(t0<0)return {err:'verb never started'};
         const kind=P.swingKind,heavy=!!P.heavy,third=!!P.heavySwing;__full();
@@ -74,7 +76,7 @@ try {
           else if(it==='jump'&&!P.ground&&P.vy<0)acted=f;
           else if(it==='attack'&&P.atk>=0&&(prevAtk<0||P.atk<prevAtk))acted=f;
           else if(it==='skill'&&P.cds&&P.cds[cdKey]>0)acted=f;
-          else if(it==='c'&&(P.block||P.aegis||P.warding||P.geoGuard||P.parryW>0||P.deflectT>0||P.braceT>0||(h==='pyro'&&st0-P.st>=30)))acted=f;
+          else if(it==='c'&&(P.block||P.aegis||P.warding||P.geoGuard||P.parryW>0||P.deflectT>0||P.braceT>0||P.fwUp))acted=f;   /* (fix149) the pyro's C TAP is the flame ward (P.fwUp, claude/pyrokit cab03cf30) - the stamina-30 ember blink it replaced is gone */
           prevAtk=P.atk;__full();f=f0;
         }
         K.block=false;

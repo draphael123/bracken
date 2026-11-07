@@ -62,7 +62,7 @@
 export const HP = {
   knight: {
     step: { t: 0.24, inv: 0.14, speed: 230, guard: 0.12, face: 90 },
-    bash: { st: 12, t: 0.24, hit: 0.08, hitEnd: 0.16, reach: 26, lunge: 110, dmg: 0.35, cd: 0.55, stagger: 0.9, eliteStagger: 0.45, bossLean: 18, shove: 120 },
+    bash: { dtLunge: 150, guardBreak: 0.9, st: 12, t: 0.24, hit: 0.08, hitEnd: 0.16, reach: 26, lunge: 110, dmg: 0.35, cd: 0.55, stagger: 0.9, eliteStagger: 0.45, bossLean: 18, shove: 120 },
     valiant: { eliteStagger: 0.8, guardBreak: 0.9, bossLean: 0.3 },
   },
   pyro: { blink: { t: 0.16, inv: 0.12, speed: 375, hide: [0.03, 0.13] } },
@@ -163,15 +163,17 @@ export function makeHeroPass(api) {
   }
 
   /* ---- THE KNIGHT: THE SHIELD BASH (UP+C) ---- */
-  function bashPress() { const p = P(); if (p.kBashT > 0 || p.kBashCd > 0) return true;   /* (the press is his either way: UP+C is never the last charge) */
+  function bashPress(dbl) { const p = P(); if (p.kBashT > 0 || p.kBashCd > 0) return true;   /* (the press is his either way: UP+C is never the last charge) */
     if (!api.spend(HP.knight.bash.st)) { api.tired(); return true; }
-    const B = HP.knight.bash; p.kBashT = B.t; p.kBashHit = new Set(); p.kBashCd = B.cd; p.block = false; p.vx = p.face * B.lunge; stats.bashes++;   /* (a half step in behind it) */
+    const B = HP.knight.bash; p.kBashT = B.t; p.kBashHit = new Set(); p.kBashCd = B.cd; p.block = false; p.vx = p.face * B.lunge; p.kDrive = dbl ? B.dtLunge : 0; stats.bashes++;   /* (a half step in behind it) */
     api.kitPose(p, 'kBash', B.t); api.SFX.throwWhoosh && api.SFX.throwWhoosh(); api.noteVerb('bash'); return true; }
-  function bashStep(p, dt) { if (!(p.kBashT > 0)) return; const B = HP.knight.bash; p.kBashT = Math.max(0, p.kBashT - dt); if (B.t - p.kBashT > B.hitEnd) p.vx *= Math.pow(0.02, dt);
+  function bashStep(p, dt) { if (!(p.kBashT > 0)) return; const B = HP.knight.bash; p.kBashT = Math.max(0, p.kBashT - dt); if (B.t - p.kBashT > B.hitEnd) p.vx *= Math.pow(0.02, dt); else if (p.kDrive && (p.ground || p.swim)) p.vx = p.face * p.kDrive;   /* (claude/knightkit) the double tap's LUNGE: driven each frame to the end of the strike (~1.5 tiles), the half step of UP+C untouched */
+    if (!(p.kBashT > 0)) p.kDrive = 0;
     const el = B.t - p.kBashT; if (el < B.hit || el > B.hitEnd) return;
     const hb = p.face > 0 ? { l: p.x, r: p.x + B.reach, t: p.y - 22, b: p.y - 1 } : { l: p.x - B.reach, r: p.x, t: p.y - 22, b: p.y - 1 };
     for (const e of api.enemies) { if (!live(e) || p.kBashHit.has(e) || !api.overlap(hb, api.box(e))) continue; p.kBashHit.add(e); stats.bashHits++;
       const winding = api.windingUp(e) || /Tell$/.test(e.mode || '');
+      if (api.guardedFoe && !big(e) && !e.elite && api.guardedFoe(e) && !(e.broken > 0)) { e.broken = B.guardBreak; e.guardT = 0; e.rxGuard = 0; e.raHigh = 0; e.vx = 0; api.number(e.x, e.y - (e.h || 16) - 24, 'GUARD BROKEN', '#ffd36b'); }   /* (claude/knightkit) the bash breaks a raised guard, as the third jab does (both ways in: UP+C and the double tap) */
       api.hurtAs('light', e, Math.max(1, Math.round(api.swordDmg() * B.dmg)), p.x, false);
       api.SFX.clank && api.SFX.clank(); api.hitstop(0.06); api.shakeCam(2.5, p.face * 2); api.sparks(e.x - p.face * 4, e.y - (e.h || 16) / 2, p.face, 8); api.ringAt(p.x + p.face * 12, p.y - 11, 12, '#fff6e0', 0.22); star(p.x + p.face * (B.reach - 2), p.y - 11, 6, 0.24, '#ffffff', '#ffd36b');
       if (!e.alive) continue;

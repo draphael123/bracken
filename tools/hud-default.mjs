@@ -40,7 +40,7 @@ try {
   await E(`(()=>{BK.SET.hud='minimal';for(const e of BK.enemies()) if(!e.mini&&e!==BK.boss)e.alive=false;const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+3,Math.round(A.floor/16)-1)})()`);
   await E('(()=>{for(let i=0;i<260;i++){BK.sim(1)}BK.step(2)})()'); await E('(()=>{const b=BK.boss;if(b)b.hp=b.maxHp*0.62;BK.step(3)})()');
   ok(await E('!!(BK.boss&&BK.boss.alive)'), 'the Djinn fight did not start');
-  for (const [mode, want] of [['bar', /^$/], ['pct', /^\d+%$/], ['num', /^\d+\/\d+$/]]) {
+  for (const [mode, want] of [['bar', /^$/], ['pct', /^\d+%$/], ['num', /^\d+(\.\d)?\/\d+(\.\d)?$/]]) {
     const rec = JSON.parse(await E(`(()=>{BK.SET.bossHp='${mode}';window.__textRec=[];BK.step(2);const r=window.__textRec.filter(t=>t.kind==='text'&&t.y0>=BK.view.VH-30).map(t=>t.s);window.__textRec=null;return JSON.stringify(r)})()`));
     const digits = rec.filter(s => /\d/.test(s)), names = rec.filter(s => /^[A-Z][A-Z ',-]+$/.test(s));
     ok(names.length === 1, mode + ': the boss band says its name ' + names.length + ' times: ' + JSON.stringify(rec));
@@ -55,7 +55,7 @@ try {
   ok(idle.r.some(t => /\d\/\d+/.test(t.s)), 'idle MINIMAL lost the coin count: ' + JSON.stringify(idle.r.slice(0, 6)));
   ok(idle.rect0[2] === 0, 'idle MINIMAL still reserves a plate rect');
   const hurt = JSON.parse(await E(`(()=>{BK.P.hp=BK.P.maxHp*0.5;BK.step(3);window.__textRec=[];BK.step(2);const r=window.__textRec.filter(t=>t.kind==='text').map(t=>t.s);window.__textRec=null;return JSON.stringify(r)})()`));
-  ok(hurt.some(s => /^\d+$/.test(s)), 'hurt MINIMAL does not show the HP number');
+  ok(hurt.some(s => /^\d+(\.\d)?$/.test(s)), 'hurt MINIMAL does not show the HP number');
   ok(!(await E('BK.uiHud.rects().length < 1')), 'rects');
 } finally { await pg.close(); }
 if (fails.length) { console.log('FAIL hud-default:\n - ' + fails.join('\n - ')); process.exit(1); }

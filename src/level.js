@@ -1,3 +1,4 @@
+import { CAST_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
@@ -48,7 +49,7 @@ import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './fro
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 import { highcrownTwo } from './highcrown2.js';
-import { buildArenaYard } from './arena-yard.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
+import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js'; import { buildLesson } from './opening-tutorial.js';   /* (claude/tutorial1, Daniel 11-05) THE ROADSIDE LESSON: the generic opening for a new save, replayable from the inn */   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -239,7 +240,7 @@ function marshWood() {
      sinking-pad run is a thing you do with your whole attention, and nothing ranged covers one now. The archers shoot over
      the raft, which holds; the pads are the long river's and the pond's */
   block(329, 344, 18, 27);
-  ent('thorn', 338, 17, { face: -1 }); crate(340, 17); ent('hopper', 342, 17, { face: -1, color: 'yellow' });
+  crate(340, 17);   /* (claude/frogking2 11-07, Daniel: remove the enemies right by his checkpoint) the thorn goblin (338) and the yellow hopper (342) beside the shrine are gone: the shrine is a breath before the exam */
   ent('check', 344, 17);
 
   // ---- 9. Mud flats: THE EXAM (design audit S3, and GAME-WIDE PATTERNS #1 - the last stretch here was a rest,
@@ -3928,7 +3929,7 @@ function theShopCrag() {
   };
 }
 
-/* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): WAYMEET'S CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
+/* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): THE CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
    their places and the furniture it draws; this paints the room and its dressing). The fire, the long tables and Waymeet's own drinkers (the beer
    garden's guests), the bar, a window onto the road; the training yard at the back; the duel pit roped off. No foe, no hazard, no coin. */
 function theTavern() {
@@ -8138,8 +8139,8 @@ export const LEVELS = [
   /* THE SEALED PYRAMID (claude/sealedpyramid, the OPUS GREYBOX, 2026-10-12; Daniel's concept interview 10-11): the tomb past THE BURIED CITY - a descent through galleries of
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
-  /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
-  { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
+  /* THE TAVERN (claude/tavern, co-op phase 2): THE CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
+  { id: 'tavern', name: 'THE INN', sub: 'friends meet here', build: theTavern, hidden: true },
   /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
   { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },
   /* THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel 10-22): APPENDED (saves count levels by index). Her home: THE HORNET QUEEN 2.
@@ -8162,6 +8163,10 @@ LEVELS.push({ id: 'kitchengate', name: 'THE KITCHEN GATE', sub: "up through the 
 LEVELS.push({ id: 'warcairn', name: 'THE WAR CAIRN', sub: 'the clan that holds the peak', rule: WC_RULE, build: () => buildWarCairn({ painter, T, TS }), needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm', spurOf: 'crown', classFor: 'berserker' });
 /* THE ARENA YARD (claude/arenayard, Daniel 11-03): APPENDED (saves count levels by index). Replaces the open yard as the default training stop; trial_open stays for the tools that use it as a test bed. NO `trial` flag (that turns co-op off): src/arena-yard.js */
 LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw that hits back', build: () => buildArenaYard({ painter, T }), hidden: true });
+/* THE DUEL PIT (claude/pvpduel, Daniel 11-05): APPENDED (saves count levels by index). DUEL (BETA)'s one ring, entered from the tavern's pit (src/pvp-duel.js); hidden, pays nothing */
+LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
+/* THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): APPENDED (saves count levels by index). The short generic opening a NEW save starts in (and the inn's training yard replays); it ends at the inn's door. src/opening-tutorial.js */
+LEVELS.push({ id: 'lesson', name: 'THE TUTORIAL', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
@@ -8886,4 +8891,5 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && CAST_SWAPS[lv.id]) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */

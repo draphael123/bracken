@@ -1,5 +1,5 @@
 // src/tavern.js - THE TAVERN (claude/tavern, CO-OP PHASE 2; Daniel 10-12, scratch brief-tavern.md + brief-onlinecoop.md 'ADDED 10-03').
-// WAYMEET'S CROSSROADS INN: one warm room - the fireplace, the long tables and their drinkers, the bar, a window onto the road - that is co-op's home.
+// THE CROSSROADS INN: one warm room - the fireplace, the long tables and their drinkers, the bar, a window onto the road - that is co-op's home.
 // Up to four players (local pads and online guests mixed) meet here, dress, practise together and take the road. It is open from the start.
 //
 // THE STATIONS, west to east (a player walks up and presses INTERACT - E/T, UP on a pad, the touch USE button):
@@ -19,6 +19,7 @@
 // main.js owns the bodies, the room's load and the screens; this module owns the stations: makeTavern(api) -> { on, layout, tick, hands, draw,
 // drawHud, dummyHit, thrown, revived, debug }. The greybox furniture is drawn here with plain fills (ART list: TAVERN_ART below).
 import { DRILLS, DRILL_IDS, TEAM_WINDOW, cleanTavern, COLOURS, stepColour, colourOf } from './party.js';
+import { PVP_SHIPS } from './pvp-duel.js';   /* (claude/pvpduel) the pit is open when DUEL (BETA) ships */
 import * as TA from './tavern-art.js';   /* (claude/tavernart) the stations' art */
 
 /* THE ROOM, in tiles (src/level.js theTavern paints it from this): floor top at row FLOOR, everything stands on row FLOOR - 1 */
@@ -26,13 +27,16 @@ export const ROOM = { W: 68, H: 26, FLOOR: 20, CEIL: 12, wallL: 1, wallR: 66 };
 export const STATIONS = [
   { id: 'door', x: 3, name: 'THE DOOR', verb: 'LEAVE', first: 'THE DOOR: FRIENDS WALK IN HERE. P1 TAKES THE PARTY OUT TO THE MAP.' },
   { id: 'board', x: 7, name: 'THE PARTY BOARD', verb: 'PARTY', first: 'THE PARTY BOARD: FILL A SEAT - JOIN HERE ON A SAVE OF YOUR OWN, OR INVITE A FRIEND ONLINE.' },
-  { id: 'saves', x: 14, name: 'THE SAVES SIGN', verb: 'READ', first: 'THE SAVES SIGN: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
+  { id: 'guestbook', x: 10, name: 'THE GUEST BOOK', verb: 'SAVES', first: 'THE GUEST BOOK: YOUR SAVES - SWITCH, START A NEW ONE, OR CLEAR ONE. P1 KEEPS THE BOOK.' },   /* (claude/innsaves, Daniel 11-06) the real SAVES station: the five-slot save screen, from the inn */
+  { id: 'saves', x: 14, name: 'CO-OP RULES', verb: 'READ', first: 'CO-OP RULES: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
+  { id: 'unlocks', x: 27, name: 'THE UNLOCKS BOARD', verb: 'UNLOCKS', first: 'THE UNLOCKS BOARD: WHAT IS STILL LOCKED, HOW TO OPEN IT, AND HOW FAR YOU ARE.' },   /* (claude/unlocks, Daniel 11-07) the UNLOCKS screen, read-only: levels, heroes, skins, the rest */
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
-  { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
+  { id: 'wardrobe', x: 40, name: 'SWAP HERO', verb: 'SWAP', first: 'SWAP HERO: PICK ANY HERO YOU OWN - A HERO UNLOCKED ON ANY SAVE IS YOURS ON EVERY SAVE. ALSO YOUR WEAPON, COLOUR AND RINGS.' },   /* (claude/heroroster2, Daniel 11-07) the wardrobe station (id kept) is SWAP HERO: the verb is SWAP */
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
+  { id: 'lesson', x: 55, name: 'THE TUTORIAL BOARD', verb: 'TUTORIAL', first: 'THE TUTORIAL BOARD: THE TUTORIAL AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
   { id: 'practice', x: 58, name: 'THE ARENA YARD', verb: 'TRAIN', first: 'THE ARENA YARD: THE TRAINING GROUND. EVERY MOVE, STRAW THAT HITS BACK, NOTHING THAT ENDS YOU.' },
-  { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
+  { id: 'arena', x: 62, name: 'THE DUEL PIT', verb: 'DUEL', first: PVP_SHIPS ? 'THE DUEL PIT: FRIENDS AGAINST FRIENDS (OR A BOT), BEST OF THREE - AND THE RANKINGS.' : 'THE DUEL PIT: FRIENDS AGAINST FRIENDS. COMING SOON.' },
 ];
 export const DUMMIES = [51, 54];   /* the straw men, in tiles */
 export const TARGET = { x: 56, r: 22 };   /* the hay target on the yard floor: its centre (tile) and how near (px) a thrown partner lands for a BULLSEYE */
@@ -46,13 +50,16 @@ export const TAVERN_ART = [
   ['tiles', 'inn floorboards (worn oak, a hearth-stone patch before the fire), the plastered back wall with timber framing, the beamed ceiling, the yard\'s packed-sand floor and its open back wall'],
   ['door', 'the inn door in the west wall: oak with iron straps, a lamp over it, swung open while somebody walks in (2 frames: shut / open), the road and a signpost seen through it'],
   ['board', 'THE INVITE BOARD: a cork-and-timber notice board with pinned bills and a chalk slate for the four-letter room code (blank / chalked)'],
+  ['unlocks', 'THE UNLOCKS BOARD: a plank board on a post between the long tables and the bar, UNLOCKS chalked on it with a small padlock hung from a nail'],
   ['table', 'THE CAMPAIGN TABLE: a heavy map table with the world map spread on it, pins and a candle; the party standing round it reads as planning'],
-  ['saves', 'THE SAVES SIGN: a painted board on a post by the party board, a chalked HOW CO-OP SAVES WORK (one page of the co-op guide opens on use)'],
+  ['guestbook', 'THE GUEST BOOK: an open ledger on a wooden stand by the door side of the room with a small hanging SAVES sign (idle: a page edge stirs, 2 frames); opens the five save slots'],
+  ['saves', 'CO-OP RULES (id saves): a painted board on a post by the party board, a chalked HOW CO-OP SAVES WORK (one page of the co-op guide opens on use)'],
   ['wardrobe', 'THE WARDROBE: a tall painted cupboard, doors open on hanging cloaks and a weapon rack, a standing mirror beside it'],
   ['drills', 'THE DRILLS BOARD: a chalkboard with three drawn drills (THROW, REVIVE, TEAM HIT) and tally marks'],
   ['bell', 'THE SPARRING BELL: a small brass bell on a post with a pull rope (rest / swinging frames)'],
   ['dummies', 'two tavern straw dummies (sack heads, a dented pot helm) - the training yard\'s own, not the open yard\'s'],
   ['target', 'THE HAY TARGET: a ring of hay bales on the yard floor with a painted bullseye'],
+  ['lesson', 'THE TUTORIAL BOARD: a plank sign on a post in the yard, TUTORIAL chalked on it (replays the tutorial)'],
   ['practice', 'THE ARENA YARD DOOR: an arched yard gate with a hung ARENA YARD board and the arena\' light behind it'],
   ['arena', 'THE DUEL PIT: a sunken sanded pit behind a rope on posts, a COMING SOON board and a stage board beside it (empty frame for the VERSUS lane)'],
   ['dressing', 'the warm room: the fireplace (lit, a cauldron), long tables with benches and Waymeet\'s drinkers, the bar with casks and the barkeep, a window onto the road (day/night), hanging lanterns, a hearth glow light'],
@@ -85,12 +92,16 @@ export function makeTavern(api) {
     const wasNew = !seen(s.id); markSeen(s.id);
     if (s.id === 'door') { if (p.n === 1) api.toMap(); else { api.leave(p); st.stats.leaves++; } return; }
     if (s.id === 'board') { (api.openParty || api.openOnline)(); return; }
+    if (s.id === 'guestbook') { if (p.n !== 1) { say(p, 'P1 KEEPS THE BOOK', '#9aa39a'); api.hint('P1 KEEPS THE BOOK: ONLY PLAYER ONE CHANGES SAVES.', 4); api.sfx('ui'); return; } if (api.openBook) api.openBook(); return; }
     if (s.id === 'saves') { if (api.openSaves) api.openSaves(); return; }
+    if (s.id === 'unlocks') { if (api.openUnlocks) api.openUnlocks(); return; }
     if (s.id === 'table') { api.takeRoad(); return; }
     if (s.id === 'wardrobe') { st.cardFor.set(p, { row: 0 }); api.sfx('uiSel'); return; }
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
     if (s.id === 'bell') { ringBell(p); return; }
     if (s.id === 'practice') { api.practice(); return; }
+    if (s.id === 'lesson') { if (api.tutorial) api.tutorial(); return; }
+    if (s.id === 'arena' && api.duel && api.duel(p)) return;   /* (claude/pvpduel) THE DUEL PIT is open: DUEL (BETA) - its card (seats, FIGHT, a bot when alone, RANKINGS); hidden again (COMING SOON below) when src/pvp-duel.js PVP_SHIPS is false */
     if (s.id === 'arena') { say(p, 'COMING SOON', '#ff9a5c'); api.hint('THE DUEL PIT IS ROPED OFF: FRIENDS AGAINST FRIENDS IS COMING SOON.', 4); api.sfx('ui'); if (wasNew) api.sfx('sting'); return; }
   }
   /* THE SPARRING BELL: a partner goes DOWN (the nearest other upright player); alone, it says it wants a partner */
@@ -171,12 +182,15 @@ export function makeTavern(api) {
     const open = api.players().some(p => p.walkIn > 0) || st.doorT > 0, code = api.roomCode(), t = tav();
     TA.door(g, at('door'), fy, open, time);
     TA.board(g, at('board'), fy, code, time, api.text);
+    TA.guestbook(g, at('guestbook'), fy, time, api.text);
     TA.saves(g, at('saves'), fy, time, api.text);
     TA.tally(g, at('drills'), fy, DRILL_IDS.map(k => t.drills[k] | 0));
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time, api.text);
+    TA.lesson(g, at('lesson'), fy, time, api.text);
+    TA.unlocks(g, at('unlocks'), fy, time, api.text);
     TA.target(g, X(TARGET.x), fy, time);
-    TA.arena(g, at('arena'), fy, time, api.text);
+    TA.arena(g, at('arena'), fy, time, api.text, PVP_SHIPS);
     TA.mirror(g, at('wardrobe'), fy, time);
     /* THE GLINTS: a bobbing gold plate and a sparkle over every station not used yet */
     for (const s of STATIONS) if (!seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
@@ -191,7 +205,7 @@ export function makeTavern(api) {
     for (const [p, c] of st.cardFor) {
       const strip = !!api.heroStrip, w = 132, h = strip ? 90 : 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
       api.board(x, y, w, h); const col = colourOf(api.PROG().tavern, p.n);
-      api.text(api.tagOf(p) + ' WARDROBE', x + w / 2, y + 4, col.c, 'center', 6);
+      api.text(api.tagOf(p) + ' SWAP HERO', x + w / 2, y + 4, col.c, 'center', 6);
       const vals = [api.heroName(p.hero), api.weaponName(api.weaponOf(p)), col.name, tav().ring ? 'ON' : 'OFF'];
       ROWS.forEach((r, k) => { const yy = y + 15 + k * 9, sel = k === c.row; api.text((sel ? '> ' : '  ') + r, x + 6, yy, sel ? '#a8e06e' : '#c2c9c2', 'left', 6); api.text((sel ? '< ' : '') + vals[k] + (sel ? ' >' : ''), x + w - 6, yy, sel ? '#fff6e0' : '#c2c9c2', 'right', 6); });
       if (strip) api.heroStrip(x + 4, y + 52, w - 8, p.hero, p);   /* (claude/hubpolish) every hero at a glance: yours lit, the others greyed */

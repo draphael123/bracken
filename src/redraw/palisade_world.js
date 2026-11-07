@@ -36,7 +36,8 @@ function logEnd(g, x, y, d, fresh) { const c = fresh ? FRESH : MID, r = d / 2; f
 
 /* ============================== THE PROP ============================== */
 /* x, y = the foot (centre of the cleat cell, its floor); lean = -1 | 0 | 1 toward what it holds */
-export function drawProp(g, x, y, lean, up, time, id) {
+/* (claude/palboss) tie = { dx, h }: the brace is RAKED from its foot up to a point (dx px across, h up) ON THE LOAD - its head lashed and strapped there, not floating by the foot - and its wedge sits on the load's side (where the striker stands) */
+export function drawProp(g, x, y, lean, up, time, id, tie) {
   g.globalAlpha = 0.28; rect(g, x - 10, y - 1, 22, 3, '#000'); g.globalAlpha = 1;
   if (!up) {   /* KNOCKED: the shore on the ground, the wedge kicked out, the rope slack, splinters */
     rect(g, x - 14, y - 5, 24, 5, OLD[1]); rect(g, x - 14, y - 5, 24, 1, FRESH[3]); rect(g, x - 14, y - 2, 24, 2, OLD[0]); rect(g, x - 15, y - 4, 2, 3, FRESH[3]); rect(g, x + 9, y - 4, 2, 3, FRESH[2]);
@@ -45,24 +46,27 @@ export function drawProp(g, x, y, lean, up, time, id) {
     rect(g, x + 11, y - 4, 7, 4, OUT); rect(g, x + 12, y - 3, 5, 2, FRESH[4]); rect(g, x + 14, y - 4, 3, 1, FRESH[4]);   /* the wedge, lying */
     for (const [dx, dy] of [[-6, -9], [8, -8], [3, -10]]) rect(g, x + dx, y + dy, 2, 1, FRESH[3]);
     return; }
-  const sl = lean || 0, H = 32;
+  const sl = lean || 0, H = tie ? tie.h : 32, slope = tie ? tie.dx / H : sl * 0.28;
   /* the shore: five wide, lit left, leaning into its load; the foot in a notch of packed earth */
-  for (let t = 0; t < H; t++) { const px = x - 2 + R(sl * t * 0.28), py = y - 1 - t, f = t > 24 ? OLD : FRESH; rect(g, px - 1, py, 7, 1, OUT);
+  for (let t = 0; t < H; t++) { const px = x - 2 + R(slope * t), py = y - 1 - t, f = t > 24 ? OLD : FRESH; rect(g, px - 1, py, 7, 1, OUT);
     rect(g, px, py, 1, 1, f[4]); rect(g, px + 1, py, 1, 1, f[3]); rect(g, px + 2, py, 2, 1, f[2]); rect(g, px + 4, py, 1, 1, f[1]); if (t % 7 === 3) rect(g, px + 2, py, 1, 1, f[0]); }
-  const hx = x - 2 + R(sl * H * 0.28), hy = y - 1 - H;
+  const hx = x - 2 + R(slope * H), hy = y - 1 - H;
   rect(g, hx - 2, hy - 2, 9, 3, OUT); rect(g, hx - 1, hy - 2, 7, 2, IRON[1]); rect(g, hx - 1, hy - 2, 7, 1, IRON[3]); rect(g, hx + 1, hy, 1, 1, IRON[0]);   /* the iron-shod head in its notch */
+  if (tie) { rect(g, hx - 4, hy - 6, 11, 8, OUT); rect(g, hx - 3, hy - 5, 9, 6, IRON[1]); rect(g, hx - 3, hy - 5, 9, 1, IRON[3]); rect(g, hx - 2, hy - 3, 1, 1, IRON[4]); rect(g, hx + 4, hy - 3, 1, 1, IRON[4]); lash(g, hx - 3, hy + 2, 7, true); }   /* the strap plate bolted across the post where the head bears, a lashing under it */
   /* THE ROPE: three turns round it, high and low, and a line running up toward the load */
-  for (const t of [9, 19]) lash(g, x - 2 + R(sl * t * 0.28) - 1, y - 1 - t, 5, t === 9);
-  for (let k = 0; k < 8; k++) rect(g, hx + 2 + sl * (2 + k), hy - 3 - k * 2, 1, 2, k % 2 ? ROPE[1] : ROPE[2]);
+  for (const t of [9, 19]) lash(g, x - 2 + R(slope * t) - 1, y - 1 - t, 5, t === 9);
+  if (!tie) for (let k = 0; k < 8; k++) rect(g, hx + 2 + sl * (2 + k), hy - 3 - k * 2, 1, 2, k % 2 ? ROPE[1] : ROPE[2]);
   /* THE WEDGE: pale, big, outlined dark - the one light thing in the picture - with a chevron on it saying 'knock it out' */
+  if (tie && sl > 0) { g.save(); g.translate(x, 0); g.scale(-1, 1); g.translate(-x, 0); }   /* the wedge on the load's side */
   rect(g, x - 11, y - 1, 12, 1, OUT);
   for (let t = 0; t < 7; t++) { rect(g, x - 11 + 0, y - 1 - t, 11 - t * 1, 1, OUT); rect(g, x - 10, y - 1 - t, Math.max(0, 9 - t * 1), 1, t === 0 ? FRESH[2] : t < 3 ? FRESH[4] : '#fff6d0'); }
   rect(g, x - 10, y - 2, 9, 1, FRESH[2]);
   /* the STRAIN marks: slanting zig-zags off the shore that shiver */
   const sh = Math.sin(time * 18 + (id % 7)) > 0 ? 1 : 0; g.fillStyle = STRAIN;
-  for (const sy of [22, 10]) { const bx = x + 4 + R(sl * sy * 0.28) + sh; g.fillRect(bx, y - sy, 2, 1); g.fillRect(bx + 2, y - sy - 1, 2, 1); g.fillRect(bx, y - sy - 2, 2, 1); g.fillRect(bx + 2, y - sy - 3, 2, 1); }
+  for (const sy of [22, 10]) { const bx = x + 4 + R(slope * sy) + sh; g.fillRect(bx, y - sy, 2, 1); g.fillRect(bx + 2, y - sy - 1, 2, 1); g.fillRect(bx, y - sy - 2, 2, 1); g.fillRect(bx + 2, y - sy - 3, 2, 1); }
   /* the GLINT (the game's gold): a flashing star at the wedge's tip while it holds */
   const ph = Math.floor(time * 3) % 3; if (ph < 2) { g.globalAlpha = ph ? 0.6 : 0.95; rect(g, x - 13, y - 9, 1, 5, GOLD); rect(g, x - 15, y - 7, 5, 1, GOLD); rect(g, x - 13, y - 7, 1, 1, '#fff6d0'); g.globalAlpha = 1; }
+  if (tie) { rect(g, x - 2, y - 8, 5, 1, OUT); rect(g, x - 1, y - 9, 3, 1, FRESH[4]); rect(g, x, y - 7, 1, 1, '#fff6d0'); if (sl > 0) g.restore(); }   /* a bright notch gouged in the brace just over the wedge: the hit */
 }
 
 /* ============================== THE SCAFFOLD SECTION (a frame against the wall face) ============================== */
@@ -205,8 +209,9 @@ function drawBreach(g, lv, ctx, cx, cy, VW, VH, TS, time) {
   /* burnt stumps: a ring-cut top, a charred skin, a split */
   for (const [a, b, row] of BR.stumps) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS);
     rc(x - 2, y - 3, w + 4, 6, CHAR[0]); rc(x - 1, y - 2, w + 2, 4, '#8a6a44'); rc(x - 1, y - 2, w + 2, 1, '#c49a5c'); rc(x + 2, y - 1, w - 4, 2, '#6a4a2c'); rc(x + 5, y - 1, w - 10, 1, '#c49a5c');   /* the cut top, a ring */
-    for (let k = 0; k < w; k += 5) rc(x + k, y + 2, 2, (b - a + 1) * TS * 0 + 14 + (strHash('c' + a + k) % 20), CHAR[1 + (k & 1)] );
-    rc(x + 3, y + 3, 1, 16, CHAR[0]); rc(x + w - 6, y + 8, 1, 14, CHAR[0]);
+    /* (claude/demoaudit 11-06, Daniel's live photo) the stump is a charred TRUNK all the way down to the crater floor: the old skin was 14-33 px of streaks, so a 9-row pillar ended in a ragged edge with the wood behind showing below it */
+    { const bot = Y((BR.pit[2] + 1) * TS); rc(x - 1, y + 2, w + 2, bot - y - 2, CHAR[0]); rc(x, y + 2, w, bot - y - 2, CHAR[1]); for (let k = 2; k < w - 2; k += 4) rc(x + k, y + 2, 2, bot - y - 2, CHAR[2 + (k & 1 ? 0 : 0)]); rc(x + 1, y + 2, 1, bot - y - 2, CHAR[3]);
+      for (let yy = y + 12; yy < bot - 4; yy += 13 + (strHash('c' + a + yy) % 7)) rc(x + 3 + (yy & 7), yy, 1, 7, CHAR[0]); }
     if (Math.floor(time * 2 + a) % 3) rc(x + 6, y - 3, 1, 1, EMBER[1]); }
   /* the standing towers */
   for (const [a, b, row] of BR.towers) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS), bot = Y(33 * TS);

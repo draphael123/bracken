@@ -188,4 +188,38 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
   { const [S, e] = fresh(); e.mode = 'chargeTell'; e.modeT = 0.1; e.face = -1; const pl = BBM.bbPlan({ P: { x: e.x - 60, y: A.floor, vy: 0, face: 1, ground: true, atk: -1 }, e, S, reach: 30, t: 1, v2: true, mem: {} }); ok(pl.why.length > 0, 'the bot reads his tells: "' + pl.why + '"'); }
   ok(/batteringbeast: e => bbOpen\(e\)/.test(src('src/boss-greed.js')) && /batteringbeast: e => \(e\.ward > 0 \? TURN\.WARDED : 'ARMOURED'\)/.test(src('src/boss-read.js')), 'boss-greed (his openings, own ward) and boss-read (ARMOURED / WARDED) know him'); }
 
+// ---- (claude/palboss) THE BROKEN CHAIN'S BALL (P2): it follows him smoothly through a charge, a stick, a daze, a turn, a flail; it is drawn in every mode but the flail's (where the baked chain is) ----
+{ const A = lv.build().arena, w = { number() {}, sound() {}, shake() {}, music() {}, mark() {}, dust() {}, deck() {}, fx() {}, splinter() {}, gate() {}, palisade() {}, loose() {}, trunkBlow() {}, rubble() {}, hornFalls() {}, hit() {}, hitHero() {}, add() { return null; } };
+  const mk = () => { const S = BBM.newFight(BBM.geom(A, 16)); const e = { t: 'batteringbeast', x: A.x0 + 200, y: A.floor, hp: BB.hp, maxHp: BB.hp, face: 1, mode: 'walk', modeT: 0, alive: true }; S.restT = 9; S.ph = 2; S.harness.cut = true; return [S, e]; };
+  const hero = x => [{ x, y: A.floor, ground: true, alive: true }];
+  const LMAX = Math.max(BBM.BALL.L, BBM.BALL.out[0] - BBM.BALL.anchor[0]) + BBM.BALL.r + 2;   /* the worst case: the instant after the flail (the whipped chain's end, drawn in at BALL.pull px/s) */
+  let worst = 0, worstStep = 0, undrawn = [], frames = 0, prev = null, tautMax = 0; const modes = new Set();
+  const run = (S, e, n, hx, dtf) => { for (let i = 0; i < n; i++) { const dt = dtf ? dtf(i) : 1 / 60; BBM.stepBeast(e, S, dt, hero(typeof hx === 'function' ? hx(i) : hx), w);
+      const g = BBM.ballGeom(e, S); frames++; modes.add(e.mode); if (g.show) worst = Math.max(worst, g.d); if (prev && g.show && e.face === prev[2]) worstStep = Math.max(worstStep, Math.hypot((g.x - g.ax) - (prev[0] - prev[3]), (g.y - g.ay) - (prev[1] - prev[4]))); prev = g.show ? [g.x, g.y, e.face, g.ax, g.ay] : null;   /* (its move RELATIVE to the collar: he carries it when he moves, a hitch included) */   /* (a TURN flips the ball with his sprite: that frame is the sprite's flip, not a move) */   /* (the ball is only DRAWN, and so only seen to move, when shown; in the flail's frames the baked chain is the picture) */
+      if (!g.show && !BBM.ballBaked(e) && e.mode !== 'sleep' && e.alive) undrawn.push(e.mode); if (g.show && g.d > BBM.BALL.L + 1.5 && e.face === (S._f || e.face)) tautMax = Math.max(tautMax, g.d); S._f = e.face;
+      if (!Number.isFinite(g.x) || !Number.isFinite(g.y)) { undrawn.push('NaN'); } } };
+  /* a charge in P2 east, then west (a turn), through a dt spike and a stutter, into the wall and the daze */
+  const tp = (S, e, x) => { e.x = x; S.ball.init = false; prev = null; };   /* (the test moves him by hand: a warp the real fight never makes; the ball re-hangs from the collar) */
+  { const [S, e] = mk(); BBM.stepBall(e, S, 1 / 60); tp(S, e, A.x0 + 120); e.face = 1; e.mode = 'chargeTell'; e.modeT = 0.2; S.act = 80; run(S, e, 60, A.x1 - 40);
+    for (let k = 0; k < 6 && e.mode !== 'dazed'; k++) run(S, e, 120, A.x1 - 40, i => (i === 20 ? 0.25 : i === 21 ? 0 : i % 7 === 0 ? 1 / 20 : 1 / 60));   /* a 250 ms spike, a zero dt, a 50 ms hitch */
+    run(S, e, 120, A.x0 + 40);                                                                                       /* dazed, then recover and turn to the hero on the other side */
+    e.mode = 'chargeTell'; e.modeT = 0.2; e.face = -1; run(S, e, 200, A.x0 + 40);
+    S.scafs[0].st = 'down'; S.scafs[0].t = 99; tp(S, e, A.x0 + 260); e.face = -1; e.mode = 'chargeTell'; e.modeT = 0.1; run(S, e, 240, A.x0 + 40);   /* into a wreck: STUCK, then the tear */
+    for (let i = 0; i < 4000; i++) { if (e.mode === 'walk') S.restT = Math.min(S.restT, 0.01); run(S, e, 1, A.x0 + 30 + (i * 13) % 700); } }
+  ok(worst <= LMAX, 'the ball stays within ' + LMAX.toFixed(0) + ' px of his collar every frame, through ' + [...modes].length + ' modes and ' + frames + ' frames (worst ' + worst.toFixed(1) + ')');
+  ok(worstStep <= 14, 'the ball never jumps: the biggest move in one frame relative to his collar (turns excepted: the sprite flips) is ' + worstStep.toFixed(1) + ' px (a 250 ms dt spike and a zero dt included)');
+  ok(undrawn.length === 0, 'the ball is drawn (and finite) in every P2 mode except the flail (where the baked chain is): ' + (undrawn.length ? [...new Set(undrawn)].join(' ') : 'all ' + frames + ' frames'));
+  ok(['chargeTell', 'charge', 'stuck', 'dazed', 'flailTell', 'flail', 'recover'].every(m => modes.has(m)), 'the run covered charge, stuck, dazed, recover and the flail');
+  { const [S, e] = mk(); e.mode = 'charge'; e.modeT = 5; e.x = A.x0 + 100; e.face = 1; S.act = 5; for (let i = 0; i < 60; i++) { e.x += 280 / 60; BBM.stepBall(e, S, 1 / 60); } const g = BBM.ballGeom(e, S);
+    ok(g.d <= BBM.BALL.L + 0.5 && g.x < g.ax - 8, 'at charge speed the ball TRAILS behind the collar on a taut chain (' + (g.ax - g.x).toFixed(0) + ' px back, ' + g.d.toFixed(1) + ' away)'); }
+  { const [S, e] = mk(); e.mode = 'flail'; e.face = 1; BBM.stepBall(e, S, 1 / 60); const a = [S.ball.x, S.ball.y]; e.mode = 'recover'; e.modeT = 1; let mx = 0, pp = a; for (let i = 0; i < 40; i++) { BBM.stepBall(e, S, 1 / 60); mx = Math.max(mx, Math.hypot(S.ball.x - pp[0], S.ball.y - pp[1])); pp = [S.ball.x, S.ball.y]; }
+    ok(mx <= 13 && BBM.ballGeom(e, S).d <= BBM.BALL.L + 0.5, 'out of the flail the ball picks up from the whipped chain end and draws in (' + mx.toFixed(1) + ' px/frame max) to hang from the collar'); }
+  ok(BBA.POSES.flailTell.chain && BBA.POSES.flail.chain && !Object.values(BBA.POSES).some(p => p.chain === 'drag'), 'the flail coil and lash are baked; no baked dragging chain (the ball is a world object)');
+}
+// ---- (claude/palboss) THE SCAFFOLD PROP is a brace attached to the frame: its head lands INSIDE the inner post, its foot on the floor (the drawing's geometry) ----
+{ const A = lv.build().arena; const G = BBM.geom(A, 16);
+  ok(G.scafs.every(s => { const inner = s.dir > 0 ? s.x1 : s.x0, head = inner - s.dir * 3, post = s.dir > 0 ? [s.x1 - 7, s.x1] : [s.x0 + 1, s.x0 + 8]; return head > post[0] && head < post[1] && Math.abs(head - s.x) <= 40 && Math.sign(inner - s.x) === -s.dir; }),
+    'each scaffold brace runs from its prop on the clearing side UP-AND-IN to the inner post (head inside the post, <= 40 px across): ' + G.scafs.map(s => 'dir ' + s.dir + ' span ' + Math.round(Math.abs(s.x - ((s.dir > 0 ? s.x1 : s.x0) - s.dir * 3))) + ' px').join(', '));
+  ok(G.scafs.every(s => { const [lo, hi] = BBM.lineOf(s), inner = s.dir > 0 ? s.x1 : s.x0; return s.dir > 0 ? lo > inner : hi < inner; }), 'the fall line starts beyond the frame inner foot and runs into the clearing, the way the frame racks over (dir)'); }
+
 console.log(bad ? 'palisadewood: ' + bad + ' FAIL' : 'palisadewood: all green'); process.exit(bad ? 1 : 0);

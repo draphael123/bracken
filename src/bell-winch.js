@@ -6,8 +6,8 @@
 //   THE GRATE TELL  the column over the bell's grate glows for `tell` s before it drops: told, every time.
 //   THE WINCH WAVE  a gate rises for guards and a horn clock runs; N blows on its winch, each inside `win` s of the last, from ANY seat (a slow hand starts
 //                   again), drop the gate and keep them out; fail and at the horn they come through, and the gate drops behind them `closeAfter` s later.
-// Used by src/gqueen-hands.js (her hall: GQ3.mech) and src/goblin-princess.js (the banquet rehearsal, the battlements' towers, the Princess's bell tower).
-// PURE: no ctx, no drawing - state in, verdict out; the callers tell it, sound it and spawn the guards. tools/gprincess.mjs and tools/gq2mech.mjs test it.
+// Used by src/gqueen-hands.js (her hall: GQ3.mech) and the Goblin Princess lane (claude/highcrown3) (the banquet rehearsal, the battlements' towers, the Princess's bell tower).
+// PURE: no ctx, no drawing - state in, verdict out; the callers tell it, sound it and spawn the guards. tools/gq2mech.mjs and tools/bell-winch.mjs test it.
 
 /* a blow from this hero on this box, once per blow (the hero's own hitSet keyed by `key`, as every struck thing in main.js is). attackBox: () => the
    current seat's blow box or null; overlap: (a, b) => bool. */

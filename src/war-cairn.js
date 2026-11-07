@@ -251,7 +251,7 @@ export function buildWarCairn({ painter, T, TS }) {
   ent('bzchief', sx + st.him, R - 1, { face: -1 });
   deco(sx + st.W - 4, R - 1, 'cairn', 3);
   const arena = { x0: sx * TS, x1: (sx + st.W) * TS, floor: R * TS, y0: (R - st.roof) * TS, trigger: (sx + 3) * TS, wallL: sx - 1, wallR: sx + st.W, boss: 'bzchief', music: 'clanchief',
-    tint: '#e8d0c0', tintA: 0.04, start: [sx + 2, R - 1], bzc: { sx, R } };
+    tint: '#e8d0c0', tintA: 0.04, start: [sx + 3, R - 1], bzc: { sx, R } };   /* (fix149) start was sx + 2: 8 px SHORT of trigger (sx + 3) * TS, so a boss-select / ?boss=bzchief jump (bossJumpGo stands the hero on arena.start) never woke the Chieftain (boss-jump: 'woke at frame 600'). sx + 3 is the first tile past the trigger line, as every other arena's start. */
 
   const ents = L.ents;
   return {

@@ -138,7 +138,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
 
 // ---- (claude/kitchengate3, Daniel 10-29) THE LEVEL, LONGER: THE HANGING LARDER and THE CARVERY, THE HOOK-TO-HOOK HOP, THE HAUL LINE, THE FLUE ----
 { ok(KG_INS.length === 2 && L.W === oldCol(432) && L.arena.x0 === oldCol(390) * TS && L.arena.x1 === (oldCol(428) + 1) * TS, 'two rooms let in (' + KG_INS.map(q => q[1] + ' columns before old ' + q[0]).join(', ') + '): the level is ' + L.W + ' wide; HIS HALL is the old one moved whole (' + L.arena.x0 / TS + '-' + (L.arena.x1 / TS - 1) + ')');
-  const hand = L.zipLines.filter(z => z.hop && z.hand), hauls = L.zipLines.filter(z => z.haul);
+  const hand = L.zipLines.filter(z => z.hop && z.hand && !z.npc), hauls = L.zipLines.filter(z => z.haul);
   /* THE KICK OFF A MEAT-HOOK RAIL is a fixed hop: tapped or held, the jump-cut never shortens it (src/zipline.js) - the hand-offs below are flown on the full hop */
   { const { zipStep } = await import('../src/zipline.js'), z = hand[0], P = { x: z.x0 + 40, y: 0, vx: 0, vy: 0, face: 1, zip: z, zipDir: z.dir, canCut: true }, nop = () => {}, c = { P, L: { zipLines: [z] }, keys: {}, jumpPress: true, SFX: new Proxy({}, { get: () => nop }), callout: nop, burst: nop, sparks: nop, number: nop };
     zipStep(c, 1 / 60); ok(!P.zip && P.vy === -240 && P.canCut === false, 'a JUMP off a meat-hook rail is a fixed kick (vy ' + P.vy + ', no jump-cut): a tap hops as far as a held jump'); }
@@ -298,15 +298,14 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const RA = G.rails.find(z => z.hand), RB = RA && RA.hand; [RA, RB].forEach(z => z && norm(z));
   ok(G.rails.length === 2 && RA && RB && G.rails.every(z => z.meat && z.dir === 1 && z.arena && L.zipLines.includes(z)) && Math.abs(RA.x0 - G.belt.x0) < 24, 'THE MEAT-HOOK RAILS: two chain-driven rails (L.zipLines) from the serving hatch east over the trench');
   { const onLine = x => ({ x, y: G.belt.y, face: 1 }), shelf = G.plats.find(p => !p.belt);
-    ok(inReach(RA, onLine(RA.x0 + 20)) && !inReach(RA, { x: G.x0 + 40, y: G.floorY, face: 1 }), 'the LOWER rail is taken from the line (UP), not from the floor');
-    { const { findCatch } = await import('../src/zipline.js'), air = { x: RA.x0 + 20, y: RA.y0 + 16, face: 1, ground: false }; ok(RA.upOnly && findCatch(L, air, false, false) !== RA && findCatch(L, air, true, false) === RA, 'and only ON PURPOSE (UP): a jump up onto the line at its foot never snatches the hook (src/zipline.js upOnly)'); }
-    ok(![...Array(40)].some((_, i) => inReach(RB, onLine(RB.x0 + i * 3))) && ![...Array(16)].some((_, i) => inReach(RB, { x: shelf.x0 + i * ((shelf.x1 - shelf.x0) / 15), y: shelf.y, face: 1 })), 'the UPPER rail is not taken standing on the line or the shelf (the hop, or a jump)');
+    ok(RA.npc && !inReach(RA, { x: G.x0 + 40, y: G.floorY, face: 1 }), 'the LOWER rail is the ATTENDANTS alone (claude/grubhook): npc, no hero takes it');
+    { const { findCatch } = await import('../src/zipline.js'), air = { x: RA.x0 + 20, y: RA.y0 + 16, face: 1, ground: false }; ok(findCatch(L, air, true, false) !== RA && findCatch(L, air, false, false) !== RA, 'no hero takes the attendants rail, by UP or by touch (src/zipline.js npc)'); }
+    { const A1 = G.plats[1], B1 = G.plats[2], hi = MOVE.JUMPV * MOVE.JUMPV / (2 * MOVE.GRAV); ok(A1 && B1 && G.belt.y - A1.y <= 2.1 * TS && A1.y - B1.y <= 2.1 * TS && G.belt.y - A1.y < hi - 12 && A1.y - B1.y < hi - 12 && A1.x0 >= G.belt.x0 && A1.x1 <= G.belt.x1 && A1.x1 > B1.x0 - 40, 'THE CLIMB (claude/grubhook): line -> low shelf (' + (G.belt.y - A1.y) + ' px) -> high shelf (' + (A1.y - B1.y) + ' px), each clear inside the shortest jump (' + hi.toFixed(0) + ' px), the low shelf over the line');
+      const atB = x => ({ x, y: B1.y, face: 1 }); ok([...Array(8)].some((_, i) => inReach(RB, atB(B1.x0 + 6 + i * 4))) && !inReach(RB, onLine(RB.x0 + 20)) && ![...Array(8)].some((_, i) => inReach(RB, { x: A1.x0 + i * 5, y: A1.y, face: 1 })), 'the hero hook is taken (UP) from the HIGH shelf and from nowhere lower (not the line, not the low shelf)'); }
     ok(RB.xb > G.platter.x0 && RB.xb < G.platter.x1, 'the UPPER rail ENDS OVER HIS PLATTER (' + Math.round(RB.xb) + ' in ' + G.platter.x0 + '-' + G.platter.x1 + ')');
     const land = []; for (const hero of HERO_MOVE_IDS) for (const hold of [0, 1, -1]) { const r = flyHop(L.zipLines, RB, RB.x0 + 8, null, { hero, hold, floorY: G.platter.y }); if (!(r.at[0] >= G.platter.x0 && r.at[0] <= G.platter.x1)) land.push(hero + '/' + hold + ' ' + Math.round(r.at[0])); }
-    ok(!land.length, 'ridden to its end, every hero (holding on, back, or nothing) comes down ON THE PLATTER ' + land.slice(0, 4).join(' '));
-    const rush = []; for (const hero of HERO_MOVE_IDS) { const A2 = { ...RA, zipN: false, speed: RA.speed * GB.bell.hook }, B2 = { ...RB, zipN: false, speed: RB.speed * GB.bell.hook }; A2.hand = B2;
-      for (const hx of [RA.hopRush[0], (RA.hopRush[0] + RA.hopRush[1]) / 2, RA.hopRush[1]]) { const r = flyHop([A2, B2], A2, A2.x0 + 8, hx, { hero, hold: 1 }); if (r.caught !== B2) rush.push(hero + '@' + Math.round(hx)); } }
-    ok(!rush.length, 'ORDER UP (the hooks x' + GB.bell.hook + '): the rush stretch of the hand-off catches the upper rail for every hero ' + rush.slice(0, 4).join(' ')); }
+    ok(!land.length, 'ridden to its end, every hero (holding on, back, or nothing) comes down ON THE PLATTER (' + G.platter.x0 + '-' + G.platter.x1 + ') ' + land.slice(0, 4).join(' '));
+  }
   /* THE PLATTER DROP: the food flies, the stove goes cold, KNOCKED OFF HIS FEET (short, capped), then the ward; one per cooldown; never on top of another opening */
   { const S = GBM.newFight(G), e = E(); S.restT = 99; S.lineT = 99; S.stove.st = 'cool'; S.stove.t = 5; S.items.push({ id: 1, kind: 'dish', x: G.belt.x0 + 40, state: 'ride' }, { id: 2, kind: 'bomb', x: G.belt.x0 + 90, state: 'ride', fuse: 4 }, { id: 3, kind: 'dish', x: G.belt.x1 - 6, state: 'wait' });
     const r = GBM.platterDrop(e, S, w, G.platter.x0 + 20);
@@ -348,9 +347,9 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
     const x0 = pp.x; step(GB.drop.shove + 0.3); ok(pp.x > x0 + 10, 'left standing on the platter, it tips him off toward him (' + Math.round(pp.x - x0) + ' px in ' + (GB.drop.shove + 0.3) + ' s)'); H.end(); }
   /* THE BOT learns the hooks (a weight - never the main loop) and climbs out of the coals */
   { const pl = (o, Sx) => { const S0 = Sx || GBM.newFight(G); S0.stove.st = 'cool'; S0.stove.t = 9; return GBM.gbPlan({ P: { x: G.belt.x0 + 30, y: G.belt.y, vy: 0, face: 1, ground: true, atk: -1, ...(o.P || {}) }, e: E({ mode: 'sit' }), S: S0, reach: 30, t: 1, rng: () => 0.1, mem: o.mem || {}, zip: o.zip || null }); };
-    ok(/hook/.test(pl({ P: { x: RA.x0 + 40 } }).why) && pl({ P: { x: Math.max(G.belt.x0 + 10, RA.x0 + 18) } }).up, 'the bot goes under the lower hook and takes it (UP) when the drop is ready and nothing else is on');
+    { const PA = G.plats[1], PB = G.plats[2], st = (x, p) => ({ x, y: p.y }); const s1 = pl({ P: st(RB.x0 + 4, PB) , mem: { hook: true } }); ok(s1.up, 'the bot on the HIGH shelf under the hook takes it (UP): ' + s1.why); const s2 = pl({ P: st(PA.x1 - 8, PA), mem: { hook: true } }); ok(s2.jump || /high shelf/.test(s2.why), 'on the low shelf it goes up to the high one: ' + s2.why); }
     const Sd = GBM.newFight(G); Sd.items = [{ id: 1, kind: 'bomb', x: G.belt.x0 + 120, state: 'ride', fuse: 4 }]; ok(/bomb/.test(pl({}, Sd).why), 'a bomb on the line still comes first');
-    ok(pl({ zip: RA.id, mem: { hook: true, hopK: 0.5 }, P: { x: (RA.hop[0] + RA.hop[1]) / 2 + 2, y: 312, ground: false } }).kick, 'on the lower hook it kicks off in the red stretch (the hand-off)');
+    
     const ob = pl({ zip: RB.id, P: { x: RB.xb - 20, y: 280, ground: false } }); ok(!ob.down && /platter/.test(ob.why), 'on the upper hook it rides on to the platter');
     const tr = pl({ P: { x: (Tr.x0 + Tr.x1) / 2, y: Tr.y } }); ok(/coals/.test(tr.why) && tr.gx != null, 'down on the coals it heads for a step (' + tr.why + ')');
     const ts = pl({ P: { x: Tr.steps[0][0] + 8, y: Tr.stepY } }); ok(ts.jump && ts.gx < Tr.steps[0][0], 'on the step it jumps up onto the floor'); }
