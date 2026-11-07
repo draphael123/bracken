@@ -172,9 +172,9 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
             else if (m === 'sweep') await E(`(()=>{BK.keys.down=true;BK.press('atk');BK.sim(20);BK.keys.down=false;BK.sim(30);})()`);
             else await E(`(()=>{const p=__p();p.x=${GEO.lid}*16+8-6;BK.press('jump');BK.sim(18);BK.keys.down=true;BK.press('atk');BK.sim(40);BK.keys.down=false;BK.sim(30);})()`); }
           ok(await E(`__O().st.done.${m}==='ok'`), hero + ': the ' + m + ' target is passed by its own blow'); ok(await E(`__gateOpen(${s0.gate})`), hero + ': the ' + m + ' gate lifted'); }
-        await E(`__stand(103,1);BK.sim(180)`);
-        let blocked = false; for (let n = 0; n < 400 && !blocked; n++) { await E(`(()=>{const K=BK.keys,p=__p(),f=BK.enemies().filter(e=>e.t==='swornsword'&&e.x>p.x-40).sort((a,b)=>a.x-b.x)[0];K.block=!!(f&&Math.abs(f.x-p.x)<64&&(f.mode==='cutTell'||f.mode==='cut'));K.right=!!(f&&f.x-p.x>34&&p.x/16<62);BK.sim(8);K.right=false;})()`); blocked = await E(`__O().st.done.block!==undefined`); if (process.env.DBG && n % 40 === 0) console.log(n, JSON.stringify(await E(`(()=>{const p=__p(),f=BK.enemies().filter(e=>e.t==='swornsword')[0];return {px:+(p.x/16).toFixed(1),fx:+(f.x/16).toFixed(1),fm:f.mode,st:Math.round(p.st),ev:__O().st.ev,i:__O().st.i,ph:p.hurt,inv:p.inv}})()`))); }
-        if (process.env.DBG) console.log(JSON.stringify(await E(`(()=>{const p=__p();return {px:p.x/16,st:p.st,hp:p.hp,blk:p.block,foes:BK.enemies().filter(e=>e.t==='swornsword').map(e=>({x:e.x/16,m:e.mode,cd:e.cd}))}})()`)));
+        await E(`__stand(103,1);BK.sim(60)`);   /* (batch150) 60 not 180: the swing used to land in the wait and knock a light hero out of the block station, where the foe (leashed to it) stopped coming */
+        let blocked = false; for (let n = 0; n < 400 && !blocked; n++) { await E(`(()=>{const K=BK.keys,p=__p(),f=BK.enemies().filter(e=>e.t==='swornsword'&&e.x>p.x-40).sort((a,b)=>a.x-b.x)[0];K.block=!!(f&&Math.abs(f.x-p.x)<64&&(f.mode==='cutTell'||f.mode==='cut'));K.right=!!((f&&f.x-p.x>34&&p.x/16<113)||p.x/16<102.8);BK.sim(8);K.right=false;})()`); blocked = await E(`__O().st.done.block!==undefined`); if (process.env.DBG && n % 40 === 0) console.log(n, JSON.stringify(await E(`(()=>{const p=__p(),f=BK.enemies().filter(e=>e.t==='swornsword')[0];return {px:+(p.x/16).toFixed(1),fx:+(f.x/16).toFixed(1),fm:f.mode,st:Math.round(p.st),ev:__O().st.ev,i:__O().st.i,ph:p.hurt,inv:p.inv}})()`))); }
+        if (process.env.DBG) console.log(JSON.stringify(await E(`(()=>{const p=__p();return {state:BK.state,px:p.x/16,st:p.st,hp:p.hp,blk:p.block,foes:BK.enemies().filter(e=>e.t==='swornsword').map(e=>({x:e.x/16,m:e.mode,cd:e.cd}))}})()`)));
         await E(`BK.keys.block=false`); ok(blocked, hero + ': BLOCK done by holding the guard as he swings (' + (await E(`__O().st.ev.blocked`)) + ' turned)');
         ok(await E(`__gateOpen(114)`), hero + ': the block gate lifted');
         /* dodge: roll through his swing */
@@ -184,8 +184,10 @@ if (WANT.some(w => ['walk', 'skip', 'inn', 'flow'].includes(w))) {
         ok(dodged, hero + ': DODGE done (' + JSON.stringify(dd) + ')');
         ok(await E(`__gateOpen(127)`), hero + ': the dodge gate lifted');
         /* flask: the road bites you, you drink */
-        await E(`__stand(130,1);BK.sim(20)`); const hp0 = await E(`BK.lesson().hp()`); ok(hp0.hp < hp0.max && hp0.flasks >= 1, hero + ': the flask step hurts you to 45% and gives a flask (' + hp0.hp + '/' + hp0.max + ', ' + hp0.flasks + ' flask)');
-        await E(`(()=>{BK.press('flask');BK.sim(150);})()`); const hp1 = await E(`BK.lesson().hp()`); st = await E(`({done:Object.keys(__O().st.done)})`);
+        await E(`__stand(130,1);BK.sim(80)`); const hp0 = await E(`BK.lesson().hp()`); ok(hp0.hp < hp0.max && hp0.flasks >= 1, hero + ': the flask step hurts you to 45% and gives a flask (' + hp0.hp + '/' + hp0.max + ', ' + hp0.flasks + ' flask)');
+        if (process.env.DBG) console.log('flask pre', JSON.stringify(await E(`(()=>{const p=__p();return {hp:p.hp,fl:p.flasks,drinkT:p.drinkT,hurt:p.hurt,dodge:p.dodge,ground:p.ground,carry:!!p.carry,ptC:!!p.ptC,inv:p.inv,st:BK.state,px:p.x/16,foes:BK.enemies().filter(e=>e.alive!==false).map(e=>[e.t,Math.round(e.x/16),e.mode])}})()`)));
+        await E(`(()=>{BK.press('flask');BK.sim(150);})()`);
+        if (process.env.DBG) console.log('flask post', JSON.stringify(await E(`(()=>{const p=__p();return {hp:p.hp,fl:p.flasks,drinkT:p.drinkT,drunk:p.drunk,hurt:p.hurt}})()`))); const hp1 = await E(`BK.lesson().hp()`); st = await E(`({done:Object.keys(__O().st.done)})`);
         ok(hp1.hp > hp0.hp && st.done.includes('flask'), hero + ': FLASK done by drinking (' + hp0.hp + ' -> ' + hp1.hp + ')');
         ok(await E(`__gateOpen(139)`), hero + ': the flask gate lifted');
         /* shrine */

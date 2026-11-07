@@ -6019,7 +6019,8 @@ const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PR
 let storeBackRect = null;
 const storeBackWords = () => touchOn ? 'TAP BACK' : padLast ? (CTL.labelFor(SET.binds, 'pad1', 'dodge', 1) + ' / ESC: BACK') : STORE_TABS[storeTab].talent ? 'Q / ESC: BACK' : 'ESC: BACK';
 const storeFootSpan = (left, right) => { const hint = storeBackWords(), hw = inkW(hint, 6), r = right - hw - 8; return { hint, hx: right, cx: (left + r) / 2, mw: r - left }; };   /* where the message sits so the hint never covers it */
-function storeBackDraw(x, y, w) { const bw = 34, bx = x + w - bw - 5, by = y + 3; storeBackRect = [bx, by, bw, 11];
+const STORE_BACK_W = 28;   /* (batch150) the BACK button's width; the coin and silver counts sit left of it, not under it */
+function storeBackDraw(x, y, w) { const bw = STORE_BACK_W, bx = x + w - bw - 5, by = y + 3; storeBackRect = [bx, by, bw, 11];
   g.fillStyle = 'rgba(90,50,50,0.8)'; g.fillRect(bx, by, bw, 11); g.strokeStyle = 'rgba(224,150,130,0.7)'; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, 10); text('BACK', bx + bw / 2, by + 3, '#f4e0d8', 'center', 6);
   TCH.hit(bx, by - 1, bw, 13, () => { pausePress = true; }); }
 function drawStore() {
@@ -6031,7 +6032,7 @@ function drawStore() {
   if (!STORE_TABS[storeTab].talent) { const kl = (() => { try { return CTL.labelFor(SET.binds, padLast ? 'pad1' : 'kb', 'throw', 1); } catch { return 'F'; } })(), lab = (touchOn ? '' : kl + ': ') + 'SWAP HERO', bw = inkW(lab, 6) + 8, bx = x + 8 + textW('THE STORE', TYPE.head) + 8;   /* (claude/hubpolish) one press, or one tap, to change hero from any tab */
     g.fillStyle = 'rgba(60,90,60,0.75)'; g.fillRect(bx, y + 3, bw, 10); g.strokeStyle = 'rgba(168,224,110,0.6)'; g.strokeRect(bx + 0.5, y + 3.5, bw - 1, 9); text(lab, bx + 4, y + 5, '#e8f4d8', 'left', 6); TCH.hit(bx, y + 2, bw, 12, () => SWAPUI.open()); }
   { const gold = String(PROG.coins), silv = String(silverAvail());
-    const gx = x + w - 10 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
+    const gx = x + w - 10 - STORE_BACK_W - 3 - textW(gold, 8), sx0 = gx - 22 - textW(silv, 8);
     if (storeKeyLast !== storeTab + ':' + storeI) { storeKeyLast = storeTab + ':' + storeI; storePage = 0; }
     g.drawImage(PROP.silver[Math.floor(time * 6 + 2) % 4], sx0 - 11, y + 3); text(silv, sx0, y + 4, UI.silver, 'left');
     g.drawImage(PROP.coin[Math.floor(time * 8) % 4], gx - 11, y + 3); text(gold, gx, y + 4, UI.gold, 'left'); }
@@ -6837,15 +6838,16 @@ function drawHeroPick() { const PICK = NEW_PICK;
     rowHi(0, by + 26);
     text('LIVES', bx + 14, by + 26, rulesRow === 0 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 22, bw - 12, 34, () => { rulesRow = 0; rulesToggle(1, 0); initAudio(); });
     text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 26, on ? '#8fd160' : '#ffd36b', 'right', 8);
-    text(fitText(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', tw, 6), VW / 2, by + 40, UI.text, 'center', 6);
+    const say = (s, y0, col) => wrap(s, tw, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, y0 + i * 8, col, 'center', 6));   /* (batch150) WRAPPED, never cut: the card is narrow */
+    say(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', by + 38, UI.text);
     rowHi(1, by + 62);
     text('DIFFICULTY', bx + 14, by + 62, rulesRow === 1 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 58, bw - 12, 34, () => { rulesRow = 1; rulesToggle(1, 1); initAudio(); });
     text('< ' + LV.modeLabel(md) + ' >', bx + bw - 14, by + 62, LV.modeCol(md), 'right', 8);
-    text(fitText(LV.MODE_BLURB[md], tw, 6), VW / 2, by + 76, UI.text, 'center', 6);
-    if (!open) text(fitText(LV.MASTER_LOCKED_NOTE, tw, 6), VW / 2, by + 86, '#8a7a6a', 'center', 6);
-    text(fitText('CHOSEN NOW. IT CANNOT BE CHANGED AFTER THE FIRST LEVEL.', tw, 6), VW / 2, by + 106, '#ff9a5c', 'center', 6);
-    if (Math.floor(time * 2) % 2 === 0) text(fitText(touchOn ? 'TAP CONTINUE' : 'UP/DOWN row  LEFT/RIGHT change  Z continue', tw, 6), VW / 2, by + 128, '#8fd160', 'center', 6);
-    TCH.hit(bx, by + 118, bw, 28, () => { rulesDone(); initAudio(); });
+    say(LV.MODE_BLURB[md], by + 76, UI.text);
+    if (!open) say(LV.MASTER_LOCKED_NOTE, by + 94, '#8a7a6a');
+    say('CHOSEN NOW. IT CANNOT BE CHANGED AFTER THE FIRST LEVEL.', by + 112, '#ff9a5c');
+    if (Math.floor(time * 2) % 2 === 0) text(fitText(touchOn ? 'TAP CONTINUE' : 'UP/DOWN row  LEFT/RIGHT change  Z continue', tw, 6), VW / 2, by + 134, '#8fd160', 'center', 6);
+    TCH.hit(bx, by + 110, bw, 40, () => { rulesDone(); initAudio(); });
     return; }
   if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT TUTORIAL', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '10 health'],
@@ -7614,8 +7616,8 @@ function drawLessonProps(cx, cy) { const o = L.opening, fy = o.floor * TS - cy, 
       g.fillStyle = '#2a1a0e'; g.fillRect(px0, by - 1, px1 - px0, 7); g.fillStyle = '#7a5230'; g.fillRect(px0 + 1, by, px1 - px0 - 2, 2); g.fillStyle = '#5c3a1d'; g.fillRect(px0 + 1, by + 2, px1 - px0 - 2, 3); } }
   if (x < -80 || x > VW + 80) return;
   TVA.door(g, x, fy, OPN.st.nearDoor, time);
-  const w = inkW(OT.INN_SIGN, 6) + 14, h = 13, px = x - (w >> 1), py = fy - 84; g.fillStyle = '#2a1a0e'; g.fillRect(px, py, w, h); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, py + 1, w - 2, h - 2); g.fillStyle = '#2a3a20'; g.fillRect(px + 3, py + 3, w - 6, h - 6);
-  text(OT.INN_SIGN, x, py + 4, '#ffe9a8', 'center', 6); if (OPN.st.nearDoor) text(opnWords().talk + ': ENTER THE INN', x, py - 9 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
+  const w = inkW(OT.INN_SIGN, 6) + 14, h = 13, sx = Math.max((w >> 1) + 2, Math.min(VW - (w >> 1) - 2, x)), px = sx - (w >> 1), py = fy - 84;   /* (batch150) the road now ends a few columns past the door: the plate slides in from the screen edge, never cut */ g.fillStyle = '#2a1a0e'; g.fillRect(px, py, w, h); g.fillStyle = '#5c3a1d'; g.fillRect(px + 1, py + 1, w - 2, h - 2); g.fillStyle = '#2a3a20'; g.fillRect(px + 3, py + 3, w - 6, h - 6);
+  text(OT.INN_SIGN, sx, py + 4, '#ffe9a8', 'center', 6); if (OPN.st.nearDoor) text(opnWords().talk + ': ENTER THE INN', sx, py - 9 + Math.round(Math.sin(time * 5) * 2), '#ffd36b', 'center', 6); }
 /* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
 /* TWO PASSES: 'back' (before the heroes) is the ring's far half and the leash rope; 'front' (after the near layer, which paints over the floor line in
    the halls) is the ring's near half - under his feet, never over his legs - and the tags, so neither is ever hidden */

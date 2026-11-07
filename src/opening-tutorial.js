@@ -33,7 +33,7 @@ export const STEPS = [
 export const GEO = { curb: 19, pit: [23, 25], ledge: [32, 34], door: 156, shrine: 144, dummies: [43, 46, 48],
   /* the straw yard: the armoured man (col), the bird on its pole (col; a one-way plank two rows up, a post under it), the rat under a beam (col, beam cols), the barrel lid by a ledge (lid col, ledge cols) */
   armour: 58, bird: 70, rat: 83, beam: [80, 86], lid: 98, pledge: [93, 95],
-  block: { foe: 106, lx: [103, 113] }, dodge: { foe: 119, lx: [116, 126] }, inn: { x0: 151, x1: 159 } };
+  block: { foe: 106, lx: [103, 113] }, dodge: { foe: 119, lx: [116, 124] /* batch150: 124 not 126 - his swing reached a hurt hero drinking at the start of the flask station */ }, inn: { x0: 151, x1: 159 } };
 export const ROLL_GRACE = 0.45;   /* s: a roll that ended up to this long before his blow still counts (a dodge is 0.2 s; the flash is the beat, not a frame) */
 export const STALL_S = 40;   /* s in one station with no headway: its gate opens anyway ("ON WE GO"): a lesson never traps anybody (a step opened this way teaches nothing) */
 export const INN_SIGN = "THE CROSSROADS INN";
