@@ -3,7 +3,7 @@ import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import * as MFX from './map-fx.js';
-import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize, SCREEN as MAP_SCREEN } from './map-plates.js';
+import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize, neighbours as plateNeighbours, nodeBox as mapNodeBox, SCREEN as MAP_SCREEN } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE, villagerBonus, VILLAGER_GOLD, ALL_SIX_GOLD } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -5415,6 +5415,8 @@ function updateMap(dt) {
   if (map.glide) { mapPreloadNode = -1; map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(MAP_TOP, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
+  if (talkPress && !map.walking && !mapPanel.open) { mapMore = !mapMore; SFX.ui(); }   /* (claude/mapclean) E / the pad's talk button: the info card's MORE page */
+  if (map.walking) mapMore = false;
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
   if (map.walking) {
     const goal = NODE_AT[map.target]; const sp = 1.6 * dt; // segments per second-ish, scaled below by length
@@ -5452,10 +5454,18 @@ function updateMap(dt) {
 /* THE MAP'S PLATES AND INFO PANEL (src/map-plates.js): one layout for every board, and for each node a camera height and panel corner that cover no node or board around it */
 let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES.filter(n3 => !demoOut(n3)), n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
+/* (claude/mapclean, Daniel 11-07) THE MAP, DECLUTTERED. A name board shows only for the node you stand on, its road neighbours (and a store beside it); HOLD C (the pad's block, LB/RB) or tap the NAMES chip on touch to show them all.
+   TAB stays THE LEVELS LIST. ONE badge a node (nodeBadge): NEW / CLEARED / ALL MEDALS (gold) / LOCKED. The info card is small, on the side away from the node; E (or a tap on it) turns it to its MORE page. */
+let mapMore = false, mapNamesTouch = false;
+function nodeBadge(nd, lk, p) { if (lk) return 'locked'; if (nd.kind !== 'level') return null; if (!p) return 'new'; if (p.medal >= 3) return 'gold'; if (p.cleared) return 'cleared'; const walked = p.best !== undefined && p.best !== null && !Number.isNaN(p.best); return walked ? null : 'new'; }
+const BADGE = { locked: ['#4a4658', '#b4b4c4'], new: ['#ffb040', '#3a2208'], cleared: ['#5fa84a', '#f4ffe8'], gold: ['#ffd34a', '#5a3a10'] };
+const BADGE_GLYPH = { new: [[0, -2, 1, 3], [0, 1, 1, 1]], cleared: [[-2, 0, 1, 1], [-1, 1, 1, 1], [0, 0, 1, 1], [1, -1, 1, 1], [2, -2, 1, 1]], gold: [[0, -2, 1, 5], [-2, 0, 5, 1], [-1, -1, 1, 1], [1, -1, 1, 1], [-1, 1, 1, 1], [1, 1, 1, 1]], locked: [[-1, -2, 3, 1], [-1, -1, 1, 1], [1, -1, 1, 1], [-2, 0, 5, 3]] };
+/* a 9x9 disc of whole pixels: ink rim, the state's colour, a pixel glyph (shape as well as colour: ! / tick / star / padlock) */
+function drawMapBadge(cx, cy, kind) { const [bg, fg] = BADGE[kind]; cx = Math.round(cx); cy = Math.round(cy); MPX.fillDisc(g, cx, cy, 4, ART.OUT); MPX.fillDisc(g, cx, cy, 3, bg); g.fillStyle = fg; for (const [x, y, w, h] of BADGE_GLYPH[kind]) g.fillRect(cx + x, cy + y, w, h); }
 let mapNoDanger = false;
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates, DS.DEMO ? { ...MAP_SCREEN, CAMTOP: MAP_TOP } : MAP_SCREEN);   /* (batch150) the demo's camera stops at the wood sheet: place the card for THAT camera, or Kingswood sat under its own card */ c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN  G ONLINE', x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'Z ENTER  TAB LEVELS  X BEASTS  C NAMES', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-dots.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -5492,7 +5502,7 @@ function drawMap() {
   g.drawImage(MAPC, 0, 0);
   if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016;
     { const jn = NODES.find(m => !m.spur && m.level >= 0 && LEVELS[m.level].id === junctionId(LEVELS[n.level])); if (jn) { const dx = n.x - jn.x, dy = n.y - jn.y, len = Math.hypot(dx, dy) || 1, reach = Math.min(len, mapSpurLit.t * 70);   /* (claude/kingscene) THE SPUR'S PATH LIT: ember dots run out from the junction to the village and stay, pulsing */
-      for (let d = 6, k = 0; d < reach; d += 5, k++) { g.globalAlpha = 0.45 + 0.55 * Math.max(0, Math.sin(time * 4 - k * 0.7)); g.fillStyle = k % 3 ? '#ff9a30' : '#ffd36b'; g.fillRect(Math.round(jn.x + dx * d / len) - 1, Math.round(jn.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1; } } const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; MPX.fillDisc(g, n.x, n.y, Math.round(12 + pu * 6), '#ff9a30'); g.globalAlpha = 0.6; MPX.strokeRing(g, n.x, n.y, Math.round(9 + pu * 3), '#ffd36b');   /* (rel139fix: whole pixels, the canvas arc anti-aliases - tools/map-scale.mjs) */ g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
+      for (let d = 6, k = 0; d < reach; d += 5, k++) { g.globalAlpha = 0.45 + 0.55 * Math.max(0, Math.sin(time * 4 - k * 0.7)); g.fillStyle = k % 3 ? '#ff9a30' : '#ffd36b'; g.fillRect(Math.round(jn.x + dx * d / len) - 1, Math.round(jn.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1; } } const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); /* (claude/mapclean: the orange dotted rings are gone; the ember path and the bobbing NEW arrow say it) */ g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   if (PROG.storeHint || pyroNew()) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
@@ -5505,15 +5515,16 @@ function drawMap() {
   // boss portraits: the queen hangs over the wood, the frog sits by the pond
   { const nd = id => NODES.find(n => n.id === id && !demoOut(n)); const cl = id => !!(PROG[id] && PROG[id].cleared); const qb = Math.round(Math.sin(time * 2.5) * 2);
     const nw = nd('wood'), nm = nd('marsh'), ns = nd('stockade'), np = nd('spore'), nk = nd('kings'), nh = nd('hanging');
-    if (nw) drawMapPortrait('wood', SPR.queen, Math.floor(time * 20) % 2, nw.x + 30, nw.y - 16 + qb, -1, 20, cl('wood'));
-    if (nh) drawMapPortrait('hanging', SPR.owl, 0, nh.x + 30, nh.y - 10 + qb, -1, 18, cl('hanging'));
-    { const nn = nd('hornetsnest'); if (nn) drawMapPortrait('hornetsnest', SPR.mapNest, 0, nn.x - 38, nn.y - 22, 1, 22, cl('hornetsnest')); }   /* (claude/hornets2art) a little great pine with its paper nest, above its node */
-    { const nc = nd('crown'); if (nc && PROP.castle) { const cw0 = PROP.castle.width, kc = Math.max(1, Math.round(cw0 / 60)), cc = MAP_CASTLE || (MAP_CASTLE = MPX.blockVote(PROP.castle, kc, { outline: ART.OUT })); { const bx = Math.round(nc.x - cc.width / 2), by = Math.round(nc.y - 58); g.drawImage(cc, bx, by); MAP_PORT_BOX.castle = { x: bx, y: by, w: cc.width, h: cc.height, k: kc }; } drawMapPortrait('crown', SPR.gqueen, 3, nc.x + 30, nc.y + 6, -1, 18, cl('crown')); } }
-    { const nr = nd('scree'); if (nr) drawMapPortrait('scree', SPR.ram, 0, nr.x + 28, nr.y + 8, -1, 14, cl('scree')); }
-    if (nm) drawMapPortrait('marsh', SPR.frog, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, 12, cl('marsh'));
-    if (ns) drawMapPortrait('stockade', SPR.chief, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, 16, cl('stockade'));
-    if (np) drawMapPortrait('spore', SPR.mother, 0, np.x + 26, np.y + 8, 1, 14, cl('spore'));
-    if (nk) drawMapPortrait('kings', kingCard(), 0, nk.x - 24, nk.y + 6, 1, 18, cl('kings'));
+    /* (claude/mapclean) a boss stands on the map only while he is UNBEATEN: a beaten one is gone, not a grey ghost */
+    if (nw && !cl('wood')) drawMapPortrait('wood', SPR.queen, Math.floor(time * 20) % 2, nw.x + 30, nw.y - 16 + qb, -1, 20, cl('wood'));
+    if (nh && !cl('hanging')) drawMapPortrait('hanging', SPR.owl, 0, nh.x + 30, nh.y - 10 + qb, -1, 18, cl('hanging'));
+    { const nn = nd('hornetsnest'); if (nn && !cl('hornetsnest')) drawMapPortrait('hornetsnest', SPR.mapNest, 0, nn.x - 38, nn.y - 22, 1, 22, cl('hornetsnest')); }   /* (claude/hornets2art) a little great pine with its paper nest, above its node */
+    { const nc = nd('crown'); if (nc && PROP.castle) { const cw0 = PROP.castle.width, kc = Math.max(1, Math.round(cw0 / 60)), cc = MAP_CASTLE || (MAP_CASTLE = MPX.blockVote(PROP.castle, kc, { outline: ART.OUT })); { const bx = Math.round(nc.x - cc.width / 2), by = Math.round(nc.y - 58); g.drawImage(cc, bx, by); MAP_PORT_BOX.castle = { x: bx, y: by, w: cc.width, h: cc.height, k: kc }; } if (!cl('crown')) drawMapPortrait('crown', SPR.gqueen, 3, nc.x + 30, nc.y + 6, -1, 18, cl('crown')); } }
+    { const nr = nd('scree'); if (nr && !cl('scree')) drawMapPortrait('scree', SPR.ram, 0, nr.x + 28, nr.y + 8, -1, 14, cl('scree')); }
+    if (nm && !cl('marsh')) drawMapPortrait('marsh', SPR.frog, Math.floor(time * 1.5) % 2, nm.x - 26, nm.y + 4, 1, 12, cl('marsh'));
+    if (ns && !cl('stockade')) drawMapPortrait('stockade', SPR.chief, Math.floor(time * 4) % 2, ns.x - 22, ns.y + 6, 1, 16, cl('stockade'));
+    if (np && !cl('spore')) drawMapPortrait('spore', SPR.mother, 0, np.x + 26, np.y + 8, 1, 14, cl('spore'));
+    if (nk && !cl('kings')) drawMapPortrait('kings', kingCard(), 0, nk.x - 24, nk.y + 6, 1, 18, cl('kings'));
     /* SMOKE OFF EVERY TOWN AND STORE, not just the first one (map-life-and-select §2). Cheap: a store's own hut
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
@@ -5541,10 +5552,9 @@ function drawMap() {
        dashed rim instead of a solid one, the same grammar the road itself uses for a spur's stub, so a glance
        says "side trip" before you have even read the name. */
     { const icon = MAPICON[nd.id]; if (icon) g.drawImage(icon, nd.x - icon.width / 2, nd.y - icon.height / 2);
-      MPX.strokeRing(g, nd.x, nd.y, 6, lk ? '#78788c' : (p && p.cleared) ? '#ffd36b' : '#e8dcc0', !!nd.spur); }   /* (whole pixels: the canvas arc anti-aliases) */
+      MPX.strokeRing(g, nd.x, nd.y, 6, lk ? '#78788c' : '#e8dcc0', !!nd.spur); }   /* (whole pixels: the canvas arc anti-aliases) (claude/mapclean: the rim is one colour now - the state is the badge) */
     if (nd.kind === 'store') g.drawImage(HUT, nd.x - 10, nd.y - 20);
-    else if (lk) g.drawImage(PROP.lock, nd.x - 3, nd.y - 16);
-    else if (p && p.cleared) g.drawImage(FLAG, nd.x - 3, nd.y - 18);
+    { const bk = nodeBadge(nd, lk, p); if (bk) drawMapBadge(nd.x + 8, nd.y - 8, bk); }   /* (claude/mapclean) ONE status badge per node: NEW, CLEARED, ALL MEDALS or LOCKED - it replaces the flag, the red banner and the gold medal ring */
     if (NODES[map.node] === nd && !map.walking) { const pu = Math.sin(time * 6) > 0 ? 1 : 0; MPX.fillDisc(g, nd.x, nd.y, 10 + pu, '#8fd160', true); MPX.strokeRing(g, nd.x, nd.y, 9 + pu, '#8fd160'); }
   }
   /* STAND AT THE JUNCTION, READ WHAT THE SIDE ROAD IS OWED. Only for the node you are actually standing on (not
@@ -5571,7 +5581,7 @@ function drawMap() {
           for (let a = -2; a <= 2; a++) g.fillRect(mx + v[0] * a - (a === 0 ? 0 : 0), my + v[1] * a, 1, 1);   /* the shaft */
           g.fillRect(mx - v[0] * 2, my - v[1] * 2, 1, 1); for (let a = 1; a <= 2; a++) { g.fillRect(mx + v[0] * (2 - a) + px * a, my + v[1] * (2 - a) + py * a, 1, 1); g.fillRect(mx + v[0] * (2 - a) - px * a, my + v[1] * (2 - a) - py * a, 1, 1); } } } } }
   { const fxo = { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather, nodes: NODES.filter(n => !nodeSecret(n)), locked: nodeLocked, cleared: n => !!(PROG[LEVELS[n.level].id] && PROG[LEVELS[n.level].id].cleared) };   /* (claude/mappolish, Daniel 11-05: map life - src/map-fx.js) */
-    MFX.drawMills(g, fxo); MFX.drawNodeStates(g, fxo);
+    MFX.drawMills(g, fxo);   /* (claude/mapclean: no campfire or red banner at a node - the badge says it) */
     const sto = NODES.filter(n => n.kind === 'store' && !nodeLocked(n)); MFX.drawTravellers(g, { ...fxo, PATH, legs: sto.slice(1).map((n, i) => [NODE_AT[NODES.indexOf(sto[i])], NODE_AT[NODES.indexOf(n)]]) }); }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
@@ -5609,11 +5619,18 @@ function drawMap() {
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
   /* THE PLATES' PLACES come from src/map-plates.js (one function, shared with tools/map-spacing.mjs, which fails the build when two
      nodes or plates would overlap); a node's own `plate: 'above' | 'below' | 'left' | 'right'` is the side tried first. */
+  const namesAll = !!(keys.block || mapNamesTouch) && !secretFx;   /* HOLD C / LB-RB shows every name; touch has a chip */
+  const plateShown = new Set();
+  { const pn = mapPlates().pn, ids = new Set(); for (const ni of map.walking ? [map.node, map.target] : [map.node]) { const n0 = NODES[ni]; if (!n0 || !pn.some(q => q.id === n0.id)) continue; ids.add(n0.id);
+      for (const q of plateNeighbours(pn.find(q => q.id === n0.id), pn)) ids.add(q); if (!n0.spur) for (const c of spursAt(n0.id)) ids.add(c.id);
+      for (const o of NODES) if (o.kind === 'store' && Math.hypot(o.x - n0.x, o.y - n0.y) < 70) ids.add(o.id); }
+    for (const i of ids) plateShown.add(i); }
   const plateAt = mapPlates().plates;   /* the worst case (every level two-line), so a board never moves with your progress and the lint proves what you see */
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
     const lk = nodeLocked(nd), here = NODES[map.node] === nd;
     if (lk && nd.kind === 'level' && !LEVELS[nd.level].secret) continue;   /* (claude/mappolish, Daniel 11-05) a place you cannot enter yet is a dot: its name board shows once it is reached; stores and the '? ? ?' secrets keep theirs */
+    if (!namesAll && !plateShown.has(nd.id)) continue;   /* (claude/mapclean) only the node you stand on, its road neighbours and a store beside it - or all of them while C is held */
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(nd.board || LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = plateAt.get(nd.id).h > 10;   /* (one-line boards: the strip is on the info card; only a name too long for its crowded spot, THE PALISADE WOOD, is two lines) */
@@ -5640,7 +5657,7 @@ function drawMap() {
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); const cardTop = !map.walking && mapPanelFor(NODES[map.node]).y < 52;   /* (the region's name is not drawn under an info card that sits at the top: it would print over the card's text) */
   if (map.regionT > 0 && !cardTop && !secretFx) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
-  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, false, [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
+  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, false, [...[...plateAt.entries()].filter(([id]) => namesAll || plateShown.has(id)).map(([, p]) => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })), ...NODES.filter(n3 => !nodeSecret(n3) && !demoOut(n3)).map(n3 => { const b3 = mapNodeBox(n3); return { x: b3.x, y: b3.y - Math.round(mapCamY), w: b3.w, h: b3.h }; }), ...(map.walking ? [] : [(() => { const pp3 = mapPanelFor(NODES[map.node]); return { x: pp3.x, y: pp3.y, w: pp3.w, h: pp3.h }; })()])]);   /* (claude/mapclean) it steps past the nodes and the card as well as the boards: it never covers a node */   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
@@ -5656,47 +5673,52 @@ function drawMap() {
     const store = nd.kind === 'store';
     const pp = mapPanelFor(nd), cw = pp.w, ch = pp.h;
     const cx0 = pp.x, cy0 = pp.y;   /* the corner (and the camera height, in updateMap) that hides nothing around this node: placePanel */
+    /* (claude/mapclean) THE COMPACT CARD: name, the level it wants and the danger pips, your best medal and whether it is cleared, the difficulty. Times, loot and the quest are its MORE page (E, or a tap on the card). */
     panel(cx0, cy0, cw, ch, UI.sel, 'parchment');
-    { const secret = nd.kind === 'level' && LEVELS[nd.level].secret && nodeLocked(nd);
-      { const nm0 = secret ? '? ? ?' : nd.name, nmW0 = (store || secret) ? cw - 52 : cw - 84, longName = !store && !secret && inkW(nm0, 8) > nmW0 && inkW(nm0, 6) > nmW0, nmW = longName ? cw - 52 : nmW0, big = inkW(nm0, 8) <= nmW; mapNoDanger = longName; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 5 : 6), UI.title, 'left', big ? 8 : 6); } }   /* (claude/lessonfix) a name too long even in the small hand (THE MASKWRIGHT'S THEATRE) takes the room of the word DANGER (the pips stay): it was printed 'THEATR' */   /* (a long name drops to the small hand rather than being cut: THE MASKWRIGHT'S THEATRE) */
-    if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : 'Z  enter', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
+    if (touchOn) TCH.hit(cx0, cy0, cw, ch, () => { if (!store) { mapMore = !mapMore; SFX.ui(); } });
+    const secret = !store && LEVELS[nd.level].secret && nodeLocked(nd);
+    { const nm0 = secret ? '? ? ?' : nd.name, nmW = cw - 16, big = inkW(nm0, 8) <= nmW; text(big ? nm0 : fitText(nm0, nmW, 6), cx0 + 8, cy0 + (big ? 4 : 5), UI.title, 'left', big ? 8 : 6); }   /* a name too long even in the small hand takes the whole row (the pips live on the next one) */
+    const more = !store && !secret && mapMore && !nodeLocked(nd), r1 = cy0 + 14, r2 = cy0 + 23, r3 = cy0 + 31;
+    if (store) text(nodeLocked(nd) ? 'SHUT UNTIL THE SCREE PATH IS WALKED' : (touchOn ? 'TAP  enter' : 'Z  enter'), cx0 + 8, cy0 + 14, UI.dim, 'left', 6);
     else {
       const lv = LEVELS[nd.level], id = lv.id, p = PROG[id] || {};
-      if (lv.secret && nodeLocked(nd)) {
+      if (secret) {
         /* A SECRET STILL OWED: its name is not yours yet, but its price is. */
         const [asks, yours] = secretWants(lv);
-        text('SOMETHING IS DOWN THERE', cx0 + 8, cy0 + 16, UI.dim, 'left', 6);
-        text(fitText(asks, cw - 16, 6), cx0 + 8, cy0 + 29, UI.gold, 'left', 6);
-        text(fitText(yours, cw - 16, 6), cx0 + 8, cy0 + 41, UI.dim, 'left', 6);
+        text('SOMETHING IS DOWN THERE', cx0 + 8, r1, UI.dim, 'left', 6);
+        text(fitText(asks, cw - 16, 6), cx0 + 8, r2, UI.gold, 'left', 6);
+        text(fitText(yours, cw - 16, 6), cx0 + 8, r3, UI.dim, 'left', 6);
       } else {
-      const hasRun = p.best !== undefined && p.best !== null && !Number.isNaN(p.best);
-      // top right: how hard this wood is meant to be
-      const pips = 1 + Math.round(tierOf(id) * 4);
-      for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, cy0 + 6, 4, 4); }
-      if (!mapNoDanger) text('DANGER', cx0 + cw - 8 - 5 * 6 - 3, cy0 + 5, '#c9463d', 'right', 6);   /* (claude/mappolish) named, so the red squares do not read as the HARD setting at the foot of the card */
-      text(MPX.fitBlurb(MAP_BLURB[id] || lv.sub || '', cw - 16, t => textW(t, 6)), cx0 + 8, cy0 + 13, UI.dim, 'left', 6);   /* ONE WHOLE LINE (src/map-blurbs.js): the old two-page blurb cut a sentence in half ("only blue in"), and the dots that paged it were a second form for one value */
-      /* A POSTCARD of the country this node sits in, and beside it: your best, the three medal times, what is found and what is owed (the old card said "OPEN" and "0/?") */
-      MCARD.drawPostcard(g, cx0 + 8, cy0 + 21, 40, 30, MCARD.regionAt(nd.y, { INLAND: INLAND_Y, COAST: COAST_Y, CRAG: CRAG_Y, WOOD: WOOD_Y }), !!(lv.night || lv.dark), time);
-      const M = MEDALS[id] || [300, 450, 660], rx = cx0 + 52, r1 = cy0 + 21, r2 = cy0 + 28, r3 = cy0 + 35, r4 = cy0 + 42;
-      text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', rx, r1, hasRun ? UI.text : UI.dim, 'left', 6);
-      if (p.medal) { const mx = rx + 62; MPX.fillDisc(g, mx + 2, r1 + 3, 3, MEDAL_COL[p.medal]); g.fillStyle = ART.OUT; g.fillRect(mx + 1, r1 + 2, 2, 2); text(MEDAL_NAME[p.medal], mx + 8, r1, MEDAL_COL[p.medal], 'left', 6); }
-      text(p.cleared ? 'CLEARED' : '', cx0 + cw - 8, r1, UI.sel, 'right', 6);
-      /* THE MEDAL LEGEND: gold, silver, bronze and the time each wants; a filled disc is a medal you hold */
-      { let lx = rx; [3, 2, 1].forEach((rank, i) => { const held = (p.medal || 0) >= rank; if (held) MPX.fillDisc(g, lx + 2, r2 + 3, 2, MEDAL_COL[rank]); else MPX.strokeRing(g, lx + 2, r2 + 3, 2, MEDAL_COL[rank]);
-        const tt = fmt(M[i]).replace(/\.\d$/, ''); text(tt, lx + 7, r2, held ? MEDAL_COL[rank] : UI.dim, 'left', 6); lx += 12 + inkW(tt, 6); }); }
-      // what is still in there: silver, gold, the quest
-      const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length;
-      let bx = rx; const by = r3;
-      g.drawImage(PROP.silver[0], bx, by - 1); text(sv + '/3', bx + 12, by, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 32;
-      { const gt = (p.gold || 0) + '/' + (p.total || '?'); g.drawImage(PROP.coin[0], bx, by - 1); text(gt, bx + 12, by, p.allGold ? UI.gold : UI.dim, 'left', 6); bx += 12 + inkW(gt, 6) + 6; }
-      g.drawImage(PROP.questIcon, bx, by - 1); text(p.quest ? 'QUEST DONE' : 'QUEST OPEN', bx + 12, by, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 12 + inkW('QUEST OPEN', 6) + 6;
-      if (p.noHit) { g.drawImage(PROP.heart, bx, by - 1); bx += 12; }
-      if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, by - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, by + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, by, 1, 6); g.fillRect(bx + 2, by + 2, 5, 1); bx += 12; }
-      // the recommended level (what the wood expects: it pays x3 XP below it), and the difficulty with its up/down
-      { const want = LEVEL_DEPTH[id] || 0, mine = heroLevel(); if (want) text('RECOMMENDED LV ' + want, rx, r4, mine >= want ? '#8fd160' : '#ff9a5c', 'left', 6); else text('NO LEVEL NEEDED', rx, r4, UI.dim, 'left', 6);
-        const D = DIFF[diffOf(id)], dx = cx0 + cw - 8; text(D.label, dx, r4, D.col, 'right', 6); const ax = dx - inkW(D.label, 6) - 8; g.fillStyle = D.col; g.fillRect(ax + 1, r4, 1, 1); g.fillRect(ax, r4 + 1, 3, 1); g.fillRect(ax, r4 + 4, 3, 1); g.fillRect(ax + 1, r4 + 5, 1, 1); }
+        const hasRun = p.best !== undefined && p.best !== null && !Number.isNaN(p.best);
+        const pips = 1 + Math.round(tierOf(id) * 4);
+        const want = LEVEL_DEPTH[id] || 0, mine = heroLevel();
+        const medalRow = (y, x) => { if (p.medal) { MPX.fillDisc(g, x + 2, y + 3, 3, MEDAL_COL[p.medal]); g.fillStyle = ART.OUT; g.fillRect(x + 1, y + 2, 2, 2); text(MEDAL_NAME[p.medal] + ' MEDAL', x + 8, y, MEDAL_COL[p.medal], 'left', 6); } else text('NO MEDAL YET', x, y, UI.dim, 'left', 6); };
+        if (!more) {
+          if (want) text('RECOMMENDED LV ' + want, cx0 + 8, r1, mine >= want ? '#8fd160' : '#ff9a5c', 'left', 6); else text('NO LEVEL NEEDED', cx0 + 8, r1, UI.dim, 'left', 6);
+          for (let i = 0; i < 5; i++) { g.fillStyle = i < pips ? '#c9463d' : 'rgba(255,255,255,0.15)'; g.fillRect(cx0 + cw - 8 - (5 - i) * 6, r1 + 1, 4, 4); }   /* the danger pips (no word: the red squares read as the wood's danger) */
+          medalRow(r2, cx0 + 8);
+          if (p.cleared) { const tw0 = Math.ceil(inkW('CLEARED', 6)); g.fillStyle = UI.sel; for (const [x, y] of [[0, 3], [1, 4], [2, 3], [3, 2], [4, 1], [5, 0]]) g.fillRect(cx0 + cw - 8 - tw0 - 9 + x, r2 + y, 1, 1); text('CLEARED', cx0 + cw - 8, r2, UI.sel, 'right', 6); }
+          else text(hasRun ? 'NOT CLEARED' : 'NOT WALKED', cx0 + cw - 8, r2, UI.dim, 'right', 6);
+          { const D = DIFF[diffOf(id)], ax = cx0 + 8; g.fillStyle = D.col; g.fillRect(ax + 1, r3, 1, 1); g.fillRect(ax, r3 + 1, 3, 1); g.fillRect(ax, r3 + 4, 3, 1); g.fillRect(ax + 1, r3 + 5, 1, 1); text(D.label, ax + 7, r3, D.col, 'left', 6); }   /* (UP / DOWN still set it) */
+          if (!nodeLocked(nd)) text(touchOn ? 'TAP: MORE' : (String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase() + ' MORE'), cx0 + cw - 8, r3, UI.dim, 'right', 6);
+        } else {
+          const M = MEDALS[id] || [300, 450, 660];
+          text(hasRun ? 'BEST ' + fmt(p.best) : 'NOT WALKED', cx0 + 8, r1, hasRun ? UI.text : UI.dim, 'left', 6);
+          { const sv = [1, 2, 4].filter(b => ((p.silver || 0) & b)).length, gt = (p.gold || 0) + '/' + (p.total || '?'); let bx = cx0 + cw - 8 - (12 + 18 + 6 + 12 + inkW(gt, 6));
+            g.drawImage(PROP.silver[0], bx, r1 - 1); text(sv + '/3', bx + 12, r1, sv >= 3 ? UI.silver : UI.dim, 'left', 6); bx += 36;
+            g.drawImage(PROP.coin[0], bx, r1 - 1); text(gt, bx + 12, r1, p.allGold ? UI.gold : UI.dim, 'left', 6); }
+          { let lx = cx0 + 8; [3, 2, 1].forEach((rank, i) => { const held = (p.medal || 0) >= rank; if (held) MPX.fillDisc(g, lx + 2, r2 + 3, 2, MEDAL_COL[rank]); else MPX.strokeRing(g, lx + 2, r2 + 3, 2, MEDAL_COL[rank]);
+            const tt = fmt(M[i]).replace(/\.\d$/, ''); text(tt, lx + 7, r2, held ? MEDAL_COL[rank] : UI.dim, 'left', 6); lx += 14 + inkW(tt, 6) + 6; }); }
+          { let bx = cx0 + 8; g.drawImage(PROP.questIcon, bx, r3 - 1); text(p.quest ? 'QUEST DONE' : 'QUEST OPEN', bx + 12, r3, p.quest ? UI.sel : UI.dim, 'left', 6); bx += 12 + inkW('QUEST DONE', 6) + 6;
+            if (p.noHit) { g.drawImage(PROP.heart, bx, r3 - 1); bx += 12; }
+            if (p.iron) { g.fillStyle = '#c9d1dc'; g.fillRect(bx + 1, r3 - 1, 7, 8); g.fillStyle = '#7c8797'; g.fillRect(bx + 1, r3 + 5, 7, 2); g.fillStyle = ART.OUT; g.fillRect(bx + 4, r3, 1, 6); g.fillRect(bx + 2, r3 + 2, 5, 1); } }
+          text(touchOn ? 'TAP: BACK' : (String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase() + ' BACK'), cx0 + cw - 8, r3, UI.dim, 'right', 6);
+        }
       }
     }
+    if (touchOn && !secretFx) { const nw = Math.ceil(textW('NAMES', 6)) + 8, nx = cx0 < 60 ? VW - nw - 4 : 4, ny = 22;   /* THE NAMES CHIP (touch has no held key): a toggle for every board, on the side opposite the card */
+      g.fillStyle = mapNamesTouch ? '#4e7a2c' : 'rgba(21,16,34,0.82)'; g.fillRect(nx, ny, nw, 11); g.fillStyle = 'rgba(217,194,140,0.6)'; g.fillRect(nx, ny + 10, nw, 1); text('NAMES', nx + (nw >> 1), ny + 3, mapNamesTouch ? '#ffffff' : UI.dim, 'center', 6);
+      TCH.hit(nx, ny, nw, 11, () => { mapNamesTouch = !mapNamesTouch; SFX.ui(); }); }
   }
   { /* the hero standing beside player one already says WHO (see below); this just says the key and whether he is
        there, so the line stays short enough to sit beside the rest of the footer without crowding it out - both
