@@ -365,6 +365,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (Lv.gpChase) for (const Tw of Lv.gpChase.towers) { const W = TW.get(Tw.id), dx = R(Tw.door - cx), wx = R(Tw.winch - cx), fy = R(Tw.floor - cy);
       g.fillStyle = W && W.state !== 'kept' ? '#3a1a10' : '#1b1626'; g.fillRect(dx - 10, fy - 30, 20, 30); g.fillStyle = '#5a5a68'; for (let k = -8; k <= 8; k += 4) g.fillRect(dx + k, fy - 30, 1, W && W.state === 'open' ? R(30 * (1 - BW.hornLeft(W, now(), GP.chase.horn))) : 30);
       g.fillStyle = '#3a3a44'; g.fillRect(wx - 6, fy - 20, 12, 20); g.fillStyle = W && W.state === 'open' ? '#ffd36b' : '#6a6a78'; g.fillRect(wx - 8, fy - 16, 16, 3);
+      { const bx = R(Tw.bell - cx), sw = W ? R(Math.sin(time * 9) * 2) : 0; g.fillStyle = '#5a5a68'; g.fillRect(bx - 1, fy - 40, 2, 8); g.fillStyle = '#b08a3a'; g.fillRect(bx - 5 + sw, fy - 32, 10, 8); g.fillStyle = '#6a4a1a'; g.fillRect(bx - 5 + sw, fy - 25, 10, 1); }   /* HER alarm bell */
       if (W && W.state === 'open') { g.fillStyle = '#ff6b6b'; g.fillRect(dx - 16, fy - 40, R(32 * BW.hornLeft(W, now(), GP.chase.horn)), 3); g.fillStyle = '#ffd36b'; g.fillRect(wx - 8, fy - 26, 5 * (W.n || 0) + 1, 3); } }
     const Q = Lv.gpRehearsal;
     if (Q) { const fy = R(Q.floor - cy), dx = R(Q.door - cx), wx = R(Q.winch - cx), rx = R(Q.rope - cx), W = RH && RH.W;
@@ -373,7 +374,9 @@ export function makeGoblinPrincessHands(ctx) {
       g.fillStyle = '#3a3a44'; g.fillRect(wx - 6, fy - 20, 12, 20); g.fillStyle = W && W.state === 'open' ? '#ffd36b' : '#6a6a78'; g.fillRect(wx - 8, fy - 16, 16, 3);
       if (W && W.state === 'open') { g.fillStyle = '#ff6b6b'; g.fillRect(dx - 16, fy - 40, R(32 * BW.hornLeft(W, now(), GP.reh.horn)), 3); }
       if (RH && RH.glowK > 0) { const gx0 = R(Q.grate.col * TS + 8 - cx), y0 = R(Q.grate.gy0 * TS - cy); g.globalAlpha = 0.25 + 0.5 * RH.glowK; g.fillStyle = '#ffd36b'; g.fillRect(gx0 - 8, y0, 16, fy - y0); g.globalAlpha = 1; } }
-    const Ar = A(); if (Ar && Ar.rope && !F) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx); g.fillStyle = '#a0885a'; g.fillRect(rx, fy - 60, 1, 56); }
+    const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx); g.fillStyle = '#a0885a'; g.fillRect(rx, fy - 60, 1, 56); g.fillStyle = '#7a5a30'; g.fillRect(rx - 1, fy - 6, 3, 4);   /* the tower bell's rope */
+      if (Ar.grate) { const gx0 = R(Ar.grate.col * TS + 8 - cx), y0 = R(Ar.grate.gy0 * TS - cy); g.fillStyle = '#b08a3a'; g.fillRect(gx0 - 7, y0 - 2, 14, 9); g.fillStyle = '#6a4a1a'; g.fillRect(gx0 - 7, y0 + 6, 14, 1); g.fillStyle = '#34343f'; g.fillRect(gx0 - 9, y0 + 8, 18, 3); }   /* THE TOWER BELL over its grate slot */
+      if (Ar.hatch) { const hx = R(Ar.hatch - cx), hy = R((Ar.y0 || 0) - cy) + TS; g.fillStyle = '#4a3620'; g.fillRect(hx - 8, hy, 16, 3); } }
   };
   /* the LAB BOT's duty (src/lab.js): strike the winch while a wave is open; ring the bell when it is ready and she is free on the floor or perched; stand off the landing as the grate glows */
   H.labDuty = P0 => {
