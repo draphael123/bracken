@@ -31,6 +31,7 @@ import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
 import {crabTrench,underwaterKeep} from './deep-split.js';
+import { buildCauseway3, cw3On, shadowCauseway } from './causeway3.js';   /* (claude/causeway3w) THE DROWNED CAUSEWAY 2: the sea act's finale on the tide kit, behind CW3_SHIPS / ?cw3=1 (src/causeway3.js) */
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
@@ -8011,7 +8012,7 @@ export const LEVELS = [
   /* THE SECOND ROAD. The sea arc closes in the trench; this opens the one that goes inland, which is
      why it is allowed to be quieter than the boss before it - see the arc rule in tools/curve.mjs. */
   /* THE DROWNED CAUSEWAY: the last of the coast, after the Deep and before the road inland. The Kraken is the coast's last word */
-  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: theDrownedCauseway, needs: 'keep' },
+  { id: 'causeway', name: 'THE DROWNED CAUSEWAY', sub: 'the pilgrim road the sea took', rule: 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.', build: () => (cw3On() ? buildCauseway3(theDrownedCauseway(), T, TS) : theDrownedCauseway()), needs: 'keep' },
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'from broken quay to lighthouse', rule: 'CROSS THE MARKET, DRYDOCK AND STORM WALL. THE WARDEN HOLDS THE SEA GATE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
@@ -8844,6 +8845,7 @@ export function thinCheckpoints(L, id) {
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => thinCheckpoints(groundCheckpoints(b(...a)), lv.id); }
 
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
+import { STUCK as CW3_STUCK, STUCK_SIGNS as CW3_STUCK_SIGNS } from './stuck-spots.js'; shadowCauseway({ AMBUSH, ELITES, TIDE_CRABS, STUCK: CW3_STUCK, STUCK_SIGNS: CW3_STUCK_SIGNS, CHECK_DROP });   /* (claude/causeway3w) with ?cw3=1 the tables that name master's Causeway by column read CAUSEWAY 2's rows (src/causeway3.js CW3_TABLES); off, master's */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */

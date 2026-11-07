@@ -8,7 +8,7 @@ export function hauntedCoast(L,id,T){
   L.ents.push({t:'sign',x:54,y:21,text:'HOLD DOWN ON A CHAIN TO DESCEND. HOLD UP TO CLIMB BACK OUT.'},{t:'sign',x:96,y:21,text:'THE LANTERN GHOST MARKS YOUR FEET. STEP CLEAR, OR GUARD THE FLASH.'});
   for(const[x,y,kind]of[[46,21,'kegStack'],[88,21,'coiledCable'],[174,21,'barrels'],[286,21,'seaChest']])L.ents.push({t:'deco',x,y,kind,v:0});
  }
- if(id==='causeway'){
+ if(id==='causeway'&&!L.cw3){   /* (claude/causeway3w: CAUSEWAY 2 (?cw3=1) lays its own road - these are master's columns) */
   L.shipZones=[[339,350,24,29],[360,388,23,29]];L.hullZones=L.shipZones;L.interiors.push([340,348,26,28,'ship'],[362,385,25,28,'ship']);
   L.pools.push({x0:362*16,x1:389*16,y:26*16,bottom:29*16,swim:true,clear:true});
   for(const e of L.ents)if(e.t==='sailor'&&e.x>=330&&e.x<=390)e.t='bonecorsair';
