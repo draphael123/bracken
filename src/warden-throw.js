@@ -4,7 +4,7 @@
 //   tier 1  a quick SHORT throw            one foe, one hit
 //   tier 2  a HEAVY throw                  the first foe is hit hard, KNOCKED BACK and staggered (NOT a pierce: the Ranger's piercing shot and her own Run-Through skewer lines)
 //   tier 3  the PIN                        the first foe is driven back against a wall (or the floor) and held a beat; a boss / mini is hit and staggered, never held (resist floor)
-// The spear comes back AT ONCE (a visual: she is never unarmed - this is not the bought JAVELIN skill, which leaves her bare-handed), and a short breath (rec) follows each throw.
+// The spear comes back AT ONCE (a visual: she is never unarmed - this is not the bought TETHER SPEAR skill (id javelin), which leaves her bare-handed), and a short breath (rec) follows each throw.
 // main.js owns the world: wthTick (the clock), wthThrow (the spear), wthDraw. This file is the numbers, so a check can read them without the page.
 export const WTH = {
   steps: [0.30, 0.80, 1.45],   /* s C is held before each tier is wound (a tap, under steps[0], is only the deflect) */
@@ -20,6 +20,13 @@ export const WTH = {
   bossCd: 3,                   /* ... and not again inside this many s (never a stun-lock) */
   pinSlide: 40,                /* tier 3: px the foe is driven back toward a wall before it is pinned */
   back: 700,                   /* px/s of the spear's return (a visual) */
+  /* (claude/wardenult, Daniel 11-07) THE THROW INSIDE WARDEN'S REACH: hold C still winds, but it is always the PIN and it is wound fast (a held 0.20 s, not 1.45 s); the spear that leaves her hand is a GIANT GHOST copy of the one she wields
+     (the one in her hands stays there: she is never disarmed in the ult), it flies far and quick, hits a taller band and pays x2.0 sword x the ult's own 1.4 = 2.8; a half-price stamina cost and a shorter breath. */
+  ult: { wind: 0.20, cost: 12, speed: 640, range: 270, dmg: 2.8, half: 15, rec: 0.35, bossStagger: 0.6 },
 };
-export const wthTier = held => held >= WTH.steps[2] ? 3 : held >= WTH.steps[1] ? 2 : held >= WTH.steps[0] ? 1 : 0;
-export const WTH_TEXT = 'TAP C DEFLECTS. HOLD C WINDS THE JAVELIN: A QUICK THROW, A HEAVY THROW THAT KNOCKS BACK, THEN THE PIN.';
+/* the pips over her head (QUICK / HEAVY / PIN): the colour each tier lights, and the word it says */
+export const WTH_PIPS = { col: ['#dff0d8', '#b6e26a', '#ffc24a'], word: ['QUICK', 'HEAVY', 'PIN'] };
+/* how many pips are lit: the tier she is on (0-3); inside the ult the three fill evenly across WTH.ult.wind s */
+export const wthPips = (held, ult = false) => ult ? Math.min(3, Math.floor(Math.min(1, held / WTH.ult.wind) * 3 + 1e-6)) : wthTier(held);
+export const wthTier = (held, ult = false) => ult ? (held >= WTH.ult.wind ? 3 : 0) : held >= WTH.steps[2] ? 3 : held >= WTH.steps[1] ? 2 : held >= WTH.steps[0] ? 1 : 0;
+export const WTH_TEXT = 'TAP C DEFLECTS. HOLD C WINDS THE SPEAR THROW: THREE PIPS FILL OVER HER HEAD - QUICK, HEAVY (KNOCKS BACK), THEN THE PIN.';
