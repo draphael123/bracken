@@ -68,6 +68,8 @@ const PINNED = [
   [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
   [/^DS\.demoLocked\(lv\)\)/, 'map header counters: the slice only (smallfix14)'],
   [/^DS\.DEMO \? MUSIC_NAMES/, 'sound test: only the shipped tracks (smallfix14)'],
+  [/^DS\.DEMO\) \{ g\.fillStyle = 'rgba\(10,8,20/, 'demoend2 DEVOFF: the FPS / UPDATE / DRAW readout is not drawn in the demo, whatever SET.fps says'],
+  [/^DS\.DEMO \|\| !SET\.boxes/, 'demoend2 DEVOFF: no hitbox overlay in the demo, whatever SET.boxes says'],
   [/^DS\.DEMO\b/, 'title: no boss rush'],
 ];
 const left = uses.slice();
@@ -81,8 +83,35 @@ assert.deepEqual([...F.DEMO_HEROES].sort(), ['geomancer', 'knight', 'pyro', 'ran
   mapCaption(g, say, w, 320, 0, 'wood', false); assert.equal(drawn.length, 0, 'no caption on an open wood');
   mapCaption(g, say, w, 320, 0, 'kings', false); assert.deepEqual(drawn, [MAP_CAPTION], 'the caption shows at Kingswood, the end of the demo road'); assert.equal(MAP_CAPTION, 'THE ROAD CONTINUES...'); }
 console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption at Kingswood');
+/* ---- DEVOFF (demoend2, Daniel 11-07): no developer readouts or rows in the demo; a saved value is ignored at the draw, never rewritten ---- */
+{ const SU = await import('../src/settings-ui.js');
+  for (const id of SU.TABS.map(t => t.id)) for (const from of ['title', 'play']) { const rows = SU.tabRows(id, from, true); for (const k of SU.DEMO_DEV_ROWS) assert.ok(!rows.includes(k), 'demo: no ' + k + ' row on tab ' + id); }
+  const dsp = SU.tabRows('display', 'title', false), gp = SU.tabRows('gameplay', 'title', false);
+  assert.ok(dsp.includes('FPS counter') && gp.includes('Hitboxes') && gp.includes('- TESTING -'), 'flag off: the dev rows are listed as ever');
+  assert.deepEqual(SU.tabRows('display', 'title', true), dsp.filter(k => k !== 'FPS counter'), 'demo: the display list is the full one minus FPS counter');
+  assert.deepEqual(SU.tabRows('gameplay', 'title', true), gp.filter(k => !SU.DEMO_DEV_ROWS.includes(k)), 'demo: the gameplay list is the full one minus the dev rows');
+  assert.ok(SU.devRowHidden('FPS counter', true) && !SU.devRowHidden('FPS counter', false) && !SU.devRowHidden('Music', true));
+  assert.ok(main.includes('SET.fps && !DS.DEMO') && !/if \(SET\.fps\) \{ g\.fillStyle/.test(main), 'main.js: the readout draw is gated on the flag; no ungated draw is left');
+  console.log('ok  DEVOFF  demo settings: no FPS counter / Hitboxes / TESTING rows, the FPS readout and hitbox overlay gated on the flag at the draw (saved values untouched); flag off unchanged'); }
+/* ---- END CARD 2 (demoend2): the teaser vignettes and the blank-safe follow button ---- */
+{ const TZ = await import('../src/demo-teaser.js'), CFG = await import('../src/demo-end-config.js'), DE = await import('../src/demo-end.js');
+  assert.equal(TZ.SCENES.length, 5, 'five teaser vignettes'); assert.deepEqual(TZ.SCENES.map(x => x.label), ['THE BURIED CITY', 'HIGHCROWN', 'THE LONG WATER', 'THE DRAKE', 'THE DEMON KING']);
+  const ids = new Set();
+  for (const sc of TZ.SCENES) { assert.ok(!ids.has(sc.id), 'unique scene id ' + sc.id); ids.add(sc.id); assert.ok(/^[A-Z' ]+$/.test(sc.label), 'caption charset (pixel font): ' + sc.label);
+    const a = TZ.bake(sc.id), b = TZ.bake(sc.id); assert.equal(a.px.length, TZ.W * TZ.H * 4); assert.ok(Buffer.from(a.px).equals(Buffer.from(b.px)), sc.id + ' bakes the same bytes every time');
+    let opaque = 0; const cols = new Set(); for (let i = 0; i < a.px.length; i += 4) { if (a.px[i + 3] === 255) opaque++; cols.add(a.px[i] << 16 | a.px[i + 1] << 8 | a.px[i + 2]); }
+    assert.equal(opaque, TZ.W * TZ.H, sc.id + ' paints every pixel'); assert.ok(cols.size >= 8 && cols.size <= 400, sc.id + ' is a real picture, not a flat fill (' + cols.size + ' colours)'); }
+  assert.throws(() => TZ.bake('nope'), /no such teaser scene/);
+  assert.equal(CFG.FOLLOW_URL, '', 'no itch page yet: FOLLOW_URL ships blank (Daniel fills it)'); assert.equal(DE.followUrlOk(), false, 'blank URL: no live follow button');
+  for (const bad of ['', 'http://x.io/a', 'javascript:alert(1)', 'https://', 'https://a b', 'itch.io/x']) assert.equal(DE.followUrlOk(bad), false, 'refused: "' + bad + '"');
+  assert.equal(DE.followUrlOk('https://someone.itch.io/thornroad'), true);
+  const src = readFileSync(new URL('../src/demo-end.js', import.meta.url), 'utf8');
+  assert.ok(src.includes('b.disabled = true') && src.includes('CFG.SOON_BTN') && src.includes("window.open(u, '_blank', 'noopener,noreferrer')"), 'blank: a shut COMING SOON button; set: opens noopener');
+  assert.ok(src.includes('KEEP YOUR PROGRESS') && src.includes('H.keep()') && src.includes('H.feedback()') && src.includes('H.credits()'), 'KEEP YOUR PROGRESS / GIVE FEEDBACK / CREDITS are still wired');
+  assert.ok(!/<img|\.png|\.jpg|fetch\(/.test(readFileSync(new URL('../src/demo-teaser.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')), 'the vignettes ship as code: no image file, no fetch');
+  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button shut + blank-safe until FOLLOW_URL is an https address'); }
 /* ---- NAMES ---- */
-const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
+const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'src/demo-teaser.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;
 for (const f of NEW_FILES) { const base = f.split('/').pop().replace(/\.m?js$/, ''); assert.ok(!ADBLOCK.test(base), 'ad-block word in ' + f); }
 const shipped = readFileSync(new URL('../src/demo-end.js', import.meta.url), 'utf8') + readFileSync(new URL('../src/demo-save.js', import.meta.url), 'utf8');

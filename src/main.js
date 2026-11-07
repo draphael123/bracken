@@ -33797,7 +33797,7 @@ function drawBloom(cx, cy) {
 }
 // THE SWING. A blade leaves a crescent behind it; a staff thrust leaves a streak of flame.
 function drawBoxes(cx, cy) {
-  if (!SET.boxes || SET.boxes === 'off' || state !== 'play') return;
+  if (DS.DEMO || !SET.boxes || SET.boxes === 'off' || state !== 'play') return;   /* (demoend2 DEVOFF) no hitbox overlay in the demo, whatever a saved setting says */
   const all = SET.boxes === 'all';
   const R = (b, col, fill) => { if (!b) return; const x = Math.round(b.l - cx), y = Math.round(b.t - cy), w = Math.round(b.r - b.l), h = Math.round(b.b - b.t);
     if (x > VW || x + w < 0) return;
@@ -37408,7 +37408,7 @@ function render() {
     else { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 2); spk(VW - 14, VH - 14, '#9aa39a'); g.globalAlpha = 1; }
   } else soundNoteT = 0;
   if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
-  if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
+  if (SET.fps && !DS.DEMO) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   if (state === 'play' && DUELO && DUELO.rosterOpen()) DUELO.drawRoster(VW, VH);   /* (claude/duelroster) the pick screen over EVERYTHING (the world's hint box, timer and coin count drew over it) */
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   if (SWAPUI.isOpen) SWAPUI.draw();   /* (claude/hubpolish) over the store, the map or the pause menu */
