@@ -4546,7 +4546,7 @@ const RUSH = [
   { lv: 'moor', boss: 'windcaller' },
   { lv: 'minecart', boss: 'forgemaster', mini: 2 },   /* (claude/forgemaster) THE FORGEMASTER moved from Highcrown's armoury to THE DEEP RAILS (its second mini) */
   { lv: 'storm', boss: 'lance' },
-  { lv: 'crown', boss: 'gqueen' },
+  { lv: 'crown', boss: 'gprincess', mini: true }, { lv: 'crown', boss: 'gqueen' },   /* (claude/highcrown3) THE GOBLIN PRINCESS before her mother */
   { lv: 'longwater', boss: 'herald' },
   { lv: 'reef', boss: 'reefmaw' },
   { lv: 'flotilla', boss: 'admiral' },   /* (claude/flotilla3) THE ADMIRAL; the Champion waits for the Keep's mini slot (KEEP 2) */
