@@ -5,7 +5,7 @@
  "trackStart": 0,
  "parts": [
   {
-   "clip": "c3_beast_ranger",
+   "clip": "c3_gorm_pyro",
    "secs": 1.3,
    "sect": "hook"
   },
@@ -24,7 +24,8 @@
    "clip": "verb_spore",
    "secs": 2.2,
    "sect": "rules",
-   "cap": "EVERY LEVEL HAS ITS OWN RULE"
+   "cap": "EVERY LEVEL HAS ITS OWN RULE",
+   "start": 95
   },
   {
    "clip": "verb_comb",
@@ -44,12 +45,28 @@
   {
    "clip": "s3_ferry",
    "secs": 2.8,
-   "sect": "world"
+   "sect": "world",
+   "start": 140,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
   },
   {
    "clip": "s3_smoke",
    "secs": 2.2,
-   "sect": "world"
+   "sect": "world",
+   "start": 290,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
   },
   {
    "clip": "s3_inn_join",
@@ -81,11 +98,6 @@
   },
   {
    "clip": "demo_stockade",
-   "secs": 1.8,
-   "sect": "fights"
-  },
-  {
-   "clip": "s3_bossfall",
    "secs": 3,
    "sect": "fights"
   },

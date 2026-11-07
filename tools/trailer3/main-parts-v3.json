@@ -5,7 +5,7 @@
  "trackStart": 0,
  "parts": [
   {
-   "clip": "c3_beast_ranger",
+   "clip": "c3_gorm_pyro",
    "secs": 1.7,
    "sect": "hook"
   },
@@ -29,7 +29,8 @@
    "clip": "verb_spore",
    "secs": 2.6,
    "sect": "rules",
-   "cap": "EVERY LEVEL HAS ITS OWN RULE"
+   "cap": "EVERY LEVEL HAS ITS OWN RULE",
+   "start": 95
   },
   {
    "clip": "verb_comb",
@@ -76,18 +77,35 @@
   {
    "clip": "s3_ferry",
    "secs": 3.4,
-   "sect": "world"
+   "sect": "world",
+   "start": 140,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
   },
   {
    "clip": "s3_smoke",
    "secs": 2.6,
-   "sect": "world"
+   "sect": "world",
+   "start": 290,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
   },
   {
    "clip": "s3_tutorial",
    "secs": 2.6,
    "sect": "learn",
-   "cap": "LEARN IT IN MINUTES"
+   "start": 70,
+   "zoom": 0
   },
   {
    "clip": "s3_heropick",
@@ -140,28 +158,23 @@
   },
   {
    "clip": "hero_knight",
-   "secs": 1.5,
+   "secs": 2.2,
    "sect": "fights",
    "cap": "HEAVY BOSS FIGHTS"
   },
   {
    "clip": "hero_warden",
-   "secs": 1.5,
+   "secs": 2.2,
    "sect": "fights"
   },
   {
    "clip": "hero_geomancer",
-   "secs": 1.5,
+   "secs": 2.4,
    "sect": "fights"
   },
   {
    "clip": "demo_stockade",
-   "secs": 2,
-   "sect": "fights"
-  },
-  {
-   "clip": "s3_bossfall",
-   "secs": 3.5,
+   "secs": 3.2,
    "sect": "fights"
   },
   {

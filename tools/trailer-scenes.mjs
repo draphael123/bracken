@@ -41,7 +41,7 @@ export const PLAY = `
   const hold = (key, n, until) => { clr(); for (let i = 0; i < n; i += 2) { K[key] = true; cap(2); if (until && until()) break; } clr(); };
   const hop = (dir, n = 26) => { clr(); BK.press('jump'); for (let i = 0; i < n; i += 2) { K.jump = true; if (dir) K[dir] = true; cap(2); } clr(); };
   const runTo = (dir, x, n = 400) => { clr(); for (let i = 0, lx = P().x, st = 0; i < n; i += 2) { K[dir] = true; cap(2); if ((dir === 'right' ? P().x >= x : P().x <= x)) break; st = Math.abs(P().x - lx) < 0.4 ? st + 1 : 0; lx = P().x; if (st >= 3 && P().ground) { BK.press('jump'); K.jump = true; } else K.jump = false; } clr(); };
-  const fresh = (id, hero = 'knight') => { BK.setHero(hero); BK.reset({ fresh: true }); BK.load(idx(id)); BK.state = 'play'; BK.start(); BK.god = false; BK.reset(); BK.sim(30); for (const e of BK.enemies()) e.alive = false; };
+  const fresh = (id, hero = 'knight', lv = 8) => { BK.setHero(hero); BK.reset({ fresh: true }); try { BKT.setHeroLevel(hero, lv); } catch (e) {} BK.setHero(hero); BK.load(idx(id)); BK.state = 'play'; BK.start(); BK.god = false; BK.reset(); BK.sim(30); for (const e of BK.enemies()) e.alive = false; __TR.clean(); BK.sim(300); };
 `;
 export const SCENES2 = [
   { id: 'verb_comb', zoom: 1, from: 46, hero: 'knight', level: 'hornetsnest', note: "the Hornet's Nest: strike the hanging comb, it drops and becomes a step up the wall", js: PLAY + `

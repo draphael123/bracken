@@ -80,7 +80,7 @@ export const SHOTS0 = [
 /* v2 (Daniel 10-24: 'can the trailer show more than combat?'): the LEVEL VERBS and SET PIECES, walked by the bot with the hero close (zoom: a 384x216 window of the plate, x5) */
 const V = (id, level, hero, from, to, extra = {}) => W(id, level, hero, from, to, { zoom: 1, lvl: 14, ...extra });
 const SHOTS2 = [
-  V('verb_spore', 'spore', 'knight', 0.15, 0.65, { note: 'Sporewood 2: bounce caps and leaning caps carry the road' }),
+  V('verb_spore', 'spore', 'knight', 0.15, 0.65, { lvl: 6, note: 'Sporewood 2: bounce caps and leaning caps carry the road' }),
   V('verb_nest', 'hornetsnest', 'knight', 0.25, 0.75, { lvl: 8, note: "the Hornet's Nest: a struck comb drops and becomes a step" }),
   V('verb_kings', 'kings', 'knight', 0.72, 0.98, { setup: 'BK.gorm().flee()', note: "King Gorm's escape run: the burning wood behind you" }),
   V('verb_hanging', 'hanging', 'ranger', 0.2, 0.9, { note: 'the Hanging Village: the hoist and the bridges of a town on a cliff' }),
@@ -119,7 +119,7 @@ const PAGE_LIB = `(() => {
   T.take = (i, n) => T.out.slice(i, i + n);
   T.meta = () => T.best ? { score: Math.round(T.best.score), endF: T.best.endF, hx: T.best.hx } : null;
   /* the game as the player sees it, minus what a trailer should not carry */
-  T.clean = () => { Object.assign(BK.SET, { timer: false, numbers: false, tips: false, foeBars: false, hud: 'minimal', hideHud: true, fps: false, boxes: 'off', wayOn: false, wayStall: false, hints: 'none', music: false, sfx: 0 }); };
+  T.clean = () => { Object.assign(BK.SET, { timer: false, numbers: false, tips: false, foeBars: false, hud: 'minimal', hideHud: true, fps: false, boxes: 'off', wayOn: false, wayStall: false, hints: 'none', music: false, sfx: 0 }); try { BK.setHints('none'); } catch (e) {} };
   /* the boss fight: damage dealt to the boss is the score; the hero's death is 'bad' */
   T.hookBoss = (bossT) => { let prev = null; BK.sim = function (n = 1) { for (let i = 0; i < n; i++) { sim0.call(BK, 1);
     const b = BK.enemies().find(e => e.t === bossT && e.alive), P = BK.P, v = BK.view;

@@ -23,7 +23,7 @@ export const SHOTS3 = [
 /* ---------------- helpers shared by the scenes ---------------- */
 /* a level's boss falls under the hero's own blade: he walks up and strikes (a god-mode hero, the boss left at a sliver), the death is captured, then the hero dances (the game's own after-boss emote) */
 const BOSSFALL = (level, hero) => PLAY + `
-  fresh(${JSON.stringify(level)}, ${JSON.stringify(hero)}); BK.god = true; const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200); cap(20);
+  BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true }); BKT.setHeroLevel(${JSON.stringify(hero)}, 24); BK.setHero(${JSON.stringify(hero)}); BK.load(idx(${JSON.stringify(level)})); BK.state = 'play'; BK.start(); BK.sim(20); __TR.clean(); BK.god = true; BK.sim(300); const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200); cap(20);
   const e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = false;
   if (e) { for (let n = 0; n < 700 && e.alive; n++) { const P0 = P(); P0.hp = P0.maxHp; if (e.hp > 30 && n > 100) e.hp = Math.min(e.hp, 30);
       const dx = e.x - P0.x; clr(); if (Math.abs(dx) > 26) K[dx > 0 ? 'right' : 'left'] = true; else if (n % 14 === 0) BK.press('atk'); cap(2); } }
@@ -31,7 +31,7 @@ const BOSSFALL = (level, hero) => PLAY + `
 
 /* THE INN with n seats: P1 the Knight walks in, the others walk in through the door one by one (BK.tavern.join, each 0.9 s of walk-in), each as a different demo hero */
 const INN = `
-  BK.setHero('knight'); BK.reset({ fresh: true }); BK.setDev(true); BK.tavern.record(null); BK.tavern.p1Pad(null); await BK.tavern.enter(); BK.sim(10);
+  BK.setHero('knight'); BK.reset({ fresh: true }); BK.setDev(true); BKT.PROG.innTold = 1; BK.tavern.record(null); BK.tavern.p1Pad(null); try { BKT.PROG.tavern = BKT.PROG.tavern || { seen: {} }; BKT.PROG.tavern.seen = BKT.PROG.tavern.seen || {}; for (const q of ['door','board','wardrobe','guestbook','arena','fire','bar','trainer','store','map']) BKT.PROG.tavern.seen[q] = 1; } catch (e) {} await BK.tavern.enter(); try { for (const q of BK.tavern.debug().stations) BKT.PROG.tavern.seen[q.id] = 1; } catch (e) {} __TR.clean(); BK.sim(360);
   const K = BK.keys, TS = 16, Ps = () => BK.players(), put = (p, tx) => { p.x = tx * TS + 8; p.y = 20 * TS; p.vx = p.vy = 0; p.face = 1; p.ground = true; };
   const pk = (p, k) => { if (p === Ps()[0]) BK.press(k); else p.press = Object.assign(p.press || {}, { [k]: true }); };
   const emote = p => { const kk = p === Ps()[0] ? K : p.keys; kk.dance = true; BK.sim(1); kk.dance = false; };
@@ -39,15 +39,22 @@ const INN = `
   const dancing = n => { for (let i = 0; i < n; i += 8) { for (const p of Ps()) if (!(p.dance > 0)) emote(p); cap(8); } };`;
 
 const TRANS = (from, endOnMap) => PLAY + `
-  BK.setHero('knight'); BK.reset({ fresh: true }); delete BKT.PROG.transSeen; BK.SET.transitions = 'always'; BK.trans.force(true); ${endOnMap ? 'BKT.PROG.burningOpen = 1;' : ''}
+  BK.setHero('knight'); BK.reset({ fresh: true }); BKT.setHeroLevel('knight', 24); BK.setHero('knight'); delete BKT.PROG.transSeen; BK.SET.transitions = 'always'; BK.trans.force(true); ${endOnMap ? 'BKT.PROG.burningOpen = 1;' : ''}
   BK.load(idx(${JSON.stringify(from)})); BK.start(); BK.sim(20);
   const L = BK.L, A = L.arena, dismiss = () => { for (let k = 0; k < 12 && BK.state === 'card'; k++) { for (let i = 0; i < 4 && BK.state === 'card'; i++) { try { BK.cardTake(i); } catch (e) {} } if (BK.state === 'card') { try { BK.cardClose(); } catch (e) {} } } };
   const e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
-  let capped = 0;
+  /* the transition runs on the page's own clock (real time, like tools/transition-clips.mjs): from the kill on the page is left to run on its rAF loop and the canvas is sampled at 30 fps */
   for (let n = 0; n < 1500 && e && e.alive; n++) { BK.players().forEach(p => { p.inv = 99; p.hp = p.maxHp; }); e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); dismiss(); if (e.alive) BK.sim(6); }
-  let sawTr = false, doneAt = -1;
-  for (let i = 0; i < 1800; i++) { cap(2); capped += 2; dismiss(); if (BK.trans.tr) sawTr = true;
-    const fin = sawTr && !BK.trans.tr && (${endOnMap ? "BK.state === 'map'" : "BK.state === 'play' && BK.trans.arrive && BK.trans.arrive.done"}); if (fin && doneAt < 0) doneAt = i; if (doneAt >= 0 && i - doneAt > 45) break; }`;
+  dismiss();
+  BK.manualSimulation = false;
+  const sleep = ms => new Promise(r => setTimeout(r, ms)), cvs = document.querySelector('canvas'), cv2 = document.createElement('canvas'); cv2.width = 640; cv2.height = 360; const c2 = cv2.getContext('2d'); c2.imageSmoothingEnabled = false;
+  if (L.gateAfterBoss) { for (let i = 0; i < 300 && !L.gateOpen; i++) { await sleep(100); dismiss(); } const g = BK.gate; if (g) BK.players().forEach((p, k) => { p.x = g.x - k * 2; p.y = g.y; p.vx = p.vy = 0; }); }
+  let sawTr = false, doneAt = -1, nxt = performance.now();
+  for (let i = 0; i < 4200; i++) { dismiss(); if (BK.trans.tr) sawTr = true;
+    __TR.out.push(__TR.shot()); __TR.hxs.push([0.5, 0.5, 0.5, 0.5]);
+    const fin = sawTr && !BK.trans.tr && (${endOnMap ? "BK.state === 'map'" : "BK.state === 'play' && BK.trans.arrive && BK.trans.arrive.done"}); if (fin && doneAt < 0) doneAt = i; if (doneAt >= 0 && i - doneAt > 45) break;
+    nxt += 33.3; await sleep(Math.max(1, nxt - performance.now())); }
+  BK.manualSimulation = true;`;
 
 export const SCENES3 = [
   /* ------------- LEVEL VERBS (the demo's own: Palisade) ------------- */
@@ -60,7 +67,7 @@ export const SCENES3 = [
     cap(40); for (let k = 0; k < 7; k++) { BK.press('atk'); cap(22); } cap(60);` },
   /* ------------- WORLD ------------- */
   { id: 's3_shrine', zoom: 1, from: 20, hero: 'knight', level: 'wood', note: 'a shrine lit by walking up to it (the Lumber Trail)', js: PLAY + `
-    fresh('wood'); BK.god = true; const s0 = BK.shrines()[0]; if (s0) { BK.tp(Math.floor(s0.x / 16) - 7, Math.floor(s0.y / 16)); BK.sim(30); }
+    fresh('wood', 'knight', 2); BK.god = true; const s0 = BK.shrines()[0]; if (s0) { BK.tp(Math.floor(s0.x / 16) - 7, Math.floor(s0.y / 16)); BK.sim(30); }
     cap(30); runTo('right', (s0 ? s0.x : P().x + 112) + 4, 400); cap(10); clr(); cap(110);` },
   { id: 's3_map', note: 'the world map of the demo: the road drawn node by node from the Lumber Trail to Kingswood, the Burning Village spur last', js: `
     const road = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'underleaf', 'palisadewood', 'kings', 'burning'];
@@ -102,7 +109,7 @@ export const SCENES3 = [
     BK.press('talk'); BK.sim(3); cap(50); const R = BK.duel().D.roster;
     for (let i = 0; i < 5; i++) { BK.press('right'); cap(18); } BK.press('left'); cap(20); BK.press('talk'); cap(40);
     BK.duel().D.setSettings({ teams: true, seats: [{ hero: '' }, { isBot: true, hero: 'warden' }, { isBot: true, hero: 'pyro' }, { isBot: true, hero: 'ranger' }] }); cap(60);` },
-  { id: 's3_duel_2v2', hud: true, from: 30, note: 'the duel pit: a 2v2 on the planks, Knight + Warden against Pyromancer + Ranger, the P1 knight played by a tiny chase script; the clock is run to SUDDEN DEATH (ONE HIT) and the match ends', js: `
+  { id: 's3_duel_2v2', hud: true, zoom: 1, from: 150, note: 'the duel pit: a 2v2 on the planks, Knight + Warden against Pyromancer + Ranger, the P1 knight played by a tiny chase script; the clock is run to SUDDEN DEATH (ONE HIT) and the match ends', js: `
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.tavern.record(null); BK.tavern.p1Pad(null); await BK.tavern.enter(); BK.sim(10);
     BK.SET.hideHud = false; const settings = { teams: true, rounds: 1, timeLimit: 60, lives: 1, seats: [{ hero: '' }, { isBot: true, hero: 'warden', team: 1 }, { isBot: true, hero: 'pyro', team: 2 }, { isBot: true, hero: 'ranger', team: 2 }] };
     BK.duel().enter(null, settings); BK.sim(90);
@@ -110,7 +117,7 @@ export const SCENES3 = [
       K.left = K.right = K.block = false; if (Math.abs(dx) > 22) K[dx > 0 ? 'right' : 'left'] = true; else BK.press('atk'); if (i % 90 === 60) BK.press('jump'); cap(6); } return true; };
     cap(60); brawl(420);
     const m = BK.duel().debug().m; if (m && m.phase !== 'over') m.clock = Math.max(m.clock, m.fightT - 1.4);
-    brawl(420); BK.keys.left = BK.keys.right = false; cap(90);` },
+    brawl(420); BK.keys.left = BK.keys.right = false; cap(90); __TR.hxs.fill([0.5, 0.78, 0.5, 0.78]);` },
   /* ------------- TUTORIAL + HERO PICK ------------- */
   { id: 's3_tutorial', zoom: 1, from: 10, hero: 'knight', level: 'lesson', hud: true, note: "the roadside lesson: the game's own prompts as a new hero walks, jumps and strikes", js: PLAY + `
     fresh('lesson'); cap(30); BK.lesson().O.st.i = 0; runTo('right', 20 * TS, 300); BK.lesson().O.st.i = 1; hop('right'); runTo('right', 40 * TS, 300);

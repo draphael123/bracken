@@ -18,12 +18,14 @@
    "clip": "verb_spore",
    "secs": 2,
    "sect": "rules",
-   "cap": "LEVELS WITH RULES"
+   "cap": "LEVELS WITH RULES",
+   "start": 95
   },
   {
    "clip": "verb_comb",
    "secs": 2.4,
-   "sect": "rules"
+   "sect": "rules",
+   "start": 110
   },
   {
    "clip": "s3_palbeast",
@@ -46,12 +48,6 @@
    "clip": "s3_store_buy",
    "secs": 2,
    "sect": "duel"
-  },
-  {
-   "clip": "s3_bossfall",
-   "secs": 3,
-   "sect": "fights",
-   "cap": "HEAVY BOSS FIGHTS"
   },
   {
    "card": "end3-short",
