@@ -47,7 +47,8 @@ export const CW3 = {
   ],
   /* THE STONES' CHANNEL (act I): in nearly always - its own dry window is far shorter than the walk; the sluice holds it out */
   race1: { lo: 31, hi: 24, cycle: { low: 1, warn: 1.5, rise: 1.5, high: 21, turn: 3, fall: 2 }, hold: 12, x0: 104, x1: 145 },
-  last: { x0: 704, x1: 758, hold: 15 },            /* THE LAST BELL's stones (act III's own tide: the sluice holds it, the bell calls it) */
+  /* THE LAST BELL's channel: act III's rate (it turns every 15 s too) on a cycle that is in nearly always - its dry window is shorter than the walk; the sluice holds it */
+  last: { lo: 31, hi: 20, cycle: { low: 2, warn: 3, rise: 3, high: 16, turn: 3, fall: 3 }, rate: 2, hold: 15, x0: 704, x1: 758 },
   crypt: { lo: 39, hi: 27, rise: 2.5, x0: 406, x1: 432 },
   arch: { x0: 433, x1: 496, y0: 27, y1: 32, strength: 70, posts: [450, 466, 482] },
   chase: { x0: 805, x1: 903, trigger: 808, speed: 50, crack: 1.2, smash: [805, 807] },
@@ -100,10 +101,10 @@ export function buildCauseway3(R0, T, TS = 16) {
   const pools = [];
   /* a kit pool: drawn at its HIGH line as built (the reach model swims it there); the kit moves it from the first frame */
   const pool = (id, x0, x1, line, o) => pools.push(Object.assign({ id, x0: x0 * TS, x1: (x1 + 1) * TS, y: line * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, sea: true, cw3: true }, o || {}));
-  const verbs = { act1: [], act2: [], act3: [], race1: [], crypt: [] };
+  const verbs = { act1: [], act2: [], act3: [], race1: [], crypt: [], last: [] };
   const bell = (tide, x, y, o) => verbs[tide].push(Object.assign({ t: 'bell', x, y }, o || {}));
   const sluice = (tide, x, y, hold) => verbs[tide].push({ t: 'sluice', x, y, hold });
-  const floats = { act1: [], act3: [] }, movers = [], rigBands = [];
+  const floats = { act1: [], last: [] }, movers = [], rigBands = [];
   const boat = (tide, id, x0, x1, rest, top) => { floats[tide].push({ id, x0, x1, y: rest, top, free: 4 }); rigBands.push([x0, x1, top, rest]);
     movers.push({ kind: 'cw3boat', cw3: 'float', fid: id, tide, x: x0 * TS, x0: x0 * TS, y: rest * TS, rest: rest * TS, w: (x1 - x0 + 1) * TS, h: 8 }); };
   const props = []; const prop = (kind, x, y, o) => props.push({ kind, x, y, ...(o || {}) });   /* GREYBOX set dressing the hands draw */
@@ -133,7 +134,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   coins([75, 29], [79, 29], [83, 29], [56, 22], [92, 22]);
 
   // ---- THE STONES (104-147): SLUICE. The channel's own tide is in nearly always; its rip carries a swimmer back to the near bank ----
-  block(99, 101, 20, 23);   /* the sluice house's plinth, over act I's high water */
+  block(98, 98, 22, 23); block(99, 101, 20, 23);   /* the sluice house's plinth (a step up onto it), over act I's high water */
   sluice('race1', 100, 19, CW3.race1.hold); sign(97, 23, CW3_SIGNS.stones);
   for (const x of [107, 112, 117, 122, 127, 132, 137]) block(x, x + 1, 28);
   block(142, 143, 28); block(144, 145, 26);   /* the last stone and the far bank's step */
@@ -144,7 +145,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   ent('silver', 120, 37);   /* ACT I's SILVER: on the channel bed under the third stone (dive for it in the hold, or the flood) */
 
   // ---- THE COVE (148-205): BELL. The boat lies on the mud at low water; at high she is a hop under the sea wall ----
-  bell('act1', 157, 19); block(156, 158, 20, 23);   /* THE HAMLET BELL on its stone */
+  bell('act1', 157, 19); block(155, 155, 22, 23); block(156, 158, 20, 23);   /* THE HAMLET BELL on its stone (a step up onto it) */
   sign(150, 23, CW3_SIGNS.cove);
   air(160, 175, 24, 31); block(160, 175, 32);   /* the cove: mud at 32 */
   net(160, 24, 31);   /* the kelp ladder back up out of the mud */
@@ -238,12 +239,12 @@ export function buildCauseway3(R0, T, TS = 16) {
   coins([614, 22], [636, 22], [648, 22], [670, 22], [688, 22]);
 
   // ---- THE LAST BELL (704-766): SLUICE + BELL, the exam. Hold the sea out to cross; call it in to float the boat up the light's sea wall ----
-  block(699, 701, 20, 23); sluice('act3', 700, 19, CW3.last.hold);
+  block(699, 700, 22, 23); block(701, 703, 20, 23); sluice('last', 702, 19, CW3.last.hold);   /* the sluice house: its stone stands over high water (act III's sea and the channel's meet against it) */
   for (const x of [707, 712, 717, 722, 727, 732, 737, 742, 747, 752]) block(x, x + 1, 28);
-  block(757, 758, 28); bell('act3', 757, 27, { swim: true });   /* THE LAST BELL, on the last stone (under the flood: ring it at low water) */
+  block(757, 758, 28); bell('last', 757, 27, { swim: true });   /* THE LAST BELL, on the last stone (under the flood: ring it at low water) */
   net(704, 25, 31);
   air(759, 766, 20, 31); block(759, 766, 32);   /* the basin: mud at 32 */
-  boat('act3', 'b3', 760, 766, 31, 19);
+  boat('last', 'b3', 760, 766, 31, 19);
   sign(696, 23, CW3_SIGNS.last);
   foe('petrel', 720, 23); foe('petrel', 744, 22);
   coins([708, 27], [718, 27], [728, 27], [738, 27], [748, 27], [762, 30]);
@@ -285,10 +286,10 @@ export function buildCauseway3(R0, T, TS = 16) {
   // =====================================================================================================================
   const A = CW3.acts;
   pool('sea1a', 4, 103, A[0].hi); pool('chan1', CW3.race1.x0, CW3.race1.x1, CW3.race1.hi); pool('sea1b', 146, 300, A[0].hi);
-  pool('sea2a', 301, 358, A[1].hi); pool('crypt', CW3.crypt.x0, CW3.crypt.x1, CW3.crypt.lo, { base: 39 * TS, bottom: 39 * TS });
+  pool('sea2a', 301, 358, A[1].hi); pool('crypt', CW3.crypt.x0, CW3.crypt.x1, CW3.crypt.hi, { base: 39 * TS, bottom: 39 * TS });   /* (built at its FULL line: the reach model swims it so; the kit drains it on the first frame unless the lever's mark says full) */
   pool('arch', CW3.arch.x0, CW3.arch.x1, CW3.arch.y0, { base: 33 * TS, bottom: 33 * TS });
   pool('sea2b', 501, 593, A[1].hi);
-  pool('sea3a', 594, 766, A[2].hi);
+  pool('sea3a', 594, 703, A[2].hi); pool('chan3', CW3.last.x0, 766, CW3.last.hi);
   pool('sea3c', 801, 932, CW3.LO);   /* THE COLLAPSE's sea stays out (the sea draws back before it comes): the road over it stays dry, the breaks are a fall */
   const krak = (R0.pools || []).find(p => p.krakenSea); if (krak) pools.push({ ...krak, x0: krak.x0 + OFF * TS, x1: krak.x1 + OFF * TS });
   const actTide = (a, poolIds, extra) => Object.assign({ id: a.id, pools: poolIds, lo: CW3.LO, hi: a.hi, cycle: CW3.cycle, rate: a.rate, safe: 'low', grace: 6, verbs: verbs[a.id], floats: floats[a.id] || [] }, extra || {});
@@ -298,12 +299,13 @@ export function buildCauseway3(R0, T, TS = 16) {
     actTide(A[1], ['sea2a', 'sea2b']),
     { id: 'crypt', mode: 'manual', flip: 'fill', pools: ['crypt'], lo: CW3.crypt.lo, hi: CW3.crypt.hi, cycle: { rise: CW3.crypt.rise }, verbs: [{ t: 'lever', x: 408, y: 38, swim: true }] },
     actTide(A[2], ['sea3a']),
+    { id: 'last', pools: ['chan3'], lo: CW3.last.lo, hi: CW3.last.hi, cycle: CW3.last.cycle, rate: CW3.last.rate, first: 'high', safe: 'high', grace: 4, verbs: verbs.last, floats: floats.last },
   ];
   const pulls = [
     { id: 'rip1', kind: 'current', box: [CW3.race1.x0, 24, CW3.race1.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },
     { id: 'arch', kind: 'current', box: [CW3.arch.x0, CW3.arch.y0, CW3.arch.x1, CW3.arch.y1], dir: [1, 0], strength: CW3.arch.strength, curve: 'flat', water: true,
       tide: 'act2', phases: { rise: 1, high: 1, turn: 1, fall: -1, low: -1 }, posts: CW3.arch.posts.map(x => [x, 27]) },
-    { id: 'rip3', kind: 'current', box: [CW3.last.x0, 20, CW3.last.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },
+    { id: 'rip3', kind: 'current', box: [CW3.last.x0, 20, CW3.last.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },   /* (to the near bank's rungs at 704) */
   ];
 
   const kr = R0.arena, sh = v => v + OFF * TS;
@@ -348,7 +350,7 @@ export const CW3_TABLES = {
     { id: 'cw3-crypt', zone: [405, 20, 433, 39], at: [408, 38], glint: 'stall', line: 'THE FLOODGATE LEVER: FLOOD THE UNDERCROFT AND SWIM TO THE DOOR' },
     { id: 'cw3-arch', zone: [433, 25, 496, 33], at: [450, 27], glint: 'stall', line: 'THE ARCH RUNS AGAINST THE EBB: HOLD THE RING (UP) AT AN AIR BELL UNTIL THE FLOOD' },
     { id: 'cw3-gate', zone: [684, 0, 697, 24], at: [690, 23], glint: 'stall', line: 'THE GATE OPENS TO A LIT LAMP: STRIKE THE STORM LAMP TWICE' },
-    { id: 'cw3-last', zone: [698, 0, 767, 39], at: [700, 19], glint: 'stall', line: 'TURN THE SLUICE, CROSS THE STONES, RING THE LAST BELL, RIDE THE BOAT UP' },
+    { id: 'cw3-last', zone: [698, 0, 767, 39], at: [702, 19], glint: 'stall', line: 'TURN THE SLUICE, CROSS THE STONES, RING THE LAST BELL, RIDE THE BOAT UP' },
   ],
   STUCK_SIGNS: { fix: [], add: [] },
 };
