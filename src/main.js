@@ -12007,7 +12007,8 @@ function bossJumpGo(row, h) {
   const A = row.kind === 'mini' || row.kind === 'mini2' ? L.mini : L.arena;
   if (A.carpet && L.carpetAt) { checkpoint = { x: L.carpetAt.x - 5 * TS, y: L.carpetAt.y + TS }; P.x = L.carpetAt.x; P.y = L.carpetAt.y; P.vx = P.vy = 0; }   /* the sky fight starts when the carpet is boarded: stand on it */
   else { const tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
-    checkpoint = { x: tx * TS + 8, y: (ty + 1) * TS }; respawn(); }
+    let sx = tx * TS + 8; if (A.trigger !== undefined && A.trigger < 1e8) { if (!A.reverse && sx <= A.trigger) sx = A.trigger + 8; else if (A.reverse && sx >= A.trigger) sx = A.trigger - 8; }   /* (fix149) a boss jump stands the hero PAST the trigger so the fight wakes at the door: an arena whose start is a few steps short of it (the Falling Tower chase: start +4 tiles, trigger +6; the War Cairn once 8 px) never woke until you walked east */
+    checkpoint = { x: sx, y: (ty + 1) * TS }; respawn(); }
   camX = P.x - VW / 2; camY = P.y - 100;
 }
 let bossSelectFrom = 'title', bossSelectI = 0, bossSelectHero = 'knight', bossSelectWait = 0;
