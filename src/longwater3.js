@@ -40,7 +40,7 @@ export const LW3 = {
   /* THE MILL RACE: high nearly always; its own low is too short to walk (1.5 + 2 told) - the wheel holds it out 10 s */
   race: { lo: 35, hi: 28, cycle: { high: 12, turn: 2, fall: 2, low: 1.5, warn: 2, rise: 2 }, hold: 10, carry: 120, x0: 462, x1: 489 },
   /* THE HARBOUR (the exam): a quick tide, mostly in, and the jellies come in with it */
-  harbour: { lo: 33, hi: 28, cycle: { low: 3, warn: 2, rise: 2, high: 10, turn: 1.5, fall: 2 }, hold: 10 },
+  harbour: { lo: 33, hi: 28, cycle: { low: 1.5, warn: 2, rise: 2, high: 10, turn: 1.5, fall: 2 }, hold: 10 },
   /* THE TIDE FLATS (the Herald's arena): the boss drives it; its fall is quick so the sluice's drop is a snap */
   square: { lo: 33, hi: 28, cycle: { low: 8, warn: 2, rise: 2, high: 8, turn: 1.5, fall: 1.2 }, hold: 5, calledHigh: 3 },
   bayHold: 8,
