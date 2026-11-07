@@ -230,7 +230,7 @@ export function makeGoblinPrincessHands(ctx) {
         if (r.some(q => q.parried)) { set(e, 'stagger', GP.lunge.stagger); F.openTaken = 0; F.n.staggers++; ctx.number(e.x, e.y - 46, 'PARRIED: SHE STAGGERS', '#8fd160'); sfx('parry'); break; }
         if (e.modeT <= 0) after(e); break; }
       case 'stagger': case 'stunned': case 'pinned': if (e.modeT <= 0) after(e, 0.2); break;
-      case 'flurryTell': if (e.modeT <= 0) { set(e, 'flurry', GP.flurry.gap); F.cur.poke = 0; F.n.flurries++; } break;
+      case 'flurryTell': if (e.modeT <= 0) { if (!F.cur || F.cur.k !== 'flurry') F.cur = { k: 'flurry', id: ++F.act, n: GP.flurry.n[F.ph - 1] }; set(e, 'flurry', GP.flurry.gap); F.cur.poke = 0; F.n.flurries++; } break;
       case 'flurry': if (e.modeT <= 0) { F.cur.poke++; hit(e, front2(e, GP.flurry.reach), GP.flurry.dmg, 'HER POKES', { key: 'gpf' + F.act + '-' + F.cur.poke, blockable: true }); sfx('slash');
         if (F.cur.poke >= F.cur.n) { set(e, 'preen', GP.flurry.preen); F.n.preens++; F.openTaken = 0; if (!F.said.preen) { F.said.preen = 1; ctx.number(e.x, e.y - 50, 'SHE PREENS: CUT HER', '#8fd160'); } } else e.modeT = GP.flurry.gap; } break;
       case 'preen': if (e.modeT <= 0) after(e); break;

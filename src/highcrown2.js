@@ -252,14 +252,14 @@ export function highcrownTwo(R, opts) {
               roof (a ladder up its east face), a broken stretch (576-584: stone corbels over a six-row drop to a lower walk and a ladder back - a
               time cost, never a death fall). THE GOBLIN PRINCESS flees along it ahead of you and rings each tower's alarm bell: its guardroom door
               rises - crank the tower winch in time or the wave is out; a murder hole's chain in each passage drops a stone on the door.
-     623-648  THE BELL TOWER (L.mini): her fight. Floor at row 21, the BELFRY LANDING (630-641, row 17), the TOWER BELL's grate over it (636),
+     623-648  THE BELL TOWER (L.mini): her fight. Floor at row 21, the BELFRY LANDING (630-641, row 19: a three-row jump, every hero), the TOWER BELL's grate over it (636),
               the bell rope on the floor's west side (627), her guardroom door (643) and its winch (641), the roof hatch (639) she escapes by,
               and the inner stair door east (648, rows 14-19, the mini's gate) onto the terrace at her doors.
      649-658  the terrace and the Queen's doors (the old Leads' last ten columns); her hall from 659. */
 export const HC3 = {
   AT: 523, ADD: 100, S: 21,
   STAIR: [523, 526], W1: [527, 556], T1: [557, 566], W2: [567, 601], GAP: [576, 584], CORBELS: [[578, 579], [581, 582]], T2: [602, 611], W3: [612, 622],
-  BT: [623, 648], BT_ROOF: 6, LAND: [630, 641], LAND_ROW: 17, GRATE: 636, ROPE: 627, DOOR: 643, WINCH: 641, HATCH: 639, EXIT_ROWS: [14, 19],
+  BT: [623, 648], BT_ROOF: 6, LAND: [630, 641], LAND_ROW: 19, GRATE: 636, ROPE: 627, DOOR: 643, WINCH: 641, HATCH: 639, EXIT_ROWS: [14, 19],
   BANQ: [485, 520], REH: { rope: 487, grate: 499, gy0: 16, gy1: 25, door: 510, winch: 507, row: 25 },
   BANQ_SHRINE: [524, 23],
   /* the towers: she rings at `bell`, the wave comes out of `door`, the winch at `winch` keeps it in, the murder hole's chain hangs at `chain` */
