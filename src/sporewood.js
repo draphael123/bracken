@@ -141,7 +141,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* THE DARK BUD WALL: four rows, a bud at its foot that grows only in light; its lantern is beside it. REQUIRED (the lantern and the bud) */
   ground(138, 160, 34); bud(136, 38, { dark: true }); lantern(133, 37);
   /* (claude/sporeplat) GAUNTLET ONE, THE LANTERN LEDGES: the wall top is cut into cap stalks over a bog pool (142-156): hop to the first lit ledge, hop to the bounce
-     pair, and the bounce throws you up to the high ledge. Few foes: the shaman and a lurker wait at the far lip. A fall stings and is the climb back (a plank up each east face). */
+     pair, and the bounce throws you up to the high ledge. Few foes: the shaman and a lurker wait at the far lip. A FALL IS THE END (claude/sporeclear: no bog floor, no stair: the lean cap is the way). */
   air(142, 156, 34, 39); ground(144, 145, 34); ground(148, 149, 34); spring(148, 34); spring(149, 34); ground(150, 151, 30); ground(154, 156, 30);
   gpool(142, 156, 40); stair(141, 34, 40); stair(145, 34, 40); stair(151, 30, 40);
   plank(144, 145, 31); plank(150, 151, 27); plank(154, 156, 27);   /* (a shelf over each ledge: a second height, and a way to save a bad hop) */
@@ -218,15 +218,15 @@ export function buildSporewood({ painter, T, TS }) {
   sign(297, 18, 'THE WEB LARDER. THE MOTHER KEEPS HER CATCH HERE. ONE CUT CLEARS A WEB.');
   ground(301, 315, 19);
   web(304, 15, 18); web(311, 15, 18);
-  foe('weaver', 299, 18, 'larderDoor', { face: -1 }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
+  foe('weaver', 299, 18, 'larderDoor', { face: -1 }); plank(300, 303, 15); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
   deco(306, 18, 'bones', 0); deco(309, 18, 'skullPile', 0);
   /* THE LARDER STAIR: two four-row tiers up the root wall, a bud at each foot (no web on a tier: a web's top is footing, and a curtain there was a stair round the bud) */
   bud(314, 19); ground(316, 358, 15);
   /* (claude/sporeplat) GAUNTLET TWO, THE ROOT SPAN: the second tier is cut into stalks over a bog pool (318-330): a LEANING cap carries you off the stair's top over the bog, a hop down
      (two wide) onto a bounce pair, and the pair throws you up against the next wall to the tier's pad and its bud. One spider keeps the pad; no other foe. The stalks keep every route
      lock: nothing here reaches the larder's end without the bud at 332. A fall stings and is the climb back (a plank up each east face). */
-  air(318, 330, 15, 22); ground(325, 326, 15); ground(329, 330, 19); spring(329, 19); spring(330, 19); bud(316, 15, { rise: 16, lean: 112, growT: 1.6 });
-  gpool(318, 330, 23); stair(317, 15, 23); stair(326, 15, 23);
+  air(318, 330, 15, 42); ground(325, 326, 15); ground(329, 330, 19); spring(329, 19); spring(330, 19); bud(316, 15, { rise: 16, lean: 112, growT: 1.6 });
+  deco(317, 14, 'warnPost', 0); deco(331, 14, 'warnPost', 1);   /* (claude/sporeclear: the Root Span's gap has NO FLOOR, like the cap ladder's: a fall is the end, back to the shrine - told by a post each lip and the sign; the lean was taught over a floored gap, stalk one) */
   sign(309, 18, 'THE ROOT SPAN. THE LEANING CAP CARRIES YOU OVER THE BOG. THE BOUNCE CAPS THROW YOU UP.');
   foe('spider', 334, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever reaches the pad) */
   coins([319, 13], [322, 12], [325, 13], [328, 16], [331, 12]);
