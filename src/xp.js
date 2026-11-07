@@ -72,3 +72,23 @@ export function xpSoftCap(n, level, depth) { if (!(n > 0)) return 0; return Math
 export const XP_CATCHUP = 3;
 export function xpCatchUp(n, xp, expected) { if (!(n > 0)) return 0; const gap = xpFloor(expected || 0) - (xp || 0);
   return gap > 0 ? n + Math.min(n * (XP_CATCHUP - 1), gap) : n; }
+
+/* THE ROSTER CATCH-UP (claude/heroroster2, Daniel 11-07): a hero BELOW the highest hero in THIS SAVE is paid XP_ROSTER (x2) until he reaches that hero's level - a second hero, or one the
+   device roster has just handed this save, walks up to the first. The extra stops AT THE FLOOR of that level (the grant is capped there like xpCatchUp's), so it turns off the moment he
+   gets there, and it is never above LV_MAX (the highest level is at most LV_MAX). It is NOT stacked with the wood's x3 curve catch-up: the grant is the larger of the two.
+   The soft cap still applies first (n is paid after it), so a hero over-levelled for a wood still gets the wood's small share - doubled - and nothing is more farmable than before. */
+export const XP_ROSTER = 2;
+export const rosterTarget = highestLevel => Math.min(LV_MAX, Math.max(0, highestLevel | 0));
+export const rosterCatching = (xp, highestLevel) => rosterTarget(highestLevel) > 0 && (xp || 0) < xpFloor(rosterTarget(highestLevel));
+export function xpRosterCatchUp(n, xp, highestLevel) { if (!(n > 0)) return 0; const gap = xpFloor(rosterTarget(highestLevel)) - (xp || 0);
+  return gap > 0 ? n + Math.min(n * (XP_ROSTER - 1), gap) : n; }
+/* THE ONE GRANT (gainXp in main.js): n is the raw pay; wood says it is a counted wood (the curve catch-up and the soft cap are wood rules); expected is the wood's level; highestLevel is the best hero of the save.
+   The old rule (x3 below the wood's curve, else the soft cap) is `curve`; the roster rule doubles what the soft cap leaves. paid is the larger (the caller clamps it at xpCap); mul says which one paid
+   (3 the curve's, 2 the roster's, 1 neither) for the plate's tag and the wood's summary. */
+export function xpGrant({ n, xp, level, wood, expected, highestLevel }) {
+  if (!(n > 0)) return { paid: 0, mul: 1 };
+  const curve = wood ? (xp < xpFloor(expected || 0) ? xpCatchUp(n, xp, expected) : xpSoftCap(n, level, expected)) : n;
+  const roster = xpRosterCatchUp(wood ? xpSoftCap(n, level, expected) : n, xp, highestLevel);
+  const paid = Math.max(curve, roster);
+  return { paid, mul: paid <= n ? 1 : roster > curve ? XP_ROSTER : XP_CATCHUP };
+}

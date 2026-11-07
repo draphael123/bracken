@@ -107,7 +107,7 @@ export function makeBatteringBeastHands(ctx) {
   };
   /* A HERO'S BLOW (main.js attackBox): on a prop, it goes; on the buckle (P2), a cut */
   H.strike = hb => { if (!S || !hb || !ctx.bossActive) return; const e = live(); if (!e) return; const w = world(e);
-    for (const s of S.scafs) { if (s.st !== 'stand') continue; const box = { l: s.x - 8, r: s.x + 8, t: S.G.floorY - 40, b: S.G.floorY };
+    for (const s of S.scafs) { if (s.st !== 'stand') continue; const box = { l: s.x - 8 - (s.dir > 0 ? 16 : 0), r: s.x + 8 + (s.dir < 0 ? 16 : 0), t: S.G.floorY - 40, b: S.G.floorY };   /* (claude/palboss) the whole drawn brace, wedge to post, is the prop */
       if (hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t && ctx.hitOnce(s)) BBM.knockProp(S, s, w); }
     if (BBM.hornUp(e, S)) { const [l, r, t, b] = BBM.hornBox(e); if (hb.l < r && hb.r > l && hb.t < b && hb.b > t && ctx.hitOnce(S.horn)) BBM.hornStruck(e, S, w); }   /* (claude/beast3) a blow on the Hornsman while the horn is up: ORDER LOST */
   };
@@ -136,7 +136,9 @@ export function makeBatteringBeastHands(ctx) {
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(R(x - 30), R(y - 2), 60, 3); g.globalAlpha = 1;
     const step = Math.floor(time * (m === 'charge' || m === 'loose' || m === 'wallRun' ? 11 : 6)), cut = S.harness.cut, solo = S.horn.down, fr = flash ? BBA.whiteOf(m, cut, step, solo) : BBA.frame(m, cut, step, S.ph, solo);   /* (claude/beast3) solo: the Hornsman knocked off the gantry */   /* (claude/palisadeart) his baked frame: every windup and release its own picture */
     g.save(); g.translate(R(x + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(y)); g.scale(f, 1); g.drawImage(fr, -BBA.AX, -BBA.AY);
-    g.restore(); e.lastSet = BBA.deadSet(); e.lastFrame = 0; e.lastBigF = 1;   /* the body he leaves when he falls (main.js spawnCorpse) */
+    g.restore();
+    { const bg = BBM.ballGeom(e, S); if (bg.show) BBA.drawBall(g, bg.ax - cx, bg.ay - cy, bg.x - cx, bg.y - cy, BBM.BALL.L, time); }   /* (claude/palboss) the broken chain and its ball, in the world: trails him, swings at a turn */
+    e.lastSet = BBA.deadSet(); e.lastFrame = 0; e.lastBigF = 1;   /* the body he leaves when he falls (main.js spawnCorpse) */
     if (m === 'chargeTell' && Math.random() < 0.5) ctx.dust(e.x + f * 20, e.y, 1); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss, G = S.G, x = X(cx), y = Y(cy);
     for (const s of S.scafs) if (s.st === 'down' || s.st === 'pin') BBA.drawScaf(g, s, x, y, G.floorY, time, null, BBM.lineOf, BB.scaf.fall);

@@ -19,8 +19,8 @@
 //     a hero, or just gone under.
 // GREYBOX ART (readable; the art lane draws it - see the lane report's ART NOTES). main.js calls: reset, on, update, strike, drawSky, drawWorld, read,
 // and the troll's hands call sectionAt, collapse, rip, fixSafe.
-import * as FRA from './redraw/fen_road_art.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as FSA from './redraw/fen_site_art.js';   /* (claude/fenroadart) the boardwalk kit's drawing */
-export const SAG = { bow: 0.5, hold: 1.1, holdArena: 3.6, holdLaid: 2.2, under: 3.2, rise: 0.6, droop: 4, stomp: 0.45, astir: 0.8, edge: 20 };   /* (claude/bogtroll2: SAG.regrow is gone - nothing floats back at the crossing) */
+import * as FRA from './redraw/fen_road_art.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as FSA from './redraw/fen_site_art.js'; import * as FMK from './redraw/fen_marks.js';   /* (claude/fenroadart) the boardwalk kit's drawing */
+export const SAG = { bow: 0.5, hold: 1.1, holdArena: 3.6, holdLaid: 2.2, under: 3.2, rise: 0.6, droop: 4, stomp: 0.45, astir: 0.8, edge: 20, reach: 48, dy: 20 };   /* (claude/bogtroll2b) reach: E lays a carried plank from up to 3 tiles off either edge of a hole, facing either way; dy: how far off the boardwalk row's top a hero's feet may be */   /* (claude/bogtroll2: SAG.regrow is gone - nothing floats back at the crossing) */
 /* (claude/bogtroll2, Daniel 11-01) THE CROSSING DOES NOT REPAIR: an arena section that breaks (his burst, or your weight past its hold) is WRECKED FOR GOOD - its middle boards in the fen, its end
    boards hanging on (you strike him from them). LAY THE ROAD rebuilds it: every open stretch of the crossing's row is a slot, and what you lay is an arena section that sags like a rotten one
    (his next lure). THE PROPS (torches, warning boards, pennants: L.arena.props) stand on their own board - when it goes they topple into the fen (a splash; a torch hisses out in steam).
@@ -165,11 +165,14 @@ export function makeFenRoadHands(ctx) {
       out.push({ id: 'x' + a, kind: sec ? 'wreck' : 'gap', x0: a, x1: b, row: ROAD_ROW, arena: true, ref: sec || null }); }
     return out; };
   H.slots = () => slotsNow().map(({ ref, ...o }) => o);
-  /* THE SLOT IN FRONT OF A HERO: footed on its row, at its near edge (within SAG.edge px of it, on his side), facing it */
-  H.slotAhead = pp => { if (!H.on() || !pp || pp.dead || !pp.ground) return null; const TS = ctx.TS, f = pp.face || 1;
-    for (const sl of slotsNow()) { if (Math.abs(pp.y - sl.row * TS) > 3) continue;
-      const edge = f > 0 ? sl.x0 * TS : (sl.x1 + 1) * TS, d = (edge - pp.x) * f; if (d >= -4 && d <= SAG.edge) return sl; }
-    return null; };
+  /* (claude/bogtroll2b, Daniel 11-07: "no exact spot") THE SLOT NEAR A HERO: the nearest open stretch whose edge is within SAG.reach px of him, either side, either facing; his feet within SAG.dy px
+     of its row (stood anywhere on the boardwalk). slotNearest(pp, maxD, dy, needGround) is the same with the range open (the glow while he carries a plank). Sets .d = the gap to its nearest edge. */
+  H.slotNearest = (pp, maxD = Infinity, dy = Infinity, needGround = true) => { if (!H.on() || !pp || pp.dead || (needGround && !pp.ground)) return null; const TS = ctx.TS; let best = null;
+    for (const sl of slotsNow()) { if (Math.abs(pp.y - sl.row * TS) > dy) continue;
+      const l = sl.x0 * TS, r = (sl.x1 + 1) * TS, d = pp.x < l ? l - pp.x : pp.x > r ? pp.x - r : 0; if (d > maxD) continue;
+      if (!best || d < best.d) best = { ...sl, d }; }
+    return best; };
+  H.slotAhead = pp => H.slotNearest(pp, SAG.reach, SAG.dy, true);
   /* LAY IT: the slot is road now - a LAID section that sags like the rest (a crew gap is finished, a sunk section floats up at once, laid) */
   H.lay = sl => { if (!H.on() || !sl) return false; const TS = ctx.TS, T = ctx.T, lv = L(); let s = null;
     if (sl.arena && ctx.trollAt && ctx.trollAt(sl.x0 * TS - 4, (sl.x1 + 1) * TS + 4)) return false;   /* (claude/bogtroll2) never down on top of him (stuck in that hole, or up through it) */
@@ -249,6 +252,7 @@ export function makeFenRoadHands(ctx) {
     /* THE BOWED SECTIONS: rotten boards that bend, shiver at the end, go under, and float back */
     /* (claude/fenroad2) THE BROKEN STRETCHES: snapped board-ends at either lip, the old road's boards sunk under the bog (GREYBOX: the art lane draws the peat hole) */
     for (const b of S.broken) { if (b.laid) continue; const x0 = X(b.x0 * TS), x1 = X((b.x0 + b.w) * TS); if (x1 < -40 || x0 > VWp + 40) continue; FPA.drawBroken(g, x0, x1, Y(b.row * TS), b.w, time, b.x0); }   /* (claude/fenroad2art) snapped board ends, the crew's stake, sunk boards; the bog itself is the peat painter (FPA.drawPeat) */
+    const hunting = !!(ctx.trollHunt && ctx.trollHunt());
     for (const s of S.sags.values()) { const x0 = X(s.x0 * TS); if (x0 > VWp + 20 || x0 + s.w * TS < -20) continue; const y = Y(s.row * TS);
       if (s.jolt > 0) s.jolt -= 1 / 60;
       const up = s.st === 'up' || s.st === 'bow', b = s.st === 'bow' ? Math.min(1, s.t / SAG.bow) : 0, shiver = s.st === 'bow' && s.t > s.hold * 0.7 ? (Math.floor(time * 30) % 2) : 0;
@@ -257,6 +261,7 @@ export function makeFenRoadHands(ctx) {
         if (s.piles && s.piles.includes(s.x0 + i)) continue;
         if (laidCell && !(s.st === 'gone' && s.arena)) { FPA.drawLaidBoard(g, x0 + i * TS, yy + (s.jolt > 0 && up ? 1 : 0), i, s.w, up ? 1 : 0.4); if (up && b > 0.25 && s.arena) FPA.drawStrain(g, x0 + i * TS, yy, i, b, time); } else FRA.drawBoard(g, x0 + i * TS, yy + (s.jolt > 0 && up ? 1 : 0), i, s.w, s.arena, up || wreck ? 1 : 0.4, wreck);
       }   /* (claude/fenroad2) a LAID plank: fresh-cut, a pale top edge (the art lane draws it) */
+      if (s.arena && up) FMK.drawRotMark(g, x0, s.w * TS, y + (b > 0 ? Math.round(b * SAG.droop * 0.5) : 0), time, s.x0, hunting && ctx.players().some(pp => standsOn(pp, s)));   /* (claude/bogtroll2b) cracked boards + a red rag on a post; pulses when a hero stands on it during his hunt */
       if (s.st === 'under' || s.st === 'gone') FRA.drawSunk(g, s.hole ? X(s.hole[0] * TS) : x0, s.hole ? (s.hole[1] - s.hole[0] + 1) * TS : s.w * TS, Y(19 * TS), time); else if (s.st === 'bow' && s.t > 0.2) FRA.drawDrips(g, x0, s.w * TS, y + 8, time);
       /* ITS LOAD (the crew's barricade): road-planks stacked on end, roped; and its foot in the section's own row */
       for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue;

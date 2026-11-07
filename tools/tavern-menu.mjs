@@ -1,5 +1,5 @@
 // tools/tavern-menu.mjs - THE TAVERN's NAME and its PAUSE/SETTINGS MENU (claude/tavernname; Daniel 10-19). Node-only (reads sources, imports the level + pause rows).
-//   name      the hidden level is called THE TAVERN; no player-facing 'Co-op Tavern' / 'CO-OP TAVERN' / 'CROSSROADS INN' string is left in src/; the title rows stay LOCAL CO-OP / ONLINE CO-OP
+//   name      (Daniel 11-05 22:52) the hidden level is called THE INN; no player-facing 'Co-op Tavern' / 'CO-OP TAVERN' / 'THE TAVERN' / 'TAVERN' string is left in src/ (ids, files, saves keep 'tavern'); the full name THE CROSSROADS INN is allowed; the title rows stay LOCAL CO-OP / ONLINE CO-OP
 //   menu      the pause menu keeps Resume / Settings / Co-op / Return to map / Quit to title in the inn, and hides the level-only rows (map, level card, hero trial, shrine, restart);
 //             Return to map walks out of the inn's door (tavernToMap); settings Back returns to the pause menu and ESC to the play state (the tavern)
 //   hands     a JOINED pad player's START (padIntoPlayer) opens the menu in the inn; an UN-JOINED pad's START still joins (tavernPadJoin) and player one's own pad is never a joiner
@@ -10,15 +10,15 @@ import { LEVELS } from '../src/level.js';
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const main = fs.readFileSync('src/main.js', 'utf8').replace(/\r\n/g, '\n');
 const lv = LEVELS.find(l => l.id === 'tavern');
-ok(lv && lv.name === 'THE TAVERN', 'the hidden level is named THE TAVERN: ' + (lv && lv.name));
+ok(lv && lv.name === 'THE INN', 'the hidden level is named THE INN: ' + (lv && lv.name));
 const bad = [];
 for (const f of fs.readdirSync('src').filter(f => f.endsWith('.js')).concat(fs.readdirSync('src/redraw').filter(f => f.endsWith('.js')).map(f => 'redraw/' + f))) {
   const t = fs.readFileSync('src/' + f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1');   // strings only: comments may keep the history
-  for (const m of t.match(/'[^'\n]*'|"[^"\n]*"/g) || []) if (/co-?op tavern|co-?op inn|crossroads inn|the inn is full: four/i.test(m)) bad.push(f + " " + m);
+  for (const m of t.match(/'[^'\n]*'|"[^"\n]*"/g) || []) if ((/co-?op tavern|co-?op inn|the tavern|tavern (door|sign|is full|board)|in the tavern/i.test(m) || /^['"]TAVERN['"]$/.test(m))) bad.push(f + " " + m);
 }
-ok(!bad.length, 'no CO-OP TAVERN / CROSSROADS INN / THE INN IS FULL: FOUR wording in any string of src/' + (bad.length ? ': ' + bad[0] : ''));
+ok(!bad.length, 'no CO-OP TAVERN / THE TAVERN / bare TAVERN / CO-OP INN wording in any string of src/ (player-facing name is THE INN)' + (bad.length ? ': ' + bad[0] : ''));
 ok(/LOCAL CO-OP/.test(main) && /ONLINE CO-OP/.test(main), 'the title rows LOCAL CO-OP / ONLINE CO-OP remain (the ways in)');
-ok(/THE TAVERN IS FULL: FOUR TO A PARTY/.test(main), 'the full-party callout says THE TAVERN');
+ok(/THE INN IS FULL: FOUR TO A PARTY/.test(main), 'the full-party callout says THE INN');
 for (const k of ['Resume', 'Settings', 'Co-op', 'Return to map', 'Quit to title']) ok(PAUSE_ROWS.includes(k), 'the pause rows include ' + k);
 const hide = (main.match(/const TAVERN_MENU_HIDE = (\[[^\]]*\])/) || [])[1];
 const H = hide ? JSON.parse(hide.replace(/'/g, '"')) : [];

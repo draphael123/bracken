@@ -8,13 +8,13 @@ import { levelHash } from './level-quality.mjs';
 import { LEVELS } from '../src/level.js';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
-ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '090c845c0531', "the level hash is the act-I tune's (claude/batch123 underleaf-act1-tune, over underleaf4's greybox): the art pass itself never changes the level data");
+ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '3aece68e2c9d', "the level hash is the act-I tune's plus the foevariety cast pass (claude/foevariety: 3 venom archers, 5 herb-thieves; was 090c845c0531): the art pass itself never changes the level data");
 try {
   const r = await pg.evalp(`(async()=>{
     const LV=(await import('/src/level.js')).LEVELS, idx=LV.findIndex(l=>l.id==='underleaf'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(idx); BK.start(); BK.god=true; BK.sim(120);
     const out={}, S=BK.SPR, want={sprig:'herbgatherer',thief:'herbthief',shield:'herbwarden',rockgoblin:'jarthrower',archer:'leafarcher',brute:'thornbeast'};
     out.reskin=JSON.stringify(BK.L.reskin); out.foes={};
-    for(const e of BK.enemies()){ if(want[e.t]){ const o=(out.foes[e.t]=out.foes[e.t]||{n:0,skinned:0}); o.n++; if(e.cnSkin===want[e.t]) o.skinned++; } }
+    for(const e of BK.enemies()){ if(want[e.t]){ const o=(out.foes[e.t]=out.foes[e.t]||{n:0,skinned:0}); o.n++; if(e.cnSkin===want[e.t]||(e.t==='archer'&&e.cnSkin==='venomarcher')) o.skinned++; } }
     out.sheets={}; for(const [t,sk] of Object.entries(want)){ out.sheets[sk]={have:!!S[sk], frames:S[sk]&&S[sk].R.length, base:S[t].R.length, white:!!(S[sk]&&S[sk].white), left:S[sk]&&S[sk].L.length}; }
     out.bare=!!S.thornbare&&S.thornbare.R.length===S.brute.R.length; out.brood=!!S.grandbrood&&S.grandbrood.R.length===S.sprig.R.length;
     const sig=cv=>{const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let h=2166136261;for(let i=0;i<d.length;i++){h=Math.imul(h^d[i],16777619)>>>0;}return h;};

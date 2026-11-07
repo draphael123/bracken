@@ -61,7 +61,7 @@ export function armourBack(g, x, y, time, v, rams, stun) {
   rc(g, x - 16, y - 16, 32, 13, DARK); rc(g, x - 14, y - 15, 28, 3, '#0c0a0e');                                   /* the tub's inside, dark */
   rc(g, x - 21, y - 11, 5, 5, MP.i3); rc(g, x - 23, y - 10, 2, 3, MP.i4); rc(g, x - 21, y - 11, 5, 1, MP.i5); rc(g, x - 22, y - 9, 1, 1, '#e8e8f4');   /* the ram's beak, at the back */
   rc(g, x - 20, y - 8, 4, 1, MP.i1);
-  rc(g, x + 12, y - 33, 1, 18, MP.t2); rc(g, x + 10, y - 36, 5, 4, MP.l1); rc(g, x + 11, y - 35, 3, 2, MP.l3);                            /* the lamp pole */
+  if ((rams || 0) >= 2) { rc(g, x + 12, y - 27, 1, 12, MP.t2); rc(g, x + 13, y - 31, 1, 5, MP.t2); rc(g, x + 12, y - 33, 5, 4, MP.l1); rc(g, x + 13, y - 32, 3, 2, MP.l3); } else { rc(g, x + 12, y - 33, 1, 18, MP.t2); rc(g, x + 10, y - 36, 5, 4, MP.l1); rc(g, x + 11, y - 35, 3, 2, MP.l3); }   /* (foreman2) the lamp pole is bent after the second stomp */                            /* the lamp pole */
   add(g, () => { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 6); g.drawImage(glow(14, '255,120,40'), x - 2, y - 48); });
   const a = time * (v || 0) / 5; for (const wx of [x - 10, x, x + 10]) { rc(g, wx - 4, y - 5, 8, 6, '#0c0a0a'); rc(g, wx - 4, y - 5, 8, 1, MP.i3); rc(g, wx - 1 + R(Math.cos(a) * 2), y - 3 + R(Math.sin(a) * 2), 2, 1, MP.i4); rc(g, wx, y - 2, 1, 1, MP.i5); }   /* wheels, turning */
 }
@@ -69,12 +69,18 @@ export function armourFront(g, x, y, time, rams, stun) {
   x = R(x + rockX(time, stun)); y = R(y);
   rc(g, x - 16, y - 15, 32, 11, MP.i0); rc(g, x - 15, y - 14, 30, 9, MP.i2);                                      /* the body, from the lid down to the skirts */
   rc(g, x - 16, y - 15, 32, 2, MP.i4); rc(g, x - 16, y - 15, 32, 1, MP.i5); rc(g, x - 16, y - 13, 32, 1, MP.i1);   /* THE LID: the rim he is stood on */
-  for (let i = 0; i < 3; i++) { const px = x - 15 + i * 10, dent = i < (rams || 0);
-    rc(g, px + 1, y - 12, 8, 7, dent ? MP.i1 : MP.i3); rc(g, px + 1, y - 12, 8, 1, dent ? MP.i2 : MP.i5); rc(g, px + 1, y - 6, 8, 1, MP.i0);
-    if (dent) { rc(g, px + 3, y - 10, 3, 2, MP.i0); rc(g, px + 6, y - 11, 1, 3, MP.i0); rc(g, px + 2, y - 8, 2, 1, MP.t3); if (rams > 1 + i) { rc(g, px + 5, y - 7, 3, 1, MP.i0); rc(g, px + 7, y - 9, 1, 2, MP.i0); } }   /* each stomp dents a plate (and a second dents it further) */
+  for (let i = 0; i < 3; i++) { const px = x - 15 + i * 10, gone = i < (rams || 0);   /* (foreman2) each stomp KNOCKS A PLATE OFF: the first stomp the near-end one, then the next - the bare frame and the dark tub show through, a hanging bolt, scorch */
+    if (gone) continue;
+    rc(g, px + 1, y - 12, 8, 7, MP.i3); rc(g, px + 1, y - 12, 8, 1, MP.i5); rc(g, px + 1, y - 6, 8, 1, MP.i0);
+    if ((rams || 0) > 0 && i === (rams || 0)) { rc(g, px + 3, y - 10, 3, 2, MP.i1); rc(g, px + 6, y - 11, 1, 3, MP.i0); }   /* the next plate is dented and next to go */
     rc(g, px + 2, y - 11, 1, 1, MP.i5); rc(g, px + 7, y - 11, 1, 1, MP.i5); }
   rc(g, x - 16, y - 9, 32, 3, HAZ[0]); for (let i = 0; i < 32; i += 6) { rc(g, x - 16 + i, y - 9, 3, 3, HAZ[1]); }   /* its hazard strip */
   rc(g, x - 16, y - 9, 32, 1, 'rgba(255,255,255,0.18)');
+  for (let i = 0; i < Math.min(3, rams || 0); i++) { const px = x - 15 + i * 10;   /* (foreman2) the plate's hole, over the hazard strip too: bare ribs, the dark tub, a bolt hanging, a torn edge, a rust glow */
+    rc(g, px, y - 13, 10, 9, '#0c0a0e'); rc(g, px, y - 13, 10, 1, MP.i1); rc(g, px + 4, y - 13, 1, 9, MP.i2); rc(g, px, y - 9, 10, 1, MP.i2);
+    rc(g, px - 1, y - 12, 1, 2, MP.i4); rc(g, px + 10, y - 7, 1, 2, MP.i4); rc(g, px + 1, y - 4, 2, 1, MP.i4); rc(g, px + 6, y - 4, 3, 1, MP.i4);
+    rc(g, px + 2, y - 11, 1, 1, MP.i5); rc(g, px + 7, y - 7, 1, 3, MP.i4); rc(g, px + 8, y - 4, 1, 1, MP.i5); rc(g, px + 2, y - 7, 2, 1, MP.t3);
+    add(g, () => { g.globalAlpha = 0.2 + 0.1 * Math.sin(time * 5 + i); rc(g, px + 1, y - 11, 8, 6, '#ff7a30'); }); }
   rc(g, x - 17, y - 14, 1, 10, MP.i3); rc(g, x + 16, y - 14, 1, 10, MP.i2);                                         /* end plates */
 }
 export function armourCart(g, x, y, time, v, rams, stun) { armourBack(g, x, y, time, v, rams, stun); armourFront(g, x, y, time, rams, stun); }

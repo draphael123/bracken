@@ -211,8 +211,12 @@ function heapSprite() {
 }
 export function drawPile(g, p, cx, cy, time) {
   const x = R(p.x - cx), wy = R(p.y - cy);   /* the walk's edge: where the pile sat */
-  g.drawImage(stakeSprite(p.st !== 'hung' && p.st !== 'creak'), x - 6, wy - 34);
   const by = R((p.st === 'fall' || p.st === 'down' ? p.by : p.y) - cy);
+  if (p.beam && p.st !== 'hung' && p.st !== 'creak') {   /* (claude/stockfloat) a RAFTER pile's stake hangs in mid-air with its beam: when the logs go the stake comes down with them (falls, tips, then lies by the heap) - it never stays floating */
+    const fy = R((p.floor !== undefined ? p.floor : p.by) - cy), drop = Math.max(0, by - wy), sgn = p.x & 1 ? 1 : -1, sp = stakeSprite(true);
+    if (p.st === 'fall') { const k = Math.min(1, drop / Math.max(1, fy - wy)); g.save(); g.translate(x + sgn * 8 * k, Math.min(fy - 3, wy + drop) - 17); g.rotate(sgn * (0.2 + 1.2 * k)); g.drawImage(sp, -6, -17); g.restore(); }
+    else { g.save(); g.translate(x + sgn * 20, fy - 4); g.rotate(sgn * Math.PI / 2 * 0.97); g.drawImage(sp, -6, -17); g.restore(); }
+  } else g.drawImage(stakeSprite(p.st !== 'hung' && p.st !== 'creak'), x - 6, wy - 34);
   if (p.st === 'down') { g.drawImage(heapSprite(), x - 22, by - 14); return; }
   const sh = p.st === 'creak' ? R(Math.sin(time * 60) * 1.5) : 0;
   if (p.st === 'fall') { const k = Math.min(1, ((p.by - p.y) / Math.max(1, p.floor - p.y))); g.save(); g.translate(x, by - 3); g.rotate(0.3 * k * (p.x & 1 ? 1 : -1)); g.drawImage(pileSprite(), -15, -19); g.restore(); return; }

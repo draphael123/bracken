@@ -1,4 +1,5 @@
 // chars.js — the knight and the forest's enemies, baked from text grids + drawn sword.
+import { RPOSE as WARDEN_REACH_POSES } from './warden-reach.js';   /* (claude/wardenult) WARDEN'S REACH: both hands on the ghost spear (the table main.js lays the shaft from) */
 import { kingFrames, KING_AX, KING_AY } from './king_swim.js';
 import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
@@ -3498,6 +3499,9 @@ function wardenKitPoses(F, sh, WIDE) {
     KF({ wide: WIDE, dx: 3, legs: 'jump2', arm: [X, Y, X + 8, Y + 1], arm2: [OFF[0], OFF[1], X + 7, Y + 3], plume: 2, bits: [ab(X + 11, Y + 1, W), ab(X + 12, Y + 1, C), ab(X + 12, Y - 1, G), ab(X + 12, Y + 3, G), ab(X + 14, Y - 2, C), ab(X + 14, Y + 4, C), ab(X + 15, Y + 1, G)] })];
   /* PERCHED ON THE SHAFT (while she stands on the foothold): bare-handed, knees a little bent, both arms out for her balance and the cloak swaying - the spear itself is drawn in the world under her boots */
   F.wPerch = [0, 1].map(i => KF({ wide: WIDE, dy: 1, legs: i ? 'stand' : 'crouch', legsDy: i ? 0 : 1, sho: i, arm: [X, Y, X + 5, Y - 2 + i], arm2: [OFF[0], OFF[1], X - 6, Y - 1 - i], plume: i ? 2 : 0 }));
+  /* WARDEN'S REACH (claude/wardenult, Daniel 11-07): SHE WIELDS IT. Every frame puts BOTH hands on the shaft (lead hand arm, rear hand arm2; the table is src/warden-reach.js, and main.js lays the ghost spear through the same two hand points). Drawn from her BARE set: the spear in her hands is the ghost one.
+     reachHold/Run/Jump are her stance, reachA the thrust, reachB the rising sweep, reachC the long drive, reachWind/reachThrow the hold-C throw inside it. */
+  for (const k in WARDEN_REACH_POSES) F[k] = WARDEN_REACH_POSES[k].map(p => KF({ wide: p.wide || 4, legs: p.legs, dx: p.dx || 0, dy: p.dy || 0, sho: p.sho || 0, plume: p.plume || 0, arm: [X, Y, X + p.fx, Y + p.fy], arm2: [OFF[0], OFF[1], X + p.rx, Y + p.ry] }));
   riposteKit(F, 'warden', KF, { X, Y, OFF, WIDE });
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.

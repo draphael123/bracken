@@ -106,7 +106,7 @@ check('the card says it', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert(/' TO YOUR NEXT PERK \(LEVEL '/.test(main), 'no N LEVELS TO YOUR NEXT PERK line'); assert(/thrNext\(PROG, h, k\.id\)/.test(main) && /'BOTH UNLOCKED'/.test(main), 'no threshold progress on the stat cards');
   assert(/fresh: !review && back !== 'menu'/.test(main) && /SFX\.sting\(\)/.test(main) && /u\.t \/ 0\.35/.test(main) && /rgba\(255,246,200/.test(main), 'the level-up moment (flash, sting, slide-in) is not there');
-  assert(/if \(cardOwed\(hero\(\)\)\) openCard\('play'\)/.test(main) && /function levelHealTick\(\) \{ const o = lvHealOwed; if \(!o \|\| state !== 'play' \|\| fightLive\(\)\) return;/.test(main), 'the card must wait for the fight to end');
+  assert(/if \(cardOwed\(hero\(\)\)\) \{ if \(FC\.told\(PROG, 'levelup'\) \|\| !teachAdd\('levelup'\)\) openCard\('play'\)/.test(main) && /function levelHealTick\(\) \{ const o = lvHealOwed; if \(!o \|\| state !== 'play' \|\| fightLive\(\)\) return;/.test(main), 'the card must wait for the fight to end');
   for (const k of [...PR.MINOR_PERKS, ...PR.ALL_HERO_PERKS, ...Object.values(PR.THRESH).flat()]) { assert(k.what && k.what === k.what.toUpperCase(), k.name + ' text'); assert(/^[A-Z0-9 ,'.:%+?!\/-]+$/.test(k.name + k.what), k.name + ' has a character the font lacks'); }
   const hooks = ['stride', 'mend', 'magnet', 'climber', 'buffer', 'rest', 'tonic', 'grit', ...PR.ALL_HERO_PERKS.map(k => k.id)];
   for (const id of hooks) assert(new RegExp("(perk|prk)\\('" + id + "'\\)|BIND\\.rest").test(main) || (id === 'rest' && /rest: \(\) => perk\('rest'\)/.test(main)), 'perk ' + id + ' has no hook in main.js');
@@ -158,7 +158,7 @@ check('card migration', () => {
 });
 
 check('skill ranks', () => {
-  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active && s.level === 1); p.coins = 100000;
+  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active && s.level === 1); p.coins = 100000; delete p.skillOwned.knight[n.id]; p.loadouts.knight = [];   /* (claude/starterskill: the level-1 skill is owned at birth; this walks the buy + rank path from none) */
   assert.equal(PR.skillRank(p, 'knight', n.id), 0); assert.equal(PR.rankUp(p, 'knight', n.id, 30), 'Learn it first');
   assert.equal(PR.buySkill(p, 'knight', n.id, 1), null); assert.equal(PR.skillRank(p, 'knight', n.id), 1);
   assert.equal(PR.rankUp(p, 'knight', n.id, 5), 'Rank 2 at level 6'); const c0 = p.coins; assert.equal(PR.rankUp(p, 'knight', n.id, 6), null); assert.equal(c0 - p.coins, PR.rankPrice(n, 2));

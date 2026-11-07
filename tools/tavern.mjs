@@ -1,4 +1,4 @@
-// tools/tavern.mjs - THE TAVERN, CO-OP PHASE 2 (claude/tavern; Daniel 10-12, scratch brief-tavern.md): Waymeet's Crossroads Inn and the four-player party.
+// tools/tavern.mjs - THE TAVERN, CO-OP PHASE 2 (claude/tavern; Daniel 10-12, scratch brief-tavern.md): The Crossroads Inn and the four-player party.
 //   pure     src/party.js: four seats, eight colours (no two seats share one), cleanTavern reads ANY save shape whole (old saves fine), the party view is one
 //            whole pixel-scale step out and never more than 1.25x, the camera's hysteresis, the leash's cases (off the picture / stretched / never a downed,
 //            held or thrown hero / never into the air); src/tavern.js: every station has its art listed, the room is closed and has no hazard or foe
@@ -67,7 +67,7 @@ if (WANT.includes('pure')) {
   const xs = STATIONS.map(s => s.x); ok(xs.every((x, i) => i === 0 || x - xs[i - 1] >= 3), 'the stations stand apart (3+ tiles), west to east: ' + xs.join(','));
   const { LEVELS, T } = await import('../src/level.js');
   const lv = LEVELS.find(l => l.id === 'tavern'), L = lv && lv.build();
-  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE TAVERN is a hidden level, flagged tavern (no death cost: openYard)');
+  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE INN is a hidden level, flagged tavern (no death cost: openYard)');
   { /* (claude/yardswap, Daniel 11-03) the training entry is the ARENA YARD: the door says so; no practice-yard / hero-trial wording left on the room's stations */
     const pd = STATIONS.find(s => s.id === 'practice');
     ok(pd && pd.name === 'THE ARENA YARD' && pd.verb === 'TRAIN' && /ARENA YARD/.test(pd.first), 'the training door is THE ARENA YARD (verb TRAIN): ' + JSON.stringify(pd && [pd.name, pd.verb]));
@@ -117,7 +117,7 @@ if (PAGE.length) {
       }
       const mf = await E(`(async()=>{BK.load(0);BK.state='map';BK.step(1);BK.press('throw');BK.step(1);for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),foot:BK.mapFooter()[0].map(f=>f.t)};})()`);
       ok(mf.st === 'play' && mf.tav, "the map's F goes to the inn: " + JSON.stringify(mf));
-      ok(mf.foot.some(t => /F TAVERN/.test(t)), '...and the map footer says so: ' + mf.foot.join(' | '));
+      ok(mf.foot.some(t => /F INN/.test(t)), '...and the map footer says so (claude/tutorial1: F INN: CO-OP): ' + mf.foot.join(' | '));
       await E('__fresh()');
       const j = await E(`(()=>{const o={};BK.ui.pollPad();__setPads([__pad(2,[])]);BK.ui.pollPad();BK.sim(1);__setPads([__pad(2,[0])]);BK.ui.pollPad();BK.sim(1);
         const p=BK.players()[1];o.n=BK.players().length;o.src=p&&p.src;o.walk=p&&p.walkIn;o.x0=p&&p.x;o.door=__st('door').x;
@@ -141,7 +141,7 @@ if (PAGE.length) {
       const g0 = await E('BK.tavern.debug().stations.filter(s=>!s.seen).length');
       ok(g0 === STATIONS.length, 'a fresh save: every station glints (' + g0 + ' unseen)');
       const first = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'wardrobe').x});BK.sim(3);return BK.tavern.hint().msg;})()`);
-      ok(/WARDROBE/.test(first || ''), 'the first approach to a station says what it does: ' + first);
+      ok(/SWAP HERO/.test(first || ''), 'the first approach to a station says what it does: ' + first);
       /* the board */
       const brd = await E(`(async()=>{const p=__P(1);__at(p,${STATIONS[1].x});BK.sim(2);__talk(p);await new Promise(r=>setTimeout(r,150));const b=document.getElementById('olparty');const o={board:!!(b&&b.style.display!=='none'),txt:b?b.innerText:'',btn:BK.coopSave.board().buttons};
         const inv=[...b.querySelectorAll('button')].find(x=>x.textContent==='INVITE');if(inv)inv.click();await new Promise(r=>setTimeout(r,150));const h=document.getElementById('olhost');o.online=!!(h&&h.style.display!=='none')&&/HOST A GAME/.test(h.innerText);o.partyGone=!document.getElementById('olparty');
@@ -166,11 +166,23 @@ if (PAGE.length) {
       /* drills board, practice, arena */
       const dr = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'drills').x});BK.sim(3);__talk(p);return BK.tavern.hint().msg;})()`);
       ok(/THROW/.test(dr) && /REVIVE/.test(dr) && /TEAM HIT/.test(dr), 'THE DRILLS BOARD names the three partner drills: ' + dr.slice(0, 90));
-      const ar = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'arena').x});BK.sim(3);__talk(p);BK.sim(2);return {st:BK.state,h:BK.tavern.hint().msg,seen:__st('arena').seen};})()`);
-      ok(ar.st === 'play' && /COMING SOON/.test(ar.h) && ar.seen, 'THE DUEL PIT is roped off: COMING SOON, nothing opens: ' + JSON.stringify(ar));
+      const ar = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'arena').x});BK.sim(3);__talk(p);BK.sim(2);const d=BK.duel?BK.duel():null,card=d&&d.ships?d.debug().card:null;if(d&&d.D&&d.D.st)d.D.st.card=null;return {st:BK.state,h:BK.tavern.hint().msg,seen:__st('arena').seen,ships:!!(d&&d.ships),card};})()`);   /* (claude/pvpduel) */
+      ok(ar.st === 'play' && ar.seen && (ar.ships ? !!ar.card : /COMING SOON/.test(ar.h)), ar.ships ? 'THE DUEL PIT opens the DUEL (BETA) card (claude/pvpduel, PVP_SHIPS): ' + JSON.stringify(ar) : 'THE DUEL PIT is roped off: COMING SOON, nothing opens: ' + JSON.stringify(ar));
       /* (claude/coopclarity) THE SAVES SIGN: READ opens the co-op guide on its HOW CO-OP SAVES WORK page, closing returns to the inn */
       const sg = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'saves').x});BK.sim(3);__talk(p);BK.sim(2);const o={st:BK.state,page:BK.ui.coopHelp.page,title:BK.ui.coopHelp.pages()[BK.ui.coopHelp.page].title,seen:__st('saves').seen};BK.state='play';return o;})()`);
       ok(sg.st === 'coophelp' && /HOW CO-OP SAVES WORK/.test(sg.title) && sg.seen, 'THE SAVES SIGN opens the co-op guide on the saves page: ' + JSON.stringify(sg));
+      /* (claude/innsaves) THE GUEST BOOK: P1 only; a seated guest is asked first; YES sends the party out cleanly; NO / ESC closes the book */
+      const gb = STATIONS.find(s => s.id === 'guestbook'), cr = STATIONS.find(s => s.id === 'saves');
+      ok(gb && gb.verb === 'SAVES' && gb.name === 'THE GUEST BOOK' && cr && cr.name === 'CO-OP RULES', 'the stations: THE GUEST BOOK (SAVES) and the renamed CO-OP RULES (id saves)');
+      const g1 = await E(`(()=>{const o={n0:BK.players().length};const b=__P(2);__at(b,${gb.x},true);BK.sim(3);__talk(b);BK.sim(2);o.p2state=BK.state;o.p2hint=BK.tavern.hint().msg;const a=__P(1);__at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);o.st=BK.state;o.book=BK.book;o.seen=__st('guestbook').seen;BK.press('confirm');BK.sim(1);o.noState=BK.state;o.noN=BK.players().length;return o;})()`);
+      ok(g1.n0 > 1 && g1.p2state === 'play' && /P1 KEEPS THE BOOK/.test(g1.p2hint), 'a guest at the book is told P1 KEEPS THE BOOK and nothing opens: ' + JSON.stringify(g1));
+      ok(g1.st === 'slots' && g1.book.inn && g1.book.ask && g1.seen, 'P1 at the book with a guest seated: the save screen opens behind THE PARTY LEAVES THE INN? : ' + JSON.stringify(g1.book));
+      ok(g1.noState === 'play' && g1.noN === g1.n0, 'NO on the question closes the book and the party stays (' + g1.noN + ')');
+      const g2 = await E(`(()=>{const o={};const a=__P(1);__at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);BK.press('left');BK.sim(1);BK.press('confirm');BK.sim(1);o.n=BK.players().length;o.ask=BK.book.ask;o.st=BK.state;BK.press('pause');BK.sim(1);o.back=BK.state;o.inn=!!BK.L.tavern;o.book=BK.book.inn;BK.tavern.join({kind:'pad',pad:3});BK.sim(80);o.n2=BK.players().length;
+        __at(a,${gb.x});BK.sim(3);__talk(a);BK.sim(2);o.st2=BK.state;o.ask2=BK.book.ask;BK.press('pause');BK.sim(1);o.back2=BK.state;return o;})()`);
+      ok(g2.n === 1 && !g2.ask && g2.st === 'slots', 'YES sends the party out of the inn (' + g2.n + ' left) and the five slots show: ' + JSON.stringify(g2));
+      ok(g2.back === 'play' && g2.inn && !g2.book, 'ESC backs out to the inn untouched');
+      ok(g2.n2 > 1 && g2.st2 === 'slots' && g2.ask2 && g2.back2 === 'play', 'a guest joins again; the book asks again; ESC closes it: ' + JSON.stringify(g2));
       /* the bell + revive drill */
       const bl = await E(`(()=>{const a=__P(1),b=__P(2),o={};for(const q of [a,b]){q.hp=q.maxHp;q.down=0;}__at(a,${STATIONS.find(s => s.id === 'bell').x});__at(b,${STATIONS.find(s => s.id === 'bell').x + 3},true);BK.sim(3);const d0=BK.stats().deaths;__talk(a);o.down=b.down;o.d0=d0;
         b.x=a.x+4;b.y=a.y;for(let i=0;i<150&&b.down>0;i++)BK.sim(1);o.up=!(b.down>0);o.hp=b.hp;o.rev=BK.tavern.debug().tavern.drills.revive;
@@ -202,6 +214,12 @@ if (PAGE.length) {
       ok(dp.st === 'map' && dp.seats === 1, 'THE DOOR, for player one: out to the map, the party with him: ' + JSON.stringify(dp));
       ok(dp.back === 2, '...and back into the inn the party comes in with him: ' + dp.back);
       ok(dp.pr === 'arena_yard' && dp.party === 2, 'THE ARENA YARD DOOR goes straight into the Arena Yard (claude/arenayard), the party with him: ' + dp.pr + ' ' + dp.party);
+      /* (claude/tutorial1, Daniel 11-05) THE LESSON BOARD: the opening lesson again, the party with him; its way out is the inn */
+      const lp = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const b=__P(1);__at(b,${STATIONS.find(s => s.id === 'lesson').x});BK.sim(3);__talk(b);for(let i=0;i<300&&!(BK.L&&BK.L.opening);i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}const o={ls:BK.L&&BK.L.opening?'lesson':BK.state,party:BK.players().length,trial:BK.L&&BK.L.trial!==undefined};BK.state='play';return o;})()`);
+      ok(lp.ls === 'lesson' && lp.party === 2 && !lp.trial, 'THE LESSON BOARD replays the roadside lesson, the party with him (no trial flag): ' + JSON.stringify(lp));
+      /* (claude/unlocks via batch150) THE UNLOCKS BOARD: opens the read-only screen, ESC closes it; using it clears its glint */
+      const ub = await E(`(async()=>{BK.coopEnd();await BK.tavern.enter();BK.sim(10);const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'unlocks').x});BK.sim(3);__talk(p);BK.sim(2);const o={open:!!BK.unlocks.isOpen,seen:__st('unlocks').seen};BK.unlocks.input({back:true});BK.sim(2);o.closed=!BK.unlocks.isOpen;BK.state='play';return o;})()`);
+      ok(ub.open && ub.seen && ub.closed, 'THE UNLOCKS BOARD opens the UNLOCKS screen, ESC closes it: ' + JSON.stringify(ub));
       const seen = await E('BK.tavern.debug().stations.filter(s=>!s.seen).map(s=>s.id)');
       ok(seen.length === 0, 'every station used once: no glint left: ' + seen.join(','));
       const touchVerb = await E(`(()=>{BK.state='play';const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});BK.sim(2);return BK.touchVerb?BK.touchVerb():null;})()`).catch(() => null);
@@ -333,7 +351,7 @@ if (PAGE.length) {
         localStorage.setItem('bracken.progress.4',JSON.stringify(Object.assign({},OLDS,{tavern:{colours:'red',seen:[1,2],drills:{throw:'lots'},ring:'yes'}})));BK.coopEnd();BK.loadSlot(4);await BK.tavern.enter();BK.sim(10);o.broken={st:BK.state,tav:BK.tavern.debug().tavern};return o;})()`.replace(/OLDS/g, JSON.stringify(OLD)));
       ok(sv.loadedTav === 'none' && sv.st === 'play' && sv.tav, 'an OLD save (no tavern record) loads and walks into the inn: ' + JSON.stringify({ l: sv.loadedTav, st: sv.st }));
       ok(sv.written && Array.isArray(sv.written.colours) && sv.written.colours.length === 4 && sv.written.colours[1] !== 'green' && typeof sv.written.ring === 'boolean', 'the tavern record is written back whole (P2\'s wardrobe colour kept): ' + JSON.stringify(sv.written));
-      ok(sv.keep && sv.moved.every(k => /^(coopTips|heardMusic|crouchFirst|hintSeen)$/.test(k)), 'nothing else in the old save moved (heroes, coins, clears, its own fields - only play bookkeeping: music heard, the co-op tips, first-crouch; vs the same save loaded and saved without the inn): ' + JSON.stringify([sv.keep, sv.moved, sv.raw]));
+      ok(sv.keep && sv.moved.every(k => /^(coopTips|heardMusic|crouchFirst|hintSeen|innTold)$/.test(k)), 'nothing else in the old save moved (heroes, coins, clears, its own fields - only play bookkeeping: music heard, the co-op tips, first-crouch; vs the same save loaded and saved without the inn): ' + JSON.stringify([sv.keep, sv.moved, sv.raw]));
       ok(sv.broken.st === 'play' && sv.broken.tav.colours.length === 4 && sv.broken.tav.drills.throw === 0, 'a save with a BROKEN tavern record loads and is read whole: ' + JSON.stringify(sv.broken.tav));
     }
     ok(pg.errors.length === 0, 'no page error: ' + pg.errors.slice(0, 3).join(' | '));

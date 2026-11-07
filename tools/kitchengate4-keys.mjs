@@ -23,20 +23,24 @@ try {
           if(P.ground&&f-jf>14&&(Math.abs(P.x-sx)<26||P.y<T.y-4)){BK.press('jump');jf=f;keys.jump=true;}else if(f-jf>16)keys.jump=false;
           BK.sim(1);if(P.ground&&Math.abs(P.y-S.G.floorY)<3)break;}
         clear();o.trench.push({side,out:f<60*6,t:+(f/60).toFixed(2),bites:S.n.coal-c0,lost:Math.round(hp0-P.hp),of:Math.round(P.maxHp),alive:!P.dead&&P.hp>0});P.hp=P.maxHp;}
-      /* THE HOOKS: UP under the lower rail, JUMP in its red stretch, ride to the platter */
-      clear();hold();S.ward=0;S.cd.drop=0;S.items=[{id:801,kind:'dish',x:S.G.belt.x0+150,state:'ride',fuse:0}];const RA=S.G.rails.find(z=>z.hand),RB=RA.hand;
-      P.x=RA.x0+20;P.y=S.G.belt.y;P.vx=0;P.vy=0;BK.sim(2);keys.up=true;let took=false,hand=false,f=0;
-      for(;f<60*5;f++){hold();S.items.forEach(q=>{if(q.state==='ride')q.x=Math.min(q.x,S.G.belt.x1-30);});if(P.zip===RA)took=true;if(P.zip===RB)hand=true;
-        if(took&&P.zip===RA&&P.x>=(RA.hop[0]+RA.hop[1])/2){BK.press('jump');}
-        if(took)keys.up=false;BK.sim(1);P.hp=P.maxHp;if(b.mode==='drop')break;}
-      o.hook={took,hand,drop:b.mode==='drop',t:+(f/60).toFixed(2),flying:S.n.flying,open:b.mode==='drop'?+b.modeT.toFixed(2):0,landX:Math.round(P.x),platter:[S.G.platter.x0,S.G.platter.x1]};
+      /* THE HOOKS (claude/grubhook): the climb - jump to the low shelf, walk and jump to the high shelf, UP under the hook, ride to the platter */
+      clear();hold();S.ward=0;S.cd.drop=0;S.items=[{id:801,kind:'dish',x:S.G.belt.x0+150,state:'ride',fuse:0}];const RB=S.G.rails.find(z=>z.platter),PA=S.G.plats[1],PB=S.G.plats[2];
+      P.x=(PA.x0+PA.x1)/2-6;P.y=S.G.belt.y;P.vx=0;P.vy=0;BK.sim(2);let took=false,onA=false,onB=false,f=0,jf=-99;
+      for(;f<60*8;f++){hold();S.items.forEach(q=>{if(q.state==='ride')q.x=Math.min(q.x,S.G.belt.x1-30);});if(P.zip===RB)took=true;
+        if(!P.zip){if(P.ground){const sy=P.y;if(Math.abs(sy-PA.y)<3)onA=true;if(Math.abs(sy-PB.y)<3)onB=true;
+          if(onB){keys.right=P.x<RB.x0+2;keys.up=Math.abs(P.x-(RB.x0+4))<8;}
+          else if(onA){keys.right=true;if(P.x>=PA.x1-8&&f-jf>14){BK.press('jump');jf=f;keys.jump=true;}else if(f-jf>16)keys.jump=false;}
+          else{keys.right=false;if(f-jf>14){BK.press('jump');jf=f;keys.jump=true;}else if(f-jf>16)keys.jump=false;}}}
+        else clear();
+        BK.sim(1);P.hp=P.maxHp;if(b.mode==='drop')break;}
+      o.hook={took,onA,onB,drop:b.mode==='drop',t:+(f/60).toFixed(2),flying:S.n.flying,open:b.mode==='drop'?+b.modeT.toFixed(2):0,landX:Math.round(P.x),platter:[S.G.platter.x0,S.G.platter.x1]};
       if(b.mode==='drop'){o.hook.take=GH.take(b,20,P.x,false);}
       clear();}
     BK.manualSimulation=false;return out;})()`, 900000);
   for (const [h, o] of Object.entries(r)) {
     if (o.err) { ok(false, h + ': ' + o.err); continue; }
     ok(o.trench.every(q => q.out && q.t <= 3.5 && q.alive && q.bites >= 1), h + ': THE COAL TRENCH - bitten, and climbed back out at both ends with base movement ' + JSON.stringify(o.trench));
-    ok(o.hook.took && o.hook.hand && o.hook.drop && o.hook.flying >= 1 && o.hook.take === 40, h + ': THE HOOKS - UP takes the lower rail, JUMP hands off to the upper, he lands on the platter: KNOCKED OFF HIS FEET, the food flies, a blade x2 ' + JSON.stringify(o.hook));
+    ok(o.hook.took && o.hook.onA && o.hook.drop && o.hook.flying >= 1 && o.hook.take === 40, h + ': THE HOOK - jump to the low shelf, then the high one, UP takes the hook over the line, he lands on the platter: KNOCKED OFF HIS FEET, the food flies, a blade x2 ' + JSON.stringify(o.hook));
   }
   if (pg.errors.length) ok(false, 'page errors: ' + pg.errors.slice(0, 3).join(' | ')); else ok(true, 'no page error');
 } finally { await pg.close(); }

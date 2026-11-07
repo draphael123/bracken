@@ -259,7 +259,8 @@ export function drawBossFx(g, L, e, cx, cy, time, FKT) {
   const C = L.frogCourt; if (!C || !e) return;
   const wy = SURF - cy;
   if (e.mode === 'spit') spitSpray(g, e, cx, cy);
-  if (e.phase >= 2 && e.alive !== false && e.mode !== 'sleep') { stirSteam(g, e, cx, cy, time); throatGlow(g, e, cx, cy, time); }
+  if (e.phase >= 2 && e.alive !== false && e.mode !== 'sleep') { stirSteam(g, e, cx, cy, time); if (e.mode !== 'bellowTell') throatGlow(g, e, cx, cy, time); }
+  if (FKT && FKT.bellow) sacFx(g, e, cx, cy, time, FKT.bellow);
   if (e.mode === 'leap' && e.vx !== undefined) {   /* the spray he trails through the air, and the ring where he left */
     const T = (FKT && FKT.air) || 1.2, age = Math.max(0, (T + 1) - e.modeT), sx0 = e.x - e.vx * age;
     for (let i = 0; i < 22; i++) { const k = i / 22, bx = e.x - e.vx * 0.032 * (i + 1) + Math.sin(i * 7.1 + time * 30) * 2, by = e.y - 12 - e.vy * 0.032 * (i + 1) + ((i * 5 + (time * 36 | 0)) % 7) - 3;   /* a streak of water flung off him along the arc, spread and thinning */
@@ -326,7 +327,10 @@ function ring(g, x, wy, k, rx, col, a) { if (k <= 0 || k >= 1) return; g.globalA
 
 /* ================= THE TONGUE ================= */
 /* same footprint as before: a 4-high bar of `len` from x0 (to the left when dir < 0) at y, a 6-high tip. Ribbed, with a sticky bulb, a drip; phase 2: angrier, with spit beads trailing */
+/* (claude/frogking2, 11-07: "the tongue doesn't look connected to him") With t.y0 it is drawn OUT OF HIS MOUTH (drawTongueOut, below): t.x0, t.y0 are his lips this
+   frame (main.js frogMouth, from his pose), t.y the height it was aimed at. Without y0 (never, now) the old straight bar. */
 export function drawTongue(g, t, cx, cy, time, phase) {
+  if (t.y0 !== undefined) { const n = Math.round(t.len); if (n >= 1) drawTongueOut(g, t, cx, cy, time, phase, n); return; }
   const x0 = Math.round(t.x0 - cx), y = Math.round(t.y - cy), len = Math.round(t.len); if (len < 1) return;
   const d = t.dir > 0 ? 1 : -1, a = d > 0 ? x0 : x0 - len, p2 = phase >= 2;
   const body = p2 ? '#ff5a74' : '#ff7a9a', lite = p2 ? '#ff9ab0' : '#ffb0c0', dark = p2 ? '#a02040' : '#c9463d';
@@ -341,6 +345,60 @@ export function drawTongue(g, t, cx, cy, time, phase) {
 
 /* THE THRONE: a seat of lotus petals - a rosette of pink petals round a red cushion trimmed with gold, laid on the royal leaf. Footprint: the old throne pad's 64 wide, drawn so the king's toes
    (the court's floor) stand on the cushion. */
+/* the tongue's line: from his lips toward the aimed height (straight at full reach), sagging a little in the middle. main.js hits with the same curve */
+export const tongueYAt = (t, x) => { if (t.y0 === undefined) return t.y; const d = t.dir > 0 ? 1 : -1, f = Math.max(0, Math.min(1, ((x - t.x0) * d) / Math.max(1, t.max))), lf = Math.max(0, Math.min(1, ((x - t.x0) * d) / Math.max(1, t.len)));
+  return t.y0 + (t.y - t.y0) * f + Math.sin(lf * Math.PI) * Math.min(3, t.len / 40); };
+/* 4 thick (5 at the root) with a dark edge, a lit top, ribs and glints; the root tucked into the maw under his lip; the sticky bulb at the tip, a drip; phase 2 angrier, spit beads */
+function drawTongueOut(g, t, cx, cy, time, phase, len) {
+  const d = t.dir > 0 ? 1 : -1, p2 = phase >= 2, body = p2 ? '#ff5a74' : '#ff7a9a', lite = p2 ? '#ff9ab0' : '#ffb0c0', dark = p2 ? '#a02040' : '#c9463d', edge = '#5a1a2a';
+  const at = i => Math.round(tongueYAt(t, t.x0 + d * i) - cy), bx = Math.round(t.x0 - cx);
+  for (let i = 0; i <= len; i++) { const x = bx + d * i, y = at(i), th = i < 4 ? 5 : 4;
+    R(g, edge, x, y - th + 1, 1, 1); R(g, body, x, y - th + 2, 1, th - 1); R(g, lite, x, y - th + 2, 1, 1); R(g, dark, x, y + 1, 1, 1); R(g, edge, x, y + 2, 1, 1);
+    if (i > 5 && i < len - 5 && i % 5 === 0) R(g, dark, x, y - 1, 1, 2); if (i > 6 && i % 11 === 0 && i < len - 5) P(g, '#ffffff', x, y - 2); }
+  R(g, '#4a1a22', bx - d * 2, at(0) - 3, 3, 5); P(g, '#284a1e', bx - d, at(0) - 4);   /* the root in the maw, under his lip */
+  const tx = bx + d * len, ty = at(len);
+  R(g, edge, tx - 3, ty - 4, 7, 8); R(g, dark, tx - 3, ty - 3, 7, 6); R(g, body, tx - 2, ty - 3, 5, 5); R(g, lite, tx - 1, ty - 3, 2, 1); P(g, '#ffffff', tx + d, ty - 3);
+  const dr = (time * 9) % 4 | 0; R(g, lite, tx, ty + 4 + dr, 1, 1 + (dr < 2 ? 1 : 0));
+  if (p2) for (let i = 0; i < 4; i++) { const k = ((time * 3 + i * 0.25) % 1), q = Math.round(k * len); g.globalAlpha = 0.8 * (1 - k * 0.5); R(g, '#e8ffb8', bx + d * q, at(q) + 3 + Math.round(Math.sin(k * 6 + i) * 2), 1, 1); g.globalAlpha = 1; }
+}
+
+/* ================= THE BELLOW (claude/frogking2, 11-07 FROG KING 2) ================= */
+/* THE SAC, the break made readable: while it is up (bellowTell) it throws a pulsing gold light that quickens as it fills; each blow on it FLASHES it white and CRACKS it,
+   and three pips over it count the blows (three: it bursts). THE BURST: a flash, shards of the sac and rings of gold light thrown out from his throat. The sac point is
+   frame 20's (src/redraw/frogking.js X 46, Y 36.5: 16 px ahead of his feet, 13 up). */
+const CRACKS = [[[-5, -3], [-1, 0], [-3, 4]], [[3, -5], [1, -1], [5, 3]], [[-1, 1], [2, 2], [0, 6], [3, 7]]];
+function sacFx(g, e, cx, cy, time, B) {
+  const f = e.face || 1, sx = Math.round(e.x + f * 16 - cx), sy = Math.round(e.y - 13 - cy);
+  if (e.mode === 'bellowTell') {
+    const T = B.tell[e.phase >= 2 ? 1 : 0] || 1.5, k = Math.max(0, Math.min(1, 1 - e.modeT / T)), pulse = 0.5 + 0.5 * Math.sin(time * (9 + k * 16));
+    g.globalAlpha = 0.16 + 0.2 * pulse * (0.5 + k * 0.5); g.fillStyle = '#ffe68a'; g.beginPath(); g.ellipse(sx + 0.5, sy + 0.5, 19 + k * 5, 14 + k * 4, 0, 0, Math.PI * 2); g.fill();
+    g.globalAlpha = 0.3 + 0.3 * pulse; g.fillStyle = '#fff7c8'; g.beginPath(); g.ellipse(sx + 0.5, sy + 0.5, 8 + k * 2, 6 + k * 1.5, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+    const n = Math.min(3, e.sacHits || 0);
+    for (let i = 0; i < n; i++) { const c = CRACKS[i]; for (let j = 1; j < c.length; j++) { const [ax, ay] = c[j - 1], [bx, by] = c[j], st = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) || 1;
+      for (let s = 0; s <= st; s++) R(g, '#9a4a10', sx + f * Math.round(ax + (bx - ax) * s / st), sy + Math.round(ay + (by - ay) * s / st), 1, 1); } P(g, '#ffffff', sx + f * c[0][0], sy + c[0][1] - 1); }
+    for (let i = 0; i < 3; i++) { const px0 = sx - 5 + i * 4, py0 = sy - 17; R(g, '#1b1626', px0 - 1, py0 - 1, 4, 4); R(g, i < n ? '#ff9a3a' : '#4a3a22', px0, py0, 2, 2); if (i < n) P(g, '#fff1a0', px0, py0); }   /* the count: blows on the sac */
+    if (e.sacHitAt !== undefined && time - e.sacHitAt < 0.12) { g.globalAlpha = 0.85; g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(sx + 0.5, sy + 0.5, 12, 9, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+  }
+  if (e.burstAt !== undefined && time - e.burstAt >= 0 && time - e.burstAt < 0.8) {   /* THE SAC BURSTS */
+    const a = time - e.burstAt, k = a / 0.8, bx = Math.round(e.burstX - cx), by = Math.round(e.burstY - cy);
+    g.globalAlpha = 1 - k; g.strokeStyle = '#fff1a0'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx + 0.5, by + 0.5, 6 + k * 46, 4 + k * 30, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+    g.strokeStyle = '#ffffff'; g.beginPath(); g.ellipse(bx + 0.5, by + 0.5, 3 + k * 30, 2 + k * 20, 0, 0, Math.PI * 2); g.stroke();
+    for (let i = 0; i < 16; i++) { const an = i / 16 * Math.PI * 2 + 0.2, r = 6 + k * (34 + (i * 13) % 18), x = bx + Math.cos(an) * r, y = by + Math.sin(an) * r * 0.75 + k * k * 18;
+      R(g, i % 3 === 0 ? '#ffffff' : i & 1 ? '#ffe68a' : '#e4e6ac', Math.round(x), Math.round(y), i < 8 ? 3 : 2, 2); }
+    if (a < 0.08) { g.globalAlpha = 0.6; g.fillStyle = '#fffbe0'; g.beginPath(); g.ellipse(bx + 0.5, by + 0.5, 26, 20, 0, 0, Math.PI * 2); g.fill(); }
+    g.globalAlpha = 1;
+  }
+}
+/* THE CROAK RING: a crescent of sound running along the ground, opening behind it - three arcs of gold light (14 px high at the front), a ripple at its foot. Low: jump it */
+export function bellowRing(g, x, y, w, time) {
+  const d = w.dir > 0 ? 1 : -1, a = Math.max(0.25, Math.min(1, w.life / 0.6));
+  g.globalAlpha = a;
+  for (const [off, col, hh] of [[0, '#fff1a0', 14], [-3, '#ffd36b', 11], [-6, '#e0b040', 8]]) for (let j = 0; j <= hh; j++) { const q = j / hh, bulge = Math.round(Math.sqrt(Math.max(0, 1 - (q * 2 - 1) * (q * 2 - 1))) * 4);
+    R(g, col, x + d * (off + bulge), y - j, 1, 1); }
+  P(g, '#ffffff', x + d * 4, y - 7); R(g, '#bfe6f5', x - 4, y - 1, 8, 1); if ((time * 20 | 0) & 1) R(g, '#ffffff', x + d * 2, y - 1, 2, 1);
+  g.globalAlpha = 1;
+}
+
 export function drawThrone(g, pr, cx, cy, floor) {
   const c = once('throne', () => {
     const [c, g2] = canvas(68, 16), PET = ['#8a3a56', '#c0607c', '#e48ea4', '#f8c4d0', '#fff0f2'];

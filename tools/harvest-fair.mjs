@@ -568,7 +568,8 @@ ok(R.n >= 6, 'the page spawned ' + R.n + ' mummers');
 ok(R.facedMoved < 0.5, 'in the page a faced mummer moved ' + R.facedMoved + ' px');
 ok(R.creepDx > 20, 'in the page a mummer with the hero\'s back turned crept only ' + R.creepDx + ' px in 2 s');
 ok(R.hit.hp1 < R.hit.hp0, 'a frozen mummer was not hurt by the hero facing it');
-ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= 5, 'a frozen mummer took ' + R.hit.blows + ' blows (about three)');
+/* (fix149) THE BLOW COUNT FOLLOWS THE MUMMER'S HEALTH, which the curve now scales: hp = 40 x difficulty (0.9) x (1 + 0.5 x level tier) x the act's ACTS.hp (claude/curvec5 b68c434f2, 10-19) - 36 when this was 'about three', 86 now (hp0 is read in the page). The knight's blow is ~12, so a frozen mummer must die in about hp0 / 10 blows: every blow lands, none is wasted (a mummer that shrugged blows off would blow the bound). */
+ok(!R.hit.alive && R.hit.blows >= 2 && R.hit.blows <= Math.ceil(R.hit.hp0 / 10), 'a frozen mummer (' + R.hit.hp0 + ' hp) took ' + R.hit.blows + ' blows (about hp / 12, at most ' + Math.ceil(R.hit.hp0 / 10) + ')');
 // a lone BULL'S-EYE (claude/fairfix2): its target struck where its ride has carried it opens it at once - its planks and its bars go to the host
 { const L0 = { strikers: [], tickets: [], galleries: [{ id: 9, targets: [{ x: 10, row: 10, on: { kind: 'gondola', idx: 0 } }], window: 1, planks: [[1, 2, 3]], bars: [[4, 4, 5, 6]] }] }, G0 = FGM.newGames(L0); let got = null, said = '';
   FK.liveTargets(G0.galleries, [{ fair: 'gondola', idx: 0, x: 400, y: 300, w: 30 }]); const t = G0.galleries[0].targets[0];

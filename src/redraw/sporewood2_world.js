@@ -28,7 +28,7 @@ function fleshOf(m) {
   const c = PAL[z].cap; return [mix(c[0], '#000000', 0.3), c[1], c[2], mix(c[2], '#fff6e0', 0.55)];
 }
 export function drawGrowcap(g, m, cx, cy, time) {
-  const x = rc(m.x - cx), cxm = x + m.w / 2, top = rc(m.y - cy), base = rc(m.y0 + 8 - cy), wob = m.state === 'up' && m.upT < 1.5 ? rc(Math.sin(time * 30)) : 0;
+  const x = rc(m.x - cx), cxm = x + m.w / 2, top = rc(m.y - cy), base = rc(m.y0 + 8 - cy), wob = m.state === 'up' && m.upT < 1.5 ? rc(Math.sin(time * 30)) : m.state === 'bud' && m.onT > 0 ? rc(Math.sin(time * 38) * 1.2) : m.flashT > 0 ? rc(Math.sin(time * 70) * 2) : 0;   /* (claude/sporeclear) it wiggles under a hero who stands on it; a struck seed cap shakes */
   const fl = fleshOf(m), withered = m.state === 'wither', lit = !!(m.dark && m.lit), sag = withered ? 2 : 0;
   const stk = (sx, sy, w) => { R(g, STALK[0], sx - w + wob, sy - 2, w * 2, 3); R(g, STALK[1], sx - w + wob, sy - 2, w * 2 - 2, 3); R(g, STALK[2], sx - w + 1 + wob, sy - 2, 1, 3); };
   if (m.lean) { const bxm = rc(m.bx - cx) + m.w / 2, dx = cxm - bxm, dy = top + 6 - base, n = Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / 2) + 1;   /* A LEANING STALK: up from its root, bending out over the gap */
@@ -51,8 +51,18 @@ export function drawGrowcap(g, m, cx, cy, time) {
   /* a SEED cap: its seed, a gold fleck and a green sprout, waiting for a blow (never when it has been struck) */
   if (m.seed && m.state === 'bud' && !(m.cd > 0) && !m.noSeed) { const gl = Math.floor(time * 3 + m.x) % 2; R(g, gl ? '#fff1a8' : '#ffd36b', cxm - 2, top - 4, 4, 3); R(g, '#fff6d0', cxm - 1, top - 4, 1, 1); R(g, '#8fd160', cxm - 1, top - 6, 2, 2);
     g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.22 + 0.1 * gl; g.drawImage(halo('255,211,107'), cxm - 14, top - 18, 28, 28); g.restore(); g.globalAlpha = 1; }
-  /* a ready bud blinks a little arrow of spores over it (the old tell, in the cap's own colour) */
-  if (m.state === 'bud' && !(m.cd > 0) && !m.seed && !(m.dark && !m.lit) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.6; g.strokeStyle = fl[3]; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; }
+  /* (claude/sporeclear) A READY BUD SAYS HOW: a pulsing UP-ARROW (two chevrons, rising) over it until it grows - brighter and faster while a hero stands on it - and the spores lift off it */
+  if (m.state === 'bud' && !(m.cd > 0) && !m.seed && !(m.dark && !m.lit)) { const on = m.onT > 0, ph = (time * (on ? 3.2 : 1.6) + m.x * 0.013) % 1, bob = rc(Math.sin(ph * 6.283) * 1.5), a = 0.55 + 0.4 * Math.sin(ph * 6.283), ay = top - 12 - bob;
+    g.globalAlpha = on ? 1 : a; for (const [dy, c] of [[0, '#eaffd8'], [4, fl[3]]]) { R(g, c, cxm - 1, ay + dy, 3, 1); R(g, c, cxm - 3, ay + dy + 2, 2, 1); R(g, c, cxm + 2, ay + dy + 2, 2, 1); R(g, c, cxm - 5, ay + dy + 4, 2, 1); R(g, c, cxm + 4, ay + dy + 4, 2, 1); } R(g, '#eaffd8', cxm, ay + 1, 1, 1); g.globalAlpha = 1;
+    if (!on) for (let i = 0; i < 2; i++) { const t = (time * 0.7 + i * 0.5 + m.x * 0.01) % 1; g.globalAlpha = (1 - t) * 0.8; R(g, '#dfffa0', cxm - 5 + i * 9, top - 2 - t * 10, 1, 1); } g.globalAlpha = 1; }
+  /* a DARK bud that needs light: cold and dimmed, a lantern-pip over it, and a dotted line to the lantern cap that wakes it (marching toward the bud once it is lit) */
+  if (m.dark && !m.lit && m.state === 'bud') { g.globalAlpha = 0.3; g.fillStyle = '#0c1020'; g.beginPath(); g.ellipse(cxm + wob, top + 4, m.w / 2, 6, 0, Math.PI, 0); g.fill(); g.globalAlpha = 1;
+    R(g, '#8ad8c0', cxm - 1, top - 9, 3, 3); R(g, '#1c2c34', cxm, top - 8, 1, 1); R(g, '#6a8a94', cxm, top - 6, 1, 1); }   /* (an unlit lantern: a dark pip on a stem) */
+  if (m.dark && m.state === 'bud' && m.linkTo) { const lx = rc(m.linkTo.x - cx), ly = rc(m.linkTo.y - cy) - 14, dx = lx - cxm, dy = ly - (top + 2), n = Math.max(2, Math.floor(Math.hypot(dx, dy) / 6)), mv = m.lit ? (time * 6) % 1 : 0;
+    g.globalAlpha = m.lit ? 0.8 : 0.5; for (let i = 0; i < n; i++) { const t = (i + mv) / n; if (t > 1) continue; R(g, m.lit ? '#bff0f0' : '#8ad8c0', cxm + dx * t, top + 2 + dy * t, 1, 1); } g.globalAlpha = 1; }
+  /* a SEED cap shows the blows it needs (one pip each) and flashes white when it is struck */
+  if (m.seed && m.state === 'bud' && !(m.cd > 0) && !m.noSeed) { const need = m.need || 1, got = m.struck || 0; for (let i = 0; i < need; i++) R(g, i < got ? '#fff6d0' : '#ffd36b', cxm - (need * 3 - 1) / 2 + i * 3, top - 11, 2, 2); R(g, '#ffd36b', cxm, top - 8, 1, 1); R(g, '#ffd36b', cxm - 1, top - 9, 3, 1); }
+  if (m.flashT > 0) { g.globalAlpha = Math.min(0.9, m.flashT * 3); R(g, '#fffbe0', x + wob, top + 1, m.w, 6); g.globalAlpha = 1; }
   if (m.shiver > 0) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 30); R(g, '#9a5aa8', x - 1 + rc(Math.sin(time * 40) * 2), top - 3, m.w + 2, 6); g.globalAlpha = 1; }   /* HER WITHER TELL: the cap shudders violet */
 }
 

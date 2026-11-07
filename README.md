@@ -19,7 +19,7 @@ No dependencies. Plain canvas 2D at 320×180, integer-scaled, every sprite baked
 | Drop through a log | Down + jump |
 | Settings / pause | Esc / P |
 | Music toggle | M |
-| Restart at shrine | R |
+| Back to shrine | Pause menu (asks first) |
 
 ## Health and stamina
 
@@ -171,7 +171,7 @@ canopy walkways and swinging platforms and a LOW ROAD through the burrows, where
 traps (a lever that swings a log ram, a pressure plate that drops a cage) can be turned on them.
 Midway, the kennels: the HOUND MASTER rides a great hound and whistles the pack. Block his charge
 and the hound rears; plunge the rider to unseat him, and he mounts again if you are slow. The
-court at the end is a red carpet, banners, a gallery of watching goblins, and KING GORM UNDERLEAF
+court at the end is a red carpet, banners, a gallery of watching goblins, and KING GORM
 on a palanquin carried by four bearers. Cut the bearers and the throne falls; then the sceptre,
 the shout that throws you back, and goblets; at the last he stands, and the court goes quiet.
 Its own music, Juhani Junkala's Retro Game Music Pack (CC0), with a second boss track for the King.

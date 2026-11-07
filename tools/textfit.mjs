@@ -40,7 +40,7 @@ import { FIRST as CROUCH_FIRST, FIRST_SENSE as CROUCH_FIRST_SENSE } from '../src
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'arena', 'party', 'bossjump', 'bossselect', 'menu', 'secrets', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'arena', 'lesson', 'party', 'bossjump', 'bossselect', 'menu', 'secrets', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -123,8 +123,8 @@ async function pageTextFit(input) {
       if (ix > 1 && iy > 1) report('COLLIDE', screen, A, { other: B.s, otherAt: B.at }); }
     for (const c of rec.filter(r => r.kind === 'cut')) report('TRUNCATED', screen, c, { out: c.out, maxW: c.maxW });
     const pagedS = new Set(rec.filter(r => r.kind === 'paged').map(r => r.s));   /* a description with a page key reaches its every line */
-    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());
-      const drawn = w.lines.filter(l => later.some(s => s === l.trim() || l.trim().startsWith(s) || l.trim().endsWith(s))).length;
+    if (!opts.paged) for (const w of rec.filter(r => r.kind === 'wrap' && !pagedS.has(r.s))) { const later = texts.filter(t => t.i > w.i).map(t => t.s.trim());   /* (rel147: a one-glyph text - the whats-new scroll arrow v - only counts on an EXACT match, not startsWith/endsWith: it matched the village burns... piece of batch 144 and made it read CLIPPED) */
+      const drawn = w.lines.filter(l => later.some(s => s === l.trim() || (s.length > 1 && (l.trim().startsWith(s) || l.trim().endsWith(s))))).length;
       if (drawn > 0 && drawn < w.lines.length) report('CLIPPED', screen, w, { lines: w.lines.length, drawn }); }
     if (opts.cover) { const v = BK.view, P = BK.P, hx = P.x - Math.max(0, Math.min(BK.L.W * 16 - v.VW, v.x)), hy = P.y - Math.max(0, Math.min(BK.L.H * 16 - v.VH, v.y));
       const box = rec.filter(r => r.kind === 'rect' && r.i < (texts[0] ? texts.find(t => opts.cover(t)) || texts[0] : { i: 0 }).i).pop();
@@ -191,7 +191,7 @@ async function pageTextFit(input) {
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
     await yieldNow(); }
   /* THE TRIAL PROMPT (hero pick, stage 'trial'): its 64-letter sentence ran off both edges of the screen (UIQUICK 2026-10-04); every hero's name over it */
-  if (want('trial')) { for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'trial'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
+  if (want('trial')) { for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'go'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
     await yieldNow(); }
   /* THE ERASE QUESTION (saves screen, ERASE SLOT n? YES / NO): each slot's, with a save in it */
   if (want('erase')) { for (let i = 0; i < 5; i++) frame('erase slot #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.eraseAsk = i; }, { settle: 20 }); BK.ui.eraseAsk = -1; await yieldNow(); }
@@ -208,6 +208,9 @@ async function pageTextFit(input) {
     for (const k of Object.keys(pr)) delete pr[k]; Object.assign(pr, JSON.parse(keep)); await yieldNow(); }
   if (want('death')) { toPlay(0, 'knight'); const K = [{ name: 'BANDIT BOWMAN   THE SHIELD CHARGE', red: true, rule: 'DODGE IT' }, { name: 'THE GATE GARGOYLE   THE OVERHEAD SMASH', red: false, rule: 'THE SHIELD TURNS IT' }, { name: 'THE MASKWRIGHT PUPPETEER   THE LONG OVERHAND CHOP', red: true, rule: 'DODGE IT' }, { name: 'ARROW   THE BOLT', red: false, rule: 'PARRY IT' }, { name: 'THE FALL', red: false, rule: '' }, { name: 'THE WATER', red: false, rule: '' }, { name: 'A TRAP', red: false, rule: '' }];
     K.forEach((k, i) => frame('death card #' + i, () => { BK.state = 'play'; BK.P.dead = 0.6; BK.P.killer = k; }, { settle: 1 }));
+    /* (claude/onboard1) THE FIRST-DEATH CARD: the longest amounts, with a foe carrying it, the arena door, and the spot */
+    for (const [i, info] of [{ where: 'foe', name: 'THE MASKWRIGHT PUPPETEER', coins: 9999, purse: 300, xp: 99999 }, { where: 'door', coins: 9999, purse: 300, xp: 99999 }, { where: 'spot', fell: false, coins: 12, purse: 0, xp: 0 }].entries()) frame('salt card #' + i, () => { BK.state = 'play'; BK.P.dead = 0; BK.saltShow(info); }, { settle: 1 });
+    BK.saltShow(null);
     /* (integ118) the recap line (FELLED BY A TRAP) lives 3.2 s of play draws after a death: let it run out here, unrecorded, or it stands over every later play-state screen (the secrets toasts, the HUD timer, the world plates) */
     { const rec = window.__textRec; window.__textRec = null; BK.state = 'play'; BK.P.dead = 0; BK.P.killer = null; for (let i = 0; i < 260; i++) BK.step(1); window.__textRec = rec; } BK.reset(); await yieldNow(); }
   if (want('results')) { toPlay(0, 'knight'); frame('level complete', () => { BK.xpWin(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 230; i++) BK.step(1); window.__textRec = rec; }, { settle: 1 });   /* (a step(n) draws once: the card counts its own drawn frames, so it is stepped one at a time) */ BK.reset(); await yieldNow(); }
@@ -235,6 +238,9 @@ async function pageTextFit(input) {
     for (let i = 0; i < 5; i++) frame('slots full #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
     for (const i of [1, 4]) ls.removeItem('bracken.progress.' + i);   /* and empty ones among full ones */
     for (let i = 0; i < 5; i++) frame('slots mixed #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
+    /* (claude/innsaves) THE GUEST BOOK: the same five slots from the inn, and the PARTY LEAVES THE INN question over them */
+    for (const i of [0, 3]) frame('guest book #' + i, () => { BK.state = 'slots'; BK.ui.slotInn = true; BK.ui.bookAsk = false; BK.ui.slotI = i; }, { settle: 20 });
+    frame('guest book party ask', () => { BK.state = 'slots'; BK.ui.slotInn = true; BK.ui.bookAsk = true; BK.ui.slotI = 0; }, { settle: 20 }); BK.ui.bookAsk = false; BK.ui.slotInn = false;
     /* (claude/shipfix) A DAMAGED SLOT is a row of its own words (CORRUPT / NEWER SAVE) and a FIX IT list over the picker */
     ls.setItem('bracken.progress.1', '{"hero":"knight","coins":1'); ls.setItem('bracken.progress.4', JSON.stringify({ hero: 'pyro', progressionVersion: 99 }));
     for (let i = 0; i < 5; i++) frame('slots damaged #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.fixAsk = -1; }, { settle: 20 });
@@ -279,6 +285,17 @@ async function pageTextFit(input) {
       BK.yard().open(BK.players()[0]); const pages = BK.yard().Y.st.board.pages.length;
       for (let k = 0; k < pages; k++) frame('arena board [' + h + '] page ' + (k + 1) + '/' + pages, () => { BK.state = 'play'; if (!BK.yard().Y.st.board) BK.yard().open(BK.players()[0]); BK.yard().Y.st.board.page = k; }, { settle: 2 });
       BK.yard().Y.st.board = null; await yieldNow(); } }
+  /* (claude/tutorial1) THE ROADSIDE LESSON: every step's panel for every hero (the keyboard's words; the pad's and touch's are measured by tools/lesson-opening.mjs line lengths), every sign in it, the inn's welcome card, the title's INN line and the map's footer */
+  if (want('lesson')) { const li = lvm.LEVELS.findIndex(l => l.id === 'lesson'), done = new Set();
+    for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger']) { try { toPlay(li, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'lesson ' + h, s: 'load: ' + e.message, n: 1 }); continue; }
+      for (let i = 0; i <= 12; i++) frame('lesson step ' + i + ' [' + h + ']', () => { BK.state = 'play'; BK.lesson().O.st.i = i; }, { settle: 2 });
+      for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key); const lines = t.lines.filter(Boolean);
+        for (let p = 0; p < lines.length; p++) frame('lesson sign @' + t.x + ' page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }); BK.state = 'play'; }
+      await yieldNow(); }
+    toPlay(li, 'knight'); BK.lesson().O.st.i = 12; frame('lesson door plate', () => { BK.state = 'play'; const p = BK.players()[0]; p.x = 154 * 16 + 8; p.y = 20 * 16 - 0.01; p.vy = 0; p.ground = true; BK.sim(30); }, { settle: 4 });
+    frame('inn welcome card', () => { BK.state = 'play'; BK.lesson().O.innCard(9); }, { settle: 20 });
+    frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; const top = BK.ui.titleTop(); BK.ui.titleI = top.indexOf('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
+    frame('map footer', () => { BK.state = 'map'; }, { settle: 20 }); }
 
   /* THE HIDDEN BOSS LIST (SHIFT+B on the title, docs/PLAYTEST.md): every row selected in turn (every boss and mini name against its wood's name), and every hero's name on the hero line */
   if (want('bossjump')) { const n = BK.bossJump.table().length;
@@ -296,6 +313,9 @@ async function pageTextFit(input) {
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
     for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 });
+    /* (claude/shrinekey) THE BACK-TO-SHRINE QUESTION, and the pause menu in the lesson + the yard (the greyed NO SHRINE HERE line) */
+    frame('shrine ask', () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.shrineAsk = true; }, { settle: 40 }); BK.ui.shrineAsk = false;
+    for (const id of ['lesson', 'arena-yard', 'arenayard']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; try { toPlay(li, 'knight'); } catch (e) { continue; } for (let i = 0; i < BK.ui.menuCount(); i++) frame('menu ' + id + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 }); }
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }

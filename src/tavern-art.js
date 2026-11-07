@@ -72,13 +72,49 @@ export function board(g, x, fy, code, time, text) {
   R(g, L + 12, T + 24, 5, 1, '#e8f0e8'); R(g, L + 18, T + 24, 2, 1, '#c9d1c9');
 }
 
+/* ---------------------------------------------------------------- THE GUEST BOOK (claude/innsaves) ---------------------------------------------------------------- */
+export function guestbook(g, x, fy, time, text) {
+  const L = x - 14, k = Math.floor(time * 1.5) & 1;
+  /* a small hanging sign: an arm off the stand's post, two chains, a plank with SAVES */
+  R(g, x - 12, fy - 52, 2, 28, TP.o2); R(g, x - 12, fy - 52, 1, 28, TP.o4); R(g, x - 12, fy - 54, 20, 2, TP.o3); R(g, x - 12, fy - 54, 20, 1, TP.o5); R(g, x + 6, fy - 52, 2, 3, TP.fe1);
+  R(g, x - 8, fy - 52, 1, 3, TP.fe2); R(g, x + 6, fy - 50, 1, 1, TP.fe2);
+  R(g, x - 10, fy - 49, 18, 9, TP.o3); R(g, x - 10, fy - 49, 18, 1, TP.o6); R(g, x - 10, fy - 41, 18, 1, TP.o1); R(g, x - 10, fy - 49, 1, 9, TP.o5); R(g, x + 7, fy - 49, 1, 9, TP.o1);
+  R(g, x - 9, fy - 48, 16, 7, '#2a2418'); text('SAVES', x - 1, fy - 48, '#e8f0e8', 'center', 6);
+  /* the stand: a slanted desk on two legs with a foot rail */
+  R(g, L + 3, fy - 18, 3, 18, TP.o2); R(g, L + 3, fy - 18, 1, 18, TP.o4); R(g, L + 22, fy - 18, 3, 18, TP.o2); R(g, L + 22, fy - 18, 1, 18, TP.o4); R(g, L + 3, fy - 5, 22, 2, TP.o1); R(g, L + 1, fy - 2, 7, 2, TP.o1); R(g, L + 20, fy - 2, 7, 2, TP.o1);
+  R(g, L, fy - 24, 28, 6, TP.o3); R(g, L, fy - 24, 28, 1, TP.o6); R(g, L, fy - 19, 28, 1, TP.o1);   /* the desk top */
+  /* the open ledger: two cream pages, a dark spine, ruled lines and ink names, a ribbon */
+  R(g, L + 1, fy - 31, 12, 8, '#e8dcc0'); R(g, L + 15, fy - 31, 12, 8, '#d8c8a0'); R(g, L + 13, fy - 32, 2, 10, '#3a2618'); R(g, L + 1, fy - 31, 12, 1, '#fff6e0'); R(g, L + 15, fy - 31, 12, 1, '#f0e4c8');
+  for (let i = 0; i < 4; i++) { R(g, L + 3, fy - 29 + i * 2, 8 - (i & 1) * 2, 1, '#6a5a4a'); R(g, L + 17, fy - 29 + i * 2, 8 - ((i + 1) & 1) * 3, 1, '#6a5a4a'); }
+  R(g, L + 14, fy - 24, 1, 6, '#c9463d');   /* the ribbon marker */
+  R(g, L + 24 + k, fy - 32 - k, 3 - k, 1, '#fff6e0'); if (k) P(g, L + 26, fy - 33, '#e8dcc0');   /* idle: a page edge lifts, then settles (2 frames) */
+  R(g, L + 22, fy - 33, 1, 5, '#4a3a2a'); P(g, L + 22, fy - 34, '#e8f0e8');   /* a quill in its pot, at the desk's end */
+}
+
 /* ---------------------------------------------------------------- THE SAVES SIGN (claude/coopclarity) ---------------------------------------------------------------- */
 export function saves(g, x, fy, time, text) {
-  const L = x - 14, T = fy - 40;
-  R(g, L + 12, T + 18, 4, 22, TP.o2); R(g, L + 12, T + 18, 1, 22, TP.o4); R(g, L + 9, T + 38, 10, 2, TP.o1);   /* the post */
-  R(g, L, T, 28, 20, TP.o3); R(g, L, T, 28, 1, TP.o6); R(g, L, T + 19, 28, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 27, T, 1, 20, TP.o1);   /* the plank */
-  R(g, L + 2, T + 2, 24, 16, '#2a2418'); R(g, L + 2, T + 2, 24, 1, '#5a4a32');
-  text('SAVES', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 5, T + 13, 18, 1, '#8fd160'); if (Math.floor(time * 2) & 1) P(g, L + 24, T + 4, '#fff');
+  const L = x - 17, T = fy - 40;
+  R(g, L + 15, T + 18, 4, 22, TP.o2); R(g, L + 15, T + 18, 1, 22, TP.o4); R(g, L + 12, T + 38, 10, 2, TP.o1);   /* the post */
+  R(g, L, T, 34, 20, TP.o3); R(g, L, T, 34, 1, TP.o6); R(g, L, T + 19, 34, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 33, T, 1, 20, TP.o1);   /* the plank */
+  R(g, L + 2, T + 2, 30, 16, '#2a2418'); R(g, L + 2, T + 2, 30, 1, '#5a4a32');
+  text('CO-OP', x, T + 3, '#e8f0e8', 'center', 6); text('RULES', x, T + 10, '#8fd160', 'center', 6); if (Math.floor(time * 2) & 1) P(g, L + 30, T + 4, '#fff');   /* (claude/innsaves: SAVES moved to the guest book) */
+}
+
+/* ---------------------------------------------------------------- THE LESSON BOARD (claude/tutorial1) ---------------------------------------------------------------- */
+export function unlocks(g, x, fy, time, text) {   /* (claude/unlocks) a greybox plank board, UNLOCKS chalked on it and a padlock on a nail: the art lane paints it */
+  const L = x - 23, T = fy - 40;
+  R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);
+  R(g, L, T, 46, 20, TP.o3); R(g, L, T, 46, 1, TP.o6); R(g, L, T + 19, 46, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 45, T, 1, 20, TP.o1);
+  R(g, L + 2, T + 2, 42, 16, '#2a2418'); R(g, L + 2, T + 2, 42, 1, '#5a4a32');
+  text('UNLOCKS', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 10, T + 13, 26, 1, '#ffd36b');
+  R(g, L + 38, T + 20, 5, 4, '#8a8f80'); R(g, L + 39, T + 18, 1, 2, '#8a8f80'); R(g, L + 41, T + 18, 1, 2, '#8a8f80'); R(g, L + 39, T + 18, 3, 1, '#8a8f80'); if (Math.floor(time * 2) & 1) P(g, L + 42, T + 21, '#fff');
+}
+export function lesson(g, x, fy, time, text) {   /* (claude/shrinekey) the plank is wider for TUTORIAL */
+  const L = x - 23, T = fy - 40;
+  R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);   /* the post */
+  R(g, L, T, 46, 20, TP.o3); R(g, L, T, 46, 1, TP.o6); R(g, L, T + 19, 46, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 45, T, 1, 20, TP.o1);   /* the plank */
+  R(g, L + 2, T + 2, 42, 16, '#2a2418'); R(g, L + 2, T + 2, 42, 1, '#5a4a32');
+  text('TUTORIAL', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 10, T + 13, 26, 1, '#ffd36b'); if (Math.floor(time * 2) & 1) P(g, L + 42, T + 4, '#fff');
 }
 
 /* ---------------------------------------------------------------- THE DRILLS TALLY ---------------------------------------------------------------- */
@@ -130,7 +166,7 @@ export function target(g, x, fy, time) {
 }
 
 /* ---------------------------------------------------------------- THE DUEL PIT ---------------------------------------------------------------- */
-export function arena(g, x, fy, time, text) {
+export function arena(g, x, fy, time, text, open = false) {   /* (claude/pvpduel) open: the board reads DUEL (BETA) - src/pvp-duel.js PVP_SHIPS */
   const cy = fy + 2;
   ELL(g, x, cy + 1, 25, 4, TP.o1); ELL(g, x, cy, 24, 3, TP.o4); ELL(g, x, cy, 22, 3, TP.o2);                                                                          /* the kerb of the pit, a ring of oak */
   ELL(g, x, cy + 1, 20, 2, '#a8895a'); ELL(g, x, cy + 1, 15, 1, '#c4a674'); R(g, x - 20, cy - 1, 41, 1, '#5a4228'); R(g, x - 18, cy, 37, 1, '#76593a');                /* the sand, and the pit's back wall in shade */
@@ -146,7 +182,7 @@ export function arena(g, x, fy, time, text) {
   R(g, bx, by, 38, 24, TP.o3); R(g, bx, by, 38, 1, TP.o6); R(g, bx, by + 23, 38, 1, TP.o1); R(g, bx, by, 1, 24, TP.o5); R(g, bx + 37, by, 1, 24, TP.o1);
   R(g, bx + 2, by + 2, 34, 20, '#5a1e1a'); R(g, bx + 2, by + 2, 34, 1, '#7a2e26'); R(g, bx + 2, by + 21, 34, 1, '#3a1010');
   for (const px0 of [bx + 3, bx + 34]) for (const py0 of [by + 3, by + 19]) P(g, px0, py0, TP.fe3);
-  text('COMING', x, by + 4, '#f0e6c8', 'center', 6); text('SOON', x, by + 12, '#ff9a5c', 'center', 6);
+  if (open) { text('DUEL', x, by + 4, '#f0e6c8', 'center', 6); text('(BETA)', x, by + 12, '#ffd36b', 'center', 6); } else { text('COMING', x, by + 4, '#f0e6c8', 'center', 6); text('SOON', x, by + 12, '#ff9a5c', 'center', 6); }
   const sw = ((time * 14) % 60) - 12; if (sw >= 0 && sw < 34) { g.globalAlpha = 0.32; for (let j = 0; j < 20; j++) { const xx = bx + 2 + sw + Math.round(j * 0.4); if (xx >= bx + 2 && xx < bx + 36) R(g, xx, by + 2 + j, 2, 1, '#fff'); } g.globalAlpha = 1; }
   /* THE STAGE BOARD for VERSUS, beside it: an empty slate in a chained frame, its two name lines unwritten */
   const sx = x + 30, sy = fy - 34;
@@ -185,6 +221,29 @@ export function dummySet(which) {
     return { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 7, ay: 21, w: 10, h: 18 };
   });
   return DUMMY[which ? 1 : 0];
+}
+
+/* ---------------------------------------------------------------- THE STRAW YARD (claude/tutorial2) ----------------------------------------------------------------
+   The roadside lesson's four targets, in the straw men's own palette and outline, SPR-shaped like dummySet: an ARMOURED man (a plate breast and pauldrons under the dented helm: only a heavy
+   blow breaks it), a STRAW CROW on a perch (up on its post: the rising cut), a low STRAW RAT (the sweep), a BARREL with a straw lid (the plunge). Frame 1 is the tilt a hit gives. */
+const STRAW_ROWS = {
+  armour: ['....gggg....', '...gllggg...', '..glgGggGg..', '..GGGGGGGG..', '..seSssseS..', '...sSsssS...', '....tttt....', '.wwwwwwwwww.', 'GllgggggGGGG', '.glggGGgggG.', '..glggGgGg..', '..gggGGggg..', '..GggggggG..', '...gGgggG...', '...hHhhHhh..', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'],
+  bird: ['......ss....', '.....ssse...', '.....ssssoo.', '..S.ssssss..', '.SSsssssss..', '.SsssyyYss..', 'SSsyyyyYYs..', '.SsssyyYs...', '..SssssSs...', '....t..t....', '....t..t....', '..wwwwwwww..'],
+  rat: ['.........ss...', '.......sssss.o', '..SSssssssesso', 'tt.ssssssssss.', '.t..ssssssss..', '.....w..w.....', '....ww..ww....'],
+  barrel: ['..llllllllll..', '.lLLLLLLLLLLl.', '.wwwwwwwwwwww.', 'whhhhhhhhhhhhw', 'wwWwwwwwwwwWww', 'wwWwwwwwwwwWww', 'whhhhhhhhhhhhw', 'wwWwwwwwwwwWww', 'wwWwwwwwwwwWww', 'whhhhhhhhhhhhw', '.wwwwwwwwwwww.', '..WWWWWWWWWW..'],
+};
+let STRAW = null;
+export function strawSet(kind) {
+  if (!STRAW) STRAW = {};
+  if (!STRAW[kind]) {
+    const rows = STRAW_ROWS[kind] || STRAW_ROWS.armour;
+    const pal = { s: '#c4a870', S: '#8a7248', e: '#2a2230', t: '#8a5a32', y: '#9a6a42', Y: '#6a4630', h: kind === 'barrel' ? '#5a6270' : '#e0c070', H: '#b89a48', w: '#6a4a2c', W: '#4a3220', g: '#8a919c', G: '#5a6270', l: kind === 'barrel' ? '#c9b27c' : '#c2c9d4', L: '#9a8050', o: '#d08a3a' };
+    const tilt = rows.map((r, i) => i < rows.length / 2 && r.endsWith('.') ? '.' + r.slice(0, -1) : r);
+    const f = r => outline(fromGrid(r, pal, 1), OUT), Rr = [f(rows), f(tilt)], white = Rr.map(c => whiten(c));
+    const cols = Math.max(...rows.map(r => r.length));
+    STRAW[kind] = { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: (cols >> 1) + 1, ay: rows.length + 1, w: cols - 2, h: rows.length - 1 };
+  }
+  return STRAW[kind];
 }
 
 /* ---------------------------------------------------------------- THE FLOOR RING + THE NAME TAG ---------------------------------------------------------------- */
