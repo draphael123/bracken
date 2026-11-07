@@ -93,13 +93,13 @@ const GENERIC = new Set(['coin', 'deco', 'sign', 'check', 'silver', 'relic', 'st
    platform kinds pacing.mjs recognises everywhere, moving platforms (moversExtra kinds), and the level's own machine arrays. */
 const ALWAYS_GADGET = new Set(['mover', 'pad', 'vent', 'balloon', 'lever', 'crank', 'winch', 'sluice', 'capstan', 'pump', 'firebox', 'sheet', 'cannon', 'bell', 'seabell', 'lockgate', 'key', 'felltree', 'deadfall', 'ram', 'cart', 'plank', 'keg', 'loosegun', 'cargowall', 'bulkhead', 'davit', 'stormkite', 'resonance', 'mirror', 'weight', 'support', 'rod', 'boiler', 'roller', 'cage', 'plate', 'timber', 'sail', 'bridge', 'gas', 'tbell', 'pwheel']);
 const SYSTEM_ARRAYS = ['ftSupports', 'rkRides', 'kgBelts', 'kgFlares', 'gusts', 'hoists', 'crumbles', 'drips', 'bridges', 'vines', 'perches', 'flips', 'glyphBridges', 'zipLines', 'ropes', 'cableBridges', 'thermals', 'airRails', 'roosts', 'winds', 'siphons', 'whirlpools', 'gasVents', 'locks', 'carousels', 'masts', 'risers', 'callers', 'pegs', 'seams', 'pits', 'cable', 'veins', 'quicksand', 'looseRock', 'heaps', 'emberPits', 'stillFires', 'beams', 'spiral', 'chases', 'rollGaps', 'felled', 'rot', 'graves', 'candles', 'duneSlides'];   /* (claude/caravan2) THE SUNKEN CARAVAN's dune slides: a slope the slide-jump is built round (L.duneSlides) */
-SYSTEM_ARRAYS.push('lw3Boats');   /* (claude/longwater3) SALTREACH's boats (kit floats) are a system; the bells, wheels, traps and moorings are ents (lw3bell, lw3sluice, lw3trap, lw3moor). LONG WATER 3 is NOT gated here (master's longwater misses the bar with the flag off): run LW3=1 node tools/level-quality.mjs longwater */
 const MOVER_KINDS_SKIP = new Set(['lane']);   /* a lane is the track a platform runs on, not a second gadget */
 
 /* a kind is a gadget when it is a known machine kind, reads like one (rune, lock, plate, glyph, lever...), or the threat table says it is worth ZERO (a thing that is not a foe) and few levels use it. A kind the table does not know is a foe. */
 const GADGET_WORD = /rune|lock|plate|glyph|lever|switch|lift|hoist|winch|carousel|crank|valve|siphon|pulley|weight/;
 const isGadget = t => ALWAYS_GADGET.has(t) || GADGET_WORD.test(t) || (t in THREAT && THREAT[t] === 0 && (kindUsers().get(t) || 0) <= 3);
 const arena = L => L.arena || null;
+SYSTEM_ARRAYS.push('lw3Boats');   /* (claude/longwater3) SALTREACH's boats (kit floats) are a system; the bells, wheels, traps and moorings are ents (lw3bell, lw3sluice, lw3trap, lw3moor). LONG WATER 3 is NOT gated here (master's longwater misses the bar with the flag off): run LW3=1 node tools/level-quality.mjs longwater */
 const setSpan = (xs, gap = 12) => { xs = [...xs].sort((a, b) => a - b); let n = 0, last = -1e9; for (const x of xs) { if (x - last > gap) n++; last = x; } return n; };
 
 /* LEVEL-SPECIFIC ENT KINDS: how many campaign levels place each kind, once, for the whole run */

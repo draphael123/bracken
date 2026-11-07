@@ -31,11 +31,11 @@ import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
 import {crabTrench,underwaterKeep} from './deep-split.js';
-import { buildLongWater3, lw3On, shadowLongwater } from './longwater3.js';   /* (claude/longwater3) THE LONG WATER 3: SALTREACH on the tide kit, behind LW3_SHIPS / ?lw3=1 (src/longwater3.js) */
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
 import { vaultSilver } from './relics.js';   /* WHAT A FORMER RELIC CACHE PAYS NOW: one of the level's three silvers (a 'vault' marker holds the spot through the build) */
+import { buildLongWater3, lw3On, shadowLongwater } from './longwater3.js';   /* (claude/longwater3) THE LONG WATER 3: SALTREACH on the tide kit, behind LW3_SHIPS / ?lw3=1 (src/longwater3.js) */
 import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';

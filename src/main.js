@@ -2726,8 +2726,8 @@ function applyLevelRims() {
 function spawnEntities() {
   if (PUPH) PUPH.clear();   /* THE PUPPETEER's show is made again with him (his spawn case) */
   if (LEH) LEH.clear();   /* THE LANTERN-EATER's show is made again with it (its spawn case) */
-  if (GLH) GLH.clear(); if (CQH) CQH.clear(); if (COH) COH.clear(); if (HMH) HMH.clear(); if (FKH) FKH.clear(); if (CHH) CHH.clear(); if (ADH) ADH.clear(); if (FL2H) FL2H.clear(); if (F3H) F3H.clear(); if (PMK) PMK.clear(); if (PBH) PBH.clear(); if (BZH) BZH.clear(); if (DCH) DCH.clear(); if (GDH) GDH.clear(); if (DJH) DJH.clear(); if (GCH) GCH.clear(); if (MTH) MTH.clear(); if (HNH) HNH.clear(); if (HGK) HGK.clear(); if (SMH) SMH.clear(); if (TKH) TKH.clear(); if (OTH) OTH.clear(); if (GBH) GBH.clear(); if (BBH) BBH.clear(); if (SSH) SSH.clear(); if (HQH) { HQH.restore(); HQH.clear(); } if (BTH) BTH.clear(); if (SNR) SNR.reset(); if (HPD) HPD.reset();   /* THE GANG LEADER's and THE CISTERN QUEEN's fights are made again with them (their spawn cases) */
   if (LWH) LWH.clear();   /* (claude/longwater3) the tides, the traps, the moorings and the Herald's sea made again (a death puts the boats back on their ropes) */
+  if (GLH) GLH.clear(); if (CQH) CQH.clear(); if (COH) COH.clear(); if (HMH) HMH.clear(); if (FKH) FKH.clear(); if (CHH) CHH.clear(); if (ADH) ADH.clear(); if (FL2H) FL2H.clear(); if (F3H) F3H.clear(); if (PMK) PMK.clear(); if (PBH) PBH.clear(); if (BZH) BZH.clear(); if (DCH) DCH.clear(); if (GDH) GDH.clear(); if (DJH) DJH.clear(); if (GCH) GCH.clear(); if (MTH) MTH.clear(); if (HNH) HNH.clear(); if (HGK) HGK.clear(); if (SMH) SMH.clear(); if (TKH) TKH.clear(); if (OTH) OTH.clear(); if (GBH) GBH.clear(); if (BBH) BBH.clear(); if (SSH) SSH.clear(); if (HQH) { HQH.restore(); HQH.clear(); } if (BTH) BTH.clear(); if (SNR) SNR.reset(); if (HPD) HPD.reset();   /* THE GANG LEADER's and THE CISTERN QUEEN's fights are made again with them (their spawn cases) */
   if(L.towerAscent){   /* THE TOWER STANDS AGAIN on a retry, and whatever is under the checkpoint goes again - silently, it is not news */
     towerAscentReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]),typeof checkpoint!=='undefined'&&checkpoint?(inSpiral(L.spiral,checkpoint.x,checkpoint.y-1)||inChase3(L,checkpoint.x,checkpoint.y-1)?0:checkpoint.y/TS):LH,   /* (a checkpoint on THE SPIRAL STAIR: every floor of the tower is behind you) */(x,y)=>cellSet(x,y,T.AIR),(x,y)=>cellSet(x,y,T.SOLID));
     for(const z of L.deckBreaks||[]){z.t=-1;z.down=false;z.seen=false;z.downT=0;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
@@ -31935,6 +31935,7 @@ function updateMovers(dt) {
   for (const m of movers) {
     if (m.kg) { if (KGH) { const ox = m.x, oy = m.y; KGH.mover(m, dt); m.dx = m.x - ox; m.dy = m.y - oy; } continue; }   /* THE KITCHEN GATE's great spits: where their wheel has them (src/kitchen-hands.js) */
     if (m.rope) { if (HVR) { const ox = m.x, oy = m.y; HVR.mover(m, dt); m.dx = m.x - ox; m.dy = m.y - oy; } continue; }   /* THE HANGING VILLAGE 3's counterweight decks and pulley seats: where their rope sends them */
+    if (m.lw3 && LWH && LWH.mover(m, dt)) continue;   /* (claude/longwater3) a boat where her tide puts her (held under at her mooring) */
     if (m.kind === 'carhorse') { carHorse(m, dt); continue; }
     if (m.kind === 'galhorse') { galHorse(m, dt); continue; }   /* (claude/fairfix5) THE GALLOPERS */   /* THE WICKER QUEEN'S CAROUSEL: its horses (claude/fairboss) */
     if (m.kind === 'chairo') { const ox = m.x, oy = m.y, h = FRS.chairAt(m.ring, m.idx, time), was = !m.broken; m.x = h.x - m.w / 2; m.y = h.y; m.depth = h.depth; m.broken = !h.front; m.dx = m.broken ? 0 : m.x - ox; m.dy = m.broken ? 0 : m.y - oy;   /* THE CHAIR-O-PLANE (claude/fairfix3, src/fair-rides.js): round the back of the mast a chair bears no one */
@@ -31955,7 +31956,6 @@ function updateMovers(dt) {
     if (m.mbasket && MTH && MTH.basket(m, dt)) continue;   /* (claude/redgorgerework) THE STANDPIPE BASKETS: a lever's water lifts one to her wall in phase two */   /* the dam's loose timbers on the Matriarch's ledge: they float up when it cracks */
     if (m.canal && CNH.canalMover(CANAL, CNX, m, dt)) continue;   /* THE FOG CANAL: the water in the locks, and the barge on it */
     if (m.towpath && TPH && TPH.mover(m, dt)) continue;
-    if (m.lw3 && LWH && LWH.mover(m, dt)) continue;   /* (claude/longwater3) a boat where her tide puts her (held under at her mooring) */
     if (m.h3 && H3H && H3H.mover(m, dt)) continue;   /* (claude/hurricane3) HER CASKS: the heel runs them (src/hurricane3.js) */   /* THE TOWPATH: a punt rides its lock's water (src/towpath-hands.js) */
     if (m.theatre && THH.theatreMover(THEATRE, THX, m, dt)) continue;
     if (m.pyr && PYH && PYH.mover(m, dt)) continue;   /* THE SEALED PYRAMID: a counterweight goes where its pair's weights send it (src/sealed-pyramid-hands.js) */   /* THE MASKWRIGHT'S THEATRE: a fly line's batten or sandbag */
@@ -34148,10 +34148,10 @@ function drawWorld(cx, cy, showPlayer) {
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time); if (FL2H && FL2H.on()) FL2H.drawBack(g, cx, cy, time); if (F3H && F3H.on()) F3H.drawBack(g, cx, cy, time); if (H3H && H3H.on()) H3H.drawBack(g, cx, cy, time);   /* THE FLOTILLA 2 (claude/flotilla2art): spars, hawser, wreck-bone masts, hatch, magazine, mainmast wall (src/flotilla2-art.js) */
   //   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
+    if (m.lw3) { if (LWH) LWH.drawMover(g, m, cx, cy, time); continue; }   /* (claude/longwater3) a boat (GREYBOX) */
     if (H2A.on() && (m.kind === 'swing' || (!m.kind && m.vert))) { if (m.x + m.w > cx - 40 && m.x < cx + VW + 40 || m.kind === 'swing') { if (m.kind === 'swing') H2A.swing(g, m, cx, cy, time); else H2A.hatch(g, m, cx, cy, time); } continue; }   /* her rope swings and her hatch covers (claude/hurricane2art) */
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
-    if (m.lw3) { if (LWH) LWH.drawMover(g, m, cx, cy, time); continue; }   /* (claude/longwater3) a boat (GREYBOX) */
     if (m.h3) { if (H3H) H3H.drawMover(g, m, cx, cy, time); continue; }   /* (claude/hurricane3) her casks */
     if (m.leRaft || m.ft2 || m.rope || m.kg || m.kind === 'orecw') continue;   /* (claude/hanging3: the rope decks and seats are drawn by their hands, HVR.drawWorld) */   /* (the raft is drawn by its hands: LEH.drawBack; the falling tower's telescope and chunk by ftDraw) */
     if (m.debris || m.mplank || m.mbasket) continue;   /* (claude/redgorge2: the rapids' timbers and the dam's are drawn by their hands) */
