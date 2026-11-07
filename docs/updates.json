@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-07",
+    "batch": 149,
+    "lines": [
+      "Starting at the War Cairn boss now wakes the Chieftain right away",
+      "Picking the Undead Archmage from the boss list wakes him at once",
+      "Boss list: all 69 fights re-checked to start awake at the door"
+    ]
+  },
+  {
+    "date": "2026-11-07",
     "batch": 148,
     "lines": [
       "THE DUEL PIT (BETA) is open: pick a fighter, then set lives, health, rounds and the bot",
