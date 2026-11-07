@@ -100,4 +100,4 @@ Openings come from the fight's own verb (cut the pinning arms), not from a pilla
 9. **New music for the raft half**: lane-musickraken holds the candidates. REC wire your pick in the art or tune lane. Alt: keep 'kraken' for both halves.
 
 ## Final tip
-claude/kraken3 FINAL TIP: the commit after 75fa5ec91 that adds this report (`git log -1 origin/claude/kraken3`).
+claude/kraken3 FINAL TIP ee40b091c (pushed). Play: ?cw3=1&level=causeway, the boss door. Proof: node tools/kraken3.mjs (217 ok).
