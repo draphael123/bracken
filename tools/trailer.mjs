@@ -431,16 +431,16 @@ function cut3() {
   writeFileSync(join(OUT, stem + '-cut.json'), J({ out: P.out, bpm: BPM, parts: used, skipped }, null, 1));
   if (skipped.length) process.exitCode = 1;
 }
-/* THORNROAD's cards (text only, the game's font on its dark purple; 320x180 scaled x6 nearest-neighbour). The URL line is a PLACEHOLDER until Daniel gives the page: TR_URL=... overrides it. */
+/* THORNROAD's cards (text only, the game's font on its dark purple; 320x180 scaled x6 nearest-neighbour). The URL line is omitted unless TR_URL=... is set. Font sizes must be multiples of 8 (Press Start 2P renders B as D otherwise). */
 function cards3() {
   mkdirSync(CARDS, { recursive: true }); copyFileSync(FONT, join(CARDS, 'font.ttf'));
-  const url = String(process.env.TR_URL || '[ URL GOES HERE ]').replace(/[^A-Za-z0-9 .\/\[\]-]/g, '');
+  const url = String(process.env.TR_URL || '').replace(/[^A-Za-z0-9 .\/\[\]-]/g, '');
   const dt = (txt, y, size, col = 'fff6e0') => `drawtext=fontfile=font.ttf:text='${txt}':fontsize=${size}:fontcolor=0x${col}:x=(w-text_w)/2:y=${y}:shadowcolor=0x000000:shadowx=1:shadowy=1`;
   const up = ',scale=1920:1080:flags=neighbor,format=rgb24', blank = ['-f', 'lavfi', '-i', `color=c=${BG}:s=320x180`];
   const run = (name, vf) => { const r = ff([...blank, '-vf', vf.join(',') + up, '-frames:v', '1', join(CARDS, name + '.png')], { cwd: CARDS }); console.log('card ' + name + (r.status === 0 ? '' : ' FAILED ' + r.stderr.slice(0, 300))); if (r.status !== 0) process.exitCode = 1; };
   run('title3', [dt('THORNROAD', 66, 24, 'ffd34a'), dt('A HAND-DRAWN PIXEL', 104, 8, 'c9b27c'), dt('ACTION PLATFORMER', 116, 8, 'c9b27c')]);
-  run('end3', [dt('THORNROAD', 38, 24, 'ffd34a'), dt('FREE DEMO', 76, 16, 'a8e06e'), dt('PLAY NOW - WISHLIST THE FULL GAME', 104, 8), dt(url, 120, 8, 'c9b27c'), dt('MUSIC - GREAT BOSS BY SPRING SPRING - CC0', 158, 6, '9aa39a')]);
-  run('end3-short', [dt('THORNROAD', 44, 24, 'ffd34a'), dt('FREE DEMO', 84, 16, 'a8e06e'), dt('PLAY NOW', 112, 8), dt(url, 126, 8, 'c9b27c'), dt('MUSIC - GREAT BOSS BY SPRING SPRING - CC0', 160, 6, '9aa39a')]);
+  run('end3', [dt('THORNROAD', 38, 24, 'ffd34a'), dt('FREE DEMO', 76, 16, 'a8e06e'), dt('PLAY NOW - WISHLIST THE FULL GAME', 104, 8), ...(url ? [dt(url, 120, 8, 'c9b27c')] : []), dt('MUSIC - GREAT BOSS', 146, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 158, 8, '9aa39a')]);
+  run('end3-short', [dt('THORNROAD', 44, 24, 'ffd34a'), dt('FREE DEMO', 84, 16, 'a8e06e'), dt('PLAY NOW', 112, 8), ...(url ? [dt(url, 126, 8, 'c9b27c')] : []), dt('MUSIC - GREAT BOSS', 146, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 158, 8, '9aa39a')]);
 }
 /* PHONE COPIES: every v3 mp4 re-encoded to <= 28 MB (target 26 MB: the bitrate from the length, one step down per retry). node tools/trailer.mjs phone [--in=a.mp4,b.mp4] */
 function phone() {
