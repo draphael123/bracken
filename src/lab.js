@@ -2370,8 +2370,8 @@ async function runbossLab(BK, opts) {
          and strike the winch as he runs under it - a quarter-second ahead of him, as a human leads a moving thing. Nothing is dropped for the bot */
       const lgate = boss.t === 'lance' ? lanceDuty(BK, boss, P, A, open) : null;   /* (claude/lance4) a tower bell, a rope post, the great bell */
       /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
-      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
-      const gateDuty = lgate;
+      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && false && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
+      const gateDuty = lgate; let gqDuty = null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -2852,6 +2852,7 @@ async function runbossLab(BK, opts) {
          environmental lab assist, not evidence that the pilot climbed to and operated its pressure plate. */
       else if (boss.t === 'king') { const gh = gormHands({ BK, boss, P, k, A, h, f }); if (gh) { goal = gh.goal; strike = gh.strike; } else { goal = boss.x; strike = true; } }   /* (claude/gorm2) src/lab-gorm.js: nothing dropped for the bot any more - it brings the archers down with rocks and cuts the pegs itself */
       /* THE GOBLIN QUEEN 3 (claude/gqueen3): the crown and the shards are parried (gqueenReact above), her quake is jumped (the branch above), she is cut when STUNNED / PINNED / on the tower top (the open branch). Between: hunt her - stand 80-170 px off, face her, and let the crown come. */
+      else if (boss.t === 'gqueen' && BK.gqHands && BK.gqHands() && BK.gqHands().labDuty && (gqDuty = BK.gqHands().labDuty(P))) { goal = gqDuty.x; strike = false; P.face = Math.abs(P.x - gqDuty.x) < 10 ? gqDuty.face : P.face; if (gqDuty.swing && Math.abs(P.x - gqDuty.x) < 10 && P.atk < 0) BK.press('atk'); }   /* (claude/gq2mech) the hands' duty: the winch, the bell, then clear of the grate */
       else if (boss.t === 'gqueen') { const toward = Math.sign(boss.x - P.x) || 1, gap = Math.abs(boss.x - P.x), rb = boss.mode === 'ringTell' ? BK.props().find(p => p.t === 'winch' && p.bell && p.bossGate) : null, rgx = rb ? rb.gate * 16 + 8 : 0;
         if (rb && Math.abs(P.x - rgx) < 40) { goal = Math.max(A.x0 + 24, Math.min(A.x1 - 24, rgx + (P.x < rgx ? -52 : 52))); strike = false; }   /* off the grate's column while it glows */
         else { P.face = toward; goal = gap > 170 ? boss.x - toward * 120 : gap < 80 ? boss.x - toward * 130 : null; strike = false; } }

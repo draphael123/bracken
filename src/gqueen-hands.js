@@ -15,6 +15,11 @@ GQ3.flee = { tell: 1.6 };
 GQ3.roof = { crownCd: 6, portalCd: 8, lashTell: 0.7, lashReach: 120, lashDmg: 18, lashCd: 2.4, ambushTell: 0.8, ambushCd: 9, ambushDmg: 15, geyserTell: 0.9, geyserN: 5, geyserGap: 0.25, geyserStep: 20, geyserDmg: 16, geyserCd: 7,
   leapCd: 5, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.66, 0.33], hatch: 0.8 };
 GQ3.esc = { fire: 8, fireEvery: 0.5, push: 150, fan: 3.5, cue: 0.5, collapse: 0.6, relay: 6, slate: 0.5, slateRelay: 5, step: 0.5, shardDmg: 10 };
+/* (claude/gq2mech) HIGHCROWN'S MECHANICS IN HER HALL (Daniel 11-06): (1) THE BELL IS YOURS - ring it (a blow on the bell) and she STORMS to the sound; under the grate when it drops she is PINNED ~4 s (a bigger
+   window, x1.35 a blow); the bell has a cooldown. (2) THE BARRACKS GATE (her west door) rises at 66 / 33 % of her hall bar: crank the winch (3 blows, each inside 2 s of the last, any seat) before the horn
+   runs out and the gate drops on her guards; fail and they join her. Hall only. Numbers are starting values for the tune lane. */
+GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 4.0, pinMul: 1.35, contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
+  addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
 export function makeGQueenHands(ctx) {
@@ -36,7 +41,7 @@ export function makeGQueenHands(ctx) {
   let persist = null, hallSnap = null;
   H.persist = () => persist;
   H.load = () => { S = null; persist = null; const A = L() && L().arena; hallSnap = A && A.boss === 'gqueen' ? { ...A } : null; };
-  const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map() });
+  const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map(), mech: { cd: 0, lure: null, queued: 0, waves: new Set(), wave: null, crank: 0, crankAt: -9, kept: 0, joined: 0, rings: 0, pins: 0, winchObj: {}, bellObj: {} } });
   /* her hall's arena as it was built (a portal step turns L.arena into the tower top's; a death turns it back) */
   function restoreHall() {
     const A = L().arena; if (!A || !hallSnap) return;
@@ -447,6 +452,7 @@ export function makeGQueenHands(ctx) {
         else if (e.modeT <= 0) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.5; }
         return 0;
       case 'crownFetch': return fetchStep(e);
+      case 'lure': return lureStep(e, dt);
       case 'portalTell':
         e.face = sign(P0.x - e.x) || e.face;
         if (Math.random() < dt * 30) ctx.part({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 10, y: e.y - 66 - Math.random() * 10, vx: 0, vy: -24, life: 0.4, max: 0.4, col: '#b28cff', size: 2, grav: 0, glow: true });
@@ -477,13 +483,132 @@ export function makeGQueenHands(ctx) {
   };
   H.tick = (e, dt) => { if (!S) return; e.crownCd = (e.crownCd ?? 3) - dt; e.portalCd = (e.portalCd ?? 6) - dt; };
 
+  /* ---------------- (claude/gq2mech) THE BELL LURE and THE BARRACKS GATE (her hall only) ---------------- */
+  const GM = G.mech;
+  const inHall = e => !!(e && (!e.stage || e.stage === 'hall') && L().arena && L().arena.boss === 'gqueen');
+  const bellProp = () => (ctx.bell ? ctx.bell() : null);
+  const hit = (P1, box, key) => { const hb = ctx.attackBox ? ctx.attackBox() : null; if (!hb || !P1.hitSet || P1.hitSet.has(key) || !ctx.overlap(hb, box)) return false; P1.hitSet.add(key); return true; };
+  const winchAt = () => { const A = L().arena; return { x: A.x0 + GM.winchCol * TS + 8, y: A.floor }; };
+  const safeToLure = e => ['stand', 'rec', 'slamRec', 'point', 'sceptreWait'].includes(e.mode) && !e.crownOut;
+  /* a blow on the bell: she hears it (queued up to GM.queue s if she is mid-move) */
+  function ringIt(e, b) {
+    const M = S.mech, tt = now();
+    if (tt < M.cd) { ctx.number(b.x, b.y - 30, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); return; }
+    M.cd = tt + GM.bellCd; M.queued = tt + GM.queue; M.rings++; b.swingT = 1.4; b.swing = 0.8;
+    ctx.number(b.x, b.y - 30, 'YOU RING THE BELL', '#ffd36b'); sfx('seaBell'); sfx('clank'); ctx.shake(2);
+  }
+  function lureBegin(e, b) {
+    const M = S.mech, gx = b.gate * TS + 8;
+    M.queued = 0; M.lure = { x: gx, state: 'run', wait: 0, hit: new Set() };
+    e.mode = 'lure'; e.modeT = GM.lureMax; e.crownOut = false; e.face = sign(gx - e.x) || e.face;
+    ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); ctx.number(e.x, e.y - 70, 'SHE HEARS IT', '#ff6b6b'); sfx('bellow'); sfx('callerChant');
+  }
+  /* the storm: a blockable charge at the sound (a parry on it stuns her, as on every told blow), then 0.9 s under the grate while its column glows, then the grate drops */
+  function lureStep(e, dt) {
+    const M = S.mech, Lu = M.lure, b = bellProp();
+    if (!Lu || !b) { e.mode = 'rec'; e.modeT = 0.5; M.lure = null; return 0; }
+    const dx = Lu.x - e.x; e.face = sign(dx) || e.face;
+    if (Lu.state === 'run') {
+      if (Math.abs(dx) < 8 || e.modeT <= 0) { Lu.state = 'wait'; Lu.wait = GM.tell; e.vx = 0; }
+      else {
+        const eta = Math.abs(dx) / GM.speed; if (eta < GM.tell) { b.tellUntil = now() + 0.12; b.tellK = 1 - eta / GM.tell; }
+        if (Math.random() < dt * 50) ctx.dust(e.x - e.face * 20, e.y, 1);
+        seats(P2 => {
+          if (Lu.hit.has(P2) || P2.dead || Math.abs(P2.x - e.x) > GM.contactR || Math.abs(P2.y - e.y) > 34) return;
+          Lu.hit.add(P2); const r = gqHit(e.x, GM.contact, e, 'HER CHARGE');
+          if (r.parried) { M.lure = null; b.tellUntil = 0; stun(e, G.crown.stun, G.crown.stunHp, 'PARRIED HER CHARGE'); }
+        });
+        if (!M.lure) return 0;
+        return sign(dx) * GM.speed;
+      }
+    }
+    if (Lu.state === 'wait') {
+      Lu.wait -= dt; b.tellUntil = now() + 0.12; b.tellK = 1 - Math.max(0, Lu.wait) / GM.tell;
+      if (Math.random() < dt * 14) ctx.part({ x: Lu.x + (Math.random() - 0.5) * 14, y: b.gy0 * TS, vx: 0, vy: 30, life: 0.4, max: 0.4, col: '#c9c9d6', size: 1, grav: 200 });
+      if (Lu.wait <= 0) dropGrate(e, b);
+      return 0;
+    }
+    return 0;
+  }
+  function dropGrate(e, b) {
+    const M = S.mech, Lu = M.lure, gx = Lu.x; M.lure = null; b.tellUntil = 0;
+    if (ctx.grate) ctx.grate(GM.grateHold, 'lure');
+    seats(P1 => { if (Math.abs(P1.x - gx) < 14 && P1.y > b.gy0 * TS && P1.y - 14 < (b.gy1 + 1) * TS) { ctx.damage(gx, ctx.slamDmg ? ctx.slamDmg() : 14, { up: true, unblockable: true, name: 'THE GRATE' }); P1.x = gx + (P1.x < gx ? -16 : 16); } });   /* you rang it: do not stand under it */
+    if (Math.abs(e.x - gx) < GM.under && ctx.pin && ctx.pin(e, gx, 'lure', 'THE GRATE COMES DOWN ON HER', GM.pin)) { b.pinned = e; b.pinMode = 'pinned'; b.open = 9; M.pins++; }
+    else { e.mode = 'rec'; e.modeT = 0.8; ctx.number(e.x, e.y - 70, 'SHE MISSED THE GRATE', '#c9c9d6'); }
+  }
+  const westGate = open => { if (ctx.westGate) ctx.westGate(open); };
+  function startWave(e, k) {
+    const M = S.mech, A = L().arena, w = winchAt(), idx = M.waves.size - 1;
+    M.wave = { k, at: now() + GM.delay, state: 'open', n: 0, last: -9, closeAt: 0, idx: Math.max(0, idx) };
+    M.crank = 0; westGate(true);
+    ctx.number(w.x, w.y - 44, 'CRANK THE WINCH', '#ffd36b'); ctx.number(A.x0 + 24, A.floor - 60, 'HER GUARDS COME', '#ff6b6b'); sfx('bellow'); ctx.shake(4);
+    ctx.hint('HER BARRACKS GATE IS RISING. CRANK THE WINCH (3 BLOWS) BEFORE HER GUARDS COME THROUGH.');
+  }
+  function mechStep(dt) {
+    const e = q(), M = S.mech, tt = now(); if (!e || !M || !inHall(e) || e.hidden) return;
+    const b = bellProp();
+    /* THE BELL: any seat's blow rings it */
+    if (b && !b.broken) {
+      const box = { l: b.x - 7, r: b.x + 7, t: b.y - 22, b: b.y };
+      seats(P1 => { if (hit(P1, box, M.bellObj)) ringIt(e, b); });
+      if (M.queued > 0 && !M.lure) { if (tt > M.queued) M.queued = 0; else if (safeToLure(e) && !(b.open > 0)) lureBegin(e, b); }
+    }
+    /* THE BARRACKS GATE */
+    const W0 = M.wave;
+    if (!W0) {
+      for (const k of GM.addAt) if (e.hp <= e.maxHp * k && !M.waves.has(k) && e.mode !== 'sleep' && e.mode !== 'wake') { M.waves.add(k); startWave(e, k); break; }
+      return;
+    }
+    const A = L().arena, wx = winchAt();
+    if (W0.state === 'open') {
+      seats(P1 => { if (P1.x < A.x0 + 6) { P1.x = A.x0 + 6; P1.vx = Math.max(0, P1.vx || 0); } });   /* the door is open for her guards, not for you */
+      seats(P1 => { if (W0.state === 'open' && hit(P1, { l: wx.x - 10, r: wx.x + 10, t: wx.y - 26, b: wx.y }, M.winchObj)) crank(W0); });
+      if (tt - W0.last > GM.crankWin && M.crank) { M.crank = 0; }
+      if (W0.state === 'open' && tt >= W0.at) {
+        const kinds = GM.guards[Math.min(W0.idx, GM.guards.length - 1)], col = Math.floor(A.x0 / TS) + 2;
+        kinds.forEach((t, i) => ctx.spawnEnt({ t, x: col + i * 2, y: Math.floor(A.floor / TS) - 1, face: 1 }));
+        W0.state = 'in'; W0.closeAt = tt + GM.closeAfter; M.joined++; ctx.number(A.x0 + 40, A.floor - 60, 'THE GUARDS ARE IN', '#ff6b6b'); sfx('gateDrop'); ctx.shake(3);
+      }
+    } else if (W0.state === 'in') {
+      seats(P1 => { if (P1.x < A.x0 + 6) { P1.x = A.x0 + 6; P1.vx = Math.max(0, P1.vx || 0); } });
+      if (tt >= W0.closeAt) { westGate(false); M.wave = null; }
+    }
+  }
+  function crank(W0) {
+    const M = S.mech, tt = now(), w = winchAt();
+    M.crank = (tt - W0.last > GM.crankWin ? 0 : M.crank) + 1; W0.last = tt; sfx('clank'); ctx.shake(2);
+    if (M.crank >= GM.crank) { M.crank = 0; W0.state = 'kept'; westGate(false); M.wave = null; M.kept++; ctx.number(w.x, w.y - 44, 'THE GATE DROPS: GUARDS KEPT OUT', '#8fd160'); sfx('gateDrop'); ctx.shake(5); ctx.burst(w.x, w.y - 12, 10, ['#8a8a9c', '#c9c9d6'], 70, 0.5); }
+    else ctx.number(w.x, w.y - 40, M.crank + ' / ' + GM.crank, '#ffd36b');
+  }
+  /* greybox: the winch (a drum and a rope, wound as it is cranked) while a wave is up, and the barracks horn's count */
+  function mechDraw(g, cx, cy, t) {
+    const e = q(), M = S && S.mech; if (!e || !M || !inHall(e)) return;
+    const W0 = M.wave, w = winchAt(), x = Math.round(w.x - cx), y = Math.round(w.y - cy);
+    g.fillStyle = W0 && W0.state === 'open' ? '#5a4a30' : '#3a3a44'; g.fillRect(x - 6, y - 22, 12, 22); g.fillStyle = W0 && W0.state === 'open' ? '#ffd36b' : '#6a6a78'; g.fillRect(x - 9, y - 18, 18, 4); g.fillRect(x - 2, y - 26, 4, 8);
+    if (W0 && W0.state === 'open') { const left = Math.max(0, W0.at - now()), A = L().arena; g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(A.x0 - cx) + 2, Math.round(A.floor - cy) - 70, Math.round(Math.min(1, left / GM.delay) * 40), 3);
+      g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 32, 4 * M.crank + 1, 3); }
+  }
+  H.mechDraw = mechDraw;
+  /* the LAB BOT's duty (src/lab.js): crank the winch while a wave is up, ring the bell when it is ready and she is free, then stand clear of the grate's column while she storms. null = no duty. */
+  H.labDuty = P0 => {
+    const e = q(), M = S && S.mech, b = bellProp(); if (!e || !M || !inHall(e) || !b) return null;
+    const A = L().arena, w = winchAt(), gx = b.gate * TS + 8;
+    if (M.wave && M.wave.state === 'open') return { x: w.x, face: sign(w.x - P0.x), swing: true, why: 'winch' };
+    if (M.lure) return { x: Math.max(A.x0 + 24, Math.min(A.x1 - 24, gx + (P0.x < gx ? -80 : 80))), face: sign(e.x - P0.x), swing: false, why: 'clear' };
+    if (now() >= M.cd && safeToLure(e) && !(b.open > 0)) return { x: b.x + 18, face: -1, swing: true, why: 'bell' };
+    return null;
+  };
+  H.mech = () => (S ? S.mech : null);
+  Object.assign(H.test = H.test || {}, { ringBell: () => { const e = q(), b = bellProp(); if (e && b && S) ringIt(e, b); } });
+
   /* ---------------- PER FRAME ---------------- */
   H.update = dt => {
     if (!S) return;
     if (S.esc && S.esc.on) escapeStep(dt);
     if (S.rocks.length) rockStep(dt);
     if (!ctx.bossActive() || !q()) { S.crown = null; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }
-    crownStep(dt); portalStep(dt); if (S.roof) roofUpdate(dt);
+    crownStep(dt); portalStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt);
   };
 
   /* ---------------- DRAW ---------------- */
@@ -583,6 +708,7 @@ export function makeGQueenHands(ctx) {
   const greyWorld = H.drawWorld;
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
+    try { mechDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
     if (artOff) return greyWorld(g, cx, cy, t);
     try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
   };

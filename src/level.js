@@ -3193,7 +3193,8 @@ function highcrown() {
      audit's "the Queen ignores it"). A grate hangs between her middle pillars on the bell's rope: strike the bell while she stands under it and the
      grate comes down on HER - pinned, as a pillar or a chandelier pins her (main.js gqPin). Rung while she is anywhere else, it only shuts the hall. */
   ent('winch', 227, 18, { gate: 225, gy0: 16, gy1: 19, drop: true, hold: 7, bossGate: true, bell: true });
-  ent('sign', 231, 19, { text: 'THE HALL BELL DROPS ITS GRATE. RING IT WHILE SHE STANDS UNDER.' });
+  ent('sign', 231, 19, { text: 'RING THE HALL BELL: SHE STORMS TO THE SOUND. UNDER THE GRATE WHEN IT DROPS, SHE IS PINNED.' });
+  ent('sign', 216, 19, { text: 'WHEN HER GUARDS COME, CRANK THE WINCH BY THE DOOR: THE GATE DROPS AND KEEPS THEM OUT.' });   /* (claude/gq2mech) the barracks gate's winch stands at col 217 (src/gqueen-hands.js GQ3.mech.winchCol) */
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
