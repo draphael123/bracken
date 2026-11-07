@@ -1,0 +1,52 @@
+== node tools/kraken3.mjs
+drift order THE SEA GOES QUIET > road > THE ROAD GOES > fade > THE RAFT > drift > BUBBLES... > SOMETHING UNDER THE RAFT > THE DECK SHAKES > p2 > THE KRAKEN
+
+seats seed  won   raft-s  open  cuts  taken  falls  lashed  hurts
+1     1     true      30     3     7     50      1       1  {"WRECKAGE":1}
+1     2     true      29     3     7     50      1       1  {"WRECKAGE":1}
+1     3     true      33     3     7     72      1       1  {"WRECKAGE":1,"HIS ARM":1}
+1     4     true      29     3     7     50      1       1  {"WRECKAGE":1}
+1     5     true      30     3     7     72      1       1  {"WRECKAGE":1,"HIS ARM":1}
+1     6     true      29     3     7     50      1       1  {"WRECKAGE":1}
+2     1     true      36     3    10     80      0       2  {"WRECKAGE":2,"HIS ARM":2}
+2     2     true      28     3    10     36      0       2  {"WRECKAGE":2}
+2     3     true      30     3    10     36      0       2  {"WRECKAGE":2}
+2     4     true      32     3    10     68      1       2  {"WRECKAGE":2}
+2     5     true      30     3    10     36      0       3  {"WRECKAGE":2}
+2     6     true      30     3    10    164      4       2  {"WRECKAGE":2}
+3     1     true      34     3    10    120      0       2  {"WRECKAGE":3,"HIS ARM":3}
+3     2     true      27     3    10     54      0       3  {"WRECKAGE":3}
+3     3     true      30     3    10    182      4       2  {"WRECKAGE":3}
+3     4     true      27     3    10    150      3       2  {"WRECKAGE":3}
+3     5     true      27     3    10     54      0       3  {"WRECKAGE":3}
+3     6     true      29     3    10    214      5       2  {"WRECKAGE":3}
+4     1     true      36     3    13    468     14       2  {"A ROCK":1}
+4     2     true      30     3    13    148      4       2  {"A ROCK":1}
+4     3     true      31     3    13    212      6       2  {"A ROCK":1}
+4     4     true      28     3    13    140      0       2  {"A ROCK":1,"HIS ARM":4}
+4     5     true      27     3    13    140      0       2  {"A ROCK":1,"HIS ARM":4}
+4     6     true      30     3    13    108      0       2  {"A ROCK":1,"HIS ARM":4}
+mash   L 664 27s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":1,"HIS BEAK":13,"THE SPOUT":1,"A BARNACLE":3} dead | L 640 23s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":4,"HIS BEAK":12,"THE SPOUT":1} dead | L 644 27s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":1,"HIS BEAK":13,"THE SPOUT":1,"A BARNACLE":2} dead | L 664 27s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":1,"HIS BEAK":13,"THE SPOUT":1,"A BARNACLE":3} dead | L 640 23s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":4,"HIS BEAK":12,"THE SPOUT":1} dead | L 664 27s {"WRECKAGE":2,"A ROCK":1,"HIS ARM":1,"HIS BEAK":13,"THE SPOUT":1,"A BARNACLE":3} dead
+slow   W 56s 32 | W 56s 32 | W 58s 32
+kraken3: 217 ok, 0 failed
+exit 0
+== node tools/causeway3.mjs
+causeway3: 98 ok
+exit 0
+== node tools/homepaths.mjs
+ok  homepaths     1836 source and tool files, none hardcodes a path under a user's home directory.
+exit 0
+== node tools/comments.mjs
+no swallowed code found.
+exit 0
+== node tools/dangling-paths.mjs
+      cited by: src/contrast-rim.js, src/redraw/sea_wildlife.js, work/claude/lane-done/claude-foeposes.md, work/claude/lane-done/claude-shopart.md
+ok  dangling-paths 12267 tracked files, every repo path they cite resolves in a fresh clone (44 known holes listed above, forgiven on purpose).
+exit 0
+== node tools/blow-tags.mjs
+blow-tags: ok (54 boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet; B13: the Lance, the Paladin and the Captain guard by angle)
+exit 0
+== node tools/anchor-lint.mjs
+(* = gated: rookery; the rest are LISTED, not failed - the brief: list them, do not fix them)
+ok  anchor-lint  every ledge, prop and perch of rookery hangs on something
+exit 0

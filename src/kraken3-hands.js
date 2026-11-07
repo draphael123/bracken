@@ -54,7 +54,7 @@ export function makeKraken3Hands(ctx) {
   /* ---------- ONE FRAME OF HIM ---------- */
   H.bossTick = (e, dt) => {
     const S = e.k3; if (!S) return;
-    if (!e.alive) { hide(e); return; }
+    if (!e.alive) return;   /* (dead: he stays where he fell - the win's drops come from there) */
     e.anim = (e.anim || 0) + dt; e.flash = Math.max(0, (e.flash || 0) - dt);
     const hs = heroes(), view = G ? hs.map((pp, i) => ({ i, x: pp.x - G.rx0, y: pp.y - G.deckY, air: !pp.ground, duck: !!pp.ducking, dead: !!pp.dead || (pp.down || 0) > 0, swim: !!pp.swim, hold: ctx.holding(pp) })) : [];
     if (S.st === 'sink') e.sinkY = Math.min(80, (e.sinkY || 0) + dt * 30);
