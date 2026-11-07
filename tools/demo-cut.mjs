@@ -68,6 +68,7 @@ const PINNED = [
   [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
   [/^DS\.demoLocked\(lv\)\)/, 'map header counters: the slice only (smallfix14)'],
   [/^DS\.DEMO \? MUSIC_NAMES/, 'sound test: only the shipped tracks (smallfix14)'],
+  [/^DS\.DEMO$/, 'unlocks screen: the demo slice only (claude/unlocks, unlockDemo)'],
   [/^DS\.DEMO\b/, 'title: no boss rush'],
 ];
 const left = uses.slice();

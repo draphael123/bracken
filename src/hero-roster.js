@@ -18,7 +18,7 @@ export const HERO_RULE_SHIPS = false;
    HEROES reads it). A slot or a device roster that already owns him keeps him either way (lockOf only gates heroes you do not own), and gets THE CHIEFTAIN'S AXES for beating him */
 export const WARCAIRN_SHIPS = true;   /* flipped in BATCH129 (Daniel approved War Cairn 10-29; music picks approved) */
 /* the lines a locked card says (size 6, 320 wide: textfit heropick strict). Hero-specific where the way in is not just the store. */
-const HOW = { reaper: 'BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER', ...(WARCAIRN_SHIPS ? { berserker: 'BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER' } : {}) };
+const HOW = { reaper: 'BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER', paladin: 'BEAT HIM IN THE LIT CHURCH, THEN BUY: 10 SILVER', ...(WARCAIRN_SHIPS ? { berserker: 'BEAT HIM AT THE WAR CAIRN, THEN BUY: 10 SILVER' } : {}) };
 export const howTo = (h, ruleShips = HERO_RULE_SHIPS) => ruleShips ? 'BEAT HIM, THEN 10 SILVER' : (HOW[h] || 'BUY IN THE STORE - 10 SILVER');
 
 const get = (s, k) => { try { return s.getItem(k); } catch { return null; } };
