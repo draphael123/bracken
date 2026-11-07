@@ -72,7 +72,9 @@ export function buildLongWater3(R, T, TS = 16) {
   const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };
   const ground = (x0, x1, top) => fill(x0, x1, top, H - 1, T.SOLID);
   const air = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.AIR);
-  const net = (x, y0, y1) => fill(x, x, y0, y1, T.NET);   /* KELP ropes / net ladders up a wall (art owed: kelp + barnacled rope) */
+  const net = (x, y0, y1) => fill(x, x, y0, y1, T.NET);
+  const supports = (R.routeSupports || []).filter(p => p.x < X0).map(p => ({ ...p }));
+  const plat = (x, y, n) => { fill(x, x + n - 1, y, y, T.ONEWAY); for (const px of [...new Set([x, ...Array.from({ length: n }, (_, i) => x + i).filter(q => (q - x) % 3 === 0), x + n - 1])]) { let b = y + 1; while (b < H - 1 && grid[b * W + px] === T.AIR) b++; if (b - y >= 2) supports.push({ x: px, y, bottom: b, kind: 'hcpier' }); } };   /* a stone pier at each end and every third column (src/route-art.js draws hcpier as stone) - lay plats AFTER their ground */   /* KELP ropes / net ladders up a wall (art owed: kelp + barnacled rope) */
   const ents = R.ents.filter(e => e.x < X0).map(e => ({ ...e }));
   const ent = (t, x, y, o) => ents.push({ t, x, y, ...(o || {}) });
   const sign = (x, y, text) => ent('sign', x, y, { text });
@@ -98,6 +100,7 @@ export function buildLongWater3(R, T, TS = 16) {
 
   // ================= 1. THE STAITHE (370-411): TEACH THE BELL =================
   ground(370, 381, ST);
+  plat(371, 19, 4); coins([372, 18], [374, 18]);   /* the smokehouse roofs: a second height over the street (posts: src/island-posts.js) */
   sign(371, 22, LW3_SIGNS.intro); ent('check', LW3.checks[0][0], LW3.checks[0][1]);
   prop('smokehouse', 372, 22); deco(376, 22, 'fishCottage', 0); deco(379, 22, 'netPoles');
   prop('local', 375, 22, { home: 376 }); prop('local', 378, 22, { home: 376 });
@@ -106,7 +109,7 @@ export function buildLongWater3(R, T, TS = 16) {
   ground(382, 394, 33); net(382, 23, 32);   /* the kelp ladder back up out of the mud */
   boat('bay', 'b1', 385, 391, 32, 23, 4);
   coins([384, 32], [386, 31], [388, 31], [390, 31], [393, 32]);
-  ground(395, 411, ST);
+  ground(395, 411, ST); plat(400, 19, 6); coins([401, 18], [403, 18], [405, 18]);   /* the smokehouse roofs: a second height over the street */
   sign(397, 22, LW3_SIGNS.bell); deco(400, 22, 'fishCottage', 1); prop('smokehouse', 404, 22); deco(407, 22, 'netPoles'); deco(402, 22, 'seaLantern', 1);
   prop('local', 399, 22, { home: 400 }); prop('local', 403, 22, { home: 400 }); prop('gulls', 406, 22);
   sign(408, 22, LW3_SIGNS.pools); bell('bay', 410, 22);
@@ -125,7 +128,7 @@ export function buildLongWater3(R, T, TS = 16) {
   // ================= 3. THE MILL RACE (456-497): TEACH THE SLUICE (required: the race's own low is too short to walk) =================
   ground(456, 457, ST); ground(458, 461, 28); net(458, 23, 27);
   sign(456, 22, LW3_SIGNS.race); sluice('race', 460, 27, LW3.race.hold);
-  fill(462, 489, 9, 27, T.SOLID); ground(462, 489, 35);   /* THE MILL over the race: its floor is the race's roof */
+  fill(462, 489, 0, 27, T.SOLID); ground(462, 489, 35);   /* THE MILL, built into the bluff over the race: its floor is the race's roof (it hangs on the bluff, not on air: anchor-lint) */
   prop('millwheel', 470, 27);
   ground(490, 491, 32); ground(492, 493, 29); ground(494, 495, 26); ground(496, 497, ST);
   coins([465, 34], [470, 34], [475, 34], [480, 34], [485, 34], [491, 31]);
@@ -146,6 +149,7 @@ export function buildLongWater3(R, T, TS = 16) {
 
   // ================= 5. THE LOW STREET (546-585): THE AMBUSH =================
   ground(546, 585, 26); sign(547, 25, LW3_SIGNS.low);
+  for (const [a, y, n] of [[551, 23, 5], [558, 22, 5], [565, 23, 5], [572, 22, 5], [579, 23, 4]]) plat(a, y, n);   /* the net-drying walks over the low street (rope and net, art owed: not timber) */
   for (const [x, v] of [[552, 1], [563, 0], [574, 1]]) deco(x, 25, 'fishCottage', v);
   prop('smokehouse', 558, 25); prop('gulls', 568, 25); deco(581, 25, 'seaLantern', 1);
   coins([550, 24], [556, 24], [561, 23], [566, 24], [571, 23], [577, 24], [583, 24]);
@@ -201,7 +205,7 @@ export function buildLongWater3(R, T, TS = 16) {
     bore: { ...R.bore, x1: Math.min(R.bore.x1, X0 * TS) }, fresh: [0, 365], turn: [300, 420],
     music: 'longwater', rule: LW3_RULE, lw3: true, checkRun: 280,   /* two shrines in Saltreach (Daniel: fewer): the auto-placer must not put one back between them */
     lw3Tides: tides, lw3Bells: bells, lw3Sluices: sluices, lw3Traps: traps, lw3Moors: moors, lw3Props: props, lw3Races: races, lw3Boats: Object.values(floats).flat().map(f => ({ ...f, x: f.x0 })),
-    rigBands: (R.rigBands || []).concat(rigBands),
+    rigBands: (R.rigBands || []).concat(rigBands), routeSupports: supports,
     sections: LW3.sections.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     palette: { ...R.palette, haze: 'rgba(214,226,232,0.16)' },   /* the pale sea-mist (art owed: its own tile kit + lantern amber) */
     weather: (R.weather || []).concat([{ x0: X0 * TS, x1: W * TS, kind: 'mist' }]),
