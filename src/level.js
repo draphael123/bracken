@@ -31,7 +31,6 @@ import {polishCoastAndTown} from './coast-town.js';
 import {addIslandPosts} from './island-posts.js';
 import {addDemoSupports} from './demo-supports.js';   /* (claude/floatfix) the hidden arena_yard is not run through addIslandPosts: its stair gets its risers here */
 import {crabTrench,underwaterKeep} from './deep-split.js';
-import { buildCauseway3, cw3On, shadowCauseway } from './causeway3.js';   /* (claude/causeway3w) THE DROWNED CAUSEWAY 2: the sea act's finale on the tide kit, behind CW3_SHIPS / ?cw3=1 (src/causeway3.js) */
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
@@ -40,6 +39,7 @@ import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
 import { spanOf, THREAT } from './threat.js';
+import { buildCauseway3, cw3On, shadowCauseway } from './causeway3.js';   /* (claude/causeway3w) THE DROWNED CAUSEWAY 2: the sea act's finale on the tide kit, behind CW3_SHIPS / ?cw3=1 (src/causeway3.js) */
 import { buildUnburiedField } from './unburied-field.js';
 import { stormholdTown } from './stormhold-town.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
