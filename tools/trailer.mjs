@@ -319,7 +319,13 @@ function renderClip(id, beats, vert, fade, outFile, cap = null, ov = null) {   /
   const wide = meta.kind === 'map' ? false : isWide(id), fl = [], boss = wide && meta.kind === 'boss';
   const fx = hx ? smooth(hx.map(q => (boss ? 0.7 * q[0] + 0.3 * q[2] : q[0]))) : null, fy = hx ? smooth(hx.map(q => (boss ? 0.7 * q[1] + 0.3 * q[3] : q[1]))) : null;
   let vf;
-  if (vert) {   /* 216x360 of the 640x360 plate, followed on the hero, x5 = 1080x1800, on the game's dark purple to 1080x1920 */
+  if (vert && meta.vcrop) {   /* v4 HAND-FRAMED: vcrop = { w, h, x (a number, or [x0, x1] for a pan across the clip), y, follow? }: a w x h window of the 640x360 plate, whole-pixel scaled to 1080 wide, centred on a dark blurred copy of the plate (letterbox). x ignores the hero unless follow. */
+    const c = meta.vcrop, cmdFile = join(WORK, id + '-v.cmd'), L = [], xs = Array.isArray(c.x) ? c.x : [c.x, c.x];
+    for (let i = 0; i < n; i++) { const t = n > 1 ? i / (n - 1) : 0, cx = c.follow && fx ? fx[Math.min(fx.length - 1, start + i)] * 640 - c.w / 2 : xs[0] + (xs[1] - xs[0]) * t, x = Math.round(Math.max(0, Math.min(640 - c.w, cx))); L.push((i / FPS).toFixed(4) + ' crop@fg x ' + x + ';'); }
+    writeFileSync(cmdFile, L.join('\n'));
+    const pre = meta.mask ? `drawbox=x=${meta.mask[0]}:y=${meta.mask[1]}:w=${meta.mask[2]}:h=${meta.mask[3]}:color=${meta.mask[4]}:t=fill,` : '', oy = c.oy != null ? c.oy : 0;
+    vf = `${pre}split[a][b];[b]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=24:3,eq=brightness=-0.3:saturation=0.8[bg];[a]sendcmd=f=${id}-v.cmd,crop@fg=${c.w}:${c.h}:0:${c.y || 0},scale=iw*6:ih*6:flags=neighbor,scale=1080:-2:flags=area[fg];[bg][fg]overlay=0:(H-h)/2+${oy}`;
+  } else if (vert) {   /* 216x360 of the 640x360 plate, followed on the hero, x5 = 1080x1800, on the game's dark purple to 1080x1920 */
     const cmdFile = join(WORK, id + '-v.cmd'), L = [];
     for (let i = 0; i < n; i++) { const cx = fx ? fx[Math.min(fx.length - 1, start + i)] : 0.5, x = Math.round(Math.max(0, Math.min(640 - 216, cx * 640 - 108))); L.push((i / FPS).toFixed(4) + ' crop x ' + x + ';'); }
     writeFileSync(cmdFile, L.join('\n')); vf = `sendcmd=f=${id}-${vert ? "v" : "w"}.cmd,crop=216:360:0:0,scale=1080:1800:flags=neighbor,pad=1080:1920:0:60:color=${BG}`;
@@ -417,7 +423,7 @@ function cut3() {
         renderCard(p.card, beats, vert, fade, file); used.push({ at: +t.toFixed(2), card: p.card, secs: +(beats * BEAT).toFixed(2) }); t += beats * BEAT;
       } else {
         if (!existsSync(join(CLIPS, p.clip + '.json'))) throw new Error('no clip ' + p.clip);
-        const ov = {}; if (p.start != null) ov.from = p.start; if (p.zoom != null) ov.zoom = p.zoom; if (p.mask) ov.mask = p.mask;
+        const ov = {}; if (p.start != null) ov.from = p.start; if (p.zoom != null) ov.zoom = p.zoom; if (p.mask) ov.mask = p.mask; if (p.vcrop && vert) ov.vcrop = p.vcrop;
         const u = renderClip(p.clip, beats, vert, fade, file, p.cap || null, ov); used.push({ at: +t.toFixed(2), ...u, secs: +(u.frames / FPS).toFixed(2), cap: p.cap || undefined }); t += u.frames / FPS;
       }
       files.push(file);
