@@ -24,3 +24,7 @@ Fresh save in the knight's first wood: slot-1 icon shown on the HUD and the YOUR
 2. Grants are for all nine heroes even before they are unlocked (invisible, makes unlock free of hooks). Rec: keep.
 
 Wider batch (demo-save-carry, demo-cut, hero-roster, skill-passives, tech-cards, flasks2, store, store-ui, leveling*, coop-progress, first-cards, starter-skill) was still running at report time; demo-save-carry and demo-cut green. Log: /tmp/run.log (not scratch; rerun if gone).
+
+## Wider batch result (final)
+Green: demo-save-carry, demo-cut, hero-roster, skill-passives, tech-cards, store, coop-progress, first-cards, starter-skill, leveling, levelling (the last two adapted to buy from no starter; tip 23d2370b2+).
+Browser-based, NOT run here (need a browser/RAM gate): flasks2, store-ui, leveling2-runtime, progression-economy. store-ui buys the tree's first ability and would hit 'Already owned' now; I edited its line 29 blind to clear that ownership first - rerun it at the gate. flasks2 and leveling2-runtime may need the same one-line adaptation if they buy a level-1 skill.
