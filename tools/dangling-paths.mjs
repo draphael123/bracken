@@ -82,6 +82,7 @@ const MISSING = new Map([
   ['docs/level-design/', 'ON A BRANCH, SAID SO. The whole directory (and its wood-to-highcrown-design.md, the design audit) lives on origin/claude/designaudit, which has not merged; claude/hanging2 was briefed to read it there (`git show origin/claude/designaudit:docs/level-design/wood-to-highcrown-design.md`). Delete this line once that branch merges.'],
   ['src/redraw/prior_queen_set.js', 'UNTRACKED ON PURPOSE (claude/queengloss): the pre-pass Hornet Queen art, kept as a local copy only so tools/queengloss-sheet.mjs can draw the before/after sheet; the tool says so. Delete this line if the copy is ever committed or the tool is retired.'],
   ['docs/visual-audit/', 'ON A BRANCH, SAID SO. lanes.md and foes.md (the sprite-camo + missing-hurt-pose cluster this brief was cut from) live on origin/claude/visualaudit, which has not merged; claude/foeposes was briefed to read them there (`git show origin/claude/visualaudit:docs/visual-audit/foes.md`). Delete this line once that branch merges.'],
+  ['.claude/bracken-lanes/', 'LOCAL REVIEW MEDIA ON PURPOSE (claude/transland): the transition review clips (.mp4, contact sheet) live in the lane owner local scratch/lane-reports folder, not in the repo; claude-transland.md lists where they sit on his PC. Only that lane report cites them.'],
 ]);
 /* a citation is forgiven if it sits under one of the MISSING prefixes */
 const forgiven = p => [...MISSING.keys()].some(m => m.endsWith('/') ? p.startsWith(m) : p === m);
