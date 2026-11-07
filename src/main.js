@@ -104,6 +104,7 @@ import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /*
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
+import * as CW3T from './redraw/causeway3_tiles.js'; import * as CW3B from './redraw/causeway3_back.js'; import * as CW3S from './redraw/causeway3_art.js';   /* (claude/cw3art) THE DROWNED CAUSEWAY 2's ART: pilgrim-stone tile kit, storm sky + lighthouse backdrop, the pieces */
 import { makeCauseway3Hands } from './causeway3-hands.js'; let CWH = null;   /* (claude/causeway3w) THE DROWNED CAUSEWAY 2 (?cw3=1): its tides, bells, sluice wheels, floodgate, currents, boats, lamps, the Kraken's arms and THE COLLAPSE - inert on every other level and with the flag off */
 import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight, pipsOf } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
@@ -1548,6 +1549,7 @@ function resolveTiles() {
     if (L.ucKit) { const ts = UCT.ucTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNDERCROWN's tile kit (claude/undercrown2art, src/redraw/undercrown_tiles.js) */
     if (L.wcKit) { const ts = WCT.wcTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* (claude/warcairnart) THE WAR CAIRN: granite slab ledges and the slate-tread rope bridge, no timber (src/redraw/warcairn_tiles.js) */
     if (L.moorRocks) { const ts = MRT.moorTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* GALE MOOR's tor country kit, THE WIND ROCKS to the landing (src/redraw/moor_tiles.js) */
+    if (L.cw3Kit) { const ts = CW3T.cw3Tile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* (claude/cw3art) THE DROWNED CAUSEWAY 2's tile kit: pilgrim flags dry (act I) and tide-washed (II, III), the wreck's hull, the fallen towers, the chapel, the undersea vaults, mud and bed, the Pilgrims' Gate (src/redraw/causeway3_tiles.js) */
     tileSpr[y * LW + x] = s;
     { // how far under the open air this tile sits: the ground gets heavier the deeper it goes
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
@@ -12592,7 +12594,8 @@ function updateStrikes(dt) {
 function drawStrike(cx, cy) {
   if (strike && strike.state === 'tell') { // where it is going to hit, and how long you have
     const x = Math.round(strike.x - cx), y0 = 0, y1 = Math.round(strike.y - cy), k = 1 - Math.max(0, strike.t) / (L.storm2.tell || 1.1);
-    if (x > -30 && x < VW + 30) {
+    if (x > -30 && x < VW + 30 && L.cw3Kit) { CW3S.drawStrike(g, strike.x - cx, y0, strike.y - cy, k, time); if (k > 0.55) tellQ.push({ txt: '!', x, y: y1 - 26 - Math.round(k * 6), col: '#dfe8ff', a: 1 }); }   /* (claude/cw3art) the warned strike's ward-ring on the stone */
+    else if (x > -30 && x < VW + 30) {
       g.globalAlpha = 0.18 + 0.3 * k; g.fillStyle = '#9ab8ff'; g.fillRect(x - 1 - Math.round(k * 2), y0, 3 + Math.round(k * 4), Math.max(0, y1 - y0)); g.globalAlpha = 1;
       g.fillStyle = Math.floor(time * 14) % 2 ? '#eef4ff' : '#9ab8ff';
       for (let r = 0; r < 3; r++) { const rr = 5 + r * 4 + Math.round(k * 6); g.fillRect(x - rr, y1 - 1, 2, 2); g.fillRect(x + rr - 2, y1 - 1, 2, 2); }
@@ -34011,6 +34014,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.skyroad) SKB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SKY ROAD's own far mesas, kite fleet, landmark spires and the Eyrie on the horizon (claude/skyroadart, src/redraw/skyroad_backdrop.js) */
   else if (L.buriedcity) {}   /* (claude/buriedcity2) THE BURIED CITY drew its own backdrop above: no far dunes under the sand roof */
   else if (L.minecart) { MCB.drawBackdrop(g, cx, cy, VW, VH, L, time); if (FGR && FGR.on()) FGR.drawBack(g, cx, cy, VW, VH, time); }   /* (claude/forgemasterart) the smelter floor's own back wall + THE FURNACE, over the mine's timber backdrop */   /* THE DEEP RAILS' own deep mine: the rock wall, ore veins, timber frames, lantern strings, the goblin works, the smelter's chimney and the bore's mouth (claude/minecartart, src/redraw/minecart_backdrop.js) */
+  else if (L.cw3Kit) CW3B.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full', skyGlow);   /* (claude/cw3art) THE DROWNED CAUSEWAY 2's own storm sky that builds dusk -> night, the cloud wall, the far shore + the causeway out to the light, its lightning (src/redraw/causeway3_back.js) */
   else if (L.towpath) TPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE TOWPATH's own night: the moon, Waymeet's roofs going to silhouette, drowned willows, lock cottages (src/redraw/towpath_backdrop.js) */
   else if (L.canal) CNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE FOG CANAL's own far fields, mill, steeple, hedges, cottages and boats (src/redraw/canal_backdrop.js), not Waymeet's town */
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
@@ -34359,6 +34363,8 @@ function drawWorld(cx, cy, showPlayer) {
       if (pr.hit > 0) { g.globalAlpha = pr.hit; g.fillStyle = '#e8dcc0'; g.fillRect(x0, y0 + Math.floor(h / 2) - 2, w, 4); g.globalAlpha = 1; }
       continue; }
     else if (pr.t === 'cannon' && pr.deck && FL2H && FL2H.on()) { FL2H.drawGun(g, pr, cx, cy, time); }
+    else if (pr.t === 'cannon' && L.cw3Kit) { CW3S.drawGun(g, Math.round(pr.x - cx), Math.round(pr.y - cy), pr.aim || 1, pr.fired, time);   /* (claude/cw3art) the wreck's gun on its truck carriage */
+      if (pr.smoke > 0 && Math.random() < 0.5) parts.push({ x: pr.x + 18, y: pr.y - 10, vx: 40 + Math.random() * 60, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, col: '#9aa39a', size: 2, grav: -10 }); }
     else if (pr.t === 'cannon') { if (!PROP.flot) continue; const c = PROP.flot.cannon[pr.fired ? 1 : 0]; g.drawImage(c, Math.round(pr.x - 15 - cx), Math.round(pr.y - c.height - cy));
       if (pr.smoke > 0 && Math.random() < 0.5) parts.push({ x: pr.x + 18, y: pr.y - 10, vx: 40 + Math.random() * 60, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, col: '#9aa39a', size: 2, grav: -10 }); }
     else if (pr.t === 'plank') { if (!PROP.flot) continue; const c = PROP.flot.gangplank[pr.down ? 1 : 0];
@@ -34446,6 +34452,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy);
       if (st === 1 && pr.tollK > 0) LA.lampDrain(g, lx0, ly0, pr.tollK);   /* its flame drawn out to the toll box */
       if (lampDrowned(pr)) LA.hoodWater(g, lx0, ly0, time, Math.round(pr.x) & 7); }   /* the writ's water standing in its hood */
+    else if (pr.t === 'lantern' && L.cw3Kit) CW3S.drawLamp(g, pr.x - cx, pr.y - cy, pr.lit, time, pr.gate !== undefined);   /* (claude/cw3art) the Causeway's storm lamp: iron post, caged glass, a flame and halo when it burns */
     else if (pr.t === 'lantern') { const lit = pr.lit && !(pr.owl && pr.lampT < OWL_LAMP.flick && Math.sin(time * 38 + pr.x) < -0.15);   /* (claude/owl3) THE GUTTER: her lamp's last OWL_LAMP.flick s stutters dark and bright */ if (lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (pr.owl && !pr.perch) { const px = Math.round(pr.x - cx), py = Math.round(pr.y - cy); g.globalAlpha = lit ? 0.22 + 0.05 * Math.sin(time * 4 + pr.x) : 0.12; g.fillStyle = lit ? '#ffd36b' : '#141020'; g.beginPath(); g.ellipse(px, py - 1, lit ? 40 : 14, lit ? 6 : 3, 0, 0, 7); g.fill(); if (lit) { g.globalAlpha = 0.18; g.fillStyle = '#fff2c0'; g.beginPath(); g.ellipse(px, py - 1, 18, 3, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }   /* (claude/owl2) HER FLOOR LAMPS' GLOW POOLS on the boards: a lit lamp is where she crashes */
       if (pr.perch) g.drawImage(PROP.crownLantern[lit ? 1 : 0], 0, 0, 12, 11, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy, 12, 11);   /* (claude/owl2) HER PERCH LAMPS HANG: the lamp alone, on its chain off a limb of the bough (src/hanging-village.js drawCrown) - they stood on posts that floated over the planks */
