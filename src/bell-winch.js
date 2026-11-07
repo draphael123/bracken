@@ -54,3 +54,7 @@ export function waveTick(W, t, win, closeAfter) {
 export function hornLeft(W, t, delay) { return W && W.state === 'open' ? Math.max(0, Math.min(1, (W.at - t) / delay)) : 0; }
 /* the guards a wave sends: the base kinds, plus one soldier at 3-4 seats (HCPLAN sec 2 co-op) */
 export function waveKinds(kinds, seats) { return seats >= 3 ? kinds.concat(['soldier']) : kinds.slice(); }
+
+/* ---------- THE MURDER HOLE (src/main.js murderhole props: Highcrown's six) ---------- a stone a seat drops by striking its slot or chain: dmg to each foe it passes, a heavy
+   or an elite staggered, never a hero; it reloads. */
+export const MURDER = { dmg: 40, stagger: 1.0, reload: 10, fall: 420 };
