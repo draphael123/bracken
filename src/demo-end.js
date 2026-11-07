@@ -103,5 +103,7 @@ export const KEEP_FILE = CFG.KEEP_FILE;
 /* THE MAP CAPTION (batch143, demoend Q4): a plate under the map's header while the cursor is on Kingswood (the end of the demo road) or on any shut node - the road is longer than the demo. Pure canvas, no DOM; text/textW are main.js's own. */
 export function mapCaption(g, text, textW, VW, time, nodeId, shut, plates) { if (nodeId !== 'kings' && !shut) return; const s = CFG.MAP_CAPTION, w = Math.ceil(textW(s, 6)) + 10, x0 = Math.round((VW - w) / 2);
   /* (smallfix14) it sits under the header, and steps down past any node plate it would cover (the Kingswood plate sat under it when Kingswood was at the top of the view) */
-  let cy = 21; for (let n = 0; n < 8; n++) { const hit = (plates || []).find(p => p.x < x0 + w + 1 && p.x + p.w > x0 - 1 && p.y < cy + 12 && p.y + p.h > cy - 1); if (!hit) break; cy = Math.ceil(hit.y + hit.h) + 2; }
+  /* (claude/mapclean) `plates` is every rect it must not cover - boards, nodes, the card. It tries the strip under the header, then the strip over the footer, then steps down past what is in the way. */
+  const free = y => !(plates || []).some(p => p.x < x0 + w + 1 && p.x + p.w > x0 - 1 && p.y < y + 12 && p.y + p.h > y - 1);
+  let cy = 21; if (!free(cy) && free(169 - 12 - 2)) cy = 169 - 14; else for (let n = 0; n < 8; n++) { const hit = (plates || []).find(p => p.x < x0 + w + 1 && p.x + p.w > x0 - 1 && p.y < cy + 12 && p.y + p.h > cy - 1); if (!hit) break; cy = Math.ceil(hit.y + hit.h) + 2; }
   g.fillStyle = 'rgba(21,16,34,0.82)'; g.fillRect(x0, cy, w, 10); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(x0, cy + 10, w, 1); text(s, VW / 2, cy + 2, Math.sin(time * 2.2) > -0.4 ? '#ffd36b' : '#c9b27c', 'center', 6); }
