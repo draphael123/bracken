@@ -45,7 +45,7 @@ export const PLAY = `
 `;
 export const SCENES2 = [
   { id: 'verb_comb', zoom: 1, from: 46, hero: 'knight', level: 'hornetsnest', note: "the Hornet's Nest: strike the hanging comb, it drops and becomes a step up the wall", js: PLAY + `
-    fresh('hornetsnest'); BK.tp(33, 65); BK.sim(20); P().face = 1; cap(30);
+    fresh('hornetsnest', 'knight', 3); BK.tp(33, 65); BK.sim(20); P().face = 1; cap(30);
     runTo('right', 36.2 * TS, 200); clr(); cap(10); hop(null, 22); BK.press('atk'); cap(30); clr();
     cap(70); runTo('right', 44 * TS, 300); cap(40);` },
   { id: 'verb_hoist', zoom: 1, from: 30, hero: 'knight', level: 'hanging', note: 'the Hanging Village: carry a coil to the hoist, ride the deck up to the market', js: PLAY + `
