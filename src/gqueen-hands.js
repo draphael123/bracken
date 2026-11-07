@@ -4,7 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
-import * as GA from './redraw/gqueen_art.js';   /* (claude/gq2art) the art */
+import * as GA from './redraw/gqueen_art.js'; import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.5, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
@@ -487,14 +487,14 @@ export function makeGQueenHands(ctx) {
   const GM = G.mech;
   const inHall = e => !!(e && (!e.stage || e.stage === 'hall') && L().arena && L().arena.boss === 'gqueen');
   const bellProp = () => (ctx.bell ? ctx.bell() : null);
-  const hit = (P1, box, key) => { const hb = ctx.attackBox ? ctx.attackBox() : null; if (!hb || !P1.hitSet || P1.hitSet.has(key) || !ctx.overlap(hb, box)) return false; P1.hitSet.add(key); return true; };
+  const hit = (P1, box, key) => BW.struck(ctx.attackBox, ctx.overlap, P1, box, key);   /* (claude/highcrown3) the shared rule code, src/bell-winch.js */
   const winchAt = () => { const A = L().arena; return { x: A.x0 + GM.winchCol * TS + 8, y: A.floor }; };
   const safeToLure = e => ['stand', 'rec', 'slamRec', 'point', 'sceptreWait'].includes(e.mode) && !e.crownOut;
   /* a blow on the bell: she hears it (queued up to GM.queue s if she is mid-move) */
   function ringIt(e, b) {
     const M = S.mech, tt = now();
-    if (tt < M.cd) { ctx.number(b.x, b.y - 30, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); return; }
-    M.cd = tt + GM.bellCd; M.queued = tt + GM.queue; M.rings++; b.swingT = 1.4; b.swing = 0.8;
+    if (BW.ringBell(M, tt, GM.bellCd, GM.queue) === 'swinging') { ctx.number(b.x, b.y - 30, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); return; }
+    b.swingT = 1.4; b.swing = 0.8;
     ctx.number(b.x, b.y - 30, 'YOU RING THE BELL', '#ffd36b'); sfx('seaBell'); sfx('clank'); ctx.shake(2);
   }
   function lureBegin(e, b) {
@@ -511,7 +511,7 @@ export function makeGQueenHands(ctx) {
     if (Lu.state === 'run') {
       if (Math.abs(dx) < 8 || e.modeT <= 0) { Lu.state = 'wait'; Lu.wait = GM.tell; e.vx = 0; }
       else {
-        const eta = Math.abs(dx) / GM.speed; if (eta < GM.tell) { b.tellUntil = now() + 0.12; b.tellK = 1 - eta / GM.tell; }
+        const eta = Math.abs(dx) / GM.speed, glow = BW.grateGlow(eta, GM.tell); if (glow > 0) { b.tellUntil = now() + 0.12; b.tellK = glow; }
         if (Math.random() < dt * 50) ctx.dust(e.x - e.face * 20, e.y, 1);
         seats(P2 => {
           if (Lu.hit.has(P2) || P2.dead || Math.abs(P2.x - e.x) > GM.contactR || Math.abs(P2.y - e.y) > 34) return;
@@ -540,7 +540,7 @@ export function makeGQueenHands(ctx) {
   const westGate = open => { if (ctx.westGate) ctx.westGate(open); };
   function startWave(e, k) {
     const M = S.mech, A = L().arena, w = winchAt(), idx = M.waves.size - 1;
-    M.wave = { k, at: now() + GM.delay, state: 'open', n: 0, last: -9, closeAt: 0, idx: Math.max(0, idx) };
+    M.wave = BW.waveOpen(now(), GM.delay, { k, idx: Math.max(0, idx) });
     M.crank = 0; westGate(true);
     ctx.number(w.x, w.y - 44, 'CRANK THE WINCH', '#ffd36b'); ctx.number(A.x0 + 24, A.floor - 60, 'HER GUARDS COME', '#ff6b6b'); sfx('bellow'); ctx.shake(4);
     ctx.hint('HER BARRACKS GATE IS RISING. CRANK THE WINCH (3 BLOWS) BEFORE HER GUARDS COME THROUGH.');
@@ -552,7 +552,7 @@ export function makeGQueenHands(ctx) {
     if (b && !b.broken) {
       const box = { l: b.x - 7, r: b.x + 7, t: b.y - 22, b: b.y };
       seats(P1 => { if (hit(P1, box, M.bellObj)) ringIt(e, b); });
-      if (M.queued > 0 && !M.lure) { if (tt > M.queued) M.queued = 0; else if (safeToLure(e) && !(b.open > 0)) lureBegin(e, b); }
+      if (!M.lure && BW.ringFresh(M, tt) && safeToLure(e) && !(b.open > 0)) lureBegin(e, b);
     }
     /* THE BARRACKS GATE */
     const W0 = M.wave;
@@ -564,21 +564,21 @@ export function makeGQueenHands(ctx) {
     if (W0.state === 'open') {
       seats(P1 => { if (P1.x < A.x0 + 6) { P1.x = A.x0 + 6; P1.vx = Math.max(0, P1.vx || 0); } });   /* the door is open for her guards, not for you */
       seats(P1 => { if (W0.state === 'open' && hit(P1, { l: wx.x - 10, r: wx.x + 10, t: wx.y - 26, b: wx.y }, M.winchObj)) crank(W0); });
-      if (tt - W0.last > GM.crankWin && M.crank) { M.crank = 0; }
-      if (W0.state === 'open' && tt >= W0.at) {
+      const ev = BW.waveTick(W0, tt, GM.crankWin, GM.closeAfter); M.crank = W0.n || 0;
+      if (ev === 'spawn') {
         const kinds = GM.guards[Math.min(W0.idx, GM.guards.length - 1)], col = Math.floor(A.x0 / TS) + 2;
         kinds.forEach((t, i) => ctx.spawnEnt({ t, x: col + i * 2, y: Math.floor(A.floor / TS) - 1, face: 1 }));
-        W0.state = 'in'; W0.closeAt = tt + GM.closeAfter; M.joined++; ctx.number(A.x0 + 40, A.floor - 60, 'THE GUARDS ARE IN', '#ff6b6b'); sfx('gateDrop'); ctx.shake(3);
+        M.joined++; ctx.number(A.x0 + 40, A.floor - 60, 'THE GUARDS ARE IN', '#ff6b6b'); sfx('gateDrop'); ctx.shake(3);
       }
     } else if (W0.state === 'in') {
       seats(P1 => { if (P1.x < A.x0 + 6) { P1.x = A.x0 + 6; P1.vx = Math.max(0, P1.vx || 0); } });
-      if (tt >= W0.closeAt) { westGate(false); M.wave = null; }
+      if (BW.waveTick(W0, tt, GM.crankWin, GM.closeAfter) === 'close') { westGate(false); M.wave = null; }
     }
   }
   function crank(W0) {
     const M = S.mech, tt = now(), w = winchAt();
-    M.crank = (tt - W0.last > GM.crankWin ? 0 : M.crank) + 1; W0.last = tt; sfx('clank'); ctx.shake(2);
-    if (M.crank >= GM.crank) { M.crank = 0; W0.state = 'kept'; westGate(false); M.wave = null; M.kept++; ctx.number(w.x, w.y - 44, 'THE GATE DROPS: GUARDS KEPT OUT', '#8fd160'); sfx('gateDrop'); ctx.shake(5); ctx.burst(w.x, w.y - 12, 10, ['#8a8a9c', '#c9c9d6'], 70, 0.5); }
+    const r = BW.crankWinch(W0, tt, GM.crank, GM.crankWin); M.crank = W0.n; sfx('clank'); ctx.shake(2);
+    if (r === 'kept') { M.crank = 0; westGate(false); M.wave = null; M.kept++; ctx.number(w.x, w.y - 44, 'THE GATE DROPS: GUARDS KEPT OUT', '#8fd160'); sfx('gateDrop'); ctx.shake(5); ctx.burst(w.x, w.y - 12, 10, ['#8a8a9c', '#c9c9d6'], 70, 0.5); }
     else ctx.number(w.x, w.y - 40, M.crank + ' / ' + GM.crank, '#ffd36b');
   }
   /* greybox: the winch (a drum and a rope, wound as it is cranked) while a wave is up, and the barracks horn's count */
