@@ -20,7 +20,8 @@
 //              him in the mud = MIRED) and by the SLUICE (pull the sea out from under him); phase two the sea is his, the bell breaks his call, the sluice drops it
 // Theme (plan s4): pale sea-mist + lantern amber, wet sand, kelp, barnacled stone piers; timber ONLY as boats (tarred hulls). No goblins: master's tribute chest
 // (the goblin queen's seals, lw_props.js) is not placed here, and the dead-end stash prop is a sea chest under the flag (shadowed table below).
-// Checkpoints: master's river keeps its two (95, 238 after the thinning); Saltreach has TWO (the Staithe, the boss door) - master's tail had three.
+// Checkpoints: master's river keeps its two (94, 238 after the thinning); Saltreach has THREE (the Staithe, the Low Street, the boss door): RULES S4's 200-tile cap
+// (tools/longwater-river.mjs) - two left 269 route tiles bare (Q2). Master's tail had three before its thinning, two after.
 
 export const LW3_SHIPS = false;
 export function lw3On() {
@@ -46,7 +47,7 @@ export const LW3 = {
   sections: [['THE STAITHE', 366, 411], ['THE TIDE POOLS', 412, 455], ['THE MILL RACE', 456, 497], ['THE NET LOFTS', 498, 545], ['THE LOW STREET', 546, 585],
     ['THE PIERS', 586, 633], ['THE HEADLAND', 634, 649], ['THE TIDE FLATS', 650, 705]],
   arena: { x0: 651, x1: 695, wallL: 650, wallR: 696, floor: 31, trigger: 653, stones: [[658, 660], [672, 673], [686, 688]], gate: 700 },
-  checks: [[373, 22], [640, 23]],
+  checks: [[373, 22], [550, 25], [640, 23]],
   stingers: { dmg: 6, every: 0.5 },
   trap: { dmg: 80, coins: 4, g: 900 },
 };
@@ -76,6 +77,9 @@ export function buildLongWater3(R, T, TS = 16) {
   const supports = (R.routeSupports || []).filter(p => p.x < X0).map(p => ({ ...p }));
   const plat = (x, y, n) => { fill(x, x + n - 1, y, y, T.ONEWAY); for (const px of [...new Set([x, ...Array.from({ length: n }, (_, i) => x + i).filter(q => (q - x) % 3 === 0), x + n - 1])]) { let b = y + 1; while (b < H - 1 && grid[b * W + px] === T.AIR) b++; if (b - y >= 2) supports.push({ x: px, y, bottom: b, kind: 'hcpier' }); } };   /* a stone pier at each end and every third column (src/route-art.js draws hcpier as stone) - lay plats AFTER their ground */   /* KELP ropes / net ladders up a wall (art owed: kelp + barnacled rope) */
   const ents = R.ents.filter(e => e.x < X0).map(e => ({ ...e }));
+  /* THE BORE STONES (brief 10-15: 'one ambush at the bore stones + one in the low street'): the game holds ONE ambush room a level (tools/elites.mjs), so the Low Street
+     has it and the Bore Reach's walk-up crowd is a SQUAD - a designed encounter that fights as one (src/foe-react.js), with the Bore running through it (Q3) */
+  for (const e of ents) if (e.x >= 324 && e.x <= 365 && ['tideguard', 'netter', 'scout', 'heronfoe'].includes(e.t)) e.squad = 'borestones';
   const ent = (t, x, y, o) => ents.push({ t, x, y, ...(o || {}) });
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
@@ -145,14 +149,14 @@ export function buildLongWater3(R, T, TS = 16) {
   trap('t2', 526, 19, 'coins', LW3.trap.coins); sign(503, 22, LW3_SIGNS.trap);
   pool('lofts', 504, 535, 35, LW3.bay.hi);
   bites.push({ tide: 'bay', x0: 516, y0: 25, x1: 525, y1: 34, when: 'high', at: 0.5, kind: 'jellies' });
-  ground(538, 545, ST); deco(540, 22, 'fishCottage', 0);   /* the ELITE holds this street (gate 545: ELITES shadow row) */
+  ground(538, 545, ST); deco(543, 22, 'fishCottage', 0);   /* the ELITE holds this street (his gate at 547: ELITES shadow row) */
 
   // ================= 5. THE LOW STREET (546-585): THE AMBUSH =================
-  ground(546, 585, 26); sign(547, 25, LW3_SIGNS.low);
+  ground(546, 585, 26); sign(549, 25, LW3_SIGNS.low); ent('check', LW3.checks[1][0], LW3.checks[1][1]);   /* THE LOW STREET's shrine (RULES S4: no 200 route tiles without one) */
   for (const [a, y, n] of [[551, 23, 5], [558, 22, 5], [565, 23, 5], [572, 22, 5], [579, 23, 4]]) plat(a, y, n);   /* the net-drying walks over the low street (rope and net, art owed: not timber) */
-  for (const [x, v] of [[552, 1], [563, 0], [574, 1]]) deco(x, 25, 'fishCottage', v);
+  for (const [x, v] of [[555, 1], [563, 0], [574, 1]]) deco(x, 25, 'fishCottage', v);
   prop('smokehouse', 558, 25); prop('gulls', 568, 25); deco(581, 25, 'seaLantern', 1);
-  coins([550, 24], [556, 24], [561, 23], [566, 24], [571, 23], [577, 24], [583, 24]);
+  coins([551, 24], [556, 24], [561, 23], [566, 24], [571, 23], [577, 24], [583, 24]);
 
   // ================= 6. THE PIERS (586-633): THE EXAM =================
   ground(586, 591, ST); sign(587, 22, LW3_SIGNS.piers); sluice('harbour', 590, 22, LW3.harbour.hold);
@@ -168,7 +172,7 @@ export function buildLongWater3(R, T, TS = 16) {
   deco(626, 23, 'pierPost'); deco(631, 23, 'buoy');
 
   // ================= 7. THE HEADLAND (634-649): the boss door, under the lighthouse =================
-  ground(634, 649, 24); ent('check', LW3.checks[1][0], LW3.checks[1][1]); sign(637, 23, LW3_SIGNS.boss);
+  ground(634, 649, 24); ent('check', LW3.checks[2][0], LW3.checks[2][1]); sign(637, 23, LW3_SIGNS.boss);
   prop('lighthouse', 645, 23);
   ground(648, 649, 27);
 
@@ -202,7 +206,7 @@ export function buildLongWater3(R, T, TS = 16) {
   const calm = (R.calm || []).filter(c => c[0] < X0).concat([[X0, W - 1, 0, H - 1]]);   /* the sprinkler leaves Saltreach alone: every foe in it is placed */
   const out = {
     ...R, W, H, grid, ents, pools, falls, moversExtra: movers, calm,
-    bore: { ...R.bore, x1: Math.min(R.bore.x1, X0 * TS) }, fresh: [0, 365], turn: [300, 420],
+    bore: { ...R.bore, x1: Math.min(R.bore.x1, X0 * TS) }, fresh: [0, 370], turn: [300, 420],
     music: 'longwater', rule: LW3_RULE, lw3: true, checkRun: 280,   /* two shrines in Saltreach (Daniel: fewer): the auto-placer must not put one back between them */
     lw3Tides: tides, lw3Bells: bells, lw3Sluices: sluices, lw3Traps: traps, lw3Moors: moors, lw3Props: props, lw3Races: races, lw3Boats: Object.values(floats).flat().map(f => ({ ...f, x: f.x0 })),
     rigBands: (R.rigBands || []).concat(rigBands), routeSupports: supports,
@@ -220,12 +224,11 @@ export function buildLongWater3(R, T, TS = 16) {
    One call from src/level.js, after the tables exist. */
 export const LW3_TABLES = {
   AMBUSH: [
-    { name: 'THE BORE STONES', row: 28, wallL: 326, wallR: 360, check: false,   /* (brief 10-15: one ambush at the bore stones) the walk-up crowd becomes a held room; the Bore still runs through it */
-      waves: [[['tideguard', 333, 28], ['netter', 345, 28], ['tideguard', 352, 28], ['scout', 358, 28]]] },
-    { name: 'THE LOW STREET', row: 25, wallL: 549, wallR: 583, check: false,   /* (brief: one in the low street) */
+    { name: 'THE LOW STREET', row: 25, wallL: 553, wallR: 583, check: false,   /* (brief: one in the low street) */
       waves: [[['tideguard', 578, 25], ['merrowspear', 557], ['netter', 570], ['scout', 575]]] },
   ],
-  ELITES: [['tideguard', 541, 22, { gate: 545 }]],
+  ELITES: [['tideguard', 539, 22, { gate: 547 }]],   /* (8 tiles of room in front of his gate: tools/elites.mjs) */
+  CHECK_DROP: [[4, 7], [165, 27], [319, 25]],   /* master's thinning, less its Saltreach entry (442 is not a shrine here) */
   TIDE_CRABS: { swap: { crab: { skin: 'tidecrab', every: 1 } }, add: [] },
   STUCK: [
     { id: 'lw-bore-gate', zone: [318, 0, 361, 28], at: [362, 22], glint: 'stall', line: 'THE SEA GATE LIFTS AS THE BORE GOES BY: STAND ON A STONE' },
@@ -254,7 +257,7 @@ export function lintLongWater3(L, T) {
     if (v.y + 1 > t.hi) bad.push('verb at ' + v.x + ',' + v.y + ' drowns at ' + v.tide + ' high water'); if (at(v.x, v.y + 1) !== T.SOLID) bad.push('verb at ' + v.x + ',' + v.y + ' stands on nothing'); if (at(v.x, v.y) !== T.AIR) bad.push('verb at ' + v.x + ',' + v.y + ' is buried'); }
   for (const p of L.lw3Traps) { let y = p.y; while (y < L.H - 1 && at(p.x, y + 1) === T.AIR) y++; if (y - p.y < 2) bad.push('trap ' + p.id + ' has no drop under it'); if (y >= L.H - 2) bad.push('trap ' + p.id + ' falls out of the level'); }
   for (const m of L.lw3Moors) { const b = L.moversExtra.find(q => q.fid === m.boat); if (!b) bad.push('mooring ' + m.id + ' has no boat'); else if (Math.abs(m.x * 16 - (b.x0 + b.w)) > 32) bad.push('mooring ' + m.id + ' is not beside its boat'); }
-  const tailChecks = L.ents.filter(e => e.t === 'check' && e.x >= LW3.X0).length; if (tailChecks !== 2) bad.push('Saltreach has ' + tailChecks + ' shrines (want 2: fewer, Daniel)');
+  const tailChecks = L.ents.filter(e => e.t === 'check' && e.x >= LW3.X0).length; if (tailChecks !== LW3.checks.length) bad.push('Saltreach has ' + tailChecks + ' shrines (want ' + LW3.checks.length + ')');
   const gob = L.ents.filter(e => e.x >= LW3.X0 && /gob|goblin/i.test(e.t + ' ' + (e.kind || '') + ' ' + (e.skin || ''))); if (gob.length) bad.push('goblin kinds in Saltreach: ' + gob.map(e => e.t).join(','));
   if (L.ents.some(e => e.x >= LW3.X0 && e.t === 'deco' && /tribute|driftwood|log/i.test(e.kind || ''))) bad.push('a tribute chest / driftwood / log in Saltreach (theme fit)');
   if (!L.arena || L.arena.boss !== 'herald') bad.push('the arena is not the Herald\'s');

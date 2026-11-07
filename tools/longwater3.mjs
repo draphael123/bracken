@@ -50,11 +50,12 @@ pass(L.lw3 && L.W === LW3.W, 'built on');
 /* ---------- 2. THE LEVEL'S OWN LINT + THE KIT'S ---------- */
 { const bad = lintLongWater3(L, T); pass(!bad.length, 'lintLongWater3: ' + bad.join('; '));
   const badT = lintTide({ tides: L.lw3Tides, pools: L.pools, checkpoints: L.ents.filter(e => e.t === 'check') }); pass(!badT.length, 'lintTide: ' + badT.join('; ')); }
-pass(L.ents.filter(e => e.t === 'check' && e.x >= LW3.X0).length === 2, 'two shrines in Saltreach (master had three in its tail)');
+pass(L.ents.filter(e => e.t === 'check' && e.x >= LW3.X0).length === 3, 'three shrines in Saltreach (the Staithe, the Low Street, the boss door)');
 pass(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers (save bits): ' + L.ents.filter(e => e.t === 'silver').map(e => e.x + ',' + e.y).join(' '));
 pass(!L.ents.some(e => e.x >= LW3.X0 && e.t === 'deco' && e.kind === 'tributeChest'), 'no goblin tribute chest in Saltreach');
-pass((L.ambushes || []).map(a => a.name).join('|') === 'THE BORE STONES|THE LOW STREET', 'the two ambushes (the bore stones, the low street): ' + (L.ambushes || []).map(a => a.name).join('|'));
-pass(L.ents.some(e => e.elite && e.t === 'tideguard' && e.x === 541), 'the elite holds the lofts\' street (gate 545)');
+pass((L.ambushes || []).map(a => a.name).join('|') === 'THE LOW STREET', 'one ambush room (the Low Street): ' + (L.ambushes || []).map(a => a.name).join('|'));
+pass(L.ents.filter(e => e.squad === 'borestones').length >= 4, 'the Bore Stones crowd is a squad (' + L.ents.filter(e => e.squad === 'borestones').map(e => e.t + '@' + e.x).join(',') + ')');
+pass(L.ents.some(e => e.elite && e.t === 'tideguard' && e.x === 539), 'the elite holds the lofts street (gate 547)');
 pass(LW3_TABLES.STASH === 'seaChest', 'the dead-end stash is a sea chest under the flag');
 for (const t of ['poolcrab', 'lw3herald', 'lw3bell', 'lw3sluice', 'lw3trap', 'lw3moor']) pass(t in THREAT, 'THREAT has ' + t);
 pass(MARK['poolcrab|pinchTell'] === '!', 'marks: the crab\'s pinch is a yellow !');
@@ -178,7 +179,7 @@ const calm = W => { const b = W.boss(); if (b.mode === 'stride' || /Tell$|^raise
 { /* every tell held >= 0.45 s before its blow (the moves through the real hands; one hero standing in reach) */
   const W = stubWorld(); W.step(2); const b = W.boss(); let tellAt = {}, short = [];
   const seen = new Set(); let prev = b.mode;
-  let tt = 0; W.step(120, () => { tt += 1 / 60; W.P.x = b.x + [30, 90, 150][Math.floor(tt / 3) % 3]; W.P.block = false; if (b.mode !== prev) { if (THM.TH_TELLS.some(([m]) => m === b.mode)) tellAt[b.mode] = 0; if (THM.TH_TELLS.some(([m]) => m === prev) && tellAt[prev] !== undefined && tellAt[prev] < 0.45 && prev !== 'seize') short.push(prev + ' ' + tellAt[prev].toFixed(2)); seen.add(b.mode); prev = b.mode; }
+  let tt = 0; W.step(120, () => { tt += 1 / 60; W.P.x = b.x + [30, 90, 150][Math.floor(tt / 3) % 3]; W.P.block = false; if (b.mode !== prev) { if (THM.TH_TELLS.some(([m]) => m === b.mode)) tellAt[b.mode] = 0; const rel = Object.values(THM.MOVES).find(M => M.tell === prev); if (rel && b.mode === rel.release && tellAt[prev] !== undefined && tellAt[prev] < 0.45) short.push(prev + ' ' + tellAt[prev].toFixed(2)); seen.add(b.mode); prev = b.mode; }
     for (const k in tellAt) tellAt[k] += 1 / 60; if (b.mode === 'mired') b.modeT = 0; W.P.hp = 300; });
   pass(!short.length, 'every tell held >= 0.45 s: ' + short.join(', '));
   pass(['sweepTell', 'thrustTell', 'spearTell', 'raise'].every(m => seen.has(m)), 'his P1 moves seen: ' + [...seen].filter(m => /Tell|raise/.test(m)).join(',')); }
@@ -211,7 +212,7 @@ if (nSim) { const res = [];
       if (plan.go === 'bell' || plan.go === 'sluice') { if (greedy && Math.random() < 0.4) go(b.x + 24); else { go(plan.to); if (Math.abs(P.x - plan.to) < 6) W.strikeAt(plan.go); } }
       else if (plan.go === 'stone') go(THM.nearestStone(Q, P.x));
       else go(b.x + (P.x < b.x ? -22 : 22));
-      swingT -= 1 / 60; if (plan.attack && Math.abs(P.x - b.x) < 30 && swingT <= 0) { swingT = SWING; const d = W.H.take(b, DMG, 'slash', false); b.hp -= d; }
+      swingT -= 1 / 60; if (plan.attack && Math.abs(P.x - b.x) < 30 && swingT <= 0) { swingT = SWING; const d = W.H.take(b, DMG, 'slash', 'slash', false); b.hp -= d; }
       if (arg('log')) { why[plan.why] = (why[plan.why] || 0) + 1 / 60; if (Math.floor(dt0 * 60) % 600 === 0) console.log('   t' + dt0.toFixed(0) + ' hp ' + b.hp + ' ph ' + W.Q().ph + ' mode ' + b.mode + ' sea ' + W.Q().sea + ' k ' + kOf(W.H.kit(), 'square').toFixed(2) + ' P ' + (P.x / 16).toFixed(1) + ' B ' + (b.x / 16).toFixed(1)); }
       if (b.hp <= 0) { b.alive = false; return false; } });
     if (arg('log')) console.log('   why', JSON.stringify(Object.fromEntries(Object.entries(why).map(([k, v]) => [k, +v.toFixed(1)]))));

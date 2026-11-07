@@ -115,7 +115,7 @@ export function makeLongWater3Hands(ctx) {
   }
 
   /* ---------- A BLOW ON ONE OF OURS ---------- */
-  H.take = (e, dmg, blow, top) => {
+  H.take = (e, dmg, blow, tag, top) => {   /* (tag: the hero blow's verbs, tools/blow-tags.mjs) */
     if (e.t === 'poolcrab') { const r = PCM.crabTake(e, top); if (r.word && near(e.x, 300)) ctx.number(e.x, e.y - 20, r.word, '#e8d8b0'); return Math.round(dmg * r.k); }
     if (e.t === 'herald' && e.lw3 && Q) { const r = THM.takeAt(e, Q, kOf(TK, 'square')); if (r.word && blow && ctx.turned) { const P = ctx.hero(); ctx.turned(e, P ? P.x : e.x, r.word, { stop: false }); }
       if (blow) Q.n.landed++; return Math.max(1, Math.round(dmg * Math.max(THM.TH.k.floor, r.k))); }
