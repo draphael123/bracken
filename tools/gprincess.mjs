@@ -1,6 +1,6 @@
 // tools/gprincess.mjs - THE GOBLIN PRINCESS and HIGHCROWN 3, THE NODE HALF (claude/highcrown3, scratch/lane-reports/hcplan.md). No page, no browser.
 //   LAYOUT   +100 columns (the battlements + the bell tower), the Captains Hall and the bakehouse kept; the bell tower is L.mini (gprincess); landing, grate column, inner stair
-//            door; the battlements have no spikes and no death fall (the broken stretch's pit has a ladder out); six murder holes; seven shrines; reachable end to end
+//            door; the battlements have no spikes and no death fall (the broken stretch's pit has a ladder out); six murder holes; eight shrines; reachable end to end
 //   FIGHT    resist 0.5x (0.4x hiding) outside openings, never 0; the bell rope (any seat) -> she bolts -> told glow -> the grate -> PINNED 3.5 s x1.35; cooldown;
 //            a missed grate (SHE DUCKED); a parried lunge staggers; a parried tiara stuns (x1.25); the cap a single opening; 'GUARDS!' at 70/35: crank 3 keeps them in,
 //            fail and they come (+1 at 3-4 seats); the tantrum at 50 %; at 10 % she escapes (no death; the mini ends); 1-4 seats

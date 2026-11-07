@@ -27,7 +27,7 @@ export const HC2 = {
   BARRACKS: [79, 89], BARRACKS_DOOR: 79, WARD_KEY: 88,
   VEST: [233, 256], VEST_GRATE: 234, VEST_GATE: 254, VEST_ELITE: 246,
   HALL: [347, 429], HALL_GRATE: 356, HALL_BELL: 360,
-  SHRINES: [[95, 63], [164, 63], [258, 63], [364, 63], [425, 19], [553, 19]],   /* (claude/highcrown3, HCPLAN sec 4) the hall balcony's 358/37 went (six columns from the keep door's: the hall climb is one beat); 553, the Queen's door, is 653 after HC3's insert; HC3 adds the banquet's EAST door (524, 23) */   /* the bailey's (after the ward gate), the crag's, the vestibule's (past its exam, on the bakehouse lip), the keep's (inside its door, after the burning yard), the hall's (its west balcony, after the landings), the chapel's, the Queen's door */   /* + the Banquet Hall's door one (AMBUSH.crown check [478, 19]) */
+  SHRINES: [[95, 63], [164, 63], [258, 63], [364, 63], [358, 37], [425, 19], [553, 19]],   /* (claude/highcrown3) HCPLAN sec 4 dropped the hall balcony's 358/37, but the hall climb is 238 route tiles from the keep door's to the chapel's without it (tools/checkpoint-gaps: <= 200) - it STAYS (question for Daniel); 553, the Queen's door, is 653 after HC3's insert; HC3 adds the banquet's EAST door (524, 23) */   /* the bailey's (after the ward gate), the crag's, the vestibule's (past its exam, on the bakehouse lip), the keep's (inside its door, after the burning yard), the hall's (its west balcony, after the landings), the chapel's, the Queen's door */   /* + the Banquet Hall's door one (AMBUSH.crown check [478, 19]) */
 };
 export function highcrownTwo(R, opts) {
   const { T, TS } = opts;
@@ -292,7 +292,7 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   // ---- the stair up out of the banquet's east door onto the walk ----
   air(523, 524, S + 1, 23);   /* (the banquet floor stands at 25: two steps of two) */
   ent('check', B.BANQ_SHRINE[0], B.BANQ_SHRINE[1]);
-  ent('sign', 526, S, { text: 'THE BATTLEMENTS. SHE RUNS FOR THE ALARM BELLS: STRIKE EACH TOWER WINCH BEFORE ITS GUARDS ARE OUT.' });
+  ent('sign', 526, S, { text: 'THE BATTLEMENTS. SHE RUNS FOR THE ALARM BELLS: STRIKE EACH TOWER WINCH IN TIME.' });
 
   // ---- W1: the open walk, one soldier, the first tower's archer shooting along it ----
   ent('soldier', 547, S, { face: -1 }); ent('torch', 530, S); ent('deco', 540, S, { kind: 'gobPennant', v: 1 }); ent('deco', 552, S, { kind: 'warStandard', v: 0 });
@@ -309,7 +309,7 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
     R.facades.push([Tw.x0, Tw.x1, 0, S, 'tower', { arch: [15, S], roof: true }]);
     R.hcDeco.push({ k: 'murder', x: Tw.door, y: 15 }, { k: 'guarddoor', x: Tw.door, y: S, id: Tw.id }, { k: 'gpwinch', x: Tw.winch, y: S, id: Tw.id }, { k: 'gpbell', x: Tw.bell, y: S, id: Tw.id });
   }
-  ent('sign', B.T1[0] - 2, S, { text: 'HER TOWER BELL TURNS OUT ITS GUARDROOM. STRIKE THE WINCH THREE TIMES, QUICKLY, AND ITS GATE DROPS.' });
+  ent('sign', B.T1[0] - 2, S, { text: 'A TOWER BELL TURNS OUT ITS GUARDS. STRIKE THE WINCH 3 TIMES, QUICKLY: THE GATE DROPS.' });
 
   // ---- W2: the broken stretch - stone corbels over a six-row drop (a lower walk and a ladder back: time, never a death) ----
   air(B.GAP[0], B.GAP[1], S + 1, S + 6); for (const [a, b] of B.CORBELS) fill(a, b, S + 1, S + 1, T.ONEWAY);
