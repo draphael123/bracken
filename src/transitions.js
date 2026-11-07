@@ -176,3 +176,28 @@ export const smokeRise = s => smooth((s - SMOKE.backAt + 0.4) / 2.8);
 export const smokeGlow = s => smooth((s - 1.0) / 3.6);
 /* the caption's opacity (0..1) */
 export const smokeWord = s => smooth((s - SMOKE.wordAt) / 0.6);
+
+/* ------------------------------------------------------------- THE CHOICE CARD (claude/transchoice, Daniel 11-07).
+   A boss falls and the clear is credited; before the walk-out starts, the level-complete card is up and, ARM_S seconds in, this small card asks: ONWARD TO <NEXT> (first, the default: plays
+   the transition exactly as it always did) or RETURN TO THE MAP (ends on the world map with the next node under the cursor, like an endOnMap row: the store, the inn and the hero swap are
+   there). Pure: main.js owns the keys and the drawing. A row that already ends on the map (entry.endOnMap) never asks. A level that returns to the map by itself (TRANSITIONS = NEVER, a
+   FIRST TIME row already seen, a level with no row) has no auto-load to interrupt, so it shows nothing: the level-complete card's own Z goes to the map. The seen-flag (FIRST TIME) is set
+   only when ONWARD is taken, so a trip to the map does not use the cutscene up.
+   MASHING: nothing is taken before CHOICE_ARM_S (the tally is on screen, a hero still mashing attack as the boss fell must not pick), and a press only counts once the card is armed. */
+export const CHOICE_ARM_S = 1.2;
+export const CHOICE_ONWARD = 'onward', CHOICE_MAP = 'map';
+export const CHOICE_LABELS = [CHOICE_ONWARD, CHOICE_MAP];
+export const needsChoice = entry => !!entry && !entry.endOnMap;
+export const choiceRows = nextName => ['ONWARD TO ' + String(nextName || 'THE NEXT WOOD').toUpperCase(), 'RETURN TO THE MAP'];
+export function choiceStart(entry, nextName) { return { entry, nextName, sel: 0, t: 0, picked: null }; }
+export const choiceArmed = c => !!c && c.picked === null && c.t >= CHOICE_ARM_S;
+/* one frame. keys: { up, down, left, right, confirm } (edge presses this frame). Returns 'onward' | 'map' when a row is taken, else null. */
+export function choiceStep(c, dt, keys = {}) {
+  if (!c || c.picked !== null) return null;
+  c.t += dt;
+  if (c.t < CHOICE_ARM_S) return null;
+  if (keys.up || keys.left) c.sel = 0;
+  if (keys.down || keys.right) c.sel = 1;
+  if (keys.confirm) { c.picked = CHOICE_LABELS[c.sel]; return c.picked; }
+  return null;
+}

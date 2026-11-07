@@ -2667,7 +2667,7 @@ const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K] });
 function* loadLevelG(i) {
   BUG.evlog('load ' + ((LEVELS[i] || {}).id || i));
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
-  if (TRN && !TRN.loading) TRN = null;   /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
+  trnChoice = null; if (TRN && !TRN.loading) TRN = null;   /* (claude/transchoice) a pending choice card goes with the level */ /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
   hintT = 0; HINTS.newLevel((LEVELS[i] || {}).id || i);   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); if (typeof GMH !== 'undefined' && GMH) GMH.load();   /* (smallfix9) a fresh visit to a level wipes KING GORM'S carried-over stage (a P1 flee or glade); only a respawn (spawnEntities) keeps it */ mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
@@ -4704,7 +4704,7 @@ function partyNextLevel() {
   return k >= 0 && k !== levelIndex && LEVELS[k] && !nodeLocked(NODES.find(n => n.kind === 'level' && n.level === k) || {}) && !levelLocked(LEVELS[k]) ? k : -1;
 }
 function partyGoNext(k) { gotoLevelNode(k); saveProgress(); selI = k; SFX.uiSel(); selectStart(); }
-function startGame() { mapSpurLit = null;
+function startGame() { mapSpurLit = null; trnChoice = null;
   trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
@@ -32509,21 +32509,23 @@ function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && 
 /* (claude/transwm) THE LEVEL-TO-LEVEL TRANSITION (src/transitions.js is the timeline and the table, src/transitions-art.js the pictures). A boss falls -> the clear is CREDITED (winLevel, first) ->
    the way opens -> the heroes walk out -> the ferry carries them (scene) -> fade -> the next level loads and begins with them stepping off. state stays 'win' while TRN is set (no card:
    the win card is skipped on a transition that plays; the credit, the medal and the XP have already been paid), and the next level starts through loadThen like a map start. Skippable by any press. */
-let trnForce = null, TRN = null, trnArrive = null;   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
+let trnForce = null, TRN = null, trnArrive = null, trnChoice = null;   /* trnChoice: (claude/transchoice) the ONWARD / RETURN TO THE MAP card, pending while the level-complete card is up */
+   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
 const trnOff = () => q.get('trans') === '0' || trnForce === false;   /* (claude/transwmart) the art is in: transitions are ON BY DEFAULT; ?trans=0 is the off switch (the TRANSITIONS setting governs the rest) */
 function trnEnv() {
   return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion,
     drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
     drawFerryman: (x, y, face, frame) => { if (SPR.ferryman) drawSet(SPR.ferryman, null, frame, x, y, face, false); } };
 }
-function trnBegin() {
-  if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
+function trnBegin(direct = false) {   /* direct: skip the choice card (the card's own ONWARD, and the tools) */
+  if (TRN || (trnChoice && !direct) || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
   const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
   if (DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
   if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
   if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
+  if (!direct && TRM.needsChoice(entry)) { trnChoice = TRM.choiceStart(entry, LEVELS[to].name); BUG.evlog('transition choice ' + key); return true; }   /* (claude/transchoice, Daniel 11-07) the cutscene would auto-load the next wood: ask first (ONWARD / RETURN TO THE MAP); the seen-flag waits for ONWARD */
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = entry.walk && entry.walk.to ? entry.walk.to * TS : LW * TS + 16;   /* (claude/demotransitions) walk.to: a column (Kingswood's arena is mid-level) */
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
@@ -32583,10 +32585,38 @@ function trnUpdate(dt) {
     if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
   else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
 }
+/* (claude/transchoice) END ON THE WORLD MAP with the next wood's node under the cursor. lit: the spur pulse + path (the kings > burning row's own); a plain next wood is lit by the cursor alone. The clear is already credited. */
+function trnToMap(toId, lit) {
+  setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === toId);
+  if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; if (lit) mapSpurLit = { id: toId, t: 0 }; }
+  saveProgress(); music.play(menuTrack()); transT = 1; transKind = 'fade';
+}
+/* THE CHOICE CARD (src/transitions.js, header): one frame of it while the level-complete card is up (state 'win', no TRN yet). Local co-op: any local seat's keys; online: the guests' keys only drive their own seats, the host's own keys choose,
+   and the guests see the host's stream (the card, waiting). */
+function trnChoiceUpdate(dt) {
+  const c = trnChoice, was = c.sel, r = TRM.choiceStep(c, dt, { up: upPress, down: downPress, left: leftPress, right: rightPress, confirm: confirmPress });
+  if (c.sel !== was) SFX.ui();
+  for (const pp of players) if (pp.dance > 0) pp.dance += dt;
+  updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt);
+  if (r === TRM.CHOICE_ONWARD) { trnChoice = null; SFX.uiSel(); if (!trnBegin(true)) { /* no row any more: fall back to the plain level-complete card */ } }
+  else if (r === TRM.CHOICE_MAP) { const e = c.entry; trnChoice = null; BUG.evlog('transition choice: map'); SFX.uiSel(); trnToMap(e.to, false); }
+}
+function trnChoiceDraw() {
+  const c = trnChoice; if (!c || state !== 'win' || !TRM.choiceArmed(c)) return;
+  const k = Math.min(1, (c.t - TRM.CHOICE_ARM_S) * 6), rows = TRM.choiceRows(c.nextName), pw = Math.min(VW - 24, 240), ph = 62, px = Math.round((VW - pw) / 2), py = Math.round((VH - ph) / 2);
+  g.globalAlpha = 0.55 * k; g.fillStyle = '#08060e'; g.fillRect(0, 0, VW, VH); g.globalAlpha = k;
+  board(px, py, pw, ph, '#8fd160', undefined, false, 'iron');
+  text('WHERE NEXT?', VW / 2, py + 7, UI.title, 'center', 8);
+  rows.forEach((r, i) => { const y = py + 22 + i * 14, on = c.sel === i;
+    text(fitText((on ? '> ' : '  ') + r, pw - 16, 8), VW / 2, y, on ? UI.sel : '#c9d1dc', 'center', 8);
+    TCH.hit(px + 4, y - 3, pw - 8, 13, () => { if (c.sel === i) confirmPress = true; else { c.sel = i; SFX.ui(); } }); });
+  text(touchOn ? 'TAP A ROW  TAP AGAIN TO TAKE IT' : 'UP / DOWN CHOOSE   Z TAKES IT', VW / 2, py + ph - 10, UI.dim, 'center', 6);
+  g.globalAlpha = 1;
+}
 let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE MAP: the spur node pulses until a level starts */
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
-  if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
+  if (entry.endOnMap) { TRN = null; trnArrive = null; trnToMap(entry.to, true); return; }
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
@@ -32880,6 +32910,7 @@ function update(dt) {
     return;
   }
   if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
+  if (state === 'win' && trnChoice) { trnChoiceUpdate(dt); return; }   /* (claude/transchoice) */
   if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
     if (confirmPress || (nextK >= 0 && pausePress)) { if (DS.demoEndsHere(LEVELS[levelIndex].id) && !bossSelectFight && !rushOn()) { demoEndOpen(); } else if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* (claude/demoend) THE DEMO'S END CARD (src/demo-end.js, a DOM board) holds until a button is taken */
@@ -37393,10 +37424,10 @@ function render() {
           if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132 + WD, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
         }
       } else winStamped = true; }
-    if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
+    if (wt > 1.75 && !trnChoice) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });   /* (claude/transchoice: with the choice card up the rows own the taps) */
     { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
       if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
-    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) { const nk = partyNextLevel();
+    if (wt > 1.75 && !trnChoice && Math.floor(time * 2) % 2 === 0) { const nk = partyNextLevel();
       if (nk >= 0) { const nm = LEVELS[nk].name.toUpperCase(), a = (touchOn ? 'TAP  NEXT: ' : 'Z  NEXT: ') + nm, b = a + (touchOn ? '' : '   ESC  MAP'), sz = textW(b, 8) <= VW - 16 ? 8 : 6; text(fitText(b, VW - 12, sz), VW / 2, 146 + WD + (sz === 6 ? 1 : 0), '#8fd160', 'center', sz); }   /* (claude/partypersist) the party's card: one button to the next wood */
       else text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146 + WD, '#8fd160', 'center'); }
   } else { winT = 0; winStamped = false; }
@@ -37418,6 +37449,7 @@ function render() {
   if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
   if (SET.fps && !DS.DEMO) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   if (state === 'play' && DUELO && DUELO.rosterOpen()) DUELO.drawRoster(VW, VH);   /* (claude/duelroster) the pick screen over EVERYTHING (the world's hint box, timer and coin count drew over it) */
+  trnChoiceDraw();   /* (claude/transchoice) ONWARD / RETURN TO THE MAP, over the level-complete card */
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   if (SWAPUI.isOpen) SWAPUI.draw();   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
@@ -37472,7 +37504,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   mapSpurLit: () => (mapSpurLit ? mapSpurLit.id : null), get map() { return map; },
-  trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
+  trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(true), choice: () => trnChoice, beginAsk: () => trnBegin(false), toMap: (id, lit) => trnToMap(id, lit), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */

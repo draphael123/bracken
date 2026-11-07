@@ -93,7 +93,7 @@ if (process.argv.includes('--browser')) {
     else { out.killed = killBoss();
       if (L.gateAfterBoss || ${JSON.stringify(from)} === 'stockade') { for (let i = 0; i < 400 && !(L.gateOpen || (${JSON.stringify(from)} === 'stockade' && i > 30)); i++) { dismiss(); BK.sim(1); } out.gateOpen = !!L.gateOpen; const g = BK.gate; BK.players().forEach((p, i) => { p.x = g.x - i * 2; p.y = g.y - (MODE.air ? 28 : 0); p.vx = p.vy = 0; }); }
       for (let i = 0; i < 900 && !BK.trans.tr && BK.state !== 'win'; i++) { if (MODE.air && !L.gateAfterBoss && !BK.enemies().some(q => q.t === A.boss && q.alive)) { if (!MODE.hover) MODE.hover = BK.players().map(p => p.y - 56); BK.players().forEach((p, k) => { p.y = MODE.hover[k]; p.vy = 0; p.ground = false; }); } dismiss(); BK.sim(1); } }   /* (claude/transland) air: the party hangs 3.5 tiles above the floor from the kill until the transition begins - in the air at trnBegin, as when a boss falls to a mid-air blow */
-    for (let i = 0; i < 200 && !BK.trans.tr && BK.state === 'win'; i++) { dismiss(); BK.sim(1); }
+    for (let i = 0; i < 200 && !BK.trans.tr && BK.state === 'win'; i++) { dismiss(); { const ch = BK.trans.choice(); if (ch && ch.t >= BK.trans.TRM.CHOICE_ARM_S) BK.press('confirm'); } BK.sim(1); }   /* (claude/transchoice) the choice card: ONWARD by confirm once armed */
     out.tr = !!BK.trans.tr; if (!out.tr) { out.state = BK.state; return out; }
     out.to = BK.trans.tr.entry.to; out.walkers = BK.trans.tr.pos.length; out.scene = BK.trans.tr.entry.scene; out.cleared = !!(BK.PROG[${JSON.stringify(from)}] && BK.PROG[${JSON.stringify(from)}].cleared);
     out.saved = Object.keys(localStorage).some(k => new RegExp('"${from}":\\\\{[^}]*"cleared":(true|1)').test(localStorage.getItem(k) || ''));
