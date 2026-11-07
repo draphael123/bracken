@@ -24,3 +24,18 @@ node --check on the 3 changed src files; node tools/sporewood2.mjs all green (al
 ## Questions (rec first)
 1. Col 316: remove the Root Span's bog floor so the lean cap is truly needed? Rec: yes (matches the cap ladder).
 2. Do the glade's four-row walls (28, 77, 85) read as 'needs the bud'? Rec: yes, they are 4 rows (51 px max jump); the arrow + line were the missing part.
+
+## ROOT SPAN (11-07 follow-up, tip bdc58bec3 on claude/sporeclear, was ac8e93c09)
+Daniel approved Q1 (remove the bog floor).
+CHANGED (src/sporewood.js only)
+- The Root Span gap (cols 318-330) is now bottomless like the cap ladder's (air to row 42): bog pool (gpool) and both stair-plank ladders removed. A fall = the end, back to the last shrine (294), the same cost as the cap ladder and the bounce stalk. No softlock: nothing in the gap can catch a hero (no floor, no stub), so a fall always resolves as a death/respawn.
+- Told: a warning post on each lip (317, 331) beside the existing ROOT SPAN sign; the lean was taught first over floored gaps (stalk one, 208).
+- Side effect: the level-quality 'bands' row (second-height share) dropped 41% -> 40% FAIL, because the stairs were a second height. Fixed with a 4-column root plank (300-303, row 15) at the larder door, contiguous with the existing ledge (305-310); far from every lock. (A plank over the span itself was tried and rejected: it is a bridge to the larder end past bud 332 - sporewood2 lock failed.)
+CHECKS (Node only, no browser; free RAM 3.8 GB)
+- tools/sporeclear-locks.mjs: all 17 caps NEEDED, no hero passes any (316 now 'need 316 lean').
+- tools/sporewood2.mjs all green; tools/demo-cut.mjs all green; deadends spore: all 3 paid; node --check ok.
+- tools/level-quality.mjs spore: every non-browser row ok (bands 41%); only pilot + mash fail, and only because the level hash changed.
+OWED
+- node tools/level1-pilot.mjs spore --write and node tools/mash-bot.mjs spore --level spore --write (browser, RAM >= 2.5 GB, memguard) to clear the hash.
+- Browser walk of the Root Span: fall in -> shrine respawn, lean-cap crossing, the warn posts drawn; plus the earlier owed stills.
+- Not merged, not deployed.
