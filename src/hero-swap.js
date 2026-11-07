@@ -13,7 +13,7 @@
 //   api.choose(id)      do the swap; returns a line to say, or null for 'refused'
 //   api.sfx(k), api.text(...), api.panel(x, y, w, h), api.hit(x, y, w, h, fn), api.g(), api.VW(), api.VH(), api.time()
 
-export const CELL_H = 52;
+export const CELL_H = 60;   /* (claude/heroroster2) 52 + the row for the 2X XP tag */
 const bboxOf = new WeakMap();
 /* where the painted pixels of a frame are (cached on the canvas): the portrait is centred on them, not on the padded canvas */
 export function bbox(c) {
@@ -83,13 +83,14 @@ export function makeSwap(api) {
         api.text('L' + Math.max(0, row.level), cx + 4, gy + 41, sel ? '#fff6e0' : '#c2c9c2', 'left', 6);
         const ic = api.icon(row.id); if (ic) g.drawImage(ic, 0, 0, ic.width, ic.height, cx + cw - 4 - Math.min(9, ic.width), gy + 41, Math.min(9, ic.width), Math.min(9, ic.height));
       }
+      if (row.owned && row.boost) { const bw = Math.min(cw - 4, row.boost.length * 5 + 3), bx = cx + ((cw - bw) >> 1); g.fillStyle = 'rgba(30,70,30,0.9)'; g.fillRect(bx, gy + 49, bw, 8); g.fillStyle = '#8fd160'; g.fillRect(bx, gy + 49, bw, 1); api.text(row.boost, cx + (cw >> 1), gy + 50, '#d4f5b8', 'center', 6); }   /* (claude/heroroster2) CATCH-UP: this hero is paid double XP until he reaches the save's best hero */
       if (act) { g.fillStyle = '#ffd36b'; g.fillRect(cx + (cw >> 1) - 2, gy + 1, 5, 2); }   /* the one you play: a gold pip on top of his cell */
     });
     const row = r[S.i], ly = gy + CELL_H + 4;
     if (row) {
       const what = pressOn(row, api.active());
       api.text(row.name + (row.owned ? '   LEVEL ' + Math.max(0, row.level) : ''), x + w / 2, ly, row.owned ? '#fff6e0' : '#9aa39a', 'center', 6);
-      const line = S.msgT > 0 && S.msg ? S.msg : what === 'locked' ? row.why : what === 'same' ? 'YOU PLAY HIM NOW' : 'CONFIRM: PLAY AS HIM. HE KEEPS HIS OWN LEVEL AND SKILLS.';
+      const line = S.msgT > 0 && S.msg ? S.msg : what === 'locked' ? row.why : what === 'same' ? 'YOU PLAY HIM NOW' + (row.boost ? '. 2X XP UNTIL LEVEL ' + row.boostTo + '.' : '') : 'CONFIRM: PLAY AS HIM. HE KEEPS HIS OWN LEVEL AND SKILLS.' + (row.boost ? ' 2X XP UNTIL LEVEL ' + row.boostTo + '.' : '');
       api.lines(line, x + w / 2, ly + 9, w - 12, S.msgT > 0 && what === 'locked' ? '#ff9a5c' : what === 'locked' ? '#c9b892' : '#a8e06e');
     }
     api.text('LEFT / RIGHT  CONFIRM  ESC', x + w / 2, y + h - 9, '#8a8f80', 'center', 6);

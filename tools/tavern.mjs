@@ -141,7 +141,7 @@ if (PAGE.length) {
       const g0 = await E('BK.tavern.debug().stations.filter(s=>!s.seen).length');
       ok(g0 === STATIONS.length, 'a fresh save: every station glints (' + g0 + ' unseen)');
       const first = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'wardrobe').x});BK.sim(3);return BK.tavern.hint().msg;})()`);
-      ok(/WARDROBE/.test(first || ''), 'the first approach to a station says what it does: ' + first);
+      ok(/SWAP HERO/.test(first || ''), 'the first approach to a station says what it does: ' + first);
       /* the board */
       const brd = await E(`(async()=>{const p=__P(1);__at(p,${STATIONS[1].x});BK.sim(2);__talk(p);await new Promise(r=>setTimeout(r,150));const b=document.getElementById('olparty');const o={board:!!(b&&b.style.display!=='none'),txt:b?b.innerText:'',btn:BK.coopSave.board().buttons};
         const inv=[...b.querySelectorAll('button')].find(x=>x.textContent==='INVITE');if(inv)inv.click();await new Promise(r=>setTimeout(r,150));const h=document.getElementById('olhost');o.online=!!(h&&h.style.display!=='none')&&/HOST A GAME/.test(h.innerText);o.partyGone=!document.getElementById('olparty');

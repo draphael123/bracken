@@ -22,6 +22,7 @@ import * as NET from './online-net.js';
 import * as UI from './online-ui.js';
 import * as CS from './coop-save.js';
 import { migrateProgress } from './progression.js';
+import { rosterOwned } from './hero-roster.js';   /* ACCOUNT-WIDE UNLOCKS (claude/heroroster2, Daniel 11-07): the device roster's heroes are on every save's pick */
 
 LS.bootDone();   /* the boot bar index.html put up is the game's: the guest page has nothing to load */
 { const b = document.getElementById('boot'); if (b) b.remove(); }   /* (and its 'still loading' line waits for a window.BK this page never makes) */
@@ -174,12 +175,12 @@ setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performanc
 const pickList = () => (G.slot >= 0 ? G.own.map(id => ({ id, name: G.names[id] || String(id).toUpperCase() })) : G.roster);
 function pick(h) { if (!link || !link.open || !pickList().some(r => r.id === h)) return false;
   let seat = null;
-  if (G.slot >= 0) { try { const raw = CS.slotRawOf(localStorage, G.slot); seat = CS.snapshotOf(raw ? migrateProgress(raw, G.camp).progress : migrateProgress(null).progress, h, G.slot); } catch (e) { G.slotMsg = 'SAVE ' + (G.slot + 1) + ' COULD NOT BE READ: ' + String(e && e.message || e).toUpperCase(); G.phase = 'slot'; G.slot = null; LOCKS.releaseRole('guest'); render(); return false; } }
+  if (G.slot >= 0) { try { const raw = CS.slotRawOf(localStorage, G.slot); seat = CS.snapshotOf(raw ? migrateProgress(raw, G.camp).progress : migrateProgress(null).progress, h, G.slot, rosterOwned(localStorage)); } catch (e) { G.slotMsg = 'SAVE ' + (G.slot + 1) + ' COULD NOT BE READ: ' + String(e && e.message || e).toUpperCase(); G.phase = 'slot'; G.slot = null; LOCKS.releaseRole('guest'); render(); return false; } }
   link.send(seat ? { t: 'pick', hero: h, seat } : { t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
 /* HIS SLOT: one of his five (an empty one is a new save), or -1 to JUST VISIT. A slot open elsewhere (his game in another tab, another guest page) is refused */
-function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm = CS.slotSummary(CS.slotRawOf(localStorage, i), G.camp), h = LOCKS.holder(i, 'guest');
+function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm = CS.slotSummary(CS.slotRawOf(localStorage, i), G.camp, rosterOwned(localStorage)), h = LOCKS.holder(i, 'guest');
   const why = h ? CS.lockLine(i, h) : sm.state === 'corrupt' ? 'DAMAGED: FIX IT IN YOUR OWN GAME' : sm.state === 'newer' ? 'FROM A NEWER THORNROAD' : '';
-  return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase(), h ? CS.HELD_LINE : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
+  return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase(), h ? CS.HELD_LINE : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}, rosterOwned(localStorage)) : sm.heroes || [] }; }); }
 function chooseSlot(i) {
   if (i < 0) { G.slot = -1; G.slotMsg = ''; G.phase = 'pick'; render(); return true; }
   const sl = slots()[i]; if (!sl || !sl.ok) { G.slotMsg = sl ? sl.why : 'NO SUCH SAVE'; render(); return false; }

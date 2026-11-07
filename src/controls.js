@@ -198,6 +198,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['grab', kb('grab') + ' (CO-OP: LIFT, THROW)', pd('grab')],   /* (claude/partnerthrow) */
     ['pause', kb('pause') + '   (MAP: ' + k1('map') + ')', pd('pause')],
     ['drop', k1('down') + '+' + k1('jump') + ' ON A LEDGE', pd('down') + '+' + pd('jump')],
+    ['swap hero', k1('dance') + ' (MAP, STORE) OR PAUSE MENU', '-'],   /* (claude/heroroster2, Daniel 11-07) the swap panel's keys; outside a level only */
     ['to shrine', 'PAUSE MENU (NOT A DEATH)', '-'],
   ];
   return rows;

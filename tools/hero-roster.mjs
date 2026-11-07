@@ -32,7 +32,7 @@ assert.throws(() => parseRoster('{bad'), /not readable/); assert.throws(() => pa
 const slotA = JSON.stringify({ hero: 'knight', heroes: { knight: true, pyro: true } }), slotB = JSON.stringify({ hero: 'paladin', heroes: { paladin: true, reaper: false } }), slotBad = '{trunc';
 assert.deepEqual(heroesInSlots([slotA, null, slotB, slotBad]), [...STARTERS, 'pyro', 'paladin'], 'every hero owned anywhere; a damaged slot is skipped, a false is not owned');
 { const s = new Fake(); const r = loadRoster(s, () => [slotA, slotB]);
-  assert.equal(r.state, 'migrated'); assert.deepEqual(r.heroes, [...STARTERS, 'pyro', 'paladin']); assert.equal(s.getItem(ROSTER_KEY), rosterText(r.heroes)); assert.equal(s.getItem(ROSTER_KEY + LASTGOOD), s.getItem(ROSTER_KEY));
+  assert.equal(r.state, 'migrated'); assert.deepEqual(r.heroes, [...STARTERS, 'pyro', 'paladin']); assert.equal(s.getItem(ROSTER_KEY), rosterText(r.heroes, r.feats, r.own)); assert.equal(s.getItem(ROSTER_KEY + LASTGOOD), s.getItem(ROSTER_KEY));
   const again = loadRoster(s, () => [JSON.stringify({ heroes: { reaper: true } })]); assert.equal(again.state, 'ok'); assert.ok(!again.heroes.includes('reaper'), 'the slots are scanned ONCE: a stored roster is not re-seeded');
   const add = addHeroes(s, r.heroes, ['pirate', 'knight']); assert.deepEqual(add.added, ['pirate']); assert.ok(add.heroes.includes('pirate')); assert.ok(parseRoster(s.getItem(ROSTER_KEY)).includes('pirate'));
   const none = addHeroes(s, add.heroes, ['pirate']); assert.equal(none.added.length, 0); assert.equal(none.heroes, add.heroes, 'nobody new: nothing is written');
