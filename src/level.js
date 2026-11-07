@@ -8681,8 +8681,8 @@ const AMBUSH = {
      checkpoint is the barn's own at 341, outside the screen. */
   burning: [{ name: 'THE BARN', row: 25, wallL: 358, wallR: 398, check: false,
     waves: [[['brute', 388, null, { elite: true }], ['burngob', 368], ['sprig', 378], ['archer', 370, 19]]] }],
-  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 485, wallR: 521, check: [478, 19],   /* (claude/highcrown2: the cut level's columns, 331 to the left) */
-    waves: [[['brute', 507, null, { elite: true }], ['soldier', 495], ['hearthgob', 499], ['javelin', 515, 23]]] }],
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 485, wallR: 521, check: false,   /* (claude/highcrown2: the cut level's columns, 331 to the left) */   /* (claude/highcrown3, HCPLAN beat 9) THE PRE-THRONE REHEARSAL: her CAPTAIN is a heavy elite at the high table (the bell rope lures him under the grate, src/goblin-princess.js); the servery's garrison is the winch wave; the door shrine moved to the banquet's EAST door (src/highcrown2.js HC3.BANQ_SHRINE) */
+    waves: [[['heavy', 505, null, { elite: true }], ['soldier', 493], ['javelin', 515, 23]]] }],
   /* THE LIT CHURCH (claude/litchurch): THE SEALED VAULT in the crypt - the one ambush. The crypt's dead under their grave captain (the caverns' husk: he calls up the dead);
      a wight, a haunt over the shelves and a bone archer. No door checkpoint of its own (CHECKPOINT TWO is in the gallery; THREE stands at the altar past it) */
   church: [{ name: 'THE SEALED VAULT', row: 53, wallL: 108, wallR: 141, check: false,   /* (the crypt's floor is row 54: its walls drop under the vault's lintels) */
