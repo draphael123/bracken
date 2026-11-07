@@ -1,4 +1,4 @@
-CAUSEWAY3W DONE 11-07 READY (code-only OPUS greybox behind its flag; browser walk / lab bot / reviewer / art / tune owed - art before live) - tip: see the last line
+CAUSEWAY3W DONE 11-07 READY (code-only OPUS greybox behind its flag; browser walk / lab bot / reviewer / art / tune owed - art before live) - tip 2ca054595 (pushed)
 
 # claude/causeway3w - THE DROWNED CAUSEWAY 2: THE SEA ACT FINALE (OPUS greybox, code-only, 11-07)
 
@@ -103,4 +103,4 @@ Timber only as ships (the hull, the boats). Checkpoints: START + 6 (master 10 on
 12. **The ARMS** are greybox hazards the hands draw (14 dmg, a knock, once an attempt). REC keep for KRAKEN 3 to reuse its tentacle look. Alt: real feeler ents.
 
 ## Final tip
-claude/causeway3w FINAL TIP: see scratch/lane-reports/causeway3w.md (the report commit; code identical to the commit before it). Play: ?cw3=1&level=causeway. Proof: node tools/causeway3.mjs (98 ok).
+claude/causeway3w FINAL TIP 2ca054595 (pushed; the report commit, code identical to 8ddfea926). Play: ?cw3=1&level=causeway. Proof: node tools/causeway3.mjs (98 ok).
