@@ -142,7 +142,7 @@ export function stepHerald(e, S, dt, hs, c) {
     case 'stride': {
       if (!h) return;
       /* A NATURAL EBB: he makes for the stones (told). LURED, he does not: he wants you */
-      if (S.ph === 1 && !S.lured && (T.ph === 'turn' || T.ph === 'fall') && out) {
+      if (S.ph === 1 && !S.lured && (T.ph === 'turn' || (T.ph === 'fall' && !T.held)) && out) {   /* (a HELD fall is the sluice's: it comes too fast to read - that is the opening) */
         const sx = nearestStone(S, e.x); e.face = Math.sign(sx - e.x) || e.face; e.x = clampX(S, e.x + e.face * TH.hurry * dt);
         if (!S.told.stones) { S.told.stones = 1; c.number(e.x, e.y - 60, TH_SAY.stones, '#9ab0c0'); }
         return; }

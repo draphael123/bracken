@@ -175,7 +175,7 @@ export function buildLongWater3(R, T, TS = 16) {
   bell('square', 659, 27); sluice('square', 687, 27, LW3.square.hold);
   ent('lw3herald', 676, 30, { face: -1 });
   pool('square', A.x0, A.x1, 33, LW3.square.lo);   /* (the other pools start at their HIGH line: the reach model swims them; the kit sets every line on the first frame) */
-  ground(A.wallR, W - 1, 24); ent('gate', A.gate, 23);
+  ground(A.wallR, A.wallR + 1, 28); ground(A.wallR + 2, W - 1, 25); ent('gate', A.gate, 24);   /* out of the flats in two 3-row steps */
 
   /* THE TIDES (src/tide-kit.js; kept under L.lw3Tides, not L.tides: claude/water1's generic wiring steps any L.tides level, and two wirings would step this twice) */
   const tides = [
