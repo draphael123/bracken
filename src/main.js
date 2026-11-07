@@ -6265,7 +6265,7 @@ const BEASTS = [
   { t: 'batteringbeast', name: 'THE BATTERING BEAST', sub: 'the ram Gorm brought for the old gate', desc: 'A war-ox in iron barding, the ram slung under him, the siege crew and their banners on his back. His plates turn a cut: come down on his back, or use the clearing. Knock out a scaffold prop and the scaffold comes down - on him, or in the path of his charge, and he sticks in the wreck. When the Hornsman raises the horn the archers rain arrows in marked lanes: hit him while it is up. Halfway, the chains snap and he goes for the palisade - its timbers roll across the clearing.' },
   { t: 'oldtusker', name: 'OLD TUSKER', sub: 'the great boar of the felling clearing', desc: 'The oldest boar in the wood, grey at the muzzle and scarred to the bone. His hide turns a cut: come down on his back, or use the clearing. He paws and snorts before he charges, and the charge runs past the standing pines to the wall. Four strokes fell a marked pine, and it falls the way it leans: lay three in early and strike the fourth when he is under it - pinned, he takes it all. A pine that misses him lies across the floor: his charge rams the trunk and he reels, and the trunk splinters. Jump his tusk sweep or parry it; step off the red rings of the clods he roots up. At half his blood is up: a charge that misses turns and comes straight back, and he rears to stomp a shockwave along the ground - jump it.' },
   { t: 'queen', name: 'HORNET QUEEN', sub: 'hive ruler', desc: 'Hovers out of reach and calls drones. While TWO are up the swarm closes over her and turns most of a blow. Her dive pulls up off bare earth, but lure it onto wood and leave late: her sting sticks, and she is open. Block the dive and she staggers. At half health she hangs in her comb and comes down only to sting.' },
-  { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on a royal pad out in his biting court, and there he is never armoured: cross the pads to him and cut. Hurt him enough and he leaps to another pad, and the leaves reshuffle. Shield or jump his tongue, lead his flies onto his head, jump his belly-flop wave. At half his pond stirs.' },
+  { t: 'frog', name: 'BULLFROG KING', sub: 'lord of the marsh', desc: 'Sits on a royal pad out in his biting court: cross the pads to him and cut. When his throat sac swells and glows, hit it three times - it bursts and he flops belly-up. Missed, he bellows a ring along the ground and calls hoppers out of the water. He leaps from pad to pad and the leaves reshuffle. Shield or jump his tongue; walk out of his flies, they sap your stamina. At half his pond stirs.' },
   { t: 'sporeling', name: 'SPORELING', sub: 'walking cap', desc: 'Wanders and bites. Kill it and it bursts into a spore cloud that slows and tires you, so finish it at range or step back.' },
   { t: 'spitcap', name: 'SPITCAP', sub: 'rooted lobber', desc: 'Rooted, so it lobs. The bomb is nothing: the sleeping cloud it leaves is everything. It swells before it throws, and while it is swollen it comes apart in one blow.' },
   { t: 'weaver', name: 'WEAVER', sub: 'pale spider', desc: 'Hangs in its curtain and spits web that holds your feet. Mash out of the web, and cut the curtains: they are what it hides behind.' },
@@ -9377,13 +9377,17 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (!(e.wallSaid > time)) { e.wallSaid = time + 8; PROG.wallTold = (PROG.wallTold || 0) + 1; if (PROG.wallTold <= 3) { hintSay('tip', 4.5, WALL_HINT[e.t] || WALL_HINT.lance); } }
     }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); if (e.rails && blow) BR.turned(e, fromX, e.ward > 0 ? 'HE BRACES' : 'IRON: SEND A CART', { stop: false }); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
-  if (e.t === 'frog' && frogOpen(e) && e.openHp0 !== undefined && e.openHp0 - e.hp >= e.maxHp * FROG_TAKE) { e.mode = 'idle'; e.modeT = 0.45; e.openHp0 = undefined; e.idleHits = 0; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); }   /* (claude/marsh2) ONE OPENING IS NEVER THE FIGHT, counted as the blows land: a flurry inside a hit-stop ran past frogShake (the window's own clock was frozen) */
+  if (e.t === 'frog' && frogOpen(e) && e.openHp0 !== undefined && e.openHp0 - e.hp >= e.maxHp * frogTake(e)) { e.mode = 'idle'; e.modeT = 0.45; e.openHp0 = undefined; e.idleHits = 0; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); }   /* (claude/marsh2) ONE OPENING IS NEVER THE FIGHT, counted as the blows land: a flurry inside a hit-stop ran past frogShake (the window's own clock was frozen) */
   /* (claude/frogking2) THE PAD CHASE: no hide - reaching him is the fight. In the air (his leap) a blow takes FROGK.air (B15, told); DAZED x2, WINDED (after his flop) x1.5 */
   if (e.t === 'frog' && e.mode === 'leap') { dmg = Math.max(1, Math.round(dmg * FROGK.air)); if (!(e.hideSaid > 0)) { e.hideSaid = 2; number(e.x, e.y - e.h - 16, 'IN THE AIR', '#9aa39a'); } }
-  const frogMul = e.t === 'frog' ? (e.mode === 'dazed' ? FROGK.dazed : e.mode === 'flopRest' ? FROGK.winded : e.mode === 'croak' ? FROGK.throat : 1) : 1;
+  const frogMul = e.t === 'frog' ? (e.mode === 'dazed' ? FROGK.dazed : e.mode === 'flopRest' ? FROGK.winded : e.mode === 'bellyUp' ? FROGK.bellow.mul : e.mode === 'croak' ? FROGK.throat : 1) : 1;   /* (outside these: 0.6x, src/boss-greed.js chipBy.frog) */
+  if (e.t === 'frog' && e.mode === 'bellyUp' && !(e.hideSaid > 0)) { e.hideSaid = 1.2; number(e.x, e.y - e.h - 16, 'BELLY-UP', '#ffd36b'); }
   if (e.t === 'frog' && frogMul > 1) { dmg *= frogMul; if (e.mode === 'flopRest' && !(e.hideSaid > 0)) { e.hideSaid = 1.2; number(e.x, e.y - e.h - 16, 'WINDED', '#8fd160'); } }
-  if (e.t === 'frog' && frogOpen(e) && e.openHp0 !== undefined) { const left = Math.max(0, e.maxHp * FROG_TAKE - (e.openHp0 - e.hp)); if (dmg > left) dmg = left + (dmg - left) / frogMul; }   /* the window pays up to FROG_TAKE of him, the rest of a blow that runs past it at 1x */
+  if (e.t === 'frog' && frogOpen(e) && e.openHp0 !== undefined) { const left = Math.max(0, e.maxHp * frogTake(e) - (e.openHp0 - e.hp)); if (dmg > left) dmg = left + (dmg - left) / frogMul; }   /* the window pays up to FROG_TAKE of him, the rest of a blow that runs past it at 1x */
   if (e.t === 'frog' && pl && e.mode !== 'dazed') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; }
+  /* (claude/frogking2 11-07) THE SAC: a blow from in front of him (his face side, or on top of his throat) while it is swollen counts; FROGK.bellow.hits of them BURST it -> BELLY-UP (x2, the BREAK) */
+  if (e.t === 'frog' && e.mode === 'bellowTell' && dmg > 0 && (Math.sign(fromX - e.x) === (e.face || 1) || Math.abs(fromX - e.x) < 14) && !(time - (e.sacHitAt ?? -9) < 0.1)) { e.sacHits = (e.sacHits || 0) + 1; e.sacHitAt = time; SFX.squelch(); sparks(e.x + (e.face || 1) * 16, e.y - 13, -(e.face || 1), 4);
+    if (e.sacHits >= FROGK.bellow.hits) frogBurst(e); else number(e.x + (e.face || 1) * 16, e.y - e.h - 4, 'THE SAC ' + e.sacHits + '/' + FROGK.bellow.hits, '#ffe68a'); }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
   let glance = false, wheel = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
   { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
@@ -11998,7 +12002,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         if (s.boot) { P.hauled = { who: s.from, t: 0.45 }; } } } }
   for (const s of seeds) if (!s.dead && !s.reflected && !s.mirror && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 }) && !(seedOver(P, s) && duckedUnder(s.x, s))) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.fv === 'shard' ? s.dmg : s.drunkLob ? s.dmg : s.rubble ? DMG.wardenRubble : s.mawSpit ? DMG.mawSpit : s.timber ? DMG.propTimber : s.weight ? DMG.tollWeight : s.shot ? (s.dmg || DMG.quarterShot) : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.emberDart ? DMG.emberwisp : s.bolt ? (s.dmg || DMG.bolt) : s.jav ? DMG.lanceJav : s.granStick ? DMG.granStick : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.pitch ? DMG.scalderPour : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed, { geo: true, unblockable: !!(s.noBlock || s.unblockable), pierce: !!s.pierce, who: s.owner || s.from || null, blow: s.pitch ? 'THE PITCH' : s.fv === 'rock' ? 'THE ROCK' : s.fv === 'shard' ? 'THE SHARDS' : s.arrow ? 'THE ARROW' : s.jav ? 'THE JAVELIN' : s.bolt ? 'THE BOLT' : s.shot ? 'THE SHOT' : s.skull ? 'THE SKULL' : s.lantern ? 'THE LANTERN' : s.goblet ? 'THE GOBLET' : null }); if (s.fv) FVR.onHit(s, sres, FVC());   /* a pistol ball marked unblockable is: the Captain's and the Quartermaster's !! shots were being turned on the shield */ if (sres === 'blocked' && s.bolt) { if (!((isPaladin() && P.aegis && sendBoltHome(s, 'aegis')) || (isReaper() && P.wardRetAt === time && sendBoltHome(s, 'ward')))) returnBolt(s); }   /* (claude/moorpass) the AEGIS / the ward let go send the Windcaller's bolt HOME */ else if (sres === 'blocked' && hero() === 'knight' && tech('klong') && (P.parryT || 0) > 0.15) { reflectSeed(s); s.longGuard = true; number(P.x, P.y - 40, 'LONG GUARD', '#fff6e0'); }   /* (claude/knightid) LONG GUARD (L40): a PERFECTLY guarded shot flies back */
   else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
-  if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - tongue.y) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, tongue.grab && boss && boss.t === 'frog' ? FROGK.tongue.dmg : DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; boss.openHp0 = boss.hp; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { tongue.active = false; if (tongue.grab && boss && boss.t === 'frog' && !P.dead && P.hp > 0) frogGrab(boss, -tongue.dir); else P.vx = tongue.dir * -160; } }   /* (claude/marsh2) THE TONGUE GRAB: it reels you in over the water */
+  if (tongue && tongue.active && !P.dead && Math.abs(P.y - 8 - FCA.tongueYAt(tongue, P.x)) < 9 && ((tongue.dir > 0 && P.x > tongue.x0 && P.x < tongue.x0 + tongue.len) || (tongue.dir < 0 && P.x < tongue.x0 && P.x > tongue.x0 - tongue.len))) { const res = damagePlayer(tongue.x0, tongue.grab && boss && boss.t === 'frog' ? FROGK.tongue.dmg : DMG.tongue); if (res === 'blocked') { tongue.active = false; boss.mode = 'dazed'; boss.modeT = 1.3; boss.openHp0 = boss.hp; number(boss.x, boss.y - 24, 'BITTEN TONGUE', '#8fd160'); SFX.tongue(); } else if (res === 'hit') { tongue.active = false; if (tongue.grab && boss && boss.t === 'frog' && !P.dead && P.hp > 0) frogGrab(boss, -tongue.dir); else P.vx = tongue.dir * -160; } }   /* (claude/marsh2) THE TONGUE GRAB: it reels you in over the water */
   if (PROG.charm === 'lucky' && !P.dead) for (const a of acorns) if (!a.got && Math.abs(a.x - P.x) < 70 && Math.abs(a.y - P.y) < 50) { a.x += (P.x - a.x) * Math.min(1, dt * 6); a.y += ((P.y - 8) - a.y) * Math.min(1, dt * 6); }
   for (const p of (L.pools || [])) if (p.flow && p.swim && !p.dry) { // the current takes whatever is loose in it
     for (const a of acorns) if (!a.got && a.x > p.x0 && a.x < p.x1 && a.y > p.y) a.x += p.flow * 0.35 * dt;
@@ -12408,7 +12412,7 @@ function queenDies(who) {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === who?.t) bossSelectRecord();
   if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
   setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
-  for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && e.drone) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
+  for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && (e.drone || e.frogAdd)) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
   if (DFM.mode() === 'normal' && !rushOn() && !bossJumpOn && curId() === CAMPAIGN_END) DFM.unlockMaster();   /* (claude/difficulty) MASTER UNLOCKS once any save beats the current final main-road boss on Normal (device-wide) */
   bossEnd(who);
@@ -13539,17 +13543,33 @@ function updateQueen(e, dt) {
 }
 
 // ---------- boss: the Bullfrog King ----------
-const FROG_FRAME = { tongueTell: 7, tongue: 8, snap: 8, flopTell: 9, flopRest: 10, swarmTell: 11, swarm: 12, rippleTell: 13, ripple: 14, poundTell: 15, pound: 16, snapTell: 17, spitTell: 18, spit: 19, croak2: 13 };   /* (claude/frogking2) the spit's own windup + release (18, 19); HIS POND STIRS croaks on the swelling throat (13) */   /* (claude/marsh2) src/redraw/frogking.js: each new move's own windup + release (B16) */
+const FROG_FRAME = { tongueTell: 7, tongue: 8, snap: 8, flopTell: 9, flopRest: 10, swarmTell: 11, swarm: 12, rippleTell: 13, ripple: 14, poundTell: 15, pound: 16, snapTell: 17, spitTell: 18, spit: 19, croak2: 13, bellowTell: 20, bellow: 21, bellyUp: 22 };   /* (claude/frogking2 11-07) THE BELLOW: the glowing sac (20), the croak let go (21), BELLY-UP (22) */
+const frogFrame = e => FROG_FRAME[e.mode] ?? (e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : (e.mode === 'flop') ? (e.vy < 0 ? 9 : 10) : (e.mode === 'croak' || e.mode === 'croak2' || e.mode === 'croak3') ? 1 : (e.mode === 'inhale' || e.mode === 'inhaleTell') ? 2 : 0);
+/* (claude/frogking2 11-07, Daniel: "the tongue doesn't look connected to him") HIS LIPS this frame, from the pose he is drawn in (src/redraw/frogking.js mouth table) */
+function frogMouth(e) { const m = (SPR.frog && SPR.frog.mouth && SPR.frog.mouth[frogFrame(e)]) || [26, -14], f = e.face || 1; return { x: e.x + f * m[0], y: e.y + m[1] }; }   /* (claude/frogking2) the spit's own windup + release (18, 19); HIS POND STIRS croaks on the swelling throat (13) */   /* (claude/marsh2) src/redraw/frogking.js: each new move's own windup + release (B16) */
 /* (claude/frogking2) THE BULLFROG KING: THE PAD CHASE. src/frog-king.js holds his numbers (FK, imported as FROGK), his court's state (the flies, the reshuffle -
    FKC) and the bot's hands; src/frog-court.js lays his court (three royal pads over three lanes of biting water); this is his machine (updateFrog below).
    (The old court - the shallow pond he croaked deep, the plug he pulled at half, the pit, the tipped pad that flung you onto him - went with it.) */
 const frogFloor = (A, x) => { const tx = Math.floor(x / TS); for (let ty = Math.floor(A.floor / TS) - 3; ty <= Math.floor(A.floor / TS) + 2; ty++) if (isSolid(tx, ty)) return ty * TS; return A.floor; }; // the real ground: the dais lifts him, the shallows drop him to the pond bed (he used to stand on the water)
 /* HIS OPENINGS: DAZED x2 (a bitten tongue, the flies led onto his head, a landing turned on a shield), WINDED x1.5 after his flop, his throat x1.5 */
-const FROG_OPEN = new Set(['dazed', 'croak', 'mired', 'flopRest']);
+const FROG_OPEN = new Set(['dazed', 'croak', 'mired', 'flopRest', 'bellyUp']);   /* (claude/frogking2 11-07) BELLY-UP: his sac burst - THE BREAK */
 const frogOpen = e => FROG_OPEN.has(e.mode);
 /* (claude/bosswave2) ONE FLOP IS NEVER THE FIGHT: after FROG_TAKE of his blood in one window he heaves himself up */
 const FROG_TAKE = FROGK.take;
-function frogShake(e) { if (e.modeT > 0 && e.openHp0 !== undefined && e.openHp0 - e.hp >= e.maxHp * FROG_TAKE) { e.modeT = 0; e.openHp0 = undefined; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); } }
+const frogTake = e => (e.mode === 'bellyUp' ? FROGK.bellow.take : FROG_TAKE);   /* (claude/frogking2 11-07) the BREAK is worth more of him than a daze: FROGK.bellow.take */
+function frogShake(e) { if (e.modeT > 0 && e.openHp0 !== undefined && e.openHp0 - e.hp >= e.maxHp * frogTake(e)) { e.modeT = 0; e.openHp0 = undefined; number(e.x, e.y - e.h - 12, 'HE SHAKES IT OFF', '#ff9a5c'); } }
+/* (claude/frogking2 11-07) HIS BELLOW CALLS MARSH HOPPERS out of the water (Daniel: "he summons smaller frogs"): FROGK.bellow.adds[ph], at most maxAlive up at once, +1 of
+   each a full extra seat (an AI partner is half a seat: none). They leap out of a lane onto the footing nearest the hero. No xpKey and no drops (the Hornet Queen's drones'
+   precedent): no XP, no salt, nothing to farm; they go down with him (queenDies). */
+function frogCallAdds(e, ph) { const A = L.arena; if (!A || !A.lanes) return 0; const extra = coop() ? Math.max(0, Math.floor(AIC.seatsOf(players) - 1 + 1e-6)) : 0;
+  const up = enemies.filter(q => q.alive && q.frogAdd).length, room = Math.min(FROGK.bellow.addCap, FROGK.bellow.maxAlive + extra) - up, n = Math.min(room, FROGK.bellow.adds[ph] + extra); let made = 0;
+  const foot = [...A.royal.map(r => ({ x0: r.x0 + 12, x1: r.x1 - 12 }))], tgtOf = () => { const f = foot.slice().sort((a, b) => Math.abs((a.x0 + a.x1) / 2 - P.x) - Math.abs((b.x0 + b.x1) / 2 - P.x))[0]; return Math.max(f.x0, Math.min(f.x1, P.x + (Math.random() - 0.5) * 60)); };
+  for (let i = 0; i < n; i++) { const tx = tgtOf(), lane = A.lanes.slice().sort((a, b) => Math.abs((a.x0 + a.x1) / 2 - tx) - Math.abs((b.x0 + b.x1) / 2 - tx))[i % 2 === 0 ? 0 : Math.min(1, A.lanes.length - 1)];
+    const fx = Math.max(lane.x0 + 8, Math.min(lane.x1 - 8, (lane.x0 + lane.x1) / 2 + (Math.random() - 0.5) * (lane.x1 - lane.x0 - 24))), fy = A.floor + 18, T = 0.71, col = ['green', 'green', 'yellow'][(Math.random() * 3) | 0];
+    enemies.push({ t: 'hopper', color: col, x: fx, y: fy, vx: (tx - fx) / T, vy: -380, w: 8, h: 6, hp: Math.max(1, Math.round(HOP[col].hp * coopMul())), face: Math.sign(tx - fx) || 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.0 + i * 0.3, air: true, frogAdd: true });
+    burst(fx, A.floor + 16, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); made++; }
+  if (made) { SFX.splash(); number(e.x, e.y - e.h - 34, made > 1 ? 'HE CALLS HIS COURT' : 'HE CALLS A HOPPER', '#8fd160'); }
+  return made; }
 /* THE TONGUE GRAB, taken (src/frog-king.js FROGK.tongue): on his pad it reels you to his feet; anywhere else it drops you in the water */
 function frogGrab(e, dir) { { const A = L.arena, mine = frogStationAt(A, P.x) === e.st && P.ground;   /* (claude/frogking2) THE PAD CHASE: on his pad it reels you to his feet; anywhere else it drops you in the water */
     if (FKC) FKC.n.grabs++; SFX.tongue();
@@ -13577,6 +13597,11 @@ function updateFrog(e, dt) {
   if (e.st === undefined) { e.st = Math.max(0, frogStationAt(A, e.x)); e.stDir = 1; e.stHp0 = e.hp; e.stT = 0; e.phase = e.phase || 1; }
   const floor = A.floor, ST = A.royal, here = ST[e.st];
   if (FKC) FKC.step(dt, e);
+  /* (claude/frogking2 11-07, Daniel: "flies do nothing") THE FLIES SAP YOUR WIND: while the cloud is ON you (FROGK.swarm.onR px of your chest) your stamina drains
+     (FROGK.swarm.drain a second) and does not come back; the bar flickers red and it is said once a swarm. Walk out of it - it trails you. Leading it onto his head still bites him */
+  if (FKC && FKC.swarm && !FKC.swarm.eaten && !P.dead && Math.hypot(FKC.swarm.x - P.x, FKC.swarm.y - (P.y - 12)) < FROGK.swarm.onR) {
+    P.st = Math.max(0, P.st - FROGK.swarm.drain * dt); P.stDelay = Math.max(P.stDelay || 0, ST.delay); P.stFlash = Math.max(P.stFlash || 0, 0.15); if (FKC.n) FKC.n.sapped = (FKC.n.sapped || 0) + dt;
+    if (!FKC.swarm.said) { FKC.swarm.said = true; number(P.x, P.y - 34, 'THE FLIES SAP YOUR STAMINA', '#c9e3a0'); } }
   const p2 = e.phase >= 2, ph = p2 ? 1 : 0; if (frogStirT > 0) frogStirT -= dt;
   e.modeT -= dt; e.anim += dt; e.hideSaid = Math.max(0, (e.hideSaid || 0) - dt);
   if (e.headT > 0) { e.headT -= dt; if (e.headT <= 0) e.headHits = 0; }
@@ -13584,6 +13609,7 @@ function updateFrog(e, dt) {
   const swarmUp = FKC && FKC.swarm && !FKC.swarm.eaten;
   const heroOn = !P.dead && P.ground && frogStationAt(A, P.x) === e.st && P.y <= floor + 2;
   if (heroOn && e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'leap' && e.mode !== 'crouch') e.stT += dt;
+  if (e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'leap' && e.mode !== 'crouch') { e.padT = (e.padT || 0) + dt; if (e.mode !== 'bellowTell' && e.mode !== 'bellow' && e.mode !== 'bellyUp') e.bellowT = (e.bellowT || 0) + dt; }   /* (claude/frogking2 11-07) his time on this pad (FROGK.leap.roam) and since his last bellow (FROGK.bellow.every) */
   const ad = Math.abs(P.x - e.x);
   switch (e.mode) {
     case 'sleep': e.y = floor; e.vy = 0; return;
@@ -13594,17 +13620,20 @@ function updateFrog(e, dt) {
       if (!p2 && e.hp <= e.maxHp * FROGK.p2At) { frogStir(e); break; }   /* (the moment it is true, not at his next choice: a flurry in his rest ran a leg past its share) */
       if (e.modeT <= 0 || e.stHp0 - e.hp >= e.maxHp * FROGK.quota[ph]) {
         /* HE LEAPS ON: a share of him taken on this pad, or a hero on it too long */
-        if (e.stHp0 - e.hp >= e.maxHp * FROGK.quota[ph] || e.stT >= FROGK.stay[ph]) { e.tst = frogNextStation(e, ST.length); e.mode = 'crouch'; e.modeT = FROGK.leap.tell[ph]; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.gasp(); number(e.x, e.y - e.h - 24, 'HE GATHERS TO LEAP', '#ffd36b'); break; }
+        if (e.stHp0 - e.hp >= e.maxHp * FROGK.quota[ph] || e.stT >= FROGK.stay[ph] || (e.padT || 0) >= FROGK.leap.roam[ph]) { e.padT = 0; e.tst = frogNextStation(e, ST.length); e.mode = 'crouch'; e.modeT = FROGK.leap.tell[ph]; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.gasp(); number(e.x, e.y - e.h - 24, 'HE GATHERS TO LEAP', '#ffd36b'); break; }
         /* THE FLIES DRAW HIS TONGUE: with a swarm on you and its time nearly up, the tongue comes for it */
         if (swarmUp && FKC.swarm.t <= 0.6) { e.mode = 'snapTell'; e.modeT = FROGK.swarm.snapTell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.snapAim = { x: FKC.swarm.x, y: FKC.swarm.y }; SFX.buzz(); break; }
+        /* (claude/frogking2 11-07) THE BELLOW: in his pool, and at least every FROGK.bellow.every[ph] s - the break comes round */
+        if ((e.bellowT || 0) >= FROGK.bellow.every[ph]) { frogBellow(e, ph); break; }
         const far = ad > FROGK.tongue.max[ph] + 10;
-        const pool = far ? ['spit', 'spit', 'flop', 'swarm'] : ['tongue', 'tongue', 'spit', 'flop', 'swarm'];
+        const pool = far ? ['spit', 'spit', 'flop', 'swarm', 'bellow'] : ['tongue', 'tongue', 'spit', 'flop', 'swarm', 'bellow'];
         if (swarmUp) for (let i = pool.length - 1; i >= 0; i--) if (pool[i] === 'tongue' || pool[i] === 'swarm') pool.splice(i, 1);   /* (with the flies out, the tongue waits for them) */
         if (!pool.length) pool.push('spit');
         let pick = pool[(Math.random() * pool.length) | 0]; if (pick === e.last) pick = pool[(Math.random() * pool.length) | 0]; e.last = pick;
         if (pick === 'tongue') { e.mode = 'tongueTell'; e.modeT = FROGK.tongue.tell[ph]; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.buzz(); }
         else if (pick === 'spit') { e.mode = 'spitTell'; e.modeT = FROGK.spit.tell[ph]; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.gasp(); }
         else if (pick === 'flop') { e.mode = 'flopTell'; e.modeT = FROGK.flop.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.gasp(); }
+        else if (pick === 'bellow') frogBellow(e, ph);
         else { e.mode = 'swarmTell'; e.modeT = FROGK.swarm.tell; e.actN = (e.actN || 0) + 1; SFX.buzz(); }
       }
       break;
@@ -13614,7 +13643,7 @@ function updateFrog(e, dt) {
         for (const k of [-1, 0, 1]) { const tx = P.x + k * FROGK.spit.spread, ty = P.y - 4; seeds.push({ x: sx, y: sy, vx: (tx - sx) / T, vy: (ty - sy - 0.5 * g * T * T) / T, dead: false, life: 3, venom: true, frogSpit: true, g }); } }
       if (e.modeT <= 0 && e.shots <= 0) { e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE TONGUE LASH: low and forward, the maw open (frame 7); out it goes at the height you stood at as it left (frame 8) - a shield bites it, a hit is a GRAB (frogGrab) */
-    case 'tongueTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = FROGK.tongue.live; tongue = { x0: e.x + e.face * 22, y: Math.max(floor - 30, Math.min(floor + 22, P.y - 8)), dir: e.face, len: 0, max: FROGK.tongue.max[ph], active: true, grab: true }; SFX.tongue(); } break;
+    case 'tongueTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = FROGK.tongue.live; tongue = { x0: e.x + e.face * 22, y: Math.max(floor - 30, Math.min(floor + 22, P.y - 8)), dir: e.face, len: 0, max: FROGK.tongue.max[ph], active: true, grab: true, frog: true }; SFX.tongue(); } break;
     case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE FLY SWARM: cheeks full of flies (frame 11), then he spits them at you (frame 12) and they trail you */
     case 'swarmTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 16 + (Math.random() - 0.5) * 8, y: e.y - 18, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.3, max: 0.3, col: '#1a1a14', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'swarm'; e.modeT = FROGK.swarm.spit; if (FKC) FKC.spitSwarm(e); SFX.spit(); number(P.x, P.y - 30, 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', '#c9e3a0'); } break;
@@ -13625,7 +13654,7 @@ function updateFrog(e, dt) {
         if (sw && Math.hypot(sw.x - head.x, sw.y - head.y) < FROGK.swarm.bite || (sw && Math.abs(sw.x - e.x) < e.w / 2 + 4 && Math.abs(sw.y - (e.y - 15)) < 26)) {
           FKC.swarm = null; FKC.n.selfBites++; e.mode = 'dazed'; e.modeT = FROGK.swarm.open; e.openHp0 = e.hp; number(e.x, e.y - e.h - 14, 'HE BITES HIMSELF', '#8fd160'); SFX.tongue(); SFX.croak(); shakeCam(3); burst(e.x + e.face * 12, e.y - 18, 10, ['#ff7a9a', '#1a1a14', '#8fd160'], 70, 0.4); break; }
         const aim = e.snapAim || { x: P.x, y: P.y - 12 }, dir = Math.sign(aim.x - e.x) || e.face, dist = Math.abs(aim.x - e.x);
-        e.face = dir; e.mode = 'snap'; e.modeT = FROGK.swarm.snapLive; tongue = { x0: e.x + dir * 22, y: Math.max(floor - 30, Math.min(floor + 22, aim.y)), dir, len: 0, max: Math.min(FROGK.swarm.reach, dist + 16), active: true, grab: true, snap: true }; SFX.tongue(); } break;
+        e.face = dir; e.mode = 'snap'; e.modeT = FROGK.swarm.snapLive; tongue = { x0: e.x + dir * 22, y: Math.max(floor - 30, Math.min(floor + 22, aim.y)), dir, len: 0, max: Math.min(FROGK.swarm.reach, dist + 16), active: true, grab: true, frog: true, snap: true }; SFX.tongue(); } break;
     case 'snap': { const live = FROGK.swarm.snapLive, t = live - e.modeT; if (tongue) tongue.len = t < 0.14 ? tongue.max * (t / 0.14) : t < 0.26 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.19); if (e.modeT <= 0) { tongue = null; if (FKC) FKC.swarm = null; e.mode = 'idle'; e.modeT = FROGK.gap[ph]; } break; }
     /* THE BELLY-FLOP: he rears up (frame 9), goes up, and comes down flat on his belly (frame 10): a shockwave runs out both ways, over the water too - jump it.
        On a bank or a royal pad it hurts; on a lily pad it sinks the pad under you (FKC.waveOver). Then he lies WINDED (x1.5) */
@@ -13645,13 +13674,33 @@ function updateFrog(e, dt) {
       else if (e.y > floor + 60) { e.x = e.tx; e.y = floor; e.vy = 0; e.vx = 0; e.st = e.tst; e.tst = undefined; e.stHp0 = e.hp; e.stT = 0; e.mode = 'land'; e.modeT = 0.5; }   /* (never lost in the water) */
       break;
     case 'land': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = p2 ? 0.6 : 0.8; } break;
+    /* (claude/frogking2 11-07) THE BELLOW: the sac swells and glows (frame 20; blows on it count in hurtEnemy0 - FROGK.bellow.hits BURST it, frogBurst); let go unburst,
+       the croak RING runs out both ways along the ground and he calls his hoppers out of the water (frame 21) */
+    case 'bellowTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 24) parts.push({ x: e.x + e.face * (12 + Math.random() * 10), y: e.y - 8 - Math.random() * 12, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#fff1a0' : '#ffd36b', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'bellow'; e.modeT = FROGK.bellow.rest; SFX.bellow(); shakeCam(4); zoomKick(1.06, 0.2); const R0 = FROGK.bellow.ring;
+        for (const d of [-1, 1]) waves.push({ x: e.x + d * 20, y: floor, dir: d, life: R0.life, sp: R0.sp, bellow: true });
+        number(e.x, e.y - e.h - 22, 'HE BELLOWS', '#ffd36b'); frogCallAdds(e, ph); } break;
+    case 'bellow': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = frogRest(e, ph); } break;
+    /* BELLY-UP (frame 22): the BREAK - x FROGK.bellow.mul for FROGK.bellow.belly s, at most FROGK.bellow.take of him (frogShake) */
+    case 'bellyUp': e.y = floor; e.vy = 0; frogShake(e); if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - 26, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#ffd36b', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE ROLLS OVER', '#9aa39a'); SFX.splash(); } break;
     case 'dazed': e.y = floor; e.vy = 0; frogShake(e); if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; } break;
     default: e.y = floor; e.vy = 0; e.mode = 'idle'; e.modeT = 0.5; break;   /* (the old court's moves - hopAway, inhale, ripple, pound, mired - are retired) */
   }
   if (e.mode !== 'leap' && e.mode !== 'flop') { e.y = Math.min(e.y, floor); e.x = Math.max(here.x0 + 14, Math.min(here.x1 - 14, e.x)); }
   e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x));
-  if (e.mode !== 'leap' && e.mode !== 'dazed' && e.mode !== 'snapTell' && e.mode !== 'snap' && e.mode !== 'tongue' && e.mode !== 'flop') e.face = Math.sign(P.x - e.x) || e.face;
+  if (e.mode !== 'leap' && e.mode !== 'dazed' && e.mode !== 'snapTell' && e.mode !== 'snap' && e.mode !== 'tongue' && e.mode !== 'flop' && e.mode !== 'bellyUp' && e.mode !== 'bellow') e.face = Math.sign(P.x - e.x) || e.face;
+  /* (claude/frogking2 11-07, Daniel: "the tongue doesn't look connected to him") THE TONGUE IS HIS, EVERY FRAME: its root at his lips in the pose he is in now (frogMouth), its
+     direction his facing (locked while it is out); out of the tongue/snap it is gone */
+  if (tongue && tongue.frog) { if (e.mode === 'tongue' || e.mode === 'snap') { e.face = tongue.dir; const m = frogMouth(e); tongue.x0 = m.x; tongue.y0 = m.y; } else tongue = null; }
 }
+/* (claude/frogking2 11-07) THE BELLOW begins: the told windup (yellow !, his croak, the sac swelling and glowing - frame 20 and FCA sacFx) */
+function frogBellow(e, ph) { e.mode = 'bellowTell'; e.modeT = FROGK.bellow.tell[ph]; e.sacHits = 0; e.bellowT = 0; e.actN = (e.actN || 0) + 1; e.last = 'bellow';
+  number(e.x, e.y - e.h - 12, '!', '#ffd36b'); number(e.x, e.y - e.h - 24, 'HIS THROAT SWELLS', '#ffe68a'); SFX.croak(); if (FKC && FKC.n) FKC.n.bellows = (FKC.n.bellows || 0) + 1; }
+/* THE SAC BURSTS (FROGK.bellow.hits blows on it while it was up): he flops BELLY-UP - the break */
+function frogBurst(e) { e.mode = 'bellyUp'; e.modeT = FROGK.bellow.belly; e.openHp0 = e.hp; e.sacHits = 0; e.burstAt = time; e.burstX = e.x + (e.face || 1) * 16; e.burstY = e.y - 13; e.hideSaid = 0;
+  if (FKC && FKC.n) FKC.n.bursts = (FKC.n.bursts || 0) + 1;
+  number(e.x, e.y - e.h - 26, 'THE SAC BURSTS', '#fff1a0'); SFX.puff(); SFX.squelch(); SFX.heavy(); shakeCam(6); hitstop(0.12); zoomKick(1.12, 0.3); killFlash = 0.05;
+  burst(e.burstX, e.burstY, 18, ['#fff1a0', '#ffe68a', '#e4e6ac', '#ffffff'], 120, 0.6); }
 /* HIS POND STIRS (claude/frogking2, phase 2 at half): the yellow leaves sink FROGK.sink[1]x faster and fewer hold; the lanes reshuffle into it */
 function frogStir(e) {
   e.phase = 2; e.mode = 'croak2'; e.modeT = 1.6; e.vx = 0; tongue = null; if (FKC) { FKC.swarm = null; FKC.stir(1); }
@@ -29384,6 +29433,9 @@ function updateEnemies(dt) {
       if (!e.air && e.stagger <= 0 && near && e.timer <= 0 && (e.drone || e.hopNow)) { e.hopNow = false; e.mode = 'hop'; e.face = Math.sign(d) || e.face; e.vx = e.face * (60 + Math.min(40, Math.abs(d) * 0.3)) * hk.sp; e.vy = e.color === 'blue' ? -260 : e.color === 'yellow' ? -190 : -230; e.air = true; e.timer = hk.cd + Math.random() * 0.4; if (Math.random() < 0.4) SFX.croak(); }
       if (!e.air) e.vx *= Math.pow(0.02, dt);
       const oldY = e.y; e.x += e.vx * dt; e.y += e.vy * dt;
+      if (e.frogAdd) {   /* (claude/frogking2 11-07) THE KING'S HOPPERS ride his court's lily pads like a raft: a leaf that is up holds them, one going under drops them in the water */
+        if (e.raft && (e.raft.sink || 0) > 0.6) { e.raft = null; e.air = true; }
+        if (e.vy >= 0 && (!e.raft || e.air)) { const m = movers.find(q => q.kind === 'pad' && (q.sink || 0) < 0.5 && e.x > q.x - 2 && e.x < q.x + q.w + 2 && oldY <= q.y + 1 && e.y >= q.y); if (m) e.raft = m; } }
       // land on the raft it rode in on, or on tiles
       let landed = false;
       if (e.raft && e.vy >= 0 && oldY <= e.raft.y + 1 && e.y >= e.raft.y && e.x > e.raft.x - 2 && e.x < e.raft.x + e.raft.w + 2) { e.y = e.raft.y; e.vy = 0; landed = true; e.x += e.raft.dx; }
@@ -29809,6 +29861,8 @@ function updateEnemies(dt) {
     { const tx = Math.floor(w.x / TS), ty = Math.floor(w.y / TS); if (!isSolid(tx, ty) && isSolid(tx, ty + 1)) w.y = (ty + 1) * TS; else if (isSolid(tx, ty - 1)) w.life = 0; }
     if (Math.random() < dt * 30) parts.push({ x: w.x + (Math.random() - 0.5) * 6, y: w.y - Math.random() * 4, vx: w.dir * 30, vy: -60 - Math.random() * 60, life: 0.35, max: 0.35, col: Math.random() < 0.5 ? '#c9b27c' : '#8a5a32', size: 2, grav: 300 });
     if (L.arena && (w.x < L.arena.x0 + 4 || w.x > L.arena.x1 - 4)) w.life = 0;
+    if (w.bellow) { if (!P.dead && P.ground && Math.abs(P.x - w.x) < 9 && P.y > w.y - 6) { const res = damagePlayer(w.x - w.dir * 20, FROGK.bellow.ring.dmg);   /* (claude/frogking2 11-07) THE BELLOW's ring: jump it or shield it; taken, it throws you back */
+        if (res === 'hit') { P.vx = w.dir * FROGK.bellow.ring.kb; P.vy = -170; P.ground = false; P.onMover = null; } else if (res === 'blocked') P.vx = w.dir * 70; if (res) w.life = 0; } continue; }
     if (w.flop && FKC && L.arena && L.arena.frogChase) { FKC.waveOver(w, dt); if (P.onMover && P.onMover.kind === 'pad') continue; }   /* (claude/frogking2) over the water the flop's wave rocks the leaves: under a hero standing on one it goes under (FKC.waveOver) - no blow on top */
     if (!P.dead && P.ground && Math.abs(P.x - w.x) < (w.block ? 12 : 9) && P.y > w.y - 4) { if (damagePlayer(w.x - w.dir * 20, w.block ? DMG.trollStone : w.flop ? FROGK.flop.dmg : DMG.wave, w.block ? { unblockable: true, up: true } : w.flop ? { unblockable: true, up: true } : undefined)) w.life = 0; }   /* (claude/marsh2) THE BELLY-FLOP's shockwave: jump it, no shield turns it */
   }
@@ -35096,7 +35150,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'wasp') frame = Math.floor(e.anim * 30) % 3;
     else if (e.t === 'queen') frame = e.mode === 'winded' || e.mode === 'stuck' || e.mode === 'slamRest' ? 6 : e.mode === 'aim' ? 2 : e.mode === 'dive' ? 3 : (e.mode === 'volley' || e.mode === 'volleyUp') ? 4 : (e.mode === 'slamUp' || e.mode === 'slamHang' || e.mode === 'slam') ? 5 : (e.mode === 'sweep' || e.mode === 'sweepStart') ? 7 : Math.floor(e.anim * 26) % 2;
     else if (e.t === 'hopper') frame = e.air ? (e.vy < 0 ? 1 : 3) : (e.mode === 'hopTell' || (e.drone && e.timer < 0.2 && Math.abs(P.x - e.x) < 170) ? 2 : 0);
-    else if (e.t === 'frog') frame = FROG_FRAME[e.mode] ?? (e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : (e.mode === 'flop') ? (e.vy < 0 ? 9 : 10) : (e.mode === 'croak' || e.mode === 'croak2' || e.mode === 'croak3') ? 1 : (e.mode === 'inhale' || e.mode === 'inhaleTell') ? 2 : 0);   /* (claude/marsh2) each move its own windup and release pose (B16): src/redraw/frogking.js 7-17 */
+    else if (e.t === 'frog') frame = frogFrame(e);   /* (claude/marsh2) each move its own windup and release pose (B16): src/redraw/frogking.js 7-17 */
     else if (e.t === 'sapper') frame = (isDyn(e) && e.mode === 'lightTell') || e.mode === 'shoveTell' || e.mode === 'shove' ? 6 : e.fleeT > 0 ? 4 + Math.floor(e.anim * 12) % 2 : Math.floor(e.anim * 12) % 4;
     else if (e.t === 'sporeling') frame = e.mode === 'biteTell' ? 0 : Math.abs(e.vx) > 4 ? [0, 2, 1, 3][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'masthead') frame = ({ slashTell: 3, slash: 4, sailTell: 5, sail: 6, climb: 7, dropTell: 7, drop: 8, boomTell: 9, boom: 10, fouled: 11, tangled: 12, reel: 12, dead: 12 })[e.mode] ?? (Math.abs(e.vx) > 6 ? 1 + Math.floor(e.anim * 6) % 2 : 0);
@@ -35459,7 +35513,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless && !e.elite) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
   FOA.drawFuses(g, cx, cy, time);   /* (claude/foepass) a VOLATILE foe's fuse: the red ring closing on the body */
-  if (FKC && boss && boss.t === 'frog') { FKC.draw(g, cx, cy, time); if (L.frogCourt) FCA.drawBossFx(g, L, boss, cx, cy, time, FROGK.leap); }   /* (claude/marsh2) the flies, the ripples, the tipped pads */
+  if (FKC && boss && boss.t === 'frog') { FKC.draw(g, cx, cy, time); if (L.frogCourt) FCA.drawBossFx(g, L, boss, cx, cy, time, { air: FROGK.leap.air, bellow: FROGK.bellow }); }   /* (claude/marsh2) the flies, the ripples, the tipped pads */
   if (tongue && tongue.active && L.frogCourt && boss && boss.t === 'frog') FCA.drawTongue(g, tongue, cx, cy, time, boss.phase || 1); else if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }
   for (const f of fish) { g.save(); g.translate(Math.round(f.x - cx), Math.round(f.y - cy)); g.rotate(Math.atan2(f.vy, f.vx) * 0.6); if (f.vx < 0) g.scale(-1, 1); g.drawImage(FISH, -3, -2); g.restore(); }
   if(L.sanctum&&L.carpetUp&&!L.sandWalk&&!mageRealm()&&!(L.arena&&L.arena.ascent))drawSanctumUnder(g,L.arena,cx,cy);   /* his hall is closed at the bottom: under the fire is stone, not the parapet and its lantern (round 2) */
@@ -35493,7 +35547,7 @@ function drawWorld(cx, cy, showPlayer) {
   for (const s of sceptres) { g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 16); g.fillStyle = '#c9a040'; g.fillRect(-9, -1, 18, 2); g.fillStyle = '#8a5ac0'; g.fillRect(6, -3, 5, 5); g.fillStyle = '#e0c0ff'; g.fillRect(7, -2, 2, 2); g.restore(); bloom(s.x - cx, s.y - cy, 10, 0.35, 'cool'); }
   if (MCH && MCH.on() && MCH.drawRiderFronts) MCH.drawRiderFronts(g, cx, cy);   /* (claude/deeprailsart) the goblin carts' front walls over their riders */
   for (const e of enemies) if (e.hill && e.alive && e.mode === 'heave') drawQuarryStone(Math.round(e.x - cx + (e.face || 1) * 2), Math.round(e.y - e.h * 1.7 - cy + 6), 0);   /* the stone over his head */
-  for (const w of waves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); if (w.block) { drawQuarryStone(x, y, (w.x / 9) * w.dir); continue; } if (w.flop) { if (L.frogCourt && FCA.laneAt(L, w.x)) FCA.waterCrest(g, x, y, w.dir, time); else M2A.flopCrest(g, x, y, w.dir, time); continue; }   /* (claude/marsh2art) the belly-flop's crest of mud and water */ if (w.royal) { g.fillStyle = '#5a2a7a'; g.fillRect(x - 4, y - 7, 8, 7); g.fillStyle = '#c9a0ff'; g.fillRect(x - 2, y - 10, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 4, 4, 2); continue; } g.fillStyle = '#8a5a32'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#c9b27c'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
+  for (const w of waves) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); if (w.block) { drawQuarryStone(x, y, (w.x / 9) * w.dir); continue; } if (w.bellow) { FCA.bellowRing(g, x, y, w, time); continue; } if (w.flop) { if (L.frogCourt && FCA.laneAt(L, w.x)) FCA.waterCrest(g, x, y, w.dir, time); else M2A.flopCrest(g, x, y, w.dir, time); continue; }   /* (claude/marsh2art) the belly-flop's crest of mud and water */ if (w.royal) { g.fillStyle = '#5a2a7a'; g.fillRect(x - 4, y - 7, 8, 7); g.fillStyle = '#c9a0ff'; g.fillRect(x - 2, y - 10, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 4, 4, 2); continue; } g.fillStyle = '#8a5a32'; g.fillRect(x - 4, y - 5, 8, 5); g.fillStyle = '#c9b27c'; g.fillRect(x - 2, y - 8, 4, 3); g.fillRect(x - 5 + (w.dir > 0 ? 0 : 6), y - 3, 4, 2); }
   if (TGM && L.monk) TGM.drawWorld(g, cx, cy, time);   /* THE TEMPLE GUARDIAN's hall: the bells' reach on the floor, its blocks (in hand, rising, in flight), its tolls */
   drawGateHints(cx, cy);
   /* THE FALL. He used to be gone the frame he died - one moment a knight, the next a puff - so a death read as a

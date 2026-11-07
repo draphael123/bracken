@@ -240,7 +240,7 @@ function marshWood() {
      sinking-pad run is a thing you do with your whole attention, and nothing ranged covers one now. The archers shoot over
      the raft, which holds; the pads are the long river's and the pond's */
   block(329, 344, 18, 27);
-  ent('thorn', 338, 17, { face: -1 }); crate(340, 17); ent('hopper', 342, 17, { face: -1, color: 'yellow' });
+  crate(340, 17);   /* (claude/frogking2 11-07, Daniel: remove the enemies right by his checkpoint) the thorn goblin (338) and the yellow hopper (342) beside the shrine are gone: the shrine is a breath before the exam */
   ent('check', 344, 17);
 
   // ---- 9. Mud flats: THE EXAM (design audit S3, and GAME-WIDE PATTERNS #1 - the last stretch here was a rest,

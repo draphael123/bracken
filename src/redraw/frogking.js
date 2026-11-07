@@ -38,10 +38,16 @@ const hand = (g, x, y, up) => { /* a webbed hand: a round palm, three stout fing
 const arc = (g, cx, cy, r, a0, a1, c) => { for (let a = a0; a <= a1; a += 0.12) px(g, Math.round(cx + Math.cos(a) * r), Math.round(cy + Math.sin(a) * r), c); };
 const drops = (g, pts, c = '#bfe6f5') => { for (const [x, y] of pts) { px(g, x, y, c); px(g, x, y - 1, '#ffffff'); } };
 
+/* (claude/frogking2, 11-07 FROG KING 2) WHERE HIS LIPS ARE, per frame: [dx, dy] from his feet (ax, ay), facing right. main.js frogMouth reads it every
+   frame so the tongue is drawn out of his mouth in whatever pose he is in (it used to float at a fixed 22 px, at the hero's height). */
+let MOUTHS = [];
 function frame(o) {
   const [c, g] = canvas(W, H);
   const sy = (o.sy || 1) * 1.16, sx = o.sx || 1, lift = o.lift || 0;
   const X = x => 30 + (x - 30) * sx, Y = y => GY - (43 - y) * sy - lift;
+  { const ma = o.mouthAt || (o.mouth ? [55.5, 32 - (o.tilt || 0) * 0.4] : [55, 29.5]); let mx = X(ma[0]), my = Y(ma[1]);
+    if (o.rot) { const pv = o.pivot || [X(12), GY - 1], a = o.rot * Math.PI / 180, ddx = mx - pv[0], ddy = my - pv[1]; mx = pv[0] + ddx * Math.cos(a) - ddy * Math.sin(a); my = pv[1] + ddx * Math.sin(a) + ddy * Math.cos(a); }
+    MOUTHS.push([Math.round(mx - 30), Math.round(my - (GY + 1))]); }
 
   // far limbs, behind everything
   if (o.legs === 'sit' || o.legs === 'crouch') { rect(g, X(22), GY - 1, 9, 2, C.DD); toes(g, X(30), GY, 1, C.DD); }
@@ -129,7 +135,35 @@ function frame(o) {
   return outline(cc, OUT);
 }
 
+/* (claude/frogking2, 11-07) 22 BELLY-UP - THE BREAK: the sac burst, he has flopped over onto his back: the pale belly to the sky, the crown knocked off under his head,
+   his legs kicking in the air, the burst sac hanging off his throat in rags and stars wheeling over him. Built from his flat pose turned over (so it is his own body,
+   his own warts and mantle), the limbs and the rags drawn on in his palette. */
+function bellyUp() {
+  const base = frame({ legs: 'splay', arms: 'none', sx: 1.08, sy: 0.78, eyes: 'shut', mouth: true, crookedCrown: true });
+  const d = base.getContext('2d').getImageData(0, 0, W, H).data; let top = H, x0 = W, x1 = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3]) { top = Math.min(top, y); x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
+  const [bc, bg] = canvas(W, H), flip = bg.createImageData(W, H);
+  for (let y = top; y <= GY; y++) flip.data.set(d.subarray(y * W * 4, (y + 1) * W * 4), (top + GY - y) * W * 4);   /* turned over: his back on the ground, the belly up */
+  bg.putImageData(flip, 0, 0);
+  /* the legs kicking up (behind the body, so their roots tuck under the belly) */
+  const [lc, lg] = canvas(W, H), up = top;
+  limb(lg, x0 + 22, up + 4, x0 + 19, up - 5, 3, C.DD); limb(lg, x0 + 19, up - 5, x0 + 25, up - 11, 2, C.DD); toes(lg, x0 + 24, up - 12, 1, C.DD);   /* the far hind leg */
+  ellipse(lg, x0 + 12, up + 1, 7, 5, C.F); ellipse(lg, x0 + 11, up - 1, 5, 2, C.L);   /* the near thigh, a fat green drumstick */
+  limb(lg, x0 + 9, up - 2, x0 + 7, up - 11, 4, C.F, C.D); limb(lg, x0 + 7, up - 11, x0 + 14, up - 15, 3, C.F, C.D); toes(lg, x0 + 13, up - 16, 1, C.D, C.L);   /* its shin and foot, kicking */
+  limb(lg, x1 - 19, up + 4, x1 - 17, up - 5, 3, C.F, C.D); toes(lg, x1 - 19, up - 6, 1, C.D, C.L);   /* a forearm up, the toes spread */
+  const [oc, og] = canvas(W, H); og.drawImage(outline(lc, OUT), 0, 0); og.drawImage(bc, 0, 0);
+  /* the burst sac: rags of it off his throat, venting the last of its glow; stars wheeling over him */
+  const [fc, fg] = canvas(W, H), tx = x1 - 14, ty = up + 2;
+  for (const [ax, ay, bx, by, cx2, cy2] of [[tx - 5, ty + 1, tx - 9, ty - 4, tx - 3, ty - 1], [tx, ty, tx + 1, ty - 6, tx + 3, ty], [tx + 4, ty + 1, tx + 9, ty - 3, tx + 6, ty + 2]]) { fillPoly(fg, [[ax, ay], [bx, by], [cx2, cy2]], C.B); line(fg, ax, ay, bx, by, C.Bs); }
+  for (const [qx, qy] of [[tx - 7, ty - 8], [tx + 2, ty - 10], [tx + 8, ty - 7], [tx - 2, ty - 13]]) { px(fg, qx, qy, '#fff1a0'); px(fg, qx, qy - 1, '#ffffff'); }
+  const star = (x, y, c) => { px(fg, x, y, '#ffffff'); for (const [sx2, sy2] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) px(fg, x + sx2, y + sy2, c); };
+  star(x0 + 26, up - 12, '#ffd36b'); star(x0 + 34, up - 16, '#fff1a0'); star(x0 + 18, up - 18, '#ffd36b');
+  og.drawImage(outline(fc, OUT), 0, 0);
+  return oc;
+}
+
 export function bakeFrog() {
+  MOUTHS = [];
   const frames = [
     frame({ legs: 'sit', arms: 'plant' }),
     frame({ legs: 'sit', arms: 'plant', sac: true, lift: 1 }),
@@ -138,8 +172,8 @@ export function bakeFrog() {
     frame({ legs: 'trail', arms: 'fwd', sx: 0.94, sy: 1.06, lift: 5 }),
     frame({ legs: 'reach', arms: 'down', lift: 3 }),
     frame({ legs: 'splay', arms: 'splay', sx: 1.06, sy: 0.72, eyes: 'shut', mouth: true, tongueOut: true, crookedCrown: true }),
-    frame({ legs: 'crouch', arms: 'fwd', mouth: true, tilt: -3, sx: 1.1, sy: 0.8, eyes: 'narrow', fx: (g, X, Y) => { fillPoly(g, [[X(46), Y(33)], [X(53), Y(36.5)], [X(58), Y(35)], [X(60), Y(38.5)], [X(55), Y(40.5)], [X(46), Y(36)]], C.tg); line(g, X(47), Y(34), X(57), Y(36), C.tgL); px(g, X(60), Y(37), C.tgL); } }),   /* 7 THE TONGUE GRAB's windup: dropped low on his forearms, eyes narrowed on you, the tongue curling out of the maw */
-    frame({ legs: 'sit', arms: 'fwd', mouth: true, tilt: 1, sx: 1.16, sy: 0.92, fx: (g, X, Y) => { fillPoly(g, [[X(50), Y(31)], [X(61), Y(32)], [X(61), Y(35)], [X(49), Y(36)]], C.tg); line(g, X(50), Y(32), X(61), Y(33), C.tgL); circle(g, X(61), Y(33.5), 1.8, C.tg); px(g, X(61), Y(33), C.tgL); } }),   /* 8 the tongue out: head thrust forward, the tongue's root running from the maw */
+    frame({ legs: 'crouch', arms: 'fwd', mouth: true, tilt: -3, sx: 1.1, sy: 0.8, eyes: 'narrow', mouthAt: [55, 35.5], fx: (g, X, Y) => { fillPoly(g, [[X(46), Y(33)], [X(53), Y(36.5)], [X(58), Y(35)], [X(60), Y(38.5)], [X(55), Y(40.5)], [X(46), Y(36)]], C.tg); line(g, X(47), Y(34), X(57), Y(36), C.tgL); px(g, X(60), Y(37), C.tgL); } }),   /* 7 THE TONGUE GRAB's windup: dropped low on his forearms, eyes narrowed on you, the tongue curling out of the maw */
+    frame({ legs: 'sit', arms: 'fwd', mouth: true, tilt: 1, sx: 1.16, sy: 0.92, mouthAt: [55, 33.5], fx: (g, X, Y) => { fillPoly(g, [[X(50), Y(31)], [X(61), Y(32)], [X(61), Y(35)], [X(49), Y(36)]], C.tg); line(g, X(50), Y(32), X(61), Y(33), C.tgL); circle(g, X(61), Y(33.5), 1.8, C.tg); px(g, X(61), Y(33), C.tgL); } }),   /* 8 the tongue out: head thrust forward, the tongue's root running from the maw */
     frame({ legs: 'trail', arms: 'up', mouth: true, sx: 0.94, sy: 1.0, rot: -17, pivot: [30, GY - 1], eyes: 'wide', fx: (g, X, Y) => { hand(g, X(56) - 3, Y(14) - 9, true); drops(g, [[X(8) - 3, GY - 2], [X(5) - 3, GY - 6]]); } }),   /* 9 THE BELLY-FLOP's windup: reared up on his hind legs, belly out, a hand thrown up, eyes wide */
     frame({ legs: 'splay', arms: 'splay', sx: 1.22, sy: 0.58, eyes: 'shut', sac: true, fx: (g, X, Y) => { for (const [mx, my, c] of [[2, GY - 3, '#3d3128'], [6, GY - 1, '#5a4a3c'], [58, GY - 4, '#3d3128'], [62, GY - 2, '#5a4a3c'], [4, GY - 7, '#5a4a3c'], [61, GY - 8, '#3d3128'], [11, GY - 12, '#3d3128'], [56, GY - 11, '#5a4a3c']]) rect(g, mx, my, 2, 2, c); drops(g, [[9, GY - 9], [52, GY - 13], [14, GY - 15]]); arc(g, X(30), GY, 30, Math.PI * 1.12, Math.PI * 1.45, '#7fc4e0'); } }),   /* 10 flat on his belly: winded, mud and spray thrown out round him */
     frame({ legs: 'sit', arms: 'plant', sac: true, cheeks: true, tilt: 3, eyes: 'shut', fx: (g, X, Y) => { blob(g, X(40), Y(30), 5, 4, C.L, C.LL, C.F); FLY(g, X(53), Y(20), 0); FLY(g, X(57), Y(25), 1); FLY(g, X(50), Y(13), 1); FLY(g, X(36), Y(11), 0); } }),   /* 11 THE FLY SWARM's windup: both cheeks stuffed with flies, eyes screwed shut, the first of them already out */
@@ -148,7 +182,7 @@ export function bakeFrog() {
     frame({ legs: 'crouch', arms: 'down', sac: true, mouth: true, sx: 1.08, sy: 0.88, eyes: 'wide', fx: (g, X, Y) => { for (let r = 0; r < 3; r++) { arc(g, X(56), Y(29), 6 + r * 5, -0.95, 0.95, r & 1 ? '#7fc4e0' : '#dff4ff'); arc(g, X(56), Y(29), 6.6 + r * 5, -0.8, 0.8, r & 1 ? '#7fc4e0' : '#dff4ff'); } } }),   /* 14 the ripple let go: slammed onto his forearms, maw wide, the croak running out in rings */
     frame({ legs: 'sit', arms: 'up', tilt: 1, sx: 0.96, sy: 1.04, rot: 4, eyes: 'narrow', fx: (g, X, Y) => { limb(g, X(40), Y(32), X(51), Y(19), 4, C.F, C.D); limb(g, X(51), Y(19), X(54), Y(9), 4, C.F, C.D); hand(g, X(54), Y(7), true); } }),   /* 15 THE SLAP's windup: a great webbed hand lifted high over the water, leaning back to throw it */
     frame({ legs: 'sit', arms: 'down', sx: 1.1, sy: 0.9, tilt: -1, eyes: 'wide', fx: (g, X, Y) => { limb(g, X(42), Y(30), X(49), Y(37), 4, C.F, C.D); limb(g, X(49), Y(37), X(55), GY - 5, 4, C.F, C.D); hand(g, X(55), GY - 5, false); drops(g, [[X(49), GY - 9], [X(59), GY - 7], [X(57), GY - 12], [X(61), GY - 11], [X(51), GY - 14]]); arc(g, X(55), GY - 1, 7, Math.PI, Math.PI * 2, '#dff4ff'); } }),   /* 16 the slap: the hand brought down flat on the water, spray flung */
-    frame({ legs: 'crouch', arms: 'plant', tilt: 7, sx: 1.02, eyes: 'wide', fx: (g, X, Y) => { fillPoly(g, [[X(53), Y(29.5)], [X(58), Y(28)], [X(59), Y(29.5)], [X(53), Y(31)]], C.tg); px(g, X(59), Y(28.5), C.tgL); FLY(g, X(55), Y(8), 0); FLY(g, X(49), Y(5), 1); } }),   /* 17 the snap's windup: head cocked up at the flies, pupil dilated, the tongue-tip flicking */
+    frame({ legs: 'crouch', arms: 'plant', tilt: 7, sx: 1.02, eyes: 'wide', mouthAt: [55.5, 29.5], fx: (g, X, Y) => { fillPoly(g, [[X(53), Y(29.5)], [X(58), Y(28)], [X(59), Y(29.5)], [X(53), Y(31)]], C.tg); px(g, X(59), Y(28.5), C.tgL); FLY(g, X(55), Y(8), 0); FLY(g, X(49), Y(5), 1); } }),   /* 17 the snap's windup: head cocked up at the flies, pupil dilated, the tongue-tip flicking */
     /* (claude/frogking2art) 18 THE SPIT's windup (B16): he gulps and swells - the throat sac blown up and gone venom-green (bubbles inside it), both cheeks puffed, the head drawn back and up, the eyes narrowed on you, a rope of drool off the lip, green fumes curling off his snout */
     frame({ legs: 'sit', arms: 'plant', sac: 'big', lift: 1, sy: 1.06, tilt: 5, eyes: 'narrow', fx: (g, X, Y) => {
       blob(g, X(46), Y(37.5), 13, 9.5, '#6fae44', '#b8e070', '#356a22'); ellipse(g, X(42), Y(33), 4, 2, '#d8f5a0'); line(g, X(36), Y(41.5), X(56), Y(40.5), '#356a22');
@@ -165,12 +199,24 @@ export function bakeFrog() {
         blob(g, gx, gy, r, r, '#8fd160', '#d6f5a0', '#4a7a2a'); px(g, gx - 0.5, gy - 1, '#ffffff'); }
       for (const [dx, dy] of [[42, 46], [45, 48], [39, 48]]) { px(g, dx, dy, '#8fd160'); px(g, dx, dy - 1, '#d8ff98'); }   /* drool flung back along the jaw */
       for (const [fx, fy] of [[52, 43], [56, 45]]) px(g, fx, fy, '#b8e070'); } }),
+    /* (claude/frogking2, 11-07 FROG KING 2) 20 THE BELLOW's windup (B16): he heaves up and the throat sac swells past his chin and GLOWS - a cream-gold lantern of a sac lit
+       from inside (a white core, orange veins), light thrown round it in rings, head back, eyes screwed shut. THE BREAK: three blows on it while it is up BURST it (main.js) */
+    frame({ legs: 'sit', arms: 'plant', sac: 'big', lift: 4, sy: 1.12, tilt: 6, eyes: 'shut', fx: (g, X, Y) => {
+      const sx0 = X(46), sy0 = Y(36.5);
+      for (let r = 0; r < 3; r++) arc(g, sx0, sy0, 16 + r * 2, -1.7 + r * 0.25, 1.7 - r * 0.25, ['#fff1a0', '#ffd36b', '#e0b040'][r]);   /* the light it throws */
+      blob(g, sx0, sy0, 14, 10.5, '#ffe68a', '#fffbe0', '#e8a83a'); ellipse(g, sx0 - 2, sy0 - 1, 7.5, 5, '#fff7c8'); ellipse(g, sx0 - 3, sy0 - 2, 3.5, 2.2, '#ffffff');   /* the sac, lit from inside */
+      for (const [ax, ay, bx, by] of [[39, 33, 43, 36], [43, 36, 41, 40], [50, 32, 53, 36], [53, 36, 56, 39], [46, 40, 51, 42]]) line(g, X(ax), Y(ay), X(bx), Y(by), '#f08a2a');   /* veins */
+      for (const [qx, qy] of [[61, 26], [62, 34], [60, 41], [29, 30], [28, 38]]) { px(g, X(qx), Y(qy), '#fff1a0'); px(g, X(qx) + 1, Y(qy), '#ffffff'); } } }),   /* sparks of it */
+    /* 21 THE BELLOW let go: slammed down onto his forearms, maw wide, the sac emptying, the croak going out of him in gold rings */
+    frame({ legs: 'crouch', arms: 'down', mouth: true, sac: true, sx: 1.08, sy: 0.88, tilt: -2, eyes: 'wide', fx: (g, X, Y) => { for (let r = 0; r < 3; r++) { arc(g, X(56), Y(30), 4 + r * 4, -1.0, 1.0, r & 1 ? '#ffd36b' : '#fff1a0'); arc(g, X(56), Y(30), 4.6 + r * 4, -0.85, 0.85, r & 1 ? '#e0b040' : '#ffffff'); } } }),
   ];
+  frames.push(bellyUp());   /* 22 BELLY-UP: THE BREAK */
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   /* (claude/frogking3) HIS POND STIRS: the same frames flushed - the green skin goes a dark, hot red-brown (green-dominant pixels only: the belly, tongue, eyes, crown keep their colours) */
   const flush = c => { const [c2, g2] = canvas(c.width, c.height); g2.drawImage(c, 0, 0); const d = g2.getImageData(0, 0, c.width, c.height), a = d.data;
     for (let i = 0; i < a.length; i += 4) { if (!a[i + 3]) continue; const r = a[i], gr = a[i + 1], b = a[i + 2]; if (gr > r + 8 && gr > b + 8) { a[i] = Math.min(255, Math.round(gr * 0.95)); a[i + 1] = Math.round(r * 0.8); a[i + 2] = Math.round(b * 0.8); } }
     g2.putImageData(d, 0, 0); return c2; };
   const hot = frames.map(flush);
-  return { R: frames, L, white: { R: white, L: white.map(flipX) }, p2: { R: hot, L: hot.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };
+  const mouth = MOUTHS.slice(0, frames.length);   /* (claude/frogking2) his lips, per frame (main.js frogMouth) */
+  return { R: frames, L, mouth, white: { R: white, L: white.map(flipX) }, p2: { R: hot, L: hot.map(flipX), mouth, white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };
 }
