@@ -68,6 +68,11 @@ const PINNED = [
   [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
   [/^DS\.demoLocked\(lv\)\)/, 'map header counters: the slice only (smallfix14)'],
   [/^DS\.DEMO \? MUSIC_NAMES/, 'sound test: only the shipped tracks (smallfix14)'],
+  [/^DS\.DEMO && nd\.y < WOOD_Y/, 'demohide: demoOut - the map shows the wood sheet only'],
+  [/^DS\.DEMO \? WOOD_Y : 0/, 'demohide: MAP_TOP - the camera stops at the wood sheet'],
+  [/^DS\.DEMO$/, 'demohide: MAP_BAKE_ALL - the demo bakes the wood sheet and no road out of it'],
+  [/^DS\.DEMO \? WOOD_PATH\.length : PATH\.length/, 'demohide: the dotted unwalked road stops at Kingswood'],
+  [/^DS\.demoLocked\(lv\)$/, 'demohide: sliceLv - slot / hero card / title counts are the slice'],
   [/^DS\.DEMO\b/, 'title: no boss rush'],
 ];
 const left = uses.slice();
@@ -79,8 +84,34 @@ assert.deepEqual([...F.DEMO_HEROES].sort(), ['geomancer', 'knight', 'pyro', 'ran
 { const { mapCaption } = await import('../src/demo-end.js'), { MAP_CAPTION } = await import('../src/demo-end-config.js'); const drawn = [];
   const g = { fillStyle: '', fillRect() {} }, say = (...a) => drawn.push(a[0]), w = s => s.length * 6;
   mapCaption(g, say, w, 320, 0, 'wood', false); assert.equal(drawn.length, 0, 'no caption on an open wood');
-  mapCaption(g, say, w, 320, 0, 'kings', false); assert.deepEqual(drawn, [MAP_CAPTION], 'the caption shows at Kingswood, the end of the demo road'); assert.equal(MAP_CAPTION, 'THE ROAD CONTINUES...'); }
+  mapCaption(g, say, w, 320, 0, 'kings', false); assert.deepEqual(drawn, [MAP_CAPTION], 'the caption shows at Kingswood, the end of the demo road'); assert.equal(MAP_CAPTION, 'THE ROAD ENDS HERE... FOR NOW'); }
 console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption at Kingswood');
+/* ---- HIDE (demohide, Daniel 11-07: the demo HIDES the other levels) ----
+   the demo's map is the WOOD sheet alone (main.js demoOut: every node with y < WOOD_Y is not shown). So every node on the wood sheet must be a slice level or a store, and no node on any other sheet may be a slice level. */
+{ const at = main.indexOf('const WOOD_NODES = ['), cr = main.indexOf('const CRAG_NODES = ['), nn = main.indexOf('const NODES = WOOD_NODES');
+  assert.ok(at > 0 && cr > at && nn > cr, 'the node tables are where demohide expects them');
+  const ids = (a, b) => [...main.slice(a, b).matchAll(/\{ id: '(\w+)', kind: '(level|store)'/g)].map(m => [m[1], m[2]]);
+  const wood = ids(at, cr), other = ids(cr, nn);
+  assert.ok(wood.length >= 12 && other.length > 20, 'the sheets were found (' + wood.length + ' wood, ' + other.length + ' other nodes)');
+  for (const [id, kind] of wood) assert.ok(kind === 'store' || DEMO_IDS.has(id), 'wood-sheet node ' + id + ' is not in the slice: demohide would show it');
+  for (const [id, kind] of other) assert.ok(kind === 'store' || !DEMO_IDS.has(id), 'slice level ' + id + ' sits on a sheet demohide hides');
+  assert.ok(/const demoOut = nd => DS\.DEMO && nd\.y < WOOD_Y;/.test(main) && /const nodeSecret = nd => demoOut\(nd\) \|\|/.test(main), 'nodeSecret starts with demoOut (the panel, the steps, the draw and the taps all skip a secret node)');
+  console.log('ok  HIDE    ' + wood.length + ' wood-sheet nodes are the slice (+ stores), ' + other.length + ' nodes on the other sheets are hidden by the flag'); }
+/* ---- LOCKDOWN (demolock, Daniel 11-07): no God mode / Unlock all levels in the demo; a saved ON does nothing; the file is written back unchanged ---- */
+{ const SU = await import('../src/settings-ui.js');
+  for (const id of SU.TABS.map(t => t.id)) for (const from of ['title', 'play']) { const rows = SU.tabRows(id, from, true); for (const k of ['God mode', 'Unlock all levels']) assert.ok(!rows.includes(k), 'demo: no ' + k + ' row on tab ' + id); }
+  const gp = SU.tabRows('gameplay', 'title', false); assert.ok(gp.includes('God mode') && gp.includes('Unlock all levels'), 'flag off: both rows are listed, as ever');
+  assert.deepEqual(SU.tabRows('gameplay', 'title', true), gp.filter(k => k !== 'God mode' && k !== 'Unlock all levels'), 'demo: the gameplay list is the full one minus those two rows');
+  const saved = { invincible: true, allLevels: true, music: false }, on = { ...saved, hudV2: 1 }, keep = {};
+  SU.demoLock(on, saved, keep, true); assert.equal(on.invincible, false); assert.equal(on.allLevels, false); assert.equal(on.music, false, 'other settings are untouched');
+  const out = SU.demoSaveOut(on, keep, true); assert.equal(out.invincible, true, 'the saved God mode is written back as it was'); assert.equal(out.allLevels, true); assert.equal(on.invincible, false, 'the live setting is not mutated by the write');
+  const none = {}, on2 = { music: true }; SU.demoLock(on2, { music: true }, none, true); assert.ok(!('invincible' in SU.demoSaveOut(on2, none, true)), 'a demo never adds the two keys to a file that had none');
+  const full = { invincible: true, allLevels: true }, k2 = {}; SU.demoLock(full, { invincible: true, allLevels: true }, k2, false); assert.equal(full.invincible, true); assert.equal(SU.demoSaveOut(full, k2, false), full, 'flag off: SET is written as it is');
+  assert.ok(SU.rowHidden('God mode', true) && SU.rowHidden('Unlock all levels', true) && !SU.rowHidden('God mode', false) && !SU.rowHidden('Music', true));
+  assert.ok(main.includes('SETUI.demoLock(SET, o, DEMO_KEEP)') && main.includes('SETUI.demoSaveOut(SET, DEMO_KEEP)'), 'main.js: readSettings locks, saveSettings writes the kept values');
+  assert.ok(main.includes("k === 'Unlock all levels' && !SETUI.rowHidden(k)") && main.includes("k === 'God mode' && !SETUI.rowHidden(k)"), 'main.js: the handlers refuse the two rows in the demo');
+  assert.ok(readFileSync(new URL('../src/settings-ui.js', import.meta.url), 'utf8').includes("'Unlock everything' && !isDev()"), 'Unlock everything stays ?dev=1-only');
+  console.log('ok  LOCK    demo settings: no God mode / Unlock all levels rows, saved ON ignored, file written back unchanged; flag off unchanged'); }
 /* ---- NAMES ---- */
 const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;

@@ -99,7 +99,7 @@ import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
-import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
+import * as SETUI from './settings-ui.js'; import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; import * as HINTS from './hints.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /* (claude/pyroboss2) THE PYROMANCER 2's numbers and pure rules */   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
@@ -350,7 +350,8 @@ const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard', 'expert'], SCALES = ['auto', 2, 3, 4];
 /* READ A SETTINGS FILE (boot, and tools/settings-tabs.mjs): every old key loads as it always did; the two fields the tabs added are cleaned
    (binds, from src/controls.js, keeps only known actions and real keys; coopHelpSeen is a plain flag) so a file from before them has none. */
-function readSettings(raw) { let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch {} Object.assign(SET, o); if (!HINTS.HINT_LEVELS.includes(SET.hints)) SET.hints = 'high'; if (!isDev()) SET.godmode = false;   /* (claude/heroroster) a saved UNLOCK EVERYTHING never outlives its dev flag */ delete SET.combat; if (!o.hudV2) SET.hud = 'minimal'; SET.hudV2 = 1; if (!['bar', 'pct', 'num'].includes(SET.bossHp)) SET.bossHp = SET.bossHp === 'both' ? 'num' : 'bar';   /* HUD-SLIM (Daniel 10-09): MINIMAL is the default, and a settings file from before it takes it ONCE (hudV2): the plate HUD is an opt-in you keep once you pick it. The old BAR+BOTH boss readout is NUMBERS now. */ /* (the retired Weighty switch: an old save drops it) */ if (!['off', 'hit', 'full'].includes(o.shakeMode)) { SET.shakeMode = o.shakeAmt === 0 || o.shake === false ? 'off' : 'hit'; if (!(SET.shakeAmt > 0)) SET.shakeAmt = 1; SET.shake = SET.shakeMode !== 'off'; }   /* OLD SAVES (no shakeMode): everyone gets the new ON HIT default, unless shake was OFF - that stays OFF */
+const DEMO_KEEP = {};   /* (claude/demohide, Daniel 11-07 DEMO LOCKDOWN) the saved GOD MODE / UNLOCK ALL LEVELS values a demo ignores, kept so saveSettings writes them back untouched (src/settings-ui.js demoLock / demoSaveOut) */
+function readSettings(raw) { let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch {} Object.assign(SET, o); if (!HINTS.HINT_LEVELS.includes(SET.hints)) SET.hints = 'high'; if (!isDev()) SET.godmode = false; SETUI.demoLock(SET, o, DEMO_KEEP);   /* (DEMO LOCKDOWN) the demo has no God mode / Unlock all levels: a saved ON does nothing there */   /* (claude/heroroster) a saved UNLOCK EVERYTHING never outlives its dev flag */ delete SET.combat; if (!o.hudV2) SET.hud = 'minimal'; SET.hudV2 = 1; if (!['bar', 'pct', 'num'].includes(SET.bossHp)) SET.bossHp = SET.bossHp === 'both' ? 'num' : 'bar';   /* HUD-SLIM (Daniel 10-09): MINIMAL is the default, and a settings file from before it takes it ONCE (hudV2): the plate HUD is an opt-in you keep once you pick it. The old BAR+BOTH boss readout is NUMBERS now. */ /* (the retired Weighty switch: an old save drops it) */ if (!['off', 'hit', 'full'].includes(o.shakeMode)) { SET.shakeMode = o.shakeAmt === 0 || o.shake === false ? 'off' : 'hit'; if (!(SET.shakeAmt > 0)) SET.shakeAmt = 1; SET.shake = SET.shakeMode !== 'off'; }   /* OLD SAVES (no shakeMode): everyone gets the new ON HIT default, unless shake was OFF - that stays OFF */
   SET.binds = CTL.cleanBinds(o.binds); SET.coopHelpSeen = !!o.coopHelpSeen; try { applyBinds(); } catch {} return SET; }
 let rawSetWas = false; { let rawSet = null; try { rawSet = localStorage.getItem('bracken.settings'); } catch {} rawSetWas = !!rawSet; readSettings(rawSet); }
 // THE WORLD SLOWED DOWN, AND AN OLD SETTINGS FILE MUST NOT HOLD IT BACK. Anyone who has played before has a
@@ -363,7 +364,7 @@ if (!SET.speedV2) { SET.speed = 0.6; SET.speedV2 = 1; try { localStorage.setItem
 const speedNote = SPEED_MIGRATE && !SET.speedV3 && rawSetWas && SET.speed !== 1; if (SPEED_MIGRATE && !SET.speedV3) { SET.speed = 1; SET.speedV3 = 1; try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
 let speedNoteShown = false;
 const GAME_SPEEDS = [0.5, 0.6, 0.7, 0.85, 1, 1.25, 1.5, 1.75, 2];   /* the Game speed steps (Daniel 10-12): 50 .. 200%, default 100% */
-function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SET)); } catch {} }
+function saveSettings() { try { localStorage.setItem('bracken.settings', JSON.stringify(SETUI.demoSaveOut(SET, DEMO_KEEP))); } catch {} }
 function applySettings() { setVolume(SET.sfx); setMusicVolume(SET.musicVol); music.set(SET.music); setSfxFiles(SET.sfxFiles); setVoices(SET.voices !== false); setUiVolume(SET.uiVol); setAmbientVolume(SET.ambVol); resize(); }
 applySettings();
 if (q.get('fps') === '1') SET.fps = true;
@@ -872,6 +873,8 @@ const stepCost = () => dodgeCost(true);   /* WEIGHT: her back-step 15, her step 
 CM.bindStamina({ lvGrow: () => LV_GROW(), lungs: () => perk('lungs'), fleet: () => perk('fleet'), rest: () => perk('rest'), lean: () => thr('e', 0), wind: () => thr('e', 1) });   /* THE SEAM: the level's growth reaches the bar only through CM.staminaOf (LEVELING's ENDURANCE feeds P.maxSt) */
 const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge (it was the dash's, and the same number) */
 /* THE MEDAL ROLL: every medal on every level you can see, bronze 1, silver 2, gold 3 */
+/* (claude/demohide) a level the demo's count includes: every level with the flag off, the slice with it on - the save slots, the hero card and the title line count only these */
+const sliceLv = lv => !DS.demoLocked(lv);
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
 const featDone = f => String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
@@ -4830,7 +4833,7 @@ function updateCard(dt) { const u = cardUi; if (!u) { state = 'map'; return; } u
    threshold gives; under the three: how many levels to the next perk and the perks taken. A fresh card (a level-up, never a review) opens with a flash and slides in. */
 const perkName = id => { const kn = milestoneName(hero(), id); if (kn) return kn; const k = PERKS.find(q => q.id === id) || MINOR_PERKS.find(q => q.id === id) || ALL_HERO_PERKS.find(q => q.id === id) || PYRO_CARDS.find(q => q.id === id); return k ? k.name : null; };   /* (claude/pyrokit: her L10 cards) */
 function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = heroLevel(h), c = cardNow(), cd = cardOf(PROG, h) || { v: 0, e: 0, m: 0, ms: {} }, gr = grow(h, lv);
-  if (u.back === 'map') g.drawImage(MAPC, 0, 0); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
+  if (u.back === 'map') g.drawImage(MAPC, 0, -MAP_TOP); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
   const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length, calm = SET.reduceMotion;
   const slide = u.fresh && !calm ? Math.max(0, 1 - Math.min(1, u.t / 0.35)) : 0, oy = Math.round(slide * slide * 70);
   text(c ? (c.kind === 'perk' ? (isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
@@ -4988,6 +4991,9 @@ const votiveOwned = () => VOTIVE_IDS.filter(id => (PROG.votive || {})[id]).lengt
 const votiveLocked = lv => !!lv.votiveLamps && votiveOwned() < VOTIVE_N && !PROG.churchOpen && !(PROG[lv.id] && PROG[lv.id].cleared);
 const levelLocked = lv => (DS.DEMO && DS.demoLocked(lv)) || (!godMode() && !SET.allLevels && (!!lv.locked || (votiveLocked(lv) && !q.get('unlock')) || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !(lv.id === 'crown' && PROG.crownOpen) && !(lv.id === 'warcairn' && PROG.crownOpen) && !(lv.id === 'marsh' && PROG.marshOpen) && !(lv.id === 'skyroad' && PROG.skyOpen) && !(lv.id === 'hanging' && PROG.hangingOpen) && !(lv.id === 'kings' && PROG.kingsOpen) && !(lv.id === 'palisadewood' && PROG.palisadeOpen) && !(lv.id === 'underleaf' && PROG.underleafOpen) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock'))));   /* (claude/demoend) the demo locks every wood past Kingswood, whatever the save, the setting or ?unlock says */
 
+/* (claude/demohide, Daniel 11-07: 'the demo should HIDE the other levels') under the DEMO flag the map is the WOOD sheet alone: every node on the other four sheets (the crags, coast, road inland, desert) is not shown - no node, plate, road, panel row, step or tap. demoOut is false with the flag off. */
+const demoOut = nd => DS.DEMO && nd.y < WOOD_Y;
+const MAP_BAKE_ALL = !DS.DEMO;   /* the demo bakes the wood sheet only, and no road out of it */
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
 // bottom. Play runs bottom to top; the sheet order above is top to bottom, which is why every offset below reads backwards
@@ -5133,7 +5139,8 @@ const spurTip = lv => { const o = lv.opensOn; if (o && o.gorm) return ['LOCKED: 
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 /* THE ROADS THAT JOIN THE SHEETS (a seam leg is baked as road; tools/map-roads.mjs reads this list to prove every road of the chain is painted). (claude/maproad, Daniel 11-01: the first leg started at the old Kingswood spot [40,64], so the road from KINGSWOOD west to the crags' door was never painted - only the dotted unwalked-road overlay showed it) */
 const MAP_CONNECTORS = [[[141, 24 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']];
-const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], MAP_CONNECTORS);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
+const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }].filter(r => MAP_BAKE_ALL || r.style === 'wood'), MAP_BAKE_ALL ? MAP_CONNECTORS : []);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
+const MAP_TOP = DS.DEMO ? WOOD_Y : 0;   /* the camera's top: the wood sheet's top edge in the demo, the whole world otherwise */
 let mapCamY = MAPH - 180;
 let ghostPathT = 0, ghostT0 = null;   /* how much of the Unburied Field's ghost-path has drawn itself (0..1; PROG.fieldPathDrawn once seen whole) */
 /* A LEVEL THAT LEADS ON (LEVELS leadsTo, claude/archmage3: THE FALLING TOWER's portal takes you to the desert): won, the map puts you on the next node of the road, not back on this one */
@@ -5173,7 +5180,7 @@ function mapPanelJump() { const vis = mapPanelIdx(); const i = vis[mapPanel.sel]
   if (!nd || nodeLocked(nd)) { SFX.buzz(); return; }
   map.node = i; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0; mapPanel.open = false;
   PROG.mapNode = map.node; PROG.mapNodeId = nd.id;
-  const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
+  const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(MAP_TOP, Math.min(MAPH - VH, a[1] - VH * 0.55));
   SFX.uiSel(); }
 function updateMapPanel(dt) {
   if (rightPress) { bossSelectOpen('map'); return; }
@@ -5234,7 +5241,7 @@ function mapToSaved() {
   const savedId=PROG.mapNodeId==='harbor'?'causeway':(PROG.mapNodeId||legacy[PROG.mapNode||0]?.id);
   const n=Math.max(0,NODES.findIndex(n=>n.id===savedId));
   map.node = (nodeLocked(NODES[n]) || nodeSecret(NODES[n])) ? 0 : n; PROG.mapNodeId=NODES[map.node].id; map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
-  const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
+  const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(MAP_TOP, Math.min(MAPH - VH, a[1] - VH * 0.55));
 }
 // what lives along the road, placed against the PATH so it is always beside the walk and never in the sea
 let mapCrit = [], mapPrints = [], mapPuffs = [], mapStepT = 0, mapCritSeeded = false;
@@ -5315,7 +5322,7 @@ function mapPos() { const nd = NODES[map.node];
 const secretHost = lv => lv && (lv.needsTime ? lv.needsTime.id : lv.needsKills ? lv.needsKills.id : null);
 const secretShown = nd => { const h = nd.kind === 'level' ? secretHost(LEVELS[nd.level]) : null;
   return !!(h && (PROG[h] || {}).cleared); };
-const nodeSecret = nd => nd.kind === 'level' && ((!!LEVELS[nd.level].hidden && nodeLocked(nd) && !secretShown(nd)) || (!!LEVELS[nd.level].secretBanners && nodeLocked(nd)));   /* (the Unburied Field before its three banners: not a node at all, only drawMap's dim spot) */
+const nodeSecret = nd => demoOut(nd) || (nd.kind === 'level' && ((!!LEVELS[nd.level].hidden && nodeLocked(nd) && !secretShown(nd)) || (!!LEVELS[nd.level].secretBanners && nodeLocked(nd))));   /* (the Unburied Field before its three banners: not a node at all, only drawMap's dim spot) */
 // AND WHAT IT ASKS FOR, in one line. The kill gate is said as a FRACTION of whatever is in there,
 // because that is how it is stored and how it survives the garrison being retuned under it.
 function secretWants(lv) {
@@ -5383,7 +5390,7 @@ function updateMap(dt) {
   mapRevealStep(dt);   /* (claude/secrets) a secret that opened since the map was last seen is shown opening */
   if (map.glide && map.glide.node !== map.node) map.glide = null;   /* (a jump from the panel, the title or a reset leaves no glide behind) */
   if (map.glide && (leftPress || rightPress || upPress || downPress || confirmPress || mapPress || pausePress)) map.glide = null;   /* a key during the glide lands the token at once and is taken: nothing waits on the animation */
-  if (map.glide) { mapPreloadNode = -1; map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(0, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
+  if (map.glide) { mapPreloadNode = -1; map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(MAP_TOP, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
@@ -5418,11 +5425,11 @@ function updateMap(dt) {
       if (li >= 0 && mapPreloadTracks.has(li)) { const tr = mapPreloadTracks.get(li), at = map.node; clearTimeout(mapPreloadTimer); mapPreloadTimer = setTimeout(() => { if (state === 'map' && map.node === at && !map.walking) music.preload(tr); }, 350); }   /* (a REAL half-second of rest first: a cursor run past ten nodes, or a tool that draws every node in one breath - tools/textfit.mjs's mapcard - decodes nothing but the node it stops on: every rest used to start a ~60 MB track decode and the textfit page crashed (Inspector.targetCrashed) once enough were cached) */   /* (batch101 integ 10-18: the track name is remembered when a level LOADS - the first wood at boot, every level once played. It was LEVELS[li].build() on the first rest at each node: a 100-450 ms build and a native-memory leak per node, 47 of them across a map walk - it crashed tools/textfit.mjs's page at 'mapcard' - for a name the level hands over for free) */
     }
   }
-  { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = secretFx ? Math.max(0, Math.min(MAPH - VH, secretFx.nd.y - VH * 0.5)) : Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
+  { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = secretFx ? Math.max(MAP_TOP, Math.min(MAPH - VH, secretFx.nd.y - VH * 0.5)) : Math.max(MAP_TOP, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
 /* THE MAP'S PLATES AND INFO PANEL (src/map-plates.js): one layout for every board, and for each node a camera height and panel corner that cover no node or board around it */
 let mapPlateCache = null;
-function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
+function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES.filter(n3 => !demoOut(n3)), n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 let mapNoDanger = false;
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
@@ -5474,7 +5481,7 @@ function drawMap() {
   // cloud shadows drift over the land, then the clouds themselves later
   for (const c of mapClouds) { c.x += c.sp * 0.016; if (c.x > VW + 60) c.x = -60; g.drawImage(MAPCLOUD[c.k].shadow, (Math.round(c.x / 2) * 2) + 6, Math.round(c.y / 2) * 2 + 10); }   /* (hard pixels, a checker of shade: it steps two pixels at a time so the dither never shimmers) */
   // boss portraits: the queen hangs over the wood, the frog sits by the pond
-  { const nd = id => NODES.find(n => n.id === id); const cl = id => !!(PROG[id] && PROG[id].cleared); const qb = Math.round(Math.sin(time * 2.5) * 2);
+  { const nd = id => NODES.find(n => n.id === id && !demoOut(n)); const cl = id => !!(PROG[id] && PROG[id].cleared); const qb = Math.round(Math.sin(time * 2.5) * 2);
     const nw = nd('wood'), nm = nd('marsh'), ns = nd('stockade'), np = nd('spore'), nk = nd('kings'), nh = nd('hanging');
     if (nw) drawMapPortrait('wood', SPR.queen, Math.floor(time * 20) % 2, nw.x + 30, nw.y - 16 + qb, -1, 20, cl('wood'));
     if (nh) drawMapPortrait('hanging', SPR.owl, 0, nh.x + 30, nh.y - 10 + qb, -1, 18, cl('hanging'));
@@ -5552,7 +5559,7 @@ function drawMap() {
   { const open = NODES.filter(n => !nodeSecret(n) && !nodeLocked(n)); MFX.drawWeather(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, weather: SET.weather }); MFX.drawFog(g, { time, camY: mapCamY, VW, VH, reduced: !!SET.reduceMotion, frontierY: open.length ? Math.min(...open.map(n => n.y)) : undefined }); }   /* (claude/mappolish) weather, and the fog over what is not reached yet */
   if (map.walking) map.lastDir = map.walking < 0 ? -1 : 1;
   { // the road not yet walked: dotted, past the last node you can enter
-    let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < PATH.length - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
+    let last = 0; for (let k = 0; k < NODES.length; k++) if (!NODES[k].spur && !nodeLocked(NODES[k])) last = k; const from = NODE_AT[last]; g.fillStyle = 'rgba(20,16,30,0.55)';   /* FROM THE LAST REQUIRED NODE WALKED, not the highest unlocked index (map-redesign §2d/§6.4) - a spur that unlocks out of order used to switch the whole dotted section off */ for (let sgi = from; sgi < (DS.DEMO ? WOOD_PATH.length : PATH.length) - 1; sgi++) { const a = PATH[sgi], b = PATH[sgi + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let d = 0; d < len; d += 6) { const t = d / len; g.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) - 1, Math.round(a[1] + (b[1] - a[1]) * t) - 1, 3, 3); } } }
   drawSet(K, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K.R.idle.length), px, py + 2, map.lastDir || 1, false);
   /* A PENNANT ON THE TOKEN. A pole planted on the hero's own shoulder, and the cloth waves on the map's clock -
      three pixels, cheap, the one thing on the token itself that moves besides his legs. */
@@ -5611,7 +5618,7 @@ function drawMap() {
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); const cardTop = !map.walking && mapPanelFor(NODES[map.node]).y < 52;   /* (the region's name is not drawn under an info card that sits at the top: it would print over the card's text) */
   if (map.regionT > 0 && !cardTop && !secretFx) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
-  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, !!NODES[map.node] && nodeLocked(NODES[map.node]), [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
+  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, false, [...plateAt.values()].map(p => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })));   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a
@@ -5954,7 +5961,7 @@ const preview = (key, make) => previewCache[key] || (previewCache[key] = make())
 const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
 function drawStore() {
   if (SWAPUI.isOpen) { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); return; }   /* (claude/hubpolish) the swap hero panel has the screen: nothing of the store shows through it */
-  if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
+  if (storeBack === 'map') { g.drawImage(MAPC, 0, -MAP_TOP); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
   const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h, UI.border, 'ledger');
   text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head);
@@ -6451,7 +6458,7 @@ function bookDropParty() {
 function drawSlots() {
   g.fillStyle = 'rgba(10,6,20,0.55)'; g.fillRect(0, 0, VW, VH);
   text(slotInn ? 'THE GUEST BOOK' : 'CHOOSE A SAVE', VW / 2, 2, UI.title, 'center', TYPE.head);
-  const levels = LEVELS.filter(l => !l.hidden).length;
+  const levels = LEVELS.filter(l => !l.hidden && sliceLv(l)).length;
   for (let i = 0; i < SLOTS; i++) {
     const p = readSlot(i), { x, y, w, h } = slotRect(i), sel = i === slotI;
     if (eraseAsk < 0 && fixAsk < 0 && !(slotInn && bookAsk)) TCH.hit(x, y, w, h, () => { if (slotI === i) confirmPress = true; else { slotI = i; slotMsg = ''; SFX.ui(); } });
@@ -6462,7 +6469,7 @@ function drawSlots() {
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
       if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER THORNROAD   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
-    const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
+    const cleared = LEVELS.filter(l => sliceLv(l) && p[l.id] && p[l.id].cleared).length, medals = LEVELS.filter(sliceLv).reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
     g.save(); g.beginPath(); g.rect(x + 1, y + 1, 40, h - 2); g.clip(); drawSet(K2, 'idle', Math.floor(time * 4.5), x + 22, y + h - 2, 1, false); g.restore();
     text(hn, x + 100, y + 4, '#fff6e0'); { const lv = Math.max(1, slotLevel(p)), roomL = w - 6 - (i === slot ? inkW('LAST PLAYED', 6) + 8 : 0) - (108 + inkW(hn, 8)); text((inkW('LEVEL ' + lv, 8) <= roomL ? 'LEVEL ' : 'LV ') + lv, x + 108 + inkW(hn, 8), y + 4, '#8fd160'); }   /* (a long hero name gives LEVEL up for LV before it would run into LAST PLAYED; textfit slots) */   /* (SLOT 1 is ~48 px wide from x + 44: the hero starts at x + 100, a clear gap after it) */
@@ -6618,8 +6625,8 @@ function menuAdjust(dir) {
   else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Transitions') { const o = ['always', 'first', 'never'], i = o.indexOf(TRM.modeOf(SET.transitions)); SET.transitions = o[(i + (dir < 0 ? 2 : 1)) % 3]; menuMsg = SET.transitions === 'never' ? 'no cutscenes between levels' : SET.transitions === 'always' ? 'the cutscene plays every time (any button skips)' : 'the cutscene plays the first time only'; menuMsgT = 3; } else if (k === 'Hints') { SET.hints = HINTS.nextLevel(SET.hints, dir); applyHints(); menuMsg = SET.hints === 'none' ? 'no hint boxes, nudges or glints' : SET.hints === 'low' ? 'only a new mechanic, once; the glint after 45 s' : SET.hints === 'medium' ? 'each hint once; the nudge after 20 s' : 'every hint, as always; the nudge after 10 s'; menuMsgT = 3; } else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Full screen') { try { if (window.bkFullscreen) window.bkFullscreen(); } catch (e) {} menuMsg = document.fullscreenElement ? 'windowed' : 'full screen'; menuMsgT = 2; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Unlock everything') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
-  else if (k === 'Unlock all levels') { SET.allLevels = !SET.allLevels; menuMsg = SET.allLevels ? 'every level is open - for getting past a stuck spot' : 'levels open as you earn them again'; menuMsgT = 2; }   /* (Daniel 10-16) UNLOCK ALL LEVELS: a player-facing helper (not dev-only) so a bug never walls off the rest of the game; opens levels only - heroes, store and medals untouched, clears still saved */
-  else if (k === 'God mode') { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'GOD MODE: no harm, endless stamina, jump in the air, hold JUMP to rise (no medals or feats)' : 'you can be hurt again'; menuMsgT = 2; }
+  else if (k === 'Unlock all levels' && !SETUI.rowHidden(k)) { SET.allLevels = !SET.allLevels; menuMsg = SET.allLevels ? 'every level is open - for getting past a stuck spot' : 'levels open as you earn them again'; menuMsgT = 2; }   /* (Daniel 10-16) UNLOCK ALL LEVELS: a player-facing helper (not dev-only) so a bug never walls off the rest of the game; opens levels only - heroes, store and medals untouched, clears still saved */
+  else if (k === 'God mode' && !SETUI.rowHidden(k)) { SET.invincible = !SET.invincible; menuMsg = SET.invincible ? 'GOD MODE: no harm, endless stamina, jump in the air, hold JUMP to rise (no medals or feats)' : 'you can be hurt again'; menuMsgT = 2; }
   else if (k === 'Iron Knight') { SET.iron = !SET.iron; menuMsg = SET.iron ? 'three lives a level, then back to the map' : 'shrines forever'; menuMsgT = 3; } else if (k === 'Effects vol') SET.sfx = Math.round(Math.max(0, Math.min(1, SET.sfx + dir * 0.1)) * 10) / 10; else if (k === 'Screen shake') { SET.shakeMode = SET.shakeMode === 'off' ? 'hit' : 'off'; SET.shake = SET.shakeMode !== 'off'; } else if (k === 'Sound FX') SET.sfxFiles = !SET.sfxFiles; else if (k === 'Character voices') SET.voices = SET.voices === false;
   else if (k === 'Way-on arrow') { if (SET.wayOn) { SET.wayOn = false; SET.wayStall = false; } else if (SET.wayStall === false) SET.wayStall = true; else SET.wayOn = true; menuMsg = SET.wayOn ? 'an arrow to the next gate, key, shrine or the way out' : SET.wayStall !== false ? 'an arrow only when you have been stuck for ten seconds' : 'no arrow: find your own way'; menuMsgT = 3; }
   else if (k === 'Hit stop') SET.hitstop = !SET.hitstop; else if (k === 'Hit numbers') SET.numbers = !SET.numbers; else if (k === 'Timer') SET.timer = !SET.timer; else if (k === 'Ambient life') SET.ambient = !SET.ambient;
@@ -36175,7 +36182,7 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const nameOfSkill = id => { if (!id) return 'NONE'; const n = skillFor(hero(), id); return n ? n.name : ((ABILITIES.find(a => a.id === id) || {}).name || 'NONE'); };
   const skName = nameOfSkill(skillNow()), sk2Name = slotsAt(heroLevel()) < 2 ? 'AT LEVEL ' + SECOND_SLOT_LEVEL : skillsOwned().length > (isReaper() ? 0 : 1) ? nameOfSkill(skill2Now()) : 'LOCKED';
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
-  const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
+  const cleared = LEVELS.filter(l => !l.hidden && sliceLv(l) && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden && sliceLv(l)).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
   rows.forEach(([a, b], i) => { const yy = rowY + i * (loop.length > 2 ? 8 : 10); text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
   if (SC.heroLine(hero())) ['FOUND ON', 'A HIDDEN', 'PATH'].forEach((ln, i) => text(ln, x + 30, y + 64 + i * 8, '#c8b6ff', 'center', 6));   /* (claude/secrets) a hero a secret carries says so */
@@ -37287,9 +37294,9 @@ function render() {
         g.globalAlpha = a; text(k, bx + 17 + (sel ? 2 : 0), yy, sel ? UI.title : UI.dim, 'left'); if (k === "WHAT'S NEW" && WN.newestDate()) { text(WN.shortDate(WN.newestDate()), bx + mw - 19, yy + 1, sel ? UI.gold : UI.dim, 'right', 6); if (WN.hasNew()) { g.fillStyle = SET.reduceMotion || Math.floor(time * 2) % 2 ? '#ff9a5c' : '#ffd36b'; g.fillRect(bx + mw - 14, yy + 1, 4, 4); } } g.globalAlpha = 1;
         if (sel) { const bob = Math.round(Math.sin(time * 6) * 1.5), cxs = bx + 9 + bob; g.fillStyle = '#c9d1dc'; g.fillRect(cxs, yy + 3, 5, 1); g.fillStyle = '#e0b040'; g.fillRect(cxs + 5, yy + 1, 1, 5); g.fillStyle = '#7a4a2a'; g.fillRect(cxs + 6, yy + 3, 2, 1); } });
       // what waits in the save you would continue
-      const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
+      const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sliceLv(lv) && sv[lv.id] && sv[lv.id].cleared).length : 0;
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(bx + 8, my + mh - 13, mw - 16, 1);
-      text(items[titleI] === 'LOCAL CO-OP' || items[titleI] === 'ONLINE CO-OP' ? 'INN: CO-OP, LOOK, TRAIN' : sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
+      text(items[titleI] === 'LOCAL CO-OP' || items[titleI] === 'ONLINE CO-OP' ? 'INN: CO-OP, LOOK, TRAIN' : sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden && sliceLv(l)).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
