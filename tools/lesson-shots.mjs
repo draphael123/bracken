@@ -14,7 +14,7 @@ try {
   if (want.includes('tavern')) { await E(`__go('tavern','${HERO}')`); await E(`__stand(55,1);BK.sim(260)`); await shot('tavern-board'); }
   if (want.includes('lesson')) {
     await E(`__go('lesson','${HERO}')`);
-    for (const [n, col, f, i] of [['move', 6, 90, 0], ['jump', 21, 90, 1], ['attack', 42, 90, 3], ['block', 55, 260, 4], ['door', 104, 90, 8]]) { await E(`BK.lesson().O.st.i=${i};__stand(${col},1);BK.sim(${f})`); await shot('lesson-' + n); }
+    for (const [n, col, f, i] of [['move', 6, 90, 0], ['jump', 21, 90, 1], ['attack', 42, 90, 3], ['heavy', 56, 90, 4], ['rise', 68, 90, 5], ['sweep', 81, 90, 6], ['plunge', 96, 90, 7], ['block', 105, 260, 8], ['door', 154, 90, 12]]) { await E(`BK.lesson().O.st.i=${i};__stand(${col},1);BK.sim(${f})`); await shot('lesson-' + n); }
   }
   if (want.includes('inn')) {
     await E(`(()=>{BK.manualSimulation=true;BK.setHero('${HERO}');BK.reset({fresh:true});BK.load(__LV.findIndex(l=>l.id==='tavern'));BK.start();BK.sim(200);BK.lesson().O.innCard(9);BK.sim(40);})()`);
