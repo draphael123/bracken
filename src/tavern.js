@@ -30,7 +30,7 @@ export const STATIONS = [
   { id: 'guestbook', x: 10, name: 'THE GUEST BOOK', verb: 'SAVES', first: 'THE GUEST BOOK: YOUR SAVES - SWITCH, START A NEW ONE, OR CLEAR ONE. P1 KEEPS THE BOOK.' },   /* (claude/innsaves, Daniel 11-06) the real SAVES station: the five-slot save screen, from the inn */
   { id: 'saves', x: 14, name: 'CO-OP RULES', verb: 'READ', first: 'CO-OP RULES: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
-  { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
+  { id: 'wardrobe', x: 40, name: 'SWAP HERO', verb: 'SWAP', first: 'SWAP HERO: PICK ANY HERO YOU OWN - A HERO UNLOCKED ON ANY SAVE IS YOURS ON EVERY SAVE. ALSO YOUR WEAPON, COLOUR AND RINGS.' },   /* (claude/heroroster2, Daniel 11-07) the wardrobe station (id kept) is SWAP HERO: the verb is SWAP */
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
   { id: 'bell', x: 48, name: 'THE SPARRING BELL', verb: 'RING', first: 'THE SPARRING BELL: RING IT AND A PARTNER GOES DOWN - STAND ON HIM TO LIFT HIM.' },
   { id: 'lesson', x: 55, name: 'THE TUTORIAL BOARD', verb: 'TUTORIAL', first: 'THE TUTORIAL BOARD: THE TUTORIAL AGAIN - MOVE, JUMP, FIGHT, DRINK, SHRINE. YOU END UP BACK HERE.' },   /* (claude/tutorial1, Daniel 11-05) replays the roadside lesson (src/opening-tutorial.js) */
@@ -201,7 +201,7 @@ export function makeTavern(api) {
     for (const [p, c] of st.cardFor) {
       const strip = !!api.heroStrip, w = 132, h = strip ? 90 : 58, x = Math.round(VW / 2 - w / 2 + (i - (st.cardFor.size - 1) / 2) * (w + 4)), y = 26; i++;
       api.board(x, y, w, h); const col = colourOf(api.PROG().tavern, p.n);
-      api.text(api.tagOf(p) + ' WARDROBE', x + w / 2, y + 4, col.c, 'center', 6);
+      api.text(api.tagOf(p) + ' SWAP HERO', x + w / 2, y + 4, col.c, 'center', 6);
       const vals = [api.heroName(p.hero), api.weaponName(api.weaponOf(p)), col.name, tav().ring ? 'ON' : 'OFF'];
       ROWS.forEach((r, k) => { const yy = y + 15 + k * 9, sel = k === c.row; api.text((sel ? '> ' : '  ') + r, x + 6, yy, sel ? '#a8e06e' : '#c2c9c2', 'left', 6); api.text((sel ? '< ' : '') + vals[k] + (sel ? ' >' : ''), x + w - 6, yy, sel ? '#fff6e0' : '#c2c9c2', 'right', 6); });
       if (strip) api.heroStrip(x + 4, y + 52, w - 8, p.hero, p);   /* (claude/hubpolish) every hero at a glance: yours lit, the others greyed */

@@ -1,42 +1,20 @@
-# claude/heroroster - HERO ROSTER + NO UNLOCK-ALL (sonnet lane, 10-12)
+# HEROROSTER (claude/heroroster2, off master 95bc267a4) - Daniel 11-07
 
-Base 1e461b4c (batch88 live). Branch claude/heroroster. Port 8875.
+Branch is claude/heroroster2: the old claude/heroroster (10-12) already exists, merged.
 
-## Where UNLOCK ALL / UNLOCK EVERYTHING lived
-- `SET.godmode` (src/main.js): `godMode()` (owns everything, opens every wood/store/co-op/hero list, rush), the settings row `Unlock everything`
-  (src/settings-ui.js TESTING block + main.js toggle + SETTING_TIPS), the HUD text `UNLOCK ALL` (the row in Daniel's photo), `assistOn()`.
-- No hotkey, title option or pause-menu entry exists for it (grepped main.js, settings-ui.js, store.js, touch.js, title-*.js).
-- Tools that set it: tools/godmode.mjs, touch.mjs, touch-shots.mjs, hanging-hoist-walk.mjs (+ settings-tabs.mjs asserts the row list).
+## Changes
+1. Account-wide unlocks. src/hero-roster.js: the roster file now also carries `own` (heroes some save owns; starters only when owned, so an unbought starter is still buyable per save) and `feats` (boss:unburied, boss:church, boss:warcairn done in ANY save). New noteRoster, rosterOwned, parseOwn/parseFeats, ownedInSlots, featsInSlots. Migration seeds own+feats from slots; old rosters upgrade on load; .lastgood/.corrupt/rebuild keep both. main.js: owns()/heroOwned() = god | this save | ROSTER_OWN; swapHeroTo, swap rows/swapWhy, store list (OWNED, equip never charges, no refunds), setSeatHero, tavHeroes, coopPickList, boss select, title camp all read it. A save ADOPTS a roster hero into PROG.heroes the first time it plays him (setEquip/tavSetHero) so every PROG.heroes reader works. A hero's sale lock reads the device feats (lockOfK/featDoneH). Gold route (coinRoute) still needs the boss in THIS save (gold is per save). rosterNote runs on every save write. coop-save.js heroesOf/slotSummary/snapshotOf/freshSeat/seatFromSlot take roster extras; applyCredit adopts a roster hero (not xpOnly); online-guest picker + snapshot use rosterOwned; host seat check follows seat.heroes (unchanged).
+2. Catch-up XP (src/xp.js xpGrant): paid = max(old rule [x3 curve catch-up, else soft cap], x2 below this save's highest hero level), capped at that level's XP floor, never above LV_MAX, never stacked. CHOICE: the soft cap applies first (roster x2 doubles the soft-capped amount), so over-levelled farming is no more farmable. '2X XP' tag on swap cards (CELL_H 52->60, caption says until level N), HUD bar ' x2' (x3 keeps priority), start-of-wood hint, wood summary shows the real multiplier.
+3. Labels: store button 'F: SWAP HERO' (pad glyph via CTL.labelFor); tavern wardrobe station -> SWAP HERO / verb SWAP / new first-visit line, card header SWAP HERO; title row SWAP HERO (only when the save is started): loads the current save, opens the panel over the title, a pick or ESC returns to the TITLE (hero saved, line shown top of title; CONTINUE then plays him - least surprising); controls card row 'swap hero'; pause row kept.
+4. Tests: new node tools/hero-account.mjs (registered in check.mjs): roster A->B, feats, old roster, damaged/rebuilt, full disk, co-op seat + credit adoption, source checks for no double charge/title/tavern/controls, xpGrant math. Updated tools/hero-roster.mjs (stored text now has own) and tools/tavern.mjs (first line says SWAP HERO).
 
-## Built
-- **Dev flag** `src/dev-flag.js`: `?dev=1` (BK.setDev = test hook). `godMode()` is `isDev() && SET.godmode`; the settings row is filtered out of
-  `tabRows` without it; the HUD row reads `godMode()`; a saved `godmode:true` setting is cleared at boot without the flag.
-  Tools updated (never weakened): godmode.mjs navigates with `?dev=1`; touch / touch-shots / hanging-hoist-walk call `BK.setDev(true)` first;
-  settings-tabs.mjs now asserts the row is ABSENT without the flag and the whole old list is present WITH it (stated design change).
-- **Device roster** `src/hero-roster.js`: localStorage `bracken.roster`, four starters always in it. Seeded ONCE at boot from every slot (incl. legacy
-  `bracken.progress`); every `saveProgress` / `loadSlot` adds heroes the slot owns. Save safety like the slots: written with `safeSet`, last clean text in
-  `.lastgood`, a damaged text kept in `.corrupt` then restored from `.lastgood` or REBUILT from the slots; a full disk never touches a slot.
-- **Hero pick** shows all 8: roster heroes (and starters) open as before; locked = black silhouette of the real idle frame (`src/hero-silhouette.js`,
-  faint cool rim), name `???`, one how-to line (`BUY IN THE STORE - 10 SILVER`; the Death Knight says `BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER`),
-  Z on it = new soft `SFX.deny()` + the line pulses, nothing taken. A new game still owns ONLY the hero it takes (silver stays per slot).
-- **Hook**: `HERO_RULE_SHIPS` in hero-roster.js (false). Flip it when the Pirate Fleet + Lit Church 2 are live: every non-starter then reads
-  `BEAT HIM, THEN 10 SILVER`; the "beaten + bought" roster rule itself is not shipped.
-- **Co-op / online**: `coopPickList` = slot's heroes + roster (+ legacy starters); the online guest's pick is that list (host's roster until portable guest saves).
-- New `tools/hero-roster.mjs`, wired into tools/check.mjs.
+## Verified
+node --check on every touched file; node tools/hero-account.mjs ok; coop-progress ok; tavern-menu ok; progression/leveling/levelling/warcairn ok. tools/warden-id.mjs RED 'DUEL_HERO: no warden row' is pre-existing on master. No browsers, no check.mjs.
 
-## Checks (all green, port 8875, one page at a time)
-hero-roster, godmode, settings-tabs, store, progression, uiscreens, titlescene, textfit (pick, trial, title, menu, settings, slots, store --strict: 0 on all),
-berserker, touch, save-slots, save-safety, online-coop. Not run: hanging-hoist-walk (edited only to call BK.setDev), the full suite.
-Screenshot: work/claude/heroroster/hero-pick-locked-selected.png (+ hero-pick-open-selected.png).
+## OWED (browser)
+Stills: store SWAP HERO button (kb + pad), tavern SWAP HERO station + card, title SWAP HERO row (row count +1: RH may drop 8->7 with 13 rows) + swap panel + toast, '2X XP' tag on cards + HUD. Page runs: tools/hero-roster.mjs, tavern.mjs, hero-swap.mjs (its 'Geomancer refused' case should still hold since unbought starters stay unowned), settings-tabs (controls card now +1 row, step shrinks), textfit. Online co-op guest check (roster hero pick from a save that never owned him).
 
-## Design changes to existing tests (stated, not weakened)
-- titlescene 'hero pick': the pick now always lays 8 cards of 37 px, so names stand on two alternating lines (as the old 7-card row did) -> rule is
-  'at most two lines, no two names touching' instead of 'one line'. The '7 heroes' test became '8 heroes' and opens them with dev flag + godmode instead
-  of mutating DEFAULT_HEROES (which the pick no longer reads). textfit 'pick' scope measures 8 screens instead of 3.
-- settings-tabs: UNLOCK EVERYTHING row is dev-only (above).
-
-## QUESTIONS FOR DANIEL (recs as built)
-1. A new game on a roster hero owns only him, so buying another hero in that slot still costs silver again (rec, as built: silver is per slot).
-2. Co-op's gate stays "this slot owns two heroes" (rec, as built); the co-op list itself follows the roster. Show locked silhouettes on the co-op pick too? (not built)
-3. The old URL cheats (?unlock, ?rush) and God Mode were left as they are (Daniel 10-11 'cheats as is').
-4. Death Knight how-to line today says to beat him in the Unburied then buy; flip HERO_RULE_SHIPS when the Pirate Fleet + Lit Church 2 ship.
+## Questions (recs built)
+- A starter picked free at new game is recorded as owned, so it is free in every save. Rec: keep.
+- Gold route for Reaper/Paladin/Berserker still per save. Rec: keep (gold is per save).
+- Title swap returns to title (not Continue). Rec: keep.
