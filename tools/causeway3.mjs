@@ -55,7 +55,7 @@ const at = (x, y) => L.grid[y * L.W + x];
 { const bad = lintCauseway3(L, T); pass(!bad.length, 'lintCauseway3: ' + bad.join('; '));
   const badT = lintTide({ tides: L.cw3Tides, pools: L.pools, checkpoints: L.ents.filter(e => e.t === 'check') }); pass(!badT.length, 'lintTide: ' + badT.join('; '));
   const badP = lintPulls({ pulls: L.cw3Pulls }); pass(!badP.length, 'lintPulls: ' + badP.join('; ')); }
-pass(L.ents.filter(e => e.t === 'check').length === 5, 'START + four shrines on 980 columns (master: 10 on 612): ' + L.ents.filter(e => e.t === 'check').map(e => e.x).join(' '));
+pass(L.ents.filter(e => e.t === 'check').length === CW3.checks.length && CW3.checks.length === 6, 'START + six shrines on 980 columns (one per area exam, at the 200-route-tile cap; master: 10 on 612): ' + L.ents.filter(e => e.t === 'check').map(e => e.x).join(' '));
 pass(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers, one an act (save bits)');
 pass((L.ambushes || []).map(a => a.name).join('|') === 'THE DROWNED CHAPEL', 'one ambush room (the island chapel)');
 pass(L.ents.some(e => e.elite && e.t === 'tideguard' && e.x === 556 && e.gate === 564), 'the gated elite holds the lee (gate 564)');

@@ -54,7 +54,7 @@ export const CW3 = {
   chase: { x0: 805, x1: 903, trigger: 808, speed: 50, crack: 1.2, smash: [805, 807] },
   arms: { tell: 1.1, slam: 0.5, dmg: 14, knock: 120 },
   rip: 120,
-  checks: [[285, 19], [590, 19], [790, 16], [925, 17]],
+  checks: [[150, 23], [285, 19], [406, 19], [590, 19], [790, 16], [925, 17]],   /* one an area's exam (A10c) at the 200-route-tile cap (tools/checkpoint-gaps.mjs); START is the first */
   lampGate: { lamp: 690, col: 697 },
   sections: [['THE LANDING', 0, 44], ['THE MILE ROAD', 45, 103], ['THE STONES', 104, 147], ['THE COVE', 148, 205], ['THE GUN', 206, 265], ['THE WAYSTATION', 266, 305],
     ['THE WRECK', 306, 358], ['THE HOLY ISLAND', 359, 437], ['THE SEA ARCH', 438, 500], ['THE LEE', 501, 598],
@@ -62,21 +62,21 @@ export const CW3 = {
 };
 export const CW3_RULE = 'THE TIDE TAKES THE ROAD. THE BELLS SAY WHEN, AND THE BELLS ARE YOURS.';
 export const CW3_SIGNS = {
-  intro: 'THE DROWNED CAUSEWAY. THE PILGRIMS WALKED TO THE LIGHT AT LOW WATER. A STORM IS COMING IN BEHIND YOU.',
-  light: 'THE LIGHT AT THE END OF THE ROAD. EVERY BELL ON THE ROAD IS A TIDE BELL, AND EVERY ONE IS YOURS.',
-  stones: 'THE STONES\' CHANNEL IS IN NEARLY ALWAYS, AND IT RUNS OUT TO SEA. TURN THE SLUICE WHEEL AND WALK THE STONES WHILE IT HOLDS.',
+  intro: 'THE DROWNED CAUSEWAY. THE PILGRIMS WALKED TO THE LIGHT. A STORM COMES IN BEHIND YOU.',
+  light: 'THE LIGHT AT THE END OF THE ROAD. EVERY BELL ON IT IS A TIDE BELL, AND YOURS.',
+  stones: 'THE CHANNEL IS IN NEARLY ALWAYS. TURN THE SLUICE WHEEL, THEN WALK THE STONES.',
   cove: 'THE COVE BOAT RIDES UP TO THE SEA WALL AT HIGH WATER. THE HAMLET BELL CALLS IT IN.',
   gun: 'THE TOLL TOWER FELL ACROSS THE ROAD. A GUN OFF THE WRECKS LIES BESIDE IT, STILL LOADED.',
   storm1: 'THE STORM IS COMING IN. FROM HERE THE TIDE COMES OVER THE ROAD, AND IT TURNS FASTER.',
   wreck: 'HER SHROUDS HANG OVER HIGH WATER. WAIT FOR THE FLOOD, SWIM UP TO THEM, CLIMB HER.',
   chapel: 'THE ISLAND CHAPEL. THE DROWNED STILL COME TO IT, AND THEY SHUT THE DOORS BEHIND YOU.',
   crypt: 'THE UNDERCROFT\'S FLOODGATE. DRAINED, YOU WALK ITS FLOOR. FLOODED, YOU SWIM TO ITS DOOR.',
-  arch: 'THE SEA ARCH RUNS WITH THE FLOOD AND AGAINST THE EBB. IN THE EBB, HOLD THE RING AT AN AIR BELL (HOLD UP) AND WAIT.',
+  arch: 'THE ARCH RUNS WITH THE FLOOD, AGAINST THE EBB. IN THE EBB, HOLD A RING (UP) AND WAIT.',
   lee: 'THE LEE OF THE ISLAND. NIGHT COMES DOWN ON THE LAST MILE.',
-  storm2: 'NIGHT. THE TIDE TURNS EVERY FEW BREATHS NOW. THE LIGHTNING SHOWS THE ROAD, AND SO DO THE LAMPS.',
+  storm2: 'NIGHT. THE TIDE TURNS EVERY FEW BREATHS. THE LIGHTNING SHOWS THE ROAD, AND THE LAMPS.',
   lamps: 'A STORM LAMP ON EVERY WAYSTONE. STRIKE ONE TWICE AND IT BURNS.',
   gate: 'THE PILGRIMS\' GATE OPENS TO A LIT LAMP.',
-  last: 'THE LAST BELL. HOLD THE SEA OUT TO CROSS THE STONES. THEN CALL IT IN, AND LET THE BOAT LIFT YOU TO THE LIGHT.',
+  last: 'THE LAST BELL. HOLD THE SEA OUT TO CROSS. THEN RING IT IN: THE BOAT LIFTS YOU.',
   holm: 'THE ROAD TO THE LIGHT IS OLD AND THE SEA IS UNDER IT. IT WILL NOT HOLD LONG. DO NOT STOP.',
   lighthouse: 'THE LIGHT. THE ROAD BEHIND YOU IS GONE. THE WATER AT THE END OF THIS ONE IS BREATHING.',
 };
@@ -91,13 +91,17 @@ export function buildCauseway3(R0, T, TS = 16) {
   const road = (x0, x1, top = RD) => block(x0, x1, top, H - 1);
   const air = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.AIR);
   const nets = []; const net = (x, y0, y1) => nets.push([x, y0, y1]);   /* EVERY ROPE IS HUNG LAST */
-  const plat = (x, y, n) => fill(x, x + n - 1, y, y, T.ONEWAY);
+  const supports = [], airRooms = [];
+  /* a ledge over the road: pilgrim stone, a pier at each end and every third column (src/routes' hcpier supports: nothing floats) */
+  const plat = (x, y, n) => { fill(x, x + n - 1, y, y, T.ONEWAY); for (const px of [...new Set([x, ...Array.from({ length: n }, (_, i) => x + i).filter(q => (q - x) % 3 === 0), x + n - 1])]) { let b = y + 1; while (b < H - 1 && grid[b * W + px] === T.AIR) b++; if (b - y >= 2) supports.push({ x: px, y, bottom: b, kind: 'hcpier' }); } };
   const ents = [];
+  /* A LEDGE A BAND UP: a two-row step stone, then a pilgrim-stone ledge four rows over the ground (S = the ground's top row): a second height (tools/level-quality.mjs bands) */
+  const ledge = (x, S, w) => { block(x, x + 1, S - 2, S - 1); plat(x + 2, S - 4, w); };
   const ent = (t, x, y, o) => ents.push({ t, x, y, ...(o || {}) });
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const deco = (kind, x, y, o) => ent('deco', x, y, Object.assign({ kind }, o || {}));
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, o || {}));
+  const foe = (t, x, y, o) => ent(t, x, y, Object.assign({ face: -1 }, t === 'petrel' ? { fly: true } : {}, o || {}));   /* a petrel is a flyer: it rides the wind over the gaps */
   const pools = [];
   /* a kit pool: drawn at its HIGH line as built (the reach model swims it there); the kit moves it from the first frame */
   const pool = (id, x0, x1, line, o) => pools.push(Object.assign({ id, x0: x0 * TS, x1: (x1 + 1) * TS, y: line * TS, base: 42 * TS, bottom: 40 * TS, swim: true, clear: true, wash: 0.42, grad: false, sea: true, cw3: true }, o || {}));
@@ -111,7 +115,6 @@ export function buildCauseway3(R0, T, TS = 16) {
   const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
   const arms = []; const arm = (x, o) => arms.push({ x, ...(o || {}) });   /* KRAKEN FORESHADOW: told strikes on the road (src/causeway3-hands.js) */
   const lamps = [];
-  const supports = [], airRooms = [];
 
   block(0, KEEP0 + OFF - 1, 40, H - 1);   /* the bed of the flats, under everything */
 
@@ -120,7 +123,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   // =====================================================================================================================
   // ---- THE LANDING (0-44): the sea wall, the pilgrim stone, the first bell, and the light on the horizon ----
   block(0, 40, 18);
-  ent('check', 3, 17); sign(2, 17, CW3_SIGNS.intro); sign(14, 17, CW3_SIGNS.light);
+  sign(2, 17, CW3_SIGNS.intro); sign(14, 17, CW3_SIGNS.light);
   deco('waystone', 9, 17); deco('wayShrine', 22, 17); deco('fencePosts', 34, 17);
   bell('act1', 28, 17); prop('pilgrimStone', 18, 17);
   coins([6, 16], [12, 16], [25, 16], [31, 16], [37, 16]);
@@ -130,7 +133,8 @@ export function buildCauseway3(R0, T, TS = 16) {
   road(45, 70); block(71, 72, 26); block(73, 86, 30); block(87, 88, 26); road(89, 103);
   net(73, 25, 29); net(86, 25, 29);   /* rungs up the dip's sides, for a hero who meets the flood in it */
   deco('waystone', 52, 23); deco('waystone', 66, 23, { v: 1 }); deco('brokenArch', 95, 23);
-  foe('sailor', 62, 23); foe('petrel', 80, 16); foe('scout', 99, 23); foe('sailor', 90, 23);
+  foe('sailor', 58, 23, { squad: 'pilgrimdead' }); foe('sailor', 63, 23, { squad: 'pilgrimdead' }); foe('scout', 57, 19, { squad: 'pilgrimdead' }); foe('petrel', 80, 16); foe('scout', 93, 23); foe('feeler', 80, 29);   /* THE FEELER (the Causeway's own foe, master's): the flats have arms in them - the Kraken's, foreshadowed */ foe('sailor', 90, 23);   /* THE PILGRIMS' DEAD: two drowned and a bow on the waymark ledge (a squad) */
+  ledge(48, 24, 8); ledge(60, 24, 6);   /* the waymark ledges over the mile road (a second height; over high water in the later acts' style) */
   coins([75, 29], [79, 29], [83, 29], [56, 22], [92, 22]);
 
   // ---- THE STONES (104-147): SLUICE. The channel's own tide is in nearly always; its rip carries a swimmer back to the near bank ----
@@ -139,7 +143,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   for (const x of [107, 112, 117, 122, 127, 132, 137]) block(x, x + 1, 28);
   block(142, 143, 28); block(144, 145, 26);   /* the last stone and the far bank's step */
   net(104, 25, 31);   /* the near bank's rungs: where the rip leaves you */
-  road(146, 159);
+  road(146, 159); ent('check', 150, 23);   /* the stones' far bank: the stones were the act's first exam */
   foe('eel', 125, 36); foe('petrel', 128, 22); foe('petrel', 140, 21);
   coins([108, 27], [118, 27], [128, 27], [138, 27], [143, 27]);
   ent('silver', 120, 37);   /* ACT I's SILVER: on the channel bed under the third stone (dive for it in the hold, or the flood) */
@@ -160,15 +164,17 @@ export function buildCauseway3(R0, T, TS = 16) {
   road(203, 265);
   block(240, 246, 6, 23);   /* the fallen tower: 18 rows of stone across the road */
   ent('cannon', 233, 23, { hole: [240, 246, 17, 23], aim: 1 }); sign(228, 23, CW3_SIGNS.gun);
-  foe('bonecorsair', 222, 23); foe('bonecorsair', 236, 23); foe('scout', 243, 5);
+  foe('bonecorsair', 225, 23, { squad: 'guncrew' }); foe('bonecorsair', 236, 23, { squad: 'guncrew' }); foe('scout', 243, 5, { squad: 'guncrew' });   /* THE GUN CREW's bones (a squad) */
+  ledge(205, 24, 8); ledge(249, 24, 8);
   deco('mastStump', 214, 23); deco('seaChest', 218, 23);
   coins([210, 22], [226, 22], [250, 22], [258, 22]);
 
   // ---- THE WAYSTATION (266-305): the holm over every high water, SHRINE ONE, and the storm ----
   block(266, 267, 22); block(268, 269, 20); block(270, 305, 20);   /* (the act I / act II seam is inside this rock: no water stands against water) */
-  ent('check', CW3.checks[0][0], CW3.checks[0][1]); sign(276, 19, CW3_SIGNS.storm1);
+  ent('check', 285, 19); sign(276, 19, CW3_SIGNS.storm1);
   ent('brazier', 290, 19); deco('tent', 294, 19); deco('lanternPost', 300, 19); deco('waystone', 282, 19, { v: 1 });
   foe('tideguard', 259, 23); foe('netter', 272, 19);
+  ledge(273, 20, 6); ledge(292, 20, 6);   /* the waystation's tent-stones */
   coins([273, 18], [287, 18], [297, 18], [303, 18]);
 
   // =====================================================================================================================
@@ -184,7 +190,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   sign(309, 23, CW3_SIGNS.wreck); deco('figurehead', 339, 23);
   block(349, 351, 30); road(352, 356); block(357, 358, 22);   /* a broken span (a 3-tile gap on its pier) and the step up onto the island */
   net(349, 25, 29); net(351, 25, 29);
-  foe('petrel', 350, 19);
+  foe('petrel', 350, 19); foe('feeler', 344, 23);
   coins([311, 22], [318, 10], [330, 10], [336, 10], [344, 22], [354, 22]);
 
   // ---- THE HOLY ISLAND (359-437): THE CHAPEL (the ambush) and THE UNDERCROFT (FLOODGATE) ----
@@ -198,11 +204,12 @@ export function buildCauseway3(R0, T, TS = 16) {
   net(410, 20, 38);   /* the ladder down (and back up, drained) */
   air(418, 420, 25, 26); airRooms.push([418, 420, 25, 27]);   /* a pocket of air in its roof */
   air(433, 433, 27, 29);   /* THE DOOR: high in the east wall, ten rows over the floor - into the sea arch */
-  sign(407, 19, CW3_SIGNS.crypt);
+  sign(404, 19, CW3_SIGNS.crypt); ent('check', 406, 19);   /* the chapel door: after its ambush, before the undercroft and the arch */
   foe('drownedknight', 426, 38); foe('eel', 420, 33);
   coins([414, 38], [422, 38], [430, 38]);
   /* THE FALLEN BELL TOWER: across the island's crown - the top road is shut, the way on is under */
   block(438, 442, 4, 19);
+  ledge(420, 20, 10);   /* the old cloister wall's top */
 
   // ---- THE SEA ARCH (433-500): CURRENT + AIR. Always flooded; it runs with the flood and against the ebb; three air bells with iron rings ----
   air(434, 496, 27, 32);
@@ -211,15 +218,17 @@ export function buildCauseway3(R0, T, TS = 16) {
   sign(444, 19, CW3_SIGNS.arch);
   foe('eel', 458, 31); foe('eel', 474, 30);
   coins([441, 29], [457, 29], [473, 29], [489, 29]);
-  foe('merrowcaller', 486, 19);   /* the island's far end: a caller over the shaft mouth */
+  foe('merrowcaller', 486, 19);
+  ledge(445, 20, 8); ledge(468, 20, 10);   /* the fallen tower's courses, over the island's far end */   /* the island's far end: a caller over the shaft mouth */
 
   // ---- THE LEE (501-598): the elite holds the road; SHRINE TWO; night comes down ----
   block(501, 502, 22); road(503, 598);
-  foe('cutlass', 512, 23); foe('netter', 522, 23); block(536, 536, 23, 23); foe('scout', 536, 22);
+  ledge(506, 24, 8); ledge(528, 24, 10); ledge(568, 24, 8);   /* the lee's broken parapet, a dry perch at high water */
+  foe('cutlass', 512, 23); foe('feeler', 520, 23); foe('netter', 522, 23); block(536, 536, 23, 23); foe('scout', 536, 22);
   foe('tideguard', 556, 23);   /* (the ELITE: CW3_TABLES.ELITES, his gate at 564) */
   foe('sailor', 572, 23); foe('petrel', 566, 15);
   block(582, 605, 20);   /* SHRINE TWO's holm (the act II / act III seam is inside this rock) */
-  ent('check', CW3.checks[1][0], CW3.checks[1][1]); sign(586, 19, CW3_SIGNS.lee);
+  ent('check', 590, 19); sign(586, 19, CW3_SIGNS.lee);
   deco('wayShrine', 596, 19); ent('brazier', 600, 19);
   coins([508, 22], [530, 22], [548, 22], [576, 22], [594, 18]);
   sign(603, 19, CW3_SIGNS.storm2);
@@ -229,12 +238,13 @@ export function buildCauseway3(R0, T, TS = 16) {
   // =====================================================================================================================
   // ---- THE DARK MILE (606-703): LAMPS. Storm lamps on the waystones; the last one lifts THE PILGRIMS' GATE ----
   road(606, 640); road(644, 660); road(664, 680); road(684, 703);   /* three broken spans (3-tile gaps) */
+  ledge(620, 24, 6); ledge(653, 24, 5); ledge(674, 24, 5);   /* the waystones' ledges: over high water, in the dark */
   for (const [a, b] of [[641, 643], [661, 663], [681, 683]]) { block(a, b, 33); net(a, 25, 32); net(b, 25, 32); }
   for (const x of [618, 632, 650, 672]) { ent('lantern', x, 23, { dark: true }); lamps.push({ x, y: 23 }); }
   ent('lantern', CW3.lampGate.lamp, 23, { dark: true }); lamps.push({ x: CW3.lampGate.lamp, y: 23, gate: CW3.lampGate.col });
   for (let y = 0; y <= 23; y++) set(CW3.lampGate.col, y, T.PORT);   /* THE PILGRIMS' GATE */
   sign(610, 23, CW3_SIGNS.lamps); sign(686, 23, CW3_SIGNS.gate);
-  foe('lanternshade', 626, 23); foe('scout', 657, 23); foe('cutlass', 668, 23); foe('petrel', 676, 16); foe('tideguard', 692, 23);
+  foe('lanternshade', 626, 23); foe('feeler', 637, 23); foe('scout', 657, 23); foe('cutlass', 668, 23); foe('petrel', 676, 16); foe('tideguard', 692, 23);
   arm(652); arm(675);
   coins([614, 22], [636, 22], [648, 22], [670, 22], [688, 22]);
 
@@ -252,9 +262,10 @@ export function buildCauseway3(R0, T, TS = 16) {
 
   // ---- THE LIGHT'S HOLM (767-804): SHRINE THREE before the chase ----
   block(767, 800, 17); block(801, 802, 19); block(803, 804, 21);
-  ent('check', CW3.checks[2][0], CW3.checks[2][1]); sign(784, 16, CW3_SIGNS.holm);
+  ent('check', 790, 16); sign(784, 16, CW3_SIGNS.holm);
   deco('waystone', 776, 16); deco('wayShrine', 796, 16);
-  foe('merrowbrute', 772, 16, { face: 1 });
+  foe('merrowbrute', 772, 16, { face: 1 }); foe('feeler', 798, 16);
+  plat(774, 15, 6); plat(786, 15, 8);   /* the holm's waystones */
   coins([770, 15], [780, 15], [793, 15]);
 
   // ---- THE COLLAPSE (805-903): the chase. The road on its piers, three 3-tile breaks, three arms that strike it ----
@@ -267,9 +278,10 @@ export function buildCauseway3(R0, T, TS = 16) {
   block(904, 905, 22); block(906, 907, 20); block(908, 928, 18);
   block(913, 920, 7, 17); air(913, 920, 15, 17);   /* the tower; the road through its foot */
   fill(910, 923, 7, 7, T.PLANK);   /* the lamp gallery round the top */
-  ent('check', CW3.checks[3][0], CW3.checks[3][1]); sign(909, 17, CW3_SIGNS.lighthouse);
+  ent('check', 925, 17); sign(909, 17, CW3_SIGNS.lighthouse);
   block(929, 930, 20); block(931, 932, 22);
   coins([911, 16], [918, 16], [923, 16]);
+  foe('tideguard', 911, 17, { squad: 'keepers' }); foe('sailor', 917, 17, { squad: 'keepers' }); foe('netter', 922, 17, { squad: 'keepers' });   /* THE LIGHT'S KEEPERS: drowned at their posts (a squad on the steps of the boss door) */
 
   // =====================================================================================================================
   // THE KRAKEN'S REACH: master's columns 565-611 cell for cell at 933-979 (the end of the last mile, his reach, the wreck, the sea wall)
@@ -288,7 +300,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   pool('sea1a', 4, 103, A[0].hi); pool('chan1', CW3.race1.x0, CW3.race1.x1, CW3.race1.hi); pool('sea1b', 146, 300, A[0].hi);
   pool('sea2a', 301, 358, A[1].hi); pool('crypt', CW3.crypt.x0, CW3.crypt.x1, CW3.crypt.hi, { base: 39 * TS, bottom: 39 * TS });   /* (built at its FULL line: the reach model swims it so; the kit drains it on the first frame unless the lever's mark says full) */
   pool('arch', CW3.arch.x0, CW3.arch.x1, CW3.arch.y0, { base: 33 * TS, bottom: 33 * TS });
-  pool('sea2b', 501, 593, A[1].hi);
+  pool('sea2b', 501, 563, CW3.LO); pool('sea2c', 565, 593, CW3.LO);   /* (built at LOW water and split at the elite's gate: the reach model leaps a one-column gate from a high surface; nothing in the lee needs the flood) */
   pool('sea3a', 594, 703, A[2].hi); pool('chan3', CW3.last.x0, 766, CW3.last.hi);
   pool('sea3c', 801, 932, CW3.LO);   /* THE COLLAPSE's sea stays out (the sea draws back before it comes): the road over it stays dry, the breaks are a fall */
   const krak = (R0.pools || []).find(p => p.krakenSea); if (krak) pools.push({ ...krak, x0: krak.x0 + OFF * TS, x1: krak.x1 + OFF * TS });
@@ -296,16 +308,16 @@ export function buildCauseway3(R0, T, TS = 16) {
   const tides = [
     actTide(A[0], ['sea1a', 'sea1b']),
     { id: 'race1', pools: ['chan1'], lo: CW3.race1.lo, hi: CW3.race1.hi, cycle: CW3.race1.cycle, first: 'high', safe: 'high', grace: 4, verbs: verbs.race1 },
-    actTide(A[1], ['sea2a', 'sea2b']),
+    actTide(A[1], ['sea2a', 'sea2b', 'sea2c']),
     { id: 'crypt', mode: 'manual', flip: 'fill', pools: ['crypt'], lo: CW3.crypt.lo, hi: CW3.crypt.hi, cycle: { rise: CW3.crypt.rise }, verbs: [{ t: 'lever', x: 408, y: 38, swim: true }] },
     actTide(A[2], ['sea3a']),
     { id: 'last', pools: ['chan3'], lo: CW3.last.lo, hi: CW3.last.hi, cycle: CW3.last.cycle, rate: CW3.last.rate, first: 'high', safe: 'high', grace: 4, verbs: verbs.last, floats: floats.last },
   ];
   const pulls = [
-    { id: 'rip1', kind: 'current', box: [CW3.race1.x0, 24, CW3.race1.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },
-    { id: 'arch', kind: 'current', box: [CW3.arch.x0, CW3.arch.y0, CW3.arch.x1, CW3.arch.y1], dir: [1, 0], strength: CW3.arch.strength, curve: 'flat', water: true,
+    { id: 'rip1', x: CW3.race1.x0, kind: 'current', box: [CW3.race1.x0, 24, CW3.race1.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },
+    { id: 'arch', x: CW3.arch.x0, kind: 'current', box: [CW3.arch.x0, CW3.arch.y0, CW3.arch.x1, CW3.arch.y1], dir: [1, 0], strength: CW3.arch.strength, curve: 'flat', water: true,
       tide: 'act2', phases: { rise: 1, high: 1, turn: 1, fall: -1, low: -1 }, posts: CW3.arch.posts.map(x => [x, 27]) },
-    { id: 'rip3', kind: 'current', box: [CW3.last.x0, 20, CW3.last.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },   /* (to the near bank's rungs at 704) */
+    { id: 'rip3', x: CW3.last.x0, kind: 'current', box: [CW3.last.x0, 20, CW3.last.x1, 39], dir: [-1, 0], strength: CW3.rip, curve: 'flat', water: true, dashOut: true },   /* (to the near bank's rungs at 704) */
   ];
 
   const kr = R0.arena, sh = v => v + OFF * TS;
@@ -327,6 +339,7 @@ export function buildCauseway3(R0, T, TS = 16) {
     routeSupports: supports,
     cw3Tides: tides, cw3Pulls: pulls, cw3Props: props, cw3Arms: arms, cw3Lamps: lamps, cw3Chase: { ...CW3.chase },
     cw3Boats: Object.values(floats).flat().map(f => ({ ...f, x: f.x0 })), cw3Verbs: Object.values(verbs).flat().map(v => ({ ...v })),
+    cw3Bells: Object.values(verbs).flat().filter(v => v.t === 'bell'), cw3Sluices: Object.values(verbs).flat().filter(v => v.t === 'sluice'), cw3Levers: [{ x: 408, y: 38 }],
     sections: CW3.sections.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     arena: { ...kr, x0: sh(kr.x0), x1: sh(kr.x1), trigger: sh(kr.trigger), wallL: kr.wallL + OFF, wallR: kr.wallR + OFF, tower: sh(kr.tower), plinth: kr.plinth.map(sh), stones: kr.stones.map(sh),
       holes: kr.holes.map(([a, b]) => [a + OFF, b + OFF]), wreck: kr.wreck.map(v => v + OFF), rest: sh(kr.rest) },
@@ -373,7 +386,7 @@ export function lintCauseway3(L, T) {
   for (const a of CW3.acts) { const t = tide(a.id); if (!t) { bad.push('no tide for ' + a.id); continue; }
     const sum = Object.values(t.cycle).reduce((s, v) => s + v, 0) / t.rate; if (Math.abs(sum - a.every) > 0.05) bad.push(a.id + ' turns every ' + sum.toFixed(2) + ' s, not ' + a.every); }
   const checks = L.ents.filter(e => e.t === 'check' && e.x <= CW3.END);
-  if (checks.length !== CW3.checks.length + 1) bad.push('the new road has ' + checks.length + ' shrines (want START + ' + CW3.checks.length + ')');
+  if (checks.length !== CW3.checks.length || CW3.checks.some(([x, y]) => !checks.some(e => e.x === x && e.y === y))) bad.push('the new road has ' + checks.length + ' shrines (want ' + CW3.checks.length + ', START is the first)');
   const gob = L.ents.filter(e => e.x <= CW3.END && /gob|goblin/i.test(e.t + ' ' + (e.kind || '') + ' ' + (e.skin || ''))); if (gob.length) bad.push('goblin kinds on the new road: ' + gob.map(e => e.t).join(','));
   if (L.ents.some(e => e.x <= CW3.END && e.t === 'deco' && /tribute|driftwood|log/i.test(e.kind || ''))) bad.push('a tribute cairn / driftwood / log on the new road (theme fit)');
   if (!L.arena || L.arena.boss !== 'kraken') bad.push('the arena is not the Kraken\'s');

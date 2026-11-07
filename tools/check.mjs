@@ -297,6 +297,7 @@ if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, [
 /* THE WATER KIT (claude/waterkit, Node only; docs/waterkit.md): THE TIDE KIT (the told cycle, bell/sluice/lever, floods/floats/bites/foes, respawn grace, every hero x 1-4 seats
    out from every checkpoint at every moment of the cycle, lintTide on every level with L.tides) and THE PULL FIELD (current/toward/away/whirl, the answers - swim, post, dash,
    brace, release window - foes/shots by weight, co-op carries, lintPulls on every level with L.pulls). Their own lines: the big list is edited by every lane */
+if (take('causeway3')) results.push(run('causeway3', process.execPath, ['tools/causeway3.mjs']));   /* (claude/causeway3w) THE DROWNED CAUSEWAY 2: the flag both ways, the verbs required, THE COLLAPSE fair, reach (node only) */
 if (take('tide-kit')) results.push(run('tide-kit', process.execPath, ['tools/tide-kit.mjs']));
 if (take('pull-field')) results.push(run('pull-field', process.execPath, ['tools/pull-field.mjs']));
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */

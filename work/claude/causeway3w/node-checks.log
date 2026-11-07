@@ -1,0 +1,46 @@
+CW3=1 causeway3 exit=0 :: causeway3: 98 ok
+CW3=1 tide-kit exit=0 :: tide-kit: 2019 checks ok
+CW3=1 pull-field exit=0 :: pull-field: 76 checks ok
+CW3=1 anchor-lint exit=0 :: ok  anchor-lint  every ledge, prop and perch of rookery hangs on something
+CW3=1 floating-geometry exit=0 :: ok  floating-geometry  theatre: nothing hangs from nothing (1 other level(s) reported)
+CW3=1 solid-islands exit=0 :: ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+CW3=1 foe-footing exit=0 :: ok  foe-footing causeway: every placed foe on footing, every stilt-walker's beat on footing and clear of dressing, every horn pack on footing
+CW3=1 checkpoints exit=0 :: 275 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on purpose, listed).
+CW3=1 checkpoint-gaps exit=0 :: checkpoint-gaps  53 levels, 275 checkpoints; along the walked route none is more than 200 from the next (worst warcairn 330), none closer than 80 except a door one, and o
+CW3=1 checkpoint-stand exit=0 :: ok  checkpoint-stand   275 checkpoints in 70 levels: every one stood at with a real jump (5 columns, not 6; 9 gaps in the model listed), none in view of a flight arena.
+CW3=1 boss-checkpoint exit=0 :: boss-checkpoint  68 boss/mini rooms in 53 levels: each has a shrine within 14 columns of its wall or at most 40 walked route tiles back (44 near, 1 chase-set, 23 by walk)
+CW3=1 elites exit=0 :: 1 elites. every elite can be fought and every gate it holds opens onto the route.
+CW3=1 ambush-reach exit=0 :: 1 ambush rooms. every captain can be reached from where the room shuts.
+CW3=1 one-new-foe exit=0 ::       burning    claude/demofoes (11-03) foreshadows the burngob + ember wisp in the Kingswood burning-wood escap
+CW3=1 goblin-lint exit=0 :: ok  goblin-lint    church, canal, redgorge, lamplit, theatre, welltown, fair: no goblins (92 reskinned foes, every skin drawn and carded, dead as well as alive); the leve
+CW3=1 threat-holes exit=0 :: ok  threat-holes   224 creature kinds placed across 70 levels, every one weighed. Deliberately 0: dummy, folk, hare, harlequin, marionette.
+CW3=1 deadends exit=0 :: 27 dead ends in 1 levels, and every one pays.
+CW3=1 breath exit=0 :: ARENA     the furthest water in the fight from air is null: 0.00s there and back (0%)
+CW3=1 floaters exit=0 :: 101 standing things checked (0 set down a row or more at load; 0 hung ones with no rock over them are left out). every one can be set down.
+CW3=1 signs exit=0 :: no level says the same sentence on two signs (0 known).
+CW3=1 deadly-water exit=0 :: 24 harmful pools; deadly (and marked): fallingtower@21 TRAP deadly, fallingtower@28 TRAP deadly, fallingtower@34 TRAP deadly, fallingtower@52 TRAP deadly
+CW3=1 haunted-coast exit=0 :: Five coastal attack tells, range counters, no mini or gate on the last mile, flooded hold and four Lamplit rope alternatives pass.
+CW3=1 keys exit=0 :: 0 levels with lock gates flooded key by key. every key comes before its gate.
+CW3=0 causeway3 exit=0 :: causeway3: 98 ok
+CW3=0 tide-kit exit=0 :: tide-kit: 2019 checks ok
+CW3=0 pull-field exit=0 :: pull-field: 76 checks ok
+CW3=0 anchor-lint exit=0 :: ok  anchor-lint  every ledge, prop and perch of rookery hangs on something
+CW3=0 floating-geometry exit=0 :: ok  floating-geometry  theatre: nothing hangs from nothing (1 other level(s) reported)
+CW3=0 solid-islands exit=0 :: ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+CW3=0 foe-footing exit=1 :: FAIL foe-footing: 12 placed foe(s) not on footing in causeway
+CW3=0 checkpoints exit=0 :: 275 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on purpose, listed).
+CW3=0 checkpoint-gaps exit=0 :: checkpoint-gaps  53 levels, 275 checkpoints; along the walked route none is more than 200 from the next (worst warcairn 330), none closer than 80 except a door one, and o
+CW3=0 checkpoint-stand exit=0 :: ok  checkpoint-stand   275 checkpoints in 70 levels: every one stood at with a real jump (5 columns, not 6; 9 gaps in the model listed), none in view of a flight arena.
+CW3=0 boss-checkpoint exit=0 :: boss-checkpoint  68 boss/mini rooms in 53 levels: each has a shrine within 14 columns of its wall or at most 40 walked route tiles back (45 near, 1 chase-set, 22 by walk)
+CW3=0 elites exit=0 :: 2 elites. every elite can be fought and every gate it holds opens onto the route.
+CW3=0 ambush-reach exit=0 :: 1 ambush rooms. every captain can be reached from where the room shuts.
+CW3=0 one-new-foe exit=0 ::       burning    claude/demofoes (11-03) foreshadows the burngob + ember wisp in the Kingswood burning-wood escap
+CW3=0 goblin-lint exit=0 :: ok  goblin-lint    church, canal, redgorge, lamplit, theatre, welltown, fair: no goblins (92 reskinned foes, every skin drawn and carded, dead as well as alive); the leve
+CW3=0 threat-holes exit=0 :: ok  threat-holes   225 creature kinds placed across 70 levels, every one weighed. Deliberately 0: dummy, folk, hare, harlequin, marionette.
+CW3=0 deadends exit=0 :: 13 dead ends in 1 levels, and every one pays.
+CW3=0 breath exit=0 :: ARENA     the furthest water in the fight from air is null: 0.00s there and back (0%)
+CW3=0 floaters exit=0 :: 74 standing things checked (0 set down a row or more at load; 0 hung ones with no rock over them are left out). every one can be set down.
+CW3=0 signs exit=0 :: no level says the same sentence on two signs (0 known).
+CW3=0 deadly-water exit=0 :: 24 harmful pools; deadly (and marked): fallingtower@21 TRAP deadly, fallingtower@28 TRAP deadly, fallingtower@34 TRAP deadly, fallingtower@52 TRAP deadly
+CW3=0 haunted-coast exit=0 :: Five coastal attack tells, range counters, no mini or gate on the last mile, flooded hold and four Lamplit rope alternatives pass.
+CW3=0 keys exit=0 :: 0 levels with lock gates flooded key by key. every key comes before its gate.
