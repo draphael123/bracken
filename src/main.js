@@ -3,7 +3,7 @@ import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import * as MFX from './map-fx.js';
-import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize } from './map-plates.js';
+import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize, SCREEN as MAP_SCREEN } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -5445,7 +5445,7 @@ function updateMap(dt) {
 let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES.filter(n3 => !demoOut(n3)), n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 let mapNoDanger = false;
-function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
+function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates, DS.DEMO ? { ...MAP_SCREEN, CAMTOP: MAP_TOP } : MAP_SCREEN);   /* (batch150) the demo's camera stops at the wood sheet: place the card for THAT camera, or Kingswood sat under its own card */ c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
 function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'INN: CO-OP, TRAINING' : 'F INN  G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
@@ -37413,7 +37413,8 @@ function render() {
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
     { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
     // the menu: a board on two posts, standing on the road to the right of the camp
-    { const items = titleItems(), TS_ = touchOn ? titleSlots() : null, n = TS_ ? Math.min(TS_.n, Math.max(items.length, titleTop().length, 7)) : Math.max(items.length, titleTop().length), RH = TS_ ? TS_.rh : Math.min(11, Math.floor(96 / n)), mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
+    { const items = titleItems(), TS_ = touchOn ? titleSlots() : null, n = TS_ ? Math.min(TS_.n, Math.max(items.length, titleTop().length, 7)) : Math.max(items.length, titleTop().length), RH = TS_ ? TS_.rh : Math.max(7, Math.min(11, Math.floor(88 / n))),   /* (batch150) 88 not 96: with UNLOCKS (and SWAP HERO) the board has 12-13 rows and its top edge cut the sign's tagline; 7 px is the floor */
+      mw = 126, mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
       const bx = mx + ox, by0 = my + mh;
       for (const px of [bx + 12, bx + mw - 17]) { const ph = VH - 22 - by0 + 2;
