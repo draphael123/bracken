@@ -56,6 +56,6 @@ ok(COMMIT.warden.third === 0.30 && COMMIT.warden.light < 0.1, 'the long thrust r
   const raw2 = JSON.stringify({ hero: 'warden', heroes: { warden: true }, xpVersion: 1, xp: { warden: xpFloor(30) }, coins: 5, progressionVersion: 2, skillOwned: { warden: { poleSpring: true, harrier: true } }, loadouts: { warden: ['poleSpring', 'harrier'] } });
   const r2 = migrateProgress(raw2).progress; ok(r2.loadouts.warden.filter(Boolean).length === 1, 'migration: a save that owned both keeps one in the loadout (' + r2.loadouts.warden + ')'); }
 /* 6. WARDEN'S REACH, THE ULTIMATE (UP+C at a full band) */
-{ const { K_WARDEN_REACH } = await import('../src/skill-k.js'); ok(WID.reach.mul === 2 && WID.reach.t === 6 && K_WARDEN_REACH.perHit === 1 && K_WARDEN_REACH.final > 1, 'reach ultimate: x2 reach for 6 s, swordDmg x k (1.0 a hit, 2.5 the final thrust)');
+{ const { K_WARDEN_REACH } = await import('../src/skill-k.js'); ok(WID.reach.mul === 2 && WID.reach.t === 6 && K_WARDEN_REACH.perHit === 1.4 && K_WARDEN_REACH.final === 4, 'reach ultimate: x2 reach for 6 s, swordDmg x k (1.4 a hit, 4.0 the final thrust: claude/wardenult)');
   ok(main.includes("UP+C is WARDEN") && main.includes("cDown && keys.up && free && (P.vigil"), "reach ultimate: fires on UP+C at a full band; tap C stays the deflect"); }
 console.log(n + ' checks' + (process.exitCode ? ' - RED' : ' - green'));

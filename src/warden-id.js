@@ -31,7 +31,8 @@ export const WID = {
   /* 4. WARDEN'S REACH, THE ULTIMATE (Daniel 11-01): a FULL band + TAP C. For `t` s the spear is huge and ghostly (x2 reach, drawn out to the hitbox), every hit is a max TIP hit,
      knocks back (a boss only gets a small push, its resist floors untouched), the box skewers a whole line; it ends with one big final thrust (+ stagger; a boss's stagger is small),
      and the band is empty afterwards. */
-  reach: { t: 6, mul: 2, knock: 260, push: 3, finalLen: 220, finalKnock: 320, finalStagger: 1.2, bossStagger: 0.6 },
+  reach: { t: 6, mul: 2, knock: 260, push: 3, finalLen: 220, finalKnock: 320, finalStagger: 1.2, bossStagger: 1.2,   /* (claude/wardenult) a boss's final stagger 0.6 -> 1.2 s, once per ult (never a lock) */
+    poiseHit: 4, poiseCap: 0.7 },   /* every hit leans 4 on a boss's break bar, up to 70% of it; the final thrust leans on it like a skill (x0.6 outside an opening) on top of its heavy */
   phalanx: { cd: 16, st: 28, trip: 1.1 },   /* the skill: seconds of cooldown, stamina, seconds a tripped foe stays down */
   vault: { cd: 7, st: 28, over: 90 },
 };
