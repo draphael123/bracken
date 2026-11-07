@@ -2399,7 +2399,7 @@ async function runbossLab(BK, opts) {
       else /* THE KRAKEN is read from the arena, not from where its body is: BK.krak() says what is coming and what is open (the same
          things its marks are drawn from) - cut the arms where they lie, get up out of the surge, ring the bell while it breathes,
          and stand behind a waystone for the spear */
-      if (KA) { goal = KA.goal; if (KA.up) k.up = true;
+      if (KA) { goal = KA.goal; if (KA.up) k.up = true; if (KA.duck && P.ground) { k.down = true; goal = null; }   /* (claude/kraken3) THE RAFT: a high spout or the rock is ducked (DOWN, standing still) */
         /* WHERE EACH HERO'S OWN BLOW LANDS (2026-09-25): the advice points at the thing - an arm lying on the road, a crate, a chest, the pinned
            spear - and the lab stands this hero off it by its own reach (LAB_STAND). The warden's point lands 38 out: stood ON a crate she swung
            over it, and the first pilot had her 90 s on the four arms the knight cut in 28. A CHEST is struck from the landward side only (it

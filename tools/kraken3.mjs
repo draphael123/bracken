@@ -159,6 +159,54 @@ const slow = [1, 2, 3].map(seed => run({ seed, speed: 74 })); check(slow.filter(
 for (const [k, v] of [['arm slam', KR3.arms.tell], ['arm lash', KR3.arms.lashTell], ['spout', KR3.spout.tell], ['bite', KR3.bite.tell], ['lift', KR3.lift.tell], ['ink', KR3.ink.tell], ['barnacles', KR3.barn.tell + KR3.barn.fly + KR3.barn.fuse], ['wreckage', KR3.wreck.lead], ['rock', KR3.rock.lead], ['whirlpool', KR3.whirl.tell], ['krakling bite', KR3.krak.biteTell], ['krakling pry', KR3.krak.climb + KR3.krak.pry]]) check(v >= 0.5, k + ' is told (' + v + ' s)');
 { const names = new Set(rows.flatMap(r => Object.keys(r.hurts))); check([...names].every(n => ['HIS ARM', 'THE SPOUT', 'HIS BEAK', 'A BARNACLE', 'A KRAKLING', 'WRECKAGE', 'A ROCK'].includes(n)), 'every blow has a name: ' + [...names].join(', ')); }
 
+/* ---------- 7. THE HANDS in a stub world (no canvas: nothing is drawn) - the hand-over, the road, the raft, the hits, the lab, the checkpoint ---------- */
+{ const { makeKraken3Hands, K3_MARK } = await import('../src/kraken3-hands.js');
+  const W = 60, Hh = 44, TSZ = 16, AIR = 0, grid = new Array(W * Hh).fill(AIR); for (let y = 24; y < 44; y++) for (let x = 0; x < W; x++) grid[y * W + x] = 1;   /* the road at row 24, piers and seabed to the bottom */
+  const mkWorld = (cw3) => { const sea = { krakenSea: true, x0: 5 * TSZ, x1: 55 * TSZ, y: 26 * TSZ, base: 42 * TSZ, bottom: 40 * TSZ };
+    const L = { cw3, grid: grid.slice(), pools: [sea], arena: { boss: 'kraken', x0: 5 * TSZ, x1: 50 * TSZ, floor: 24 * TSZ, y0: 4 * TSZ, tower: 8 * TSZ + 8, wallL: 4, wallR: 50, rest: 46 * TSZ } };
+    const P = { x: 20 * TSZ, y: 24 * TSZ, vx: 0, vy: 0, ground: true, hp: 265, maxHp: 265, inv: 0 }, w = { L, P, enemies: [], movers: [], marks: new Set(), hurts: [], broke: 0, lock: null, boss: null, said: [] };
+    w.ctx = { get L() { return w.L; }, get players() { return [w.P]; }, hero: () => w.P, boss: () => w.boss, marks: () => w.marks, number: (x, y, t) => w.said.push(t), hint: t => w.said.push('HINT ' + t), shake() {}, ring() {}, splash() {}, debris() {}, sparks() {}, hitstop() {}, time: () => 0, VW: () => 320, VH: () => 180, krkArt: () => null,
+      poolLevel: (p, y) => { p.y = y; }, moveBody: (b, dx) => { b.x += dx; }, holding: () => false, hurtAs: (pp, x, d, o) => w.hurts.push({ d, o }), addEnemy: n => w.enemies.push(n), addMover: m => w.movers.push(m),
+      breakTile: (x, y) => { const i = y * W + x; if (w.L.grid[i] !== AIR) { w.L.grid[i] = AIR; w.broke++; } }, tilesDone() {}, dropThings() {}, lock: (x0, x1) => { w.lock = [x0, x1]; }, p1Stop: e => { e.p1Stopped = true; }, sound() {} };
+    w.H = makeKraken3Hands(w.ctx); return w; };
+  const off = mkWorld(false); check(!off.H.on(), 'hands: inert without L.cw3 (master\'s Causeway)');
+  globalThis.BRACKEN_K3 = false; const offk = mkWorld(true); check(!offk.H.on(), 'hands: BRACKEN_K3 === false turns the raft off under ?cw3=1'); delete globalThis.BRACKEN_K3;
+  const w = mkWorld(true); check(w.H.on(), 'hands: on with L.cw3');
+  const boss = { t: 'kraken', alive: true, hp: 335, maxHp: 670, x: 0, y: 0, w: 20, h: 20 }; w.boss = boss;
+  w.H.begin(boss, false); check(boss.p1Stopped && boss.k3 && boss.k3.st === 'sink' && boss.y > w.L.arena.floor + 100, 'hands: begin stops phase 1 and he sinks out of reach');
+  let t = 0; while (boss.k3.st !== 'drift' && t < 10) { w.H.bossTick(boss, DT); t += DT; }
+  const towerC = Math.floor(w.L.arena.tower / TSZ), keptTower = [towerC - 1, towerC, towerC + 1, towerC + 2].every(x => w.L.grid[25 * W + x] !== AIR), road = w.L.grid[24 * W + 30] === AIR, bed = w.L.grid[41 * W + 30] !== AIR;
+  check(road && keptTower && bed && w.broke > 100, 'hands: THE ROAD GOES - the reach broken (' + w.broke + ' tiles), the tower and the seabed stand');
+  check(w.movers.length === KR3.planks && w.movers.every(m => m.k3 && m.y === 26 * TSZ - 4), 'hands: the raft is ' + KR3.planks + ' plank movers on his sea');
+  check(Math.abs(w.P.y - (26 * TSZ - 4)) < 1 && w.P.x >= w.movers[0].x && w.P.x <= w.movers[KR3.planks - 1].x + 16, 'hands: the hero is on the raft');
+  check(w.marks.has(K3_MARK) && w.lock && w.lock[1] - w.lock[0] >= 320, 'hands: the raft checkpoint mark, and the camera held to the raft');
+  while (boss.k3.st !== 'p2' && t < 40) { w.H.bossTick(boss, DT); t += DT; }
+  for (let k = 0; k < 90; k++) w.H.bossTick(boss, DT);
+  check(boss.w === 34 && Math.abs(boss.y - (26 * TSZ + 4)) < 8, 'hands: his face is the boss\'s hit box at the raft\'s edge');
+  check(w.said.some(s => s.startsWith('HINT ')), 'hands: the hint card');
+  const armEnts = w.enemies.filter(n => n.k3arm && n.alive); for (let k = 0; k < 90; k++) w.H.bossTick(boss, DT);
+  const armEnts2 = w.enemies.filter(n => n.k3arm && n.alive);
+  check(armEnts2.length === KR3.arms.perSeat[0] && armEnts2.every(n => n.t === 'krakenarm' && n.parent === boss), 'hands: the pinning arms are krakenarm ents (' + armEnts2.length + ')');
+  const d0 = w.H.hurt(boss, 20, boss.x - 20); check(d0 === Math.round(20 * KR3.face.mul), 'hands: a blow on the face outside an opening: ' + d0 + ' (x' + KR3.face.mul + ')');
+  for (const n of armEnts2) for (let k = 0; k < 20; k++) w.H.hurt(n, 30, n.x - 10);
+  w.H.bossTick(boss, DT); check(boss.k3.face.st === 'reel', 'hands: every arm cut through the ents - HE REELS');
+  const d1 = w.H.hurt(boss, 20, boss.x - 20); check(d1 === Math.round(20 * KR3.face.openMul), 'hands: OPEN: ' + d1 + ' (x' + KR3.face.openMul + ')');
+  const adv = w.H.advice(); check(adv && adv.mode === 'k3' && typeof adv.goal === 'number' && adv.goal > w.movers[0].x - 30, 'hands: the lab\'s advice in world coordinates');
+  /* the sea: the hero below the deck comes back with a spare blow */
+  w.P.y = 26 * TSZ + 30; w.P.swim = true; for (let k = 0; k < 70; k++) w.H.bossTick(boss, DT);
+  check(Math.abs(w.P.y - (26 * TSZ - 4)) < 1 && w.hurts.some(h => h.o && h.o.spare && h.o.name === 'THE SEA'), 'hands: out of the sea onto the raft, a spare blow (never a death)');
+  /* the checkpoint: a fresh boss with the mark comes straight back to the road's breaking */
+  const w2 = mkWorld(true); w2.marks.add(K3_MARK); const b2 = { t: 'kraken', alive: true, hp: 670, maxHp: 670 }; w2.boss = b2;
+  check(w2.H.resume(b2) && b2.k3.st === 'road' && b2.hp === Math.round(670 * KR3.p2At), 'hands: A10 - with the mark, a death comes back to the raft at ' + KR3.p2At * 100 + '% of his bar');
+  const w3 = mkWorld(true); const b3 = { t: 'kraken', alive: true, hp: 670, maxHp: 670 }; check(!w3.H.resume(b3) && !b3.k3, 'hands: no mark - phase 1 as today'); }
+/* the main.js wiring is where it should be (src text: the browser proof is OWED) */
+{ const fs = await import('node:fs'); const M = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  for (const [k, re] of [['import', /import \{ makeKraken3Hands \} from '\.\/kraken3-hands\.js'/], ['construction', /K3H = makeKraken3Hands\(\{/], ['clear', /if \(K3H\) K3H\.clear\(\)/], ['tick + resume', /if \(K3H\.owns\(e\)\) \{ K3H\.bossTick\(e, dt\); return; \} if \(K3H\.resume\(e\)\) return;/],
+    ['hand-over at p2At', /K3H\.p2At\(\)\)\) \{ K3H\.begin\(e, false\); return; \}/], ['hurt', /return K3H\.hurt\(e, dmg, fromX, plunge, tag\)/], ['draw', /K3H\.drawBoss\(g, cx, cy, time\)/], ['advice', /if \(K3H && K3H\.owns\(boss\)\) return K3H\.advice\(\)/],
+    ['mover', /if \(m\.k3\) \{ m\.dx = 0; m\.dy = 0; continue; \}/], ['mover draw', /if \(m\.k3\) continue;/], ['strike', /K3H\.strike\(hb\)/], ['sky', /K3H\.drawSky\(/], ['back', /K3H\.drawBack\(/], ['over', /K3H\.drawOver\(/]]) check(re.test(M), 'main.js: ' + k);
+  const i1 = M.indexOf('K3H.begin(e, false)'), i2 = M.indexOf("e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3;"); check(i1 > 0 && i2 > i1, 'main.js: the hand-over runs before stage 3 (the maw, the climb, the EYE never come under the flag)');
+  const L = fs.readFileSync(new URL('../src/lab.js', import.meta.url), 'utf8'); check(/KA\.duck && P\.ground/.test(L), 'lab.js: the lab ducks when the raft advice says so'); }
+
 log('\nseats seed  won   raft-s  open  cuts  taken  falls  lashed  hurts');
 for (const r of rows) log(String(r.seats).padEnd(6) + String(r.seed).padEnd(6) + String(r.won).padEnd(6) + (r.t - KR3.drift.len - KR3.sinkT - KR3.roadT - KR3.fadeT).toFixed(0).padStart(6) + String(r.openings).padStart(6) + String(r.armCuts).padStart(6) + String(r.taken).padStart(7) + String(r.falls).padStart(7) + String(r.lashed).padStart(8) + '  ' + JSON.stringify(r.hurts));
 log('mash   ' + mashR.map(r => (r.won ? 'W' : 'L') + ' ' + r.taken + ' ' + (r.t - KR3.drift.len - KR3.sinkT - KR3.roadT - KR3.fadeT).toFixed(0) + 's ' + JSON.stringify(r.hurts) + (r.deaths ? ' dead' : '')).join(' | '));
