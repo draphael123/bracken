@@ -22,8 +22,8 @@ const { gqLabState, gqLabStep, gqLabRow, GQ_ESC_STALL } = await imp('src/lab-gqu
 const make = () => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W;
   const st = { time: 0, parries: 0, dmg: [], called: [], active: true, spawned: [], checkpoint: null };
-  const P = { x: 9150, y: 320, hp: 50, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 };
-  const e = { t: 'gqueen', alive: true, x: 9300, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
+  const P = { x: 10750, y: 320, hp: 50, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 };
+  const e = { t: 'gqueen', alive: true, x: 10900, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
   const noop = () => {};
   const ctx = { L: Lw, TS: 16, T, sfx: new Proxy({}, { get: () => noop }), P: () => P, boss: () => e, bossActive: () => st.active, enemies: () => [e], props: () => [], time: () => st.time,
     number: noop, burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
@@ -111,9 +111,9 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
 { /* two seats: ctx.P() is whoever's call it is (main.js's global P, swapped by eachHero / allHeroes); the boss's own frame means the nearer */
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W, noop = () => {};
   const mk = (x, hp) => ({ x, y: 320, hp, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 });
-  const A = mk(8900, 40), B = mk(9150, 30), seatsL = [A, B]; let cur = A;
+  const A = mk(10500, 40), B = mk(10750, 30), seatsL = [A, B]; let cur = A;
   const st = { time: 0, parries: 0, mode: 'hit', dmg: [], called: [], active: true, spawned: [], checkpoint: null, flask: { a: 3, b: 5 } };
-  const e = { t: 'gqueen', alive: true, x: 9300, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
+  const e = { t: 'gqueen', alive: true, x: 10900, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
   const swap = (p, fn) => { const w = cur; cur = p; try { return fn(p); } finally { cur = w; } };
   const ctx = { L: Lw, TS: 16, T, sfx: new Proxy({}, { get: () => noop }), P: () => cur, boss: () => e, bossActive: () => st.active, enemies: () => [e], props: () => [], time: () => st.time,
     number: noop, burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
@@ -136,13 +136,13 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
   ok(A.hp === 100 && B.hp === 100 && A.flasks === 3 && B.flasks === 5, 'the flee FULLY HEALS both seats (flasks ' + A.flasks + ' / ' + B.flasks + ', each his own)');
   step(60 * 2);
   /* the burning floor ticks each hero on it, on his own clock */
-  A.x = 9300; B.x = 9350; A.y = B.y = Lw.arena.floor; st.dmg.length = 0; for (let i = 0; i < 60 * 3; i++) { A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; step(1); }   /* (the fake world has no gravity: each frame lands them again) */
+  A.x = 10900; B.x = 10950; A.y = B.y = Lw.arena.floor; st.dmg.length = 0; for (let i = 0; i < 60 * 3; i++) { A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; step(1); }   /* (the fake world has no gravity: each frame lands them again) */
   ok(st.dmg.filter(d => d.o.spare && d.who === 'A').length >= 2 && st.dmg.filter(d => d.o.spare && d.who === 'B').length >= 2, 'the burning floor ticks BOTH seats (A ' + st.dmg.filter(d => d.who === 'A').length + ', B ' + st.dmg.filter(d => d.who === 'B').length + ')');
   /* seat two walks into her portal: the WHOLE party goes to the tower top */
-  const E = Lw.gqEscape, RA = Lw.arenaRoof; A.x = 9000; A.y = 320; B.x = E.portal.x * 16 + 8; B.y = (E.portal.y + 1) * 16; step(60);
+  const E = Lw.gqEscape, RA = Lw.arenaRoof; A.x = 10600; A.y = 320; B.x = E.portal.x * 16 + 8; B.y = (E.portal.y + 1) * 16; step(60);
   ok(e.stage === 'roof' && Math.abs(A.y - (RA.exit.y + 1) * 16) < 1 && Math.abs(B.y - (RA.exit.y + 1) * 16) < 1 && A.x !== B.x && Math.abs(A.x - (RA.exit.x * 16 + 8)) < 60 && Math.abs(B.x - (RA.exit.x * 16 + 8)) < 60, 'seat two steps into her portal: BOTH heroes are set down at the island exit, a step apart');
   /* the banner lash hits every seat in front of her */
-  H.test.begin(); e.x = 10000; e.y = Lw.arena.floor; A.x = 9950; B.x = 9930; A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; e.face = -1; e.crownCd = e.portalCd = 99; st.dmg.length = 0;
+  H.test.begin(); e.x = 11600; e.y = Lw.arena.floor; A.x = 11550; B.x = 11530; A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; e.face = -1; e.crownCd = e.portalCd = 99; st.dmg.length = 0;
   e.mode = 'lashLowTell'; e.modeT = 0.7; step(60);
   ok(st.dmg.filter(d => d.d === GQ3.roof.lashDmg).map(d => d.who).sort().join('') === 'AB', 'the LOW lash catches BOTH seats on the floor in front of her (' + st.dmg.map(d => d.who).join('') + ')');
   B.dead = true; st.dmg.length = 0; e.mode = 'lashLowTell'; e.modeT = 0.7; step(60);
