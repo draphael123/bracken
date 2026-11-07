@@ -15,7 +15,7 @@ check('numbers: slower wind-up (a told, heavier blow), short stagger, a boss onl
 check('rules in main.js: Paladin ground third cut only; flagged once per swing; a guarded boss gets none', () => {
   assert(/isPaladin\(\) && P\.heavySwing && !P\.heavy && !rip && !P\.swingKind && !P\.dashCut && \(P\.ground \|\| P\.swim\)\) \{ P\.palSmite3 = true;/.test(main), 'flag set only on the plain third ground cut');
   const rider = main.slice(main.indexOf('function palSmiteRider(e)'), main.indexOf('function heroCut(e)'));
-  assert(/P\.heavy \|\| P\.swingRiposte \|\| P\.swingKind \|\| P\.dashCut\) return/.test(rider), 'not the heavy, riposte, kind or dash cuts'); assert(/if \(!P\.palSmGain\) \{ P\.palSmGain = true; convGain\(S\.conv, false\); \}/.test(rider), 'Conviction once per swing');
+  assert(/P\.heavy \|\| P\.swingRiposte \|\| P\.swingKind \|\| P\.dashCut\) return/.test(rider), 'not the heavy, riposte, kind or dash cuts'); assert(/if \(!P\.palSmGain\) \{ P\.palSmGain = true; convGain\(S\.conv, false\);/.test(rider), 'Conviction once per swing');
   assert(/if \(lcBig\(e\) \|\| e\.maxHp\) \{ if \(guardedFoe\(e\)\) return;/.test(rider), 'a guarded boss: no chip, no stagger, no guard break'); assert(/hurtAs\('light'/.test(rider), 'the chip is a light blow, so the boss resist floor applies');
   assert(/Math\.random = fxRand/.test(rider), 'FX dice are fxRand (game dice untouched)'); assert(!/invul|\.inv\s*=/.test(rider), 'no invulnerability');
 });
