@@ -4,7 +4,7 @@ on:
     branches: [codex/load-perf]
     paths:
       - tools/rootway-binary-column-guide-nov06/**
-      - tools/rootway-binary-column-guide*-nov05.mjs
+      - tools/rootway-binary-column-guide*-nov06.mjs
       - .github/workflows/rootway-binary-column-guide-nov06.yml
 permissions: {contents: read}
 jobs:
