@@ -55,6 +55,10 @@ function stormAttach(s) { if (stormCents && s && s.detune) { try { s.detune.valu
 function warpAttach(s, name) { stormAttach(s); if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
 function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
+/* (claude/fastload) the order the sound clips load in: 0 = the core of a fight and a walk, 1 = footsteps and the r_ / bd_ recordings, 2 = voices and ambient one-shots (about half the bytes; a clip still loading is played by its synth anyway) */
+const sfxRank = name => /^(vo_|amb_)/.test(name) ? 2 : /^(step_|r_|bd_)/.test(name) ? 1 : 0;
+let sfxTotal = 0, sfxDone = 0;
+export const sfxLoadProgress = () => ({ total: sfxTotal, done: sfxDone });   /* (claude/fastload) tools/itch-build-check.mjs and the dev console read it; nothing in play depends on it */
 export const SFX_LANES = 8;   /* (claude/marsh3) how many sound clips load at once (initAudio) */
 
 export function initAudio() {
@@ -79,9 +83,11 @@ export function initAudio() {
      coming and leave the connection to the music; a clip still loading is played by its synth, as before. */
   fetch('./audio/manifest.json').then(r => r.json()).then(man => {
     const q = []; for (const name in man) man[name].forEach((url, i) => q.push([name, url, i]));
+    q.sort((x, y) => sfxRank(x[0]) - sfxRank(y[0]));   /* (claude/fastload) the sounds a fight and a walk need come first; the voices (372 of the 876 clips, half the bytes) and the ambient one-shots come last. A stable sort: the manifest's own order holds inside a rank. */
+    sfxTotal = q.length;
     const lane = () => { if (Object.values(trackPending).some(Boolean)) { setTimeout(lane, 150); return; }   /* a music file on its way has the line to itself */
       const j = q.shift(); if (!j) return; const [name, url, i] = j;
-      fetch(url, { priority: 'low' }).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => ac.decodeAudioData(ab)).then(b => { (clips[name] = clips[name] || [])[i] = b; }).catch(() => {}).finally(lane); };
+      fetch(url, { priority: 'low' }).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => ac.decodeAudioData(ab)).then(b => { (clips[name] = clips[name] || [])[i] = b; }).catch(() => {}).finally(() => { sfxDone++; lane(); }); };
     for (let k = 0; k < SFX_LANES; k++) lane();
   }).catch(() => {});
 }
