@@ -67,7 +67,7 @@ export const GATE = { r: 16 * 16, delay: 0.5 };
    first/every/every2: s to the first wind and between winds; open: the SILENCED window (s); crew: what it calls; deckAt/deckDraw: the tower's one wind */
 /* (claude/chief4) A REAL SQUAD: crew = a spear goblin (the Stockade's pike, who ADVANCES when he is the Chieftain's: hold()) and an archer, crewMax of them for one hero,
    + crewSeat a co-op seat past the first (to crewCap); P2 louder (shake2, three rings) and faster (draw2, every2). open 3.2 -> 2.2 */
-export const HORN = { draw: 3.0, draw2: 2.2, hits: 2, first: 8, every: 17, every2: 12, open: 2.2, crew: ['pike', 'archer', 'pike', 'archer'], crewMax: 2, crewSeat: 1, crewCap: 4, shake: 3, shake2: 6, deckAt: 3, deckDraw: 3.2, pikeWalk: 1.6 };
+export const HORN = { draw: 3.0, draw2: 2.2, hits: 2, first: 8, every: 17, every2: 12, open: 2.2, crew: ['pike', 'archer', 'pike', 'archer'], crewMax: 1, crewSeat: 1, crewCap: 4, shake: 3, shake2: 6, deckAt: 3, deckDraw: 3.2, pikeWalk: 1.6 };
 export const crewMaxFor = seats => Math.min(HORN.crewCap, HORN.crewMax + Math.max(0, (seats || 1) - 1) * HORN.crewSeat);
 /* tell: his heave (s); fuse: from the throw (s); kickMin: a struck keg's fuse at least this; kickV: its roll (px/s); r: the blast; open: BLASTED (s);
    minD: he heaves only past this range; cd: s between his kegs; towerR: a blast this near his tower's legs takes both lashings; deckEvery: every Nth deck shot */
