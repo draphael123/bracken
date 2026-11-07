@@ -663,8 +663,8 @@ const SWORDS = [
 const UPGRADES = [
   { id: 'heart', name: 'HEART OF OAK', price: 60, desc: '+25 max health' },
   { id: 'wind', name: 'SECOND WIND', price: 60, desc: '+30 max stamina' },
-  { id: 'edge', name: 'KEEN EDGE', price: 90, desc: '+3 sword damage' },
-  { id: 'edge2', name: 'RAZOR EDGE', price: 160, desc: '+3 more sword damage', needs: 'spore', needsName: 'Sporewood' },
+  { id: 'edge', name: 'KEEN EDGE', price: 90, desc: '+3 weapon damage' },
+  { id: 'edge2', name: 'RAZOR EDGE', price: 160, desc: '+3 more weapon damage', needs: 'spore', needsName: 'Sporewood' },
   // THE SMITH's new work, for the gold the training used to take: better edges and armour as the woods open, and tonics to carry
   { id: 'edge3', name: 'MASTERWORK EDGE', price: 260, desc: '+3 more damage: the best the smith can do', needs: 'spire', needsName: 'the Monastery' },
   { id: 'mail', name: 'RINGMAIL', price: 150, desc: 'a tenth less damage from every blow', needs: 'kings', needsName: 'Kingswood' },
@@ -5696,7 +5696,7 @@ const atShrine = () => shrines.some(s => s.lit && Math.abs(s.x - P.x) < 36 && Ma
 const loadoutSafe = () => { const away = storeBack !== 'map'; return mayBuy({ where: storeWhere(), fight: away && inFight(), atShrine: away && atShrine() }); };
 function openStore(back, tab) {
   if (back !== 'map') { const no = storeRefusalOf({ fight: inFight() }); if (no) { SFX.buzz(); if (back === 'menu') { menuMsg = no.toLowerCase(); menuMsgT = 2; } else { hintMsg = no; hintT = 1.5; } return false; } }
-  storeBack = back; storeTab = storeTabIndex(tab); storeI = 0; treeI = 0; treeBranch = 0; treePage = 0; storeMsgT = 0; state = 'store'; SFX.menuOpen(); return true; }
+  storeBack = back; storeTab = storeTabIndex(tab); storeI = 0; treeI = 0; treeBranch = 0; treePage = 0; storeMsgT = 0; state = 'store'; dodgePress = pausePress = talentsPress = false; SFX.menuOpen(); return true; }   /* (claude/menuback) the press that opened the store is spent: it must not close it in the same frame */
 function updateSkills(dt) {
  treeMsgT = Math.max(0, treeMsgT-dt); const ns=treeNodes();treeI=Math.max(0,Math.min(ns.length-1,treeI));const old=treeI;
  if(leftPress||rightPress){treeBranch=1-treeBranch;treeI=0;treePage=0;treeMsgT=0;SFX.ui();return;}
@@ -5876,7 +5876,7 @@ function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F a
  const needs=skillNeeds(n),missing=needs.length&&!needs.some(id=>list.includes(id)),description=(missing?'PAIR WITH '+needs.map(id=>skillFor(h,id).name).join(' OR ')+'. ':'')+n.desc;
  const lines=wrap(description,VW-26,6),per=4;treePages=Math.max(1,Math.ceil(lines.length/per));lines.slice((treePage%treePages)*per,(treePage%treePages)*per+per).forEach((line,i)=>text(line,12,137+i*8,UI.text,'left',6));if(treePages>1&&window.__textRec)textRec('paged',{s:description,pages:treePages});}
  const rkN=n&&n.active&&PROG.skillOwned[h]?.[n.id]?skillRank(PROG,h,n.id):0,rankHelp=rkN&&rkN<RANK_MAX?'Z: RANK '+(rkN+1)+' FOR '+rankPrice(n,rkN+1)+' GOLD'+(lv<rankLevel(n,rkN+1)?' AT LV '+rankLevel(n,rkN+1):''):null;
- const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:limit>1?STORE_HELP.skills.replace('F slot','F/G slot'):STORE_HELP.skills;text(fitName(help,VW-22,6),VW/2,VH-10,UI.gold,'center',6);
+ const help=treeMsgT>0?treeMsg:!loadoutSafe()?STORE_HELP.skillsLook:rankHelp?rankHelp:treeBranch===1?STORE_HELP.passives:limit>1?STORE_HELP.skills.replace('F slot','F/G slot'):STORE_HELP.skills;{const fs1=storeFootSpan(10,VW-8);text(fitName(help,fs1.mw,6),fs1.cx,VH-10,UI.gold,'center',6);text(fs1.hint,fs1.hx,VH-10,UI.sel,'right',6);}
 }
 /* ====== (claude/hubpolish, Daniel 11-01) THE SWAP HERO PANEL: src/hero-swap.js draws and walks it; these are the facts it asks for ======
    Open it with F (the pad's throw, a tap on SWAP HERO) in the store, H on the map and in the store's SKILLS tab, the pause menu's Swap hero (the map, a shop room, the inn). A swap is
@@ -5917,9 +5917,10 @@ function updateStore0(dt) {
   if (SWAPUI.isOpen) { swapFrame(dt); return; }
   if (swapPress || (throwPress && !tab.talent)) { swapPress = throwPress = false; if (SWAPUI.open()) return; }   /* (claude/hubpolish) F or H: the swap hero panel */
   /* THE TABS: TAB or E (LB on a pad) the next, Q (RB) the one before - the settings' own keys. LEFT and RIGHT turn the tabs too, except on SKILLS, where they switch ACTIVES / PASSIVES. */
-  const step = mapPress || talkPress ? 1 : talentsPress ? -1 : !tab.talent && rightPress ? 1 : !tab.talent && leftPress ? -1 : 0;
+  const qClose = talentsPress && tab.talent;   /* (claude/menuback, Daniel 11-07) Q opened the store on SKILLS, so Q on SKILLS shuts it; on every other tab Q stays 'the tab before' */
+  const step = mapPress || talkPress ? 1 : talentsPress && !qClose ? -1 : !tab.talent && rightPress ? 1 : !tab.talent && leftPress ? -1 : 0;
   if (step) { storeTab = stepStoreTab(storeTab, step); storeI = 0; storeMsgT = 0; SFX.ui(); return; }
-  if (pausePress) { state = storeBack; SFX.menuClose(); return; }
+  if (pausePress || qClose || (dodgePress && padLast)) { state = storeBack; dodgePress = pausePress = talentsPress = false; SFX.menuClose(); return; }   /* ESC / START, Q on SKILLS, pad B (the dodge button), or the BACK button (a click or a tap sets pausePress) */
   if (tab.talent) { updateSkills(dt); return; }
   const items = storeItems(tab);
   if (morePress() && storePages > 1) { storePage = (storePage + 1) % storePages; SFX.ui(); }   /* the next page of a long description */
@@ -5952,12 +5953,19 @@ function fitName(s, maxW, size = 6) { if (inkW(s, size) <= maxW) return s; const
 const skinPreview = (k, icon = false) => preview('skin:' + hero() + ':' + k.id + ':' + PROG.sword + ':' + icon, () => heroSet(k.id, PROG.sword, icon ? 'icon' : 'idle'));
 const preview = (key, make) => previewCache[key] || (previewCache[key] = make());
 const weaponPreview = (k, icon = false) => preview('weapon:' + hero() + ':' + PROG.skin + ':' + k.id + ':' + icon, () => heroSet(PROG.skin, k.id, icon ? 'weaponIcon' : 'atk'));
+/* (claude/menuback) THE WAY OUT, always on screen: a BACK button top-right (mouse click or tap) and a footer line naming the keys for the input in use */
+let storeBackRect = null;
+const storeBackWords = () => touchOn ? 'TAP BACK' : padLast ? (CTL.labelFor(SET.binds, 'pad1', 'dodge', 1) + ' / ESC: BACK') : STORE_TABS[storeTab].talent ? 'Q / ESC: BACK' : 'ESC: BACK';
+const storeFootSpan = (left, right) => { const hint = storeBackWords(), hw = inkW(hint, 6), r = right - hw - 8; return { hint, hx: right, cx: (left + r) / 2, mw: r - left }; };   /* where the message sits so the hint never covers it */
+function storeBackDraw(x, y, w) { const bw = 34, bx = x + w - bw - 5, by = y + 3; storeBackRect = [bx, by, bw, 11];
+  g.fillStyle = 'rgba(90,50,50,0.8)'; g.fillRect(bx, by, bw, 11); g.strokeStyle = 'rgba(224,150,130,0.7)'; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, 10); text('BACK', bx + bw / 2, by + 3, '#f4e0d8', 'center', 6);
+  TCH.hit(bx, by - 1, bw, 13, () => { pausePress = true; }); }
 function drawStore() {
   if (SWAPUI.isOpen) { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); return; }   /* (claude/hubpolish) the swap hero panel has the screen: nothing of the store shows through it */
   if (storeBack === 'map') { g.drawImage(MAPC, 0, 0); g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH); } else { g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, VH); }
   const x = 3, y = 2, w = VW - 6, h = VH - 4;
   panel(x, y, w, h, UI.border, 'ledger');
-  text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head);
+  text('THE STORE', x + 8, y + 4, UI.title, 'left', TYPE.head); storeBackDraw(x, y, w);
   if (!STORE_TABS[storeTab].talent) { const lab = (touchOn || padLast ? '' : 'F ') + 'SWAP HERO', bw = inkW(lab, 6) + 8, bx = x + 8 + textW('THE STORE', TYPE.head) + 8;   /* (claude/hubpolish) one press, or one tap, to change hero from any tab */
     g.fillStyle = 'rgba(60,90,60,0.75)'; g.fillRect(bx, y + 3, bw, 10); g.strokeStyle = 'rgba(168,224,110,0.6)'; g.strokeRect(bx + 0.5, y + 3.5, bw - 1, 9); text(lab, bx + 4, y + 5, '#e8f4d8', 'left', 6); TCH.hit(bx, y + 2, bw, 12, () => SWAPUI.open()); }
   { const gold = String(PROG.coins), silv = String(silverAvail());
@@ -6048,7 +6056,7 @@ function drawStore() {
     } else storePages = 1; }
   { const bark = storeMsgT > 0 ? '' : SHOPLIFE.storeLine(time, shopIdNow()), set = SPR.keeper, head = set && (Array.isArray(set.R) ? set.R[0] : set.R);   /* (claude/hubpolish) the keeper's head at the foot of the page: he nods when you buy and says a line every while */
     SHOPLIFE.candles(g, x + 4, x + w - 5, y + 2, time); if (head) SHOPLIFE.storeHead(g, head, x + 7, y + h - 14, time); SHOPLIFE.pop(g, pvX + pvW / 2, pvY + 30, time);
-    text(storeMsgT > 0 ? fitName(storeMsg, w - 44, 6) : fitName(bark || (loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look), w - 44, 6), VW / 2 + 8, y + h - 10, storeMsgT > 0 ? UI.title : bark ? '#c9b892' : UI.dim, 'center', 6); }
+    const fs0 = storeFootSpan(x + 22, x + w - 6); text(storeMsgT > 0 ? fitName(storeMsg, fs0.mw, 6) : fitName(bark || (loadoutSafe() ? STORE_HELP.buy : STORE_HELP.look), fs0.mw, 6), fs0.cx, y + h - 10, storeMsgT > 0 ? UI.title : bark ? '#c9b892' : UI.dim, 'center', 6); text(fs0.hint, fs0.hx, y + h - 10, UI.sel, 'right', 6); }
 }
 
 // ---------- bestiary ----------
@@ -6996,6 +7004,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
 {
   const toGame = ev => { const r = disp.getBoundingClientRect(); return [((ev.clientX - r.left) * DPR - offX) / S, ((ev.clientY - r.top) * DPR - offY) / S]; };
   disp.addEventListener('pointerdown', () => { if (pressCard && state === 'title') { initAudio(); dismissPress(); } });   /* a click anywhere on the card is a press */
+  disp.addEventListener('mousedown', ev => { if (state !== 'store' || !storeBackRect || SWAPUI.isOpen || ev.button !== 0) return; const [mx, my] = toGame(ev), [bx, by, bw, bh] = storeBackRect; if (mx >= bx && mx < bx + bw && my >= by - 1 && my < by + bh + 1) { initAudio(); pausePress = true; ev.preventDefault(); } });   /* (claude/menuback) the store's BACK button, clicked */
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
   disp.addEventListener('mousedown', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { initAudio(); const [x, y] = toGame(ev); if (DUELO.rosterMouse(x, y, true)) ev.preventDefault(); } });   /* (claude/duelroster) the pick screen's mouse: player one clicks a hero, a seat's row, a tab */
   disp.addEventListener('mousemove', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { const [x, y] = toGame(ev); DUELO.rosterMouse(x, y, false); } });
