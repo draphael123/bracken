@@ -215,6 +215,29 @@ export function dummySet(which) {
   return DUMMY[which ? 1 : 0];
 }
 
+/* ---------------------------------------------------------------- THE STRAW YARD (claude/tutorial2) ----------------------------------------------------------------
+   The roadside lesson's four targets, in the straw men's own palette and outline, SPR-shaped like dummySet: an ARMOURED man (a plate breast and pauldrons under the dented helm: only a heavy
+   blow breaks it), a STRAW CROW on a perch (up on its post: the rising cut), a low STRAW RAT (the sweep), a BARREL with a straw lid (the plunge). Frame 1 is the tilt a hit gives. */
+const STRAW_ROWS = {
+  armour: ['....gggg....', '...gllggg...', '..glgGggGg..', '..GGGGGGGG..', '..seSssseS..', '...sSsssS...', '....tttt....', '.wwwwwwwwww.', 'GllgggggGGGG', '.glggGGgggG.', '..glggGgGg..', '..gggGGggg..', '..GggggggG..', '...gGgggG...', '...hHhhHhh..', '.....ww.....', '.....ww.....', '...WWWWWW...', '..WWWWWWWW..'],
+  bird: ['......ss....', '.....ssse...', '.....ssssoo.', '..S.ssssss..', '.SSsssssss..', '.SsssyyYss..', 'SSsyyyyYYs..', '.SsssyyYs...', '..SssssSs...', '....t..t....', '....t..t....', '..wwwwwwww..'],
+  rat: ['.........ss...', '.......sssss.o', '..SSssssssesso', 'tt.ssssssssss.', '.t..ssssssss..', '.....w..w.....', '....ww..ww....'],
+  barrel: ['..llllllllll..', '.lLLLLLLLLLLl.', '.wwwwwwwwwwww.', 'whhhhhhhhhhhhw', 'wwWwwwwwwwwWww', 'wwWwwwwwwwwWww', 'whhhhhhhhhhhhw', 'wwWwwwwwwwwWww', 'wwWwwwwwwwwWww', 'whhhhhhhhhhhhw', '.wwwwwwwwwwww.', '..WWWWWWWWWW..'],
+};
+let STRAW = null;
+export function strawSet(kind) {
+  if (!STRAW) STRAW = {};
+  if (!STRAW[kind]) {
+    const rows = STRAW_ROWS[kind] || STRAW_ROWS.armour;
+    const pal = { s: '#c4a870', S: '#8a7248', e: '#2a2230', t: '#8a5a32', y: '#9a6a42', Y: '#6a4630', h: kind === 'barrel' ? '#5a6270' : '#e0c070', H: '#b89a48', w: '#6a4a2c', W: '#4a3220', g: '#8a919c', G: '#5a6270', l: kind === 'barrel' ? '#c9b27c' : '#c2c9d4', L: '#9a8050', o: '#d08a3a' };
+    const tilt = rows.map((r, i) => i < rows.length / 2 && r.endsWith('.') ? '.' + r.slice(0, -1) : r);
+    const f = r => outline(fromGrid(r, pal, 1), OUT), Rr = [f(rows), f(tilt)], white = Rr.map(c => whiten(c));
+    const cols = Math.max(...rows.map(r => r.length));
+    STRAW[kind] = { R: Rr, L: Rr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: (cols >> 1) + 1, ay: rows.length + 1, w: cols - 2, h: rows.length - 1 };
+  }
+  return STRAW[kind];
+}
+
 /* ---------------------------------------------------------------- THE FLOOR RING + THE NAME TAG ---------------------------------------------------------------- */
 /* half: 'back' (the far half, behind the hero) or 'front' (the near half, over the floor). c: his colour, d: its dark. Pixel by pixel: a 1 px ring (rx 9, ry 3), a shimmer
    that runs round it in two frames, a faint fill on the near side, a dark rim outside it so it reads on the pale sand too. */
