@@ -158,7 +158,7 @@ check('card migration', () => {
 });
 
 check('skill ranks', () => {
-  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active && s.level === 1); p.coins = 100000;
+  const p = PR.migrateProgress(null).progress, n = PR.skillsFor('knight').find(s => s.active && s.level === 1); p.coins = 100000; delete p.skillOwned.knight[n.id]; p.loadouts.knight = [];   /* (claude/starterskill: the level-1 skill is owned at birth; this walks the buy + rank path from none) */
   assert.equal(PR.skillRank(p, 'knight', n.id), 0); assert.equal(PR.rankUp(p, 'knight', n.id, 30), 'Learn it first');
   assert.equal(PR.buySkill(p, 'knight', n.id, 1), null); assert.equal(PR.skillRank(p, 'knight', n.id), 1);
   assert.equal(PR.rankUp(p, 'knight', n.id, 5), 'Rank 2 at level 6'); const c0 = p.coins; assert.equal(PR.rankUp(p, 'knight', n.id, 6), null); assert.equal(c0 - p.coins, PR.rankPrice(n, 2));

@@ -298,12 +298,28 @@ export function trimSlots(p){
  }
  return cut;
 }
+/* THE STARTER SKILL (claude/starterskill, Daniel 11-07: "every hero starts with his cheapest existing level-1 active skill OWNED + EQUIPPED"): per hero, the active ability with the lowest level, then the
+   lowest price, then the catalog's order (today each hero has ONE level-1 active at the entry price). A hero who owns NO ability gets it owned and in slot 1 - a fresh save, an old save whose hero
+   never bought one, a hero unlocked later (every hero is covered whether owned yet or not, so an unlock needs no hook). Never removes, never refunds, never touches a hero who owns anything:
+   one who owns abilities but has nothing equipped is left as he is, and one who unequips his starter keeps owning it (so it is never granted twice). */
+export const starterSkillFor = h => skillsFor(h).map((n,i)=>({n,i})).filter(x=>x.n.active).sort((a,b)=>a.n.level-b.n.level||a.n.price-b.n.price||a.i-b.i)[0]?.n.id||null;
+export const STARTER_SKILLS = Object.fromEntries(HERO_IDS.map(h=>[h,starterSkillFor(h)]));
+export function grantStarter(p,h){
+ const id=starterSkillFor(h);if(!id||!object(p))return false;
+ const own=object(p.skillOwned)&&object(p.skillOwned[h])?p.skillOwned[h]:null;
+ if(own&&Object.keys(own).some(k=>skillFor(h,k)?.active))return false;
+ if(!object(p.skillOwned))p.skillOwned={};p.skillOwned[h]=object(p.skillOwned[h])?p.skillOwned[h]:{};p.skillOwned[h][id]=true;
+ if(!object(p.loadouts))p.loadouts={};const lo=Array.isArray(p.loadouts[h])?p.loadouts[h]:[];
+ if(!lo.some(Boolean)){const out=[...lo];if(!out.length)out.push(null);out[0]=id;p.loadouts[h]=out;}
+ return true;
+}
+export function grantStarters(p){let n=0;for(const h of HERO_IDS)if(grantStarter(p,h))n++;return n;}
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */
