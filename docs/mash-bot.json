@@ -176,7 +176,7 @@
   }
  },
  "marsh": {
-  "hash": "4aa7420dc470",
+  "hash": "1c1acb0561e7",
   "boss": {
    "boss": "frog",
    "wins": 0,
@@ -277,73 +277,73 @@
    ]
   },
   "carried": {
-   "from": "5e9d0a69f3f6",
+   "from": "4aa7420dc470",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 13,
+    "deaths": 10,
     "minHpPct": 0,
-    "hpLostPct": 1322,
-    "hits": 25,
+    "hpLostPct": 1109,
+    "hits": 27,
     "walked": 100,
-    "lifts": 36,
-    "held": 27,
-    "duels": 9,
-    "boardLifts": 4,
-    "rides": 7,
-    "pulls": 7,
+    "lifts": 37,
+    "held": 12,
+    "duels": 4,
+    "boardLifts": 8,
+    "rides": 8,
+    "pulls": 6,
     "ridden": {
-     "pad": 6,
+     "pad": 7,
      "raft": 1
     },
     "machines": true,
-    "frames": 47685,
-    "kills": 10,
+    "frames": 30090,
+    "kills": 6,
     "heroLevel": 2
    },
    "warden": {
     "deaths": 10,
     "minHpPct": 0,
-    "hpLostPct": 1082,
-    "hits": 27,
+    "hpLostPct": 1089,
+    "hits": 16,
     "walked": 100,
-    "lifts": 36,
-    "held": 12,
-    "duels": 4,
-    "boardLifts": 9,
-    "rides": 10,
-    "pulls": 4,
+    "lifts": 34,
+    "held": 21,
+    "duels": 7,
+    "boardLifts": 8,
+    "rides": 9,
+    "pulls": 6,
     "ridden": {
-     "pad": 9,
+     "pad": 8,
      "raft": 1
     },
     "machines": true,
-    "frames": 29505,
-    "kills": 10,
+    "frames": 42351,
+    "kills": 7,
     "heroLevel": 2
    },
    "pyro": {
-    "deaths": 11,
+    "deaths": 14,
     "minHpPct": 0,
-    "hpLostPct": 1248,
-    "hits": 27,
+    "hpLostPct": 1435,
+    "hits": 20,
     "walked": 100,
-    "lifts": 38,
-    "held": 12,
-    "duels": 4,
-    "boardLifts": 7,
-    "rides": 10,
-    "pulls": 2,
+    "lifts": 37,
+    "held": 30,
+    "duels": 10,
+    "boardLifts": 4,
+    "rides": 7,
+    "pulls": 3,
     "ridden": {
-     "pad": 9,
+     "pad": 6,
      "raft": 1
     },
     "machines": true,
-    "frames": 28474,
-    "kills": 5,
+    "frames": 48189,
+    "kills": 3,
     "heroLevel": 2
    }
   }

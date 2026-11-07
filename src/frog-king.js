@@ -32,7 +32,7 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 1100,                         /* (claude/frogking3, Daniel 11-01: "way too much health") 1500 -> 650; (bosstune 11-04) 900; (claude/frogking2 11-07) 1100 BY ARITHMETIC, n=6 OWED: off-opening blows went
+  hp: 800,                          /* (claude/frogking3, Daniel 11-01: "way too much health") 1500 -> 650; (bosstune 11-04) 900; (claude/frogking2 11-07) 1100 BY ARITHMETIC, n=6 OWED: off-opening blows went
                                        x0.05 -> x0.6 and the BELLOW break pays up to 12% a burst, so the bar moves ~1.5x faster than at 900 - 1100 holds the fight near 70-80 s with the new
                                        pressure (hoppers, the ring, the flies' drain, more leaps) */
   p2At: 0.5,                       /* HIS POND STIRS */
@@ -41,16 +41,16 @@ export const FK = {
   stay: [12, 9],                  /* or this long with you on his pad */
   take: 0.045,                      /* one opening is worth at most this share of him, then he shakes it off */
   dazed: 1.5, winded: 1.2, air: 0.4, throat: 1.5,
-  tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 26 },
+  tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 22 },
   spit: { tell: [0.5, 0.42], shots: [1, 2], flight: 0.8, spread: 18 },
-  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 28, dunk: 0.6 },
+  flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 24, dunk: 0.6 },
   swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4, drain: 20, onR: 16 },   /* (claude/frogking2 11-07, Daniel "flies do nothing") drain: stamina a second while the cloud is ON you (within onR px of your chest) - regen held, the bar flickers; walk out of it (it trails FK.swarm.lag s behind) */
   leap: { tell: [0.65, 0.5], air: 1.2, under: 0.9, roam: [13, 10] },   /* (claude/frogking2 11-07, Daniel "jumps between platforms more") roam: s on one pad before he leaps on even untouched (was never); quota .10/.10 -> .08/.07, stay 20/16 -> 12/9 */
   /* (claude/frogking2 11-07) THE BELLOW - his BREAK (Daniel: "no obvious way to make him vulnerable"). bellowTell: the throat sac swells and GLOWS for tell[ph] s; three blows on it
      (hits) in that time BURST it: he flops BELLY-UP for belly s at x mul, one break worth at most take of him. Let go unburst, a croak RING runs out both ways along the
      ground (jump it, or shield it; taken it knocks you back) and he CALLS adds[ph] marsh hoppers out of the water (max alive maxAlive, +1 each a full extra seat).
      every[ph]: he bellows at least this often. Outside his openings a hero's blade lands at 0.6x (src/boss-greed.js chipBy.frog; was the x0.05 chip) */
-  bellow: { tell: [1.6, 1.35], hits: 3, every: [12, 10], rest: 0.6, belly: 3.0, mul: 2, take: 0.12, ring: { sp: 150, life: 1.8, dmg: 16, kb: 190 }, adds: [2, 3], maxAlive: 4, addCap: 6 },
+  bellow: { tell: [2.0, 1.7], hits: 3, every: [12, 10], rest: 0.6, belly: 3.0, mul: 2, take: 0.12, ring: { sp: 150, life: 1.8, dmg: 12, kb: 190 }, adds: [1, 2], maxAlive: 3, addCap: 6 },
   guard: 0.6,
   sink: [1.3, 2.0],                  /* the sinking pads' pace, per phase */
   firm: [1, 1],                    /* leaves in a lane that HOLD after a reshuffle, per phase (of four) */
