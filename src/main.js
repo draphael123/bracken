@@ -6742,7 +6742,7 @@ const heroOpen = h => godMode() || ROSTER.includes(h);
 let heroDenyAt = -99;
 /* (claude/lives) THE NEW-SAVE RULES CARD: before the hero pick, once per save. One row today, LIVES: OFF (today's shrine-and-salt deaths, pre-selected) / ON (5 lives a level,
    +1 per 100 coins, then back to the map). The difficulty pick sits beside it when that picker lands (rulesRows). It is read-only from the first level on (LV.lockedOf; the slot card shows it). */
-const newRulesDue = () => !PROG.rulesSet && !PROG.heroPicked && !LEVELS.some(l => PROG[l.id]);
+const newRulesDue = () => !PROG.rulesSet && !PROG.heroPicked && !LEVELS.some(l => PROG[l.id]) && !(window.BK && window.BK.manualSimulation);   /* (a tool run drives the pick itself: BK.ui.heroPickStage = 'rules' shows the card) */
 function rulesToggle(dir) { const cur = PROG.lives === 'on' ? 1 : 0, nx = LV.LIVES_VALUES[(cur + (dir || 1) + 2) % 2]; if (LV.setLives(PROG, nx, CAMP_IDS) === nx) { SFX.ui(); saveProgress(); } else SFX.deny(); }
 function rulesDone() { PROG.rulesSet = 1; PROG.lives = LV.livesOf(PROG); saveProgress(); SFX.uiSel(); heroPick.stage = 'pick'; }
 function updateHeroPick() {
