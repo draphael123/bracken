@@ -5,7 +5,7 @@ import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRop
 import * as MFX from './map-fx.js';
 import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
-import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE, villagerBonus, VILLAGER_GOLD, ALL_SIX_GOLD } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
 import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost, bankStake, actStake } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
@@ -4874,6 +4874,8 @@ function xpSim() { const keep = levelIndex, rows = []; let run = 0, full = 0, st
     full += foeXp + bossXp + clear + quest; if (lv.secret) secrets++; else { stage++; run += Math.round(XP_KILL_NORMAL * foeXp) + bossXp + clear; }
     rows.push({ id: lv.id, secret: !!lv.secret, stage: lv.secret ? null : stage, foes, foeXp, bossXp, clear, quest, run, level: levelOfXp(run), old: stage, full, fullLevel: levelOfXp(full), oldFull: stage + secrets }); }
   loadLevel(keep); return rows; }
+let burnWin = null;   /* (claude/gormburn) THE BURNING VILLAGE's clear card: { n saved, of, base (gold paid for new villagers), all (the all-six bonus paid), first (the first clear: the Pyromancer opens) } */
+const pyroNew = () => !!PROG.pyroNew && !(PROG.heroes && PROG.heroes.pyro);   /* the store's NEW on the Pyromancer: set on the village's first clear, gone when he is bought or the row has been looked at */
 let winLevelUp = false, medalPurse = 0, winPrevBest = null;   /* (winPrevBest: the best time before this finish, for the level-complete card's compare line) */
 const MEDAL_PURSE = [0, 20, 45, 90];   /* gold paid the FIRST time a level reaches each medal: bronze 20, silver 45 in all, gold 90 in all */
 const medalTime = () => levelTime * (PROG.charm === 'ribbon' ? 0.9 : 1);
@@ -4912,6 +4914,11 @@ function winLevel0() {
   PROG[id] = { quest: p.quest, silver: p.silver, cleared: true, best: SET.invincible ? p.best : (p.best ? Math.min(p.best, levelTime) : levelTime), gold: Math.max(p.gold || 0, got), total, deaths: p.deaths === undefined ? deaths : Math.min(p.deaths, deaths),
     slain: Math.max(p.slain || 0, kills), slainOf: Math.max(p.slainOf || 0, ofAll) };
   PROG.coins = (PROG.coins || 0) + got; earned = got;
+  burnWin = null;
+  if (id === 'burning') { const of = questOf().n, n = Math.min(straysGot.size, of), pv = Math.min(p.saved || 0, of), pay = villagerBonus(n, of) - villagerBonus(pv, of);   /* (claude/gormburn, Daniel 11-07) the villagers' thanks: 25 gold per NEW villager saved, +50 once for all of them */
+    PROG[id].saved = Math.max(pv, n); if (pay > 0) PROG.coins += pay;
+    burnWin = { n, of, base: Math.max(0, n - pv) * VILLAGER_GOLD, all: n >= of && pv < of ? ALL_SIX_GOLD : 0, first: !p.cleared };
+    if (!p.cleared) { PROG.pyroNew = true; BUG.evlog('burning first clear: the Pyromancer can be bought'); } }   /* the first clear: the store marks him NEW */
   if (F2.objLevelCleared(PROG, { drinks: flaskHud.levelDrinks, assist: assistOn(), real: !LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret }).length) PROG.flaskObjNew = 'dry';   /* (said as the next wood starts: the win card is the medal's) */   /* (claude/flasks2) a wood cleared without a drink opens QUICK DRAUGHT (said on the win card) */
   /* THE WOOD'S SHARE (XP_CLEAR in src/xp.js). The first finish of a wood was a level; it is XP now, and the fights paid the rest on the way */
   if (firstWalk && xpWood()) gainXp(XP_CLEAR * levelXp);
@@ -5464,7 +5471,7 @@ function drawMap() {
   if (mapSpurLit) { const n = NODES.find(n => n.id === mapSpurLit.id); if (n) { mapSpurLit.t += 0.016;
     { const jn = NODES.find(m => !m.spur && m.level >= 0 && LEVELS[m.level].id === junctionId(LEVELS[n.level])); if (jn) { const dx = n.x - jn.x, dy = n.y - jn.y, len = Math.hypot(dx, dy) || 1, reach = Math.min(len, mapSpurLit.t * 70);   /* (claude/kingscene) THE SPUR'S PATH LIT: ember dots run out from the junction to the village and stay, pulsing */
       for (let d = 6, k = 0; d < reach; d += 5, k++) { g.globalAlpha = 0.45 + 0.55 * Math.max(0, Math.sin(time * 4 - k * 0.7)); g.fillStyle = k % 3 ? '#ff9a30' : '#ffd36b'; g.fillRect(Math.round(jn.x + dx * d / len) - 1, Math.round(jn.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1; } } const pu = 0.5 + 0.5 * Math.sin(time * 5), by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.save(); g.globalAlpha = 0.25 + 0.3 * pu; MPX.fillDisc(g, n.x, n.y, Math.round(12 + pu * 6), '#ff9a30'); g.globalAlpha = 0.6; MPX.strokeRing(g, n.x, n.y, Math.round(9 + pu * 3), '#ffd36b');   /* (rel139fix: whole pixels, the canvas arc anti-aliases - tools/map-scale.mjs) */ g.restore(); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
-  if (PROG.storeHint) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
+  if (PROG.storeHint || pyroNew()) { const n = NODES.find(n => n.kind === 'store'); if (n) { const by = n.y - 26 + Math.round(Math.sin(time * 4) * 2); g.fillStyle = '#ffd36b'; g.fillRect(n.x - 1, by, 3, 6); g.fillRect(n.x - 1, by + 8, 3, 2); text('NEW', n.x + 1, by - 10, '#ffd36b', 'center'); } }
   // river sparkle (the river is on the wood sheet)
   g.fillStyle = 'rgba(230,245,255,0.8)'; for (let i = 0; i < 8; i++) { const t = (time * 0.4 + i * 0.13) % 1; const pts = [[VW - 34, WOOD_Y], [VW - 58, 40 + WOOD_Y], [VW - 26, 82 + WOOD_Y], [VW - 70, 122 + WOOD_Y], [VW - 44, VH + WOOD_Y]]; const k = Math.min(3, Math.floor(t * 4)); const a = pts[k], b = pts[k + 1]; const u = t * 4 - k; if (Math.sin(time * 3 + i) > 0.4) g.fillRect(Math.round(a[0] + (b[0] - a[0]) * u) - 1 + (i & 1), Math.round(a[1] + (b[1] - a[1]) * u), 2, 1); }
   /* THE COAST SHIMMER: the whole sheet is sea, so this is a fixed scatter of points (seeded, not random every
@@ -6006,7 +6013,8 @@ function drawStore() {
     /* A PRICE IS A NUMBER AND ITS COIN: the words GOLD and SILVER took seven letters off every name in the row */
     const priced = !eq && !owned && !locked && k.price > 0, ic = priced ? (k.silver ? PROP.silver[0] : PROP.coin[0]) : null, icw = ic ? ic.width + 2 : 0;
     const bg = eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : String(k.price);
-    rowName(bg, icw);
+    const nw = tab.key === 'hero' && k.id === 'pyro' && pyroNew(); if (nw && sel) PROG.pyroNew = false;   /* (claude/gormburn) NEW until the row is looked at or he is bought */
+    rowName(bg, icw + (nw ? 26 : 0)); if (nw && Math.floor(time * 3) % 2 === 0) text('NEW', listX + listW - 8 - icw - inkW(bg, 6), yy, '#ffd36b', 'right', 6);
     if (ic) g.drawImage(ic, listX + listW - 3 - ic.width, yy + 2 - (ic.height >> 1));
     text(bg, listX + listW - 4 - icw, yy, eq ? UI.sel : owned ? UI.dim : locked ? '#6a6a7a' : ((k.silver ? (silverAvail() >= k.price || (coinRoute(k) && PROG.coins >= k.coinPrice)) : PROG.coins >= k.price) ? (k.silver ? UI.silver : UI.gold) : '#ff6b6b'), 'right', 6);
   });
@@ -32513,7 +32521,8 @@ function trnBegin() {
   if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
   const entry = TRM.entryFor(LEVELS[levelIndex].id, undefined, { burningOpen: !!PROG.burningOpen }); if (!entry) return false;   /* (claude/demotransitions) a row may ask for flags (Kingswood: the spur open or shut) */
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
-  if (DS.DEMO && DS.demoLocked(LEVELS[to])) return false;   /* (claude/demoend) the demo's last wood walks out to nothing: Gorm's win card, then the END CARD */
+  const demoTeaser = DS.DEMO && DS.demoLocked(LEVELS[to]);   /* (claude/gormburn, Daniel 11-07) the demo's last wood walks out to nothing - EXCEPT a row marked demoEnd (Kingswood > Scree Path, the MOUNTAIN scene): it plays as a teaser, then the END CARD (no level loads; trnFinish). Any other locked row: Gorm's win card, then the END CARD */
+  if (demoTeaser && !entry.demoEnd) return false;
   if (LEVELS[to].needs !== LEVELS[levelIndex].id && !(LEVELS[to].opensOn && LEVELS[to].opensOn.level === LEVELS[levelIndex].id)) return false;   /* (claude/demotransitions) or a SPUR that hangs off this level (Kingswood -> the Burning Village) */   /* (claude/smallfix5) the table's target must be the NEXT level on the road: the Lumber Trail's ferry carried the party to MARSH WOOD past THE HORNET'S NEST (marsh needs hornetsnest). No row, no cutscene: the normal win card, then the road */
   const key = entry.from + '>' + entry.to;
   if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
@@ -32567,7 +32576,7 @@ function trnUpdate(dt) {
   const entered = TRM.step(tl, dt, { press: anyPress, ready });
   if (tl.skipped && !tr.skipNoted) { tr.skipNoted = true; BUG.evlog('transition skipped'); }
   for (const e of entered) {
-    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(tr.entry.scene === 'smoke' ? 'forest' : 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
+    if (!tr.scene && e !== 'fade' && e !== 'done' && TRM.isSceneBeat(tl.beats[tl.i])) { tr.scene = true; ambient.set(tr.entry.scene === 'smoke' || tr.entry.scene === 'mountain' ? 'forest' : 'water'); if (SFX.step) SFX.step(); }   /* (claude/demotransitions) the first scene beat, whatever the scene */
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
@@ -32580,6 +32589,7 @@ let mapSpurLit = null;   /* (Daniel 11-02) the kings > burning row ends ON THE M
 function trnFinish() {
   const tr = TRN, entry = tr.entry; tr.loading = true;
   if (entry.endOnMap) { TRN = null; trnArrive = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); const k = NODES.findIndex(n => n.id === entry.to); if (k >= 0) { map.node = k; map.seg = NODE_AT[k]; map.t = 0; map.walking = 0; PROG.mapNode = k; PROG.mapNodeId = NODES[k].id; mapSpurLit = { id: entry.to, t: 0 }; } music.play(menuTrack()); transT = 1; transKind = 'fade'; return; }
+  if (entry.demoEnd && DS.DEMO) { TRN = null; trnArrive = null; setView('normal'); transT = 1; transKind = 'fade'; demoEndOpen(); return; }   /* (claude/gormburn) the demo: the mountain scene was the teaser; the Scree Path is locked - the END CARD */
   loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
 }
 /* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
@@ -32603,7 +32613,7 @@ function trnArriveTick(dt) {
 function trnDrawScene() {
   const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);
   env.bank = tr.entry.bank || 'wood';
-  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
+  if (tr.entry.scene === 'road') TRA.drawRoadScene(env, s); else if (tr.entry.scene === 'smoke') TRA.drawSmokeScene(env, s); else if (tr.entry.scene === 'mountain') TRA.drawMountainScene(env, s); else TRA.drawFerryScene(env, s);   /* (claude/demotransitions) */
   if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function trnDrawWorldOver(cx, cy) {
@@ -37364,10 +37374,11 @@ function render() {
     if (coop()) coopTally(px0, pw, at, cnt);
     else {
     line(0.55, 'gold     ' + Math.round(cnt(0.55, got)) + ' / ' + total + '   +' + Math.round(cnt(0.55, earned)) + ' purse', 77, '#ffd34a');
-    line(0.80, 'foes ' + Math.round(cnt(0.80, kills)) + '   blocks ' + Math.round(cnt(0.80, blocks)) + '   dodges ' + Math.round(cnt(0.80, dodges)), 90, '#fff6e0');
+    line(0.80, burnWin ? 'foes ' + Math.round(cnt(0.80, kills)) + '   deaths ' + deaths : 'foes ' + Math.round(cnt(0.80, kills)) + '   blocks ' + Math.round(cnt(0.80, blocks)) + '   dodges ' + Math.round(cnt(0.80, dodges)), 90, '#fff6e0');   /* (the village's card trades blocks and dodges for its villagers' lines) */
     { const q = PROG[LEVELS[levelIndex].id] || {}, sv = [1, 2, 4].filter(b => ((q.silver || 0) & b)).length;   /* what was found: the silver and the quest */
       line(1.00, 'silver ' + sv + '/3   quest ' + (q.quest ? 'done' : 'open'), 103, sv >= 3 ? UI.silver : '#fff6e0'); }
-    line(1.20, 'deaths   ' + deaths, 116, deaths ? '#ff9a6b' : '#fff6e0'); }
+    if (burnWin) line(1.20, fitText('SAVED ' + burnWin.n + '/' + burnWin.of + (burnWin.base ? '   +' + burnWin.base + ' GOLD' : '   (THANKS PAID)') + (burnWin.all ? '   ALL SIX +' + burnWin.all : ''), pw - 12, 8), 116, burnWin.n >= burnWin.of ? '#8fd160' : '#fff6e0');
+    else line(1.20, 'deaths   ' + deaths, 116, deaths ? '#ff9a6b' : '#fff6e0'); }
     { const n = heroLevel(), s = winLevelUp ? 'LEVEL ' + n + (n - lvAtStart > 1 ? ' (+' + (n - lvAtStart) + ')' : '') + '   +' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') : xpRun > 0 ? '+' + xpRun + ' XP' + (xpBoost > 0 ? ' x' + XP_CATCHUP : '') + '   ' + (xpFloor(n + 1) - heroXp()) + ' TO LEVEL ' + (n + 1) : '';   /* what the wood paid, and the level it made */
       if (s && !coop()) line(0.15, fitText(s.replace(/ +\+0 XP$/, ''), pw - 12, 6), 52, winLevelUp ? (Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0') : '#c9d1dc', 6); }   /* (a +0 XP is not a line worth printing) */   /* (in co-op that row is the tally's, and the XP is player one's alone anyway) */
     if (PROG.storeHint === 'shieldThrow' && LEVELS[levelIndex].id === 'stockade') line(1.9, 'STORE: SHIELD THROW', 141, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0');
@@ -37387,8 +37398,9 @@ function render() {
         }
       } else winStamped = true; }
     if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
+    if (burnWin && burnWin.first && !coop() && !(PROG.heroes && PROG.heroes.pyro)) line(1.9, fitText('THE PYROMANCER CAN NOW BE BOUGHT AT THE STORE', pw - 12, 6), 139, Math.floor(time * 3) % 2 ? '#ffd36b' : '#fff6e0', 6);   /* (claude/gormburn, Daniel 11-07) the first clear of the village: the store has a new hero */
     { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
-      if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
+      if (wt > 1.9 && m2 < 3 && !coop() && !(burnWin && burnWin.first)) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
     if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) { const nk = partyNextLevel();
       if (nk >= 0) { const nm = LEVELS[nk].name.toUpperCase(), a = (touchOn ? 'TAP  NEXT: ' : 'Z  NEXT: ') + nm, b = a + (touchOn ? '' : '   ESC  MAP'), sz = textW(b, 8) <= VW - 16 ? 8 : 6; text(fitText(b, VW - 12, sz), VW / 2, 146 + WD + (sz === 6 ? 1 : 0), '#8fd160', 'center', sz); }   /* (claude/partypersist) the party's card: one button to the next wood */
       else text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146 + WD, '#8fd160', 'center'); }
