@@ -1,0 +1,48 @@
+name: Composed Rootway and Skyroad full native qualification
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/terrain-base-composition-native-nov07/manifest.json
+      - tools/terrain-base-composition-native-nov07/cases-rootway.mjs
+      - tools/terrain-base-composition-native-nov07/cases-skyroad.mjs
+      - tools/terrain-base-composition-native-nov07/component-page.mjs
+      - tools/terrain-base-composition-native-nov07/component.mjs
+      - .github/workflows/terrain-base-composition-native-nov07.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [rootway-zone0-top-face-0, rootway-zone0-ceil-mass-0, rootway-zone1-top-face-0, rootway-zone1-ceil-mass-0, rootway-zone2-top-face-0, rootway-zone2-ceil-mass-0, rootway-zone3-top-face-0, rootway-zone3-ceil-mass-0, rootway-zone4-top-face-0, rootway-zone4-ceil-mass-0, rootway-palette-0, rootway-metadata-0, rootway-gpu-0, rootway-public-0, rootway-contracts-0, rootway-contracts-8, rootway-contracts-16, rootway-before-module-0, rootway-before-module-8, rootway-before-module-16, rootway-after-module-0, rootway-after-module-8, rootway-after-module-16, rootway-streaming-0, rootway-descriptor-hooks-0, rootway-descriptor-hooks-8, rootway-native-records-0, rootway-context-owners-0, rootway-image-data-hooks-0, rootway-iterator-capture-0, rootway-complete-construction-0, rootway-scalar-dictionary-0, rootway-scalar-dictionary-8, rootway-word-view-hooks-0, rootway-word-view-hooks-8, skyroad-zone0-top-face-0, skyroad-zone0-ceil-mass-0, skyroad-zone1-top-face-0, skyroad-zone1-ceil-mass-0, skyroad-zone2-top-face-0, skyroad-zone2-ceil-mass-0, skyroad-zone3-top-face-0, skyroad-zone3-ceil-mass-0, skyroad-zone4-top-face-0, skyroad-zone4-ceil-mass-0, skyroad-palette-0, skyroad-metadata-0, skyroad-gpu-0, skyroad-public-0, skyroad-contracts-0, skyroad-contracts-8, skyroad-contracts-16, skyroad-before-module-0, skyroad-before-module-8, skyroad-before-module-16, skyroad-after-module-0, skyroad-after-module-8, skyroad-after-module-16, skyroad-streaming-0, skyroad-descriptor-hooks-0, skyroad-descriptor-hooks-8, skyroad-native-records-0, skyroad-context-owners-0, skyroad-image-data-hooks-0, skyroad-iterator-capture-0, skyroad-complete-construction-0, skyroad-scalar-dictionary-0, skyroad-scalar-dictionary-8, skyroad-word-view-hooks-0, skyroad-word-view-hooks-8, skyroad-skyroad-boundaries-0, composition-0, composition-8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/terrain-base-composition-native-nov07/component.mjs
+        env:
+          TERRAIN_COMPOSITION_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/terrain-base-composition-native-${{ matrix.group }}-nov07
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terrain-base-composition-native-${{ matrix.group }}-nov07
+          path: |
+            ${{ runner.temp }}/terrain-base-composition-native-${{ matrix.group }}-nov07/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
