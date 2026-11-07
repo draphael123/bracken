@@ -138,7 +138,7 @@ function stubWorld(o = {}) {
   const he = Lw.ents.find(e => e.t === 'lw3herald');
   boss = H.spawnEnt({ x: he.x * TS + 8, y: (he.y + 1) * TS, vx: 0, vy: 0, face: -1, alive: true }, he); enemies.push(boss);
   boss.mode = 'wake'; boss.modeT = 1.6;
-  const strikeAt = id => { const v = id === 'bell' ? { x: 659, y: 27 } : { x: 687, y: 27 }; H.strike({ l: v.x * TS + 4, r: v.x * TS + 12, t: (v.y + 1) * TS - 20, b: (v.y + 1) * TS - 6 }); };
+  const strikeAt = id => { const v = id === 'bell' ? { x: 659, y: 27 } : { x: 672, y: 27 }; H.strike({ l: v.x * TS + 4, r: v.x * TS + 12, t: (v.y + 1) * TS - 20, b: (v.y + 1) * TS - 6 }); };
   const step = (secs, fn) => { const dt = 1 / 60; for (let t = 0; t < secs; t += dt) { if (fn && fn(t) === false) return; H.update(dt); H.updateEnt(boss, dt); } };
   return { H, Lw, A, P, boss: () => boss, hits, enemies, coins: () => ctx.coinN || 0, step, strikeAt, Q: () => H.herald(), sq: () => H.kit().tides.find(s => s.id === 'square') };
 }
@@ -149,8 +149,8 @@ const calm = W => { const b = W.boss(); if (b.mode === 'stride' || /Tell$|^raise
   pass(mired, 'P1: the SLUICE pulls the sea out from under him on the flats: MIRED'); pass(W.Q().n.sluiceMire === 1, 'counted as the sluice\'s');
   pass(THM.takeK(W.boss(), W.Q(), 0) === 1.5, 'and x1.5 while he is'); }
 { /* P1: THE SLUICE while he stands on a stone: no opening */
-  const W = stubWorld(); W.step(2); const sq = W.sq(); sq.ph = 'high'; sq.k = 1; sq.t = 8; W.boss().x = 659 * TS + 8; calm(W);
-  W.step(0.5, () => { calm(W); W.boss().x = 659 * TS + 8; }); W.strikeAt('sluice'); let mired = false; W.step(3, () => { calm(W); W.boss().x = 659 * TS + 8; if (W.boss().mode === 'mired') mired = true; });
+  const W = stubWorld(); W.step(2); const sq = W.sq(); sq.ph = 'high'; sq.k = 1; sq.t = 8; W.boss().x = 687 * TS + 8; calm(W);
+  W.step(0.5, () => { calm(W); W.boss().x = 687 * TS + 8; }); W.strikeAt('sluice'); let mired = false; W.step(3, () => { calm(W); W.boss().x = 687 * TS + 8; if (W.boss().mode === 'mired') mired = true; });
   pass(!mired, 'P1: the sluice while he is on a stone: no opening'); }
 { /* P1: a NATURAL ebb: he makes for the stones and reaches one */
   const W = stubWorld(); W.step(2); const sq = W.sq(); sq.ph = 'high'; sq.k = 1; sq.t = 0.5; W.boss().x = 666 * TS; W.boss().mode = 'stride'; W.boss().modeT = 99;
@@ -202,7 +202,7 @@ const calm = W => { const b = W.boss(); if (b.mode === 'stride' || /Tell$|^raise
 /* ---------- 8. TOY DUELS (--sim=N): the FLOW through the real hands, NOT the rate ---------- */
 const nSim = +(arg('sim') || 0);
 if (nSim) { const res = [];
-  for (let i = 0; i < nSim; i++) { const W = stubWorld(), b = W.boss(), P = W.P, greedy = i % 3 === 2; let t = 0, swingT = 0, flasks = 3, dead = false;
+  for (let i = 0; i < nSim; i++) { const W = stubWorld(), b = W.boss(), P = W.P, greedy = i % 3 === 2; let t = 0, swingT = 0, flasks = 3, dead = false; const why = {};
     const DMG = 14, SWING = 0.42;
     W.step(400, dt0 => { t = dt0; const Q = W.Q(), plan = THM.thPlan(b, Q, gauge(W.H.kit(), 'square'), W.A.bellX, W.A.sluiceX);
       if (!b.alive || b.hp <= 0) return false; if (P.hp <= 0) { if (flasks > 0) { flasks--; P.hp = 160; } else { dead = true; return false; } }
@@ -212,7 +212,9 @@ if (nSim) { const res = [];
       else if (plan.go === 'stone') go(THM.nearestStone(Q, P.x));
       else go(b.x + (P.x < b.x ? -22 : 22));
       swingT -= 1 / 60; if (plan.attack && Math.abs(P.x - b.x) < 30 && swingT <= 0) { swingT = SWING; const d = W.H.take(b, DMG, 'slash', false); b.hp -= d; }
+      if (arg('log')) { why[plan.why] = (why[plan.why] || 0) + 1 / 60; if (Math.floor(dt0 * 60) % 600 === 0) console.log('   t' + dt0.toFixed(0) + ' hp ' + b.hp + ' ph ' + W.Q().ph + ' mode ' + b.mode + ' sea ' + W.Q().sea + ' k ' + kOf(W.H.kit(), 'square').toFixed(2) + ' P ' + (P.x / 16).toFixed(1) + ' B ' + (b.x / 16).toFixed(1)); }
       if (b.hp <= 0) { b.alive = false; return false; } });
+    if (arg('log')) console.log('   why', JSON.stringify(Object.fromEntries(Object.entries(why).map(([k, v]) => [k, +v.toFixed(1)]))));
     res.push({ won: !b.alive || b.hp <= 0, t: +t.toFixed(1), flasks, mired: W.Q().n.mired, bell: W.Q().n.bellMire, sluice: W.Q().n.sluiceMire, nat: W.Q().n.natMire, reel: W.Q().n.reel, ph: W.Q().ph, hp: Math.round(P.hp), greedy }); }
   console.log('TOY DUELS (a perfect-read bot through the real hands; flow, NOT the rate):'); for (const r of res) console.log('  ' + JSON.stringify(r));
   const won = res.filter(r => r.won); console.log('  won ' + won.length + '/' + res.length + ', avg ' + (won.reduce((a, r) => a + r.t, 0) / Math.max(1, won.length)).toFixed(1) + ' s'); }

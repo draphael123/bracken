@@ -16,7 +16,7 @@
 //     586-633  THE PIERS - THE EXAM (bell + sluice + crab + trap + boat, the harbour's own fast tide): the jellies ride the flood, so turn the SLUICE and cross the
 //              crab flats at low water, cut the moored boat loose, ring the BELL on the rock beside it and ride it up to the pier head
 //     634-649  THE HEADLAND: the boss door's shrine under THE TIDE-CLOCK LIGHTHOUSE (the landmark: its dial is drawn on the horizon the whole level, A3)
-//     650-696  THE TIDE FLATS: THE TIDE HERALD (src/tide-herald.js) - opened by the BELL (lure him out onto the flats; a called sea goes back out fast and leaves
+//     650-696  THE TIDE FLATS: THE TIDE HERALD (src/tide-herald.js; the bell on the west stone, the wheel on the mid-flats stone) - opened by the BELL (lure him out onto the flats; a called sea goes back out fast and leaves
 //              him in the mud = MIRED) and by the SLUICE (pull the sea out from under him); phase two the sea is his, the bell breaks his call, the sluice drops it
 // Theme (plan s4): pale sea-mist + lantern amber, wet sand, kelp, barnacled stone piers; timber ONLY as boats (tarred hulls). No goblins: master's tribute chest
 // (the goblin queen's seals, lw_props.js) is not placed here, and the dead-end stash prop is a sea chest under the flag (shadowed table below).
@@ -171,8 +171,8 @@ export function buildLongWater3(R, T, TS = 16) {
   // ================= 8. THE TIDE FLATS (650-705): THE TIDE HERALD =================
   const A = LW3.arena;
   ground(A.wallL, A.wallL, 27); ground(A.x0, A.x1, A.floor);
-  for (const [a, b] of A.stones) ground(a, b, a === 672 ? 29 : 28);   /* two dry stones (28) and a low one mid-flats (29: awash at high) */
-  bell('square', 659, 27); sluice('square', 687, 27, LW3.square.hold);
+  for (const [a, b] of A.stones) ground(a, b, 28);   /* three dry stones: the bell's (west), the wheel's (mid-flats), the east one */
+  bell('square', 659, 27); sluice('square', 672, 27, LW3.square.hold);   /* 13 tiles apart: in phase two you ring the one and run to the other inside his call */
   ent('lw3herald', 676, 30, { face: -1 });
   pool('square', A.x0, A.x1, 33, LW3.square.lo);   /* (the other pools start at their HIGH line: the reach model swims them; the kit sets every line on the first frame) */
   ground(A.wallR, A.wallR + 1, 28); ground(A.wallR + 2, W - 1, 25); ent('gate', A.gate, 24);   /* out of the flats in two 3-row steps */
@@ -189,7 +189,7 @@ export function buildLongWater3(R, T, TS = 16) {
       floods: [{ x0: 592, y0: 28, x1: 620, y1: 34 }], bites: bites.filter(b => b.tide === 'harbour'), foes: { poolcrab: 'low' } },
     /* THE TIDE FLATS: a cycle the Herald's fight takes over (src/tide-herald.js through the hands); low and dry until he wakes */
     { id: 'square', pools: ['square'], lo: LW3.square.lo, hi: LW3.square.hi, cycle: LW3.square.cycle, first: 'low', firstT: 9999, safe: 'low', grace: 4, boss: true,
-      verbs: [{ t: 'bell', x: 659, y: 27 }, { t: 'sluice', x: 687, y: 27, hold: LW3.square.hold }] },
+      verbs: [{ t: 'bell', x: 659, y: 27 }, { t: 'sluice', x: 672, y: 27, hold: LW3.square.hold }] },
   ];
   /* bay's floats stand in their own coves' pools (b1 in the cove: the cove is part of the bay's flats pool? no - its own) */
   pool('cove', 382, 394, 33, LW3.bay.hi); tides[0].pools.push('cove');
@@ -206,7 +206,7 @@ export function buildLongWater3(R, T, TS = 16) {
     palette: { ...R.palette, haze: 'rgba(214,226,232,0.16)' },   /* the pale sea-mist (art owed: its own tile kit + lantern amber) */
     weather: (R.weather || []).concat([{ x0: X0 * TS, x1: W * TS, kind: 'mist' }]),
     arena: { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: A.floor * TS, y0: 14 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'herald', music: 'herald', tint: '#3a8aa0', tintA: 0.08, fx: 'motes',
-      stones: A.stones.map(([a, b]) => [a * TS, (b + 1) * TS]), tide: 'square', bellX: 659 * TS + 8, sluiceX: 687 * TS + 8 },
+      stones: A.stones.map(([a, b]) => [a * TS, (b + 1) * TS]), tide: 'square', bellX: 659 * TS + 8, sluiceX: 672 * TS + 8 },
   };
   return out;
 }

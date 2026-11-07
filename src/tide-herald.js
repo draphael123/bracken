@@ -30,7 +30,7 @@ export const TH = {
   spear: { tell: 0.7, n: 3, gap: 34, every: 0.3, dmg: 16, w: 12, h: 54 },
   wave: { tell: 1.0, speed: 230, dmg: 20, cd: 9 },
   undertow: { tell: 1.0, on: 2.2, pull: 80, pullHalf: 40, bite: 18, r: 180, cd: 8 },
-  seize: 1.6, recall: 2.5,
+  seize: 1.6, recall: 3.4,   /* the bell's stone to the wheel's is 13 tiles: ~2.3 s at a run */
   mire: 3.4, mireP2: 3.8, mireCap: 0.22, ward: 1.4,
   idle: [0.5, 0.9],
   k: { floor: 0.4, body: 0.5, mud: 0.45, reel: 1.0, mired: 1.5, ward: 0.4 },
@@ -221,7 +221,7 @@ export function thPlan(e, S, T, bellX, sluiceX) {
   if ((e.mode === 'thrustTell' || e.mode === 'spearTell') && e.modeT < 0.3) return { why: 'guard', block: true };
   if (e.mode === 'maelTell' || e.mode === 'mael') return { why: 'undertow', go: 'stone', block: true };
   if (S.ph === 2 && e.mode === 'callTell') return { why: 'drop', go: 'sluice', to: sluiceX, strike: true };
-  if (S.ph === 2 && S.sea === 'his') return { why: 'break', go: 'bell', to: bellX, strike: true };
+  if (S.ph === 2 && S.sea === 'his') return { why: 'break', go: 'bell', to: bellX, strike: true, attack: Math.abs(e.x - bellX) < 40 };
   if (S.ph === 1 && T.k > TH.waterK && !onStone(S, e.x)) return { why: 'drop', go: 'sluice', to: sluiceX, strike: true };
   if (S.ph === 1 && T.ph === 'low') return { why: 'lure', go: 'bell', to: bellX, strike: true };
   return { why: 'flank', go: 'in', attack: true };
