@@ -48,7 +48,7 @@ export const STK_SAY = {
   exam: 'THREE HORNS WIND: CROSS', tower: 'TO THE WAR TOWER', taut: 'CUT THE LASHINGS', lash: 'A LASHING GOES', falls: 'THE TOWER FALLS', wreck: 'IN THE WRECK: CUT HIM',
   woke: 'HE WAKES', noticed: 'THEY SEE YOU', comes: 'HE COMES DOWN',
   chiefHorn: 'HIS WAR HORN: SILENCE IT', silenced: 'SILENCED: CUT HIM', sounded: 'HIS CREW COMES', answered: 'HORN ANSWERS HORN', pulled: 'YOUR HORN SENDS HIS CREW HOME',
-  keg: 'POWDER: STRIKE IT BACK', kicked: 'IT ROLLS', blasted: 'BLASTED: CUT HIM', powderTower: 'THE POWDER TAKES THE LASHINGS', lookout: 'THE LOOKOUT COMES DOWN',
+  keg: 'POWDER: STRIKE IT WHEN IT FLASHES', kicked: 'IT ROLLS', early: 'TOO SOON: IT BLOWS', blasted: 'BLASTED: CUT HIM', powderTower: 'THE POWDER TAKES THE LASHINGS', lookout: 'THE LOOKOUT COMES DOWN',
   dropped: 'HE DROPS THE HORN', hornOut: 'THE HORN SOUNDS',
   ramp: 'THE LOGS MAKE A STAIR', crank: 'THEY OPEN IT TO THEIR HORN', hears: 'HE HEARS THE HORN', ignores: 'HE IGNORES IT', sees: 'HE SEES YOU',
   crushedHim: 'CRUSHED: CUT HIM', fodder: 'CRUSHED: +HEALTH', hallHorn: 'A HORN HANGS BY THE DOOR: E BLOWS IT',
@@ -58,21 +58,27 @@ export const STK_SAY = {
    he sees you; reach: a hall pile this far (px) from where you blew is the one he walks to. CRUSH: open (s) under the logs, hit: the knock (of his max), drip: what a
    crushed crew gives back (of yours) */
 export const CHIEF_LURE = { walk: 84, walk2: 96, look: 1.7, look2: 1.3, stand: 0.8, cd: 10, near: 24, reach: 8 * 16, maxWalk: 3.2 };
-export const CRUSH = { open: 3.4, hit: 0.04, drip: 0.1 };
+export const CRUSH = { open: 2.4, hit: 0.04, drip: 0.1 };   /* (claude/chief4) open 3.4 -> 2.4 */
 const LURE_MODES = new Set(['walk', 'landed', 'toRack', 'rainLoose', 'sweep', 'kegThrow']);
 export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70, crewSpeed: 125 };
 export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
 /* (claude/chief3) HIS WAR HORN and HIS POWDER (see the header). draw: the ground wind (s), draw2 at his second wind; hits: blows that silence it;
    first/every/every2: s to the first wind and between winds; open: the SILENCED window (s); crew: what it calls; deckAt/deckDraw: the tower's one wind */
-export const HORN = { draw: 3.0, draw2: 2.5, hits: 2, first: 8, every: 17, every2: 14, open: 3.2, crew: ['sprig', 'sprig'], crewMax: 2, deckAt: 3, deckDraw: 3.2 };
+/* (claude/chief4) A REAL SQUAD: crew = a spear goblin (the Stockade's pike, who ADVANCES when he is the Chieftain's: hold()) and an archer, crewMax of them for one hero,
+   + crewSeat a co-op seat past the first (to crewCap); P2 louder (shake2, three rings) and faster (draw2, every2). open 3.2 -> 2.2 */
+export const HORN = { draw: 3.0, draw2: 2.2, hits: 2, first: 8, every: 17, every2: 12, open: 2.2, crew: ['pike', 'archer', 'pike', 'archer'], crewMax: 2, crewSeat: 1, crewCap: 4, shake: 3, shake2: 6, deckAt: 3, deckDraw: 3.2, pikeWalk: 1.6 };
+export const crewMaxFor = seats => Math.min(HORN.crewCap, HORN.crewMax + Math.max(0, (seats || 1) - 1) * HORN.crewSeat);
 /* tell: his heave (s); fuse: from the throw (s); kickMin: a struck keg's fuse at least this; kickV: its roll (px/s); r: the blast; open: BLASTED (s);
    minD: he heaves only past this range; cd: s between his kegs; towerR: a blast this near his tower's legs takes both lashings; deckEvery: every Nth deck shot */
 const HORN_BLOW_AT = 0.28;   /* (claude/chief3art) the draw's share spent raising the horn (frame 22); after it he blows (frame 23) */
-export const KEG = { tell: 0.8, deckTell: 0.7, flight: 0.85, fuse: 2.7, kickMin: 0.9, kickV: 200, r: 44, open: 2.4, minD: 80, cd: 9, first: 4, towerR: 56, deckEvery: 3 };
+/* (claude/chief4) THE TIMED KICK: a landed keg can only be sent back in the last `ripe` s of its fuse (it FLASHES, and pings); struck before that it blows where it lies
+   (its fuse snaps to `early`) - on you. open 2.4 -> 1.7 */
+export const KEG = { tell: 0.8, deckTell: 0.7, flight: 0.85, fuse: 2.7, kickMin: 0.9, kickV: 200, r: 44, open: 1.7, minD: 80, cd: 9, first: 4, towerR: 56, deckEvery: 3, ripe: 0.8, early: 0.2 };
+export const kegRipe = k => !!k && k.st !== 'fly' && k.fuse > 0 && k.fuse <= KEG.ripe;
 /* (claude/chief3) what one blow and one opening can take of him, AFTER every multiplier (the planted x2, a break, a finisher, a riposte) */
 export const CAP = { blow: 0.12, window: 0.25 };
-export const TOWER = { take: 0.5, climb: 1.1, shotEvery: 1.9, volleyEvery: 4, volleyN: 4, sway: 1.8, pegDx: 4 * 16, fall: 0.7, wreck: 3.2, cap: 40, deck: 5 };
+export const TOWER = { take: 0.5, climb: 1.1, shotEvery: 1.9, volleyEvery: 4, volleyN: 4, sway: 1.8, pegDx: 4 * 16, fall: 0.7, wreck: 2.2, cap: 40, deck: 5 };   /* (claude/chief4) wreck 3.2 -> 2.2 */
 const LURED = new Set(['sprig', 'shield', 'pike', 'brute', 'hound', 'sapper', 'thorn', 'runner']);
 
 export function makeStockadeHands(ctx) {
@@ -184,6 +190,9 @@ export function makeStockadeHands(ctx) {
       e.anim = (e.anim || 0) + dt; if (!e.vx && P) e.face = Math.sign(dx) || e.face;
       return true;
     }
+    /* (claude/chief4) HIS SPEAR ADVANCES: the Stockade's pike holds a line - the Chieftain's comes for you, guard up, and thrusts when you are in reach (main.js) */
+    if (e.chiefCrew && e.t === 'pike' && e.mode === 'guard' && P && !P.dead && !(e.stagger > 0) && Math.abs(dx) > 40 && Math.abs(dy) < 60) {
+      e.face = Math.sign(dx) || e.face; e.vx = e.face * (e.speed || 20) * HORN.pikeWalk; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; e.anim = (e.anim || 0) + dt; return true; }
     if (e.cook || (e.gateGuard === true && !gateOpen)) {
       if (struck || (P && !P.dead && Math.abs(dx) < 64 && Math.abs(dy) < 24)) { e.cook = false; if (e.gateGuard === true) e.gateGuard = 'out'; return false; }
       e.vx = 0; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); const r = ctx.moveBody(e, 0, e.vy * dt); if (r && r.ground) e.vy = 0; return true;
@@ -268,9 +277,12 @@ export function makeStockadeHands(ctx) {
         if (!ctx.solidAt(Math.floor(k.x / TS), Math.floor(k.y / TS)) && !ctx.oneWay(Math.floor(k.x / TS), Math.floor(k.y / TS))) k.y += 160 * dt; }
       if (A) k.x = Math.max(A.x0 + 6, Math.min(A.x1 - 6, k.x));
       /* STRIKE IT: it rolls away from you, still lit (a short fuse is made a little longer: you had to stand by it to send it) */
-      if (k.st !== 'fly' && hb && P && ctx.overlap(hb, { l: k.x - 7, r: k.x + 7, t: k.y - 15, b: k.y + 1 }) && ctx.hitOnce(k)) {
+      if (kegRipe(k) && !k.pinged && !k.kicked) { k.pinged = true; ctx.sfx.tell && ctx.sfx.tell(false); ctx.number(k.x, k.y - 22, 'NOW', '#fff6e0'); }   /* (claude/chief4) it FLASHES: now */
+      if (k.st !== 'fly' && !k.kicked && !kegRipe(k) && k.fuse > KEG.early && hb && P && ctx.overlap(hb, { l: k.x - 7, r: k.x + 7, t: k.y - 15, b: k.y + 1 }) && ctx.hitOnce(k)) {
+        k.fuse = KEG.early; k.early = true; st.early = (st.early || 0) + 1; ctx.sparks(k.x, k.y - 8, P.face || 1, 6); ctx.sfx.clank && ctx.sfx.clank(); say(k.x, k.y - 22, 'early', '#ff6b6b'); }   /* (claude/chief4) TOO SOON: it blows where it lies */
+      else if (k.st !== 'fly' && (kegRipe(k) || k.kicked) && hb && P && ctx.overlap(hb, { l: k.x - 7, r: k.x + 7, t: k.y - 15, b: k.y + 1 }) && ctx.hitOnce(k)) {
         k.vx = (P.face || 1) * KEG.kickV; k.fuse = Math.max(k.fuse, KEG.kickMin); k.kicked = true; st.kick++; ctx.sparks(k.x, k.y - 8, P.face || 1, 4); ctx.sfx.stone && ctx.sfx.stone(); say(k.x, k.y - 22, 'kicked', '#ffd36b'); }
-      if (k.fuse <= 0) { k.dead = true; ctx.explode(k.x, k.y - 6, KEG.r); }
+      if (k.fuse <= 0) { k.dead = true; ctx.explode(k.x, k.y - 6, KEG.r, k.own && ctx.kegDmg ? ctx.kegDmg() : undefined); }   /* (claude/chief4) his own powder: DMG.chiefKeg (+20%) */
     }
     kegs = kegs.filter(k => !k.dead);
   }
@@ -306,12 +318,12 @@ export function makeStockadeHands(ctx) {
   }
   /* ---- HIS WAR HORN: the crew it calls ---- */
   function hornSound(e) {
-    const A = ctx.L.arena; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(3);
-    rings.push({ x: e.x, y: e.y - e.h, t: 0 }, { x: e.x, y: e.y - e.h, t: -0.2 });
+    const A = ctx.L.arena, p2 = e.phase === 2; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); if (p2 && ctx.sfx.roar) ctx.sfx.roar(); ctx.shake(p2 ? HORN.shake2 : HORN.shake);   /* (claude/chief4) his second wind: louder */
+    rings.push({ x: e.x, y: e.y - e.h, t: 0 }, { x: e.x, y: e.y - e.h, t: -0.2 }); if (p2) rings.push({ x: e.x, y: e.y - e.h, t: -0.4 });
     st.snd++; if (e.hornAnswered) { e.hornAnswered = false; return; }
-    crew = crew.filter(q => q.alive); const n = Math.max(0, HORN.crewMax - crew.length); if (!n || !A) { say(e.x, e.y - e.h - 12, 'hornOut', '#ff6b6b'); return; }
+    crew = crew.filter(q => q.alive); const n = Math.max(0, crewMaxFor(ctx.seats ? ctx.seats() : 1) - crew.length); if (!n || !A) { say(e.x, e.y - e.h - 12, 'hornOut', '#ff6b6b'); return; }
     say(e.x, e.y - e.h - 24, 'sounded', '#ff9a5c');
-    for (let i = 0; i < n; i++) { const left = i % 2 === 0, x = left ? A.x0 + 48 : A.x1 - 48;   /* (in at the doors, past the fire strips his second wind lights) */ const q = ctx.spawnFoe(HORN.crew[i] || 'sprig', x, A.floor, left ? 1 : -1); if (q) { q.chiefCrew = true; crew.push(q); fx.push(SA.newBlast(x + (left ? -14 : 14), A.floor, 0, 'door')); } }   /* (claude/chief3art) the doors flung open: firelight and dust */
+    for (let i = 0; i < n; i++) { const left = i % 2 === 0, x = left ? A.x0 + 48 : A.x1 - 48;   /* (in at the doors, past the fire strips his second wind lights) */ const kind = HORN.crew.find(t => !crew.some(c => c.alive && c.t === t)) || HORN.crew[(crew.length) % HORN.crew.length]; const q = ctx.spawnFoe(kind, x, A.floor, left ? 1 : -1); if (q) { q.chiefCrew = true; crew.push(q); fx.push(SA.newBlast(x + (left ? -14 : 14), A.floor, 0, 'door')); } }   /* (claude/chief3art) the doors flung open: firelight and dust */
   }
   /* (claude/stockade3-1101) CRUSHED: the logs knock him down where he stands - his 'planted' read (x2, the quarter cap), as SILENCED and BLASTED */
   function crushChief(ch, p) {
@@ -435,6 +447,8 @@ export function makeStockadeHands(ctx) {
   function drawKeg(g, k, cx, cy, time) {
     const x = Math.round(k.x - cx), y = Math.round(k.y - cy); if (k.st === 'fly') k.rot = (k.rot || 0) + 0.18 * (k.vx >= 0 ? 1 : -1);
     SA.drawPowderKeg(g, x, y, k.rot || 0, k.fuse / KEG.fuse, time); SA.drawFuseBar(g, x, y - 21, k.fuse / KEG.fuse, time);
+    if (kegRipe(k) && !k.kicked) { const a = 0.45 + 0.45 * Math.abs(Math.sin(time * 18)); g.save(); g.globalAlpha = a; g.fillStyle = '#fff6e0'; g.fillRect(x - 8, y - 17, 16, 1); g.fillRect(x - 8, y + 1, 16, 1); g.fillRect(x - 9, y - 16, 1, 17); g.fillRect(x + 8, y - 16, 1, 17);
+      g.globalAlpha = a * 0.35; g.fillRect(x - 7, y - 15, 14, 15); g.restore(); }   /* (claude/chief4) THE FLASH: its kick window (greybox - the art lane's turn) */
   }
   /* (claude/chief3art) his war horn's draw bar (and the note arcs from the bell), the keg heaved over his head, the cough / stars of a silenced or blasted Chieftain */
   function drawChief(g, e, cx, cy, time) {

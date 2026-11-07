@@ -7,7 +7,7 @@
    Mode-only openings that no boss walks into on a bare placement are listed as 'n/a' with the reason. */
 import { openPage } from './cdp.mjs';
 const ROWS = [   /* [boss kind, mode, designed s] (designed = the modeT its own code sets) */
-  ['queen', 'winded', 2.0], ['chief', 'planted', 2.6], ['herald', 'mired', 3.6], ['reefmaw', 'beached', 2.0], ['captain', 'beach', 2.6],
+  ['queen', 'winded', 2.0], ['chief', 'planted', 1.8], ['herald', 'mired', 3.6], ['reefmaw', 'beached', 2.0], ['captain', 'beach', 2.6],
   ['closedhelm', 'cutRec', 0.6], ['closedhelm', 'thrustRec', 0.6], ['closedhelm', 'grabMiss', 1.0], ['closedhelm', 'brandRec', 1.0],
   ['grandmother', 'opened', 3.2], ['grandmother', 'floated', 3.2], ['hourglassking', 'turn', 0.6], ['owl', 'crash', 2.2], ['owl', 'grounded', 2.8],
 ];
