@@ -3294,6 +3294,45 @@ export function cutColumns(R, c0, c1) {
   if (R.START) R.START = { ...R.START, x: cx(R.START.x) ?? lo(R.START.x) };
   R.grid = g; R.W = W2; return R;
 }
+/* INSERT COLUMNS (claude/highcrown3, Daniel 11-06 22:34 "a bit longer"): cutColumns run the other way. n new columns of SOLID open at column c,
+   and everything at c or right of it slides right by n: the grid, the ents, movers, pools, zones, alarms, winds, the arena, the tower top, the
+   escape table and every tile box the castle keeps. A range that starts left of c and ends at or past it GROWS by n. Applied LAST in
+   highcrownTwo(), after every literal it writes, so nothing written above it has to change; the new section is carved into the n columns after. */
+export function insertColumns(R, c, n) {
+  const W2 = R.W + n, H = R.H, g = new Uint8Array(W2 * H).fill(T.SOLID);
+  for (let y = 0; y < H; y++) for (let x = 0; x < R.W; x++) g[y * W2 + (x < c ? x : x + n)] = R.grid[y * R.W + x];
+  const sx = x => (typeof x === 'number' && x >= c ? x + n : x), P0 = c * TS, NP = n * TS, sp = p => (typeof p === 'number' && p >= P0 && p < 99999 ? p + NP : p);
+  const tbox = a => [a[0] >= c ? a[0] + n : a[0], a[1] >= c ? a[1] + n : a[1], ...a.slice(2)];
+  const spEnd = p => (typeof p === 'number' && p > P0 && p < 99999 ? p + NP : p), pz = z => ({ ...z, x0: sp(z.x0), x1: spEnd(z.x1) });   /* a pixel range's END on the seam stays (it ended before column c) */
+  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x0', 'x1', 'pool', 'ifDrained'];
+  R.ents = R.ents.map(e => { const o = { ...e, x: sx(e.x) }; for (const k of REF) if (typeof o[k] === 'number') o[k] = sx(o[k]); return o; });
+  if (R.pools) R.pools = R.pools.map(pz);
+  if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number' && o[k] > 0) o[k] = sp(o[k]); return o; });
+  for (const k of ['weather', 'ambient', 'gusts', 'fog', 'sleeps']) if (R[k]) R[k] = R[k].map(pz);
+  for (const k of ['interiors', 'masonry', 'facades', 'tints', 'calm', 'stone']) if (R[k]) R[k] = R[k].map(tbox);
+  if (R.structures) R.structures = R.structures.map(z => ({ ...z, x0: sx(z.x0), x1: sx(z.x1) }));
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([cc, y0, y1]) => [sx(cc), y0, y1]), garrison: (a.garrison || []).map(gd => ({ ...gd, x: sx(gd.x) })), ...(a.opens ? { opens: a.opens.map(([cc, y0, y1]) => [sx(cc), y0, y1]) } : {}),
+    ...(a.wake ? { wake: tbox(a.wake) } : {}), ...(a.trip ? { trip: tbox(a.trip) } : {}) }));
+  if (R.winds) R.winds = R.winds.map(w => ({ ...w, x0: sx(w.x0), x1: sx(w.x1), wells: (w.wells || []).map(sx), exits: (w.exits || []).map(([x, y]) => [sx(x), y]) }));
+  for (const k of ['arena', 'arenaRoof', 'mini']) if (R[k]) { const A = { ...R[k] };
+    for (const f of ['x0', 'trigger', 'well']) if (typeof A[f] === 'number') A[f] = sp(A[f]); if (typeof A.x1 === 'number') A.x1 = spEnd(A.x1);
+    for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sx(A[f]);
+    if (A.hole) A.hole = { ...A.hole, x0: sx(A.hole.x0), x1: sx(A.hole.x1) };
+    if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [sx(x), y, w]);
+    if (A.exit) A.exit = { ...A.exit, x: sx(A.exit.x) };
+    for (const f of ['hatches', 'stack', 'poles']) if (Array.isArray(A[f])) A[f] = A[f].map(sx);
+    R[k] = A; }
+  if (R.gqEscape) { const E = R.gqEscape;
+    R.gqEscape = { ...E, tiers: E.tiers.map(t => ({ ...t, x0: sx(t.x0), x1: sx(t.x1) })), start: { ...E.start, x: sx(E.start.x) }, check: { ...E.check, x: sx(E.check.x) }, portal: { ...E.portal, x: sx(E.portal.x) },
+      hallPortals: (E.hallPortals || []).map(p => ({ ...p, x: sx(p.x) })), slates: E.slates && { ...E.slates, x0: sx(E.slates.x0), x1: sx(E.slates.x1) }, throwers: (E.throwers || []).map(t => ({ ...t, x: sx(t.x) })),
+      route: (E.route || []).map(([x, y]) => [sx(x), y]), supports: (E.supports || []).map(s => ({ ...s, x: sx(s.x) })) }; }
+  if (R.routeSupports) R.routeSupports = R.routeSupports.map(s => ({ ...s, x: sx(s.x) }));
+  if (R.hcDeco) R.hcDeco = R.hcDeco.map(d => ({ ...d, ...(typeof d.x === 'number' ? { x: sx(d.x) } : {}), ...(typeof d.x0 === 'number' ? { x0: sx(d.x0) } : {}), ...(typeof d.x1 === 'number' ? { x1: sx(d.x1) } : {}), ...(typeof d.gate === 'number' ? { gate: sx(d.gate) } : {}) }));
+  if (R.hcDoors) R.hcDoors = R.hcDoors.map(([x, y0, y1]) => [sx(x), y0, y1]);
+  if (R.reachDoors) R.reachDoors = R.reachDoors.map(d => ({ ...d, x0: sx(d.x0), x1: sx(d.x1) }));
+  if (R.START) R.START = { ...R.START, x: sx(R.START.x) };
+  R.grid = g; R.W = W2; return R;
+}
 function highcrownWhole() {
   const L0 = highcrown(); crownReview(L0); growDown(L0, 30);
 
@@ -3664,7 +3703,7 @@ function highcrownWhole() {
      the Kitchen Gate brings you in under the walls). 940 -> 609 columns. Then the new pieces, written in the CUT level's own columns
      (src/highcrown2.js): the winch gate at the bailey, the ward bell as a lure, the vestibule exam, the one tall keep hall. */
   cutColumns(R, 488, 587); cutColumns(R, 0, 230);
-  return highcrownTwo(R, { T, TS, painter });
+  return highcrownTwo(R, { T, TS, painter, insertColumns });
 }
 
 
