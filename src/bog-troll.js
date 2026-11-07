@@ -31,6 +31,8 @@ export const BT = {
   sink: 0.45, swim: [0.6, 0.5], swimV: 180,
   burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 24, kick: -300, rise: 0.5 },
   stuck: { t: [4.2, 3.6], mul: 2, cap: 0.25, heave: 0.6, ward: 3, w: 52 },
+  /* (claude/bogtroll2b, Daniel 11-07) A THROWN PLANK on him while he is up out of the water STUNS him: t s reeling, blows x mul, counted in the same per-stun cap (cap of his hp); cd: he will not be stunned again for that long */
+  stun: { t: 1.5, mul: 1.5, cap: 0.25, cd: 4 },
   drag: { tell: [0.85, 0.7], t: 0.32, reach: 118, h: 12, dmg: 15, pull: 210, rec: 0.6, range: 150 },
   hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 15, spread: 56, rec: 0.55 },
   rip: { tell: 1.4, t: 0.6, roar: 0.8 },
@@ -41,12 +43,19 @@ export const BT = {
      reach in front, back behind, top..bot over the road (a standing or ducking hero is in it; a roll's i-frames or a jump clear it); push = the knock-back */
   pile: { tell: 0.85, wind: 0.5, t: 0.22, reach: 112, back: 34, top: 30, bot: 12, dmg: 14, push: 170, rec: 0.75, range: 150, every: 3 },
 };
-export const BT_RELAY = 'THE ROAD DOES NOT MEND. TAKE A PLANK FROM A BANK AND LAY IT AT THE BROKEN EDGE: A FRESH PLANK SAGS - HIS NEXT LURE.';   /* (claude/bogtroll2) told once, as he tears free of the first wreck */
+export const BT_RELAY = 'THE ROAD DOES NOT MEND. TAKE A PLANK FROM A BANK: E NEAR A HOLE LAYS IT (A FRESH PLANK SAGS: HIS NEXT LURE). ATTACK THROWS IT - A PLANK ON HIM WHILE HE IS UP STUNS HIM.';   /* (claude/bogtroll2) told once, as he tears free of the first wreck */
 export const BT_SAY = { wake: 'THE BOG TROLL', rule: 'HE FEELS YOUR WEIGHT. LURE HIS BURST UNDER A ROTTEN SECTION.', stuck: 'STUCK IN THE BOARDS', free: 'HE TEARS FREE', ward: 'HE SHAKES OFF THE WRECK',
-  bounce: 'THE BOARDS BREAK ON HIM: WARDED', p2: 'HE RIPS THE ROAD', dragged: 'DRAGGED', hide: 'PEAT HIDE',
+  bounce: 'THE BOARDS BREAK ON HIM: WARDED', stun: 'PLANK! HE REELS', stunned: 'STUNNED', clunk: 'THE PLANK BOUNCES OFF', p2: 'HE RIPS THE ROAD', dragged: 'DRAGGED', hide: 'PEAT HIDE',
   pinned: 'PINNED UNDER THE WRECK', wave: 'JUMP THE WAVE', thrown: 'THE WAVE THROWS YOU', post: 'HE WRENCHES A POST OUT', swing: 'ROLL OR JUMP THE POST' };
-export const OPEN_NAME = { stuck: 'STUCK' };
+export const OPEN_NAME = { stuck: 'STUCK', stun: 'STUNNED' };
 export const btOpen = e => !!e && e.mode === 'stuck';
+export const btStun = e => !!e && e.mode === 'stun';   /* (claude/bogtroll2b) reeling from a thrown plank */
+/* where a plank can stun him: up out of the water, free (not pinned, not warded) - he stops mid-tell; under the boards nothing reaches him */
+export const STUNNABLE = new Set(['up', 'recover', 'dragTell', 'hurlTell', 'pileTell', 'waveTell']);
+export function plankStun(e, S) {
+  if (!STUNNABLE.has(e.mode) || S.ward > 0 || (S.stunCd || 0) > 0) return false;
+  e.mode = 'stun'; e.modeT = BT.stun.t; e.openT0 = e.modeT; S.purse = e.maxHp * BT.stun.cap; S.stunCd = BT.stun.t + BT.stun.cd; S.n.planked = (S.n.planked || 0) + 1; return true;
+}
 const TELLS = new Set(['burstTell', 'dragTell', 'hurlTell', 'ripTell', 'waveTell', 'pileTell', 'pileWind']);
 export const btTelling = e => TELLS.has(e.mode);
 export const btUnder = e => !!e && (e.mode === 'under' || e.mode === 'burstTell' || e.mode === 'waveGo');
@@ -65,7 +74,7 @@ export const inRip = (S, x) => S.ripped && S.G.rip.some(([a, b]) => x > a && x <
    w.sectionAt(x) -> a rotten section (or null) with .st ('up'|'bow'|'under'|'gone'), w.collapse(sec), w.rip(ranges), + number/sound/shake/hit/hitHero/fx ---------- */
 export function stepTroll(e, S, dt, heroes, w) {
   const G = S.G, ph = S.ph, i = ph - 1, P = heroes.find(h => h.alive) || heroes[0];
-  S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
+  S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.stunCd = Math.max(0, (S.stunCd || 0) - dt);
   stepClods(S, dt, heroes, w); stepWave(S, dt, w);
   if (e.mode === 'sleep') return;
   e.modeT -= dt;
@@ -106,6 +115,7 @@ export function stepTroll(e, S, dt, heroes, w) {
       return;
     case 'stuck': e.y = upY; if (e.modeT <= 0) { e.mode = 'heave'; e.modeT = BT.stuck.heave; w.sound('roar'); w.shake(5); w.number(e.x, G.floorY - 60, BT_SAY.free, '#ff9a5c'); } return;
     case 'heave': if (e.modeT <= 0) { S.ward = BT.stuck.ward; e.ward = S.ward; w.fx('ward', e.x, G.floorY); w.number(e.x, G.floorY - 72, BT_SAY.ward, '#c8d8e8'); e.mode = 'sink'; e.modeT = BT.sink; } return;
+    case 'stun': face(); e.y = upY; if (e.modeT <= 0) { e.mode = 'up'; S.restT = 0.5; } return;   /* (claude/bogtroll2b) reeling: he does nothing, then he is back among his moves */
     case 'dragTell': if (e.modeT <= 0) { e.mode = 'drag'; e.modeT = BT.drag.t; e.hitKey = 'dr' + S.act; w.sound('drag'); } return;
     case 'drag': {
       const f = e.face, a = e.x + f * 14, b = e.x + f * (14 + BT.drag.reach);
@@ -174,7 +184,7 @@ export function clodAt(c, floorY) { const k = Math.min(1, c.t / c.T); return { x
 export function takeBlow(e, S, dmg) {
   if (btUnder(e) || e.mode === 'sink') return [0, null];   /* (under the boards: no blow reaches him - the hands never let one through; here for the tools) */
   if (S.ward > 0 || e.mode === 'heave') return [Math.max(1, Math.round(dmg * BT.wardMul)), 'WARDED'];
-  if (e.mode === 'stuck') { const d = Math.round(dmg * BT.stuck.mul), left = S.purse ?? Infinity; if (d >= left) { S.purse = 0; e.modeT = 0; return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
+  if (e.mode === 'stuck' || e.mode === 'stun') { const d = Math.round(dmg * (e.mode === 'stun' ? BT.stun.mul : BT.stuck.mul)), left = S.purse ?? Infinity; if (d >= left) { S.purse = 0; e.modeT = 0; return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
   return [Math.max(1, Math.round(dmg * BT.hide)), BT_SAY.hide];
 }
 
