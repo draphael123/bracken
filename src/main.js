@@ -143,7 +143,7 @@ import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE,
 import * as GLU from './foe-glue.js'; import { installTactics, braceHit } from './foe-tactics.js';   /* (claude/lategameb) PACK GLUE (src/foe-glue.js) */  import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg, capBoost as bpCap, kiteBoost as bpKite } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
 import { roleOf as rxRoleOf } from './foe-react.js'; import * as FBR from './foe-break.js'; import * as FOA from './foe-affix.js'; import * as FP from './foe-pursuit.js'; import * as FPL from './foe-pass.js';   /* (claude/foepass) LEVER 3 affixes from act II; LEVER 1 pursuit + the archer's lead and LEVER 4a squad roles; where they are live (src/foe-pass.js) */ import * as TA from './told-attacks.js';   /* (claude/foepass) LEVER 4b: every family's ONE told attack - its own windup shape, the answer read beside the mark, a jumped / ducked one OVERREACHES */   /* (claude/foepass) THE FOE PASS, LEVER 2: varied blows fill a common foe's bar, the same one spammed goes stale; a finisher refunds wind + a sliver of health */
-import * as AM from './anti-mash.js'; import * as DFM from './difficulty.js';   /* (claude/difficulty) ANTI-MASH INSIDE OPENINGS (stale blows, the universal break bar + finisher, varied hits refill abilities) and THE DIFFICULTY MODES' table */
+import * as AM from './anti-mash.js'; import * as DFM from './difficulty.js'; import * as LV from './lives.js';   /* (claude/lives) THE LIVES OPTION: PROG.lives 'off'|'on', chosen at NEW SAVE, locked at the first level */   /* (claude/difficulty) ANTI-MASH INSIDE OPENINGS (stale blows, the universal break bar + finisher, varied hits refill abilities) and THE DIFFICULTY MODES' table */
 import { makePartnerThrow, WORDS as PT_WORDS, PT as PTC } from './partner-throw.js';   /* (claude/partnerthrow) CO-OP: GRAB YOUR PARTNER, CARRY HIM (he dangles and screams), THROW HIM (src/partner-throw.js) */
 import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS, weightOf as kiWeight } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep, REACT_AIR as RX_AIR } from './foe-react.js'; import * as AP from './anti-plunge.js'; import * as KA from './ki-art.js'; import { knockRows as kiRows } from './knock-data.js';   /* (claude/kifollow) the knock-into ART (spines, armed states, poses, entry FX: src/ki-art.js) and the per-act hazard DATA (src/knock-data.js) */   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
 import * as OKD from './order-chapters.js'; import { installOrder, bakeBase as okBakeBase, bakeCardFor as okBakeCard, frameOf as okFrame } from './order-knights.js';   /* (claude/order) THE ROAD WARDENS: four knight bodies as ELITE KINDS (src/order-knights.js) and who holds which level (src/order-chapters.js) */
@@ -424,7 +424,7 @@ const slotKeys = () => Array.from({ length: SLOTS }, (_, j) => slotKey(j));
 let saveFail = '';   /* the last write that did not land ('SAVE FAILED - STORAGE FULL'), '' once one does: a banner shows it and every save retries */
 let ROSTER = HR.STARTERS.slice(), ROSTER_FEATS = [], ROSTER_OWN = [], rosterReady = false;   /* ROSTER_OWN: the heroes some save on this device OWNS (the starters only when owned: an unbought starter is still bought per save) */   /* ROSTER_FEATS: the hero-gating boss feats done in ANY save (src/hero-roster.js HERO_FEATS) */   /* THE DEVICE-LEVEL HERO ROSTER (claude/heroroster, src/hero-roster.js): every hero any slot has ever owned, on this device */
 function rosterNote() { if (!rosterReady) return; try { const r = HR.noteRoster(localStorage, { heroes: ROSTER, feats: ROSTER_FEATS, own: ROSTER_OWN }, Object.keys(PROG.heroes || {}).filter(h => PROG.heroes[h]), HR.HERO_FEATS.filter(f => PROG.bossDown && PROG.bossDown[f.slice(5)])); ROSTER = r.heroes; ROSTER_FEATS = r.feats; ROSTER_OWN = r.own; } catch {} }   /* (claude/heroroster2, Daniel 11-07) EVERY SAVE NOTES IT: a hero this save owns (bought, or taken by a feat's sale) and a hero-gating boss it has beaten go on the device roster at once, so every other save has them */
-function progDefaults() { if (DS.DEMO) DSV.tag(PROG, LEVELS);   /* (claude/demoend) a save the demo plays is TAGGED (demoSave): the full game's IMPORT SAVE reads the tag (src/demo-save.js) */ DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) the save's mode (PROG.mode: story / normal / master; ?difficulty= overrides) */ if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+function progDefaults() { if (DS.DEMO) DSV.tag(PROG, LEVELS);   /* (claude/demoend) a save the demo plays is TAGGED (demoSave): the full game's IMPORT SAVE reads the tag (src/demo-save.js) */ DFM.setSaveMode(PROG.mode); PROG.lives = LV.livesOf(PROG);   /* (claude/lives) an old save has no field: lives OFF */   /* (claude/difficulty) the save's mode (PROG.mode: story / normal / master; ?difficulty= overrides) */ if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
@@ -2193,7 +2193,7 @@ let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, ki
 const MEDALS = { hornetsnest: [440, 630, 920],   /* (claude/hornetsnest2: +100 columns, the gallery and the well: x1.2) THE HORNET'S NEST (claude/hornetsnest): an ESTIMATE (the climb ~3 min walked, the Queen's two rooms and the drop ~2), no timed run */ fenroad: [420, 600, 860],   /* THE FEN ROAD (claude/fenroad): an ESTIMATE, no timed run */ minecart: [260, 360, 520],   /* THE DEEP RAILS (claude/minecart): the cart pilot rides the route in ~160 s and the drill takes ~90 - an ESTIMATE, no timed run */ rootway: [470, 650, 920],   /* THE ROOTWAY (claude/rootway): ~450 columns of roots, buds and hoists and THE HUNTMASTER - an ESTIMATE off the sky road's, no timed run */ skyroad: [520, 720, 1020],   /* THE SKY ROAD (claude/skyroad): ~460 columns of climbing and gliding and THE ROC - an ESTIMATE off the moor's, no timed run */ caravan: [410, 560, 780],   /* THE SUNKEN CARAVAN: 505 columns to the hollow, one ambush, and since claude/duneworm THE DUNE WORM in it: the old estimate (300/440/660, off the stair's, no boss) plus about 110 s for him - the boss lab's median fight at normal health (tools/duneworm-pilot.mjs). Still an ESTIMATE: no timed human run. work/claude/lane-done/claude-duneworm.md */ unburied: [330, 480, 720],   /* THE UNBURIED FIELD: 420 columns, a mini and a boss, eleven encounters and an ambush - an ESTIMATE off the stair's, no pilot yet */ witchlight: [312, 468, 707],   /* (x619/595 for the Rooted Garden's 24 columns, claude/hedgewarden2) the stair, redesigned (2026-09-22): ~430 tiles of road and a 36-row shaft, slab crossings and the cloister's roof walk, thirteen encounters and the Hedge Warden - an ESTIMATE, no climbing pilot */ burning: [480, 680, 980], fallingtower:[420,600,880],   /* the ascent (2026-09-21): the carpet pilot's median win 122 s (17 of 24 at normal health) + a climb of ~55 tiers at ~4-5 s */ keep: [850,1200,1700], harbor: [850, 1200, 1700], burial: [520, 760, 1100]   /* claude/burial2: cut from 1,386 cols to 660 (a 740-tile walked route, the Keeper and the Buried Dead in it): about the Hexed Fields' times, a little under */, mage: [660, 920, 1300], fields: [600, 860, 1220], causeway: [660, 920, 1290], frost: [640, 890, 1250], hunt: [640, 900, 1260], quarry: [600, 850, 1200], skyship: [660, 920, 1280], waymeet: [620, 870, 1220], deep: [600, 840, 1180], undercrown: [540, 760, 1080], underleaf: [420, 600, 900], lamplit: [620, 860, 1220], hurricane: [560, 790, 1130], flotilla: [580, 820, 1160], reef: [650, 910, 1280],   /* LONGER (docs/briefs/reef-longer.md): 90 more columns - the bell-pool and the hulk, about 35 s at the walk the old times assumed - and the Reefmaw's land phase, about 15 s more at the boss lab's median. An ESTIMATE: no timed human run */ longwater: [600, 840, 1180], crown: [460, 640, 900], storm: [600, 820, 1150], moor: [480, 660, 960], scree: [450, 630, 920], spire: [520, 700, 980], hanging: [480, 660, 960], wood: [240, 360, 540], marsh: [300, 450, 660], stockade: [330, 480, 720], spore: [360, 520, 780], kings: [420, 600, 900] };
 const medalFor = (id, t) => { const m = MEDALS[id] || [300, 450, 660]; return t <= m[0] ? 3 : t <= m[1] ? 2 : t <= m[2] ? 1 : 0; };
 const MEDAL_NAME = ['', 'BRONZE', 'SILVER', 'GOLD'], MEDAL_COL = ['#5a5a5a', '#b87333', '#c9d1dc', '#ffd34a'];
-let lives = Infinity, bannerT = 0, soundI = 0, soundCat = 0;
+let lives = Infinity, livesCoins = 0, bannerT = 0, soundI = 0, soundCat = 0;
 const soundMusic = () => DS.DEMO ? MUSIC_NAMES.filter(hasTrackFile) : MUSIC_NAMES;   /* (smallfix14) the demo's Sound Test lists only the tracks that ship in it (the itch build cuts TRACKS) */
 // WHERE THE SOUND TEST WAS OPENED FROM (Daniel, 2026-09-27): a main-menu entry point straight off the title, next to
 // the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
@@ -4576,6 +4576,12 @@ const RUSH = [
 ];
 let rush = null; // { i, lives, hits, t, single }
 const rushOn = () => !!rush;
+/* (claude/lives) LIVES apply on a campaign wood only: not the rush, boss select, a trial, a shop, the tavern, the yard/arena/duel, an editor test */
+const livesWood = () => !!L && !rushOn() && !bossSelectFight && !L.trial && !L.shop && !L.tavern && !edTesting && !(DUELO && DUELO.on()) && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
+const livesOn = () => PROG.lives === 'on' && livesWood();   /* the coin lives and the heart row (Iron Knight is the older 3-life rule: SET.iron) */
+const lifeRule = () => livesOn() || !!SET.iron;
+/* a coin picked up in a level: every 100 is a life (the party's pool; a bag you win back is not a pickup) */
+function livesCoin(n) { if (!livesOn()) return; const r = LV.coinTick(livesCoins, n); livesCoins = r.coins; if (r.gained > 0) { lives += r.gained; number(P.x, P.y - 34, '+1 LIFE', '#8fd160'); SFX.sting(); burst(P.x, P.y - 12, 12, ['#8fd160', '#fff6c8'], 60, 0.5, -50, 1); } }
 function rushStart(single) {
   rush = { i: single !== undefined ? single : 0, lives: single !== undefined ? 9 : 3, hits: 0, t: 0, single: single !== undefined, best: null };
   rushLoad();
@@ -4719,7 +4725,7 @@ function startGame() { mapSpurLit = null; trnChoice = null;
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
   if (TAVO) TAVO.reset(); if (YARD) YARD.st.board = null;
   dcStart(); for (const p of players) { p.score = freshScore(); if (p.prof) p.prof.woodBase = CS.earnedOf(p.prof.led); }   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
-  state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
+  state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; livesCoins = 0; lives = LV.startLives(PROG) !== Infinity && livesWood() ? LV.startLives(PROG) : SET.iron ? 3 : Infinity; if (livesWood() && !PROG.livesLocked) { LV.lockIn(PROG); saveProgress(); }   /* (claude/lives) ON: 5 a campaign level, shared by the party; the pick locks at the first entry */ pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
@@ -6495,9 +6501,10 @@ function drawSlots() {
     if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6);   /* the save the game last opened (bracken.slot); the picker starts its cursor on it */
     const stat = pts => [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + pts, '#c9d1dc']], done = cleared >= levels;
     /* (a full save with a big purse: COMPLETE sits at the right of this row, so the last label gives way - MEDAL PTS -> PTS - before it would run into it; textfit slots) */
-    const rowEnd = pts => 44 + stat(pts).reduce((a, [s2]) => a + inkW(s2, 6) + 10, -10), room = w - 6 - (done ? inkW('COMPLETE', 6) + 6 : 0), medalPts = rowEnd(' MEDAL PTS') <= room ? ' MEDAL PTS' : ' PTS';
+    const rowEnd = pts => 44 + stat(pts).reduce((a, [s2]) => a + inkW(s2, 6) + 10, -10), room = w - 6 - (done ? inkW('COMPLETE', 6) + 6 : 0) - LV.cardTags(p).reduce((a2, [t2]) => a2 + inkW(t2, 6) + 8, 0), medalPts = rowEnd(' MEDAL PTS') <= room ? ' MEDAL PTS' : ' PTS';
     let tx = x + 44; for (const [s2, col] of stat(medalPts)) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
+    { let tgx = x + w - 6 - (done ? inkW('COMPLETE', 6) + 8 : 0); for (const [t2, c2] of LV.cardTags(p).slice().reverse()) { text(t2, tgx, y + 17, c2, 'right', 6); tgx -= inkW(t2, 6) + 8; } }   /* (DIFFPICK: the mode, then LIVES) */   /* (claude/lives) LIVES ON, read-only: chosen at the new save, locked from the first level */
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : slotInn ? (touchOn ? 'TAP a save   BACK to the inn' : 'Z open  X erase  ESC back to the inn') : touchOn ? 'TAP a save   ERASE to erase' : 'Z play  X erase  ESC back', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
   if (slotInn && bookAsk) {   /* THE PARTY LEAVES THE INN? */
@@ -6759,7 +6766,22 @@ const PICK = DS.DEMO ? ['knight', 'warden', 'geomancer', 'ranger', 'pyro'] : ['k
 const NEW_PICK = PICK;
 const heroOpen = h => godMode() || ROSTER.includes(h);
 let heroDenyAt = -99;
+/* (claude/lives) THE NEW-SAVE RULES CARD: before the hero pick, once per save. One row today, LIVES: OFF (today's shrine-and-salt deaths, pre-selected) / ON (5 lives a level,
+   +1 per 100 coins, then back to the map). The DIFFICULTY row (DIFFPICK) sits under it. It is read-only from the first level on (LV.lockedOf; the slot card shows it). */
+const newRulesDue = () => !PROG.rulesSet && !PROG.heroPicked && !LEVELS.some(l => PROG[l.id]) && !(window.BK && window.BK.manualSimulation);   /* (a tool run drives the pick itself: BK.ui.heroPickStage = 'rules' shows the card) */
+/* (claude/lives DIFFPICK, Daniel 11-07) the card has TWO rows: LIVES (0) and DIFFICULTY (1; VERY EASY / NORMAL / MASTER, NORMAL pre-selected). PROG.mode rides the save and is handed to
+   DFM.setSaveMode at once (progDefaults / loadSlot do it on every load); it LOCKS with LIVES at the first level (LV.lockedOf). MASTER stays behind its device unlock (a Normal clear) unless ?difficulty=master. */
+let rulesRow = 0;
+const masterOpen = () => DFM.masterUnlocked() || DFM.overrideId() === 'master';
+function rulesToggle(dir, row = rulesRow) {
+  if (row === 0) { const cur = PROG.lives === 'on' ? 1 : 0, nx = LV.LIVES_VALUES[(cur + (dir || 1) + 2) % 2]; if (LV.setLives(PROG, nx, CAMP_IDS) === nx) { SFX.ui(); saveProgress(); } else SFX.deny(); return; }
+  const cur = LV.modeOf(PROG), nx = LV.stepMode(cur, dir || 1);
+  if (nx !== cur && LV.setMode(PROG, nx, CAMP_IDS, masterOpen()) === nx) { DFM.setSaveMode(nx); SFX.ui(); saveProgress(); } else SFX.deny();
+}
+function rulesDone() { PROG.rulesSet = 1; PROG.lives = LV.livesOf(PROG); PROG.mode = LV.modeOf(PROG); DFM.setSaveMode(PROG.mode); rulesRow = 0; saveProgress(); SFX.uiSel(); heroPick.stage = 'pick'; }
 function updateHeroPick() {
+  if (heroPick.stage === 'pick' && newRulesDue()) heroPick.stage = 'rules';
+  if (heroPick.stage === 'rules') { if (upPress && rulesRow > 0) { rulesRow = 0; SFX.ui(); } else if (downPress && rulesRow < 1) { rulesRow = 1; SFX.ui(); } else if (leftPress || rightPress) rulesToggle(rightPress ? 1 : -1); else if (confirmPress) rulesDone(); return; }
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
@@ -6768,6 +6790,24 @@ function updateHeroPick() {
 }
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
+  if (heroPick.stage === 'pick' && newRulesDue()) heroPick.stage = 'rules';
+  if (heroPick.stage === 'rules') { const on = PROG.lives === 'on', md = LV.modeOf(PROG), bw = VW - 60, bx = 30, by = 10, tw = bw - 24, open = masterOpen();
+    board(bx, by, bw, 152, '#ffd36b', undefined, false, 'iron');
+    text('NEW SAVE', VW / 2, by + 7, UI.title, 'center', 12);
+    const rowHi = (r, y0) => { if (r === rulesRow) { g.fillStyle = 'rgba(255,211,107,0.14)'; g.fillRect(bx + 6, y0 - 4, bw - 12, 34); g.fillStyle = '#ffd36b'; g.fillRect(bx + 6, y0 - 4, 2, 34); } };
+    rowHi(0, by + 26);
+    text('LIVES', bx + 14, by + 26, rulesRow === 0 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 22, bw - 12, 34, () => { rulesRow = 0; rulesToggle(1, 0); initAudio(); });
+    text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 26, on ? '#8fd160' : '#ffd36b', 'right', 8);
+    text(fitText(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', tw, 6), VW / 2, by + 40, UI.text, 'center', 6);
+    rowHi(1, by + 62);
+    text('DIFFICULTY', bx + 14, by + 62, rulesRow === 1 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 58, bw - 12, 34, () => { rulesRow = 1; rulesToggle(1, 1); initAudio(); });
+    text('< ' + LV.modeLabel(md) + ' >', bx + bw - 14, by + 62, LV.modeCol(md), 'right', 8);
+    text(fitText(LV.MODE_BLURB[md], tw, 6), VW / 2, by + 76, UI.text, 'center', 6);
+    if (!open) text(fitText(LV.MASTER_LOCKED_NOTE, tw, 6), VW / 2, by + 86, '#8a7a6a', 'center', 6);
+    text(fitText('CHOSEN NOW. IT CANNOT BE CHANGED AFTER THE FIRST LEVEL.', tw, 6), VW / 2, by + 106, '#ff9a5c', 'center', 6);
+    if (Math.floor(time * 2) % 2 === 0) text(fitText(touchOn ? 'TAP CONTINUE' : 'UP/DOWN row  LEFT/RIGHT change  Z continue', tw, 6), VW / 2, by + 128, '#8fd160', 'center', 6);
+    TCH.hit(bx, by + 118, bw, 28, () => { rulesDone(); initAudio(); });
+    return; }
   if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT TUTORIAL', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '10 health'],
     pyro: ['staff and fire, no shield', 'TAP C: THE FLAME WARD', '8.8 health', 'HARDER'],   /* (claude/pyrokit) */
@@ -8438,7 +8478,7 @@ function die(killer) {
   if (DUELO && DUELO.on()) { if (!(P.down > 0)) goDown(killer); return; }   /* (claude/pvpduel) NOBODY DIES IN THE DUEL PIT: a K.O. lies down until the round is called - no shrine, no death cost */
   if (coop() && !(P.down > 0) && players.some(q => q !== P && upright(q))) { goDown(killer); return; }
   P.killer = killer || null; BUG.evlog('died: ' + ((killer && killer.name) || '?') + ' @' + (P.x / TS).toFixed(0) + ',' + (P.y / TS).toFixed(0));
-  P.dead = 1.2; deaths++; gormNoteDeath(); bossNoteDeath(); P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (SET.iron) { lives--; if (lives > 0) number(P.x, P.y - 30, lives + (lives === 1 ? ' LIFE LEFT' : ' LIVES LEFT'), '#ff6b6b'); }
+  P.dead = 1.2; deaths++; gormNoteDeath(); bossNoteDeath(); P.hp = 0; SFX.pDie(); SFX.jet(false); shakeCam(7, 0, 'hurt'); crowdJeer(true); if (lifeRule()) { lives = LV.loseLife(lives).lives; if (lives > 0) number(P.x, P.y - 30, LV.leftWord(lives), '#ff6b6b'); }   /* (claude/lives) each death costs a life on top of the usual rules (shrine, salt) */
   burst(P.x, P.y - 8, 22, ['#c9d1dc', '#3d5aa8', '#c9463d'], 120, 0.9); deathCost(P, killer);
 }
 // Per-enemy death: a corpse object animates the fall so every foe dies its own way.
@@ -10742,7 +10782,7 @@ function updatePlayer(dt) {
   // The water ends an airborne chain once the downstroke has stopped; treading water must recover wind.
   if (P.ground || (P.swim && !P.plunge)) P.plungeN=0;
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
-  if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0 && !bossSelectFight) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
+  if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (lifeRule() && lives <= 0 && !bossSelectFight) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
   if (P.windRide && !L.winds) P.windRide = null;   /* (a ride never outlives its level) */
   if (P.frogReel && frogReelStep(dt)) return;   /* (claude/marsh2) THE BULLFROG KING's TONGUE has him: it reels him in (frogReelStep) */
@@ -11913,7 +11953,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   for (const a of acorns) {
     if (a.got) continue;
     if (a.vy !== undefined) { a.vy += 400 * dt; a.y += a.vy * dt; const ty = Math.floor((a.y + 3) / TS); if (isSolid(Math.floor(a.x / TS), ty)) { a.y = ty * TS - 3; a.vy = 0; } }
-    if (Math.abs(a.x - P.x) < 10 * (perk('magnet') ? 1.7 : 1) && Math.abs(a.y - (P.y - 7)) < 12 * (perk('magnet') ? 1.7 : 1)) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
+    if (Math.abs(a.x - P.x) < 10 * (perk('magnet') ? 1.7 : 1) && Math.abs(a.y - (P.y - 7)) < 12 * (perk('magnet') ? 1.7 : 1)) { a.got = true; got++; livesCoin(1); dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
@@ -26877,7 +26917,7 @@ function updateSentry(e, dt) {
 // the shaman. (The sword is no use up here: both hands are on the kite. The roll is a dart.)
 let flight = null;
 const freeAt = (x, y) => { for (let ty = Math.floor((y - 13) / TS); ty <= Math.floor((y - 1) / TS); ty++) for (let tx = Math.floor((x - 5) / TS); tx <= Math.floor((x + 5) / TS); tx++) if (isSolid(tx, ty)) return false; return true; };
-function collectAcorn(a) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++; if (tal('pieces') && got % 8 === 0) { got += 9; dcGot(9); number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
+function collectAcorn(a) { a.got = true; got++; livesCoin(1); dcGot(1); if (P.score) P.score.coins++; if (tal('pieces') && got % 8 === 0) { got += 9; livesCoin(9); dcGot(9); number(a.x, a.y - 14, 'PIECES OF EIGHT', '#ffd36b'); SFX.coinUp(10); } coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
 function startFlight(pr) {
   const F = L.flight; if (!F || flight) return;
   flight = { cx: camX, cy: camY, lift: 1.3, F }; P.fly = true;
@@ -37019,7 +37059,7 @@ function render() {
     const big = !!SET.bigText; const sz = big ? TYPE.big : 8; const bw = VW - 24, bx = 12; const body = talk.lines[talk.i] || ''; const lines = wrap(body, bw - 16, sz); const lh = big ? 18 : 10, nh = talk.name ? lh : 0; const bh = 14 + lines.length * lh + nh + 8;   /* (+8: the page count and the next glyph have a row of their own, off the last line) */
     /* NEVER OVER HIM: a page tall enough to reach his head goes up under the plates instead */
     const heroY = P.y - cy, textH = 7 + nh + lines.length * lh, cover = y0 => heroY > y0 + 3 && heroY - 28 < y0 + textH + 4;
-    const low = VH - bh - 8, high = SET.iron ? 52 : 40, by = !cover(low) ? low : !cover(high) ? high : !cover(2) ? 2 : heroY - 14 > VH / 2 ? high : low;   /* whichever leaves his head clear: over the HUD plates if it has to (they wait) */
+    const low = VH - bh - 8, high = lifeRule() ? 52 : 40, by = !cover(low) ? low : !cover(high) ? high : !cover(2) ? 2 : heroY - 14 > VH / 2 ? high : low;   /* whichever leaves his head clear: over the HUD plates if it has to (they wait) */
     talkOverHud = by < high;
     const dress = (L && L.palette && L.palette.dress) || 'wood'; const bc = L && L.dark ? '#7aa8c8' : dress === 'crag' ? '#8a919c' : dress === 'marsh' ? '#4a9a6e' : dress === 'camp' ? '#8b6a2a' : (L && L.palette && L.palette.myc) ? '#9a5aa8' : '#8b6a2a';
     board(bx, by, bw, bh, bc, 'rgba(14,10,22,0.92)', false, 'wood');
@@ -37033,7 +37073,7 @@ function render() {
     drawBkEdge();   /* (claude/bkblood) THE RALLY's red edge pulse (the Blood Knight with debt; off in reduce motion) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
-    const duelUI = !!(DUELO && DUELO.on()), hudMin = SET.hud === 'minimal' || duelUI, HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
+    const duelUI = !!(DUELO && DUELO.on()), hudMin = SET.hud === 'minimal' || duelUI, HS = hudMin ? 'outline' : 'shadow', HY = lifeRule() ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
     const hudMeter = state === 'talk' ? null : hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, rgRow = isRg() ? 11 : 0, hudPH = HY + 7 + xpRow + rgRow;   /* (claude/rangerhud) rgRow: the ranger's QUIVER ROW under the XP bar */   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */   /* (claude/kingsfix) a sign or a talk page is open: the HUD hides the C prompt (TAP C / HOLD C) - the talk panel's title sat on it wherever the sign stood */
     const hudIdle = duelUI || hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */
     const gShown = g, hudG = () => { g = hudIdle ? NULLG : gShown; }, hudShow = () => { g = gShown; };   /* (what the idle MINIMAL HUD draws, it draws into NULLG: one code path, nothing on the screen) */
@@ -37047,7 +37087,8 @@ function render() {
       g.globalAlpha = coinA; if (!hudMin) board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); g.globalAlpha = 1; hudRects = [hudIdle ? [0, 0, 0, 0] : [0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
     hudG();
     g.drawImage(PROP.heart, 4, 4);
-    if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 4 + i * 11, 29, 12, 12); } g.globalAlpha = 1; text('IRON', 40, 32, '#c9d1dc', 'left', 8, HS); }
+    if (livesOn()) { g.drawImage(K.R.idle[0], 0, 0, 12, 12, 4, 29, 12, 12); text('x' + Math.max(0, lives), 18, 32, lives <= 1 ? '#ff6b6b' : '#fff6e0', 'left', 8, HS); text('LIVES', 40, 32, '#c9d1dc', 'left', 8, HS); }   /* (claude/lives) the heart row: only when LIVES is ON, on a campaign wood */
+    else if (SET.iron) { for (let i = 0; i < 3; i++) { g.globalAlpha = i < lives ? 1 : 0.25; g.drawImage(K.R.idle[0], 0, 0, 12, 12, 4 + i * 11, 29, 12, 12); } g.globalAlpha = 1; text('IRON', 40, 32, '#c9d1dc', 'left', 8, HS); }
     if (P.torch > 0 && state !== 'win') { const tx = 92, ty = 24; g.fillStyle = 'rgba(10,8,20,0.45)'; g.beginPath(); g.roundRect(tx - 4, ty - 2, 30, 16, 4); g.fill(); g.fillStyle = '#5c3a1d'; g.fillRect(tx, ty + 5, 2, 7); const f = Math.floor(time * 12) % 3; g.fillStyle = '#ff9a5c'; g.fillRect(tx - 1, ty - (f === 1 ? 1 : 0), 4, 5); g.fillStyle = '#ffd36b'; g.fillRect(tx, ty + 1, 2, 3); bar(tx + 6, ty + 4, 16, 3, Math.min(1, P.torch / 30), P.torch < 6 && Math.floor(time * 6) % 2 ? '#ff6b6b' : '#ffd36b'); }
     if (statFlash > 0) { statFlash -= 1 / 60; g.fillStyle = 'rgba(143,209,96,' + (statFlash * 0.5) + ')'; g.fillRect(2, 2, 62, 28); }
     bar(15, 6, 45, 5, P.hp / P.maxHp, P.hp > 30 ? '#e04848' : (Math.floor(time * 6) % 2 ? '#ff7a6b' : '#e04848'), P.hpShown / P.maxHp);
@@ -37396,11 +37437,11 @@ function render() {
   if ((state === 'win' && !TRN) || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = state === 'win' ? 'rgba(8,6,14,0.88)' : 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }   /* (the level-complete card sits on a darker scrim: the HUD's fragments no longer poke out around it) */
   if (state === 'gameover') {
     board(40, 40, VW - 80, 100, '#ff6b6b', undefined, false, 'iron');
-    text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
+    text(PROG.lives === 'on' ? 'GAME OVER' : 'THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
     if (P.killer) text(killerLine(P.killer), VW / 2, 66, P.killer.rule ? (P.killer.red ? (SET.colorSafe ? '#5aa8ff' : '#ff6b6b') : '#ffd36b') : '#c9d1dc', 'center', 6);   /* and what did it (killerOf) */
     text('no lives left', VW / 2, 76, '#fff6e0', 'center');
     text('time ' + fmt(levelTime) + '   foes ' + kills, VW / 2, 92, '#c9d1dc', 'center');
-    text('the gold stays', VW / 2, 106, UI.dim, 'center');
+    text(PROG.lives === 'on' ? 'enter the level again with ' + LV.LIVES_START + ' lives' : 'the gold stays', VW / 2, 106, UI.dim, 'center');
     if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, 124, '#8fd160', 'center');
   }
   if (state === 'win' && !TRN) {
