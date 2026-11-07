@@ -1,0 +1,43 @@
+name: Immediate grid outline pair original Node fallback checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/grid-outline-pair-native-nov07/node-*.json
+      - tools/grid-outline-pair-native-nov07/node-*.mjs
+permissions: {contents: read}
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: {fixture: [canvas-retirement-selftest, skins, dressing]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-safety-game
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: sprite-publication-original-tools
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Fresh exact-source original fixture, unchanged source and strict1536MB
+        run: node tools/grid-outline-pair-native-nov07/node-${{ matrix.fixture }}.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: publicApi
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/grid-outline-pair-node-${{ matrix.fixture }}-nov07
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: grid-outline-pair-node-${{ matrix.fixture }}-nov07
+          path: ${{ runner.temp }}/grid-outline-pair-node-${{ matrix.fixture }}-nov07/
+          if-no-files-found: error
