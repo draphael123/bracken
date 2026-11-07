@@ -35,7 +35,7 @@ export async function runRimFirstRead(manifest,config){
   goldenInput=config.factory?factoryA[config.factory.factory]():null;
   side=1;candidatePx=await after('src/px.js');const rimB=await after('src/contrast-rim.js'),H=await after('src/rim-first-read.js'),factoryB=config.factory?await after(config.factory.module):null;
   service=H.createRimFirstReadBoundary(true);
-  const readyModules=[];if(config.factory)for(const x of config.factory.ready)readyModules.push([await after(x.file),x.export]);
+  const readyModules=[];if(config.factory)for(let i=0;i<config.factory.ready.length;i++){const x=config.factory.ready[i];A(push,readyModules,[[await after(x.file),x.export]]);}
   const ready=()=>{for(let i=0;i<readyModules.length;i++)if(!readyModules[i][0][readyModules[i][1]]())return false;return H.rimSourceRootsReady([]);};
   function fixture(px){
    const W=config.protocol==='alpha-lattice'?256:17,H0=config.protocol==='alpha-lattice'?256:19,[c,g]=px.canvas(W,H0),im=g.createImageData(W,H0);
