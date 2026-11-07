@@ -1,4 +1,4 @@
-CW3ART DONE 11-07 (code-only art pass for Causeway 2, behind the same ?cw3=1 flag; browser stills OWED) - tip 4d3220e09 (pushed)
+CW3ART DONE 11-07 (code-only art pass for Causeway 2, behind the same ?cw3=1 flag; browser stills OWED) - tip 82d4bc6ac (pushed)
 
 # claude/cw3art - THE DROWNED CAUSEWAY 2: ART PASS (11-07, code-only, no browser)
 
