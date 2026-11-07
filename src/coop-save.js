@@ -21,7 +21,7 @@
 //                 localStorage would change the whole-storage snapshots the save checks take): every page that holds slots (the game: its own slot
 //                 and its local co-op seats; a guest page: the slot it plays) says so on a BroadcastChannel, answers 'who', and re-says it every few
 //                 seconds; a claim nobody has repeated for LOCK_TTL is gone. claim() refuses a slot another page - or another seat of this page - holds.
-import { migrateProgress, loadProgress, validateProgress, DEFAULT_HEROES, HERO_IDS } from './progression.js';
+import { migrateProgress, loadProgress, validateProgress, grantStarter, DEFAULT_HEROES, HERO_IDS } from './progression.js';
 import { slotHealth, safeSet } from './save-safety.js';
 import { levelOfXp, xpCap } from './xp.js';
 
@@ -92,6 +92,7 @@ export function cleanSnapshot(snap) {
     view.charm = typeof d.charm === 'string' && d.charm.length < 40 ? d.charm : null;
     view.items = {}; if (object(d.items)) for (const [k, v] of Object.entries(d.items)) if (typeof v === 'boolean' || Number.isFinite(v)) view.items[k] = v;
     view.coins = Number.isFinite(d.coins) && d.coins >= 0 ? Math.floor(d.coins) : 0;
+    grantStarter(view, hero);   /* (claude/starterskill) a snapshot from a client that predates the starter skill: the seat's hero still starts with his own, owned and in slot 1 (the view only; a save is never written from it) */
     validateProgress({ hero, ...view });   /* the save's own rules (owned skills, loadouts, card picks, unsafe keys) on the hero's part */
   } catch { return null; }
   const heroes = Array.isArray(snap.heroes) ? snap.heroes.filter(h => HERO_IDS.includes(h)) : [hero];

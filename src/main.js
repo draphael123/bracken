@@ -8287,7 +8287,7 @@ function teachTick(dt) {
     leftPress = rightPress = upPress = downPress = jumpPress = atkPress = confirmPress = pausePress = false; return !!teachCard; }
   if (state !== 'play' || P.dead || !teachReal() || saltCard || saltPend) return false;
   const live = fightLive();
-  if (!FC.told(PROG, 'skills') && !live && P.ground) teachCalmT += dt; else if (live) teachCalmT = 0;
+  if (!FC.told(PROG, 'skills') && !live && P.ground && FC.skillsReady(PROG, hero(), heroLevel())) teachCalmT += dt; else if (live) teachCalmT = 0;
   if (teachCalmT > FC.CALM_S) teachAdd('skills');
   const i = teachQ.findIndex(id => id.startsWith('hint:') || !live);
   if (i >= 0) { const id = teachQ.splice(i, 1)[0], card = FC.cardOf(id, teachKeys()); if (card) { FC.markTold(PROG, id); saveProgress(); teachCard = { id, card, t: 0 }; if (id === 'skills') teachCalmT = 0; } }
