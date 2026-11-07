@@ -43,7 +43,7 @@ Branch `claude/gq2` off master 42a1d4cd, worktree `C:\Users\Daniel Raphael\.clau
 
 ## 3. Node results (on the merged tip)
 - **GREEN:** gqueen3, gq2-lab, tells, answer-tags, comments, architecture, checkpoints, boss-checkpoint, anchor-lint, signs, goblin-lint, blow-tags, level-quality crown, crown-exam, crown-requests, boss-rows, elites, kitchengate, curve-gate (exit 0).
-- **dangling-paths:** went red on the merged tree because the gqueen3 lane report cited `audio/file.ogg` in its text. I reworded that citation and it is green again.
+- **dangling-paths:** went red on the merged tree because the gqueen3 lane report cited an example audio file path in its text. I reworded that citation and it is green again.
 - **`node --check`:** clean on every file touched (main.js, gqueen-hands.js, lab.js, lab-gqueen.js, level.js, highcrown2.js, marks.js, boss-run.mjs, check.mjs, gqueen3*.mjs, gq2-lab.mjs). I stopped a whole-`src/` sweep part-way because it was too slow; no file it reached failed.
 - **curve-gate:** the `crown` row is **stale** (the level changed). It needs a browser restamp: `node tools/level1-pilot.mjs crown --curve`.
 
