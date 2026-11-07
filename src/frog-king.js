@@ -27,18 +27,24 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 900,                         /* (claude/frogking3, Daniel 11-01: "way too much health" - the Hornet Queen before him is 430) 1500 -> 650: a second boss is a step up, not 3.5x */
+  hp: 840,                         /* (claude/frogking3, Daniel 11-01: "way too much health" - the Hornet Queen before him is 430) 1500 -> 650: a second boss is a step up, not 3.5x */
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
-  quota: [0.10, 0.10],             /* the share of him one royal pad is worth before he leaps on, per phase */
-  stay: [20, 16],                  /* or this long with you on his pad */
+  quota: [0.08, 0.07],             /* the share of him one royal pad is worth before he leaps on, per phase */
+  stay: [12, 9],                  /* or this long with you on his pad */
   take: 0.045,                      /* one opening is worth at most this share of him, then he shakes it off */
   dazed: 1.5, winded: 1.2, air: 0.4, throat: 1.5,
   tongue: { tell: [0.5, 0.45], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 26 },
   spit: { tell: [0.5, 0.42], shots: [1, 2], flight: 0.8, spread: 18 },
   flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 28, dunk: 0.6 },
-  swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4 },
-  leap: { tell: [0.65, 0.5], air: 1.2, under: 0.9 },
+  swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4, drain: 20, onR: 16 },   /* (claude/frogking2 11-07, Daniel "flies do nothing") drain: stamina a second while the cloud is ON you (within onR px of your chest) - regen held, the bar flickers; walk out of it (it trails FK.swarm.lag s behind) */
+  leap: { tell: [0.65, 0.5], air: 1.2, under: 0.9, roam: [13, 10] },   /* (claude/frogking2 11-07, Daniel "jumps between platforms more") roam: s on one pad before he leaps on even untouched (was never); quota .10/.10 -> .08/.07, stay 20/16 -> 12/9 */
+  /* (claude/frogking2 11-07) THE BELLOW - his BREAK (Daniel: "no obvious way to make him vulnerable"). bellowTell: the throat sac swells and GLOWS for tell[ph] s; three blows on it
+     (hits) in that time BURST it: he flops BELLY-UP for belly s at x mul, one break worth at most take of him. Let go unburst, a croak RING runs out both ways along the
+     ground (jump it, or shield it; taken it knocks you back) and he CALLS adds[ph] marsh hoppers out of the water (max alive maxAlive, +1 each a full extra seat).
+     every[ph]: he bellows at least this often. Outside his openings a hero's blade lands at 0.6x (src/boss-greed.js chipBy.frog; was the x0.05 chip) */
+  bellow: { tell: [1.6, 1.35], hits: 3, every: [10, 8], rest: 0.6, belly: 3.0, mul: 2, take: 0.15, ring: { sp: 150, life: 1.8, dmg: 16, kb: 190 }, adds: [2, 3], maxAlive: 4, addCap: 6 },
+  guard: 0.6,
   sink: [1.3, 2.0],                  /* the sinking pads' pace, per phase */
   firm: [1, 1],                    /* leaves in a lane that HOLD after a reshuffle, per phase (of four) */
   gap: [0.55, 0.35],                /* his rest between blows, per phase */
@@ -110,7 +116,7 @@ export function frogPlan(s) {
   const royal = F.royal || [], his = royal[e.tst !== undefined && (m === 'leap' || m === 'crouch') ? e.tst : e.st] || royal[0];
   const onSt = i => i >= 0 && royal[i] && P.x >= royal[i].x0 - 4 && P.x <= royal[i].x1 + 4 && P.y <= royal[i].top + 3;
   const myFoot = () => { if (!P.ground) return null; const fs = footings(F); return fs.find(f => P.x >= f.x0 - 3 && P.x <= f.x1 + 3 && (f.solid ? P.y <= (royal[0] ? royal[0].top + 3 : 1e9) : true)) || null; };
-  const open = e.mode === 'dazed' || e.mode === 'flopRest' || e.mode === 'croak';
+  const open = e.mode === 'dazed' || e.mode === 'flopRest' || e.mode === 'croak' || e.mode === 'bellyUp' || e.mode === 'bellowTell';   /* (claude/frogking2 11-07: the sac while it glows, and belly-up, are the blows to make) */
   out.face = toHim;
   if (F.reel) { out.why = 'reeled in'; return out; }
   /* IN THE WATER (the marsh's drain): to the nearest footing that holds - a leaf that is up or a royal pad - and out onto it */
