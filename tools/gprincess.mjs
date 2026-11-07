@@ -37,7 +37,7 @@ let spikes = 0; for (let x = HC3.AT; x <= HC3.BT[1]; x++) for (let y = 0; y < 40
 let pitOut = false; for (let y = HC3.S + 1; y <= HC3.S + 6; y++) if (at(HC3.GAP[1], y) === T.NET) pitOut = true; ok(pitOut && at(HC3.GAP[0] + 2, HC3.S + 7) === T.SOLID, 'the broken stretch drops six rows onto a lower walk, with a ladder back up (time, not a life)');
 const holes = L.ents.filter(e => e.t === 'murderhole'); ok(holes.length === 6, 'six murder holes (' + holes.map(h => h.x + ',' + h.y).join(' ') + ')');
 for (const h of holes) { let solidAbove = at(h.x, h.y - 1) === T.SOLID || at(h.x, h.y - 1) === T.ONEWAY; ok(solidAbove && at(h.x, h.y) === T.AIR, 'murder hole #' + h.n + ' at ' + h.x + ',' + h.y + ' is a slot under stone (or boards) with air below'); }
-const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 7, 'seven shrines (' + checks.join(' ') + '): the hall balcony\'s went, the banquet\'s moved to its east door');
+const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 8, 'eight shrines, as before (' + checks.join(' ') + '): the banquet\'s moved to its east door; the hall balcony\'s stays (tools/checkpoint-gaps: <= 200 route tiles)');
 ok(checks.includes(HC3.BANQ_SHRINE[0]) && !checks.includes(478), 'the banquet shrine is at its EAST door (after the rehearsal), not before it');
 ok(!checks.some(x => x > HC3.BANQ_SHRINE[0] && x < M.x1 / TS), 'no shrine on the battlements walk itself (the chase + her fight is one checkpoint)');
 const qShrine = checks.find(x => x > M.x1 / TS); ok(qShrine && qShrine < L.arena.x0 / TS, 'the Queen\'s shrine is past the Princess\'s tower and before her hall (' + qShrine + ')');
