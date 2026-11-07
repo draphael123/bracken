@@ -30315,6 +30315,7 @@ SMH = makeScarabMotherHands({ get L() { return L; }, get players() { return play
 FRH = makeFenRoadHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time, VW: () => VW,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), shake: n => shakeCam(n), hint: m => hintSay('mechanic', 5, m),
   cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, tileAt: (tx, ty) => tileAt(tx, ty), solidAt: (tx, ty) => isSolid(tx, ty),
+  trollHunt: () => !!(BTH && BTH.hunting()),   /* (claude/bogtroll2b) the crossing's rotten sections pulse under a hero while he hunts */
   trollAt: (a, b) => !!(boss && boss.alive && boss.t === 'bogtroll' && !BTM.btUnder(boss) && boss.mode !== 'sink' && boss.mode !== 'sleep' && boss.x + 26 > a && boss.x - 26 < b) });   /* THE FEN ROAD's HANDS (claude/fenroad, src/fen-road-hands.js); (claude/bogtroll2) trollAt: no plank is laid on top of the troll */
 SSH = makeShriekSistersHands({ get L() { return L; }, get players() { return players && players.length ? players : [P]; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, sfx: SFX, hero: () => P, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), dust: (x, y, n) => dust(x, y, n),
@@ -30438,7 +30439,7 @@ HPD = makeHuntPods({ L: () => L, P: () => P, keys: () => keys, boss: () => (boss
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sfx: SFX, hint: m => hintSay('mechanic', 6, m), told: () => (PROG.podTold || 0) > 1, tell: () => { PROG.podTold = (PROG.podTold || 0) + 1; },
   onBoss: (e, x) => (HNH ? HNH.podHit(e, x) : null), hurtFoe: (e, d, x) => hurtAs('throw', e, d, x, false), spring: (x, y) => (SNR ? SNR.spring(x, y) : 0), rope: (x, y) => (RWH && RWH.podRope ? RWH.podRope(x, y) : false), traps: () => (SNR ? SNR.read().jaws : []) });
 /* (claude/fenroad2) LAY THE ROAD: THE FEN ROAD's plank bundles, the carried plank, its lay and its throw (src/fen-planks.js) */
-FPK = makeFenPlanks({ L: () => L, P: () => P, keys: () => keys, enemies: () => enemies, fen: () => (FRH && FRH.on() ? FRH : null),
+FPK = makeFenPlanks({ L: () => L, P: () => P, keys: () => keys, enemies: () => enemies, plankBoss: e => !!(BTH && BTH.plankStun(e)),   /* (claude/bogtroll2b) a thrown plank on the BOG TROLL */ fen: () => (FRH && FRH.on() ? FRH : null),
   solidPx: (x, y, falling) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS), t = tileAt(tx, ty); return isSolid(tx, ty) || (!!falling && (isOneWay(t) || t === T.PLANK) && (y % TS) < 6); },
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), sfx: SFX, hint: m => hintSay('mechanic', 7, m), told: () => (PROG.plankTold || 0) > 1, tell: () => { PROG.plankTold = (PROG.plankTold || 0) + 1; },
   hurtFoe: (e, d, x, st) => { hurtAs('throw', e, d, x, false); if (e.alive) e.stagger = Math.max(e.stagger || 0, st || 0.8); },

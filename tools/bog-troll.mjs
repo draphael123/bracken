@@ -101,4 +101,13 @@ ok(POSE.stuck.pinned && POSE.pileWind.post === 'wind' && POSE.pileSwing.post ===
   ok(o.talk, 'at the bundle: E takes a plank');
   o = M.btPlan({ P: { x: slot.x0 - 7, y: G.floorY, ground: true, face: 1, atk: -1 }, e, S, reach: 24, secs: [], holes: [[slot.x0, slot.x1]], slots: [slot], bundles: [], held: true, t: 0, mem: {}, rng: () => 0.5 });
   ok(o.talk && o.face === 1 && !o.atk && !o.jump, 'carried to the broken edge, facing it: E lays it (never a swing, never a jump with it)'); }
+{ const S = M.newFight(G), e = troll();   // (claude/bogtroll2b) THE PLANK STUN
+  for (const m of ['under', 'burstTell', 'sink', 'sleep', 'wake', 'stuck', 'stuckIn', 'heave', 'ripTell']) { e.mode = m; ok(!M.plankStun(e, S) && e.mode === m, 'a plank does nothing in ' + m + ' (under water / pinned / not up)'); }
+  e.mode = 'up'; S.ward = 2; ok(!M.plankStun(e, S), 'warded: no stun'); S.ward = 0;
+  e.mode = 'hurlTell'; e.modeT = 0.4; ok(M.plankStun(e, S) && e.mode === 'stun' && e.modeT === BT.stun.t && BT.stun.t === 1.5, 'above water: STUNNED ' + BT.stun.t + ' s (it stops his told move)');
+  ok(M.takeBlow(e, S, 100)[0] === Math.round(100 * BT.stun.mul) && BT.stun.mul === 1.5, 'stun: blows x' + BT.stun.mul);
+  let got = 0; for (let i = 0; i < 60 && e.mode === 'stun'; i++) got += M.takeBlow(e, S, 60)[0]; ok(got <= e.maxHp * BT.stun.cap + 1 && e.mode === 'stun' && e.modeT === 0, 'the per-stun cap (' + BT.stun.cap + ' of his hp) holds and ends the stun');
+  M.stepTroll(e, S, 1 / 60, hero(G.mid + 80), world()); ok(e.mode === 'up', 'then he is back among his moves');
+  ok(!M.plankStun(e, S) && S.stunCd > 0, 'and he shrugs a second plank for ' + BT.stun.cd + ' s after');
+  const e2 = troll(), S2 = M.newFight(G); e2.mode = 'up'; ok(M.plankStun(e2, S2), 'a fresh fight stuns'); for (let i = 0; i < 60 * 1.6; i++) M.stepTroll(e2, S2, 1 / 60, hero(G.mid + 80), world()); ok(e2.mode !== 'stun', 'the stun runs out by itself in about ' + BT.stun.t + ' s'); }
 console.log('ok  bog-troll   ' + n + ' checks: B15 floor 0.4 / warded 0.4 / stuck x2 (purse ' + BT.stuck.cap + '), the lure, the phase-two rip, B16 poses, the bot, routed lines');
