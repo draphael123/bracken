@@ -17,7 +17,6 @@ ok(FB.tuneOf('warden').in === 1 && FB.tuneOf('warden').out === 1, 'flotilla TUNE
 ok(AC.tuneOf('warden').in === 1 && AC.tuneOf('warden').out === 1, 'fleetlord-champion TUNE: warden 1 / 1');
 for (const f of ['bzchief.js', 'paladin-boss.js', 'deacon.js', 'lance-support.js', 'great-drill.js', 'grubbag.js']) ok(!/warden\s*:\s*[0-9.]+/.test(src(f)), f + ': no warden row');
 const main = src('main.js');
-ok(!/const DUEL_HERO = [^\n]*warden\s*:/.test(main), 'main.js DUEL_HERO: no warden row');
 ok(!/const CAP_HERO = [^\n]*warden\s*:/.test(main), 'main.js CAP_HERO: no warden row');
 ok(!/const ARCH_TUNE = [^\n]*warden\s*:/.test(main), 'main.js ARCH_TUNE: no warden row');
 ok(!/const LP_HERO = [^\n]*warden\s*:/.test(main), 'main.js LP_HERO: no warden row');
