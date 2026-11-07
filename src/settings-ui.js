@@ -21,7 +21,14 @@ export const TABS = [
   { id: 'access',   name: 'ACCESSIBILITY', short: 'ACCESS' },
 ];
 
-import { isDev } from './dev-flag.js';
+import { isDev } from './dev-flag.js'; import { DEMO } from './demo-flag.js';
+/* (claude/demohide, Daniel 11-07 DEMO LOCKDOWN) the demo has no GOD MODE (SET.invincible) and no UNLOCK ALL LEVELS (SET.allLevels): the rows are not listed, a saved ON is ignored
+   (SET reads false), and the saved value is kept aside so the settings file is written back unchanged. The full game (flag off) is untouched. */
+export const DEMO_HIDDEN_ROWS = ['God mode', 'Unlock all levels'];
+const DEMO_FIELDS = ['invincible', 'allLevels'];
+export const rowHidden = (k, demo = DEMO) => !!demo && DEMO_HIDDEN_ROWS.includes(k);
+export function demoLock(SET, saved, keep, demo = DEMO) { if (!demo) return; for (const f of DEMO_FIELDS) { keep[f] = saved[f]; SET[f] = false; } }
+export function demoSaveOut(SET, keep, demo = DEMO) { if (!demo) return SET; const out = { ...SET }; for (const f of DEMO_FIELDS) { if (keep[f] === undefined) delete out[f]; else out[f] = keep[f]; } return out; }
 export const TAB_ITEMS = {
   audio: ['Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices'],
   display: ['- PICTURE -', 'Graphics', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
@@ -51,9 +58,9 @@ export const tabIndex = id => Math.max(0, TABS.findIndex(t => t.id === id));
 export const tabOf = row => { for (const t of TABS) if (TAB_ITEMS[t.id].includes(row)) return t.id; return null; };
 export const stepTab = (id, dir) => TABS[(tabIndex(id) + dir + TABS.length) % TABS.length].id;
 /* the rows one tab shows: the strip first, 'Back' last; the Sound test is title-only (it needs the menu's own music) */
-export function tabRows(id, from) {
+export function tabRows(id, from, demo = DEMO) {
   const rows = TAB_ITEMS[id] || TAB_ITEMS.audio;
-  return ['@TABS', ...rows.filter(k => !(k === 'Sound test' && from === 'play') && !(k === 'Unlock everything' && !isDev())), 'Back'];   /* (claude/heroroster) UNLOCK EVERYTHING is a dev row: ?dev=1 only */
+  return ['@TABS', ...rows.filter(k => !(k === 'Sound test' && from === 'play') && !(k === 'Unlock everything' && !isDev()) && !rowHidden(k, demo)), 'Back'];   /* (claude/heroroster) UNLOCK EVERYTHING is a dev row: ?dev=1 only */
 }
 /* the first row the cursor may rest on: never the strip's own row 0 on a fresh open, and never a header */
 export const firstRow = rows => { let i = 1; while (i < rows.length - 1 && isHeaderRow(rows[i])) i++; return i; };
