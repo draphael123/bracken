@@ -46,10 +46,10 @@ ok('main.js: the tools\' BK.trans.begin() is the direct path (no card), beginAsk
 /* ---- ORDER INSIDE trnBegin: gates, the demo lock, the policy, THEN the card ---- */
 const iBegin = src.indexOf('function trnBegin('), body = src.slice(iBegin, src.indexOf('/* (claude/transland, Daniel 11-06)', iBegin)), at = s => body.indexOf(s);
 ok('trnBegin: rush / boss select / trials / shops / editor still bail first', at('rushOn() || bossSelectFight || edTesting || L.trial || L.shop') > 0 && at('rushOn() || bossSelectFight') < at('needsChoice'));
-ok('the demo end card comes FIRST: the demo lock returns false before any card (Gorm\'s win card, then the END CARD, unchanged)', at('DS.DEMO && DS.demoLocked(LEVELS[to])) return false') > 0 && at('DS.demoLocked') < at('needsChoice'));
+ok('the demo end card comes FIRST: the demo lock returns false before any card (Gorm\'s win card, then the END CARD, unchanged)', at('if (demoTeaser && !entry.demoEnd) return false') > 0 && at('DS.demoLocked') < at('needsChoice'));
 ok('NEVER / a seen FIRST TIME pair: the policy returns false before the card (nothing would auto-load; the level-complete card\'s Z goes to the map as before)', at('TRM.policy(') > 0 && at('TRM.policy(') < at('needsChoice') && /if \(!TRM\.policy\([^\n]*\) return false;/.test(body));
 ok('FIRST TIME: the seen-flag is set only after the card (on ONWARD), so a trip to the map does not use the cutscene up', at('needsChoice') < at('PROG.transSeen[key] = 1'));
-ok('only the direct path and endOnMap rows skip the card', at('!direct && TRM.needsChoice(entry)') > 0);
+ok('only the direct path and endOnMap rows skip the card', at('!direct && !demoTeaser && TRM.needsChoice(entry)') > 0);
 { const lv = { id: 'scree' }, burning = { id: 'burning' };
   ok('demo: the wood after King Gorm (scree) is out of the slice (DS.outOfSlice) so the demo lock blocks it; the Burning Village spur is in the slice', DS.outOfSlice(lv) === true && DS.inSlice(burning) === true);
   ok('demo: the kings > scree row is a plain row: only the demo lock keeps the card away there', TRM.needsChoice(TRM.entryFor('kings', 'scree', { burningOpen: false }))); }

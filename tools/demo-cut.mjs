@@ -57,7 +57,8 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const uses = main.split(/\r?\n/).flatMap((ln, i) => [...ln.matchAll(/\bDS\.(DEMO\b|demoLocked|demoEndsHere)[^;]{0,70}/g)].map(m => ({ i, t: m[0] })));
 const PINNED = [
   [/^DS\.DEMO && DS\.demoLocked\(lv\)\) \|\|/, 'levelLocked: the lock first, then the full rule untouched'],
-  [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[to\]\)\) return false/, 'trnBegin: no walk-out to a locked wood'],
+  [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[to\]\)/, 'trnBegin: no walk-out to a locked wood (unless the row is the demoEnd teaser, claude/gormburn)'],
+  [/^DS\.DEMO\) \{ TRN = null/, 'trnFinish: the demo mountain teaser ends on the END CARD (claude/gormburn)'],
   [/^DS\.DEMO \? bossTable\(\)\.filter/, 'boss select: the slice only'],
   [/^DS\.DEMO \? \[\] : \['THE EDITOR'\]/, 'title: no editor'],
   [/^DS\.DEMO\) DSV\.tag\(PROG, LEVELS\)/, 'progDefaults: tag a demo save'],

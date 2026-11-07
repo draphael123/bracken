@@ -328,6 +328,10 @@ export function buildBurningVillage({ painter, T, TS }) {
 //                  the fire out is what saves them. CAPTIVE.reached seconds of that and the house has them.
 // A villager lost is lost for THIS RUN only (the count resets with the level, like the saved one), so a player can come back
 // and do better. Pure: main.js counts the fire and draws; tools/village-stakes.mjs drives this directly.
+/* (claude/gormburn, Daniel 11-07) THE VILLAGERS' THANKS: gold for each of the quest's villagers (quest.n: 6) SAVED, and a bonus when ALL are. Paid on the clear card, only for villagers beyond the best
+   count already paid (a replay that saves no new one pays nothing), so the whole village is worth 6 x 25 + 50 = 200 gold once, ever. villagerBonus(n) = the total owed for n saved. */
+export const VILLAGER_GOLD = 25, ALL_SIX_GOLD = 50, VILLAGERS = 6;
+export const villagerBonus = (n, of = VILLAGERS) => { const k = Math.max(0, Math.min(of, Math.floor(n) || 0)); return k * VILLAGER_GOLD + (k >= of ? ALL_SIX_GOLD : 0); };
 export const CAPTIVE = { hot: 40, reached: 20, near: 2, r: 6 };
 /* one frame of a captive's fuse. `alightNear` is the count of burning grid cells about their house. Returns what just
    happened for the world to say - 'half', 'last', 'lost' - or null */

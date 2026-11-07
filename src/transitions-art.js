@@ -8,7 +8,7 @@
    drawArrivalFerry: the ferry the Marsh begins on, in WORLD space (moored: post, rope, lantern). drawWayGate: the Wood's east gate in WORLD space (rails that fall, a header that stays).
    drawBars: the letterbox with a film-edge line. Everything static is baked ONCE (per viewport size) and blitted; the per-frame work is a few drawImage calls, a handful of 1 px
    rects and two or three gradients. Every loop is bounded and hashed, never random. No dialogue: this file never writes text. */
-import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeStance, smokePan, smokeRise, smokeGlow } from './transitions.js';
+import { FERRY, sceneScroll, heroOnScene, ferryX, ROAD, roadScroll, roadGrowth, roadHero, SMOKE, smokeHero, smokeStance, smokePan, smokeRise, smokeGlow, MOUNTAIN, mountainHero, mountainStance, mountainPan, mountainRise, mountainGlow } from './transitions.js';
 import { canvas, outline } from './px.js';
 import { BARK, CUT, NEEDLE, logPileSprite, drawStump } from './redraw/lumber_trail_art.js';
 import { OAK, BOARD, CORD, CORD_D } from './redraw/marsh2_art.js';
@@ -702,5 +702,69 @@ export function drawSmokeScene(env, s) {
   for (let i = 0; i < 12; i++) { const x = Math.round((((i * (VW / 11) + (hash(i + 5) - 0.5) * 20 - cam * 1.3) % (VW + 40)) + VW + 40) % (VW + 40)) - 20, h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
   g.fillStyle = 'rgba(40,10,10,' + (0.10 * glow).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
   if (calm) { const d = Math.max(0, 1 - Math.abs(s - (SMOKE.panAt + 0.25)) / 0.25); if (d > 0) { g.fillStyle = 'rgba(5,4,10,' + (d * 0.9).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* reduce-motion: the cut to the village is one dip to dark */
+  const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+
+/* =====================================================================================================================================================================================================
+   THE MOUNTAIN SCENE (scene 'mountain', claude/gormburn, Daniel 11-07): KINGSWOOD -> THE SCREE PATH. King Gorm is down but the clean win was missed. The party walks out of the court onto the road, the leader looks BACK:
+   THE WOOD IS BURNING on the horizon (flames along the tree line, plumes standing up, the sky red behind). Then they turn and walk on, the camera sliding right while the wood slips away behind them and THE MOUNTAIN
+   (the Scree Path: a grey, broken peak with a switchback of pale scree up its flank) comes up ahead and fills the right of the frame. Painted from rects, the shared halo / puff / flame / tree pieces of the smoke scene. */
+const mountainSprite = () => once('mountainSprite', () => { const [c, g] = canvas(520, 130);
+  const top = x => { const a = Math.abs(x - 250); return 118 - Math.max(0, 104 - a * 0.52) - Math.max(0, 40 - Math.abs(x - 372) * 0.7) * 0.9 - Math.max(0, 30 - Math.abs(x - 118) * 0.8) + Math.round(hash(Math.floor(x / 3) + 9) * 5) - Math.round(hash(Math.floor(x / 9)) * 4); };
+  /* the far range behind: paler, bluer */
+  for (let x = 0; x < 520; x++) { const hgt = 46 + Math.sin(x * 0.045 + 1) * 14 + Math.sin(x * 0.13) * 5 + hash(Math.floor(x / 4)) * 3; R(g, '#3a3c52', x, 130 - hgt, 1, hgt); }
+  /* the mass: dark grey-blue, the face toward the burning wood (the LEFT) rimmed with ember light, scree banding on the flank */
+  for (let x = 0; x < 520; x++) { const t = Math.max(6, Math.round(top(x))), h = 130 - t;
+    for (let y = t; y < 130; y++) { const rock = hash(x * 0.37 + y * 0.61) > 0.82, band = ((y + Math.floor(x / 7)) % 9) === 0;
+      g.fillStyle = y - t < 2 ? '#8c5a48' : rock ? '#171826' : band ? '#2c2e44' : (x < 250 ? '#262840' : '#1c1d30'); g.fillRect(x, y, 1, 1); }
+    if (x < 250 && h > 8) { for (let y = t + 2; y < Math.min(130, t + 7); y++) if (hash(x + y * 3.1) > 0.35) { g.fillStyle = y < t + 4 ? '#b0684a' : '#6a4640'; g.fillRect(x, y, 1, 1); } } }
+  /* THE SCREE PATH: a pale switchback zigzagging up the near flank to a notch below the summit, with two small cairns */
+  const pts = [[200, 126], [262, 118], [222, 100], [276, 86], [240, 70], [268, 56], [252, 40]];
+  for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let k = 0; k <= n; k++) { const x = Math.round(x0 + (x1 - x0) * k / n), y = Math.round(y0 + (y1 - y0) * k / n); R(g, '#6e665a', x, y, 2, 1); if (k % 3 === 0) P(g, '#a89c86', x, y - 1); } }
+  for (const [x, y] of [[262, 117], [240, 69]]) { R(g, '#8a8070', x - 1, y - 3, 3, 3); P(g, '#b8ac94', x, y - 4); }
+  return c; });
+const BURN_X = [12, 31, 58, 84, 109, 140, 171, 205, 238, 274];   /* where the wood's crowns burn (px along the far tree row; they slide off to the left as the camera comes on) */
+export function drawMountainScene(env, s) {
+  const { g, VW, VH, time, n, reduce } = env, calm = !!reduce, wl = Math.round(VH * 0.60), rt = wl + 26, rise = mountainRise(s), glow = mountainGlow(s);
+  const p = mountainPan(s, calm), cam = p * MOUNTAIN.panPx, st = mountainStance(s, calm);
+  g.drawImage(smokeSky(VW, wl), 0, 0); g.globalAlpha = 0.55 * glow; g.drawImage(smokeEmber(VW, wl), 0, 0); g.globalAlpha = 1;
+  /* the glow of the whole wood on the left sky (it goes with the wood, thinning as the camera leaves it) */
+  { const k = glow * (1 - 0.55 * p), r = Math.round(VW * 0.62); g.globalAlpha = Math.min(1, k * (0.85 + (calm ? 0 : Math.sin(time * 4) * 0.06))); g.drawImage(halo(60, '255,110,44'), Math.round(VW * 0.10 - cam * 0.25) - r, wl - 30 - Math.round(r * 0.62), r * 2, Math.round(r * 1.5)); g.globalAlpha = 1; }
+  /* THE MOUNTAIN: ahead on the right; it grows and slides left as the party walks to it */
+  { const ms = mountainSprite(), k = lerp(0.78, 1.32, p), cx = VW * lerp(0.86, 0.60, p), w = Math.round(ms.width * k), h = Math.round(ms.height * k);
+    g.drawImage(ms, Math.round(cx - w / 2), wl + 6 - h, w, h);
+    g.globalAlpha = 0.16 * glow * (1 - 0.5 * p); g.fillStyle = '#ff7a30'; g.fillRect(Math.round(cx - w / 2), wl - h + 24, Math.round(w * 0.5), h); g.globalAlpha = 1; }
+  /* the far hills, a dark rim of ember along the fire side */
+  const hx = cam * 0.15, hy = x => wl - 12 - Math.round(Math.sin((x + hx) * 0.021 + 1) * 8 + Math.sin((x + hx) * 0.057) * 4);
+  { const hs = g.createLinearGradient(0, wl - 30, 0, wl + 2); hs.addColorStop(0, '#202c2a'); hs.addColorStop(1, '#111a18'); g.fillStyle = hs;
+    g.beginPath(); g.moveTo(0, wl + 2); for (let x = 0; x <= VW; x += 8) g.lineTo(x, hy(x)); g.lineTo(VW, wl + 2); g.fill(); }
+  /* THE WOOD ON FIRE: the far tree row at 35% of the camera, crowns alight along its left, plumes drifting off to the right toward the mountain */
+  { const par = 0.35, spr = huntTrees(0), d = -Math.round((cam * par + (calm ? 0 : time * 1.2)) % 540); for (let x = d; x < VW + 540; x += 540) g.drawImage(spr, x, wl - 46);
+    const off = cam * par + (calm ? 0 : time * 1.2);
+    for (let i = 0; i < BURN_X.length; i++) { const fx = Math.round(BURN_X[i] - off), fy = wl - 8 - Math.round(hash(i + 4) * 14); if (fx < -30 || fx > VW + 30) continue;
+      g.globalAlpha = Math.min(1, glow * 1.2); flames(g, fx, fy, 3 + (i % 3), time, calm, i + 20); g.globalAlpha = 1; if (i % 2 === 0) smokePlume(g, fx, fy - 4, 80 + (i % 3) * 14, rise, time, i + 31, calm); }
+    for (const i of [1, 4, 7]) { const fx = Math.round(BURN_X[i] - off), r = 46; if (fx < -60 || fx > VW + 60) continue; g.globalAlpha = glow * (0.55 + (calm ? 0 : Math.sin(time * 5 + i) * 0.08)); g.drawImage(halo(60, '255,120,50'), fx - r, wl - 8 - r, r * 2, r * 2); g.globalAlpha = 1; } }
+  /* the near tree row (90%), lit warm on its left sides by the wood behind */
+  { const spr = huntTrees(1), d = -Math.round((cam * 0.9 + (calm ? 0 : time * 2.4)) % 540); for (let x = d; x < VW + 540; x += 540) g.drawImage(spr, x, wl - 54 + 14 + 8);
+    g.globalAlpha = 0.22 * glow * (1 - 0.6 * p); g.fillStyle = '#ff7a30'; g.fillRect(0, wl - 4, Math.round(VW * 0.45), 3); g.globalAlpha = 1; }
+  /* the ground: the court road (a dirt bed, two ruts, gold leaves) running on to the right; the fire's light on it from the LEFT, going cold toward the mountain */
+  { const gg = g.createLinearGradient(0, wl, 0, VH); gg.addColorStop(0, '#1d2a1a'); gg.addColorStop(1, '#0b120a'); g.fillStyle = gg; g.fillRect(0, wl + 2, VW, VH - wl);
+    R(g, '#4a3a28', 0, rt - 2, VW, 14); R(g, '#5c4a34', 0, rt - 2, VW, 2); R(g, '#33281c', 0, rt + 4, VW, 1); R(g, '#33281c', 0, rt + 8, VW, 1);
+    const Wd = VW + 60, sl = x => (((x - cam) % Wd) + Wd) % Wd - 30;
+    for (let i = 0; i < 40; i++) { const x = Math.round(sl(hash(i + 11) * Wd)), y = rt + 11 + Math.round(hash(i + 12) * Math.max(1, VH - rt - 14)); R(g, i % 3 ? '#2a3c1c' : '#5a4a1c', x, y, 2 + (i % 3), 1); }
+    for (let i = 0; i < 14; i++) { const x = Math.round(sl(hash(i + 31) * Wd)), y = rt - 1 + Math.round(hash(i + 33) * 11); P(g, i % 2 ? '#d9a63a' : '#c9782a', x, y); }
+    for (let i = 0; i < 9; i++) { const x = Math.round(sl(hash(i + 61) * Wd)); R(g, '#6e665a', x, rt + 2 + (i % 3) * 3, 2, 1); }   /* the first scree on the road, the mountain's */
+    const ex = g.createLinearGradient(0, 0, VW * 0.7, 0); ex.addColorStop(0, 'rgba(255,120,50,' + (0.3 * glow * (1 - 0.6 * p)).toFixed(3) + ')'); ex.addColorStop(1, 'rgba(255,120,50,0)'); g.fillStyle = ex; g.fillRect(0, rt - 2, VW, VH - rt); }
+  /* THE PARTY: in from the left; the leader looks back at the wood; then they all face the mountain and walk on in place while the world slides */
+  const feet = rt + 7;
+  for (let i = n - 1; i >= 0; i--) { const h = mountainHero(i, n, s, VW), walk = i === 0 ? st.walking : (h.walking || st.walking), face = i === 0 ? st.face : (s >= MOUNTAIN.lookAt + 0.12 * i && s < MOUNTAIN.turnAt + 0.15 * i ? -1 : 1);
+    env.drawHero(i, h.x, feet, face, walk ? 'run' : 'idle', walk ? Math.floor(time * 12) + i * 2 : Math.floor(time * 4.5) + i); }
+  /* ash and sparks, blown off the wood toward the mountain (from the left, thinning as it is left behind) */
+  { const cnt = Math.round((8 + 24 * glow) * (1 - 0.5 * p)); for (let i = 0; i < cnt; i++) { const sp = 14 + hash(i + 3) * 24, x = (((hash(i) * (VW + 60)) + (calm ? 0 : time * sp)) % (VW + 60) + VW + 60) % (VW + 60) - 20, y = (((hash(i + 7) * VH) + (calm ? 0 : time * (4 + hash(i + 9) * 9) * (i % 2 ? 1 : -1))) % VH + VH) % VH;
+      const spark = i % 3 === 0; g.fillStyle = spark ? 'rgba(255,' + (150 + (i * 13) % 80) + ',70,' + (0.8 * glow).toFixed(2) + ')' : 'rgba(150,140,136,' + (0.5 * glow).toFixed(2) + ')'; g.fillRect(Math.round(x), Math.round(y), spark ? 1 : 2, 1); } }
+  /* near: dark bracken fronds along the bottom edge (they slide fastest) */
+  for (let i = 0; i < 12; i++) { const x = Math.round((((i * (VW / 11) + (hash(i + 5) - 0.5) * 20 - cam * 1.3) % (VW + 40)) + VW + 40) % (VW + 40)) - 20, h = 12 + Math.round(hash(i + 2) * 12); for (let k = 0; k < 5; k++) { const lean = (k - 2) * 2; for (let y = 0; y < h - Math.abs(k - 2) * 2; y++) P(g, y % 5 === 4 ? '#0e1a0c' : '#07100a', x + Math.round(lean * y / 5), VH + 2 - y); } }
+  g.fillStyle = 'rgba(40,10,10,' + (0.10 * glow).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH);
+  if (calm) { const d = Math.max(0, 1 - Math.abs(s - (MOUNTAIN.panAt + 0.25)) / 0.25); if (d > 0) { g.fillStyle = 'rgba(5,4,10,' + (d * 0.9).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* reduce-motion: the cut to the mountain is one dip to dark */
   const a = s < 0.45 ? 1 - s / 0.45 : 0; if (a > 0) { g.fillStyle = 'rgba(8,6,14,' + (a * a).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
