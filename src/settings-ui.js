@@ -33,17 +33,17 @@ export const TAB_ITEMS = {
     '- SAVE -', 'Export save', 'Import save', 'Erase this save',
     '- TESTING -', 'Unlock everything', 'God mode', 'Hitboxes'],
   controls: ['Controls', 'Rebind keys', 'Block', 'Swap Z / X', 'Rumble', 'Co-op guide', 'Reset controls'],
-  access: ['- READING -', 'Big text', 'Timer', 'Colour tells', 'Foe outline',
-    '- MOTION AND FLASHES -', 'Reduce motion', 'Flashes', 'Screen shake', 'Shake strength'],
+  access: ['- READING -', 'Larger text', 'Level timer', 'Colour tells', 'Foe outline',
+    '- MOTION AND FLASHES -', 'Reduce motion', 'Flashes', 'Screen shake', 'Shake when'],
 };
 
 /* THE OLD SETTINGS LIST, kept as a snapshot for the check: every one of these must still be a row somewhere, under the same name
    (a saved value is keyed by the SET field behind the name, which the tabs never touch). */
 export const LEGACY_ROWS = ['Difficulty', 'Game speed', 'Jump assist', 'Way-on arrow', 'Iron Knight', 'Block', 'Text speed', 'Swap Z / X', 'Controls', 'Rumble',
   'Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices',
-  'Full screen', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Big text', 'Colour tells', 'FPS counter', 'Brightness',
-  'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Screen shake', 'Hit stop', 'Flashes',
-  'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', 'Export save', 'Import save', 'Erase this save',
+  'Full screen', 'Text colour', 'UI colour', 'Ground light', 'The air', 'Camera', 'Look down', 'HUD', 'Larger text', 'Colour tells', 'FPS counter', 'Brightness',
+  'Screen filter', 'Film grain', 'Parallax', 'Arena tint', 'Particles', 'Foe outline', 'Boss intro', 'Foe health', 'Reduce motion', 'Shake when', 'Hit stop', 'Flashes',
+  'Vignette', 'Weather', 'Impact FX', 'Hit numbers', 'Level timer', 'Tenths', 'Ambient life', 'Scanlines', 'Pixel scale', 'Export save', 'Import save', 'Erase this save',
   'Unlock everything', 'God mode', 'Hitboxes'];
 
 export const isHeaderRow = k => k[0] === '-';

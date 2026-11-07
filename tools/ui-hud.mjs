@@ -90,7 +90,7 @@ try {
   assert(O.toasts.some(t => /SUN BITES|HOTTER|SCORCHING|LETS GO/.test(t || '')), 'a status CHANGE is told once as a toast: ' + JSON.stringify(O.toasts));
   assert(O.fade.coinSince > 6 && O.fade.freshSince < 3.5, 'the coin counter had been idle long enough to fade: ' + JSON.stringify(O.fade));
   assert(O.gfxRow, 'Graphics is a DISPLAY row'); assert.equal(O.g0, 'high'); assert.deepEqual(O.g1, ['medium', 'near']); assert.deepEqual(O.g2, ['low', 'few', false, false]); assert.equal(O.g3, 'high'); assert.equal(O.g4, 'custom');
-  for (const k of ['Big text', 'Timer', 'Reduce motion', 'Flashes', 'Screen shake', 'Shake strength']) assert(O.access.includes(k), 'ACCESSIBILITY holds ' + k); assert(!O.display.includes('Timer') && !O.display.includes('Screen shake'), 'and they left DISPLAY');
+  for (const k of ['Larger text', 'Level timer', 'Reduce motion', 'Flashes', 'Shake when', 'Screen shake']) assert(O.access.includes(k), 'ACCESSIBILITY holds ' + k); assert(!O.display.includes('Level timer') && !O.display.includes('Shake when'), 'and they left DISPLAY');
   assert.deepEqual(O.pause.slice(0, 5), ['Resume', 'Map', 'Skills', 'Settings', 'Return to map'], 'the pause menu opens on what a player pauses for');
   assert.equal(O.leave1[0], 'menu', 'one press on Return to map in a level only asks'); assert(/press again/.test(O.leave1[1]), 'and says so'); assert.equal(O.leave2, 'map', 'the second press goes');
   assert.deepEqual(pg.errors, [], 'no page errors: ' + JSON.stringify(pg.errors.slice(0, 3)));
