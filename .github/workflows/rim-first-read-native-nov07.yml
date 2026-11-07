@@ -1,0 +1,47 @@
+name: Rim first-read native exactness
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/rim-first-read-native-nov07/manifest.json
+      - tools/rim-first-read-native-nov07/cases.mjs
+      - tools/rim-first-read-native-nov07/component.mjs
+      - tools/rim-first-read-native-nov07/component-page.mjs
+      - .github/workflows/rim-first-read-native-nov07.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [rim-0, rim-1, rim-2, rim-3, rim-4, rim-5, rim-6, rim-7, rim-8, rim-9, rim-10, rim-11, rim-12, rim-13, rim-14, rim-15, rim-16, rim-17, rim-18, rim-19, rim-20, rim-21, rim-22, rim-23, rim-24, rim-25, rim-26, rim-27, rim-28, rim-29, rim-30, rim-31, rim-32, rim-33, rim-34, rim-35, rim-36, rim-37, rim-38, rim-39, rim-40, rim-41, rim-42, rim-43, rim-44, rim-45, rim-46, rim-47]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/rim-first-read-native-nov07/component.mjs
+        env:
+          RIM_FIRST_READ_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/rim-first-read-native-${{ matrix.group }}-nov07
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rim-first-read-native-${{ matrix.group }}-nov07
+          path: |
+            ${{ runner.temp }}/rim-first-read-native-${{ matrix.group }}-nov07/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
