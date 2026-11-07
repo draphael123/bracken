@@ -25493,7 +25493,7 @@
         ]
       }
     ],
-    "before-module": [
+    "before-module-shard-0": [
       {
         "name": "before-module-fillRect",
         "stage": "before-module",
@@ -25573,7 +25573,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "before-module-shard-1": [
       {
         "name": "before-module-getContextAttributes",
         "stage": "before-module",
@@ -25653,7 +25655,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "before-module-shard-2": [
       {
         "name": "before-module-dictionary-colorType",
         "stage": "before-module",
@@ -25695,7 +25699,7 @@
         ]
       }
     ],
-    "after-module": [
+    "after-module-shard-0": [
       {
         "name": "after-module-fillRect",
         "stage": "after-module",
@@ -25775,7 +25779,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "after-module-shard-1": [
       {
         "name": "after-module-getContextAttributes",
         "stage": "after-module",
@@ -25855,7 +25861,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "after-module-shard-2": [
       {
         "name": "after-module-dictionary-colorType",
         "stage": "after-module",
@@ -25897,7 +25905,7 @@
         ]
       }
     ],
-    "factory-chars": [
+    "factory-chars-shard-0": [
       {
         "name": "src/chars.js:bakeKnight",
         "factory": {
@@ -25993,7 +26001,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-1": [
       {
         "name": "src/chars.js:bakeSpitterParts",
         "factory": {
@@ -26089,7 +26099,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-2": [
       {
         "name": "src/chars.js:bakeBrute",
         "factory": {
@@ -26185,7 +26197,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-3": [
       {
         "name": "src/chars.js:bakeDrone",
         "factory": {
@@ -26281,7 +26295,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-4": [
       {
         "name": "src/chars.js:bakeHarpy",
         "factory": {
@@ -26377,7 +26393,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-5": [
       {
         "name": "src/chars.js:bakeSquire",
         "factory": {
@@ -26473,7 +26491,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-6": [
       {
         "name": "src/chars.js:bakePyro",
         "factory": {
@@ -26569,7 +26589,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-7": [
       {
         "name": "src/chars.js:bakeTippler",
         "factory": {
@@ -26665,7 +26687,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-8": [
       {
         "name": "src/chars.js:bakeBat",
         "factory": {
@@ -26761,7 +26785,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-9": [
       {
         "name": "src/chars.js:bakePaladin",
         "factory": {
@@ -26857,7 +26883,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-10": [
       {
         "name": "src/chars.js:bakeForgemasterBig",
         "factory": {
@@ -26953,7 +26981,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-11": [
       {
         "name": "src/chars.js:bakeBoneGob",
         "factory": {
@@ -27049,7 +27079,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-12": [
       {
         "name": "src/chars.js:bakeSuncatcher",
         "factory": {
@@ -27145,7 +27177,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-chars-shard-13": [
       {
         "name": "src/chars.js:bakeClosedHelm",
         "factory": {
@@ -28073,7 +28107,7 @@
         ]
       }
     ],
-    "factory-art": [
+    "factory-art-shard-0": [
       {
         "name": "src/art.js:bakeCrate",
         "factory": {
@@ -28169,7 +28203,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-1": [
       {
         "name": "src/art.js:bakeCoin",
         "factory": {
@@ -28265,7 +28301,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-2": [
       {
         "name": "src/art.js:bakeMapClouds",
         "factory": {
@@ -28361,7 +28399,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-3": [
       {
         "name": "src/art.js:bakeNet",
         "factory": {
@@ -28457,7 +28497,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-4": [
       {
         "name": "src/art.js:bakeFire",
         "factory": {
@@ -28553,7 +28595,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-5": [
       {
         "name": "src/art.js:bakeCampfire",
         "factory": {
@@ -28649,7 +28693,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-6": [
       {
         "name": "src/art.js:bakeGibbet",
         "factory": {
@@ -28745,7 +28791,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-7": [
       {
         "name": "src/art.js:bakeCompass",
         "factory": {
@@ -28841,7 +28889,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-8": [
       {
         "name": "src/art.js:bakeMill",
         "factory": {
@@ -28937,7 +28987,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-9": [
       {
         "name": "src/art.js:bakeBirdhouse",
         "factory": {
@@ -29033,7 +29085,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-10": [
       {
         "name": "src/art.js:bakeCabin",
         "factory": {
@@ -29129,7 +29183,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-11": [
       {
         "name": "src/art.js:bakeLensIcon",
         "factory": {
@@ -29225,7 +29281,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-12": [
       {
         "name": "src/art.js:bakeGatehouse",
         "factory": {
@@ -29321,7 +29379,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-art-shard-13": [
       {
         "name": "src/art.js:bakeCanary",
         "factory": {
@@ -29383,7 +29443,7 @@
         ]
       }
     ],
-    "factory-lw_props": [
+    "factory-lw_props-shard-0": [
       {
         "name": "src/lw_props.js:bakeDrownedHut",
         "factory": {
@@ -29479,7 +29539,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-lw_props-shard-1": [
       {
         "name": "src/lw_props.js:bakeTributeChest",
         "factory": {
@@ -29517,7 +29579,7 @@
         ]
       }
     ],
-    "factory-reef_props": [
+    "factory-reef_props-shard-0": [
       {
         "name": "src/reef_props.js:bakeMastStump",
         "factory": {
@@ -29613,7 +29675,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-reef_props-shard-1": [
       {
         "name": "src/reef_props.js:bakeSeal",
         "factory": {
@@ -29709,7 +29773,9 @@
         "inputs": [
           []
         ]
-      },
+      }
+    ],
+    "factory-reef_props-shard-2": [
       {
         "name": "src/reef_props.js:bakeManifest",
         "factory": {
