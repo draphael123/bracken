@@ -135,7 +135,7 @@ try {
   await section('save-slots', async () => {
     await sleep(600);
     if (await E('BK.ui.titleOpts')) { const sub = await E('BK.ui.titleItems()'); await tapTitleItem('BACK'); await sleep(300); }   /* (Back out of Settings lands on the OPTIONS list; BACK on that list is the title) */
-    const items = await E('BK.ui.titleItems()'), i = items.findIndex(k => k === 'NEW GAME' || k === 'CHOOSE A SAVE'); ok(i >= 0, 'no save item on the title: ' + items.join('|'));
+    const items = await E('BK.ui.titleItems()'), i = items.findIndex(k => k === 'CHOOSE A SAVE'); ok(i >= 0, 'no CHOOSE A SAVE item (NEW GAME routes through the opening and the hero pick, not the slots) on the title: ' + items.join('|'));
     await tapTitleItem(items[i]);
     ok(await E('BK.state') === 'slots', 'a tap on ' + items[i] + ' did not open the save slots (' + await E('BK.state') + ')');
     await sleep(300);

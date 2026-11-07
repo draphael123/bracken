@@ -3,11 +3,11 @@
     "date": "2026-11-07",
     "batch": 148,
     "lines": [
-      "THE DUEL PIT (BETA) is open: pick your fighter from the roster, then set lives, health, rounds, teams and the bot",
+      "THE DUEL PIT (BETA) is open: pick a fighter, then set lives, health, rounds and the bot",
       "THE GUEST BOOK at THE INN: your five save slots, with the co-op rules on the board",
-      "The lesson is now the TUTORIAL; R no longer returns you to a shrine - use the pause menu, then confirm",
-      "First-time help: a card after your first death, hero pick guidance, boss hints, and short explainers",
-      "Fixes: a new save now CONTINUEs correctly; heroes land before the walk-out; the Battering Beast falls and braces properly"
+      "The lesson is now the TUTORIAL; R no longer returns you to a shrine (use the pause menu)",
+      "First-time help: a card after your first death, boss hints and short explainers",
+      "Fixes: a new save reads NEW GAME; heroes land before the walk-out; Battering Beast fixes"
     ]
   },
   {
@@ -62,7 +62,7 @@
     "lines": [
       "Geomancer: walk through your own stones, tap DOWN to recall them",
       "Geomancer's ultimate is now Mountain Collapse: a wave of boulders",
-      "Old Tusker's stomp is a splintered shockwave you can read and jump",
+      "Old Tusker's stomp: a shockwave to jump",
       "The Hornet's Nest drips dark amber resin, not honey",
       "Sound on phones unlocks reliably, and the credits list the new music"
     ]
