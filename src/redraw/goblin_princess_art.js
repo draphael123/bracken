@@ -171,3 +171,7 @@ export function drawRipple(g, x, fy, time, k = 0) {                             
   rect(g, X - 8, fy - 1, 3, 1, '#3a3a44'); rect(g, X + 5, fy - 1, 3, 1, '#3a3a44'); px(g, X - 7, fy - 2, '#c9c9d6'); px(g, X + 6, fy - 3, '#c9c9d6'); void k; }
 export function drawFanGust(g, x, y, face, time, len = 60) {                                             // a gust of pink feather-light air: three streaks and fluttering down
   for (let i = 0; i < 3; i++) { const xx = Math.round(x + face * (8 + ((time * 120 + i * 17) % len))), yy = Math.round(y - 8 + i * 5 + Math.sin(time * 20 + i) * 1.5); rect(g, face > 0 ? xx : xx - 6, yy, 6, 1, i & 1 ? C.fan : '#ffffff'); px(g, xx + face * 6, yy + 1, C.fanD); } }
+
+/* ONE sheet for the whole game: main.js SPR.gprincess and src/goblin-princess.js's chase actor share it */
+let SHEET = null;
+export function sheet() { return SHEET || (SHEET = bakeGoblinPrincess()); }

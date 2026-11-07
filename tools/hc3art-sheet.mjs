@@ -11,6 +11,8 @@ P.R.forEach((c, i) => { if (c.width !== P.R[0].width || c.height !== P.R[0].heig
 if (P.R.length !== GPA.GP_FRAMES) bad.push('frames ' + P.R.length);
 const seen = new Map(); sigs.forEach((s, i) => { if (seen.has(s.h)) bad.push('frame ' + i + ' draws the same as ' + seen.get(s.h)); else seen.set(s.h, i); });
 P.white.R.forEach((c, i) => { if (sig(c).k !== sigs[i].k) bad.push('princess ' + i + ': flash silhouette differs'); });
+for (const [a, b] of [['lungeTell', 'lunge'], ['flurryTell', 'flurry'], ['trinketTell', 'trinket'], ['fanTell', 'fan'], ['hopTell', 'hop'], ['tiaraTell', 'tiara'], ['stompTell', 'stomp']]) { const fa = GPA.gpFrame({ mode: a, anim: 0, vx: 0 }), fb = GPA.gpFrame({ mode: b, anim: 0, vx: 0 }); if (fa === fb) bad.push(a + ' wears the same frame as ' + b + ' (B16: windup != release)'); if (sigs[fa].h === sigs[fb].h) bad.push(a + '/' + b + ' frames draw identically'); }
+for (const m of ['walk', 'recover', 'preen', 'perch', 'stand', 'hide', 'pinned', 'stunned', 'stagger', 'bolt', 'escape', 'sleep', 'tiaraWait']) { const f = GPA.gpFrame({ mode: m, anim: 0.3, vx: 80 }); if (!(f >= 0 && f < GPA.GP_FRAMES)) bad.push(m + ': frame ' + f + ' out of range'); }
 const HA = await import('../src/redraw/hc3_art.js');
 const cell = (w, h, bg, fn) => { const c = newCanvas(w, h), g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, w, h); fn(g); if (!sig(c).k) bad.push('empty cell'); return c; };
 const stoneFloor = (g, w, y) => { g.fillStyle = '#363949'; g.fillRect(0, y, w, 40); g.fillStyle = '#74788e'; g.fillRect(0, y, w, 1); };

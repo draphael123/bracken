@@ -15,6 +15,7 @@
 // Resist 0.5x outside openings (0.4x hiding behind a guard: never less, never invulnerable). A single opening takes no more than GP.capK of her bar.
 // main.js calls makeGoblinPrincessHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read, level, drawWorld, clear, load, labDuty.
 import * as BW from './bell-winch.js';
+import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
   hp: 1100, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
@@ -276,27 +277,26 @@ export function makeGoblinPrincessHands(ctx) {
     if (k >= 1 && !e.escaped) { e.escaped = true; e.hidden = true; for (const g of F.guards) if (g.alive) { g.alive = false; ctx.burst(g.x, g.y - 6, 6, ['#5a2a7a', '#e0b040'], 40, 0.4); } F.guards = []; ctx.number(hx, ly - 40, 'SHE IS GONE TO WARN THE QUEEN', '#ff9ad0'); }
   }
   H.escaped = e => !!(e && e.escaped);
-  H.frame = e => { const w = Math.floor((e.anim || 0) * 8) % 2; return (e.mode === 'walk' || e.mode === 'bolt' || e.mode === 'escape') ? w : 0; };
+  H.frame = e => GPA.gpFrame(e);   /* (claude/hc3art) a pose for every move (src/redraw/goblin_princess_art.js): B16 */
   H.barName = e => 'THE GOBLIN PRINCESS' + (e.mode === 'pinned' ? '  PINNED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'preen' ? '  PREENING' : e.mode === 'stagger' ? '  STAGGERED' : e.hiding ? '  HIDING' : '');
   H.end = () => { if (F) { F.gems = []; F.tiara = null; F.ripples = []; F.wave = null; F.bolt = null; } };
   H.read = () => F && { n: { ...F.n }, ph: F.ph, rings: F.M.rings, wave: F.wave ? F.wave.state : null, gems: F.gems.length, tiara: !!F.tiara, ripples: F.ripples.length, hurt: { ...F.hurt }, secs: now() - F.t0, chaseDone, chase: C ? C.state : null };
   H.test = { boltBegin: e => boltBegin(e), escape: e => escapeBegin(e), guards: (e, i) => guardsCall(e, i), stun: e => stun(e), chase: () => C, towers: () => TW, rehearsal: () => RH };
 
-  /* greybox drawing: her gown and tiara over the borrowed sheet, the gems, the tiara in flight, the ripples, the grate's glow, the horn and the winch */
+  /* the art (claude/hc3art): her sprite is the sheet's (src/redraw/goblin_princess_art.js); this draws what flies, rings and glows around her */
   H.drawOver = (g, cx, cy, time) => {
     if (!F) return; const e = live(), Ar = F.A, f0 = R(fl() - cy);
-    if (e && !e.hidden) { const x = R(e.x - cx), y = R(e.y - cy); g.fillStyle = '#c8508a'; g.fillRect(x - 6, y - 10, 12, 9); g.fillStyle = '#e8a0c8'; g.fillRect(x - 6, y - 10, 12, 1); if (!F.tiara) { g.fillStyle = '#e0c04a'; g.fillRect(x - 3, y - GP.h - 3, 7, 2); g.fillRect(x - 2, y - GP.h - 5, 1, 2); g.fillRect(x + 2, y - GP.h - 5, 1, 2); }
-      if (e.mode === 'lungeTell') { g.fillStyle = '#ffffff'; const tx = x + (e.face || 1) * 16; g.fillRect(tx - 2, y - 14, 5, 1); g.fillRect(tx, y - 16, 1, 5); }   /* the GLINT on her blade's tip */
-      if (e.mode === 'fanTell' || e.mode === 'fan') { g.fillStyle = '#f0d0e8'; g.fillRect(x + (e.face || 1) * 6 - 3, y - 18, 7, 6); }
-      if (e.mode === 'pinned') { g.fillStyle = '#8fd160'; g.fillRect(x - 16, y - 34, R(32 * Math.max(0, e.modeT / GP.bell.pin)), 3); } }
-    for (const q of F.gems) { g.fillStyle = q.col; g.fillRect(R(q.x - cx) - 2, R(q.y - cy) - 2, 4, 4); g.fillStyle = '#fff6c8'; g.fillRect(R(q.x - cx) - 1, R(q.y - cy) - 2, 1, 1); }
-    if (F.tiara) { const T = F.tiara, x = R(T.x - cx), y = R(T.y - cy), a = Math.floor(time * 16) % 4; g.fillStyle = T.home ? '#8fd160' : '#e0c04a'; g.fillRect(x - 4 + (a & 1), y - 2, 8 - 2 * (a & 1), 4); g.fillStyle = '#fff6c8'; g.fillRect(x, y - 3, 1, 1); }
-    for (const w of F.ripples) { g.fillStyle = '#c9b27c'; g.fillRect(R(w.x - cx) - 5, f0 - 3, 10, 3); }
-    if (Ar.grate && F.glowK > 0 && F.bolt) { const x = R(gx() - cx), y0 = R(Ar.grate.gy0 * TS - cy); g.globalAlpha = 0.25 + 0.5 * F.glowK; g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y0, 16, R(Ar.land.y - cy) - y0); g.globalAlpha = 1; }
-    if (F.wave && F.wave.state === 'open' && Ar.door) { const x = R(Ar.door - cx); g.fillStyle = '#ff6b6b'; g.fillRect(x - 16, f0 - 40, R(32 * BW.hornLeft(F.wave, now(), GP.guards.horn)), 3); g.fillStyle = '#ffd36b'; g.fillRect(R(Ar.winch - cx) - 8, f0 - 32, 5 * (F.wave.n || 0) + 1, 3); }
+    if (e && !e.hidden) { const x = R(e.x - cx), y = R(e.y - cy);
+      if (e.mode === 'fan') GPA.drawFanGust(g, e.x - cx, e.y - cy - 4, e.face || 1, time, GP.fan.reach * 0.5);
+      if (e.mode === 'pinned') { g.fillStyle = '#8fd160'; g.fillRect(x - 16, y - 40, R(32 * Math.max(0, e.modeT / GP.bell.pin)), 3); } }
+    for (const q of F.gems) GPA.drawGem(g, q.x - cx, q.y - cy, q.col, time, q.id || 0);
+    if (F.tiara) GPA.drawTiaraFlying(g, F.tiara.x - cx, F.tiara.y - cy, time, F.tiara.home);
+    for (const w of F.ripples) GPA.drawRipple(g, w.x - cx, f0, time);
+    if (Ar.grate && F.glowK > 0 && F.bolt) HC2A.drawGrateFx(g, { gate: Ar.grate.col, gy0: Ar.grate.gy0, gy1: Ar.grate.gy1 }, cx, cy, TS, time, F.glowK);   /* the told grate: the column lit before it drops */
     if (Ar.rope && BW.bellReady(F.M, now()) && !F.said.ropeHint) { ctx.text && ctx.text('RING', R(Ar.rope - cx), f0 - 40, '#ffd36b', 'center', 6); }
     if (F.M.rings) F.said.ropeHint = true;
   };
+
 
   /* ======================= THE CHASE, THE TOWERS, THE REHEARSAL (every frame of the level, src/main.js updateVillage) ======================= */
   H.level = dt => { const Lv = L(); if (!Lv) return; if (Lv.gpChase) { chaseStep(dt); towersStep(dt); } if (Lv.gpRehearsal) rehStep(dt); };
@@ -357,27 +357,32 @@ export function makeGoblinPrincessHands(ctx) {
         if (BW.underGrate(cap.x, gx0, G.under)) { cap.stagger = G.pin; cap.gpPinUntil = t + G.pin; RH.pins++; ctx.number(cap.x, cap.y - 40, 'THE GRATE PINS HER CAPTAIN: CUT HIM', '#8fd160'); ctx.shake(5); }
         else ctx.number(cap.x, cap.y - 40, 'HE STEPS CLEAR', '#c9c9d6'); } } }
   }
-  /* greybox: the chase actor, the towers' doors and winches, the banquet's rope, door and horn */
+  /* the art (claude/hc3art): the chase actor on her sheet, the guardrooms' doors and winches, the alarm bells, the banquet's rope and servery, the bell tower's bell, rope, door, winch and hatch */
+  const doorSt = W => !W ? 'shut' : (W.state === 'kept' || W.state === 'closed') ? 'down' : 'up';
+  const spinOf = (W, time) => { if (!W) return 0; if (W._dn !== W.n) { W._dn = W.n; W._dt = time; } return time - (W._dt === undefined ? -9 : W._dt) < 0.35 ? 1 : 0; };
+  const slamOf = (W, time) => { if (!W || (W.state !== 'kept' && W.state !== 'closed')) return 0; if (W._kt === undefined) W._kt = time; return Math.max(0, 1 - (time - W._kt) / 0.4); };
+  const guardSet = (g, W, door, winch, fy, horn, cx, time) => { const dx = R(door - cx), wx = R(winch - cx);
+    HC3A.drawGuardDoor(g, dx, fy, doorSt(W), W && W.state === 'open' ? BW.hornLeft(W, now(), horn) : 0, time, slamOf(W, time));
+    HC3A.drawWinchBox(g, wx, fy, dx, spinOf(W, time), W ? (W.n || 0) : 0, GP.guards.crank, !!W && W.state === 'open', time); };
+  const swingOf = (M, time) => { if (!M) return 0; if (M._rn !== M.rings) { M._rn = M.rings; M._rt = time; } const k = time - (M._rt === undefined ? -9 : M._rt); return k < 1.6 ? Math.sin(k * 14) * 3 * (1 - k / 1.6) : 0; };
   H.drawWorld = (g, cx, cy, time) => {
     const Lv = L(); if (!Lv) return;
-    if (Lv.gpChase && C && !chaseDone) { const x = R(C.x - cx), y = R(C.y - cy); g.fillStyle = '#c8508a'; g.fillRect(x - 5, y - 16, 10, 14); g.fillStyle = '#2c4a1e'; g.fillRect(x - 3, y - 22, 6, 6); g.fillStyle = '#e0c04a'; g.fillRect(x - 3, y - 24, 6, 2);
-      if (C.state === 'ring') { g.fillStyle = '#e0c04a'; g.fillRect(x + 4, y - 26 + R(Math.sin(time * 30) * 2), 3, 4); } }
-    if (Lv.gpChase) for (const Tw of Lv.gpChase.towers) { const W = TW.get(Tw.id), dx = R(Tw.door - cx), wx = R(Tw.winch - cx), fy = R(Tw.floor - cy);
-      g.fillStyle = W && W.state !== 'kept' ? '#3a1a10' : '#1b1626'; g.fillRect(dx - 10, fy - 30, 20, 30); g.fillStyle = '#5a5a68'; for (let k = -8; k <= 8; k += 4) g.fillRect(dx + k, fy - 30, 1, W && W.state === 'open' ? R(30 * (1 - BW.hornLeft(W, now(), GP.chase.horn))) : 30);
-      g.fillStyle = '#3a3a44'; g.fillRect(wx - 6, fy - 20, 12, 20); g.fillStyle = W && W.state === 'open' ? '#ffd36b' : '#6a6a78'; g.fillRect(wx - 8, fy - 16, 16, 3);
-      { const bx = R(Tw.bell - cx), sw = W ? R(Math.sin(time * 9) * 2) : 0; g.fillStyle = '#5a5a68'; g.fillRect(bx - 1, fy - 40, 2, 8); g.fillStyle = '#b08a3a'; g.fillRect(bx - 5 + sw, fy - 32, 10, 8); g.fillStyle = '#6a4a1a'; g.fillRect(bx - 5 + sw, fy - 25, 10, 1); }   /* HER alarm bell */
-      if (W && W.state === 'open') { g.fillStyle = '#ff6b6b'; g.fillRect(dx - 16, fy - 40, R(32 * BW.hornLeft(W, now(), GP.chase.horn)), 3); g.fillStyle = '#ffd36b'; g.fillRect(wx - 8, fy - 26, 5 * (W.n || 0) + 1, 3); } }
+    if (Lv.gpChase && C && !chaseDone && (C.state === 'run' || C.state === 'ring')) { const sp = GPA.sheet(), f = C.state === 'ring' ? GPA.GPF.bell : GPA.GPF.bolt + (Math.floor(time * 9) & 1); g.drawImage(sp.R[f], R(C.x - cx - sp.ax), R(C.y - cy - sp.ay)); }
+    if (Lv.gpChase) for (const Tw of Lv.gpChase.towers) { const W = TW.get(Tw.id), fy = R(Tw.floor - cy);
+      guardSet(g, W, Tw.door, Tw.winch, fy, GP.chase.horn, cx, time);
+      HC3A.drawBellAt(g, R(Tw.bell - cx), fy - 58, W ? Math.sin(time * 14) * 2.5 : 0, 0, time); }   /* HER alarm bell, cast bronze on an iron beam: it swings while it is sounding */
     const Q = Lv.gpRehearsal;
-    if (Q) { const fy = R(Q.floor - cy), dx = R(Q.door - cx), wx = R(Q.winch - cx), rx = R(Q.rope - cx), W = RH && RH.W;
-      g.fillStyle = '#a0885a'; g.fillRect(rx, fy - 44, 1, 40); g.fillStyle = '#7a5a30'; g.fillRect(rx - 1, fy - 6, 3, 4);
-      g.fillStyle = W ? '#3a1a10' : '#1b1626'; g.fillRect(dx - 10, fy - 30, 20, 30);
-      g.fillStyle = '#3a3a44'; g.fillRect(wx - 6, fy - 20, 12, 20); g.fillStyle = W && W.state === 'open' ? '#ffd36b' : '#6a6a78'; g.fillRect(wx - 8, fy - 16, 16, 3);
-      if (W && W.state === 'open') { g.fillStyle = '#ff6b6b'; g.fillRect(dx - 16, fy - 40, R(32 * BW.hornLeft(W, now(), GP.reh.horn)), 3); }
-      if (RH && RH.glowK > 0) { const gx0 = R(Q.grate.col * TS + 8 - cx), y0 = R(Q.grate.gy0 * TS - cy); g.globalAlpha = 0.25 + 0.5 * RH.glowK; g.fillStyle = '#ffd36b'; g.fillRect(gx0 - 8, y0, 16, fy - y0); g.globalAlpha = 1; } }
-    const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx); g.fillStyle = '#a0885a'; g.fillRect(rx, fy - 60, 1, 56); g.fillStyle = '#7a5a30'; g.fillRect(rx - 1, fy - 6, 3, 4);   /* the tower bell's rope */
-      if (Ar.grate) { const gx0 = R(Ar.grate.col * TS + 8 - cx), y0 = R(Ar.grate.gy0 * TS - cy); g.fillStyle = '#b08a3a'; g.fillRect(gx0 - 7, y0 - 2, 14, 9); g.fillStyle = '#6a4a1a'; g.fillRect(gx0 - 7, y0 + 6, 14, 1); g.fillStyle = '#34343f'; g.fillRect(gx0 - 9, y0 + 8, 18, 3); }   /* THE TOWER BELL over its grate slot */
-      if (Ar.hatch) { const hx = R(Ar.hatch - cx), hy = R((Ar.y0 || 0) - cy) + TS; g.fillStyle = '#4a3620'; g.fillRect(hx - 8, hy, 16, 3); } }
+    if (Q) { const fy = R(Q.floor - cy), W = RH && RH.W, rx = R(Q.rope - cx), bTop = R(10 * TS + 6 - cy), sw = swingOf(RH && RH.M, time);
+      HC3A.drawBellAt(g, rx, bTop, sw, RH && BW.bellReady(RH.M, now()) ? 0.6 : 0, time); HC3A.drawRope(g, rx, bTop + 31, fy, sw, time);
+      guardSet(g, W, Q.door, Q.winch, fy, GP.reh.horn, cx, time);
+      if (RH && RH.glowK > 0) HC2A.drawGrateFx(g, { gate: Q.grate.col, gy0: Q.grate.gy0, gy1: Q.grate.gy1 }, cx, cy, TS, time, RH.glowK); }
+    const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx), ceil = R((Ar.y0 || 0) - cy) + TS, sw = swingOf(F && F.M, time), e = live();
+      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); HC3A.drawBellAt(g, bx, R(Ar.grate.gy0 * TS - cy) + 2, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time); g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
+      HC3A.drawRope(g, rx, ceil, fy, sw, time);
+      if (Ar.door) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
+      if (Ar.hatch) HC3A.drawHatch(g, R(Ar.hatch - cx), ceil, e && e.mode === 'escape' ? 1 : 0, time); }
   };
+
   /* the LAB BOT's duty (src/lab.js): strike the winch while a wave is open; ring the bell when it is ready and she is free on the floor or perched; stand off the landing as the grate glows */
   H.labDuty = P0 => {
     const e = live(); if (!F || !e) return null; const Ar = F.A;
