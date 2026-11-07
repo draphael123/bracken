@@ -299,6 +299,7 @@ if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, [
    brace, release window - foes/shots by weight, co-op carries, lintPulls on every level with L.pulls). Their own lines: the big list is edited by every lane */
 if (take('tide-kit')) results.push(run('tide-kit', process.execPath, ['tools/tide-kit.mjs']));
 if (take('pull-field')) results.push(run('pull-field', process.execPath, ['tools/pull-field.mjs']));
+if (take('longwater3')) results.push(run('longwater3', process.execPath, ['tools/longwater3.mjs']));   /* (claude/longwater3) THE LONG WATER 3 + THE TIDE-POOL CRAB + THE TIDE HERALD 2: node proofs (no page) */
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
 if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
