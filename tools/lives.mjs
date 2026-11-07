@@ -8,7 +8,8 @@
    D. SAVES        PROG.lives survives migrateProgress, export, and a demo save's prepareImport; an old save with no field loads as OFF
    Run: node tools/lives.mjs */
 import { readFileSync } from 'node:fs';
-import { LIVES_START, LIVES_PER_COINS, livesOf, lockedOf, setLives, lockIn, startLives, coinTick, loseLife, leftWord, cardTag } from '../src/lives.js';
+import { LIVES_START, LIVES_PER_COINS, livesOf, lockedOf, setLives, lockIn, startLives, coinTick, loseLife, leftWord, cardTag, modeOf, setMode, stepMode, cardTags, MODE_BLURB, MODE_IDS } from '../src/lives.js';
+import * as DFM from '../src/difficulty.js';
 import { migrateProgress, exportProgress } from '../src/progression.js';
 import { prepareImport, tag } from '../src/demo-save.js';
 import { LEVELS } from '../src/level.js';
@@ -65,7 +66,7 @@ has(/text\(PROG\.lives === 'on' \? 'GAME OVER'/, 'the card says GAME OVER');
 has(/const newRulesDue = \(\) => !PROG\.rulesSet && !PROG\.heroPicked && !LEVELS\.some/, 'the rules card is due only for a save that has not started');
 has(/heroPick\.stage === 'rules'/, 'the rules card is a stage before the hero pick');
 has(/LV\.setLives\(PROG, nx, CAMP_IDS\)/, 'the card toggles through the lock-aware setter');
-has(/LV\.cardTag\(p\)/, 'the slot card shows the read-only tag');
+ok(main.includes('LV.cardTags(p)'),'the slot card shows the read-only tags');
 ok((main.match(/state = 'gameover'/g) || []).length === 1, 'the only way into GAME OVER is the lives rule');
 
 /* D. SAVES */
@@ -76,5 +77,34 @@ ok((main.match(/state = 'gameover'/g) || []).length === 1, 'the only way into GA
   const prep = JSON.parse(prepareImport(exportProgress(d), LEVELS)); ok(prep.lives === 'on', 'a demo save imported into the full game keeps LIVES ON');
   const old = migrateProgress(JSON.stringify({ coins: 5 })).progress; ok(livesOf(old) === 'off', 'an old save with no field is OFF'); }
 
+/* E. DIFFPICK: the DIFFICULTY row on the same card */
+ok(modeOf({}) === 'normal' && modeOf(null) === 'normal' && modeOf({ mode: 'bogus' }) === 'normal' && modeOf({ mode: 'master' }) === 'master', 'NORMAL is the default and every old save mode');
+{ const p = {};
+  ok(setMode(p, 'story', IDS) === 'story' && p.mode === 'story', 'an unlocked save can pick VERY EASY');
+  ok(setMode(p, 'master', IDS, false) === 'story' && p.mode === 'story', 'MASTER is refused while it is not unlocked');
+  ok(setMode(p, 'master', IDS, true) === 'master', '... and allowed once unlocked (or ?difficulty=master)');
+  ok(setMode(p, 'nonsense', IDS, true) === 'master', 'a value outside the three is refused');
+  setMode(p, 'normal', IDS, true); lockIn(p);
+  ok(setMode(p, 'story', IDS, true) === 'normal' && p.mode === 'normal', 'LOCKED with the first level: the mode refuses a change');
+  const q = { [IDS[0]]: { cleared: true } }; ok(setMode(q, 'story', IDS) === 'normal', 'an old save with a level record cannot be moved off NORMAL'); }
+ok(stepMode('normal', 1) === 'master' && stepMode('normal', -1) === 'story' && stepMode('story', -1) === 'story' && stepMode('master', 1) === 'master', 'the row steps VERY EASY - NORMAL - MASTER without wrapping');
+ok(MODE_IDS.join() === 'story,normal,master' && DFM.MODES.story.label === 'VERY EASY' && DFM.MODES.master.label === 'MASTER', 'labels come from src/difficulty.js');
+ok(MODE_IDS.every(id => MODE_BLURB[id] && MODE_BLURB[id].length <= 60), 'one short line per mode');
+ok(cardTags({}).length === 0 && cardTags({ lives: 'on' }).map(t => t[0]).join() === 'LIVES', 'an old save shows no mode tag (LIVES only if ON)');
+ok(cardTags({ rulesSet: 1 }).map(t => t[0]).join() === 'NORMAL' && cardTags({ rulesSet: 1, mode: 'master', lives: 'on' }).map(t => t[0]).join() === 'MASTER,LIVES' && cardTags({ mode: 'story' })[0][0] === 'VERY EASY', 'the slot card shows the chosen mode (then LIVES)');
+/* the mode is the save's: handed to difficulty.js, and the ?difficulty= override still wins */
+DFM.setOverride(null); DFM.setSaveMode('story'); ok(DFM.mode() === 'story', 'setSaveMode hands the saved mode to difficulty.js');
+DFM.setOverride('master'); ok(DFM.mode() === 'master' && DFM.overrideId() === 'master', 'the ?difficulty= override still wins over the save'); DFM.setOverride(null); DFM.setSaveMode('normal');
+ok(main.includes("DFM.setSaveMode(PROG.mode); PROG.lives = LV.livesOf(PROG)"), "progDefaults hands PROG.mode to the difficulty module (every load)");
+ok(main.includes("PROG.mode = LV.modeOf(PROG); DFM.setSaveMode(PROG.mode)"), "the card stores PROG.mode (NORMAL pre-selected) and applies it at CONTINUE");
+ok(main.includes("LV.setMode(PROG, nx, CAMP_IDS, masterOpen()) === nx) { DFM.setSaveMode(nx)"), "the card sets the mode through the lock-aware setter and applies it at once");
+ok(main.includes("if (upPress && rulesRow > 0) { rulesRow = 0; SFX.ui(); } else if (downPress && rulesRow < 1) { rulesRow = 1;"), "up / down move between the two rows (keyboard + pad)");
+ok(main.includes("rulesRow = 1; rulesToggle(1, 1)"), "the DIFFICULTY row is a touch target");
+ok(main.includes("LV.cardTags(p).slice().reverse()"), "the slot card draws the mode tag");
+{ const p = migrateProgress(null).progress; p.mode = 'master'; p.rulesSet = 1;
+  ok(migrateProgress(JSON.stringify(p)).progress.mode === 'master', 'PROG.mode survives migrateProgress');
+  ok(JSON.parse(exportProgress(p)).mode === 'master', 'export carries the mode');
+  ok(modeOf(migrateProgress(JSON.stringify({ coins: 5 })).progress) === 'normal', 'an old save with no mode loads as NORMAL'); }
+
 if (fails.length) { console.log('RED ' + fails.length); for (const f of fails) console.log(' - ' + f); process.exit(1); }
-console.log('GREEN lives: pick + lock, 5 lives, +1 per 100, game over -> map, OFF unchanged, saves carry the field');
+console.log('GREEN lives: pick + lock, DIFFICULTY row (default, lock, persistence), 5 lives, +1 per 100, game over -> map, OFF unchanged, saves carry the field');

@@ -32,3 +32,29 @@ export function loseLife(lives) { const left = Math.max(0, lives - 1); return { 
 export const leftWord = n => n + (n === 1 ? ' LIFE LEFT' : ' LIVES LEFT');
 /* what the slot card says about a save */
 export const cardTag = prog => (isOn(prog) ? 'LIVES' : '');
+
+/* ---- DIFFPICK (Daniel 11-07): the DIFFICULTY row on the same new-save card. PROG.mode = 'story' | 'normal' | 'master' (src/difficulty.js MODES), NORMAL pre-selected
+   and the value of every old save; LOCKED with LIVES at the first campaign entry (lockedOf). MASTER stays behind its device-wide unlock (a Normal clear of the road,
+   difficulty.js masterUnlocked) unless the ?difficulty=master dev override is set. ---- */
+import { MODES, MODE_IDS, modeId } from './difficulty.js';
+export { MODES, MODE_IDS };
+export const modeOf = prog => modeId(prog && prog.mode) || 'normal';
+export const modeLabel = id => (MODES[id] || MODES.normal).label;
+export const modeCol = id => (MODES[id] || MODES.normal).col;
+/* one line each, from the MODES table's own comments */
+export const MODE_BLURB = { story: 'half damage taken, an extra flask, shrines refill all', normal: 'the game as it was built', master: 'harder hits, boss reprisals, fewer flasks' };
+export const MASTER_LOCKED_NOTE = 'MASTER UNLOCKS AFTER YOU CLEAR THE ROAD ON NORMAL';
+/* the pick: an unlocked save only; MASTER only when `masterOpen`; returns the value now in force */
+export function setMode(prog, v, levelIds = [], masterOpen = false) {
+  if (!prog || lockedOf(prog, levelIds) || !MODE_IDS.includes(v) || (v === 'master' && !masterOpen)) return modeOf(prog);
+  prog.mode = v; return v;
+}
+/* the neighbour in a direction on the VERY EASY / NORMAL / MASTER row (no wrap); setMode then refuses a locked MASTER */
+export function stepMode(cur, dir) { const i = MODE_IDS.indexOf(modeId(cur) || 'normal'); return MODE_IDS[Math.max(0, Math.min(MODE_IDS.length - 1, i + (dir < 0 ? -1 : 1)))]; }
+/* the slot card's read-only tags, left to right: [text, colour]. The mode shows once chosen (rulesSet) or when it is not NORMAL; old saves show only LIVES (if ON). */
+export function cardTags(prog) {
+  const t = [], m = modeOf(prog);
+  if (prog && (prog.rulesSet || m !== 'normal')) t.push([modeLabel(m), modeCol(m)]);
+  if (isOn(prog)) t.push(['LIVES', '#ffd36b']);
+  return t;
+}

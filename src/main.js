@@ -6475,10 +6475,10 @@ function drawSlots() {
     if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6);   /* the save the game last opened (bracken.slot); the picker starts its cursor on it */
     const stat = pts => [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + pts, '#c9d1dc']], done = cleared >= levels;
     /* (a full save with a big purse: COMPLETE sits at the right of this row, so the last label gives way - MEDAL PTS -> PTS - before it would run into it; textfit slots) */
-    const rowEnd = pts => 44 + stat(pts).reduce((a, [s2]) => a + inkW(s2, 6) + 10, -10), room = w - 6 - (done ? inkW('COMPLETE', 6) + 6 : 0) - (LV.cardTag(p) ? inkW(LV.cardTag(p), 6) + 8 : 0), medalPts = rowEnd(' MEDAL PTS') <= room ? ' MEDAL PTS' : ' PTS';
+    const rowEnd = pts => 44 + stat(pts).reduce((a, [s2]) => a + inkW(s2, 6) + 10, -10), room = w - 6 - (done ? inkW('COMPLETE', 6) + 6 : 0) - LV.cardTags(p).reduce((a2, [t2]) => a2 + inkW(t2, 6) + 8, 0), medalPts = rowEnd(' MEDAL PTS') <= room ? ' MEDAL PTS' : ' PTS';
     let tx = x + 44; for (const [s2, col] of stat(medalPts)) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
-    if (LV.cardTag(p)) text(LV.cardTag(p), x + w - 6 - (done ? inkW('COMPLETE', 6) + 8 : 0), y + 17, '#ffd36b', 'right', 6);   /* (claude/lives) LIVES ON, read-only: chosen at the new save, locked from the first level */
+    { let tgx = x + w - 6 - (done ? inkW('COMPLETE', 6) + 8 : 0); for (const [t2, c2] of LV.cardTags(p).slice().reverse()) { text(t2, tgx, y + 17, c2, 'right', 6); tgx -= inkW(t2, 6) + 8; } }   /* (DIFFPICK: the mode, then LIVES) */   /* (claude/lives) LIVES ON, read-only: chosen at the new save, locked from the first level */
   }
   text(slotMsgT > 0 && slotMsg ? slotMsg : slotInn ? (touchOn ? 'TAP a save   BACK to the inn' : 'Z open  X erase  ESC back to the inn') : touchOn ? 'TAP a save   ERASE to erase' : 'Z play  X erase  ESC back', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
   if (slotInn && bookAsk) {   /* THE PARTY LEAVES THE INN? */
@@ -6741,13 +6741,21 @@ const NEW_PICK = PICK;
 const heroOpen = h => godMode() || ROSTER.includes(h);
 let heroDenyAt = -99;
 /* (claude/lives) THE NEW-SAVE RULES CARD: before the hero pick, once per save. One row today, LIVES: OFF (today's shrine-and-salt deaths, pre-selected) / ON (5 lives a level,
-   +1 per 100 coins, then back to the map). The difficulty pick sits beside it when that picker lands (rulesRows). It is read-only from the first level on (LV.lockedOf; the slot card shows it). */
+   +1 per 100 coins, then back to the map). The DIFFICULTY row (DIFFPICK) sits under it. It is read-only from the first level on (LV.lockedOf; the slot card shows it). */
 const newRulesDue = () => !PROG.rulesSet && !PROG.heroPicked && !LEVELS.some(l => PROG[l.id]) && !(window.BK && window.BK.manualSimulation);   /* (a tool run drives the pick itself: BK.ui.heroPickStage = 'rules' shows the card) */
-function rulesToggle(dir) { const cur = PROG.lives === 'on' ? 1 : 0, nx = LV.LIVES_VALUES[(cur + (dir || 1) + 2) % 2]; if (LV.setLives(PROG, nx, CAMP_IDS) === nx) { SFX.ui(); saveProgress(); } else SFX.deny(); }
-function rulesDone() { PROG.rulesSet = 1; PROG.lives = LV.livesOf(PROG); saveProgress(); SFX.uiSel(); heroPick.stage = 'pick'; }
+/* (claude/lives DIFFPICK, Daniel 11-07) the card has TWO rows: LIVES (0) and DIFFICULTY (1; VERY EASY / NORMAL / MASTER, NORMAL pre-selected). PROG.mode rides the save and is handed to
+   DFM.setSaveMode at once (progDefaults / loadSlot do it on every load); it LOCKS with LIVES at the first level (LV.lockedOf). MASTER stays behind its device unlock (a Normal clear) unless ?difficulty=master. */
+let rulesRow = 0;
+const masterOpen = () => DFM.masterUnlocked() || DFM.overrideId() === 'master';
+function rulesToggle(dir, row = rulesRow) {
+  if (row === 0) { const cur = PROG.lives === 'on' ? 1 : 0, nx = LV.LIVES_VALUES[(cur + (dir || 1) + 2) % 2]; if (LV.setLives(PROG, nx, CAMP_IDS) === nx) { SFX.ui(); saveProgress(); } else SFX.deny(); return; }
+  const cur = LV.modeOf(PROG), nx = LV.stepMode(cur, dir || 1);
+  if (nx !== cur && LV.setMode(PROG, nx, CAMP_IDS, masterOpen()) === nx) { DFM.setSaveMode(nx); SFX.ui(); saveProgress(); } else SFX.deny();
+}
+function rulesDone() { PROG.rulesSet = 1; PROG.lives = LV.livesOf(PROG); PROG.mode = LV.modeOf(PROG); DFM.setSaveMode(PROG.mode); rulesRow = 0; saveProgress(); SFX.uiSel(); heroPick.stage = 'pick'; }
 function updateHeroPick() {
   if (heroPick.stage === 'pick' && newRulesDue()) heroPick.stage = 'rules';
-  if (heroPick.stage === 'rules') { if (leftPress || rightPress || upPress || downPress) rulesToggle(rightPress || downPress ? 1 : -1); else if (confirmPress) rulesDone(); return; }
+  if (heroPick.stage === 'rules') { if (upPress && rulesRow > 0) { rulesRow = 0; SFX.ui(); } else if (downPress && rulesRow < 1) { rulesRow = 1; SFX.ui(); } else if (leftPress || rightPress) rulesToggle(rightPress ? 1 : -1); else if (confirmPress) rulesDone(); return; }
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
     if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
@@ -6757,16 +6765,22 @@ function updateHeroPick() {
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   if (heroPick.stage === 'pick' && newRulesDue()) heroPick.stage = 'rules';
-  if (heroPick.stage === 'rules') { const on = PROG.lives === 'on', bw = VW - 60, bx = 30, by = 22;
-    board(bx, by, bw, 128, '#ffd36b', undefined, false, 'iron');
-    text('NEW SAVE', VW / 2, by + 8, UI.title, 'center', 12);
-    text('LIVES', bx + 14, by + 32, UI.dim); TCH.hit(bx + 60, by + 26, bw - 74, 18, () => { rulesToggle(1); initAudio(); });
-    text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 32, on ? '#8fd160' : '#ffd36b', 'right', 8);
-    text(on ? '5 lives a level, +1 for every 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', VW / 2, by + 54, UI.text, 'center', 6);
-    text(on ? 'each death still costs what it costs; the last life ends the run of the level' : 'no limit on tries', VW / 2, by + 66, UI.dim, 'center', 6);
-    text('CHOSEN NOW. IT CANNOT BE CHANGED AFTER THE FIRST LEVEL.', VW / 2, by + 86, '#ff9a5c', 'center', 6);
-    if (Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP CONTINUE' : 'LEFT/RIGHT change   Z continue', VW / 2, by + 108, '#8fd160', 'center');
-    TCH.hit(bx, by + 98, bw, 28, () => { rulesDone(); initAudio(); });
+  if (heroPick.stage === 'rules') { const on = PROG.lives === 'on', md = LV.modeOf(PROG), bw = VW - 60, bx = 30, by = 10, tw = bw - 24, open = masterOpen();
+    board(bx, by, bw, 152, '#ffd36b', undefined, false, 'iron');
+    text('NEW SAVE', VW / 2, by + 7, UI.title, 'center', 12);
+    const rowHi = (r, y0) => { if (r === rulesRow) { g.fillStyle = 'rgba(255,211,107,0.14)'; g.fillRect(bx + 6, y0 - 4, bw - 12, 34); g.fillStyle = '#ffd36b'; g.fillRect(bx + 6, y0 - 4, 2, 34); } };
+    rowHi(0, by + 26);
+    text('LIVES', bx + 14, by + 26, rulesRow === 0 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 22, bw - 12, 34, () => { rulesRow = 0; rulesToggle(1, 0); initAudio(); });
+    text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 26, on ? '#8fd160' : '#ffd36b', 'right', 8);
+    text(fitText(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', tw, 6), VW / 2, by + 40, UI.text, 'center', 6);
+    rowHi(1, by + 62);
+    text('DIFFICULTY', bx + 14, by + 62, rulesRow === 1 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 58, bw - 12, 34, () => { rulesRow = 1; rulesToggle(1, 1); initAudio(); });
+    text('< ' + LV.modeLabel(md) + ' >', bx + bw - 14, by + 62, LV.modeCol(md), 'right', 8);
+    text(fitText(LV.MODE_BLURB[md], tw, 6), VW / 2, by + 76, UI.text, 'center', 6);
+    if (!open) text(fitText(LV.MASTER_LOCKED_NOTE, tw, 6), VW / 2, by + 86, '#8a7a6a', 'center', 6);
+    text(fitText('CHOSEN NOW. IT CANNOT BE CHANGED AFTER THE FIRST LEVEL.', tw, 6), VW / 2, by + 106, '#ff9a5c', 'center', 6);
+    if (Math.floor(time * 2) % 2 === 0) text(fitText(touchOn ? 'TAP CONTINUE' : 'UP/DOWN row  LEFT/RIGHT change  Z continue', tw, 6), VW / 2, by + 128, '#8fd160', 'center', 6);
+    TCH.hit(bx, by + 118, bw, 28, () => { rulesDone(); initAudio(); });
     return; }
   if (heroPick.stage === 'trial' || heroPick.stage === 'go') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('THE ROAD STARTS WITH A SHORT TUTORIAL', VW / 2, VH / 2, UI.text, 'center'); return; }   /* (claude/tutorial1) the lesson starts at once; the Arena Yard stays at the inn */
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
