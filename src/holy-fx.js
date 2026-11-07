@@ -29,10 +29,38 @@ export function bakeHammer() {
   return frames;
 }
 
+/* THE LIGHT HAMMER (claude/palrework, PAL_MACE): the thrown HOLY HAMMER is not the maul any more but a hammer CONJURED OF LIGHT, 9 x 9, a squat head on a short haft, white at the heart and
+   gold at the rim, FOUR spin frames (a quarter turn each, nearest pixel). It is the same pixels whichever skin he wears: the light is not the weapon's metal. */
+export function bakeLightHammer() {
+  const N = 9, mid = 4, base = [];   /* 0 clear, 1 rim, 2 gold, 3 cream, 4 white core, 5 haft */
+  for (let y = 0; y < N; y++) base.push(new Array(N).fill(0));
+  for (let y = 0; y <= 4; y++) for (let x = 0; x <= 8; x++) base[y][x] = 1;                         /* the rim of the head, 9 x 5 */
+  base[0][0] = base[0][8] = base[4][0] = base[4][8] = 0;                                              /* corners off */
+  for (let y = 1; y <= 3; y++) for (let x = 1; x <= 7; x++) base[y][x] = y === 2 && x > 1 && x < 7 ? 3 : 2;   /* gold edges, a cream band across */
+  base[2][3] = base[2][4] = base[2][5] = 4;                                                           /* the white core */
+  for (let y = 5; y <= 8; y++) { base[y][mid] = y & 1 ? 2 : 3; }                                      /* the haft, one pixel of light */
+  base[8][mid] = 4;
+  const col = { 1: D, 2: G, 3: C, 4: W, 5: H }, out = [];
+  for (let k = 0; k < 4; k++) { const c = document.createElement('canvas'); c.width = c.height = N + 4; const g = c.getContext('2d'); const a = k * Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a), ctr = (N + 4) / 2 - 0.5;
+    for (let y = 0; y < N + 4; y++) for (let x = 0; x < N + 4; x++) { const dx = x - ctr, dy = y - ctr, sx = Math.round(ca * dx + sa * dy + mid), sy = Math.round(-sa * dx + ca * dy + 4);
+      if (sx < 0 || sy < 0 || sx >= N || sy >= N) continue; const v = base[sy][sx]; if (!v) continue; g.fillStyle = col[v]; g.fillRect(x, y, 1, 1); }
+    out.push(c); }
+  return out;
+}
+
 export function makeHolyFx(api) {
   let hammerFrames = null, spearFrame = null, flashes = [], columns = [], bursts = [], falls = [], vstrikes = [], starbursts = [], dawns = [], judges = [], shards = [], prays = [];   /* (PALADIN 4 ART) DAWNFALL's pillar, JUDGED's gavel and scales, the ward's SHATTER, the prayer's rising ring */   /* (PALADIN 3 ART) RADIANCE's ring, SUNFALL's falling light, VERDICT's columns, the perfect guard's flash */
   const parts = api.parts, B = (g, ...a) => { api.bloom(...a); g.globalAlpha = 1; };   /* (main.js bloom leaves its alpha set) */
   const frames = () => hammerFrames || (hammerFrames = bakeHammer());
+  let lightFrames = null; const lframes = () => lightFrames || (lightFrames = bakeLightHammer());
+  /* THE HOLY HAMMER IN FLIGHT (PAL_MACE). m: main.js's { x, y, t, dir, trail: [[x,y]...] (newest last) }. A white-gold trail runs back along the loop it has drawn, four spin frames, a bloom; returns nothing */
+  function holyHammer(g, m, cx, cy, now) {
+    const f = lframes(), turn = Math.floor(m.t * 20) & 3, tr = m.trail || [];
+    for (let i = 0; i < tr.length; i++) { const k = (i + 1) / (tr.length + 1); g.globalAlpha = 0.5 * k * k; g.fillStyle = k > 0.7 ? C : G; g.fillRect(Math.round(tr[i][0] - cx) - 1, Math.round(tr[i][1] - cy) - 1, k > 0.5 ? 2 : 1, k > 0.5 ? 2 : 1); }
+    g.globalAlpha = 1; g.drawImage(f[turn], Math.round(m.x - cx - 6.5), Math.round(m.y - cy - 6.5));
+    B(g, m.x - cx, m.y - cy, 9, 0.5, 'gold'); B(g, m.x - cx, m.y - cy, 4, 0.45, 'gold'); }
+  /* WHERE IT ENDS (a wall, or its life spent): a flare and a puff of motes, FX only */
+  function hammerEnd(x, y, dir) { flashes.push({ x, y, t: 0, max: 0.25 }); for (let i = 0; i < 8; i++) { const a = Math.random() * 6.283, v = 24 + Math.random() * 36; parts({ x, y, vx: Math.cos(a) * v - dir * 10, vy: Math.sin(a) * v - 6, life: 0.35, max: 0.35, col: i & 1 ? C : G, size: 1, grav: 14, glow: true }); } }
   /* THE HAMMER IN FLIGHT. m: main.js's { x, y, t, dir, x0, y0 }; hand: where it is caught (the off hand) or null; returns where it was drawn */
   function hammer(g, m, cx, cy, now, hand) {
     const T = 1.4, back = Math.max(0, Math.min(1, (m.t - (T - 0.22)) / 0.22)), s = back * back * (3 - 2 * back);   /* the last 0.22 s it flies in to the hand */
@@ -200,5 +228,5 @@ export function makeHolyFx(api) {
       g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1 - k; g.strokeStyle = W; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 3 + 11 * k, 0, 7); g.stroke();
       g.globalAlpha = 0.6 * (1 - k); g.fillStyle = C; g.fillRect(x - 1, y - 1, 3, 3); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; B(g, x, y, 14, 0.5 * (1 - k), 'gold'); } }
   const clear = () => { dawns = []; judges = []; shards = []; prays = []; flashes = []; columns = []; bursts = []; falls = []; vstrikes = []; starbursts = []; };
-  return { hammer, wave, smite, catchAt, windup, update, draw, clear, radiance, sunfall, verdict, flash, sigil, dawn, judged, ward, shatter, pray, spear };
+  return { holyHammer, hammerEnd, hammer, wave, smite, catchAt, windup, update, draw, clear, radiance, sunfall, verdict, flash, sigil, dawn, judged, ward, shatter, pray, spear };
 }

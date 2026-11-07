@@ -11,6 +11,9 @@
 // circle's side ('hero' | 'foe') says whom it burns - the host's api.targets(circle) gives the bodies standing against it and api.hurt
 // does the damage, so the boss fight reuses plant/inside/empower/update/draw as they are and only hands over its own hooks.
 // main.js binds it (makeHolyGround) and calls update (updateHoly), draw (drawHoly) and clear (a level load); BK.holy() reads it.
+/* (claude/palrework, Daniel 11-06 11:38 + 21:19) THE PALADIN REWORK: PAL_MACE is the one switch. ON = a one-hand flanged MACE and a SUN SHIELD (art: src/chars.js), the HOLY HAMMER thrown on UP+C at 3-4 pips
+   (SUNFALL moves to UP+C at 5, a tap at 5 is RADIANCE+), pips earned by ABSORBING blows, no Bulwark Advance. OFF = the master paladin (the war maul, the out-and-back hammer, tap-SUNFALL). scratch/lane-reports/paladinplan.md */
+export const PAL_MACE = true;
 export const HG = {
   r: 44,              // px either side of the middle: about five and a half tiles across
   dy: 30,             // a body this far above or below the circle's floor still stands in it
@@ -26,13 +29,20 @@ export const HG = {
   hitMul: 1.3,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle
   smite: { cost: 20, mul: 1.5 },                                   // SMITE: the overhead inside the circle, its waves holy
-  throw: { cost: 60, dmg: 9, reach: 112, t: 1.4 },                 // THE HAMMER THROW: out and back (PALADIN 3: three pips of Conviction)
+  throw: { cost: 60, dmg: 9, reach: 112, t: 1.4 },                 // (PAL_MACE off) THE HAMMER THROW: out and back (PALADIN 3: three pips of Conviction)
+  /* THE HOLY HAMMER (PAL_MACE, paladinplan s5): a hammer of light that CORKSCREWS forward through a crowd (src/holy-hammer.js hammerPath), pierces, stops at a wall. UP+C at 3-4 pips, spends 3.
+     dmg = swordDmg x k x amul; the 'light' class (a shot-reflecting boss does not send it back); a boss takes no stagger and its resist floor holds. A fork overrides fields only. */
+  hammer: { cost: 60, need: 60, k: 0.6, rehit: 0.3, speed: 150, life: 1.1, loopR: 16, loops: 2.5, box: 6, stagger: 0.3, burn: 1.2, castT: 0.3, root: 0.12, cd: 0.6, pose: 0.35, flare: 0.25 },
+  /* THE MACE (PAL_MACE, s3): the swing numbers. swordDmg stays 14 (every skill k is untouched); the per-swing mul and the slower clock carry the weight. */
+  mace: { mul: 0.8, rate: 0.72, cost: 22, poise: 1.25, reach: 26, heavyReach: 25, riseReach: 23, overheadPips: 0.5, ripple: 30, rippleStagger: 0.8, lowMace: true },
   judge: 100,                                                      // JUDGEMENT: the whole bar
   cover: { st: 10, light: 5 },                                     // the AEGIS turning a blow for a partner in his circle: his wind, his Light
   /* PALADIN 3 (claude/paladin3, Daniel 10-14): CONVICTION - the Light store read as FIVE PIPS (pip px of Light each). Earned by blows landing (as Light was), a
      BLOCK (+block), a PERFECT GUARD on the beat (+parry, and a HOLY FLASH that staggers the attacker). C SPENDS BY TIER: 1 = SMITE, 3 = RADIANCE (a burst) or
      UP+C the HAMMER THROW, 5 = SUNFALL (the finisher). Every spend lights the HALLOWED AURA: his holy ground at his feet, travelling with him, base + perPip s a pip */
-  conv: { pip: 20, pips: 5, block: 20, parry: 40 },
+  conv: { pip: 20, pips: 5, block: 20, parry: 40,
+          /* (PAL_MACE, paladinplan s4) FILL = STANDING IN FRONT: a blow ABSORBED on the ward +block, a heavy one +red, a blow turned for a partner +partner, a perfect guard only +parryMace (timing is the Knight's), a mace blow +hit (was 5 Light), THE OVERHEAD +overhead pips once; anti-starve: 1 pip each trickleS s while he stands in his own hallowed ground */
+          red: 30, partner: 20, parryMace: 20, hit: 3, redFrac: 0.12, trickleS: 12, hint: 3 },
   aura: { r: 34, base: 2, perPip: 0.8 },
   smite3: { windRate: 0.8, stagger: 0.8, bossStagger: 0.3, bossChip: 0.35, poise: 10, conv: 0.5 },   // (claude/palsmite, Daniel 11-04) THE COMBO FINISHER SMITE (the third hammer swing): wind-up pace x0.8, a normal foe staggered 0.8 s (was 1.2), a boss 0.3 s + chip x0.35 of a blow + 10 poise, +0.5 pip of Conviction a swing
   smiteQ: { cost: 20, mul: 1.6, reach: 28, stagger: 0.5 },       // SMITE (1 pip): a quick holy strike in front of him
@@ -67,7 +77,7 @@ export const HG = {
 /* CONVICTION PIPS: whole pips held (the Light store / HG.conv.pip) */
 export const pipsOf = o => Math.floor(((o && o.light) || 0) / HG.conv.pip + 1e-6);
 /* SPEND LIGHT: true and taken if the owner has n of it, else false and nothing taken (the boss calls this on itself too) */
-export function spendLight(o, n) { if (!o || (o.light || 0) < n - 1e-9) return false; o.light -= n; return true; }
+export function spendLight(o, n, why) {   /* (why: the fork hooks' tag - KINDLED reads it - ignored here) */ if (!o || (o.light || 0) < n - 1e-9) return false; o.light -= n; return true; }
 
 /* THE CIRCLE'S COLOURS by side (claude/palart). 'foe' is the same gold for now so a player reads the boss's circle as the same thing - LIT CHURCH 2 can retint
    it here (floor / rim / runes / the dark line under it) without touching the draw. */
