@@ -261,7 +261,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* HER APPROACH'S FALL (claude/sporewood2tune): the last stretch before her door breaks in a REAL GAP, seven wide, no floor, a pillar of THREE bounce caps in it (integ117: three, not two - the paladin's thrown carry fell 23 px short of the far lip over a two-cap pillar) - hop on, be thrown over. A heavy waits where it throws you. Told: the post each side, the sign */
   air(392, 398, 5, 42); ground(394, 396, 5); spring(394, 5); spring(395, 5); spring(396, 5); deco(391, 4, 'warnPost', 0); deco(399, 4, 'warnPost', 1);
   sign(388, 4, 'THE ROOT BREAKS HERE. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
-  plank(370, 391, 2); plank(399, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
+  plank(377, 391, 2); plank(399, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
   coins([372, 3], [374, 3], [390, 3], [400, 3]);
   sign(403, 4, 'HER CAP TURNS BLADES. GROW HER SEED CAPS, CLIMB, AND PLUNGE ONTO HER KNOT.');
   ground(405, 408, 9);                                                              /* down into her hollow */

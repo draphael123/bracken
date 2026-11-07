@@ -20,7 +20,7 @@ import { SPRING_MOVE } from './hero-move.js'; import * as SW2ART from './redraw/
 export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.08, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
 export const SPW_SAY = {
   lit: 'THE LANTERN CAP LIGHTS', dazzled: 'DAZZLED', dark: 'THIS BUD IS DARK: LIGHT A LANTERN CAP', mend: 'THE SPORES MEND YOU', spring: 'A SPRING SPORE',
-  seed: 'THE SEED CAP GROWS', knot: 'THE KNOT OPENS', above: 'FROM ABOVE',
+  seed: 'THE SEED CAP GROWS', budFirst: 'STAND STILL ON A BUD: IT GROWS', knot: 'THE KNOT OPENS', above: 'FROM ABOVE',
 };
 
 export function makeSporewoodHands(ctx) {
@@ -89,6 +89,19 @@ export function makeSporewoodHands(ctx) {
       if (e.mode === 'hide' || e.mode === 'springTell') { e.mode = 'rest'; e.modeT = Math.max(e.modeT || 0, SP.dazzle); e.vx = 0; if (!e.dazzled) { S.n.dazzled++; say(e.x, e.y - 22, 'dazzled', '#bff0f0'); } }
       else if (e.mode === 'rest') e.modeT = Math.max(e.modeT || 0, SP.dazzle);
       e.dazzled = 1; }
+    /* (claude/sporeclear) A BUD HAS TO SAY HOW IT GROWS. A hero on a bud makes it wiggle and puff spores until it rises (drawGrowcap reads onT), a first-time line the
+       first time one is near, and a dark bud links by a dotted line to the lantern cap that wakes it */
+    let nearBud = null;
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap') continue;
+      if (m.flashT > 0) m.flashT -= dt;
+      const onIt = P.onMover === m && !P.dead && !m.seed && m.state === 'bud' && !(m.cd > 0);
+      m.onT = onIt ? (m.onT || 0) + dt : 0;
+      if (m.onT > 0 && (!m.dark || m.lit)) { m.puffT = (m.puffT || 0) - dt; if (m.puffT <= 0) { m.puffT = 0.22; ctx.burst(m.x + m.w / 2 + (Math.random() - 0.5) * m.w, m.y + 2, 2, ['#bff0f0', '#dfffa0'], 28, 0.45); } }
+      if (m.dark && m.state === 'bud') { const np = ctx.props().length; if (m.linkAt !== np) { m.linkAt = np; m.linkTo = null; let best = 1e9; const cx = m.x + m.w / 2;
+          for (const pr of ctx.props()) if (pr.t === 'glowbud' && Math.abs(pr.x - cx) < SP.litX && Math.abs(pr.y - m.y0) < SP.litY) { const d = Math.abs(pr.x - cx); if (d < best) { best = d; m.linkTo = pr; } } } }
+      if (!m.seed && !m.mother && m.state === 'bud' && !(m.cd > 0) && !(m.dark && !m.lit) && Math.abs(m.x + m.w / 2 - P.x) < 7 * TS && Math.abs(m.y0 - P.y) < 3 * TS && !nearBud) nearBud = m; }
+    if (nearBud && !S.budTold && ctx.hintSay && !(ctx.isTaught && ctx.isTaught('bud'))) { S.budTold = true; ctx.hintSay(SPW_SAY.budFirst, 5); }
+    if (ctx.taught && !S.budTaught) for (const m of ctx.movers()) if (m.kind === 'growcap' && !m.seed && m.state === 'grow' && P.onMover === m) { S.budTaught = true; ctx.taught('bud'); break; }
     /* THE DARK BUDS: lit or not, and a hero on an unlit one is told */
     for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.dark) continue; m.lit = litNear(m);
       if (!m.lit && m.state === 'bud' && P.onMover === m && Math.abs(P.vx) < 25) { S.darkSaid += dt; if (S.darkSaid > 0.6) { S.darkSaid = -3; say(m.x + m.w / 2, m.y - 24, 'dark', '#c9a0ff'); } } }
@@ -116,8 +129,12 @@ export function makeSporewoodHands(ctx) {
     /* SEED CAPS: a blow grows one (her hollow's too - src/mother-cap2.js may refuse one she is withering: m.noSeed) */
     for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.seed || m.state !== 'bud' || m.cd > 0 || m.noSeed) continue;
       if (!overlap(hb, { l: m.x - 2, r: m.x + m.w + 2, t: m.y - 18, b: m.y + 10 })) continue;
+      /* (claude/sporeclear) a seed cap FLASHES and SHAKES when struck (drawGrowcap reads flashT) and shows the blows it needs (m.need, one by default; drawGrowcap draws the pips) */
+      m.struck = (m.struck || 0) + 1; for (const q of m.pair ? ctx.movers().filter(q => q.kind === 'growcap' && q.seed && q.pair === m.pair && q.state === 'bud') : [m]) q.flashT = 0.4;
+      if (m.struck < (m.need || 1)) { ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(m.x + m.w / 2, m.y, 6, ['#ffd36b', '#fff1a8'], 40, 0.3); continue; }
+      m.struck = 0;
       for (const q of m.pair ? ctx.movers().filter(q => q.kind === 'growcap' && q.seed && q.pair === m.pair && q.state === 'bud' && !(q.cd > 0) && !q.noSeed) : [m]) { q.state = 'grow'; q.k = 0; q.hold = q.hold || SP.seedHold; }   /* A PAIR GROWS AS ONE: a stair of two steps toward the way on (her knot) */
-      m.struck = (m.struck || 0) + 1; S.n.seeds++; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(m.x + m.w / 2, m.y, 10, ['#8fd160', '#dfffa0', '#e0b0f0'], 60, 0.5);
+      S.n.seeds++; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(m.x + m.w / 2, m.y, 10, ['#8fd160', '#dfffa0', '#e0b0f0'], 60, 0.5);
       if (once(m.mother ? 'seedM' : 'seed')) say(m.x + m.w / 2, m.y - 22, 'seed', '#dfffa0'); }
     /* a ROOT KNOT turns a blade: it opens FROM ABOVE */
     for (const k of S.knots) if (!k.open && !(P && P.plunge) && overlap(hb, { l: k.px - SP.knotW, r: k.px + SP.knotW, t: k.py - SP.knotH, b: k.py })) {
