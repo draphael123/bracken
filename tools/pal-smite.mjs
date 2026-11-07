@@ -19,6 +19,6 @@ check('rules in main.js: Paladin ground third cut only; flagged once per swing; 
   assert(/if \(lcBig\(e\) \|\| e\.maxHp\) \{ if \(guardedFoe\(e\)\) return;/.test(rider), 'a guarded boss: no chip, no stagger, no guard break'); assert(/hurtAs\('light'/.test(rider), 'the chip is a light blow, so the boss resist floor applies');
   assert(/Math\.random = fxRand/.test(rider), 'FX dice are fxRand (game dice untouched)'); assert(!/invul|\.inv\s*=/.test(rider), 'no invulnerability');
 });
-check('the hero blurb and the first-time hint name the smite', () => { assert(/the third cut is a told holy SMITE/.test(main), 'blurb'); assert(/SMITE|smite/i.test(main.slice(main.indexOf('palSmite3 = true') - 200, main.indexOf('palSmite3 = true') + 1600)), 'hint near the flag'); });
+check('the hero blurb and the first-time hint name the smite', () => { assert(/the third blow is THE OVERHEAD, a told holy smite/.test(main), 'blurb'); assert(/SMITE|smite/i.test(main.slice(main.indexOf('palSmite3 = true') - 200, main.indexOf('palSmite3 = true') + 1600)), 'hint near the flag'); });
 if (bad.length) { console.log('PAL-SMITE: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('PAL-SMITE: the third-hit smite holds - short stagger, boss chip only on an unguarded boss (resist floor applies), half a pip of Conviction once per swing, Paladin ground cut only.');

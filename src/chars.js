@@ -3,6 +3,8 @@ import { RPOSE as WARDEN_REACH_POSES } from './warden-reach.js';   /* (claude/wa
 import { kingFrames, KING_AX, KING_AY } from './king_swim.js';
 import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, flipX, whiten } from './px.js';
 import { OUT } from './art.js';
+import { PAL_MACE } from './holy-ground.js';   /* (claude/palrework) the paladin's one-hand MACE and SUN SHIELD (art below: maceAt / SUNSHIELD) */
+let MACE_ON = false;   /* set by bakePaladin for the hero's own sheet (the foe Paladins of the Lit Church and Waymeet keep their mauls: bakePaladin(skin, preview, true)) */
 
 const KP0 = { // knight palette
   s: '#c9d1dc', S: '#7c8797', b: '#3d5aa8', B: '#243a78', r: '#c9463d', k: '#f1c9a0',
@@ -139,6 +141,8 @@ export const KNIGHT_ANCHOR = { ax: 16, ay: 22 };
    carries a shield looked like he had none. Lowered it is this: five by eight, the same steel rim, oak face and gold
    cross as the raised one, small enough that the sword arm crosses in front of it and the helm still reads above it. */
 const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..S..'];
+/* THE SUN SHIELD (claude/palrework): round, seven by seven - a steel rim (lit on its upper left), the face in his tabard's blues, a gold sun boss. It stays on his arm in every pose: it is never thrown, never rammed (the Knight's two verbs). */
+const SUNSHIELD = ['..sSS..', '.sbbbS.', 'sbbybbS', 'sbyyybS', 'SBbybBS', '.SBBBS.', '..SSS..'];
 
 /* A WIDER FRAME FOR A LONGER WEAPON. The Warden's point lands forty-four pixels out and the knight's sword only
    twenty-six, which is already drawn to the edge of a 34-wide frame. `wide` adds canvas ON THE RIGHT ONLY, so her
@@ -169,6 +173,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (GEAR) gearFront(g, BX + dx, BY + dy, headTop(body.slice(0, 6)), hy, sho, body);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
   if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);
+  if (maul && MACE_ON && BODY_REF === PAL_BODY) { const sx = Math.max(BX + dx, Math.min(BX + dx + 9, arm2 ? arm2[2] + dx - 3 : BX + dx + 4)), sy = Math.max(BY + dy + hy - 4, Math.min(BY + dy + hy + 10, arm2 ? arm2[3] + dy - 3 : BY + dy + hy + 7));
+    draw(SUNSHIELD, sx, sy); if (!arm2) { px(g, sx - 1, sy + 3, KP.S); px(g, sx - 2, sy + 2, KP.S); } }   /* (PAL_MACE) THE SUN SHIELD on the off arm: lowered across his front, up where a pose lifts the off hand; a stub of arm behind it */
   if (arm2 && BODY_REF === RG_BODY) rgBracerAt(g, arm2, dx, dy);
   if (BZ && arm2) bzArmInk(g, rgo, arm2, dx, dy, top);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
   /* THE BERSERKER'S HAND AXES (claude/berserker). Given [hand x, hand y, head x, head y, side]: a short oak haft out of the fist (its knob two
@@ -205,7 +211,25 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
-  if (maul) { // THE PALADIN'S WAR HAMMER (claude/paladin3art, was the flanged maul): ~70% of the old maul. The long oak haft wound with leather stays; the head is now a COMPACT
+  if (maul && MACE_ON && BODY_REF === PAL_BODY) { // THE PALADIN'S MACE (claude/palrework): ONE hand, a short flanged head. The pose's segment gives the grip and the direction; the haft is short (at most 14 px out), the head a flanged ball seven across
+    // (a steel core, four flanges, a gold stud) on a leather-wound oak haft with a gold pommel. ONLY the head takes a weapon skin (WT); the haft, wrap, pommel and gauntlet keep their own colours. The off hand is on the SHIELD, never the haft.
+    const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
+    const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, L = Math.min(len0, 14), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay, qy = ax;
+    const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+    line(g, ...at(-3), ...at(L - 2), '#6a4428', 2);
+    for (let t = -2; t <= 3; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
+    px(g, ...at(-3), KP.y); px(g, ...at(-3, 1), KP.y); px(g, ...at(-4), KP.y);                                                         // the gold pommel
+    const hx = x0 + ax * L, hy2 = y0 + ay * L, inside = new Map(), key = (X, Y) => X + ',' + Y;
+    for (let X = Math.floor(hx) - 5; X <= Math.ceil(hx) + 5; X++) for (let Y = Math.floor(hy2) - 5; Y <= Math.ceil(hy2) + 5; Y++) {
+      const ox = X - hx, oy = Y - hy2, t = ox * ax + oy * ay, o = ox * qx + oy * qy;
+      if (Math.abs(t) > 3.2 || Math.abs(o) > 3.2 || Math.abs(t) + Math.abs(o) > 4.7) continue;
+      const rim = Math.abs(t) > 2.1 || Math.abs(o) > 2.1, flange = (Math.abs(o) < 0.8 && Math.abs(t) > 2.4) || (Math.abs(t) < 0.8 && Math.abs(o) > 2.4), lit = o < -0.6, dark = o > 0.6;
+      inside.set(key(X, Y), (Math.abs(t) < 0.7 && Math.abs(o) < 0.7) ? KP.y : flange ? WT('#f4f8ff', 1) : rim ? WT('#aab6c6', lit ? 0.9 : dark ? 0.15 : 0.5) : WT('#aab6c6', lit ? 1 : dark ? 0.35 : 0.65));
+    }
+    for (const k of [...inside.keys()]) { const [X, Y] = k.split(',').map(Number); for (const [u, v] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!inside.has(key(X + u, Y + v))) px(g, X + u, Y + v, KP.o); }
+    for (const [k, c] of inside) { const [X, Y] = k.split(',').map(Number); px(g, X, Y, c); }
+    { const [gx, gy] = at(0); px(g, gx, gy, KP.S); px(g, gx + 1, gy, KP.S); px(g, gx, gy + 1, KP.S); px(g, gx + 1, gy + 1, KP.s); }   // the one gauntlet
+  } else if (maul) { // THE PALADIN'S WAR HAMMER (claude/paladin3art, was the flanged maul): ~70% of the old maul. The long oak haft wound with leather stays; the head is now a COMPACT
     // SQUARE BLOCK - a flat strike face with a bright rim, a narrower back with a gold collar behind it, a rivet band - read by its square silhouette at game scale. BOTH hands are on the haft in every pose (the sword
     // arm at the grip, the off hand a stride up the haft, or wherever an ability's own off arm lands). ONLY the head (core, flanges, stud, spike) takes a weapon
     // skin (WT); the haft, wrap, socket and gauntlets keep their own colours.
@@ -461,18 +485,19 @@ const AIRUP_BODY = [
   { dx: -2, dy: -1, legs: 'jump2', legsDy: -1, hy: 0, sho: 0, plume: 1, arm2: 1, trail: 2, feet: [[11, 16], [16, 15]], hemW: 11, cowl: 0 },   /* 3 the follow-through: the blade gone on behind, the body coming down */
 ];
 const AIRUP_ANG = [4, 48, 102, 134], AIRUP_HAND = [[4, -9], [7, -15], [3, -22], [-1, -18]];
+const AIRUP_MACE = { len: 14, two: false, hand: [[2, -9], [4, -19], [1, -21], [4, -13]], ang: [335, 118, 72, 205] };   /* (claude/palrework) the mace: a hand's length shorter than the maul, one-handed */
 const AIRUP_WEAPON = { sword: { len: 21 }, cutlass: { len: 19, free: true }, greatsword: { len: 23, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] },
   maul: { len: 19, two: true, hand: [[2, -9], [4, -19], [1, -21], [4, -13]], ang: [335, 118, 72, 205] }, spear: { len: 27, free: true, hand: [[3, -8], [6, -13], [2, -17], [-1, -15]] },
   staff: { len: 22, two: true }, stave: { len: 23, two: true }, axe: { len: 11 } };   /* (THE BERSERKER: a hand axe; the off one stays at his guard, given in extra) */
 function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
   padHeroFrames(F);
-  const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : weapon === 'maul' ? 29 : ['greatsword', 'staff'].includes(weapon) ? 34 : 28;   /* (the war hammer: -15%, PALADIN 3 ART) */
+  const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : weapon === 'maul' ? (MACE_ON ? 26 : 29) : ['greatsword', 'staff'].includes(weapon) ? 34 : 28;   /* (the war hammer: -15%, PALADIN 3 ART) */
   const pose = (kind, i) => {
     /* THE AIR UP-SLASH, hand-drawn (claude/airupart; combat3 had a procedural stand-in): the blade from low in front, up through the front,
        over his head and on behind it, in the four beats the timing already has (wind-up 0.02 s, the rise to 0.08, the blade OVER him until 0.17 -
        the live box - then the follow-through). Each beat is a body (lean, lift, helm, shoulders, tucked legs, cloth) and a hand with the weapon at
        an angle; the weapon is the same length in every beat, so the arc reads as one swing. */
-    if (kind === 'airUp') { const B = AIRUP_BODY[i], W2 = AIRUP_WEAPON[weapon] || AIRUP_WEAPON.sword, ang = (W2.ang ? W2.ang[i] : AIRUP_ANG[i]) * Math.PI / 180;
+    if (kind === 'airUp') { const B = AIRUP_BODY[i], W2 = (weapon === 'maul' && MACE_ON ? AIRUP_MACE : AIRUP_WEAPON[weapon]) || AIRUP_WEAPON.sword, ang = (W2.ang ? W2.ang[i] : AIRUP_ANG[i]) * Math.PI / 180;
       const hand = [...(W2.hand ? W2.hand[i] : AIRUP_HAND[i])], minY = -(ay + ATTACK_HEADROOM - (pyro ? 5 : 2));
       let len = W2.len; const tipAt = l => [hand[0] + Math.cos(ang) * l, hand[1] - Math.sin(ang) * l];
       while (len > 8 && (tipAt(len)[1] < minY || tipAt(len)[0] < -15)) len -= 0.5;   /* (a frame is 24 px of headroom and 32 wide: the blade shortens to stay inside it) */
@@ -482,7 +507,7 @@ function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = fa
       return make({ ...extra, ...(W2.extra ? W2.extra[i] : {}), top: ATTACK_HEADROOM, wide: 32, dx: B.dx, dy: B.dy, legs: B.legs, legsDy: B.legsDy, hy: B.hy, sho: B.sho, plume: B.plume, arm: armA, ...(arm2 ? { arm2 } : {}), [weapon]: [...gA, ...tA] }); }
     const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
     const end = rise ? [[18, -3], [weapon === 'spear' ? 14 : 24, -25], [weapon === 'spear' ? 8 : 12, weapon === 'spear' ? -43 : -39], [18, -24]][i] : [[14, -12], [reach - 5, -5], [reach - 1, -4], [20, -10]][i];
-    if (rise && weapon === 'maul') end[0] = Math.round(end[0] * 0.85);   /* (the war hammer's rising cut reaches 24, not 28) */
+    if (rise && weapon === 'maul') end[0] = Math.round(end[0] * (MACE_ON ? 0.8 : 0.85));   /* (the war hammer's rising cut reaches 24, not 28) */
     const hand = rise ? [[1, -7], [6, -15], [5, -21], [4, -12]][i] : [[1, -9], [5, -6], [7, -6], [3, -8]][i];
     const xy = ([x, y]) => [ax + Math.round(x / scale) - dx, ay + Math.round(y / scale) - dy];
     const grip = xy(hand), tip = xy(end), arm = [16, 12, ...grip];
@@ -3539,7 +3564,9 @@ const PAL_PLUME = [
   ['y..SSSS...', 'yySssssS..', 'yySsssssS.'],
 ];
 const PAL_PAL = { s: '#eef2f8', S: '#98a4ba', b: '#3a5ab8', B: '#243a78', r: '#f0c040', y: '#f0c040', w: '#b8c0cc', W: '#9a7a32', v: '#2a2f3d' };
-export function bakePaladin(skin = {}, previewOnly = false) {
+export function bakePaladin(skin = {}, previewOnly = false, foe = false) {
+  MACE_ON = PAL_MACE && !foe; try { return bakePaladin0(skin, previewOnly); } finally { MACE_ON = false; } }
+function bakePaladin0(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, PAL_PAL, skin); BODY_REF = PAL_BODY; PLUME_REF = PAL_PLUME;
   const sh = [BX + 8, BY + 7];
   const rest = (d = 0) => [sh[0] + 2, sh[1] + 1 + d, sh[0] + 5, sh[1] + 9 + d];   // the head grounded in front of him
@@ -3605,7 +3632,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', butt: 3, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1], sh[0] + 4, sh[1] - 10], glow: [sh[0] + 4, sh[1] - 15 - i], plume: 0,
       bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
-    block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
+    block: [0, 1].map(i => MACE_ON ? knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 4], maul: [sh[0] + 2, sh[1] + 4, sh[0] + 9, sh[1] + 9], arm2: [BX + 2, BY + 7, sh[0] + 3, sh[1] - 1], glow: [sh[0] + 5, sh[1] - 1] }) : knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),
     // MEND: the free hand up, the light in it
     cast: [0, 1].map(i => knightFrame({ legs: 'stand', arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 7], maul: rest(), glow: [sh[0] + 1, sh[1] - 9 - i] })),
     // JUDGEMENT: the maul straight up over his head, then down
