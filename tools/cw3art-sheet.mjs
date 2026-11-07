@@ -8,7 +8,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const OUT = process.argv[2] || fileURLToPath(new URL('../work/claude/lane-done/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
-const hexRgb = c => { c = String(c); let m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /^rgba?\((\d+),(\d+),(\d+)/.exec(c.replace(/\s/g, '')))) return [+m[1], +m[2], +m[3]]; return [255, 0, 255]; };
+const hexRgb = c => { c = String(c); let m; if ((m = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(c))) c = '#' + m[1] + m[1] + m[2] + m[2] + m[3] + m[3]; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /^rgba?\((\d+),(\d+),(\d+)/.exec(c.replace(/\s/g, '')))) return [+m[1], +m[2], +m[3]]; return [255, 0, 255]; };
 class Ctx {
   constructor(c) { this.canvas = c; this.fillStyle = '#000000'; this.globalAlpha = 1; this.strokeStyle = '#000'; this.lineWidth = 1; this.imageSmoothingEnabled = false; }
   get buf() { const c = this.canvas; if (!c._buf || c._buf.length !== c.width * c.height * 4) c._buf = new Uint8ClampedArray(c.width * c.height * 4); return c._buf; }
@@ -43,7 +43,8 @@ const sheets = [];
   [430, 500, 'THE SEA ARCH (undersea kit)', 18, 41], [612, 648, 'THE DARK MILE (act III, night)', 14, 36], [700, 724, 'THE LAST BELL stones + sluice house', 14, 36], [894, 932, 'THE LIGHTHOUSE steps + tower', 3, 24], [156, 180, 'THE COVE (mud)', 16, 36]];
   const COLS = 40, [c, g] = mk(COLS * 16, 0 + spans.reduce((s, sp) => s + (sp[4] - sp[3] + 1) * 16 + 12, 0) + 8, '#10141c'); let oy = 4;
   for (const [x0, x1, , y0, y1] of spans) { for (let y = y0; y <= y1; y++) for (let x = x0; x <= Math.min(x1, x0 + COLS - 1); x++) { const t = at(x, y); if (t === T.AIR) continue; const s = TILES.cw3Tile(t, x, y, at, T, L); if (s) g.drawImage(s, (x - x0) * 16, oy + (y - y0) * 16, 16, 16); else { g.fillStyle = '#ff00ff'; g.fillRect((x - x0) * 16, oy + (y - y0) * 16, 16, 16); } } oy += (y1 - y0 + 1) * 16 + 12; }
-  sheets.push(['cw3art-tiles.png', c, 2]); }
+  sheets.push(['cw3art-tiles.png', c, 2]);
+  spans.forEach(([x0, x1, , y0, y1], i) => { const [cc, gg] = mk((Math.min(x1, x0 + COLS - 1) - x0 + 1) * 16, (y1 - y0 + 1) * 16, '#10141c'); for (let y = y0; y <= y1; y++) for (let x = x0; x <= Math.min(x1, x0 + COLS - 1); x++) { const t = at(x, y); if (t === T.AIR) continue; const sp = TILES.cw3Tile(t, x, y, at, T, L); if (sp) gg.drawImage(sp, (x - x0) * 16, (y - y0) * 16, 16, 16); } png(cc, 2, 'cw3art-tiles-' + (i + 1) + '.png'); }); }
 /* ---- SKY: five stages of the storm with the light, and a lightning frame ---- */
 { const VW = 320, VH = 180, ks = [0.02, 0.28, 0.5, 0.72, 0.95], [c, g] = mk(VW * 3, (VH + 4) * 2 + 4, '#000');
   ks.forEach((k, i) => { const cx = k * (BACK.END - 160) - VW / 2, ox = (i % 3) * VW, oy = 2 + Math.floor(i / 3) * (VH + 4), [cc, gg] = mk(VW, VH); BACK.drawBackdrop(gg, cx, 400, VW, VH, L, 3 + i * 1.3, 0, true, 0); gg.fillStyle = '#0a2a36'; gg.fillRect(0, Math.round(VH * 0.62 - k * 12) + 2, VW, VH);

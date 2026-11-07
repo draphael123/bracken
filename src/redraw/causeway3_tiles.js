@@ -55,7 +55,7 @@ const crossAt = (g, cx, cy, c) => { rect(g, cx, cy - 2, 1, 5, c); rect(g, cx - 1
    act I tops are DRY (salt crust, moss in the joints); acts II/III are TIDE-WASHED (algae film, barnacles, a shell). */
 function roadTop(zone, x, y, eL, eR, o) {
   const wet = zone >= 1;
-  return once('rt' + zone + '_' + (x & 7) + (o.turf ? 'tf' : '') + (o.coping ? 'cp' : '') + (eL ? 'l' : '') + (eR ? 'r' : ''), () => {
+  return once('rt' + zone + '_' + (x & 7) + (o.turf ? 'tf' : '') + (o.brass ? 'br' : '') + (o.coping ? 'cp' : '') + (eL ? 'l' : '') + (eR ? 'r' : ''), () => {
     const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, zone + 11)), Z = ZONE[zone], h = hash(x & 7, 3);
     fillAshlar(g, zone, x, y, 2, null, 6, 16);
     rect(g, 0, 0, 16, 5, Z.s[o.coping ? 4 : 3]);                                                      /* the walked flag */
@@ -74,6 +74,7 @@ function roadTop(zone, x, y, eL, eR, o) {
       if ((h & 3) === 1) { px2(g, 8 + (h % 3), 3, '#4a6a3a'); px2(g, 9 + (h % 3), 4, '#38542c'); }     /* moss in the butt joint */
     }
     if (o.turf) { for (let k = 0; k < 16; k++) { const q = hash(k + (x & 7) * 16, 21) % 4; if (q < 2) { px2(g, k, -0, '#3c5a34'); } if (q === 0) { px2(g, k, 1, '#4a7040'); } } rect(g, 0, 0, 16, 1, '#2c4a2a'); for (let k = 0; k < 4; k++) px2(g, ((hash(x, k) % 14) + 1), 0, '#d8a0b8'); }   /* the island's turf and sea-pinks */
+    if (o.brass) { rect(g, 0, 0, 16, 1, '#e0c060'); rect(g, 0, 1, 16, 1, '#a8802c'); rect(g, 0, 2, 16, 1, '#6a4a14'); for (let k = 2; k < 16; k += 5) px2(g, k, 0, '#fff0b0'); }   /* a brass nosing on the light's steps */
     if (eL) { rect(g, 0, 0, 1, 16, Z.s[5]); } if (eR) rect(g, 15, 0, 1, 16, Z.s[0]);
     return c; });
 }
@@ -173,7 +174,7 @@ function towerTile(zone, x, y, up, eL, eR, ox) {
   return once('tw' + zone + '_' + (x & 3) + '_' + (y & 7) + (up ? 'u' : '') + (eL ? 'l' : '') + (eR ? 'r' : '') + ox, () => {
     const [c, g] = canvas(16, 16), Z = ZONE[zone], r = mulberry(hash(x & 3, y & 7) + 91);
     fillAshlar(g, zone, x, y, 3, null);
-    if (up) { const prof = [0, 1, 0, 2, 1, 3, 0, 2, 1, 0, 3, 1, 2, 0, 1, 2]; for (let p = 0; p < 16; p++) { const k = prof[(p + (hash(x, 4) & 7)) % 16]; for (let py = 0; py < k + 2; py++) g.clearRect(p, py, 1, 1); px2(g, p, k + 2, Z.s[6]); px2(g, p, k + 3, Z.crust); } }
+    if (up) { const prof = [0, 3, 1, 5, 2, 7, 0, 4, 2, 0, 6, 2, 4, 0, 3, 5]; for (let p = 0; p < 16; p++) { const k = prof[(p + (hash(x, 4) & 7)) % 16]; for (let py = 0; py < k + 2; py++) g.clearRect(p, py, 1, 1); px2(g, p, k + 2, Z.s[6]); px2(g, p, k + 3, Z.crust); } }
     if (!up && (y & 3) === 2 && (x & 1) === 0 && !eL && !eR) { rect(g, 7, 3, 2, 8, Z.joint); rect(g, 6, 3, 1, 8, Z.s[1]); rect(g, 9, 3, 1, 8, Z.s[5]); }   /* an arrow-slit */
     if (eL) { rect(g, 0, 0, 2, 16, Z.s[5]); } if (eR) { rect(g, 14, 0, 2, 16, Z.s[1]); }
     for (let k = 0; k < 3; k++) px2(g, (r() * 16) | 0, 2 + ((r() * 12) | 0), Z.crust); dark(g, 0.08);
@@ -186,8 +187,8 @@ function chapelTile(zone, x, y, roof, up, eL, eR) {
     if (roof) { for (let py = 0; py < 16; py++) for (let p = 0; p < 16; p++) { const row = py >> 2, sc = ((p + (row & 1) * 4) % 8), edge = py % 4 === 3 || sc === 0; px2(g, p, py, edge ? slate[0] : slate[2 + (hash(x * 4 + (p >> 3), row + y * 4) % 3) + (sc > 5 ? 0 : 0)]); }
       if (up) { rect(g, 0, 0, 16, 2, '#4a5260'); rect(g, 0, 0, 16, 1, '#8a96a8'); } if (eL) rect(g, 0, 0, 1, 16, slate[5]); dark(g, 0.1); return c; }
     fillAshlar(g, 1, x, y, 3, null);
-    if (((x - 372) % 8) === 4) { rect(g, 6, 3, 4, 9, Z.joint); rect(g, 7, 2, 2, 1, Z.joint); rect(g, 7, 4, 2, 6, '#e8c070'); rect(g, 7, 4, 1, 6, '#ffe8a0'); rect(g, 6, 12, 4, 1, Z.s[5]); }   /* a lancet lit from inside */
-    if ((x - 372) % 8 === 0 || (x - 372) % 8 === 7) { rect(g, 0, 0, 16, 16, Z.s[2]); fillAshlar(g, 1, x, y, 2, null); rect(g, 0, 0, 2, 16, Z.s[4]); }   /* a buttress */
+    if (x === 373 || x === 403) { rect(g, 6, 3, 4, 9, Z.joint); rect(g, 7, 2, 2, 1, Z.joint); rect(g, 7, 4, 2, 6, '#e8c070'); rect(g, 7, 4, 1, 6, '#ffe8a0'); rect(g, 6, 12, 4, 1, Z.s[5]); }   /* a lancet lit from inside */
+    if (x === 372 || x === 404) { rect(g, 0, 0, 16, 16, Z.s[2]); fillAshlar(g, 1, x, y, 2, null); rect(g, 0, 0, 2, 16, Z.s[4]); }   /* a buttress */
     if (eL) rect(g, 0, 0, 2, 16, Z.s[5]); if (eR) rect(g, 14, 0, 2, 16, Z.s[1]); return c; });
 }
 /* the LIGHTHOUSE tower: whitewash, one red band, a lit window, brass at the door; its foot is granite */
@@ -196,7 +197,7 @@ function lightTile(x, y, up, eL, eR) {
     const [c, g] = canvas(16, 16), Z = ZONE[3], band = (y === 9 || y === 10 || y === 14 || y === 15);
     for (let py = 0; py < 16; py++) for (let p = 0; p < 16; p++) { const sh = (x - 913) < 3 ? 1 : (x - 913) > 4 ? -1 : 0; const lo = band ? ['#4a1410', '#6e1c18', '#8a2a24', '#a8382c'] : [Z.s[3], Z.s[4], Z.s[5], Z.s[6]];
       px2(g, p, py, lo[Math.max(0, Math.min(3, 2 - sh + ((hash(x * 16 + p, y * 16 + py) % 7 === 0) ? -1 : 0) + ((py % 8 === 7) ? -2 : 0)))]); }
-    if (!band && y === 11 && (x === 916 || x === 917)) { rect(g, 4, 3, 8, 10, Z.joint); rect(g, 5, 4, 6, 8, '#ffd36b'); rect(g, 5, 4, 6, 2, '#fff0b0'); rect(g, 7, 4, 1, 8, Z.joint); rect(g, 5, 8, 6, 1, Z.joint); }   /* the lit window */
+    if (!band && y === 11 && (x === 915 || x === 918)) { rect(g, 4, 3, 8, 10, Z.joint); rect(g, 5, 4, 6, 8, '#ffd36b'); rect(g, 5, 4, 6, 2, '#fff0b0'); rect(g, 7, 4, 1, 8, Z.joint); rect(g, 5, 8, 6, 1, Z.joint); }   /* the lit window */
     if (up) { rect(g, 0, 0, 16, 2, Z.s[6]); rect(g, 0, 2, 16, 1, Z.s[2]); }
     if (eL) rect(g, 0, 0, 2, 16, Z.crust); if (eR) { rect(g, 14, 0, 2, 16, Z.s[1]); } return c; });
 }
@@ -224,7 +225,7 @@ function underTile(x, y, up, down, eL, eR, d) {
     const [c, g] = canvas(16, 16), r = mulberry(hash(x & 7, y & 7) + 111);
     fillAshlar(g, 2, x, y, up ? 3 : 2, vault);
     if (down) { rect(g, 0, 12, 16, 4, vault[2]); rect(g, 0, 12, 16, 1, vault[4]); rect(g, 0, 15, 16, 1, vault[0]); for (let k = 3; k < 16; k += 8) { rect(g, k, 12, 1, 4, vault[0]); }   /* a vault: voussoirs */
-      for (let k = 0; k < 3; k++) { const bx = (r() * 16) | 0; for (let q = 0; q < 2 + ((r() * 5) | 0); q++) px2(g, bx, 15 - q < 0 ? 0 : 15 - q, '#000'); } }
+      for (let k = 0; k < 3; k++) { const bx = (r() * 16) | 0; for (let q = 0; q < 2 + ((r() * 5) | 0); q++) px2(g, bx, 15 - q < 0 ? 0 : 15 - q, '#000000'); } }
     if (up) { rect(g, 0, 0, 16, 3, sand[2]); rect(g, 0, 0, 16, 1, sand[4]); for (let k = 0; k < 16; k++) px2(g, k, 3, sand[(k & 3) ? 1 : 0]); for (let k = 0; k < 3; k++) px2(g, (r() * 16) | 0, 0, '#c8d8d0');
       if ((hash(x, 5) & 3) === 0) { const bx = (r() * 13) | 0; for (let q = 0; q < 5; q++) px2(g, bx + (q & 1), 0, weed[q % 4]); } }
     for (let k = 0; k < 5; k++) { const bx = (r() * 16) | 0, l = 2 + ((r() * 6) | 0); for (let q = 0; q < l; q++) px2(g, bx + (q & 1), 15 - q, weed[(q + k) % 4]); }
@@ -264,6 +265,7 @@ export function cw3Tile(t, x, y, at, T, L) {
     if (y >= 31 && y <= 38 && ((x >= 160 && x <= 175) || (x >= 759 && x <= 766))) return mudTile(x, y, true, 0);
     if (y === ROAD_ROW) return roadTop(zone, x, y, eL, eR, {});
     if (y === 20 && x >= 359 && x <= 500) return roadTop(zone, x, y, eL, eR, { turf: true });
+    if (x >= 904 && x <= 907) return roadTop(zone, x, y, eL, eR, { coping: true, brass: true });
     return copingTop(zone, x, y, eL, eR);
   }
   if (down) return ceilTile(zone, x, y, eL, eR);

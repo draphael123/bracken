@@ -43,13 +43,13 @@ export function bakeSky(stage, h) {
 function bakeFar(night) {
   return once('far' + night, () => {
     const W = 640, H = 120, [c, g] = canvas(W, H), w = wrap(W), pal = night ? BP.cloudNight : BP.cloudDusk, r = mulberry(night ? 41 : 17);
-    for (let bank = 0; bank < 4; bank++) {
-      const base = 22 + bank * 20, n = 9 + bank * 2;
+    for (let bank = 0; bank < 4; bank++) {   /* back to front: each bank is a row of overlapping round puffs on a flat belly; the belly's edge is the lit lip */
+      const base = 30 + bank * 17, n = 5 + bank * 2;
       for (let i = 0; i < n; i++) {
-        const cx0 = r() * W, rw = 38 + r() * 54, rh = 10 + r() * 14 + bank * 3, y0 = base + (r() - 0.5) * 8;
-        for (let x = -rw; x <= rw; x++) { const u = x / rw, top = y0 - rh * Math.sqrt(Math.max(0, 1 - u * u)) * (0.7 + 0.3 * Math.sin(x * 0.4 + i)), bot = y0 + rh * 0.35 * Math.sqrt(Math.max(0, 1 - u * u));
-          for (let y = Math.floor(top); y <= bot; y++) { const d = (y - top) / Math.max(1, bot - top), lit = y >= bot - 1.5;
-            px(g, w(cx0 + x), y, lit ? pal[night ? 4 : 5] : pal[Math.max(0, Math.min(4, Math.floor(d * 2.4) + (bank > 1 ? 1 : 0) + ((x + y) % 7 === 0 ? 1 : 0)))]); } }
+        const cx0 = (i + r() * 0.8) * (W / n), pr = 14 + r() * 16 + bank * 3, rx = pr * (1.8 + r() * 0.8), y0 = base + (r() - 0.5) * 6, flat = 0.28 + r() * 0.12;
+        for (let x = -rx; x <= rx; x++) { const u = x / rx, lump = 1 + 0.25 * Math.sin(x * 0.22 + i * 3) * (1 - u * u), top = y0 - pr * 0.5 * lump * Math.pow(Math.max(0, 1 - u * u), 0.6), bot = y0 + pr * flat * (1 - u * u * 0.6);
+          for (let y = Math.floor(top); y <= bot; y++) { const d = (y - top) / Math.max(1, bot - top), lit = y >= bot - 1.2;
+            px(g, w(cx0 + x), y, lit ? pal[night ? 4 : 5] : y >= bot - 2.4 ? pal[night ? 3 : 4] : pal[Math.max(0, Math.min(3, Math.floor(d * 3.2) + (bank > 1 ? 1 : 0) - 0))]); } }
       }
     }
     if (!night) for (let k = 0; k < 14; k++) { const x = r() * W, y = 88 + r() * 6, l = 16 + r() * 30; for (let i = 0; i < l; i++) px(g, w(x + i), y + ((i / 8) | 0) * 0, BP.rim[(i + k) % 3]); }   /* the sun's last glint along a lip */
@@ -113,7 +113,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full, glow) {
   const far = bakeFar(false), farN = bakeFar(true), drift = time * (2 + 3 * k), cxo = ((cx * 0.12 + drift) % 640 + 640) % 640, y0 = horizon - 96;
   const blit = (img, a) => { if (a <= 0.01) return; g.globalAlpha = a; for (let x = -cxo; x < VW; x += 640) g.drawImage(img, R(x), y0); g.globalAlpha = 1; };
   blit(far, 1 - night); blit(farN, night);
-  if (flick > 0.02) { g.globalAlpha = Math.min(0.42, flick * 0.34); g.fillStyle = '#c8d8ff'; g.fillRect(0, Math.max(0, y0), VW, 100); g.globalAlpha = 1; }   /* the clouds lit from inside */
+  if (flick > 0.02) { g.globalAlpha = Math.min(0.42, flick * 0.34); g.fillStyle = '#c8d8ff'; g.fillRect(0, 0, VW, Math.max(0, horizon)); g.globalAlpha = 1; }   /* the clouds lit from inside */
   /* a forked bolt, cloud wall to the sea, while the glow is high */
   if ((glow || 0) > 0.85) { const seed = Math.floor(time * 2.5) * 977 + 31, r = mulberry(seed); let x = 40 + r() * (VW - 80), y = y0 + 20; g.fillStyle = '#eef4ff'; while (y < horizon) { const nx = x + (r() - 0.5) * 9; g.fillRect(R(Math.min(x, nx)), y, Math.max(1, Math.abs(R(nx - x)) + 1), 3); if (r() < 0.18) { let bx = nx, by = y; for (let i = 0; i < 6; i++) { bx += (r() - 0.3) * 6; by += 3; g.fillRect(R(bx), by, 1, 3); } } x = nx; y += 3; } g.globalAlpha = 0.5; g.fillStyle = '#9ab8ff'; g.fillRect(R(x) - 1, horizon - 2, 3, 3); g.globalAlpha = 1; }
   if (full === false) return;
