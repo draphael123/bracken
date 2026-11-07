@@ -1,0 +1,47 @@
+name: Complete Deep Rails tile native compatibility
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/minecart-pixel-native-nov07/manifest.json
+      - tools/minecart-pixel-native-nov07/cases.mjs
+      - tools/minecart-pixel-native-nov07/component-page.mjs
+      - tools/minecart-pixel-native-nov07/component.mjs
+      - .github/workflows/minecart-pixel-native-nov07.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [cases-0, cases-6, cases-12, cases-18, cases-24, cases-30, cases-36, cases-42, cases-48, cases-54, cases-60, cases-66, cases-72, cases-78, cases-84, cases-90, cases-96, cases-102, cases-108, cases-114, cases-120, cases-126, cases-132, cases-138, cases-144, cases-150, cases-156, cases-162, cases-168, cases-174]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/minecart-pixel-native-nov07/component.mjs
+        env:
+          MINECART_PIXEL_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/minecart-pixel-native-${{ matrix.group }}-nov07
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: minecart-pixel-native-${{ matrix.group }}-nov07
+          path: |
+            ${{ runner.temp }}/minecart-pixel-native-${{ matrix.group }}-nov07/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
