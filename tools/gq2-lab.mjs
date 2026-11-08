@@ -97,8 +97,9 @@ console.log('== PARRY (every hero has a parry hand)');
     const P = { x: 100, y: 200, face: 1, cWas: false, dead: false, swim: false }, keys = {};
     const BK = { P, keys, ward: () => ({ ready: true, up: false, wet: false }) };
     const handled = LAB.parryAt(BK, h, 0.5), early = !!keys.block;
-    LAB.parryAt(BK, h, 0.03); const late = !!keys.block;
-    ok(handled && !early && late, h + ': a parry hand, C held back at 0.5 s to impact and pressed at 0.03 s');
+    const own = LAB.GQ_OWN[h], at = own ? own.at - 0.02 : 0.03;   /* (claude/hcfix) the paladin, geomancer and reaper meet it on their own beat (lab.js GQ_OWN) */
+    LAB.parryAt(BK, h, at); const late = !!keys.block;
+    ok(handled && !early && late, h + ': a parry hand, C held back at 0.5 s to impact and pressed at ' + at.toFixed(2) + ' s');
   }
   const P = { x: 100, y: 200, face: 1 }, keys = {}, BK = { P, keys, ward: () => null };
   const q = { id: 1, x: 300, y: 191, vx: -230, vy: 0, kind: 'crown', home: false };

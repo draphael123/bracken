@@ -775,8 +775,13 @@ function rollWhenDue(BK, press0) {
    GQ_TAP s out, respecting BUSY_C; the pyro taps the ward EMBER_LEAD s out; the pirate taps C). A human tries LABP.parryTry (start 0.7) of the shots, decided ONCE per shot; the rest are ducked (the crown) or rolled (a shard). */
 let gqf = null;
 export const GQ_RAISE = 0.06, GQ_TAP = 0.08, GQ_PIRATE = 0.06;
+export const GQ_OWN = { paladin: { at: 0.25 }, geomancer: { at: 0.15 }, reaper: { at: 0.1, tap: true } };   /* (claude/hcfix) see parryAt */
 export function parryAt(BK, h, tti) {
   const P = BK.P, k = BK.keys;
+  /* (claude/hcfix) THE THREE OTHER GUARDS HAVE THEIR OWN BEAT (they all call RP.parried on it already - the miss was the bot's timing, gobgeo Q6 / tools/gobgeo-page.mjs LEAD):
+     the paladin's AEGIS comes up only after C is held 0.16 s, so he holds from GQ_OWN.paladin out; the geomancer's rune-ward takes WD.raise 0.1 s to stand, so she holds from GQ_OWN.geomancer;
+     the reaper's parry is the ward LET GO as the blow lands (bkFlick, WARD_BEAT 0.22 s), so he TAPS C GQ_OWN.reaper out. The knight raises in the last GQ_RAISE s as before. */
+  const own = GQ_OWN[h]; if (own) { k.block = own.tap ? tti <= own.at && tti > own.at - 0.05 : tti <= own.at; return true; }
   if (SHIELDED(h)) { k.block = tti <= GQ_RAISE; return true; }
   if (DEFLECTS(h)) { k.block = tti <= GQ_TAP && BUSY_C(h, P) <= 0.001 && !P.cWas; return true; }
   if (h === 'pyro') { k.block = emberReady(BK, h) && tti <= EMBER_LEAD && !P.cWas; return true; }
