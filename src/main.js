@@ -6884,7 +6884,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     text('LIVES', bx + 14, by + 26, rulesRow === 0 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 22, bw - 12, 34, () => { rulesRow = 0; rulesToggle(1, 0); initAudio(); });
     text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 26, on ? '#8fd160' : '#ffd36b', 'right', 8);
     const say = (s, y0, col) => wrap(s, tw, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, y0 + i * 8, col, 'center', 6));   /* (batch150) WRAPPED, never cut: the card is narrow */
-    say(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', by + 38, UI.text);
+    say(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you back to the last shrine you lit: retry as often as you like', by + 38, UI.text);
     rowHi(1, by + 62);
     text('DIFFICULTY', bx + 14, by + 62, rulesRow === 1 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 58, bw - 12, 34, () => { rulesRow = 1; rulesToggle(1, 1); initAudio(); });
     text('< ' + LV.modeLabel(md) + ' >', bx + bw - 14, by + 62, LV.modeCol(md), 'right', 8);
