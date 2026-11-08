@@ -44,6 +44,11 @@ try {
     assert.deepEqual(w.sub, want.concat(['BACK']), g + ' opens ' + want.join(' / ') + ' and BACK: ' + w.sub.join('|'));
     assert.ok(w.at === g && w.i0 === 0 && w.closedSub === null && w.on === g && w.st === 'title' && w.top.length === 6, g + ' closes with ' + how + ' on its own row of the six: ' + JSON.stringify(w));
   }
+  /* ENTER is attack AND confirm: inside a submenu it must TAKE the row (not go back); X alone goes back */
+  const kk = async (k, code, vk) => { for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: vk }); await pg.evalp('BK.step(3)'); };
+  await pg.evalp('(()=>{ BK.state = "title"; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleItems().indexOf("EXTRAS"); 0; })()'); await kk('Enter', 'Enter', 13);
+  const en = await pg.evalp('({ sub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI] })'); assert.deepEqual(en, { sub: 'EXTRAS', on: "WHAT'S NEW" }, 'ENTER opens EXTRAS and stays in it: ' + JSON.stringify(en));
+  await kk('Enter', 'Enter', 13); assert.equal(await pg.evalp('BK.state'), 'whatsnew', 'ENTER inside EXTRAS takes the row, it is not a back press'); await pg.evalp('BK.state = "title"; BK.ui.titleSub = null; BK.ui.titleI = 0; 0');
   assert.ok(!t.items.includes('SWAP HERO'), 'no SWAP HERO on the title');
   console.log('ok  groups         PLAY TOGETHER / MORE MODES / EXTRAS open in place, with BACK; ESC, X and BACK return to the top level');
 
