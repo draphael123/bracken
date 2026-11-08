@@ -238,7 +238,8 @@ const bakeCapt = (w, h) => once('capt' + w + 'x' + h, () => { const [c, g] = can
     lancet(g, bx + 14, 22, 12, 36, 0);                                                                                                                                                   // a lancet window
     banner(g, bx + 36, 14, 38, i % 2 ? '#4e1e72' : '#2c4a1e', '#e0b040', true);                                                                                                           // the Queen's purple / the goblin green
     if (bx + 28 < w - 8) { /* a shield and crossed pikes on every other bay */ const sx = bx + 30, sy = 62; if (i % 2 === 0) { R(g, sx - 1, sy - 8, 2, 34, '#5a5a6c'); R(g, sx + 12, sy - 8, 2, 34, '#5a5a6c'); R(g, sx - 3, sy - 12, 6, 5, '#c9d1dc'); R(g, sx + 10, sy - 12, 6, 5, '#c9d1dc'); R(g, sx - 2, sy - 1, 18, 2, '#34343f'); } } }
-  for (let x = 40, i = 0; x < w - 30; x += 64, i++) { if (i % 2 === 1) { R(g, x, h - 56, 22, 22, '#3a3a48'); R(g, x + 1, h - 55, 20, 20, '#8a2c2c'); R(g, x + 1, h - 55, 20, 3, '#c9a040'); R(g, x + 9, h - 52, 4, 16, '#e8e8f0'); R(g, x + 4, h - 46, 14, 4, '#e8e8f0'); } }   // a heater shield on the wall
+  for (let x = 40, i = 0; x < w - 30; x += 64, i++) { if (i % 2 === 1) { R(g, x, h - 56, 22, 22, '#3a3a48'); R(g, x + 1, h - 55, 20, 20, '#4e1e72'); R(g, x + 1, h - 55, 20, 2, '#e0b040'); R(g, x + 1, h - 38, 20, 1, '#e0b040'); R(g, x + 1, h - 55, 1, 20, '#e0b040'); R(g, x + 20, h - 55, 1, 20, '#a8841c');
+      R(g, x + 5, h - 47, 12, 3, '#e0b040'); R(g, x + 5, h - 47, 12, 1, '#fff6c8'); for (const dx of [5, 8, 10, 12, 15]) R(g, x + dx, h - 52 + (dx === 10 ? 0 : 2), 1, 5 - (dx === 10 ? 0 : 2), '#e0b040'); px(g, x + 10, h - 46, '#ff4a6a'); R(g, x + 8, h - 42, 6, 1, '#7a3aa0'); } }   // a heater shield on the wall
   return c; });
 const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
   ashlar(g, w, h, '#2b2830', '#403c4c', '#15131b', 479);
@@ -256,6 +257,10 @@ const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = can
   feastTable(g, 168, 132, h); feastTable(g, 340, 84, h); for (const c of CHAND) chandelier(g, c.cx, c.y);   /* the long tables, the candle-rings */
   const sv = (31 * 16);                                                                                                                                                                  // the servery door's end: a plate rack and a serving shelf (the door is at 510)
   R(g, sv - 56, h - 72, 44, 5, S.f); R(g, sv - 56, h - 72, 44, 1, S.g); for (let i = 0; i < 6; i++) { R(g, sv - 54 + i * 7, h - 82, 5, 10, '#c9c9d6'); R(g, sv - 54 + i * 7, h - 82, 5, 1, '#ffffff'); R(g, sv - 53 + i * 7, h - 80, 3, 6, '#9a9aa8'); }
+  { const ry = h - 112; R(g, sv - 100, ry, 150, 2, '#34343f'); R(g, sv - 100, ry, 150, 1, '#8a8aa0'); R(g, sv - 101, ry - 3, 3, 8, S.c); R(g, sv + 49, ry - 3, 3, 8, S.c);   // the servery's pot rail: copper, ladles, a cleaver
+    for (let i = 0, x = sv - 92; x < sv + 44; i++, x += 17) { R(g, x + 3, ry + 2, 1, 4, '#8a8aa0');
+      if (i % 3 === 2) { R(g, x + 2, ry + 6, 3, 14, '#a8a8b8'); R(g, x, ry + 18, 7, 4, '#8a8aa0'); R(g, x + 1, ry + 19, 5, 1, '#c9c9d6'); }
+      else { R(g, x - 2, ry + 6, 11, 9, '#a85a2c'); R(g, x - 2, ry + 6, 11, 2, '#e08a4c'); R(g, x - 3, ry + 5, 13, 1, '#6a3414'); R(g, x - 1, ry + 14, 9, 2, '#6a3414'); px(g, x, ry + 9, '#f0b070'); px(g, x + 1, ry + 9, '#f0b070'); } } }
   R(g, sv - 58, h - 90, 3, 20, '#34343f'); R(g, sv - 14, h - 90, 3, 20, '#34343f'); R(g, sv - 58, h - 92, 47, 2, '#34343f');
   return c; });
 export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
