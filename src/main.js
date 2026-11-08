@@ -35099,6 +35099,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#f0e4ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y1 - 1, rr, 4, 0, 0, Math.PI * 2); g.stroke();
       g.fillStyle = '#ff6b6b'; for (let q = 0; q < 4; q++) { const a = time * 3 + q * Math.PI / 2; g.fillRect(x + Math.round(Math.cos(a) * (rr - 5)) - 1, y1 - 1 + Math.round(Math.sin(a) * 2), 2, 1); } }
     /* THE BURIED PRINCE: the tomb's marks round him first, and nothing of him while he lies in the box or is under the floor */
+    if (e.t === 'gprincess' && GPH && GPH.hidden(e)) continue;   /* (claude/hc3art) she is on the battlements' chase, not in her tower, until the chase is done */
     if (e.t === 'prince') { drawPrinceFx(e, cx, cy); if (e.mode === 'sleep' || (e.mode === 'sunk' && e.modeT < (e.phase === 2 ? 0.75 : 1.0))) continue; }
     if (e.t === 'royalboar') { RBM.drawBoarLane(g, e, cx, cy, time); RBM.drawRoyalBoar(g, e, cx, cy, time); continue; }   /* (claude/gorm2) THE ROYAL BOAR draws itself (greybox: src/royal-boar.js) */
     if (e.t === 'king') { if (e.hidden) continue; GPZ.drawGorm(g, e, cx, cy, time, { drawSet, SPR, PROP, text, bossActive }); continue; }   /* (claude/gorm2) KING GORM 2: every move its own windup and release (src/redraw/gorm_poses.js, greybox) */

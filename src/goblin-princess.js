@@ -80,6 +80,7 @@ export function makeGoblinPrincessHands(ctx) {
   const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any; };
   H.on = () => !!(L() && (L().gpChase || L().gpRehearsal || A()));
   H.owns = e => e.t === 'gprincess';
+  H.hidden = e => !!(e && e.mode === 'sleep' && L() && L().gpChase && !chaseDone);   /* (claude/hc3art, highcrown3 q7) not drawn in her tower while the chase is still running along the wall */
   H.fight = () => F;
   H.load = () => { F = null; C = null; chaseDone = false; TW = new Map(); RH = null; };
   /* a respawn (spawnEntities): the fight goes; the chase starts again only if she had not reached her tower; the towers' and the banquet's state with it */
@@ -371,6 +372,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (Lv.gpChase) for (const Tw of Lv.gpChase.towers) { const W = TW.get(Tw.id), fy = R(Tw.floor - cy);
       guardSet(g, W, Tw.door, Tw.winch, fy, GP.chase.horn, cx, time);
       HC3A.drawBellAt(g, R(Tw.bell - cx), fy - 58, W ? Math.sin(time * 14) * 2.5 : 0, 0, time); }   /* HER alarm bell, cast bronze on an iron beam: it swings while it is sounding */
+    cameo(g, cx, cy, time);
     const Q = Lv.gpRehearsal;
     if (Q) { const fy = R(Q.floor - cy), W = RH && RH.W, rx = R(Q.rope - cx), bTop = R(10 * TS + 6 - cy), sw = swingOf(RH && RH.M, time);
       HC3A.drawBellAt(g, rx, bTop, sw, RH && BW.bellReady(RH.M, now()) ? 0.6 : 0, time); HC3A.drawRope(g, rx, bTop + 31, fy, sw, time);
@@ -382,6 +384,23 @@ export function makeGoblinPrincessHands(ctx) {
       if (Ar.door) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
       if (Ar.hatch) HC3A.drawHatch(g, R(Ar.hatch - cx), ceil, e && e.mode === 'escape' ? 1 : 0, time); }
   };
+
+  /* THE CAMEO (claude/hc3art): in her mother's intro (the Queen's 'wake' beat) the Princess has run up behind the throne: she wails MOTHER! with her arms up, points her fan at the hero (HIM!), and scurries off to the far wing before the first blow. Drawing only: she is not an enemy there. */
+  let CM = null;
+  function cameo(g, cx, cy, time) {
+    const q = ctx.enemies().find(e => e.t === 'gqueen' && e.alive && e.mode === 'wake');
+    if (!q) { CM = null; return; }
+    if (!CM || CM.q !== q) { CM = { q, m0: Math.max(0.5, q.modeT || 1), said: 0 }; }
+    const k = Math.max(0, Math.min(1, 1 - Math.max(0, q.modeT) / CM.m0)), Ar = L().arena, floor = Ar && Ar.floor ? Ar.floor : q.y + (q.h || 20) / 2;
+    const away = -(q.face || -1), sp = GPA.sheet(), side = away > 0 ? sp.R : sp.L;
+    let x = q.x + away * 40, f = GPA.GPF.escape, al = 1;
+    if (k > 0.3 && k <= 0.62) f = GPA.GPF.fanTell;
+    else if (k > 0.62) { const run = k - 0.62; x += away * run * 330; f = GPA.GPF.run + (Math.floor(time * 12) & 1); al = Math.max(0, 1 - Math.max(0, run - 0.25) / 0.13); }
+    if (Ar && Ar.x1) x = Math.max(Ar.x0 + 8, Math.min(Ar.x1 - 8, x));   /* never through a wall */
+    if (!CM.said) { CM.said = 1; ctx.number(x, floor - 44, 'MOTHER! HIM!', '#ff9ad0'); }
+    if (al <= 0) return;
+    g.globalAlpha = al; g.drawImage(side[f], R(x - cx - sp.ax), R(floor - cy - sp.ay)); g.globalAlpha = 1;
+  }
 
   /* the LAB BOT's duty (src/lab.js): strike the winch while a wave is open; ring the bell when it is ready and she is free on the floor or perched; stand off the landing as the grate glows */
   H.labDuty = P0 => {
