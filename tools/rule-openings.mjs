@@ -47,8 +47,8 @@ try {
     for (const under of [true,false]) { const {q,P}=setup('crown','knight','gqueen');const b=BK.props().find(p=>p.t==='winch'&&p.bell);
       if(!b){out.gqueen={noBell:true};break;}
       const gx=b.gate*16+8;q.mode='stand';hold(q);q.x=under?gx:gx-150;q.y=BK.L.arena.floor;P.x=b.x-6;P.y=BK.L.arena.floor;P.vy=0;BK.sim(1);P.x=b.x-6;
-      let best=0;swing(1,60*5,()=>{if(q.mode==='pinned')best=Math.max(best,q.modeT);else{q.x=under?gx:gx-150;q.vx=0;}});   /* (claude/hcfix) GQ2-MECH made the bell a LURE: she storms to it, the grate is told GQ3.mech.tell s, then drops (lureMax 3.2 s if she never gets there) - 0.5 s ended mid-lure */
-      out['gqueen'+(under?'Under':'Away')]={mode:q.mode,pinned:+best.toFixed(2),by:q.pinBy||null,open:BK.bossOpen(q)}; }
+      let best=0,op=false,by=null;swing(1,60*5,()=>{if(q.mode==='pinned'){best=Math.max(best,q.modeT);op=op||BK.bossOpen(q);by=by||q.pinBy;}else{q.x=under?gx:gx-150;q.vx=0;}});   /* (claude/hcfix) GQ2-MECH made the bell a LURE: she storms to it, the grate is told GQ3.mech.tell s, then drops (lureMax 3.2 s if she never gets there) - 0.5 s ended mid-lure */
+      out['gqueen'+(under?'Under':'Away')]={mode:q.mode,pinned:+best.toFixed(2),by:by||q.pinBy||null,open:op};   /* (claude/hcfix) read WHILE pinned: 5 s outlasts her 4 s pin */ }
     /* ---- THE GATE GARGOYLE and the RUNE COLUMN ---- */
     for (const inIt of [true,false]) { const {A,q,P}=setup('witchlight','knight','gargoyle');const rc=A.rune;
       if(!rc){out.gargoyle={noRune:true};break;}
