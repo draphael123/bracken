@@ -89,7 +89,7 @@ try {
     ok(!items.includes('SETTINGS') && !items.includes('SOUND TEST') && !items.includes('CONTROLS'), 'SETTINGS / SOUND TEST / CONTROLS sit under OPTIONS, not on the title: ' + items.join('|'));
     ok(items.includes('OPTIONS') && items.includes('EXTRAS') && items.includes('PLAY TOGETHER') && items.includes('MORE MODES') && !items.includes('SWAP HERO'), 'the touch title is the six-row top level: ' + items.join('|'));
     /* (claude/titlemenu, Daniel 11-08) every group opens by tap, shows a BACK row, and BACK (a tap) returns to the top level on the group's row */
-    for (const [g, want] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP']], ['MORE MODES', ['ARENA YARD', 'BOSS SELECT']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS']]]) {
+    for (const [g, want] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI']], ['MORE MODES', ['ARENA YARD', 'BOSS SELECT']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS']]]) {
       await tapTitleItem(g); const gi = await E('BK.ui.titleItems()'), gh = await E('BK.touch.hitBoxes()');
       ok(want.every(k => gi.includes(k)) && gi[gi.length - 1] === 'BACK' && gh.length >= want.length + 1, g + ' opened by tap with ' + gh.length + ' boxes: ' + gi.join('|'));
       await tapTitleItem('BACK'); await sleep(250); const back = await E('({ sub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI] })'); ok(back.sub === null && back.on === g, 'a tap on BACK returned to the top level on ' + g + ': ' + JSON.stringify(back));
