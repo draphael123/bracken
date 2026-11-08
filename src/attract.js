@@ -23,6 +23,7 @@ export const CLIPS = [
 export function blockedBy(c) {
   if (c.off) return 'switched off (?noattract, a tool, or a page that said so)';
   if (c.reduceMotion) return 'reduce-motion is on';
+  if (c.noAudio) return 'the sound is not unlocked yet (no first press: the clips would carry the sound banner)';
   if (c.state !== 'title') return 'not on the title';
   if (c.pressCard) return 'the press prompt is still up';
   if (c.titleSub) return 'a submenu is open';

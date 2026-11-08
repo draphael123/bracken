@@ -12315,7 +12315,7 @@ function levelJump(id, heroId, campaign) {
    window.__NOATTRACT, BK.manualSimulation or a webdriver page (every tool), and in reduce-motion. The hands are the AI partner's (the lab's duel hands + the playtest walker). */
 let attractOn = false, attract = null, attractSnap = null, attractIdle = 0, attractTouched = false, attractSwallow = 0, attractForce = false;
 const attractOff = () => q.has('noattract') || !!window.__NOATTRACT || (!attractForce && (!!(window.BK && window.BK.manualSimulation) || !!navigator.webdriver));
-const attractBlock = () => AT.blockedBy({ off: attractOff(), reduceMotion: !!SET.reduceMotion, state, pressCard, titleSub, hidden: !!document.hidden,
+const attractBlock = () => AT.blockedBy({ off: attractOff(), reduceMotion: !!SET.reduceMotion, noAudio: !audioReady(), state, pressCard, titleSub, hidden: !!document.hidden,
   overlay: UNLUI.isOpen || SWAPUI.isOpen || FBF.isOpen() || BUGUI.isOpen() || DEND.isOpen(),
   savePrompt: !!saveBlocked || !!saveFail });
 const attractPoke = () => { attractTouched = true; };
@@ -12332,7 +12332,7 @@ function attractNext() {
     const A = L.arena, tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
     let sx = tx * TS + 8; if (A.trigger !== undefined && A.trigger < 1e8) { if (!A.reverse && sx <= A.trigger) sx = A.trigger + 8; else if (A.reverse && sx >= A.trigger) sx = A.trigger - 8; }
     checkpoint = { x: sx, y: (ty + 1) * TS }; respawn(); }
-  camX = P.x - VW / 2; camY = P.y - 100; transT = 1; transKind = 'fade';
+  camX = P.x - VW / 2; camY = P.y - 100; transT = 1; transKind = 'fade'; if (c.kind !== 'boss') bannerT = 0;   /* the wood's name card is not for a clip (a boss's own name card is the glimpse) */
 }
 function attractBegin() {
   if (attractOn) return false;
@@ -12356,17 +12356,18 @@ function attractStop() {
 function attractHands() {
   const A = attract; if (!A || !LABMOD || !PTMOD || !WDMOD || state !== 'play') return;
   for (const k in keys) keys[k] = false;
-  A.t += 1 / 60; A.f++; if (A.t >= AT.CLIP_S) A.next = true;
+  const fightOn = bossActive || miniActive, waking = enemies.some(e => e.alive && e.maxHp && e.mode === 'wake');   /* a boss that is waking is his name card: the hero stands, and the clip's clock waits for the fight itself */
+  if (!waking) A.t += 1 / 60; A.f++; if (A.t >= AT.CLIP_S) A.next = true;
+  if (A.waking && !waking) A.walk = null; A.waking = waking;   /* a walker that stood through the wake thinks it is stuck: a fresh one when the fight starts */
   for (const p of players) if (!p.dead && p.hp < p.maxHp * 0.34) p.hp = p.maxHp;
-  if (P.dead || P.down > 0) return;
+  if (P.dead || P.down > 0 || waking) return;
   if (!A.walk) { A.walk = PTMOD.makeBot(window.BK, { fightThrough: true }); A.walk.drink = false; A.read = WDMOD.makeEliteRead({}); }
   let foe = null, best = 1e9;
   for (const e of enemies) { if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
-    if (Math.abs(e.y - P.y) > 40) continue; const d = Math.abs(e.x - P.x); if (d > 120) continue; if (d < best) { best = d; foe = e; } }
+    if (Math.abs(e.y - P.y) > 40) continue; const d = Math.abs(e.x - P.x); if (d > (fightOn && e.maxHp ? 520 : 120)) continue; if (d < best) { best = d; foe = e; } }
   if (foe) { LABMOD.labDuelFrame(window.BK, hero(), foe, A.f, 'human', A.read);
     if ((keys.left || keys.right) && allySafeGoal(P.x + (keys.right ? 12 : -12)) === P.x) keys.left = keys.right = false; return; }
-  const bossE = enemies.find(e => e.alive && e.maxHp && (bossActive || miniActive));
-  A.walk(allySafeGoal(bossE ? bossE.x : P.x + 260));
+  A.walk(allySafeGoal(P.x + 260));
 }
 /* the wait: called every title frame; true when it began a clip (update() returns, the state is 'play') */
 function attractTickIdle(dt) {

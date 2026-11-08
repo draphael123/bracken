@@ -20,14 +20,14 @@ for (const c of AT.CLIPS) { assert.ok(DEMO_IDS.has(c.level), c.id + ' is in the 
 assert.ok(AT.CLIPS.some(c => c.kind === 'boss') && AT.CLIPS.some(c => c.buddy) && AT.CLIPS.some(c => c.kind === 'run' && !c.buddy), 'a boss glimpse, a co-op pair and platforming');
 const base = { state: 'title', pressCard: false, titleSub: null, overlay: false, savePrompt: false, hidden: false, off: false, reduceMotion: false };
 assert.equal(AT.blockedBy(base), '', 'the plain title may');
-for (const [k, v] of Object.entries({ off: true, reduceMotion: true, state: 'slots', pressCard: true, titleSub: 'OPTIONS', overlay: true, savePrompt: true, hidden: true })) assert.notEqual(AT.blockedBy({ ...base, [k]: v }), '', 'blocked by ' + k);
+for (const [k, v] of Object.entries({ off: true, reduceMotion: true, noAudio: true, state: 'slots', pressCard: true, titleSub: 'OPTIONS', overlay: true, savePrompt: true, hidden: true })) assert.notEqual(AT.blockedBy({ ...base, [k]: v }), '', 'blocked by ' + k);
 assert.equal(AT.idleStep(5, 1, false, false), 6); assert.equal(AT.idleStep(5, 1, true, false), 0); assert.equal(AT.idleStep(5, 1, false, true), 0);
 assert.equal(AT.nextClip(-1), 0); assert.equal(AT.nextClip(AT.CLIPS.length - 1), -1);
 console.log('ok  static         ' + AT.CLIPS.length + ' clips (' + AT.CLIPS.map(c => c.id).join(', ') + '), ' + AT.CLIP_S + ' s each, ' + AT.IDLE_S + ' s idle, every reason named');
 
 const SAVE = { hero: 'knight', heroes: { knight: true, warden: true }, coins: 137, wood: { cleared: true, mini: true, medal: 2, best: 188 }, xp: { knight: 420 } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const pg = await openPage({ audio: false });
+const pg = await openPage({});   /* (the page has had a key: the sound is unlocked, as after a real first press) */
 const E = (x, t) => pg.evalp(x, t);
 const store = () => E('JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]))');
 const key = async (k, code, vk) => { for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: vk }); };
@@ -35,6 +35,7 @@ const key = async (k, code, vk) => { for (const type of ['keyDown', 'keyUp']) aw
 async function nav(query = '') {
   await E('(()=>{ localStorage.clear(); localStorage.setItem("bracken.progress.0", ' + JSON.stringify(JSON.stringify(SAVE)) + '); localStorage.setItem("bracken.settings", JSON.stringify({ speed: 1, speedV3: 1, hints: "high" })); window.__gone = 1; setTimeout(() => location.assign("/' + query + '"), 0); })()').catch(() => {});
   for (let i = 0; i < 400; i++) { await sleep(150); const r = await E('!window.__gone && typeof window.BK === "object" && !!window.BK.lookPass && location.search === ' + JSON.stringify(query), 3000).catch(() => false); if (r) break; }
+  await key('F8', 'F8', 119);   /* the first press of a fresh document: the sound is unlocked, as after a real one */
   await E('BK.manualSimulation = true; BK.ui.pressCard = false; BK.state = "title"; BK.ui.titleSub = null; BK.ui.titleI = 0; BK.step(3); 0');
 }
 /* step n frames in chunks, yielding between so the bot's modules (a dynamic import) can land */

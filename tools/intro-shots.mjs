@@ -4,7 +4,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 const out = join(ROOT, process.argv[2] || 'work/claude/intro'), tag = process.argv[3] || 'shot', which = process.argv[4] || 'all'; mkdirSync(out, { recursive: true });
-const pg = await openPage({ audio: false });
+const pg = await openPage({ audio: which === 'attract' });
 const snap = async name => { const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(out, tag + '-' + name + '.png'), Buffer.from(r.result.data, 'base64')); console.log(join(out, tag + '-' + name + '.png')); };
 const pause = ms => new Promise(r => setTimeout(r, ms));
 const want = k => which === 'all' || which === k;
