@@ -17,6 +17,16 @@ const HA = await import('../src/redraw/hc3_art.js');
 const cell = (w, h, bg, fn) => { const c = newCanvas(w, h), g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, w, h); fn(g); if (!sig(c).k) bad.push('empty cell'); return c; };
 const stoneFloor = (g, w, y) => { g.fillStyle = '#363949'; g.fillRect(0, y, w, 40); g.fillStyle = '#74788e'; g.fillRect(0, y, w, 1); };
 const wall = (g, w, h) => { g.fillStyle = '#2a2d38'; g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 10) { g.fillStyle = '#14151d'; g.fillRect(0, y + 9, w, 1); } };
+// the art's hard-coded columns must match the built level (claude/hc3art): K in src/redraw/hc3_art.js against HC3 in src/highcrown2.js and the grid
+{ const { LEVELS, T } = await import('../src/level.js'); const { HC3 } = await import('../src/highcrown2.js'); const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x], K = HA.K;
+  const solid = (x, y) => at(x, y) === T.SOLID;
+  if (!L.hc3) bad.push('level: L.hc3 is not set (the art would never draw)');
+  K.TOWERS.forEach((t, i) => { const h = HC3.TOWERS[i]; for (const k of ['x0', 'x1', 'bell', 'door', 'winch']) if (t[k] !== h[k]) bad.push('tower ' + (i + 1) + ': art ' + k + ' ' + t[k] + ' != level ' + h[k]); });
+  if (K.GAP[0] !== HC3.GAP[0] || K.GAP[1] !== HC3.GAP[1]) bad.push('broken stretch: art ' + K.GAP + ' != level ' + HC3.GAP);
+  if (K.BT[0] !== HC3.BT[0] || K.BT[1] !== HC3.BT[1] || K.BT_ROOF !== HC3.BT_ROOF || K.HATCH !== HC3.HATCH || K.S !== HC3.S) bad.push('bell tower / wall-walk row: art and level differ');
+  const ints = (L.interiors || []).filter(r => r[4] === 'royal'); for (const [n, c] of [['captains hall', K.CAPT], ['banquet', K.BANQ]]) if (!ints.some(r => r[0] === c)) bad.push(n + ': no royal interior starts at column ' + c);
+  for (const [a, b] of K.PARAPET) for (let x = a; x <= b; x++) { if (!solid(x, K.S + 1)) bad.push('parapet column ' + x + ': no wall-walk floor under it'); if (solid(x, K.S)) bad.push('parapet column ' + x + ': the walk is blocked'); }
+  for (const o of K.YARD) { const x = o.col; if (!solid(x, o.row) && at(x, o.row) !== T.ONEWAY && at(x, o.row) !== T.PLANK) bad.push('yard ' + o.k + ' at ' + x + '/' + o.row + ': no floor under it'); for (let dy = 1; dy <= 2; dy++) if (solid(x, o.row - dy)) bad.push('yard ' + o.k + ' at ' + x + '/' + o.row + ': stone in its way at row ' + (o.row - dy)); } }
 const parts = [];
 parts.push(['door shut / up / down', cell(150, 60, '#2a2d38', g => { HA.drawGuardDoor(g, 24, 54, 'shut'); HA.drawGuardDoor(g, 74, 54, 'up', 0.6, 0.3); HA.drawGuardDoor(g, 124, 54, 'down', 0, 0, 1); })]);
 parts.push(['winch / bell / rope / hatch', cell(190, 80, '#2a2d38', g => { stoneFloor(g, 190, 70); HA.drawWinchBox(g, 18, 70, 50, 1, 2, 3, true, 0.1); HA.drawBellAt(g, 62, 4, 3, 1, 0.2); HA.drawRope(g, 100, 4, 70, 2, 0.3); HA.drawHatch(g, 138, 6, 0, 0); HA.drawHatch(g, 172, 6, 1, 0); })]);
@@ -26,8 +36,12 @@ parts.push(['princess parts', cell(200, 50, '#2a1a3a', g => { GPA.drawGem(g, 10,
 parts.push(['battlements walk', cell(640, 190, '#0c1226', g => { const cx = 527 * 16, cy = 22 * 16 - 150; HA.drawFar(g, cx, cy, 640, 190, 0); g.fillStyle = '#363949'; g.fillRect(0, 150, 640, 40); g.fillStyle = '#74788e'; g.fillRect(0, 150, 640, 1);
   HA.drawParapet(g, cx, cy, 640, 0); g.fillStyle = '#2a2d38'; g.fillRect((557 * 16 - cx), 0, 160, 150 - 8 * 16 + 8 * 16 - 0); HA.drawTowers(g, cx, cy, 640, 0.3);
   const T = HA.K.TOWERS[0]; HA.drawGuardDoor(g, T.door * 16 + 8 - cx, 150, 'up', 0.5, 0.2); HA.drawWinchBox(g, T.winch * 16 + 8 - cx, 150, T.door * 16 + 8 - cx, 0, 1, 3, true, 0); HA.drawBellAt(g, T.bell * 16 + 8 - cx, 150 - 50, 2, 0, 0); })]);
+parts.push(['tower top cold / lit', cell(360, 130, '#0c1226', g => { const tile = (cx, a, b, r0, r1) => { g.fillStyle = '#2a2d38'; g.fillRect(a * 16 - cx, r0 * 16, (b - a + 1) * 16, (r1 - r0 + 1) * 16); };
+  for (const [lit, ox] of [[false, 0], [true, 180]]) { g.save(); g.translate(ox, 0); const cx = 556 * 16, T = HA.K.TOWERS[0]; tile(cx, T.x0, T.x1, 7, 14); tile(cx, T.x0, T.x0, 5, 6); tile(cx, T.x1, T.x1, 5, 6); tile(cx, T.x0 + 4, T.x0 + 5, 5, 6); g.translate(-0, 0);
+    HA.drawTowerTops(g, cx, 0, 180, 0.4, lit ? new Set(['tower1']) : null); g.restore(); } })]);
 parts.push(['broken stretch', cell(300, 190, '#0c1226', g => { const cx = 570 * 16, cy = 22 * 16 - 150; HA.drawFar(g, cx, cy, 300, 190, 0); g.fillStyle = '#363949'; g.fillRect(0, 150, 90, 40); g.fillRect(200, 150, 100, 40); HA.drawParapet(g, cx, cy, 300, 0); HA.drawGapRubble(g, cx, cy, 0); })]);
 parts.push(['bell tower top', cell(420, 130, '#0c1226', g => { const cx = 622 * 16 + 8, cy = 0; g.fillStyle = '#2a2d38'; g.fillRect(8, 32, 400, 98); HA.drawBellTowerTop(g, cx, cy, 420, 0.3); })]);
+parts.push(['belfry chamber (her room)', cell(384, 240, '#000', g => { HA.paintRoom(g, 'hchall', 0, 0, 384, 240, HA.K.BT[0] + 1, 7, 0.3); HA.drawGuardDoor(g, 312, 240, 'shut'); HA.drawWinchBox(g, 280, 240, 312, 0, 1, 3, false, 0); HA.drawBellAt(g, 200, 50, 0, 0, 0.3); HA.drawRope(g, 56, 18, 240, 0, 0); HA.drawHatch(g, 248, 18, 0, 0); })]);
 parts.push(['captains hall', cell(480, 160, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 160, HA.K.CAPT, 10, 0); })]);
 parts.push(['banquet hall', cell(480, 256, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 256, HA.K.BANQ, 10, 0); })]);
 for (const [n, c] of parts) { if (!sig(c).k) bad.push(n + ': nothing drawn'); }

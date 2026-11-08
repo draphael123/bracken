@@ -105,7 +105,7 @@ function pose(f) {
     case 13: return { lean: -1, legs: [2, -2], fa: [4, 2], ba: [-4, -3], blade: [6, -1, 13, -5], fan: 1, fanDir: -1, mouth: 'smile', eyes: 'open', ears: 1 };
     case 14: return { lean: -4, legs: [-3, 6], fa: [4, 2], ba: [6, -2], blade: null, fan: 2, fanDir: 1, skirt: 4, flare: 3, fly: 6, mouth: 'shout', eyes: 'shut', fx: (g, o) => { for (let i = 0; i < 4; i++) { rect(g, o.fhx + 10 + i * 3, o.hy - 6 + i * 4, 6, 1, C.fan); px(g, o.fhx + 17 + i * 3, o.hy - 5 + i * 4, C.goldL); } } };
     case 15: return { crouch: 7, lean: 0, legs: [-3, 3], fa: [3, 6], ba: [-4, 6], blade: null, fan: 0, skirt: 0, flare: 1, mouth: 'grin', eyes: 'open', ears: 1 };
-    case 16: return { air: 8, by: -6, lean: 1, legs: [-5, 4], lift: 5, fa: [7, -8], ba: [-7, -7], blade: null, fan: 0, skirt: 5, flare: 3, fly: 4, eyes: 'wide', mouth: 'shout', ears: 1 };
+    case 16: return { air: 1, by: -4, lean: 1, legs: [-5, 4], lift: 5, fa: [7, -8], ba: [-7, -7], blade: null, fan: 0, skirt: 5, flare: 3, fly: 4, eyes: 'wide', mouth: 'shout', ears: 1 };
     case 17: return { lean: 0, legs: [1, -1], fa: [3, -12], ba: [-5, 5], blade: null, tiara: 'hand', eyes: 'open', mouth: 'grin', ears: 1 };
     case 18: return { lean: 3, legs: [3, -3], fa: [12, -3], ba: [-5, 5], blade: null, tiara: 'off', eyes: 'angry', mouth: 'shout', ears: 1 };
     case 19: return { lean: 0, crouch: 0, legs: [1, -1], lift: 5, fa: [5, 6], ba: [-5, 6], blade: null, eyes: 'angry', mouth: 'shout', ears: 1, flare: 1,

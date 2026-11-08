@@ -3,6 +3,7 @@
 // a winch drum). Same stone as the rest of Highcrown (STONE in highcrown2_art.js) and the Queen's purple + gold.
 //   the BATTLEMENTS  drawFar (the outer wards, the hills, the haze - parallax, behind the facades), drawParapet (merlons, crenels, snow, loops: behind the walkers), drawTowers (machicolation
 //                    course, arch rings, loops, banners), the broken stretch's ragged ends
+//                    drawTowerTops (the archers' roofs: snow caps, loops, pennants, the signal brazier)
 //   the BELL TOWER   drawBellTowerTop (belfry arches, louvres, finial), drawHatch (her roof hatch, shut / open to the sky)
 //   the PROPS        drawGuardDoor (shut oak / raised / iron gate down), drawWinchBox, drawBellAt (cast bronze, swung), drawRope, drawMurderHole (the slot, the chain, the stone), drawStone
 //   the ROOMS        paintRoom: THE CAPTAINS HALL (guard hall) and THE BANQUET HALL (feast hall), keyed off the 'royal' interiors at those columns
@@ -153,6 +154,29 @@ export function drawTowers(g, cx, cy, VW, time) {                               
     const wave = Math.sin(time * 2.2 + T.x0) * 1.5; for (const bx of [X0 + 7, X1 - 15]) { R(g, bx - 1, top + 3, 12, 2, S.dk); R(g, bx, top + 5, 10, 18, '#4e1e72'); R(g, bx, top + 5, 10, 1, '#e0b040'); R(g, bx + 4 + Math.round(wave), top + 10, 2, 6, '#e0b040'); R(g, bx + 3 + Math.round(wave), top + 12, 4, 2, '#e0b040'); for (let i = 0; i < 5; i++) R(g, bx + i * 2, top + 23 + (i & 1), 2, 2, '#e0b040'); }   // the Queen's banner: a crown on purple
   } }
 
+// THE TOWER TOPS (the archers' roofs): the merlons (tile columns x0, x1 and x0+4..5 on rows 5-6) get snow caps, a cut loop in the broad one, a pennant pole on each end; a signal BRAZIER (an iron basket on three legs) stands in
+// the crenel by the west merlon: cold coals until her alarm sounds, then it burns (lit = a Set of tower ids, from goblin-princess.js). Nothing here moves a tile.
+export function drawTowerTops(g, cx, cy, VW, time, lit) {
+  for (const T of K.TOWERS) {
+    if (!inSpan(T.x0, T.x1, cx, VW)) continue; const id = T.x0 === K.TOWERS[0].x0 ? 'tower1' : 'tower2', on = !!(lit && lit.has && lit.has(id));
+    const top = Math.round(5 * TS - cy), floor = Math.round(7 * TS - cy), X = c => Math.round(c * TS - cx);
+    for (const [a, b] of [[T.x0, T.x0], [T.x1, T.x1], [T.x0 + 4, T.x0 + 5]]) { const x = X(a), w = (b - a + 1) * TS;
+      R(g, x, top - 2, w, 3, SNOW); R(g, x, top - 2, w, 1, '#ffffff'); R(g, x + 1, top + 1, w - 2, 1, SNOW_D); R(g, x - 1, top + 2, w + 2, 2, S.f); R(g, x - 1, top + 3, w + 2, 1, S.mor);   // the cap stone, the snow on it
+      for (let y = top + 6; y < floor - 2; y += 8) { R(g, x, y, w, 1, S.mor); } R(g, x - 1, floor - 3, w + 2, 3, S.a);                                                                // courses, the shadow at the foot
+      if (w > 20) { const lx = x + (w >> 1) - 1; R(g, lx - 2, top + 8, 5, 1, S.f); R(g, lx - 1, top + 9, 3, 16, '#07070b'); R(g, lx - 2, top + 9, 1, 16, S.e); R(g, lx - 1, top + 15, 3, 1, '#07070b'); R(g, lx - 3, top + 25, 7, 1, S.a); } }   // the archers' loop, a cross-slit
+    const pole = (a, col, flip) => { const x = X(a) + (flip ? 11 : 3), w = Math.sin(time * 2.6 + a) * 1.5; R(g, x, top - 22, 2, 21, '#8a919c'); R(g, x, top - 22, 2, 1, '#c9a040'); R(g, x - 1, top - 24, 4, 2, '#c9a040');
+      for (let i = 0; i < 9; i++) R(g, x + 2 + i, top - 20 + Math.round(w * i / 9) + (i >> 2), 1, 7 - (i >> 1), i & 1 ? col : col);   // the pennant, tapering
+      R(g, x + 2, top - 20, 6, 1, '#e0b040'); };
+    pole(T.x0, '#9a4ad0', false); pole(T.x1, '#4aa84a', true);
+    const bx = X(T.x0 + 2) + 8;                                                                                   // the signal brazier in the crenel
+    R(g, bx - 6, floor - 3, 3, 3, '#34343f'); R(g, bx + 4, floor - 3, 3, 3, '#34343f'); R(g, bx - 1, floor - 3, 3, 3, '#34343f');
+    R(g, bx - 7, floor - 12, 15, 3, '#3a3a48'); R(g, bx - 7, floor - 12, 15, 1, '#8a8aa0'); R(g, bx - 6, floor - 9, 13, 6, '#22222c'); for (const dx of [-5, -1, 3, 6]) R(g, bx + dx, floor - 9, 1, 6, '#5a5a6c');
+    if (!on) { R(g, bx - 5, floor - 14, 11, 2, '#2a2420'); px(g, bx - 2, floor - 14, '#5a3a2a'); px(g, bx + 2, floor - 15, '#3a2a22'); }
+    else { const f = 0.5 + 0.5 * Math.sin(time * 11 + T.x0); for (let k = 0; k < 4; k++) { g.globalAlpha = (0.05 + 0.03 * f) * (k + 1) / 2; R(g, bx - 8 - (3 - k) * 5, floor - 20 - (3 - k) * 5, 17 + (3 - k) * 10, 20 + (3 - k) * 5, '#ff8a3c'); } g.globalAlpha = 1;
+      for (let i = 0; i < 5; i++) { const fh = 8 + ((i * 5 + Math.floor(time * 12 + i * 2)) % 4) * 3; R(g, bx - 5 + i * 2, floor - 13 - fh, 3, fh, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, bx - 4 + i * 2, floor - 13 - fh + 4, 1, fh - 4, '#ffd36b'); }
+      R(g, bx - 5, floor - 14, 11, 2, '#ff6a2c'); } }
+}
+
 // ---------------- THE BELL TOWER ----------------
 export function drawBellTowerTop(g, cx, cy, VW, time) {
   if (!inSpan(K.BT[0], K.BT[1], cx, VW)) return; const X0 = Math.round(K.BT[0] * TS - cx), top = Math.round(2 * TS - cy), W = (K.BT[1] - K.BT[0] + 1) * TS;
@@ -171,7 +195,7 @@ export function drawYard(g, cx, cy, VW, time) {
     if (o.k === 'oven') {                                                                                         // a beehive bread oven in coursed stone, soot over its mouth, a fire-glow in it
       R(g, x - 15, fy - 6, 31, 6, S.d); R(g, x - 15, fy - 6, 31, 1, S.f); R(g, x - 13, fy - 20, 27, 14, S.c); R(g, x - 13, fy - 20, 27, 1, S.e); R(g, x - 10, fy - 25, 21, 5, S.c); R(g, x - 7, fy - 29, 15, 4, S.b); R(g, x - 4, fy - 32, 9, 3, S.c);
       for (const [yy, off] of [[fy - 15, 0], [fy - 10, 5], [fy - 23, 3]]) R(g, x - 13 + off, yy, 26 - off, 1, S.mor);
-      R(g, x - 6, fy - 17, 13, 11, '#0a0810'); R(g, x - 7, fy - 18, 15, 2, S.d); R(g, x - 7, fy - 16, 1, 10, S.e); const f = 0.5 + 0.5 * Math.sin(time * 7 + o.col); g.globalAlpha = 0.5 + 0.25 * f; R(g, x - 5, fy - 11, 11, 5, '#ff7a2c'); R(g, x - 3, fy - 9, 7, 3, '#ffd36b'); g.globalAlpha = 1;
+      R(g, x - 6, fy - 17, 13, 11, '#0a0810'); R(g, x - 7, fy - 18, 15, 2, S.d); R(g, x - 7, fy - 16, 1, 10, S.e); const f = 0.5 + 0.5 * Math.sin(time * 7 + o.col); for (let k = 0; k < 3; k++) { g.globalAlpha = 0.07 + 0.03 * f; R(g, x - 12 - k * 5, fy - 16 - k * 4, 25 + k * 10, 16 + k * 4, '#ff7a2c'); } g.globalAlpha = 0.5 + 0.25 * f; R(g, x - 5, fy - 11, 11, 5, '#ff7a2c'); R(g, x - 3, fy - 9, 7, 3, '#ffd36b'); g.globalAlpha = 1;
       R(g, x - 5, fy - 24, 11, 3, '#1a1620'); R(g, x + 13, fy - 28, 3, 22, S.b); R(g, x + 13, fy - 28, 3, 1, S.e); }                                // soot, and the flue
     else if (o.k === 'sacks') {                                                                                   // flour sacks piled against the wall, goblin-brand stamped
       for (const [dx, dy, w] of [[-9, 0, 11], [3, 0, 11], [-4, -9, 11]]) { R(g, x + dx, fy - 9 + dy, w, 9, '#b8a888'); R(g, x + dx, fy - 9 + dy, w, 1, '#d8c8a8'); R(g, x + dx, fy - 1 + dy, w, 1, '#7a6a50'); R(g, x + dx + 1, fy - 12 + dy, w - 2, 3, '#a89878'); R(g, x + dx + 3, fy - 5 + dy, 4, 3, '#2c4a1e'); R(g, x + dx + 4, fy - 4 + dy, 2, 1, '#8fd160'); } R(g, x + 9, fy - 3, 4, 3, '#e8e0cc'); }
@@ -188,6 +212,21 @@ const ashlar = (g, w, h, base, lit, mor, seed) => { const rnd = mulberry(seed); 
   for (let i = 0; i < w * h / 90; i++) { const x = (rnd() * w) | 0, y = (rnd() * h) | 0; px(g, x, y, rnd() < 0.5 ? lit : mor); } };
 function banner(g, x, y, h, col, trim, glyph) { R(g, x - 1, y, 14, 2, S.dk); R(g, x, y, 12, 1, '#8a8aa0'); R(g, x + 1, y + 2, 10, h, col); R(g, x + 1, y + 2, 1, h, trim); R(g, x + 10, y + 2, 1, h, '#000000'); for (let i = 0; i < 5; i++) R(g, x + 1 + i * 2, y + 2 + h, 2, 2 + (i & 1) * 2, trim);
   if (glyph) { const cy = y + 2 + (h >> 1) - 3; R(g, x + 3, cy + 2, 6, 3, trim); for (const dx of [3, 5, 7, 9]) R(g, x + dx - 1 + (dx > 5 ? 0 : 0), cy - (dx === 5 || dx === 7 ? 1 : 0), 1, 3, trim); px(g, x + 6, cy + 3, '#ff4a6a'); } }
+function princessBanner(g, x, y, h) { banner(g, x, y, h, '#a8386e', '#f0d0e8', false);                                                               // the Goblin Princess's colours: rose, with a gold tiara and three gems
+  const cy = y + 2 + (h >> 1) - 3; R(g, x + 2, cy + 3, 8, 2, '#e0b040'); R(g, x + 2, cy + 3, 8, 1, '#fff6c8'); for (const dx of [2, 5, 8]) R(g, x + dx, cy - (dx === 5 ? 1 : 0), 1, 4 + (dx === 5 ? 1 : 0), '#e0b040'); px(g, x + 6, cy + 3, '#ff4a6a'); px(g, x + 4, cy + 4, '#4ad0ff'); px(g, x + 8, cy + 4, '#7aff8a'); }
+function feastTable(g, x, w, fl) {                                                                                // a long banquet table: white cloth to the floor, a purple runner, gilt goblets, a roast, loaves, candelabra
+  const top = fl - 22; R(g, x, top, w, 3, '#e8e0f0'); R(g, x, top, w, 1, '#ffffff'); R(g, x + 1, top + 3, w - 2, 19, '#cfc4de'); R(g, x + 1, top + 3, w - 2, 2, '#b3a6c8');
+  for (let k = x + 5; k < x + w - 3; k += 7) { R(g, k, top + 5, 1, 17, '#a094b8'); R(g, k + 1, top + 5, 1, 17, '#dcd2ea'); } R(g, x + 1, fl - 3, w - 2, 3, '#e0b040'); R(g, x + 1, fl - 3, w - 2, 1, '#fff6c8'); R(g, x, fl - 1, w, 1, S.mor);
+  R(g, x + 8, top, w - 16, 2, '#7a3aa0'); R(g, x + 8, top, w - 16, 1, '#e0b040'); R(g, x + 8, top + 2, w - 16, 1, '#4e1e72');
+  for (let k = x + 12; k < x + w - 14; k += 15) { const m = ((k - x) / 15) | 0;
+    if (m % 4 === 0) { R(g, k, top - 3, 4, 3, '#e0b040'); R(g, k + 1, top - 5, 2, 2, '#e0b040'); px(g, k, top - 3, '#fff6c8'); }
+    else if (m % 4 === 1) { R(g, k - 3, top - 2, 14, 2, '#c9d1dc'); R(g, k - 1, top - 6, 10, 4, '#7a4a22'); R(g, k, top - 7, 8, 1, '#a8682c'); px(g, k + 3, top - 5, '#d8a060'); px(g, k + 6, top - 4, '#5a3216'); }
+    else if (m % 4 === 2) { R(g, k + 1, top - 2, 3, 2, '#c9a870'); R(g, k + 5, top - 3, 4, 3, '#a8884e'); R(g, k + 5, top - 3, 4, 1, '#d8b878'); R(g, k, top - 1, 10, 1, '#c9d1dc'); }
+    else { R(g, k + 2, top - 10, 1, 8, '#c9a040'); R(g, k - 1, top - 10, 7, 1, '#c9a040'); R(g, k + 3, top - 2, 3, 2, '#c9a040'); for (const cx2 of [k - 1, k + 2, k + 5]) { R(g, cx2, top - 14, 1, 4, '#fff6e0'); } } } }
+const CHAND = [{ cx: 224, y: 50 }, { cx: 388, y: 50 }];                                                          // the banquet's two iron candle-rings (flames are drawn live)
+function chandelier(g, cx, y) { for (let yy = 22; yy < y; yy += 3) R(g, cx, yy, 1, 2, yy & 1 ? '#b0b0c4' : '#6a6a7c'); R(g, cx - 2, 20, 5, 3, S.dk);
+  R(g, cx - 18, y, 37, 2, '#34343f'); R(g, cx - 18, y, 37, 1, '#8a8aa0'); R(g, cx - 19, y - 3, 2, 5, '#34343f'); R(g, cx + 18, y - 3, 2, 5, '#34343f'); R(g, cx - 1, y + 2, 3, 6, '#34343f'); px(g, cx, y + 8, '#c9a040');
+  for (const dx of [-16, -8, 0, 8, 16]) { R(g, dx + cx - 1, y - 6, 3, 6, '#fff6e0'); R(g, dx + cx, y - 7, 1, 1, '#5a3a14'); } }
 const lancet = (g, x, y, w, h, shaftK) => { R(g, x - 2, y - 2, w + 4, h + 3, S.dk); R(g, x, y, w, h, '#0c1226'); for (let i = 0; i < w / 2; i++) { const d = Math.round((w / 2 - i) * 0.8); R(g, x + i, y, 1, d, S.dk); R(g, x + w - 1 - i, y, 1, d, S.dk); }
   R(g, x - 2, y - 2, 1, h + 3, S.e); R(g, x + w + 1, y - 2, 1, h + 3, S.a); R(g, x - 3, y + h + 1, w + 6, 2, S.f); R(g, x + (w >> 1), y + 3, 1, h - 3, S.dk); R(g, x, y + (h >> 1), w, 1, S.dk); for (let k = 0; k < 2; k++) px(g, x + 2 + k * (w - 5), y + 6 + k, '#9fb4e8'); void shaftK; };
 const bakeCapt = (w, h) => once('capt' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
@@ -199,7 +238,8 @@ const bakeCapt = (w, h) => once('capt' + w + 'x' + h, () => { const [c, g] = can
     lancet(g, bx + 14, 22, 12, 36, 0);                                                                                                                                                   // a lancet window
     banner(g, bx + 36, 14, 38, i % 2 ? '#4e1e72' : '#2c4a1e', '#e0b040', true);                                                                                                           // the Queen's purple / the goblin green
     if (bx + 28 < w - 8) { /* a shield and crossed pikes on every other bay */ const sx = bx + 30, sy = 62; if (i % 2 === 0) { R(g, sx - 1, sy - 8, 2, 34, '#5a5a6c'); R(g, sx + 12, sy - 8, 2, 34, '#5a5a6c'); R(g, sx - 3, sy - 12, 6, 5, '#c9d1dc'); R(g, sx + 10, sy - 12, 6, 5, '#c9d1dc'); R(g, sx - 2, sy - 1, 18, 2, '#34343f'); } } }
-  for (let x = 40, i = 0; x < w - 30; x += 64, i++) { if (i % 2 === 1) { R(g, x, h - 56, 22, 22, '#3a3a48'); R(g, x + 1, h - 55, 20, 20, '#8a2c2c'); R(g, x + 1, h - 55, 20, 3, '#c9a040'); R(g, x + 9, h - 52, 4, 16, '#e8e8f0'); R(g, x + 4, h - 46, 14, 4, '#e8e8f0'); } }   // a heater shield on the wall
+  for (let x = 40, i = 0; x < w - 30; x += 64, i++) { if (i % 2 === 1) { R(g, x, h - 56, 22, 22, '#3a3a48'); R(g, x + 1, h - 55, 20, 20, '#4e1e72'); R(g, x + 1, h - 55, 20, 2, '#e0b040'); R(g, x + 1, h - 38, 20, 1, '#e0b040'); R(g, x + 1, h - 55, 1, 20, '#e0b040'); R(g, x + 20, h - 55, 1, 20, '#a8841c');
+      R(g, x + 5, h - 47, 12, 3, '#e0b040'); R(g, x + 5, h - 47, 12, 1, '#fff6c8'); for (const dx of [5, 8, 10, 12, 15]) R(g, x + dx, h - 52 + (dx === 10 ? 0 : 2), 1, 5 - (dx === 10 ? 0 : 2), '#e0b040'); px(g, x + 10, h - 46, '#ff4a6a'); R(g, x + 8, h - 42, 6, 1, '#7a3aa0'); } }   // a heater shield on the wall
   return c; });
 const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
   ashlar(g, w, h, '#2b2830', '#403c4c', '#15131b', 479);
@@ -212,16 +252,48 @@ const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = can
     R(g, ax - 2, 40, aw + 4, 90, S.dk); R(g, ax, 42, aw, 88, '#0a0f22'); for (let k = 0; k < aw / 2; k++) { const d = Math.round((aw / 2 - k) * 0.55); R(g, ax + k, 42, 1, d, S.dk); R(g, ax + aw - 1 - k, 42, 1, d, S.dk); }
     R(g, ax - 2, 40, 1, 90, S.e); R(g, ax + aw + 1, 40, 1, 90, S.a); R(g, ax - 3, 130, aw + 6, 3, S.f); for (let y = 52; y < 126; y += 18) R(g, ax, y, aw, 1, S.dk); R(g, ax + (aw >> 1), 42, 1, 88, S.dk);
     for (let k = 0; k < 6; k++) px(g, ax + 4 + (k * 7) % (aw - 8), 50 + k * 12, '#9fb4e8'); }
-  for (let x = 24; x < w - 40; x += 80) { R(g, x, 20, 30, 3, '#8a8aa0'); banner(g, x + 4, 22, 54, '#4e1e72', '#e0b040', true); }                                                // the Queen's banners hung between windows
+  for (let x = 24, i = 0; x < w - 40; x += 80, i++) { R(g, x, 20, 30, 3, '#8a8aa0'); if (i % 3 === 1) princessBanner(g, x + 4, 22, 54); else banner(g, x + 4, 22, 54, '#4e1e72', '#e0b040', true); }                                                // the Queen's banners hung between windows
   R(g, 0, h - 30, w, 30, '#1f1c25'); R(g, 0, h - 30, w, 2, S.d); for (let x = 0; x < w; x += 24) { R(g, x, h - 28, 1, 28, S.mor); R(g, x + 3, h - 26, 18, 18, '#262330'); R(g, x + 3, h - 26, 18, 1, S.b); }
+  feastTable(g, 168, 132, h); feastTable(g, 340, 84, h); for (const c of CHAND) chandelier(g, c.cx, c.y);   /* the long tables, the candle-rings */
   const sv = (31 * 16);                                                                                                                                                                  // the servery door's end: a plate rack and a serving shelf (the door is at 510)
   R(g, sv - 56, h - 72, 44, 5, S.f); R(g, sv - 56, h - 72, 44, 1, S.g); for (let i = 0; i < 6; i++) { R(g, sv - 54 + i * 7, h - 82, 5, 10, '#c9c9d6'); R(g, sv - 54 + i * 7, h - 82, 5, 1, '#ffffff'); R(g, sv - 53 + i * 7, h - 80, 3, 6, '#9a9aa8'); }
+  { const ry = h - 112; R(g, sv - 100, ry, 150, 2, '#34343f'); R(g, sv - 100, ry, 150, 1, '#8a8aa0'); R(g, sv - 101, ry - 3, 3, 8, S.c); R(g, sv + 49, ry - 3, 3, 8, S.c);   // the servery's pot rail: copper, ladles, a cleaver
+    for (let i = 0, x = sv - 92; x < sv + 44; i++, x += 17) { R(g, x + 3, ry + 2, 1, 4, '#8a8aa0');
+      if (i % 3 === 2) { R(g, x + 2, ry + 6, 3, 14, '#a8a8b8'); R(g, x, ry + 18, 7, 4, '#8a8aa0'); R(g, x + 1, ry + 19, 5, 1, '#c9c9d6'); }
+      else { R(g, x - 2, ry + 6, 11, 9, '#a85a2c'); R(g, x - 2, ry + 6, 11, 2, '#e08a4c'); R(g, x - 3, ry + 5, 13, 1, '#6a3414'); R(g, x - 1, ry + 14, 9, 2, '#6a3414'); px(g, x, ry + 9, '#f0b070'); px(g, x + 1, ry + 9, '#f0b070'); } } }
   R(g, sv - 58, h - 90, 3, 20, '#34343f'); R(g, sv - 14, h - 90, 3, 20, '#34343f'); R(g, sv - 58, h - 92, 47, 2, '#34343f');
   return c; });
+// THE BELFRY CHAMBER (her room, the 'hchall' interior at 624): a bell-chamber of dark ashlar with a corbelled vault, tall louvred openings onto the snow-night, the vault pulley-holes the ropes run through, and
+// her touches - rose-and-gold drapes with the tiara, a heap of gilt cushions and a little tea table by her guardroom door, a gem-box on a stone shelf.
+const bakeBelfry = (w, h) => once('belfry' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
+  ashlar(g, w, h, '#262833', '#383b4c', '#12131a', 624);
+  for (let y = 0; y < 14; y++) R(g, 0, y, w, 1, y < 2 ? S.f : y < 7 ? S.d : S.c); R(g, 0, 14, w, 2, S.mor);
+  for (let x = 6; x < w - 8; x += 20) { R(g, x, 16, 9, 5, S.c); R(g, x + 1, 21, 7, 3, S.b); R(g, x + 2, 24, 5, 2, S.a); }                                  // the vault's corbels
+  R(g, 0, h - 26, w, 26, '#1d1e28'); R(g, 0, h - 26, w, 2, S.d); R(g, 0, h - 25, w, 1, S.f); for (let x = 0; x < w; x += 24) { R(g, x, h - 24, 1, 24, S.mor); R(g, x + 3, h - 22, 18, 16, '#232532'); R(g, x + 3, h - 22, 18, 1, S.b); }
+  const n = 3, gap = Math.floor(w / n);
+  for (let i = 0; i < n; i++) { const wx = i * gap + (gap >> 1) - 14, wy = 36, ww = 28, wh = 84;                                                    // the tall louvred openings
+    R(g, wx - 3, wy - 3, ww + 6, wh + 4, S.dk); R(g, wx, wy, ww, wh, '#0a0f22');
+    for (let k = 0; k < ww / 2; k++) { const d = Math.round((ww / 2 - k) * 0.7); R(g, wx + k, wy, 1, d, S.dk); R(g, wx + ww - 1 - k, wy, 1, d, S.dk); }
+    for (let yy = wy + 18; yy < wy + wh; yy += 6) { R(g, wx, yy, ww, 2, '#16161f'); R(g, wx, yy, ww, 1, S.c); }                                      // the louvre boards (stone-grey slats: a bell-chamber's)
+    R(g, wx - 3, wy - 3, 1, wh + 4, S.e); R(g, wx + ww + 2, wy - 3, 1, wh + 4, S.a); R(g, wx - 4, wy + wh + 1, ww + 8, 3, S.f);
+    for (let k = 0; k < 5; k++) px(g, wx + 4 + (k * 7) % (ww - 8), wy + 8 + k * 3, '#9fb4e8'); }
+  for (let i = 0; i <= n; i++) { const px0 = i * gap - 4; if (px0 > 0 && px0 < w - 8) { R(g, px0, 16, 8, h - 42, S.e); R(g, px0, 16, 1, h - 42, S.g); R(g, px0 + 7, 16, 1, h - 42, S.a); R(g, px0 - 2, 16, 12, 3, S.f); R(g, px0 - 2, h - 30, 12, 4, S.d); } }   // pilasters between the openings
+  for (const cx2 of [Math.round(w * 0.12), Math.round(w * 0.5), Math.round(w * 0.86)]) { R(g, cx2 - 4, 16, 9, 5, S.dk); R(g, cx2 - 2, 18, 5, 3, '#06060a'); }   // the pulley holes in the vault
+  princessBanner(g, Math.round(w * 0.30), 20, 44); princessBanner(g, Math.round(w * 0.70), 20, 44);
+  const cy2 = h - 26;                                                                                                                                 // her cushions and tea table, by the door side (east)
+  const cu = (x, y, col, hi) => { R(g, x, y - 5, 14, 5, col); R(g, x + 1, y - 6, 12, 1, hi); R(g, x, y - 5, 14, 1, hi); R(g, x + 6, y - 6, 2, 1, '#e0b040'); px(g, x - 1, y - 1, col); px(g, x + 14, y - 1, col); R(g, x + 1, y - 1, 12, 1, '#6a1c44'); };
+  cu(68, cy2, '#c8508a', '#e8a0c8'); cu(84, cy2, '#7a3aa0', '#a870d0'); cu(76, cy2 - 5, '#e0b040', '#fff6c8');
+  R(g, 108, cy2 - 12, 18, 2, '#e8e0f0'); R(g, 108, cy2 - 12, 18, 1, '#ffffff'); R(g, 112, cy2 - 10, 2, 10, '#c9a040'); R(g, 120, cy2 - 10, 2, 10, '#c9a040'); R(g, 110, cy2 - 1, 14, 1, '#a8841c');
+  R(g, 111, cy2 - 16, 4, 4, '#f0d0e8'); R(g, 111, cy2 - 16, 4, 1, '#ffffff'); R(g, 116, cy2 - 15, 3, 3, '#e0b040'); R(g, 120, cy2 - 17, 5, 5, '#c9d1dc'); px(g, 122, cy2 - 18, '#ffffff');   // a teacup, a gilt cup, a silver pot
+  R(g, 10, cy2 - 22, 24, 3, S.f); R(g, 10, cy2 - 22, 24, 1, S.g); R(g, 12, cy2 - 19, 3, 6, S.c); R(g, 29, cy2 - 19, 3, 6, S.c);                           // a stone shelf with her gem-box (west)
+  R(g, 16, cy2 - 29, 12, 7, '#7a3aa0'); R(g, 16, cy2 - 29, 12, 2, '#e0b040'); R(g, 21, cy2 - 31, 2, 3, '#e0b040'); for (let k = 0; k < 3; k++) px(g, 18 + k * 3, cy2 - 26, ['#ff4a6a', '#4ad0ff', '#7aff8a'][k]);
+  return c; });
 export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
+  if (st === 'hchall' && tx0 === K.BT[0] + 1) { g.drawImage(bakeBelfry(w, h), sx, sy); const k = 0.5 + 0.5 * Math.sin(time * 1.7); g.globalAlpha = 0.05 + 0.02 * k; g.fillStyle = '#9fb4ff'; g.fillRect(sx, sy + 30, w, h - 60); g.globalAlpha = 1; return true; }
   if (st !== 'royal') return false;
   if (tx0 === K.CAPT) { g.drawImage(bakeCapt(w, h), sx, sy); const k = 0.5 + 0.5 * Math.sin(time * 2.3); g.globalAlpha = 0.06 + 0.02 * k; g.fillStyle = '#ffb45c'; g.fillRect(sx, sy + h - 50, w, 50); g.globalAlpha = 1; return true; }
   if (tx0 === K.BANQ) { g.drawImage(bakeBanq(w, h), sx, sy);
+    for (const c of CHAND) for (const dx of [-16, -8, 0, 8, 16]) { const fh = 3 + ((Math.floor(time * 9 + dx + c.cx) % 3 + 3) % 3); R(g, sx + c.cx + dx - 1, sy + c.y - 6 - fh - 1, 3, fh, '#ff9a3c'); R(g, sx + c.cx + dx, sy + c.y - 6 - fh, 1, fh - 1, '#ffd36b'); }
     const hx = sx + 40, hy = sy + h - 30; R(g, hx - 6, hy - 70, 62, 70, S.dk); R(g, hx - 10, hy - 76, 70, 8, S.d); R(g, hx - 10, hy - 76, 70, 1, S.f); R(g, hx - 4, hy - 68, 58, 68, '#0a0810'); R(g, hx - 6, hy - 70, 3, 70, S.e); R(g, hx + 53, hy - 70, 3, 70, S.a);   // the great hearth on the west wall
     const f = 0.5 + 0.5 * Math.sin(time * 7); for (let i = 0; i < 5; i++) { const fh = 18 + ((i * 7 + Math.floor(time * 9 + i * 3)) % 4) * 4; g.globalAlpha = 0.85; R(g, hx + 4 + i * 10, hy - fh, 8, fh, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, hx + 6 + i * 10, hy - fh + 6, 4, fh - 6, '#ffd36b'); g.globalAlpha = 1; }
     g.globalAlpha = 0.08 + 0.04 * f; g.fillStyle = '#ff9a3c'; g.fillRect(sx, sy + h - 120, w, 120); g.globalAlpha = 1; return true; }
