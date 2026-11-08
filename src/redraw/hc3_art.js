@@ -63,8 +63,12 @@ export function drawGuardDoor(g, x, fy, st = 'shut', hornK = 0, time = 0, hit = 
     for (let k = 0; k < 6; k++) { R(g, x0 + 1 + k * 4, top + 6, 1, 4, '#8a8aa0'); px(g, x0 + 1 + k * 4, top + 10, '#c9c9d6'); }
   } else {
     const slam = hit > 0 ? Math.min(1, hit) : 0;
+    if (st === 'kept') {   /* (claude/hcfix) KEPT IN: the guards stand behind the dropped grate - helmets, shoulders and eyes in the dark - so DOWN never reads as the open, rising door */
+      g.globalAlpha = 0.16; R(g, x0, top + 14, 22, 18, '#ff6b3c'); g.globalAlpha = 1;
+      for (let i = 0; i < 3; i++) { const hx = x0 + 2 + i * 7, hy = top + 12 + (i & 1) * 2; R(g, hx, hy, 6, 4, '#3a3a48'); R(g, hx, hy, 6, 1, '#9a9ab0'); R(g, hx - 1, hy + 4, 8, 1, '#2a2a34'); R(g, hx + 1, hy + 5, 4, 3, '#2a1c14'); px(g, hx + 1, hy + 6, '#ff6b6b'); px(g, hx + 4, hy + 6, '#ff6b6b'); R(g, hx - 1, hy + 8, 8, fy - hy - 8, '#1c1c26'); R(g, hx - 1, hy + 8, 8, 1, '#4a4a58'); } }
     for (let k = 0; k < 6; k++) { R(g, x0 + 1 + k * 4, top, 3, 31, '#34343f'); R(g, x0 + 1 + k * 4, top, 1, 31, '#8a8aa0'); R(g, x0 + 3 + k * 4, top, 1, 31, '#16161e'); R(g, x0 + 1 + k * 4, fy - 4, 3, 2, '#c9c9d6'); px(g, x0 + 2 + k * 4, fy - 2, '#c9c9d6'); }
     bandIron(g, x0, top, 22, 3); bandIron(g, x0, top + 14, 22, 2); bandIron(g, x0, top + 26, 22, 2); for (const sx of [x0 + 1, x0 + 19]) stud(g, sx, top + 1);
+    R(g, x0 - 1, fy - 3, 24, 3, '#2a2a34'); R(g, x0 - 1, fy - 3, 24, 1, '#c9c9d6');   /* (claude/hcfix) the grate's foot rail, seated on the floor: DOWN */
     if (slam) { g.globalAlpha = slam; for (let i = 0; i < 6; i++) px(g, x0 + 2 + i * 4 + ((i * 7) & 1), fy - 3 - (i % 3), '#ffd36b'); g.globalAlpha = 1; } }
   if (hornK > 0) { const k = Math.max(0, Math.min(1, hornK)), w = Math.round(26 * k); R(g, x - 14, top - 13, 28, 5, '#3a1a1a'); R(g, x - 13 + (26 - w) / 2, top - 12, w, 3, hornK < 0.3 && Math.sin(time * 24) > 0 ? '#ffffff' : '#ff6b6b'); R(g, x - 14, top - 13, 28, 1, '#e0b040'); R(g, x - 14, top - 9, 28, 1, '#a8841c'); } }
 

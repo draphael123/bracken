@@ -384,7 +384,7 @@ export function makeGoblinPrincessHands(ctx) {
         else ctx.number(cap.x, cap.y - 40, 'HE STEPS CLEAR', '#c9c9d6'); } } }
   }
   /* the art (claude/hc3art): the chase actor on her sheet, the guardrooms' doors and winches, the alarm bells, the banquet's rope and servery, the bell tower's bell, rope, door, winch and hatch */
-  const doorSt = W => !W ? 'shut' : (W.state === 'kept' || W.state === 'closed') ? 'down' : 'up';
+  const doorSt = W => !W ? 'shut' : W.state === 'kept' ? 'kept' : W.state === 'closed' ? 'down' : 'up';   /* (claude/hcfix) 'kept': down, with the guards behind it */
   const spinOf = (W, time) => { if (!W) return 0; if (W._dn !== W.n) { W._dn = W.n; W._dt = time; } return time - (W._dt === undefined ? -9 : W._dt) < 0.35 ? 1 : 0; };
   const slamOf = (W, time) => { if (!W || (W.state !== 'kept' && W.state !== 'closed')) return 0; if (W._kt === undefined) W._kt = time; return Math.max(0, 1 - (time - W._kt) / 0.4); };
   const guardSet = (g, W, door, winch, fy, horn, cx, time) => { const dx = R(door - cx), wx = R(winch - cx);

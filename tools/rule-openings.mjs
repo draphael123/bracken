@@ -47,7 +47,7 @@ try {
     for (const under of [true,false]) { const {q,P}=setup('crown','knight','gqueen');const b=BK.props().find(p=>p.t==='winch'&&p.bell);
       if(!b){out.gqueen={noBell:true};break;}
       const gx=b.gate*16+8;q.mode='stand';hold(q);q.x=under?gx:gx-150;q.y=BK.L.arena.floor;P.x=b.x-6;P.y=BK.L.arena.floor;P.vy=0;BK.sim(1);P.x=b.x-6;
-      let best=0;swing(1,30,()=>{if(q.mode==='pinned')best=Math.max(best,q.modeT);else{q.x=under?gx:gx-150;q.vx=0;}});
+      let best=0;swing(1,60*5,()=>{if(q.mode==='pinned')best=Math.max(best,q.modeT);else{q.x=under?gx:gx-150;q.vx=0;}});   /* (claude/hcfix) GQ2-MECH made the bell a LURE: she storms to it, the grate is told GQ3.mech.tell s, then drops (lureMax 3.2 s if she never gets there) - 0.5 s ended mid-lure */
       out['gqueen'+(under?'Under':'Away')]={mode:q.mode,pinned:+best.toFixed(2),by:q.pinBy||null,open:BK.bossOpen(q)}; }
     /* ---- THE GATE GARGOYLE and the RUNE COLUMN ---- */
     for (const inIt of [true,false]) { const {A,q,P}=setup('witchlight','knight','gargoyle');const rc=A.rune;
@@ -72,7 +72,7 @@ const fails = [];
 const ok = (c, m) => { if (!c) fails.push(m); };
 ok(r.lanceUnder && r.lanceUnder.gated >= 1 && r.lanceUnder.planted >= 3 && r.lanceUnder.open === true, 'THE LANCE: the bridge gate struck with him under it pins him, planted 3 s+, open: ' + JSON.stringify(r.lanceUnder || r.lance));
 ok(r.lanceAway && !r.lanceAway.gated && r.lanceAway.tiles === true, 'THE LANCE: struck with him away, the gate only shuts the lane: ' + JSON.stringify(r.lanceAway));
-ok(r.gqueenUnder && r.gqueenUnder.by === 'grate' && r.gqueenUnder.pinned >= 3 && r.gqueenUnder.open === true, 'THE GOBLIN QUEEN: the hall bell rung with her under its grate pins her 3 s+, open: ' + JSON.stringify(r.gqueenUnder || r.gqueen));
+ok(r.gqueenUnder && (r.gqueenUnder.by === 'grate' || r.gqueenUnder.by === 'lure') && r.gqueenUnder.pinned >= 3 && r.gqueenUnder.open === true, 'THE GOBLIN QUEEN: the hall bell rung with her under its grate pins her 3 s+, open: ' + JSON.stringify(r.gqueenUnder || r.gqueen));
 ok(r.gqueenAway && r.gqueenAway.mode !== 'pinned', 'THE GOBLIN QUEEN: rung with her away, she is not pinned: ' + JSON.stringify(r.gqueenAway));
 ok(r.gargIn && r.gargIn.crash && r.gargIn.stunned >= 3 && r.gargIn.caught === 1, 'THE GARGOYLE: the rune struck while he flies in it turns him onto the spikes, stunned 3 s+: ' + JSON.stringify(r.gargIn || r.gargoyle));
 ok(r.gargOut && !r.gargOut.crash && r.gargOut.lit === 1 && r.gargOut.caught === 0, 'THE GARGOYLE: struck while he is out of it, it flares on nothing and goes dark: ' + JSON.stringify(r.gargOut));
