@@ -30285,7 +30285,8 @@ GPH = GPM.makeGoblinPrincessHands({ get L() { return L; }, get players() { retur
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(),
   parries: () => RP.stats.parries, hint: m => hintSay('mechanic', 6, m), music: n => { if (miniActive) music.play(n); },
-  spawnEnt: o => { const n0 = enemies.length; spawnEnt(o); return enemies.slice(n0); }, grateDrop: (col, y0, y1, hold) => gpGrateDrop(col, y0, y1, hold), grateClear: () => gpGrateClear() });
+  spawnEnt: o => { const n0 = enemies.length; spawnEnt(o); return enemies.slice(n0); }, grateDrop: (col, y0, y1, hold) => gpGrateDrop(col, y0, y1, hold), grateClear: () => gpGrateClear(),
+  shots: () => (players && players.length ? players : [P]).flatMap(pp => (pp.rgArrows || []).filter(q => q.state === 'fly').concat(pp.bzAxe && pp.bzAxe.state === 'fly' ? [pp.bzAxe] : [])).concat(embers.filter(q => q.life > 0)) });   /* (claude/hcfix) a ranged hit is a blow on her rope, winch and gems: the ranger's arrows, the berserker's thrown axe, the pyro's embers */
 GLH = GLM.makeGangLeaderHands({ get L() { return L; }, get players() { return players; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), enrage: e => enrageBeat(e),

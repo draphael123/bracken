@@ -8,7 +8,8 @@
 //                   bounce; a blow knocks one away), FAN GUST (a push along the floor, never off anything), 'GUARDS!' HANDBELL at 70 / 35 % (strike the winch
 //                   by her guardroom door, or the guards come and she HIDES behind them), BELFRY HOP (up onto the landing, under the tower bell's grate).
 //                   THE TOWER BELL is your opening: ring its rope (a blow, any seat) and she BOLTS for the roof hatch on the landing - under the grate
-//                   when it drops = PINNED 3.5 s (x1.35). Below half: the TANTRUM - quicker, TIARA BOOMERANG (parry it: it conks her, STUNNED 2.5 s, x1.25),
+//                   when it drops = PINNED. (claude/hcfix) The grate drops on a TIMED blow on the winch, while it BLAZES (too soon: she ducks; too late:
+//                   she slips out). An arrow, a thrown axe or an ember is a blow on the rope, the winch and her gems. Below half: the TANTRUM - quicker, TIARA BOOMERANG (parry it: it conks her, STUNNED 2.5 s, x1.25),
 //                   STOMP ripple (jump it). At 10 % she shrieks MOTHER! and escapes through the hatch: the mini is done, she is NOT killed.
 //   THE REHEARSAL   (the banquet hall before the battlements) her CAPTAIN (a heavy elite) storms to the sound of the hall's bell rope - under the grate when
 //                   it drops he is pinned; the servery door horns, and its winch keeps the garrison in. No boss: a puzzle.
@@ -27,7 +28,7 @@ export const GP = {
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 5, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
-  bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
+  bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.5, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: 16, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: 18, speed: 220 },
   tantrum: 1.0, escape: 2.0,
@@ -77,7 +78,12 @@ export function makeGoblinPrincessHands(ctx) {
   const seatN = () => Math.max(1, ctx.players.filter(p => !p.dead).length);
   const nearest = e => { let b = null, bd = 1e9; seats(P => { const d = Math.abs(P.x - e.x) + Math.abs(P.y - e.y) * 0.5; if (d < bd) { bd = d; b = { x: P.x, y: P.y, ground: P.ground }; } }); return b || ctx.hero(); };
   const front = () => { let x = -1e9; seats(P => { x = Math.max(x, P.x); }); return x; };
-  const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any; };
+  /* (claude/hcfix) A RANGED HIT IS A BLOW: an arrow, a thrown axe or an ember in flight that meets the rope, a winch or a gem counts as a blow on it (once a shot;
+     an arrow drops there), so the ranger plays her bell tower as the blades do (hcproof sec 'why the bots win': she could not ring, crank or knock a gem) */
+  const usedShots = new WeakSet();
+  const shotOn = box => { for (const q of (ctx.shots ? ctx.shots() : [])) { if (!q || usedShots.has(q) || q.x < box.l - 3 || q.x > box.r + 3 || q.y < box.t - 3 || q.y > box.b + 3) continue;
+    usedShots.add(q); if (q.state === 'fly') { q.state = 'drop'; q.vx = (q.vx || 0) * -0.1; q.vy = -40; } else if (q.life > 0 && q.state === undefined) q.life = 0; return true; } return false; };
+  const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any || shotOn(box); };
   H.on = () => !!(L() && (L().gpChase || L().gpRehearsal || A()));
   H.owns = e => e.t === 'gprincess';
   H.towersLit = () => new Set(TW.keys());   /* (claude/hc3art) the signal braziers burn on the towers whose alarm she rang */
@@ -92,7 +98,7 @@ export function makeGoblinPrincessHands(ctx) {
     const Ar = A();
     F = { A: Ar ? { ...Ar, xMax: Ar.x1 - 3 * TS - 8 } : { x0: base.x - 200, x1: base.x + 200, xMax: base.x + 150, floor: base.y }, ph: 1, cycle: 0, step: 0, chain: CHAINS[1][0].slice(), act: 0, gems: [], tiara: null, ripples: [],
       M: { cd: 0, queued: 0, rings: 0 }, bolt: null, wave: null, waves: new Set(), guards: [], lastWaveT: -99, openTaken: 0, idN: 0, said: {}, ropeKey: {}, winchKey: {}, gemKeys: new WeakMap(),
-      n: { lunges: 0, staggers: 0, flurries: 0, preens: 0, trinkets: 0, knocked: 0, fans: 0, hops: 0, rings: 0, pins: 0, ducks: 0, tiaras: 0, stuns: 0, stomps: 0, waves: 0, kept: 0, joined: 0, capped: 0, parries: 0, hides: 0 }, hurt: {}, t0: now() };
+      n: { lunges: 0, staggers: 0, flurries: 0, preens: 0, trinkets: 0, knocked: 0, fans: 0, hops: 0, rings: 0, pins: 0, ducks: 0, tiaras: 0, stuns: 0, stomps: 0, waves: 0, kept: 0, joined: 0, capped: 0, parries: 0, hides: 0, early: 0, slips: 0, shots: 0 }, hurt: {}, t0: now() };
     return { ...base, t: 'gprincess', w: GP.w, h: GP.h, hp: ctx.EHP.gprincess, maxHp: ctx.EHP.gprincess, mini: true, noGrav: true, markH: GP.markH, face: -1, mode: 'sleep', modeT: 0, phase: 1, hiding: false };
   };
   const set = (e, m, t) => { e.mode = m; e.modeT = t; };
@@ -106,7 +112,7 @@ export function makeGoblinPrincessHands(ctx) {
       const n0 = ctx.parries ? ctx.parries() : 0, h0 = P.hp;
       const r = ctx.damagePlayer(o.fromX ?? e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock });
       if (F) F.hurt[name] = (F.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp));
-      if (F) globalThis.__gpHurt = F.hurt;   /* (hcproof) the per-move damage tally, read by tools/boss-run.mjs */
+      if (F) { globalThis.__gpHurt = F.hurt; globalThis.__gpN = F.n; }   /* (hcproof) the per-move damage tally, read by tools/boss-run.mjs */
       const parried = !!(ctx.parries && ctx.parries() > n0); if (parried && F) F.n.parries++;
       if (o.push && !P.dead) { const dir = sign(P.x - (o.fromX ?? e.x)), k = r === 'blocked' || parried ? 0.5 : 1; P.vx = dir * o.push * 2 * k; }
       out.push({ pp, r, parried }); });
@@ -168,9 +174,19 @@ export function makeGoblinPrincessHands(ctx) {
     if (F.A.door) ctx.number(F.A.winch || F.A.door, fl() - 44, 'STRIKE THE WINCH', '#ffd36b');
     ctx.hint && ctx.hint('HER GUARDROOM DOOR IS RISING. STRIKE THE WINCH BESIDE IT 3 TIMES, QUICKLY, AND IT DROPS.');
   }
+  /* (claude/hcfix) THE GRATE'S RELEASE IS THE WINCH, AND IT IS TIMED: while she bolts, the winch holds the tower grate. Strike it while the grate BLAZES (she is set
+     under it: GP.bell.win s) and it drops on her - PINNED. Strike it sooner and she sees it come and ducks; let the blaze pass and she slips out from under.
+     (hcproof: the pin was free - any hero who rang the rope got it; mashing the winch now spends it.) */
+  function stepRelease(e) {
+    const B = F.bolt; if (!B || !F.A.winch) return;
+    if (!blowOn({ l: F.A.winch - 10, r: F.A.winch + 10, t: fl() - 26, b: fl() }, F.winchKey)) return; F.winchKey = {}; sfx('clank'); ctx.shake(2);
+    if (B.state === 'ready') { dropGrate(e); return; }
+    F.bolt = null; F.glowK = 0; F.n.early++; if (ctx.grateDrop && F.A.grate) ctx.grateDrop(F.A.grate.col, F.A.grate.gy0, F.A.grate.gy1, 0.6);
+    set(e, 'ducked', GP.bell.duck); ctx.number(e.x, e.y - 50, 'TOO SOON: SHE SEES IT COME', '#c9c9d6'); sfx('gateDrop');
+  }
   function stepWave(e) {
     const W = F.wave; if (!W) return; const t = now();
-    if (W.state === 'open' && F.A.winch && blowOn({ l: F.A.winch - 10, r: F.A.winch + 10, t: fl() - 26, b: fl() }, F.winchKey)) { F.winchKey = {};
+    if (W.state === 'open' && F.A.winch && !F.bolt && blowOn({ l: F.A.winch - 10, r: F.A.winch + 10, t: fl() - 26, b: fl() }, F.winchKey)) { F.winchKey = {};
       const r = BW.crankWinch(W, t, GP.guards.crank, GP.guards.win); sfx('clank'); ctx.shake(2);
       if (r === 'kept') { F.n.kept++; F.wave = null; ctx.number(F.A.winch, fl() - 44, 'THE GATE DROPS: GUARDS KEPT IN', '#8fd160'); sfx('gateDrop'); return; }
       ctx.number(F.A.winch, fl() - 40, r + ' / ' + GP.guards.crank, '#ffd36b'); }
@@ -192,7 +208,8 @@ export function makeGoblinPrincessHands(ctx) {
   }
   function boltBegin(e) {
     const up = onLanding(e); F.bolt = { state: up ? 'up' : 'run', wait: up ? GP.bell.glowUp : GP.bell.glow, hup: 0 };
-    set(e, 'bolt', 6); e.hiding = false; ctx.number(e.x, e.y - 50, 'EEK! SHE BOLTS FOR THE HATCH', '#ff6b6b'); sfx('bellow');
+    set(e, 'bolt', 9); e.hiding = false; ctx.number(e.x, e.y - 50, 'EEK! SHE BOLTS FOR THE HATCH', '#ff6b6b'); sfx('bellow');
+    if (!F.said.release) { F.said.release = 1; ctx.hint && ctx.hint('THE WINCH HOLDS THE GRATE. STRIKE IT WHEN THE GRATE BLAZES, WITH HER UNDER IT. TOO SOON AND SHE DUCKS.'); }
   }
   function stepBolt(e, dt) {
     const B = F.bolt, g0 = gx(), Ar = F.A; if (!B || g0 == null) { F.bolt = null; after(e); return; }
@@ -200,7 +217,10 @@ export function makeGoblinPrincessHands(ctx) {
     if (B.state === 'run') { e.x += sign(dx) * Math.min(Math.abs(dx), GP.bell.bolt * dt); if (Math.abs(dx) < 6) { B.state = 'hup'; B.hup = GP.bell.hup; ctx.number(e.x, e.y - 40, 'HUP!', '#ffd36b'); } return; }
     if (B.state === 'hup') { B.hup -= dt; const k = 1 - Math.max(0, B.hup) / GP.bell.hup; e.y = fl() - (fl() - Ar.land.y) * k - Math.sin(k * Math.PI) * 10; if (B.hup <= 0) { e.y = Ar.land.y; B.state = 'up'; } return; }
     if (B.state === 'up') { e.x += sign(dx) * Math.min(Math.abs(dx), GP.bell.bolt * dt); if (Math.abs(dx) < 4) { B.state = 'glow'; } return; }
-    if (B.state === 'glow') { B.wait -= dt; F.glowK = 1 - Math.max(0, B.wait) / GP.bell.glow; if (B.wait <= 0) dropGrate(e); }
+    if (B.state === 'glow') { B.wait -= dt; F.glowK = 0.75 * (1 - Math.max(0, B.wait) / GP.bell.glow);
+      if (B.wait <= 0) { B.state = 'ready'; B.left = GP.bell.win; B.readyT = now(); B.react = GP.bell.react[0] + Math.random() * (GP.bell.react[1] - GP.bell.react[0]); F.glowK = 1;
+        ctx.number(Ar.winch || e.x, fl() - 44, 'NOW!', '#ffd36b'); ctx.sfx.tell && ctx.sfx.tell(false); } return; }
+    if (B.state === 'ready') { B.left -= dt; F.glowK = 1; if (B.left <= 0) { F.bolt = null; F.glowK = 0; F.n.slips++; set(e, 'ducked', GP.bell.duck); ctx.number(e.x, e.y - 50, 'SHE SLIPS OUT FROM UNDER IT', '#c9c9d6'); } }
   }
   function dropGrate(e) {
     const g0 = gx(), Ar = F.A; F.bolt = null; F.glowK = 0;
@@ -217,7 +237,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (e.mode === 'escape') { stepEscape(e, dt); return; }
     if (F.ph === 1 && e.hp <= e.maxHp * 0.5) { F.ph = 2; e.phase = 2; F.chain = CHAINS[2][0].slice(); F.step = 0; F.cycle = 0; F.bolt = null; set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'SHE THROWS A TANTRUM: NOT FAIR!', '#ff6b6b'); ctx.shake(4); ctx.music && ctx.music('goblinroyal'); }
     for (let i = 0; i < GP.guards.at.length; i++) if (e.hp <= e.maxHp * GP.guards.at[i] && !F.waves.has(i) && t - F.lastWaveT >= GP.guards.gapMin && SAFE.has(e.mode) && !F.wave) { F.waves.add(i); guardsCall(e, i); break; }
-    stepGems(e, dt); stepTiara(e, dt); stepRipples(e, dt); stepWave(e); stepBell(e);
+    stepGems(e, dt); stepTiara(e, dt); stepRipples(e, dt); stepRelease(e); stepWave(e); stepBell(e);
     e.hiding = SAFE.has(e.mode) && hidingNow(e, P); if (e.hiding && !F.said.hide) { F.said.hide = 1; F.n.hides++; ctx.number(e.x, e.y - 50, 'SHE HIDES BEHIND HER GUARD', '#c9c9d6'); }
     const fx = e.face || 1;
     switch (e.mode) {
@@ -410,7 +430,8 @@ export function makeGoblinPrincessHands(ctx) {
   H.labDuty = P0 => {
     const e = live(); if (!F || !e) return null; const Ar = F.A;
     if (F.wave && F.wave.state === 'open' && Ar.winch) return { x: Ar.winch, face: sign(Ar.winch - P0.x), swing: true, why: 'winch' };
-    if (F.bolt) { const g0 = gx(); return { x: Math.max(Ar.x0 + 20, Math.min(Ar.xMax, g0 + (P0.x < g0 ? -60 : 60))), face: sign(e.x - P0.x), swing: false, why: 'clear the grate' }; }
+    if (F.bolt && Ar.winch) { const B = F.bolt, ranged = !!P0.rgArrows && P0.rgStance !== 'knife', s0 = P0.x < Ar.winch ? -1 : 1, x = Ar.winch + s0 * (ranged ? 70 : 8);   /* (claude/hcfix) to the winch (the ranger shoots it from 70 px), and strike it in the blaze after a human's reaction - never before */
+      return { x, face: -s0, swing: B.state === 'ready' && now() - B.readyT >= B.react, why: 'release the grate' }; }
     if (Ar.rope && BW.bellReady(F.M, now()) && SAFE.has(e.mode) && !gpOpen(e)) return { x: Ar.rope + 10, face: -1, swing: true, why: 'bell' };
     return null;
   };

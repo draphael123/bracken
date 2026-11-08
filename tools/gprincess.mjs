@@ -51,7 +51,7 @@ ok(!(L.alarms || []).some(a => a.id === 'leads') && !L.ents.some(e => e.t === 'w
 /* ---------- a fake world for her hands ---------- */
 const make = (seats = 1, opt = {}) => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), A = Lw.mini;
-  const st = { time: 0, parries: 0, dmg: [], spawned: [], grates: [], said: [], parryNext: false, enemies: [] };
+  const st = { shots: [], time: 0, parries: 0, dmg: [], spawned: [], grates: [], said: [], parryNext: false, enemies: [] };
   const mk = x => ({ x, y: A.floor, hp: 100, maxHp: 100, dead: false, ground: true, vy: 0, vx: 0, face: 1, hitSet: new Set(), box: null });
   const heroes = Array.from({ length: seats }, (_, i) => mk(A.x0 + (3 + 2 * i) * TS)); let cur = heroes[0];
   const noop = () => {};
@@ -61,15 +61,18 @@ const make = (seats = 1, opt = {}) => {
     asPlayer: (p, fn) => { const c0 = cur; cur = p; try { fn(); } finally { cur = c0; } }, upright: p => !p.dead, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t,
     box: p => ({ l: p.x - 5, r: p.x + 5, t: p.y - 14, b: p.y }), attackBox: () => cur.box, parries: () => st.parries,
     spawnEnt: o => { const e = { ...o, x: o.x * TS + 8, y: (o.y + 1) * TS, alive: true, h: 14 }; st.spawned.push(o); st.enemies.push(e); return [e]; },
-    grateDrop: (c, y0, y1, hold) => { st.grates.push({ c, y0, y1, hold, t: st.time }); return true; }, grateClear: noop };
+    grateDrop: (c, y0, y1, hold) => { st.grates.push({ c, y0, y1, hold, t: st.time }); return true; }, grateClear: noop, shots: () => st.shots };
   const H = GPX.makeGoblinPrincessHands(ctx); H.load();
   const e = H.spawn({ x: A.x0 + 14 * TS, y: A.floor, vx: 0, vy: 0, face: -1, alive: true }); st.enemies.push(e);
   const step = (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) { st.time += dt; H.update(e, dt); for (const h of heroes) h.box = null; } };
   const blow = (h, box) => { h.hitSet = new Set(); h.box = box; };
   const ropeBox = { l: A.rope - 3, r: A.rope + 3, t: A.floor - 20, b: A.floor - 2 }, winchBox = { l: A.winch - 3, r: A.winch + 3, t: A.floor - 20, b: A.floor - 2 };
   const ring = (h = heroes[0]) => { blow(h, ropeBox); step(1); };
+  /* (claude/hcfix) step until the grate BLAZES (the release window), then strike the winch */
+  const toReady = () => { for (let i = 0; i < 60 * 6 && !(H.fight().bolt && H.fight().bolt.state === 'ready'); i++) step(1); return !!(H.fight().bolt && H.fight().bolt.state === 'ready'); };
+  const release = (h = heroes[0]) => { blow(h, winchBox); step(1); };
   step(1); step(80);   /* asleep -> awake -> on her feet */
-  return { H, st, e, A, heroes, step, blow, ring, ropeBox, winchBox, Lw, ctx };
+  return { H, st, e, A, heroes, step, blow, ring, toReady, release, ropeBox, winchBox, Lw, ctx };
 };
 const free = w => { w.e.mode = 'walk'; w.e.modeT = 9; w.e.y = w.A.floor; };
 
@@ -80,21 +83,29 @@ ok(gpMul({ mode: 'walk', hiding: true }) === 0.4, 'hiding behind a guard: 0.4x (
 ok(gpMul({ mode: 'pinned' }) === 1.15 && gpMul({ mode: 'stunned' }) === 1.15 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.15, stunned x1.15, preen / stagger x1.0');
 ok(GP.hp === 1600 && GP.endAt === 0.1 && GP.bell.pin === 2.5, 'hp 1600 base, she ends at 10 %, the pin is 2.5 s');
 
-console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate -> PINNED');
+console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate BLAZES -> a timed blow on the winch -> PINNED');
 { const w = make(); free(w); const gx = w.A.grate.col * TS + 8;
   w.ring(); ok(w.H.fight().M.rings === 1 && w.st.said.includes('YOU RING THE TOWER BELL'), 'a blow on the rope rings it');
   w.step(2); ok(w.e.mode === 'bolt' && w.st.said.some(s => /BOLTS/.test(s)), 'she bolts for the hatch (told)');
-  let glowSeen = false, upSeen = false; for (let i = 0; i < 60 * 6 && !w.st.grates.length; i++) { w.step(1); if (w.H.fight().glowK > 0) glowSeen = true; if (w.e.y < w.A.floor - 20) upSeen = true; }
+  let glowSeen = false, upSeen = false; for (let i = 0; i < 60 * 6 && !(w.H.fight().bolt && w.H.fight().bolt.state === 'ready'); i++) { w.step(1); if (w.H.fight().glowK > 0) glowSeen = true; if (w.e.y < w.A.floor - 20) upSeen = true; }
   ok(upSeen, 'she hops up onto the landing'); ok(glowSeen, 'the grate column glows before it drops');
+  ok(!w.st.grates.length && w.H.fight().bolt.state === 'ready' && w.st.said.includes('NOW!'), 'it does not drop by itself: it BLAZES (NOW!) and waits for the winch');
+  w.release();
   ok(w.st.grates.length === 1 && w.st.grates[0].c === w.A.grate.col, 'the grate drops (col ' + w.A.grate.col + ')');
   ok(w.e.mode === 'pinned' && Math.abs(w.e.modeT - GP.bell.pin) < 0.05 && Math.abs(w.e.x - gx) < GP.bell.under, 'under it: PINNED ' + GP.bell.pin + ' s');
   const hp0 = w.e.hp, d = w.H.take(w.e, 10); ok(Math.abs(d - 11.5) < 1e-6, 'a blow while pinned: x1.15 (' + d + ')');
   let tot = 0; for (let i = 0; i < 40; i++) tot += w.H.take(w.e, 30); ok(tot <= w.e.maxHp * GP.capK + 1e-6 && w.H.fight().n.capped > 0, 'one opening takes no more than ' + (GP.capK * 100) + ' % of her bar (' + Math.round(tot) + ' of ' + w.e.maxHp + ')');
   free(w); w.e.x = w.A.x0 + 6 * TS; w.step(60); w.ring(); w.step(5); ok(w.e.mode !== 'bolt' && w.st.said.includes('STILL SWINGING'), 'inside the cooldown: STILL SWINGING');
   w.step(60 * GP.bell.cd); free(w); w.ring(); w.step(3); ok(w.e.mode === 'bolt', 'after ' + GP.bell.cd + ' s it answers again'); }
-{ const w = make(); free(w); w.ring(); w.step(2); w.H.fight().bolt.state = 'glow'; w.e.x = w.A.grate.col * TS + 8 + 40; w.e.y = w.A.land.y; w.step(60); ok(w.e.mode === 'ducked' && w.st.said.includes('SHE DUCKED'), 'not under it at the drop: SHE DUCKED, no pin'); }
+{ const w = make(); free(w); w.ring(); w.step(2); w.release(); ok(w.e.mode === 'ducked' && w.H.fight().n.early === 1 && w.st.grates.length === 1 && w.H.fight().n.pins === 0, 'the winch struck TOO SOON (she is still running): the grate drops, she sees it and ducks, no pin'); }
+{ const w = make(); free(w); w.ring(); w.step(2); ok(w.toReady(), 'the blaze'); w.step(Math.ceil(60 * GP.bell.win) + 2); ok(w.e.mode === 'ducked' && w.H.fight().n.slips === 1 && !w.st.grates.length, 'the blaze passes with no blow: she slips out from under it'); }
+{ const w = make(); free(w); w.ring(); w.step(2); w.toReady(); w.st.shots.push({ x: w.A.winch, y: w.A.floor - 10, vx: 300, vy: 0, state: 'fly' }); w.step(1); ok(w.e.mode === 'pinned' && w.st.shots[0].state === 'drop', 'AN ARROW in the winch in the blaze releases it too: PINNED (the arrow drops)'); }
+{ const w = make(); free(w); w.st.shots.push({ x: w.A.rope, y: w.A.floor - 10, vx: -300, vy: 0, state: 'fly' }); w.step(1); ok(w.H.fight().M.rings === 1, 'an arrow on the rope rings the bell'); w.step(10); w.st.shots.push(w.st.shots[0]); w.step(1); ok(w.H.fight().M.rings === 1, 'one arrow counts once'); }
+{ const w = make(); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); const F = w.H.fight(); for (let i = 0; i < 3; i++) { w.st.shots.push({ x: w.A.winch, y: w.A.floor - 8, life: 1 }); w.step(1); w.step(20); } ok(F.n.kept === 1, 'embers on the winch crank it: three keep the guards in'); }
+{ const w = make(); const F = w.H.fight(); w.e.mode = 'trinketTell'; w.e.modeT = 0.01; w.step(2); const q = F.gems[0]; ok(!!q, 'a gem flies'); w.st.shots.push({ x: q.x, y: q.y, vx: 300, vy: 0, state: 'fly' }); w.step(1); ok(q.away && F.n.knocked === 1, 'an arrow knocks her gem away'); }
+{ const w = make(); free(w); w.ring(); w.step(2); w.toReady(); w.H.fight().bolt.state = 'ready'; w.e.x = w.A.grate.col * TS + 8 + 40; w.e.y = w.A.land.y; w.release(); ok(w.e.mode === 'ducked' && w.st.said.includes('SHE DUCKED'), 'not under it at the drop: SHE DUCKED, no pin'); }
 { const w = make(); w.e.mode = 'lungeTell'; w.e.modeT = 9; w.ring(); w.step(10); ok(w.e.mode === 'lungeTell', 'mid-move she is not yanked out of it'); w.e.mode = 'walk'; w.step(2); ok(w.e.mode === 'bolt', 'a moment later she answers the queued ring'); }
-{ const w = make(); free(w); w.ring(); w.step(2); const h = w.heroes[0]; h.x = w.A.grate.col * TS + 8 + 4; h.y = w.A.land.y; w.st.dmg.length = 0; for (let i = 0; i < 60 * 6 && !w.st.grates.length; i++) w.step(1);
+{ const w = make(); free(w); w.ring(); w.step(2); const h = w.heroes[0]; h.x = w.A.grate.col * TS + 8 + 4; h.y = w.A.land.y; w.st.dmg.length = 0; w.toReady(); w.release();
   ok(w.st.dmg.some(q => q.o.name === 'THE GRATE' && q.o.unblockable) && Math.abs(h.x - (w.A.grate.col * TS + 8)) >= 14, 'a hero on the landing under it at the drop is shoved clear (unblockable)'); }
 
 console.log('== PARRIES');

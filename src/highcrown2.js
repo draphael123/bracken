@@ -322,7 +322,7 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
 
   // ---- W3: the last stretch to THE BELL TOWER ----
   ent('torch', 615, S); ent('deco', 619, S, { kind: 'warStandard', v: 1 }); coins([614, S], [618, S]);
-  ent('sign', 620, S, { text: 'THE BELL TOWER. RING ITS BELL WITH HER UNDER THE GRATE, AND SHE IS YOURS.' });
+  ent('sign', 620, S, { text: 'THE BELL TOWER. RING ITS BELL, THEN STRIKE THE WINCH AS THE GRATE BLAZES.' });
 
   // ---- THE BELL TOWER (623-648): her room ----
   const [b0, b1] = B.BT;
