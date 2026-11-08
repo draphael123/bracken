@@ -381,27 +381,25 @@ export function makeGoblinPrincessHands(ctx) {
       guardSet(g, W, Q.door, Q.winch, fy, GP.reh.horn, cx, time);
       if (RH && RH.glowK > 0) HC2A.drawGrateFx(g, { gate: Q.grate.col, gy0: Q.grate.gy0, gy1: Q.grate.gy1 }, cx, cy, TS, time, RH.glowK); }
     const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx), ceil = R((Ar.y0 || 0) - cy) + TS, sw = swingOf(F && F.M, time), e = live();
-      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); HC3A.drawBellAt(g, bx, R(Ar.grate.gy0 * TS - cy) + 2, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time); g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
+      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); const by0 = R((Ar.grate.gy0 + 4) * TS - cy); g.fillStyle = '#8a8aa0'; for (let yy = ceil + 3; yy < by0; yy += 3) g.fillRect(bx, yy, 1, 2); HC3A.drawBellAt(g, bx, by0, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time);   /* (claude/hc3art) hung 4 rows down on a chain so the camera sees it */ g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
       HC3A.drawRope(g, rx, ceil, fy, sw, time);
       if (Ar.door) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
       if (Ar.hatch) HC3A.drawHatch(g, R(Ar.hatch - cx), ceil, e && e.mode === 'escape' ? 1 : 0, time); }
   };
 
-  /* THE CAMEO (claude/hc3art): in her mother's intro (the Queen's 'wake' beat) the Princess has run up behind the throne: she wails MOTHER! with her arms up, points her fan at the hero (HIM!), and scurries off to the far wing before the first blow. Drawing only: she is not an enemy there. */
+  /* THE CAMEO (claude/hc3art): in her mother's intro (the Queen's 'wake' beat) the Princess peeks out from behind the Queen's skirt on the hero's side: she wails MOTHER! with her arms up, points her fan at the hero (HIM!), then ducks back behind the Queen (drawn before the actors, so the Queen covers her). Drawing only: she is not an enemy there. */
   let CM = null;
   function cameo(g, cx, cy, time) {
     const q = ctx.enemies().find(e => e.t === 'gqueen' && e.alive && e.mode === 'wake');
     if (!q) { CM = null; return; }
     if (!CM || CM.q !== q) { CM = { q, m0: Math.max(0.5, q.modeT || 1), said: 0 }; }
-    const k = Math.max(0, Math.min(1, 1 - Math.max(0, q.modeT) / CM.m0)), Ar = L().arena, floor = Ar && Ar.floor ? Ar.floor : q.y + (q.h || 20) / 2;
-    const away = -(q.face || -1), sp = GPA.sheet(), side = away > 0 ? sp.R : sp.L;
-    let x = q.x + away * 40, f = GPA.GPF.escape, al = 1;
+    const k = Math.max(0, Math.min(1, 1 - Math.max(0, q.modeT) / CM.m0)), Lv = L(), toHero = ctx.hero().x < q.x ? -1 : 1, sp = GPA.sheet(), side = toHero > 0 ? sp.R : sp.L;
+    let x = q.x + toHero * 54, f = GPA.GPF.escape;
     if (k > 0.3 && k <= 0.62) f = GPA.GPF.fanTell;
-    else if (k > 0.62) { const run = k - 0.62; x += away * run * 330; f = GPA.GPF.run + (Math.floor(time * 12) & 1); al = Math.max(0, 1 - Math.max(0, run - 0.25) / 0.13); }
-    if (Ar && Ar.x1) x = Math.max(Ar.x0 + 8, Math.min(Ar.x1 - 8, x));   /* never through a wall */
-    if (!CM.said) { CM.said = 1; ctx.number(x, floor - 44, 'MOTHER! HIM!', '#ff9ad0'); }
-    if (al <= 0) return;
-    g.globalAlpha = al; g.drawImage(side[f], R(x - cx - sp.ax), R(floor - cy - sp.ay)); g.globalAlpha = 1;
+    else if (k > 0.62) { f = GPA.GPF.run + (Math.floor(time * 12) & 1); x -= toHero * Math.min(1, (k - 0.62) / 0.25) * 50; }
+    let feet = q.y + (q.h || 20) / 2; { const col = Math.floor(x / TS), row0 = Math.floor((q.y - 8) / TS); for (let r = row0; r < row0 + 8; r++) { const v = Lv.grid[r * Lv.W + col]; if (v === 1 || v === 2) { feet = r * TS; break; } } }
+    if (!CM.said) { CM.said = 1; ctx.number(x, feet - 44, 'MOTHER! HIM!', '#ff9ad0'); }
+    g.drawImage(side[f], R(x - cx - sp.ax), R(feet - cy - sp.ay));
   }
 
   /* the LAB BOT's duty (src/lab.js): strike the winch while a wave is open; ring the bell when it is ready and she is free on the floor or perched; stand off the landing as the grate glows */
