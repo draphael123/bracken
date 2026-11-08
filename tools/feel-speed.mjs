@@ -1,9 +1,10 @@
 // tools/feel-speed.mjs - GAME SPEED 50..200% (Daniel 10-12, claude/feelplatform). In the page:
-//  1. the speed row: nine steps 50/60/70/85/100/125/150/175/200, the default of a fresh profile is 100%, the old save is migrated ONCE (speedV3) and then left alone;
+//  1. the speed row: nine DISPLAYED steps 50/60/70/85/100/125/150/175/200 where 100% is the tuned real 0.6 (Daniel 11-08 relabel; real 0.3..1.2), the default of a fresh profile is real 0.6 = 100%, the old save is migrated ONCE (speedV3) and then left alone;
 //  2. the sub-step rule: above 100% the world runs 2 sub-steps of at most one 100% step (never one long step), so the hero covers speed x the ground in the same wall frames
 //     and a fast fall lands the same place; at 50% and 100% nothing changed (the same trace as the old code);
 //  3. the level clock and the hitstop stay on the right clocks.
 import { openPage } from './cdp.mjs';
+import { readFileSync } from 'node:fs';
 const fails = []; const ok = (c, m) => { if (!c) { fails.push(m); console.log('FAIL ' + m); } };
 const pg = await openPage({ audio: false, fonts: false, speed: false });   /* the game's OWN default + migration, no tool pin */
 try {
@@ -19,9 +20,15 @@ try {
     out.runs = {}; for (const s of [0.5, 1, 1.25, 1.5, 2]) out.runs[s] = run(s, 30);
     return out; })()`, 600000);
   console.log(JSON.stringify(r));
-  ok(r.defaultSpeed === 0.6, 'a fresh profile defaults to 60% (Daniel 10-14; SPEED_DEFAULT flips it later): ' + r.defaultSpeed);
+  ok(r.defaultSpeed === 0.6, 'a fresh profile defaults to real 0.6, shown as 100% (Daniel 11-08 relabel): ' + r.defaultSpeed);
+  { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); const dflt = +(/const SPEED_DEFAULT = ([\d.]+)/.exec(src) || [])[1];
+    const steps = [50, 60, 70, 85, 100, 125, 150, 175, 200].map(p => Math.round(p / 100 * dflt * 1000) / 1000);
+    ok(dflt === 0.6 && steps.join() === '0.3,0.36,0.42,0.51,0.6,0.75,0.9,1.05,1.2', 'the displayed ladder maps to the real steps: ' + steps.join());
+    ok(src.includes('const GAME_SPEEDS = [50, 60, 70, 85, 100, 125, 150, 175, 200].map(p => Math.round(p / 100 * SPEED_DEFAULT * 1000) / 1000)'), 'GAME_SPEEDS is the relabelled ladder');
+    ok(src.includes("k === 'Game speed' ? Math.round((SET.speed || SPEED_DEFAULT) / SPEED_DEFAULT * 100) + '%'"), 'the settings row shows speed / SPEED_DEFAULT as a percent');
+    ok(src.includes('menuMsg = SET.speed < SPEED_DEFAULT ?') && src.includes('SET.speed > SPEED_DEFAULT ?') && !/Game speed'\) \{[^}]*Math\.round\(SET\.speed \* 100\)/.test(src), 'the Game speed message compares and shows against SPEED_DEFAULT'); }
   ok(!r.v3, 'no speedV3 migration is applied while SPEED_MIGRATE is off');
-  const d1 = r.runs[1].dx; ok(d1 > 20, 'the hero ran at 100%: ' + d1);
+  const d1 = r.runs[1].dx; ok(d1 > 20, 'the hero ran at real 1.0: ' + d1);
   for (const s of [0.5, 1.25, 1.5, 2]) { const k = r.runs[s].dx / d1; ok(Math.abs(k - s) < 0.12 * s + 0.05, 'ground covered at ' + s + ' is ' + s + ' x the 100% run, was ' + k.toFixed(2)); }
   ok(r.runs[2].maxStep <= r.runs[1].maxStep * 2.05 + 0.2, 'no single frame at 200% moved more than twice a 100% frame (two sub-steps)');
   /* THE ONE-TIME MIGRATION: an old file (speed 0.6, no speedV3) boots at 1.0 and is flagged; a v3 file at 0.7 keeps 0.7 */

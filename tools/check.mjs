@@ -44,7 +44,7 @@
 //   ambush-reach every captain an ambush makes you kill can be reached from where the room shuts you in (stake walls and gates are rock)
 //   elites    every elite can be reached, and every gate it holds is reached with it shut and really holds the route
 //   spawns    no creature starts inside the rock, no eel, angler or urchin starts out of the water
-//   feel-speed    (headless) Game speed 50..200%: the nine steps, 100% default for a fresh profile, the one-time speedV3 migration, sub-steps above 100% (claude/feelplatform)
+//   feel-speed    (headless) Game speed 50..200%: the nine steps, 100% default for a fresh profile, the one-time speedV3 migration, sub-steps above 100% (claude/feelplatform); (11-08) 100% label = real 0.6
 //   feel-platform (headless) camera lookahead (eased, ~1/6 screen, off with Reduce motion), landings by height, the world's small reactions (claude/feelplatform)
 //   pixels    (headless) no sprite floats, hangs from nothing or runs through a ledge, by its own pixels; no water
 //             creature leaves its water over a tide (src/floatlab.js)
