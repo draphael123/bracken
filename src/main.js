@@ -7496,7 +7496,7 @@ const partyBodies = () => inWoodNow() || !coopWant ? players : [players[0]].conc
 function partyDismissWant(sd) { const seats = wantSeats().filter(q => q !== sd); coopWant = seats.length ? { hero: seats[0].hero, ally: !!seats[0].ally, seats } : null; partySave(); profReconcile(); }
 /* THE PARTY BOARD (the tavern's board station; src/party-board.js draws it): the four seats and, on each empty one, JOIN / INVITE / AI PARTNER */
 const seatKind = p => p === players[0] ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local';
-function partyBoardOpen() {
+function partyBoardOpen(opt) {
   PBOARD.open({
     seats: () => { const out = [], bodies = partyBodies(); for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = bodies[n - 1];
         if (!p) { out.push({ n, empty: true }); continue; }
@@ -7522,7 +7522,7 @@ function partyBoardOpen() {
     ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     dismiss: n => { const p = partyBodies()[n - 1]; if (!p || !p.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; if (p.want) { partyDismissWant(p.want); SFX.ui(); return { ok: true }; } burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); seatDrop(p); SFX.ui(); return { ok: true }; },
     sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
-  });
+  }, opt);
 }
 /* in a hero's own pass: a joiner walking in is walked by the room; a hero at the wardrobe has his keys taken by its card */
 function tavHands(pp) {
@@ -12089,7 +12089,7 @@ const saveUnstarted = r => !r || (!r.heroPicked && !LEVELS.some(l => r[l.id]) &&
    close it). A group with ONE row left shows that row directly. SWAP HERO left the title (inn, store, pause menu keep it). Row ids are unchanged: every handler and tool still names LOCAL CO-OP, ARENA YARD... */
 const titleRushRow = () => rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [];   /* (still off in the demo and without ?modes) */
 const titleEditorRow = () => MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'];
-const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow(), titleEditorRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
+const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow(), titleEditorRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
 const titleGroupRows = g => TITLE_GROUPS[g] ? TITLE_GROUPS[g]() : null;
 const titleTop = () => { const out = !saveUnstarted(readSlot(slot)) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   const grp = g => { const r = titleGroupRows(g); if (r.length > 1) out.push(g); else if (r.length === 1) out.push(r[0]); };
@@ -12127,6 +12127,7 @@ function demoEndOpen() {
     map: () => { DEND.close(); state = 'map'; gotoLevelNode(levelIndex); saveProgress(); SFX.menuClose(); },
     menu: () => { DEND.close(); setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); } });
 }
+function titleGo() { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* CONTINUE (and PLAY WITH AI once its partners are seated): the saved game, or an unstarted save's opening and hero pick */
 const titleItems = () => titleSub === 'OPTIONS' ? titleOptRows().concat(['BACK']) : titleSub ? (titleGroupRows(titleSub) || []).concat(['BACK']) : titleTop();
 /* (claude/touchrows, Daniel 11-04) THE TOUCH TITLE IS A PAGED LIST: every row is >= 44 CSS px tall (a thumb), so only a few fit the 180 px picture; the rest are a page away (an UP row and a DOWN row,
    drawn as rows too, 44 px each). titleWin turns (item count, slot count, the selected item, the first shown item) into what each slot holds. Keys and pads still walk the whole list: the window follows. */
@@ -12134,8 +12135,8 @@ let titleOff = 0;
 const TITLE_LABEL = { 'LOCAL CO-OP': 'PLAY TOGETHER (SAME SCREEN)', 'ONLINE CO-OP': 'PLAY ONLINE WITH A FRIEND' };
 const TITLE_SUBLABEL = { 'LOCAL CO-OP': 'SAME SCREEN', 'ONLINE CO-OP': 'ONLINE WITH A FRIEND' };   /* (claude/titlemenu) inside PLAY TOGETHER the two rows read short; shown alone on the top level they keep the long label */
 const titleLabel = (k, sub) => (sub && TITLE_SUBLABEL[k]) || TITLE_LABEL[k] || k;
-const titleHasNew = k => (k === "WHAT'S NEW" || k === 'EXTRAS');   /* the 8 NOV date and the new-dot show on WHAT'S NEW and on the EXTRAS row that holds it */   /* (claude/polish150) what the two co-op title rows READ; the row keys (LOCAL CO-OP / ONLINE CO-OP) stay the ids every handler and tool uses */
-const TITLE_HINT = { 'LOCAL CO-OP': 'PLUG IN A PAD, PRESS JUMP TO JOIN', 'ONLINE CO-OP': 'HOST, SHARE THE CODE' };   /* the one line under the selected row: the footer line the board already had, so it adds no row */
+const titleHasNew = k => k === "WHAT'S NEW";   /* the 8 NOV date and the new-dot show on WHAT'S NEW only (inside EXTRAS); the EXTRAS row itself stays plain (Daniel 11-08, claude/titlemenu2) */   /* (claude/polish150) what the two co-op title rows READ; the row keys (LOCAL CO-OP / ONLINE CO-OP) stay the ids every handler and tool uses */
+const TITLE_HINT = { 'LOCAL CO-OP': 'PLUG IN A PAD, PRESS JUMP TO JOIN', 'ONLINE CO-OP': 'HOST, SHARE THE CODE', 'PLAY WITH AI': 'THE COMPUTER PLAYS YOUR PARTNER' };   /* the one line under the selected row: the footer line the board already had, so it adds no row */
 function titleSlots() { const css = Math.max(0.5, S / (DPR || 1)); let rh = Math.max(11, Math.ceil(44 / css)); const room = Math.max(40, VH - 54); let n = Math.floor(room / rh); if (n < 3) { n = 3; rh = Math.floor(room / 3); } return { rh, n: Math.min(12, n) }; }
 function titleWin(len, slots, sel, off) {
   const lay = o => { const up = o > 0 ? 1 : 0, left = len - o; if (left <= slots - up) return { up, down: 0, c: left }; return { up, down: 1, c: slots - up - 1 }; };
@@ -33091,8 +33092,8 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress && !titleSub) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
-    else {
+  if (state === 'title') { ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress && !titleSub && !PBOARD.shown()) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
+    else if (!PBOARD.shown()) {   /* (the party board over the title - PLAY WITH AI - eats the keys and the pad) */
       const items = titleItems();
       if (titleSub && (pausePress || (atkPress && !confirmPress))) { titleI = titleBackTo(); titleSub = null; SFX.ui(); pausePress = false; atkPress = false; }   /* (ESC / X / the back key closes the open submenu, as BACK does; ENTER is attack AND confirm, so a press that is also a confirm takes the row, it does not go back) */
       else {
@@ -33100,8 +33101,9 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'NEW GAME', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
-        else if (k === 'CONTINUE' || (k === 'NEW GAME' && readSlot(slot))) { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
+        if (['CONTINUE', 'NEW GAME', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        else if (k === 'CONTINUE' || (k === 'NEW GAME' && readSlot(slot))) titleGo();
+        else if (k === 'PLAY WITH AI') partyBoardOpen({ ai: true, done: n => { if (n > 0) titleGo(); } });   /* (claude/titlemenu2, Daniel 11-08) the party board opened on its AI PARTNER picker; PLAY then takes the road CONTINUE takes, with the partners wanted for the first wood */   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */

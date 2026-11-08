@@ -13,10 +13,14 @@
 import * as UI from './online-ui.js';
 import * as CS from './coop-save.js';   /* (claude/coopclarity) the picker's words: what happens to what a seat earns */
 
-let B = null, api = null, view = { k: 'seats' }, msg = null, hooked = false, padPrev = {};
+let pre = null, B = null, api = null, view = { k: 'seats' }, msg = null, hooked = false, padPrev = {};
 export const shown = () => !!(B && B.shown());
-export function open(a) { api = a; view = { k: 'seats' }; msg = null; UI.styles(); B = UI.board('olparty'); hook(); render(); }
-export function close() { if (B) { B.remove(); B = null; } view = { k: 'seats' }; }
+/* (claude/titlemenu2, Daniel 11-08) opt { ai: true, done(n) }: the title's PLAY WITH AI opens the board straight on its AI PARTNER picker (the first empty seat); the seats view then ends in PLAY
+   (BACK until a partner sits) and done(n) is told how many AI partners are seated when the board leaves. */
+export function open(a, opt) { api = a; pre = opt && opt.ai ? opt : null; view = { k: 'seats' }; msg = null; if (pre) { const e = api.seats().find(s => s.empty); if (e && api.ai && api.room() > 0) view = { k: 'aikind', n: e.n }; } UI.styles(); B = UI.board('olparty'); hook(); render(); }
+export function close() { if (B) { B.remove(); B = null; } view = { k: 'seats' }; pre = null; }
+const aiSeated = () => api ? api.seats().filter(s => s.kind === 'ally').length : 0;
+function leave() { const f = pre && pre.done, n = aiSeated(); close(); if (f) f(n); }
 function hook() {
   if (hooked) return; hooked = true;
   addEventListener('keydown', keys, true); addEventListener('keyup', e => { if (shown()) e.stopImmediatePropagation(); }, true);
@@ -41,7 +45,7 @@ function pads() {
     for (const [k, key] of [['up', 'ArrowUp'], ['down', 'ArrowDown'], ['left', 'ArrowLeft'], ['right', 'ArrowRight']]) if (rose(k)) { UI.arrowsWalk(B.root, { key }); return; }
   }
 }
-function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' && view.change ? { k: 'seats' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
+function back() { if (pre && (view.k === 'seats' || (view.k === 'aikind' && !aiSeated()))) { leave(); api && api.sfx && api.sfx('menuClose'); return; } if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' && view.change ? { k: 'seats' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
 const say = (t, ok) => { msg = { t, ok }; };
 
 /* (claude/coopplates) the seat's hero icon, framed in his seat colour (main.js heroIconUrl) */
@@ -70,7 +74,7 @@ function render() {
       parts.push(r);
     }
     if (msg) parts.push(UI.el(msg.ok ? 'p.ok' : 'p.bad', msg.t));
-    parts.push(UI.el('p.dim', 'A PAD\'S JUMP OR START ANYWHERE IN THE INN STILL WALKS A GUEST IN.'), UI.row(UI.el('button', 'BACK', () => back())));
+    parts.push(UI.el('p.dim', 'A PAD\'S JUMP OR START ANYWHERE IN THE INN STILL WALKS A GUEST IN.'), UI.row(pre && aiSeated() ? UI.el('button.sel', 'PLAY', () => back()) : UI.el('button', 'BACK', () => back())));
   } else if (view.k === 'slot') {
     parts.push(UI.el('h1', 'P' + view.n + ': PICK A SAVE'), UI.el('p.dim', 'ONE OF THIS BROWSER\'S SAVES: WHAT P' + view.n + ' EARNS IS WRITTEN TO IT. AN EMPTY ONE STARTS A NEW SAVE.'));
     for (const sl of api.slots()) { const b = UI.el('button' + (sl.ok ? '' : '.no'), sl.line + (sl.ok ? '' : '  (' + sl.why + ')'), () => { if (!sl.ok) return; view = { ...view, k: 'hero', slot: sl.i, heroes: sl.heroes }; msg = null; render(); }); b.dataset.slot = sl.i; if (!sl.ok) b.disabled = true; parts.push(UI.row(b)); }
