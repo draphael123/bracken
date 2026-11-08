@@ -42,7 +42,7 @@ import { hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (
 import { drillHittable } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart) */
 import { bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn; the hero as the boss) */ import { pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch; the hero as the boss, claude/church2) */ import { dcOpen } from './deacon.js';   /* THE DEACON (claude/church2) */
 import { fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath) */
-import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
+import { glOpen } from './gang-leader.js'; import { gpOpen } from './goblin-princess.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -140,6 +140,7 @@ export const OPEN_RULE = {
   djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
   roc: e => rocEyrieOpen(e),                                                 // THE ROC (claude/skyroad): stuck in the nest off a dive, or knocked down - a thermal plunge, the lightning on her mast
   gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
+  gprincess: e => gpOpen(e),                                                 // (claude/highcrown3) THE GOBLIN PRINCESS: pinned under her tower bell's grate, stunned by her own tiara, staggered off a parried lunge, preening after her pokes
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
@@ -188,7 +189,7 @@ export function install(helpers) { H = helpers || {}; }
    outside value - the chip for a mini on CHIP_MINI, his plain blow (no opening's bonus) for the rest. The purse is refilled when the
    opening ends (capStep, every frame). MINI_OWN_CAP already cap their own windows the same way, in their own code. */
 export const MINI_CAP = 1 / 3;
-export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader', 'deacon']);   /* (claude/church2) THE DEACON caps his grope himself (DC.gropeCap) */
+export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader', 'deacon', 'gprincess']);   /* (claude/highcrown3) THE GOBLIN PRINCESS caps an opening herself (GP.capK) */   /* (claude/church2) THE DEACON caps his grope himself (DC.gropeCap) */
 const ruleOpen = e => { if (e.rpOpenT > 0) return true;   /* (claude/riposte) a parry's short told opening (src/riposte.js) */ if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true; const r = OPEN_RULE[e.t]; if (!r) return null; try { return !!r(e); } catch { return null; } };
 const capped = e => !!e && e.xpRole === 'mini' && !MINI_OWN_CAP.has(e.t);
 /* dmg: what his own code made of a hero's blow; raw: the blow before it. Returns what comes off the bar. say(e) tells the shut. */

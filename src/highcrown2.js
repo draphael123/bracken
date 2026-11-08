@@ -27,9 +27,10 @@ export const HC2 = {
   BARRACKS: [79, 89], BARRACKS_DOOR: 79, WARD_KEY: 88,
   VEST: [233, 256], VEST_GRATE: 234, VEST_GATE: 254, VEST_ELITE: 246,
   HALL: [347, 429], HALL_GRATE: 356, HALL_BELL: 360,
-  SHRINES: [[95, 63], [164, 63], [258, 63], [364, 63], [358, 37], [425, 19], [553, 19]],   /* the bailey's (after the ward gate), the crag's, the vestibule's (past its exam, on the bakehouse lip), the keep's (inside its door, after the burning yard), the hall's (its west balcony, after the landings), the chapel's, the Queen's door */   /* + the Banquet Hall's door one (AMBUSH.crown check [478, 19]) */
+  SHRINES: [[95, 63], [164, 63], [258, 63], [364, 63], [358, 37], [425, 19], [553, 19]],   /* (claude/highcrown3) HCPLAN sec 4 dropped the hall balcony's 358/37, but the hall climb is 238 route tiles from the keep door's to the chapel's without it (tools/checkpoint-gaps: <= 200) - it STAYS (question for Daniel); 553, the Queen's door, is 653 after HC3's insert; HC3 adds the banquet's EAST door (524, 23) */   /* the bailey's (after the ward gate), the crag's, the vestibule's (past its exam, on the bakehouse lip), the keep's (inside its door, after the burning yard), the hall's (its west balcony, after the landings), the chapel's, the Queen's door */   /* + the Banquet Hall's door one (AMBUSH.crown check [478, 19]) */
 };
-export function highcrownTwo(R, { T, TS }) {
+export function highcrownTwo(R, opts) {
+  const { T, TS } = opts;
   const W = R.W, H = R.H, g = R.grid;
   const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
   const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? T.SOLID : g[y * W + x];
@@ -62,7 +63,7 @@ export function highcrownTwo(R, { T, TS }) {
   ent('hound', 29, 63, { face: -1 });
   ent('torch', 22, 63); ent('torch', 28, 63);
   /* THE MURDER HOLE past the gate: a stone in a slot of the wall walk over the bailey - it sparks, then drops (Stormhold's barbican stones) */
-  ent('weight', 33, 53, { len: 4, unstable: true, crane: true });
+  ent('murderhole', 33, 53, { n: 1 });   /* (claude/highcrown3, HCPLAN beat 1) MURDER HOLE #1 is the PLAYER'S now: stand on the wall walk over it and strike the slot - the stone drops on the gate guards (reloads; src/main.js murderhole) */
   // the picket, fewer and on footing: a temperer at its brazier, a javelin on the wall walk's stair
   ent('brazier', 37, 63); ent('temperer', 40, 63, { face: -1 });
   for (const [x, y] of [[43, 62], [47, 60], [51, 58], [55, 56], [59, 54]]) { plat(x, y, 4); sup(x, y, 'pier', 64); sup(x + 3, y, 'pier', 64); }   // the stair up to the wall walk, past the gate, on its stone piers
@@ -112,6 +113,7 @@ export function highcrownTwo(R, { T, TS }) {
   ent('bell', 250, 63, { section: 'vestibule' }); ent('sentry', 248, 63, { section: 'vestibule', range: 1, face: -1 });
   ent('sign', 231, 63, { text: 'THE VESTIBULE. STEP IN AND THE GRATE DROPS BEHIND YOU. HER CHAMPION HOLDS THE FAR GATE.' });
   ent('torch', 238, 63); ent('torch', 251, 63); ent('deco', 242, 63, { kind: 'barrels' });
+  ent('murderhole', 253, 58, { n: 3, kick: [252, 252, 59, 63] });   /* (claude/highcrown3) MURDER HOLE #3 in the east gate tower's lintel, over her champion's gate: its pull-chain hangs inside the arch */
   coins([239, 62], [243, 62], [247, 62]);
   R.masonry = R.masonry.concat([[232, 236, 48, 57], [252, 256, 48, 57]]);
   R.facades = R.facades.concat([[232, 236, 40, 63, 'tower', { arch: [58, 63] }], [252, 256, 40, 63, 'tower', { arch: [58, 63] }]]);
@@ -157,6 +159,7 @@ export function highcrownTwo(R, { T, TS }) {
   ent('sign', 358, 31, { text: 'THE HALL BELL DROPS THE GRATE ON THE STAIR HEAD. BE PAST IT WHEN IT RINGS.' });
   R.alarms = R.alarms.concat([{ id: 'hall', gates: [[HC2.HALL_GRATE, 26, 31]], garrison: [{ t: 'soldier', x: 350, y: 31 }, { t: 'javelin', x: 352, y: 31 }] }]);
   ent('heavy', 398, 31, { face: -1 });
+  ent('murderhole', 386, 33, { n: 4 });   /* (claude/highcrown3) MURDER HOLE #4 in the high gallery's boards: strike it from the gallery and the stone drops thirty rows onto the hall floor (the Queen-climb rehearsal) */
   ent('deco', 384, 31, { kind: 'banner', v: 0 }); ent('torch', 410, 31); coins([380, 31], [390, 31], [420, 31]);
   R.masonry = R.masonry.concat([[409, 429, 54, 63], [K0, 371, 38, 39], [K0, 352, 34, 37]]);
 
@@ -235,5 +238,127 @@ export function highcrownTwo(R, { T, TS }) {
     ent('deco', 624, 19, { kind: 'banner', v: 1 }); ent('deco', 648, 19, { kind: 'banner', v: 0 }); ent('torch', 618, 19); ent('torch', 654, 19);
     R.arenaRoof = { x0: 612 * TS, x1: 660 * TS, floor: 20 * TS, wallL: 611, wallR: 661, boss: 'gqueen', music: 'gqjudge', tint: '#7a2a1a', tintA: 0.1, fx: 'dust', noWall: true, exit: { x: 614, y: 19 }, hatches: [616, 656], stack: [636, 637], poles: [624, 648] };
   }
+  return highcrownThree(R, { T, TS, insertColumns: opts.insertColumns });
+}
+
+/* ============ HIGHCROWN 3 (claude/highcrown3, scratch/lane-reports/hcplan.md, APPROVED Daniel 11-06 22:34) ============
+   "A BIT LONGER": nothing is cut (the Captains Hall and the bakehouse yard stay); a hundred columns are INSERTED at the banquet's east door
+   (src/level.js insertColumns, so the Queen's hall, her escape and her tower top slide east whole) and the Leads are rebuilt into them:
+     479-522  THE BANQUET HALL = THE PRE-THRONE REHEARSAL and the level's ambush room: her CAPTAIN (a heavy elite, AMBUSH.crown) at the high table;
+              ring the BELL ROPE (west) and he storms to the sound - under the GRATE mid-hall when it drops he is pinned; meanwhile the SERVERY DOOR
+              rises (her garrison: soldier, javelin, pike) - crank its WINCH (3 blows, 2 s apart) before the horn or they are in. A murder hole over
+              the servery. The shrine is at its EAST door, after it (524, 23).
+     523-622  THE BATTLEMENTS (outdoor, snow and headwind gusts): the wall walk at row 21, two ALARM TOWERS (557-566, 602-611) with an archer on each
+              roof (a ladder up its east face), a broken stretch (576-584: stone corbels over a six-row drop to a lower walk and a ladder back - a
+              time cost, never a death fall). THE GOBLIN PRINCESS flees along it ahead of you and rings each tower's alarm bell: its guardroom door
+              rises - crank the tower winch in time or the wave is out; a murder hole's chain in each passage drops a stone on the door.
+     623-648  THE BELL TOWER (L.mini): her fight. Floor at row 21, the BELFRY LANDING (630-641, row 19: a three-row jump, every hero), the TOWER BELL's grate over it (636),
+              the bell rope on the floor's west side (627), her guardroom door (643) and its winch (641), the roof hatch (639) she escapes by,
+              and the inner stair door east (648, rows 14-19, the mini's gate) onto the terrace at her doors.
+     649-658  the terrace and the Queen's doors (the old Leads' last ten columns); her hall from 659. */
+export const HC3 = {
+  AT: 523, ADD: 100, S: 21,
+  STAIR: [523, 526], W1: [527, 556], T1: [557, 566], W2: [567, 601], GAP: [576, 584], CORBELS: [[578, 579], [581, 582]], T2: [602, 611], W3: [612, 622],
+  BT: [623, 648], BT_ROOF: 6, LAND: [630, 641], LAND_ROW: 19, GRATE: 636, ROPE: 627, DOOR: 643, WINCH: 641, HATCH: 639, EXIT_ROWS: [14, 19],
+  BANQ: [485, 520], REH: { rope: 487, grate: 499, gy0: 16, gy1: 25, door: 510, winch: 507, row: 25 },
+  BANQ_SHRINE: [524, 23],
+  /* the towers: she rings at `bell`, the wave comes out of `door`, the winch at `winch` keeps it in, the murder hole's chain hangs at `chain` */
+  TOWERS: [{ id: 'tower1', x0: 557, x1: 566, bell: 564, door: 561, winch: 558, chain: 559, wave: ['soldier', 'javelin'] },
+           { id: 'tower2', x0: 602, x1: 611, bell: 609, door: 606, winch: 603, chain: 604, wave: ['pike', 'soldier', 'hound'] }],
+};
+export function highcrownThree(R, { T, TS, insertColumns }) {
+  if (!insertColumns) return R;
+  const B = HC3, S = B.S;
+  insertColumns(R, B.AT, B.ADD);
+  const W = R.W, H = R.H, g = R.grid, BOT = H - 1;
+  const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
+  const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };
+  const block = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.SOLID), air = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.AIR);
+  const plat = (x, y, n) => fill(x, x + n - 1, y, y, T.ONEWAY), rungs = (x, y0, y1) => fill(x, x, y0, y1, T.NET), port = (x, y0, y1) => fill(x, x, y0, y1, T.PORT);
+  const ent = (t, x, y, o = {}) => R.ents.push({ t, x, y, ...o });
+  const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
+  const X0 = B.AT, X1 = B.BT[1] + 3;   /* everything the old Leads were, and the hundred new columns: rebuilt (the terrace at 652-658 and the door-tower stay) */
+
+  // ---- out with the Leads: their stack, gutter, spikes, turret, buttress, whelp, sentry, bell, signs, alarm, wind ----
+  R.ents = R.ents.filter(e => !(e.x >= X0 && e.x <= X1 && e.y <= 30 && e.t !== 'check'));
+  R.alarms = (R.alarms || []).filter(a => a.id !== 'leads');
+  R.winds = (R.winds || []).filter(w => !(w.x0 >= X0 && w.x1 <= X1));
+  R.calm = (R.calm || []).filter(b => !(b[0] >= X0 && b[1] <= X1 + 1));
+  R.tints = (R.tints || []).filter(b => !(b[0] >= X0 && b[0] <= X1)).concat([[X0, B.W3[1], [150, 170, 230], 0.08], [B.BT[0], B.BT[1], [255, 190, 120], 0.05]]);
+  R.facades = (R.facades || []).filter(f => !(f[0] >= X0 && f[1] <= X1));
+  air(X0, X1, 0, S); block(X0, X1, S + 1, BOT);
+  air(B.BT[1] + 1, B.BT[1] + 3, 16, 19);   /* the old buttress off the turret: the terrace runs on to the tower's door */
+
+  // ---- the stair up out of the banquet's east door onto the walk ----
+  air(523, 524, S + 1, 23);   /* (the banquet floor stands at 25: two steps of two) */
+  ent('check', B.BANQ_SHRINE[0], B.BANQ_SHRINE[1]);
+  ent('sign', 526, S, { text: 'THE BATTLEMENTS. SHE RUNS FOR THE ALARM BELLS: STRIKE EACH TOWER WINCH IN TIME.' });
+
+  // ---- W1: the open walk, one soldier, the first tower's archer shooting along it ----
+  ent('soldier', 547, S, { face: -1 }); ent('torch', 530, S); ent('deco', 540, S, { kind: 'gobPennant', v: 1 }); ent('deco', 552, S, { kind: 'warStandard', v: 0 });
+  coins([533, S], [538, S - 1], [544, S], [550, S - 1]);
+
+  // ---- THE TWO ALARM TOWERS: a body over a passage (rows 15-21), a roof with an archer, a ladder up the east face ----
+  for (const Tw of B.TOWERS) {
+    block(Tw.x0, Tw.x1, 7, 14); block(Tw.x0, Tw.x0, 5, 6); block(Tw.x1, Tw.x1, 5, 6); block(Tw.x0 + 4, Tw.x0 + 5, 5, 6);   /* the body, and its merlons */
+    rungs(Tw.x1 + 1, 6, S);                                                                                     /* the ladder up its east face to the roof */
+    ent('archer', Tw.x0 + 7, 6, { face: -1 });
+    ent('murderhole', Tw.door, 15, { n: Tw.id === 'tower1' ? 5 : 6, kick: [Tw.chain, Tw.chain, S - 4, S] });   /* MURDER HOLES #5/#6: a slot in the passage's vault over the guardroom door, its pull-chain beside it */
+    ent('torch', Tw.x0 + 2, S);
+    R.masonry.push([Tw.x0, Tw.x1, 5, 14]);
+    R.facades.push([Tw.x0, Tw.x1, 0, S, 'tower', { arch: [15, S], roof: true }]);
+    R.hcDeco.push({ k: 'murder', x: Tw.door, y: 15 }, { k: 'guarddoor', x: Tw.door, y: S, id: Tw.id }, { k: 'gpwinch', x: Tw.winch, y: S, id: Tw.id }, { k: 'gpbell', x: Tw.bell, y: S, id: Tw.id });
+  }
+  ent('sign', B.T1[0] - 2, S, { text: 'A TOWER BELL TURNS OUT ITS GUARDS. STRIKE THE WINCH 3 TIMES, QUICKLY: THE GATE DROPS.' });
+
+  // ---- W2: the broken stretch - stone corbels over a six-row drop (a lower walk and a ladder back: time, never a death) ----
+  air(B.GAP[0], B.GAP[1], S + 1, S + 6); for (const [a, b] of B.CORBELS) fill(a, b, S + 1, S + 1, T.ONEWAY);
+  rungs(B.GAP[1], S + 1, S + 6);
+  ent('pike', 588, S, { face: -1 }); ent('heavy', 594, S, { face: -1 }); ent('torch', 586, S); ent('deco', 598, S, { kind: 'gobPennant', v: 0 });
+  coins([578, S], [581, S], [580, S + 6], [590, S - 1]);
+  R.hcDeco.push({ k: 'corbel', x: 578, y: S + 1 + 7 / 16, n: 2 }, { k: 'corbel', x: 581, y: S + 1 + 7 / 16, n: 2 });
+  R.facades.push([B.GAP[0], B.GAP[1], S + 1, S + 6, 'chasm']);
+
+  // ---- W3: the last stretch to THE BELL TOWER ----
+  ent('torch', 615, S); ent('deco', 619, S, { kind: 'warStandard', v: 1 }); coins([614, S], [618, S]);
+  ent('sign', 620, S, { text: 'THE BELL TOWER. RING ITS BELL WITH HER UNDER THE GRATE, AND SHE IS YOURS.' });
+
+  // ---- THE BELL TOWER (623-648): her room ----
+  const [b0, b1] = B.BT;
+  block(b0, b1, 2, B.BT_ROOF); block(b0, b0, B.BT_ROOF + 1, S - 6); block(b1, b1, B.BT_ROOF + 1, B.EXIT_ROWS[0] - 1);   /* roof, west wall over its door (rows 16-21 open), east wall over the inner stair door */
+  port(b1, B.EXIT_ROWS[0], B.EXIT_ROWS[1]);                                                                        /* the inner stair door: shut until she has gone (L.mini.gate) */
+  block(b1 - 3, b1 + 3, B.EXIT_ROWS[1] + 1, S);                                                                    /* the stair's foot inside the door and the sill out to the terrace (stand at 19, the terrace's height) */
+  plat(B.LAND[0], B.LAND_ROW, B.LAND[1] - B.LAND[0] + 1);                                                          /* THE BELFRY LANDING (one-way: every hero jumps it) */
+  ent('gprincess', 638, S, { face: -1, mini: true });
+  ent('torch', 626, S); ent('torch', 646, B.EXIT_ROWS[1]); ent('deco', 633, S, { kind: 'banner', v: 1 });
+  R.masonry.push([b0, b1, 2, S]);
+  R.facades.push([b0, b1, 0, S, 'tower', { roof: true }]);
+  R.interiors.push([b0 + 1, b1 - 1, B.BT_ROOF + 1, S, 'hchall']);
+  R.calm.push([b0, b1, 0, B.BT_ROOF]);
+  R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, { k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }, { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
+  R.mini = { x0: (b0 + 1) * TS, x1: b1 * TS, floor: (S + 1) * TS, y0: B.BT_ROOF * TS, y1: (S + 2) * TS, trigger: (b0 + 4) * TS, wallL: b0, wallR: b1, gate: b1, boss: 'gprincess',
+    name: 'THE GOBLIN PRINCESS', music: 'goblinroyal', start: [b0 + 2, S],
+    land: { x0: B.LAND[0] * TS, x1: (B.LAND[1] + 1) * TS, y: B.LAND_ROW * TS }, grate: { col: B.GRATE, gy0: B.BT_ROOF + 1, gy1: B.LAND_ROW - 1 },
+    rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8 };
+
+  // ---- THE CHASE (src/goblin-princess.js): where she runs, where she rings ----
+  R.gpChase = { x0: 527 * TS, start: 540 * TS + 8, floor: (S + 1) * TS, end: (b0 + 2) * TS, gap: [B.GAP[0] * TS, (B.GAP[1] + 1) * TS],
+    towers: B.TOWERS.map(Tw => ({ id: Tw.id, bell: Tw.bell * TS + 8, door: Tw.door * TS + 8, doorCol: Tw.door, winch: Tw.winch * TS + 8, wave: Tw.wave, floor: (S + 1) * TS })) };
+
+  // ---- THE BANQUET HALL'S REHEARSAL (the room is AMBUSH.crown's; src/goblin-princess.js runs the bell rope, the grate and the servery winch) ----
+  const Q = B.REH;
+  air(Q.grate, Q.grate, Q.gy0, Q.gy1);
+  ent('murderhole', Q.door, 10, { n: 2, kick: [Q.door + 2, Q.door + 2, 19, 23] });   /* MURDER HOLE #2 (the banquet): a slot in the vault over the servery door, its chain hanging to the dais */
+  ent('sign', 482, 23, { text: 'HER CAPTAIN STORMS TO THE SOUND OF THE BELL ROPE: RING IT WITH THE GRATE BETWEEN YOU.' });
+  R.gpRehearsal = { x0: B.BANQ[0] * TS, x1: (B.BANQ[1] + 1) * TS, floor: (Q.row + 1) * TS, rope: Q.rope * TS + 8, grate: { col: Q.grate, gy0: Q.gy0, gy1: Q.gy1 }, door: Q.door * TS + 8, doorCol: Q.door, winch: Q.winch * TS + 8,
+    wave: ['soldier', 'javelin', 'pike'] };
+  R.hcDeco.push({ k: 'bellrope', x: Q.rope, y: Q.row - 3 }, { k: 'murder', x: Q.door, y: 10 }, { k: 'guarddoor', x: Q.door, y: Q.row, id: 'servery' }, { k: 'gpwinch', x: Q.winch, y: Q.row, id: 'servery' });
+
+  // ---- weather: the snow and the wind come back on the battlements (the tower is inside; the terrace is out again) ----
+  R.weather = (R.weather || []).filter(z => !(z.x0 >= X0 * TS)).concat([{ x0: X0 * TS, x1: b0 * TS, kind: 'snow' }, { x0: (b1 + 1) * TS, x1: (b1 + 11) * TS, kind: 'snow' }]);
+  R.ambient = (R.ambient || []).filter(z => !(z.x0 >= X0 * TS)).concat([{ x0: X0 * TS, x1: b0 * TS, kind: 'wind' }, { x0: b0 * TS, x1: (b1 + 1) * TS, kind: 'hall' }, { x0: (b1 + 1) * TS, x1: 99999, kind: 'wind' }]);
+  R.gusts = (R.gusts || []).concat([{ x0: B.W1[0] * TS, x1: B.W1[1] * TS, y0: 8 * TS, y1: (S + 1) * TS, dir: -1, period: 6.5, on: 1.4, phase: 0, told: true },
+    { x0: B.W2[0] * TS, x1: B.W2[1] * TS, y0: 8 * TS, y1: (S + 7) * TS, dir: -1, period: 5.5, on: 1.8, phase: 2, told: true }]);   /* headwind gusts, told (crosswind on the walk, stronger over the broken stretch) */
+  R.hc3 = true;
   return R;
 }
