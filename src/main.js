@@ -3,7 +3,7 @@ import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { drawBasketOutline } from './false-abbot.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotInChair, abbotBridgeBell, abbotWheelStruck, abbotPlunge, abbotClamp, drawAbbotHouse } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import * as MFX from './map-fx.js';
-import { layoutPlates, plateNodes, placePanel, plateLabel, plateLines, panelSize, neighbours as plateNeighbours, nodeBox as mapNodeBox, SCREEN as MAP_SCREEN } from './map-plates.js';
+import { layoutPlates, nudgePlate, plateNodes, placePanel, plateLabel, plateLines, panelSize, neighbours as plateNeighbours, nodeBox as mapNodeBox, SCREEN as MAP_SCREEN } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
 import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE, villagerBonus, VILLAGER_GOLD, ALL_SIX_GOLD } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
@@ -5561,14 +5561,15 @@ function drawMap() {
   /* STAND AT THE JUNCTION, READ WHAT THE SIDE ROAD IS OWED. Only for the node you are actually standing on (not
      every junction on the sheet at once), and only while its own side road is still shut - once it opens this
      plate has nothing to say and stops drawing itself. 320x180 buffer: fitText, never a guessed width. */
+  let mapHintBox = null;   /* (claude/mapfix151) where the junction's red 'what the side road is owed' box was drawn: no name board goes under it */
   if (!map.walking) { const here = NODES[map.node], child = here && !here.spur && spurAt(here.id);
     if (child && nodeLocked(child) && mapTip.t > 0 && mapTip.id === child.id) { const maxW = VW - 12, ls = spurTip(LEVELS[child.level]).flatMap((m, k) => wrap(m, maxW, 6).map(s => [s, k])), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m[0], 6))) + 6), bh = 2 + ls.length * 8;   /* (claude/unlocks) wrapped, never cut */
       const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -15 - bh : 14);
-      g.fillStyle = 'rgba(18,14,24,0.92)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh); g.strokeStyle = '#c9463d'; g.strokeRect(Math.round(lx - tw / 2) + 0.5, ly + 0.5, Math.round(tw) - 1, bh - 1);
+      mapHintBox = { x: Math.round(lx - tw / 2), y: ly, w: Math.round(tw), h: bh }; g.fillStyle = 'rgba(18,14,24,0.92)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh); g.strokeStyle = '#c9463d'; g.strokeRect(Math.round(lx - tw / 2) + 0.5, ly + 0.5, Math.round(tw) - 1, bh - 1);
       ls.forEach((m, k) => text(m[0], Math.round(lx), ly + 2 + k * 8, m[1] ? '#e8dcc0' : '#ff8a7a', 'center', 6)); }
     else if (child && nodeLocked(child)) { const maxW = VW - 12, ls = wrap(spurReqText(LEVELS[child.level]), maxW, 6), tw = Math.min(maxW + 4, Math.max(...ls.map(m => textW(m, 6))) + 6), bh = 1 + ls.length * 8;
       const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -15 - bh : 14);
-      g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh);
+      mapHintBox = { x: Math.round(lx - tw / 2), y: ly, w: Math.round(tw), h: bh }; g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), bh);
       ls.forEach((m, k) => text(m, Math.round(lx), ly + 1 + k * 8, '#c9463d', 'center', 6)); } }
   if (!map.walking && !map.glide) { const here = NODES[map.node]; if (here && !here.spur) for (const c of spursAt(here.id)) { if (nodeLocked(c)) continue;   /* THE WAY ONTO A SIDE ROAD: a few bright dots run out along its stub from the junction you stand on */
       const dx = c.x - here.x, dy = c.y - here.y, len = Math.hypot(dx, dy) || 1; for (let d = 8, k = 0; d < len - 8; d += 6, k++) { g.globalAlpha = 0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - k * 0.9)); g.fillStyle = '#fff4c8'; g.fillRect(Math.round(here.x + dx * d / len) - 1, Math.round(here.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1;
@@ -5626,6 +5627,16 @@ function drawMap() {
       for (const q of plateNeighbours(pn.find(q => q.id === n0.id), pn)) ids.add(q); if (!n0.spur) for (const c of spursAt(n0.id)) ids.add(c.id);
       for (const o of NODES) if (o.kind === 'store' && Math.hypot(o.x - n0.x, o.y - n0.y) < 70) ids.add(o.id); }
     for (const i of ids) plateShown.add(i); }
+  const cY = Math.round(mapCamY), plateRes = [{ x: 0, y: cY, w: VW, h: 20 }, { x: 0, y: cY + VH - 11, w: VW, h: 11 }, { x: VW - 31, y: cY + VH - 53, w: 28, h: 28 }], plateAvoid = [];   /* (claude/mapfix151) what a board may never sit on: header, footer, compass, the info card, the NAMES chip, the demo caption */
+  let capBox = null;
+  if (mapHintBox) plateRes.push({ x: mapHintBox.x - 2, y: mapHintBox.y - 2, w: mapHintBox.w + 4, h: mapHintBox.h + 4 });
+  if (!map.walking && NODES[map.node]) { const pp4 = mapPanelFor(NODES[map.node]); plateRes.push({ x: pp4.x - 1, y: cY + pp4.y - 1, w: pp4.w + 2, h: pp4.h + 2 });
+    if (touchOn && !secretFx) { const nw4 = Math.ceil(textW('NAMES', 6)) + 8; plateRes.push({ x: (pp4.x < 60 ? VW - nw4 - 4 : 4) - 1, y: cY + 21, w: nw4 + 2, h: 13 }); } }
+  for (const n3 of NODES) if (!nodeSecret(n3) && !demoOut(n3)) { const b3 = mapNodeBox(n3); plateAvoid.push({ x: b3.x, y: b3.y, w: b3.w, h: b3.h }); }
+  if (DS.DEMO) { capBox = DEND.mapCaptionBox(textW, VW, NODES[map.node] && NODES[map.node].id, false, [...plateAvoid.map(r => ({ x: r.x, y: r.y - cY, w: r.w, h: r.h })), ...(map.walking ? [] : [(() => { const pp3 = mapPanelFor(NODES[map.node]); return { x: pp3.x, y: pp3.y, w: pp3.w, h: pp3.h }; })()])]);
+    if (capBox) plateRes.push({ x: capBox.x - 2, y: cY + capBox.y - 2, w: capBox.w + 4, h: capBox.h + 4 }); }
+  const plateHard = NODES.filter(n3 => !nodeSecret(n3) && !(nodeLocked(n3) && n3.kind === 'level' && !LEVELS[n3.level].secret) && (namesAll || plateShown.has(n3.id))).map(n3 => { const a3 = mapPlates().plates.get(n3.id); return { id: n3.id, r: { x: a3.x, y: a3.y, w: a3.w, h: a3.h } }; });   /* the boards that will be drawn: a moved board must not land on one */
+  const plateBounds = { x: 3, y: cY + 20, w: VW - 6, h: VH - 31 }, plateDone = [];
   const plateAt = mapPlates().plates;   /* the worst case (every level two-line), so a board never moves with your progress and the lint proves what you see */
   for (const nd of NODES) {
     if (nodeSecret(nd)) continue;
@@ -5635,7 +5646,9 @@ function drawMap() {
     const lbl = nd.kind === 'store' ? (nd.id === 'highstore' ? 'HIGH STORE' : 'STORE') : (LEVELS[nd.level].secret && nodeLocked(nd)) ? '? ? ?' : plateLabel(nd.board || LEVELS[nd.level].name);
     const p = nd.kind === 'level' ? PROG[LEVELS[nd.level].id] : null;
     const twoLine = plateAt.get(nd.id).h > 10;   /* (one-line boards: the strip is on the info card; only a name too long for its crowded spot, THE PALISADE WOOD, is two lines) */
-    const pl = plateAt.get(nd.id), tw = pl.w, th = twoLine ? pl.h : Math.min(10, pl.h);   /* (a place you cannot enter yet is a one-line board; the layout kept room for the two-line one) */
+    let pl = plateAt.get(nd.id);
+    { const a0 = plateAt.get(nd.id); if (a0.y < cY + VH && a0.y + a0.h > cY) pl = nudgePlate({ x: a0.x, y: a0.y, w: a0.w, h: a0.h }, nd, plateRes, plateAvoid, plateBounds, [...plateHard.filter(o => o.id !== nd.id).map(o => o.r), ...plateDone], nd.y > cY + 20 && nd.y < cY + VH - 11 ? Infinity : 14); if (!pl) continue; plateDone.push({ x: pl.x, y: pl.y, w: pl.w, h: pl.h }); }   /* (claude/mapfix151) off the compass, footer, header, card and caption */
+    const tw = pl.w, th = twoLine ? pl.h : Math.min(10, pl.h);   /* (a place you cannot enter yet is a one-line board; the layout kept room for the two-line one) */
     const lx = pl.x + pl.w / 2, ly = pl.y;
     /* A BOARD PUSHED AWAY FROM ITS NODE points back at it. On a crowded road the long names get shoved wherever there is room,
        and THE BURNING VILLAGE's board landed on the Store's hut: players walked to the Store and pressed Z (Daniel, 2026-09-21) */
@@ -5658,7 +5671,7 @@ function drawMap() {
   { const region = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD'; if (region !== map.region) { map.region = region; map.regionT = map.regionT === undefined ? 0 : 2.2; } map.regionT = Math.max(0, (map.regionT || 0) - 1 / 60); const cardTop = !map.walking && mapPanelFor(NODES[map.node]).y < 52;   /* (the region's name is not drawn under an info card that sits at the top: it would print over the card's text) */
   if (map.regionT > 0 && !cardTop && !secretFx) { const a = Math.min(1, map.regionT > 1.8 ? (2.2 - map.regionT) / 0.4 : map.regionT / 0.6); g.globalAlpha = a; text(region, VW / 2 + 1, 41, '#3a2214', 'center', 12); text(region, VW / 2, 40, UI.title, 'center', 12); g.globalAlpha = 1; } }
   g.fillStyle = '#151022'; g.fillRect(0, 0, VW, 19); g.fillStyle = 'rgba(217,194,140,0.5)'; g.fillRect(0, 19, VW, 1); { const hn = mapCamY < INLAND_Y - 60 ? 'THE DESERT' : mapCamY < COAST_Y - 60 ? 'THE ROAD INLAND' : mapCamY < CRAG_Y - 60 ? 'THE COAST' : mapCamY < WOOD_Y - 60 ? 'THE CRAGS' : 'THE WOOD', bg = inkW(hn, 8) <= 90; text(hn, 6, bg ? 5 : 7, UI.title, 'left', bg ? 8 : 6); }   /* (THE ROAD INLAND drops to the small hand, so the counters beside it do not collide) */
-  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, false, [...[...plateAt.entries()].filter(([id]) => namesAll || plateShown.has(id)).map(([, p]) => ({ x: p.x, y: p.y - Math.round(mapCamY), w: p.w, h: p.h })), ...NODES.filter(n3 => !nodeSecret(n3) && !demoOut(n3)).map(n3 => { const b3 = mapNodeBox(n3); return { x: b3.x, y: b3.y - Math.round(mapCamY), w: b3.w, h: b3.h }; }), ...(map.walking ? [] : [(() => { const pp3 = mapPanelFor(NODES[map.node]); return { x: pp3.x, y: pp3.y, w: pp3.w, h: pp3.h }; })()])]);   /* (claude/mapclean) it steps past the nodes and the card as well as the boards: it never covers a node */   /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
+  if (DS.DEMO) DEND.mapCaption(g, text, textW, VW, time, NODES[map.node] && NODES[map.node].id, false, null, capBox);   /* (claude/mapfix151) its box is fixed first; the boards step round it */ /* (claude/batch143) the demo's map says the road goes on - at Kingswood and on any shut node (src/demo-end.js) */
   /* AND THE SECRETS COUNT ONCE YOU HAVE FOUND THEM. `!lv.hidden` left both of them out of the woods
      walked and the medals in the game, so a player who beat the Undercrown was still told 17 woods and 51
      medals. They join the count the moment you have set foot in one, which is also when it stops being a

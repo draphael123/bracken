@@ -137,3 +137,26 @@ export function placePanel(nd, nodes, plates, S = SCREEN, quick = false) {   /* 
   }
   return bestOk || first;
 }
+
+/* (claude/mapfix151, Daniel 11-07) A BOARD NEVER SITS UNDER THE MAP'S OWN FURNITURE. layoutPlates places boards in the world, once; the compass, the footer, the header, the info card, the NAMES chip and the demo's caption live on the SCREEN and
+   move across them as the camera does. At draw time a board whose rectangle meets one of those (or runs off the screen's side) is moved to the nearest free spot: above, below, left or right of its node, or a short slide
+   from where it was. Everything is in one frame of reference (the caller passes world or screen, as long as it is the same for all). `reserved` is what it may not touch, `avoid` what it should not (boards already placed, nodes);
+   `bounds` is the allowed area. A board that is clear is returned as it was, so nothing moves unless it has to. */
+export function nudgePlate(pl, nd, reserved, avoid, bounds, hard = [], maxMove = Infinity) {   /* hard: boards it may not land on; maxMove: the furthest it may travel (a board whose node is off the screen only slides a little) */
+  const inB = r => r.x >= bounds.x && r.y >= bounds.y && r.x + r.w <= bounds.x + bounds.w && r.y + r.h <= bounds.y + bounds.h;
+  const bad = r => reserved.some(q => hitR(r, q)) || !inB(r);
+  if (!bad(pl)) return pl;
+  const { w, h } = pl, cands = [];
+  const around = [[nd.x - w / 2, nd.y - 22 - h], [nd.x - w / 2, nd.y + 8], [nd.x - w - 10, nd.y - h / 2 - 4], [nd.x + 12, nd.y - h / 2 - 4], [nd.x - w / 2, nd.y - 30 - h], [nd.x - w / 2, nd.y + 16]];
+  for (const [x, y] of around) cands.push([x, y]);
+  for (const d of [4, 8, 12, 16, 22, 30]) for (const [dx, dy] of [[0, -d], [0, d], [-d, 0], [d, 0], [-d, -d], [d, -d], [-d, d], [d, d]]) cands.push([pl.x + dx, pl.y + dy]);
+  let best = null;
+  for (const [cx, cy] of cands) {
+    const x = Math.max(bounds.x, Math.min(bounds.x + bounds.w - w, Math.round(cx))), y = Math.round(cy), r = { x, y, w, h };
+    if (bad(r) || hard.some(q => hitR({ x: r.x - 1, y: r.y - 1, w: r.w + 2, h: r.h + 2 }, q)) || Math.hypot(x - pl.x, y - pl.y) > maxMove) continue;
+    const over = avoid.filter(q => hitR({ x: r.x - 1, y: r.y - 1, w: r.w + 2, h: r.h + 2 }, q)).length, far = Math.hypot(x + w / 2 - nd.x, y + h / 2 - nd.y);
+    const cost = over * 40 + far * 0.5 + Math.hypot(x - pl.x, y - pl.y) * 0.3;
+    if (!best || cost < best.cost) best = { r, cost };
+  }
+  return best ? { ...pl, ...best.r } : null;   /* null: nowhere clear on the screen (it would be under the furniture anyway): the board is not drawn */
+}
