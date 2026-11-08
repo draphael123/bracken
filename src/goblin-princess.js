@@ -19,11 +19,11 @@ import * as BW from './bell-winch.js';
 import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
-  hp: 1600, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
+  hp: 1450, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
   resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.12, endAt: 0.1,
   gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
-  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 28, reach: 30, stagger: 1.2 },
-  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 12, reach: 30, preen: 1.6 },
+  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 28, reach: 30, stagger: 1.0 },
+  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 12, reach: 30, preen: 1.2 },
   trinket: { tell: 0.5, n: [2, 3], dmg: 8, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 5, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
@@ -430,9 +430,11 @@ export function makeGoblinPrincessHands(ctx) {
   H.labDuty = P0 => {
     const e = live(); if (!F || !e) return null; const Ar = F.A;
     if (F.wave && F.wave.state === 'open' && Ar.winch) return { x: Ar.winch, face: sign(Ar.winch - P0.x), swing: true, why: 'winch' };
-    if (F.bolt && Ar.winch) { const B = F.bolt, ranged = !!P0.rgArrows && P0.rgStance !== 'knife', s0 = P0.x < Ar.winch ? -1 : 1, x = Ar.winch + s0 * (ranged ? 70 : 8);   /* (claude/hcfix) to the winch (the ranger shoots it from 70 px), and strike it in the blaze after a human's reaction - never before */
+    if (F.bolt && Ar.winch) { const B = F.bolt, ranged = !!P0.rgArrows && P0.rgStance !== 'knife' && P0.rgQ > 0, s0 = P0.x < Ar.winch ? -1 : 1, x = Ar.winch + s0 * (ranged ? 70 : 8);   /* (claude/hcfix) to the winch (the ranger shoots it from 70 px), and strike it in the blaze after a human's reaction - never before */
       return { x, face: -s0, swing: B.state === 'ready' && now() - B.readyT >= B.react, why: 'release the grate' }; }
     if (Ar.rope && BW.bellReady(F.M, now()) && SAFE.has(e.mode) && !gpOpen(e)) return { x: Ar.rope + 10, face: -1, swing: true, why: 'bell' };
+    /* (claude/hcfix) THE RANGER SHOOTS HER GEMS: a gem coming at her near the floor is met with an arrow (a blow on it, as a blade's knocks it away) */
+    if (P0.rgArrows && P0.rgStance !== 'knife' && P0.rgQ > 0) { const q = F.gems.find(g => !g.away && Math.abs(g.x - P0.x) < 90 && Math.abs(g.x - P0.x) > 12 && g.y > P0.y - 22 && Math.sign(g.vx || 0) === Math.sign(P0.x - g.x)); if (q) return { x: P0.x, face: sign(q.x - P0.x), swing: true, why: 'shoot the gem' }; }
     return null;
   };
   return H;
