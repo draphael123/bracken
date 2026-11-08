@@ -77,8 +77,8 @@ console.log('== RESIST: never invulnerable');
 for (const m of ['walk', 'lungeTell', 'lunge', 'flurry', 'fanTell', 'trinketTell', 'tiaraWait', 'stomp', 'tantrum', 'handbell', 'bolt', 'perch', 'hopUp', 'recover', 'wake'])
   ok(gpMul({ mode: m }) >= 0.4 && gpMul({ mode: m }) <= 0.5, m + ': ' + gpMul({ mode: m }) + 'x (>= 0.4, never 0)');
 ok(gpMul({ mode: 'walk', hiding: true }) === 0.4, 'hiding behind a guard: 0.4x (the floor)');
-ok(gpMul({ mode: 'pinned' }) === 1.15 && gpMul({ mode: 'stunned' }) === 1.15 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.15, stunned x1.15, preen / stagger x1.0');
-ok(GP.hp === 1500 && GP.endAt === 0.1 && GP.bell.pin === 2.5, 'hp 1500 base, she ends at 10 %, the pin is 2.5 s');
+ok(gpMul({ mode: 'pinned' }) === 1.2 && gpMul({ mode: 'stunned' }) === 1.15 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.2, stunned x1.15, preen / stagger x1.0');
+ok(GP.hp === 1600 && GP.endAt === 0.1 && GP.bell.pin === 2.8, 'hp 1600 base, she ends at 10 %, the pin is 2.8 s');
 
 console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate -> PINNED');
 { const w = make(); free(w); const gx = w.A.grate.col * TS + 8;
@@ -88,7 +88,7 @@ console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate -> PINNED
   ok(upSeen, 'she hops up onto the landing'); ok(glowSeen, 'the grate column glows before it drops');
   ok(w.st.grates.length === 1 && w.st.grates[0].c === w.A.grate.col, 'the grate drops (col ' + w.A.grate.col + ')');
   ok(w.e.mode === 'pinned' && Math.abs(w.e.modeT - GP.bell.pin) < 0.05 && Math.abs(w.e.x - gx) < GP.bell.under, 'under it: PINNED ' + GP.bell.pin + ' s');
-  const hp0 = w.e.hp, d = w.H.take(w.e, 10); ok(Math.abs(d - 11.5) < 1e-6, 'a blow while pinned: x1.15 (' + d + ')');
+  const hp0 = w.e.hp, d = w.H.take(w.e, 10); ok(Math.abs(d - 12) < 1e-6, 'a blow while pinned: x1.2 (' + d + ')');
   let tot = 0; for (let i = 0; i < 40; i++) tot += w.H.take(w.e, 30); ok(tot <= w.e.maxHp * GP.capK + 1e-6 && w.H.fight().n.capped > 0, 'one opening takes no more than ' + (GP.capK * 100) + ' % of her bar (' + Math.round(tot) + ' of ' + w.e.maxHp + ')');
   free(w); w.e.x = w.A.x0 + 6 * TS; w.step(60); w.ring(); w.step(5); ok(w.e.mode !== 'bolt' && w.st.said.includes('STILL SWINGING'), 'inside the cooldown: STILL SWINGING');
   w.step(60 * GP.bell.cd); free(w); w.ring(); w.step(3); ok(w.e.mode === 'bolt', 'after ' + GP.bell.cd + ' s it answers again'); }
