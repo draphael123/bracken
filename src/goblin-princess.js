@@ -320,7 +320,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (F.tiara) GPA.drawTiaraFlying(g, F.tiara.x - cx, F.tiara.y - cy, time, F.tiara.home);
     for (const w of F.ripples) GPA.drawRipple(g, w.x - cx, f0, time);
     if (Ar.grate && F.glowK > 0 && F.bolt) HC2A.drawGrateFx(g, { gate: Ar.grate.col, gy0: Ar.grate.gy0, gy1: Ar.grate.gy1 }, cx, cy, TS, time, F.glowK);   /* the told grate: the column lit before it drops */
-    if (Ar.rope && BW.bellReady(F.M, now()) && !F.said.ropeHint) { ctx.text && ctx.text('RING', R(Ar.rope - cx), f0 - 40, '#ffd36b', 'center', 6); }
+    if (Ar.rope && BW.bellReady(F.M, now()) && !F.said.ropeHint && R(Ar.rope - cx) > 14 && f0 - 40 > 8) { ctx.text && ctx.text('RING', R(Ar.rope - cx), f0 - 40, '#ffd36b', 'center', 6); }   /* (claude/hcfix, textfit OFFSCREEN) only while the rope is in the picture */
     if (F.M.rings) F.said.ropeHint = true;
   };
 
