@@ -736,7 +736,7 @@ export function makeGQueenHands(ctx) {
     S.esc.step = null; toRoof(); return e.stage === 'roof';
   };
   /* (claude/hcfix) tools/hcfix-fights-sheet.mjs: start each told move the way her own chooser does (the mark, the sound, the set-up), for the stills */
-  Object.assign(H.test = H.test || {}, { start: k => { const e = q(); if (!e || !S) return false; if (k === 'lash') startLash(e); else if (k === 'ambush') startAmbush(e); else if (k === 'geyser') startGeyser(e); else if (k === 'leap') startLeap(e); else if (k === 'crown') roofCrown(e); else if (k === 'portal') roofPortal(e); else return false; return e.mode; } });
+  Object.assign(H.test = H.test || {}, { start: k => { const e = q(); if (!e || !S) return false; if (k !== 'crown' && k !== 'portal' && !S.roof) roofBegin(e); if (k === 'lash') startLash(e); else if (k === 'ambush') startAmbush(e); else if (k === 'geyser') startGeyser(e); else if (k === 'leap') startLeap(e); else if (k === 'crown') roofCrown(e); else if (k === 'portal') roofPortal(e); else return false; return e.mode; } });
   Object.assign(H.test = H.test || {}, { toss:() => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
   return H;
 }
