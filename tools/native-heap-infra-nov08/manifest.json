@@ -46,7 +46,7 @@
     "maxTraceBytes": 67108864,
     "strictProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
     "pageSha256": "aca5c6a88055b9153bebd75f1767f612cc05b497804781a682c86dcdf5cf3c50",
-    "driverSha256": "e38b685ef497a4df62e8af572479117a9f2aa5ab3dd20f254756706d7bdf5ad2",
+    "driverSha256": "8d9103b5dc71b2f036d8f7c471227ee20987aa12f0230d32215b32e071c5c494",
     "originalToolHashes": {
       "tools/_rwmap.mjs": "b01c8b49d28ce9793f52ef03fe2eacba2864175d4f536a4699f4b0b127ea461f",
       "tools/ability-poses.mjs": "94e29c5b51620a33ecfe41a477ef54ce33e3746619cd28f9f68ad8545064382d",
@@ -989,7 +989,8 @@
       "tools/private-hero-profile-guard-preload-nov01.mjs": "677953beff668e81b2000ecce4ce54344d8da4372462976a31013581ae95af0e",
       "tools/browser-profile.mjs": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
       "tools/process-memory.mjs": "fafe9c59b4f6c05b60ec2c7e36fe78d554e2b1290bbee6cd2d822b430c2e6ed1",
-      "tools/ports.mjs": "21bf29ed6e6b0c2b3abfc6cbaeed3d4f2ba742956e45a43a152f14143f1a0573"
+      "tools/ports.mjs": "21bf29ed6e6b0c2b3abfc6cbaeed3d4f2ba742956e45a43a152f14143f1a0573",
+      "tools/native-heap-stack-wire-nov08.mjs": "55a0ebb7a51e51122ba045675e838e1abc81d9c60d221684f1dd746ef37abc23"
     },
     "historicalSourceManifest": {
       "file": "tools/baseline-memory-profile-source/manifest.json",
@@ -1005,7 +1006,25 @@
       "localCrlfSha256": "3c0904f86806cff1213ad93af0f293999ea169f24cdde749fee64e875767dad5",
       "onlyExpectedCanonicalHelperHashCorrected": true,
       "noSourceAlgorithmOrGuardRelaxation": true
-    }
+    },
+    "observedNativeProtocol": {
+      "result": "outputs/receipts/native-heap-infra-recovery-result-nov08.json",
+      "sha256": "7368a1f61147abaab8c2cf075ab2cdc52bc06eb13dec29bee33b0481ccc13ade",
+      "browser": {
+        "protocolVersion": "1.3",
+        "product": "Chrome/156.0.8078.79",
+        "revision": "@a21ce95c24ce3964416f09ae1862f53f319eb4d0",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+        "jsVersion": "15.6.75.27"
+      },
+      "legacyOnlyReaderWasWrong": true,
+      "modernPacket135": true,
+      "perSequenceSourceAndCounterAndCompleteFrameIdentitiesRequired": true,
+      "positiveByteWeightAndOwnedRendererRequired": true,
+      "noResidentOrLiveObjectSavingInference": true
+    },
+    "maxDecodedArtifactBytes": 268435456,
+    "decodedSamplesStreamedNotWholeReceipt": true
   },
   "baseline": [
     {
