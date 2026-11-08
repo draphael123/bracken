@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-08",
+    "batch": 152,
+    "lines": [
+      "New EASY and HARD modes: five difficulties from VERY EASY to MASTER",
+      "Lives follow your difficulty: 10, 5, 3, 2 or 1 (Master has no coin lives)",
+      "A lives icon on the HUD shows how many you have left",
+      "Find it too hard? Lower your difficulty from the pause menu (never back up)",
+      "The Ram Lord is re-tuned for a fairer fight"
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "batch": 151,
     "lines": [
       "Frog King: swell-throat BELLOW can be burst with three sac blows; fewer hoppers",
