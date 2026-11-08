@@ -90,7 +90,7 @@ ok(modeOf({}) === 'normal' && modeOf(null) === 'normal' && modeOf({ mode: 'bogus
 ok(stepMode('normal', 1) === 'hard' && stepMode('hard', 1) === 'master' && stepMode('hard', -1) === 'normal' && stepMode('normal', -1) === 'easy' && stepMode('easy', -1) === 'story' && stepMode('story', 1) === 'easy' && stepMode('story', -1) === 'story' && stepMode('master', 1) === 'master', 'the row steps VERY EASY - EASY - NORMAL - MASTER without wrapping');
 ok(MODE_IDS.join() === 'story,easy,normal,hard,master' && DFM.MODES.hard.label === 'HARD' && DFM.MODES.easy.label === 'EASY' && DFM.MODES.story.label === 'VERY EASY' && DFM.MODES.master.label === 'MASTER', 'labels come from src/difficulty.js');
 ok(MODE_IDS.every(id => MODE_BLURB[id] && MODE_BLURB[id].length <= 72), 'one short line per mode (two lines at 6 px on the card)');
-ok(MODE_BLURB.easy === 'FOES HIT 25% LESS, +1 FLASK, SHRINE REFILLS ONE FLASK' && MODE_BLURB.hard === 'FOES HIT 18% MORE, -1 FLASK, SHRINE REFILLS ONE FLASK' && /35% MORE/.test(MODE_BLURB.master) && /NONE/.test(MODE_BLURB.master) && /PUNISH/.test(MODE_BLURB.master) && /ALL FLASKS/.test(MODE_BLURB.story), 'each blurb is built from the MODES numbers');
+ok(MODE_BLURB.easy === 'FOES HIT 15% LESS, +1 FLASK, SHRINE REFILLS ONE FLASK' && MODE_BLURB.hard === 'FOES HIT 14% MORE, -1 FLASK, SHRINE REFILLS ONE FLASK' && /35% MORE/.test(MODE_BLURB.master) && /NONE/.test(MODE_BLURB.master) && /PUNISH/.test(MODE_BLURB.master) && /ALL FLASKS/.test(MODE_BLURB.story), 'each blurb is built from the MODES numbers');
 ok(cardTags({}).length === 0 && cardTags({ lives: 'on' }).map(t => t[0]).join() === 'LIVES', 'an old save shows no mode tag (LIVES only if ON)');
 ok(cardTags({ rulesSet: 1 }).map(t => t[0]).join() === 'NORMAL' && cardTags({ rulesSet: 1, mode: 'master', lives: 'on' }).map(t => t[0]).join() === 'MASTER,LIVES' && cardTags({ mode: 'story' })[0][0] === 'VERY EASY', 'the slot card shows the chosen mode (then LIVES)');
 /* F. LIVES BY DIFFICULTY (Daniel 11-08) + EASY */
@@ -102,10 +102,10 @@ ok(livesValue({}) === 'OFF' && livesValue({ lives: 'on' }) === 'ON: 3 LIVES' && 
 ok(coinLivesOn({}) && coinLivesOn({ mode: 'story' }) && coinLivesOn({ mode: 'easy' }) && coinLivesOn({ mode: 'hard' }) && !coinLivesOn({ mode: 'master' }), '+1 per 100 coins on every mode but MASTER');
 ok(/no coin lives/.test(livesBlurb({ lives: 'on', mode: 'master' })) && /\+1 per 100/.test(livesBlurb({ lives: 'on' })), 'the card blurb says so');
 { const E = DFM.MODES.easy, S = DFM.MODES.story, N = DFM.MODES.normal;   /* EASY sits halfway on every number */
-  for (const k of ['take', 'stagger', 'parry', 'open', 'death', 'affix']) ok(Math.abs(E[k] - (S[k] + N[k]) / 2) < 0.02, 'EASY ' + k + ' is halfway (' + E[k] + ')');
+  for (const k of ['take', 'stagger', 'parry', 'open', 'death', 'affix']) ok(E[k] !== N[k] && (E[k] - S[k]) * (E[k] - N[k]) < 0, 'EASY ' + k + ' sits between VERY EASY and NORMAL (' + E[k] + ')');   /* (claude/ladder: tuned off halfway on the measured win rates) */
   ok(E.flaskAdd === 1 && E.shrine === 'one' && E.punish === false && E.flinch === true && E.stale === null && E.poise === 1 && E.gap === 1, 'EASY keeps the whole-number rules: +1 flask, one-flask shrines, no punish'); }
 { const N = DFM.MODES.normal, M = DFM.MODES.master, H = DFM.MODES.hard;   /* HARD sits halfway between NORMAL and MASTER */
-  for (const k of ['take', 'stagger', 'poise', 'parry', 'open', 'gap', 'death', 'affix']) ok(Math.abs(H[k] - (N[k] + M[k]) / 2) < 0.02, 'HARD ' + k + ' is halfway (' + H[k] + ')');
+  for (const k of ['take', 'stagger', 'poise', 'parry', 'open', 'gap', 'death', 'affix']) ok((H[k] - N[k]) * (H[k] - M[k]) < 0, 'HARD ' + k + ' sits between NORMAL and MASTER (' + H[k] + ')');   /* (claude/ladder) */
   ok(H.flaskAdd === -1 && H.shrine === 'one' && H.punish === false && H.flinch === true, 'HARD whole-number rules: -1 flask (rounded away from Normal like EASY), one-flask shrines, no boss reprisals'); }
 { const p = { mode: 'hard', lives: 'on' }, f = [];
   ok(lowerTarget(p) === 'normal' && lowerTarget({ mode: 'story' }) === null && lowerTarget({}) === 'easy' && lowerTarget({ mode: 'master' }) === 'hard', 'the lower target is one step down, none under VERY EASY');
