@@ -1,0 +1,27 @@
+name: Symbolize saved BRACKEN native PCs
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/native-symbols-nov08.py
+      - tools/native-symbols-nov08.json
+      - .github/workflows/native-symbols-nov08.yml
+permissions: {contents: read}
+jobs:
+  symbols:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Symbolize immutable numeric PCs without launching a browser
+        run: python3 tools/native-symbols-nov08.py
+        env:
+          SYMBOL_OUT: ${{ runner.temp }}/native-symbols-nov08
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-symbols-nov08
+          path: |
+            ${{ runner.temp }}/native-symbols-nov08/receipt.json
+            ${{ runner.temp }}/native-symbols-nov08/elf-notes.txt
+          if-no-files-found: error
