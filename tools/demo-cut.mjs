@@ -67,6 +67,7 @@ const PINNED = [
   [/^DS\.DEMO \? \['knight'/, 'hero pick: the five demo heroes'],
   [/^DS\.DEMO \? HEROES\.filter/, 'store: the HEROES rows are the demo five'],
   [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
+  [/^DS\.DEMO\) \{ capBox = DEND\.mapCaptionBox/, 'map: the caption box is fixed before the boards (claude/mapfix151)'],
   [/^DS\.demoLocked\(lv\)\)/, 'map header counters: the slice only (smallfix14)'],
   [/^DS\.DEMO \? MUSIC_NAMES/, 'sound test: only the shipped tracks (smallfix14)'],
   [/^DS\.DEMO && nd\.y < WOOD_Y/, 'demohide: demoOut - the map shows the wood sheet only'],

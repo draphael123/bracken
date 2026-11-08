@@ -149,7 +149,8 @@ try {
   await section('map', async () => {
     await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = false; BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.setDev(true); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200);
     const hs = await E('BK.touch.hitBoxes()'), mn = await E('BK.mapNodes()');
-    ok(hs.length === mn.hitOrder.length && hs.length > 5, 'the map drew ' + hs.length + ' node boxes for ' + mn.hitOrder.length + ' nodes');
+    /* (claude/fix151, mapclean 11-07) two boxes follow the node boxes now: the compact info card (tap = its MORE page) and the NAMES chip (tap = every name). The node boxes stay first, so hs[k] is still hitOrder[k]. */
+    ok(hs.length === mn.hitOrder.length + 2 && hs.length > 5, 'the map drew ' + hs.length + ' boxes for ' + mn.hitOrder.length + ' nodes + the card + the NAMES chip');
     const here = mn.hitOrder.indexOf(mn.node), next = mn.hitOrder.findIndex((n, k) => k > here && !mn.spur[n]);
     ok(here >= 0 && next >= 0, 'could not find the node under the hero and the next one');
     // the next node may be off the top or bottom of the view: the camera follows the hero, so ask for the one that is on screen

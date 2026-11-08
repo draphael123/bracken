@@ -92,7 +92,7 @@ export function makeBogTrollHands(ctx) {
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'bogtroll';
   /* (claude/bogtroll2b) A THROWN PLANK HITS HIM (src/fen-planks.js): up out of the water it stuns him (src/bog-troll.js plankStun) - true if it did */
-  H.plankStun = e => { if (!S || !e || e.t !== 'bogtroll' || !BTM.plankStun(e, S)) return false; ctx.number(e.x, S.G.floorY - 64, BTM.BT_SAY.stun, '#ffd36b'); ctx.ring && ctx.ring(e.x, S.G.floorY - 16, 34, '#ffd36b'); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake && ctx.shake(3); return true; };
+  H.plankStun = e => { if (!S || !e || e.t !== 'bogtroll' || !BTM.plankStun(e, S)) return false; ctx.dropTells && ctx.dropTells(e.x); /* the told move is stopped: its red !! badge (floorY - markH, the same spot as the STUNNED label) must not linger over the word */ ctx.number(e.x, S.G.floorY - 64, BTM.BT_SAY.stun, '#ffd36b'); ctx.ring && ctx.ring(e.x, S.G.floorY - 16, 34, '#ffd36b'); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake && ctx.shake(3); return true; };
   /* (claude/bogtroll2b) is he HUNTING (under the boards, bulge or swim)? - the crossing's rotten sections pulse under a hero then */
   H.hunting = () => { const e = live(); return !!(S && e && BTM.btUnder(e)); };
   H.phase = () => (S ? S.ph : 1);
