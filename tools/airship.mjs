@@ -102,14 +102,14 @@ const fakeWorld = () => {
 
 /* ---- 7. THE WYRMLING ---- */
 ok(Object.keys(WL.ELEMENT).join() === 'shock,frost,fire' && Object.values(WL.ELEMENT).filter(e => e.ships).length === 1 && WL.ELEMENT.shock.ships, 'the element table: shock / frost / fire, only SHOCK ships');
-ok(['idle', 'spitTell', 'spit', 'coilTell', 'bite', 'hurt', 'die'].every(k => WL.WYRM_POSES[k] && WL.WYRM_SOUNDS[k]), 'B16: seven poses, each with its sound key');
+ok(['idle', 'sparkTell', 'spit', 'coilTell', 'bite', 'hurt', 'die'].every(k => WL.WYRM_POSES[k] && WL.WYRM_SOUNDS[k]), 'B16: seven poses, each with its sound key');
 { const s = WL.newWyrmling(0, 100); let firstTell = -1, firstHit = -1, tellMove = null;
   for (let i = 0; i < 600; i++) { for (const v of WL.wyrmStep(s, 1 / 60, { px: 120, py: 112, time: i / 60 })) { if (v.ev === 'tell' && firstTell < 0) { firstTell = i; tellMove = v.move; } if ((v.ev === 'glob' || v.ev === 'bite') && firstHit < 0) firstHit = i; } }
   ok(firstTell >= 0 && firstHit > firstTell && (firstHit - firstTell) / 60 >= 0.5, 'a wyrmling tells (' + tellMove + ') ' + ((firstHit - firstTell) / 60).toFixed(2) + ' s before its blow can land');
   const s2 = WL.newWyrmling(0, 100); let bit = false; for (let i = 0; i < 600 && !bit; i++) for (const v of WL.wyrmStep(s2, 1 / 60, { px: 14, py: 112, time: i / 60 })) if (v.ev === 'bite') bit = true; ok(bit, 'close in: it coils and bites');
   const hero = {}; WL.elementApply(hero, 'shock'); const r = WL.elementStep(hero, 1 / 60, {}); ok(r && r.sap === WL.ELEMENT.shock.bite.sap, 'SHOCK: a stamina sap + jitter');
   ok(WL.elementStep(hero, 1 / 60, { roll: true }).cleansed === 'roll' && !hero.wlEl, 'a roll shakes it off'); WL.elementApply(hero, 'shock'); ok(WL.elementStep(hero, 1 / 60, { warm: true }).cleansed === 'warm', 'warmth clears it'); }
-{ const marks = await import('../src/marks.js'); for (const k of ['wyrmling|spitTell', 'wyrmling|coilTell', 'thunderwyrm|strikeTell', 'thunderwyrm|slamTell', 'thunderwyrm|roarTell', 'thunderwyrm|tailTell']) ok(k in marks.MARK && k in marks.ANSWER && k in marks.HEIGHT, 'marks rows: ' + k);
+{ const marks = await import('../src/marks.js'); for (const k of ['wyrmling|sparkTell', 'wyrmling|coilTell', 'thunderwyrm|strikeTell', 'thunderwyrm|slamTell', 'thunderwyrm|roarTell', 'thunderwyrm|tailTell']) ok(k in marks.MARK && k in marks.ANSWER && k in marks.HEIGHT, 'marks rows: ' + k);
   ok(marks.ANSWER['thunderwyrm|roarTell'] === 'block' && marks.MARK['thunderwyrm|roarTell'] === '!' && marks.ANSWER['wyrmling|coilTell'] === 'block' && marks.MARK['wyrmling|coilTell'] === '!', "every '!' is a block"); }
 
 /* ---- 8. THE THUNDER WYRM ---- */

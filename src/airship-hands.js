@@ -87,7 +87,7 @@ export function makeAirshipHands(ctx) {
     if (e.t !== 'wyrmling') return; const s = e.st;
     if (Math.abs(e.x - P.x) > 480) return;
     for (const v of wyrmStep(s, dt, { px: P.x, py: P.y, time: ctx.time() })) {
-      if (v.ev === 'tell') { ctx.number(s.x, s.y - 18, v.move === 'spitTell' ? '!!' : '!', v.move === 'spitTell' ? '#ff6b6b' : '#ffd36b'); snd(v.move === 'spitTell' ? 'wyrmSpitTell' : 'wyrmCoil'); }
+      if (v.ev === 'tell') { ctx.number(s.x, s.y - 18, v.move === 'sparkTell' ? '!!' : '!', v.move === 'sparkTell' ? '#ff6b6b' : '#ffd36b'); snd(v.move === 'sparkTell' ? 'wyrmSpitTell' : 'wyrmCoil'); }
       else if (v.ev === 'spit') snd('wyrmSpit');
       else if (v.ev === 'glob') { if (wlHit(e, v.box, v.dmg, 'A WYRMLING\'S SPARK', v.key, null, false) && s.glob) s.glob = null; }
       else if (v.ev === 'bite') wlHit(e, v.box, v.dmg, 'A WYRMLING\'S BITE', v.key, v.el, true);
@@ -179,7 +179,7 @@ export function makeAirshipHands(ctx) {
       if (gr) { gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(gx - 110, gy - 110, 220, 220); } g.globalCompositeOperation = 'source-over'; }
   };
   H.drawFoe = (g, e, cx, cy, time) => {
-    if (e.t === 'wyrmling') { const s = e.st, E = ELEMENT[s.el], x = R(s.x - cx), y = R(s.y - cy), tell = s.mode === 'spitTell' || s.mode === 'coilTell';
+    if (e.t === 'wyrmling') { const s = e.st, E = ELEMENT[s.el], x = R(s.x - cx), y = R(s.y - cy), tell = s.mode === 'sparkTell' || s.mode === 'coilTell';
       for (let i = 4; i >= 0; i--) { const sx = x - s.face * i * 4, sy = y + Math.sin(time * 6 + i) * 2; g.fillStyle = i ? '#4a5a8a' : '#6a7ab0'; g.fillRect(sx - 3, sy - 3, 6, 6); }
       g.fillStyle = tell ? E.glow : E.col; g.fillRect(x + s.face * 3 - 2, y - 3, 3, 2);
       if (s.mode === 'coilTell') { g.strokeStyle = '#ffd36b'; g.strokeRect(x - 10, y - 8, 20, 14); }

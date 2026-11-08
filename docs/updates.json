@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-08",
+    "batch": 153,
+    "lines": [
+      "HIGHCROWN rebuilt: a longer climb with battlements, two alarm towers and a bell tower",
+      "Ring a bell or rope with any blow: a gate drops, a hatch opens, murder holes drop on foes",
+      "NEW BOSS: the Goblin Princess, cornered in her bell tower after a chase along the wall",
+      "Goblin Queen: ring the bell to drop the grate on her; the winch holds back her guards",
+      "The Captains Hall and the bakehouse yard stay, with new banquet and belfry rooms"
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "batch": 151,
     "lines": [
       "Frog King: swell-throat BELLOW can be burst with three sac blows; fewer hoppers",

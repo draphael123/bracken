@@ -10,7 +10,7 @@
 //          FIRE   a BURN (a short damage-over-time)                                    - the mountain's skin (the fire arc), table only
 //   CLEANSE: a roll (dodge) shakes it off, so does standing by a warm station (a stoked burner or a brazier) - src/airship-hands.js.
 // Two blows of a sword do not kill it (hp ~ a cutthroat's); a stomp knocks it from the air (staggered).
-// POSES (src/redraw art owed, B16): idle, spitTell, spit, coilTell, bite, hurt, die. SOUNDS: wyrmHiss, wyrmSpitTell, wyrmSpit, wyrmCoil, wyrmBite, wyrmHurt, wyrmDie.
+// POSES (src/redraw art owed, B16): idle, sparkTell, spit, coilTell, bite, hurt, die. SOUNDS: wyrmHiss, wyrmSpitTell, wyrmSpit, wyrmCoil, wyrmBite, wyrmHurt, wyrmDie.
 
 export const WYRMLING = { hp: 34, w: 16, h: 10, sight: 190, hover: 18, drift: 26, spitR: [60, 180], spitTell: 0.7, spitFly: 0.65, globR: 9, spitCd: 2.6,
   biteR: 30, coilTell: 0.55, bite: 0.2, biteReach: 22, lunge: 160, recover: 0.6, biteCd: 1.8, staggerT: 0.8, spitDmg: 9, biteDmg: 11 };
@@ -20,8 +20,8 @@ export const ELEMENT = {
   frost: { ships: false, name: 'FROST', col: '#bfe6f5', glow: '#ffffff', spit: 'an ice shard', bite: { kind: 'chill', t: 2.2, slow: 0.6 }, word: 'CHILLED' },
   fire: { ships: false, name: 'FIRE', col: '#ff9a3c', glow: '#ffd36b', spit: 'an ember glob', bite: { kind: 'burn', t: 2.4, dps: 3 }, word: 'BURNING' },
 };
-export const WYRM_POSES = { idle: 'wlIdle', spitTell: 'wlSpitWind', spit: 'wlSpitRel', coilTell: 'wlCoilWind', bite: 'wlBite', hurt: 'wlHurt', die: 'wlDie' };
-export const WYRM_SOUNDS = { idle: 'wyrmHiss', spitTell: 'wyrmSpitTell', spit: 'wyrmSpit', coilTell: 'wyrmCoil', bite: 'wyrmBite', hurt: 'wyrmHurt', die: 'wyrmDie' };
+export const WYRM_POSES = { idle: 'wlIdle', sparkTell: 'wlSpitWind', spit: 'wlSpitRel', coilTell: 'wlCoilWind', bite: 'wlBite', hurt: 'wlHurt', die: 'wlDie' };
+export const WYRM_SOUNDS = { idle: 'wyrmHiss', sparkTell: 'wyrmSpitTell', spit: 'wyrmSpit', coilTell: 'wyrmCoil', bite: 'wyrmBite', hurt: 'wyrmHurt', die: 'wyrmDie' };
 export const elementOf = el => ELEMENT[el] || ELEMENT.shock;
 
 export function newWyrmling(x, y, el = 'shock') {
@@ -40,10 +40,10 @@ export function wyrmStep(s, dt, w) {
       s.x = s.hx + Math.sin(s.ph * 0.9) * W.drift; s.y = s.hy + Math.sin(s.ph * 1.8) * 6; if (Math.abs(dx) > 2) s.face = Math.sign(dx);
       if (d < W.sight) {
         if (d < W.biteR + 14 && s.biteCd <= 0) { s.mode = 'coilTell'; s.t = W.coilTell; out.push({ ev: 'tell', move: 'coilTell' }); }
-        else if (d >= W.spitR[0] && d <= W.spitR[1] && s.spitCd <= 0 && !s.glob) { s.mode = 'spitTell'; s.t = W.spitTell; s.tx = w.px; s.ty = w.py - 6; out.push({ ev: 'tell', move: 'spitTell' }); }
+        else if (d >= W.spitR[0] && d <= W.spitR[1] && s.spitCd <= 0 && !s.glob) { s.mode = 'sparkTell'; s.t = W.spitTell; s.tx = w.px; s.ty = w.py - 6; out.push({ ev: 'tell', move: 'sparkTell' }); }
         else if (d > W.spitR[1] * 0.6) { s.hx += Math.sign(dx) * 30 * dt; }   /* it slithers along the rigging toward you */
       } break; }
-    case 'spitTell': if (s.t <= 0) { s.mode = 'spit'; s.t = 0.25; s.hitKey++; s.glob = { x0: s.x, y0: s.y, x1: s.tx, y1: s.ty, x: s.x, y: s.y, t: 0, key: 'wlg' + s.hitKey }; s.spitCd = W.spitCd; out.push({ ev: 'spit' }); } break;
+    case 'sparkTell': if (s.t <= 0) { s.mode = 'spit'; s.t = 0.25; s.hitKey++; s.glob = { x0: s.x, y0: s.y, x1: s.tx, y1: s.ty, x: s.x, y: s.y, t: 0, key: 'wlg' + s.hitKey }; s.spitCd = W.spitCd; out.push({ ev: 'spit' }); } break;
     case 'spit': if (s.t <= 0) { s.mode = 'idle'; } break;
     case 'coilTell': if (s.t <= 0) { s.mode = 'bite'; s.t = W.bite; s.hitKey++; s.lx = Math.sign(dx) || s.face; s.face = s.lx; } break;
     case 'bite': { s.x += s.lx * W.lunge * dt; const r = W.biteReach, bx = s.x + s.lx * 6;

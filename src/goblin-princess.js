@@ -306,7 +306,10 @@ export function makeGoblinPrincessHands(ctx) {
     const Ch = L().gpChase, t = now(); if (chaseDone) return;
     if (!C) C = { state: 'idle', x: Ch.start, y: Ch.floor, k: 0, wait: 0, hop: 0 };
     const fx = front();
-    if (C.state === 'idle') { let near = false; seats(P => { if (P.x > Ch.x0 && Math.abs(P.y - Ch.floor) < 64) near = true; }); if (near) { C.state = 'run'; ctx.number(C.x, C.y - 40, 'GUARDS! GUARDS!', '#ff6b6b'); sfx('seaBell'); ctx.hint && ctx.hint('THE GOBLIN PRINCESS. SHE IS TOO QUICK: CORNER HER IN HER BELL TOWER.'); } return; }
+    if (C.state === 'idle') { let near = false; seats(P => { if (P.x > Ch.x0 && Math.abs(P.y - Ch.floor) < 64) near = true; }); if (near) {   /* (claude/hcship, small152) the chase STARTS only for a hero still on the approach: one already at her tower (a teleport, a dev jump) finds her in it - no shout, no hint */
+      let behind = false; seats(P => { if (P.x < Ch.end - 2 * TS) behind = true; });
+      if (!behind) { C.state = 'in'; chaseDone = true; return; }
+      C.state = 'run'; ctx.number(C.x, C.y - 40, 'GUARDS! GUARDS!', '#ff6b6b'); sfx('seaBell'); ctx.hint && ctx.hint('THE GOBLIN PRINCESS. SHE IS TOO QUICK: CORNER HER IN HER BELL TOWER.'); } return; }
     if (C.state === 'ring') { C.wait -= dt; if (C.wait <= 0) { const Tw = Ch.towers[C.k]; towerAlarm(Tw); C.k++; C.state = 'run'; } return; }
     if (C.state === 'run') {
       const Tw = Ch.towers[C.k], target = Tw ? Tw.bell : Ch.end;
