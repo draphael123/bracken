@@ -31,3 +31,10 @@ exit 0: hc3art-sheet (34 frames, silhouettes of the flash frames match, windup !
 ## Questions for Daniel (rec first)
 1. Keep the hit box at 12x20? Rec: yes (see above).
 2. Want fingers on the gloves and a flowing (not curled) ringlet? Rec: only if the 1x stills read poorly to you; one small follow-up.
+
+# ROUND 2 (coordinator, 11-08): UGLY AND FAT like her mother - DONE
+All 34 frames redrawn again, same keys and timings, art only (same one file). She is now squat and round: a big belly and chest in a tight pink gown (strain wrinkles, belly roll, straining gold buttons, the Queen's purple sash), NO neck, a double chin, thick sleeved arms and fat gloves, stubby slippers. Face: lumpy, warty (warts on cheeks, brow, nose tip, chin, ears), heavy brow ridge, small beady eyes, a fat bulb nose, a wide grumpy down-turned mouth with crooked fangs (tantrum: red cheeks, anger marks). Kept: tiara, pink gown with a frilly puffed-and-wavy hem, rapier, fan, bell, gems, tiara throw. Same outline + 5-tone ramp + rim-light bar.
+- AFTER (new): scratchlane-reportsgpart-after-sheet.png ; in-game: scratchlane-reportsgpart-stills (sheet.png, chase, fight, cameo - the fight stills show her at game scale beside the hero and the Queen's hall).
+- Round 1 (the pretty one) kept for comparison: gpart-after1-pretty-sheet.png, gpart-stills1-pretty.
+- HIT BOX WIDTH: checked and NOT widened. src/goblin-princess.js itself only reads w at spawn, but w is the generic enemy box that main.js's hero-hit, contact and overlap code use for every enemy, so a wider box changes how easily she is hit = a tuning change that belongs to HCPROOF's numbers. Kept 12 x 20 (the sprite was already far wider than the box). REC: leave it; if wanted, HCPROOF can set w 20 with the n=6 re-tune.
+- Checks: hc3art-sheet, gprincess, goblin-lint, comments exit 0; shots run with no page errors.
