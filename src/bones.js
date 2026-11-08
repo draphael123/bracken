@@ -105,7 +105,7 @@ function archerStep(s, w, dt, C, near, evs, canStep, busyElse) {
       s.face = sgn(near.x - s.x) || s.face; s.cd -= dt;
       const d = Math.abs(near.x - s.x), ready = s.cd <= 0 && !busyElse;
       if (ready && d >= 60 && d <= C.keepMax + 60) {
-        if (r() < 0.55) { s.mode = 'aimTell'; s.t = C.aimTell; s.atk++; s.aim = { x: near.x, y: near.y - 7 }; evs.push({ t: 'tell', move: 'aimTell', mark: '!', dur: C.aimTell }); break; }
+        if (r() < 0.55) { s.mode = 'aimTell'; s.t = C.aimTell; s.atk++; s.aim = { x: near.x, y: (near.y || s.y) - 11 }; evs.push({ t: 'tell', move: 'aimTell', mark: '!', dur: C.aimTell }); break; }
         s.mode = 'volleyTell'; s.t = C.volleyTell; s.atk++; const base = near.x, sp = C.volleySpread;
         s.spots = [base - sp, base, base + sp].slice(0, C.volleyN);
         evs.push({ t: 'tell', move: 'volleyTell', mark: '!!', dur: C.volleyTell, spots: s.spots.slice() }); break; }
@@ -113,7 +113,7 @@ function archerStep(s, w, dt, C, near, evs, canStep, busyElse) {
       if (d < C.keepMin && canStep(-s.face)) { s.vx = -s.face * C.walk; s.mode = 'walk'; }
       else if (d > C.keepMax && canStep(s.face)) { s.vx = s.face * C.walk * 0.8; s.mode = 'walk'; }
       break; }
-    case 'aimTell': s.t -= dt; if (near) { s.face = sgn(near.x - s.x) || s.face; s.aim = { x: near.x, y: (near.y || s.y) - 7 }; }
+    case 'aimTell': s.t -= dt; if (near) { s.face = sgn(near.x - s.x) || s.face; s.aim = { x: near.x, y: (near.y || s.y) - 11 }; }
       if (s.t <= 0) { s.mode = 'shoot'; s.t = 0.12; const o = { x: s.x + s.face * 8, y: s.y - C.shotY }, a = s.aim || { x: s.x + s.face * 150, y: s.y - 7 };
         const dx = a.x - o.x, dy = a.y - o.y, len = Math.hypot(dx, dy) || 1;
         evs.push({ t: 'shot', x: o.x, y: o.y, vx: dx / len * C.shotSpeed, vy: dy / len * C.shotSpeed, dmg: C.shotDmg, key: 'skelShot', life: C.shotLife, atk: s.atk }); }

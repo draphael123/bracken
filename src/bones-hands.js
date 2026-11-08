@@ -46,7 +46,8 @@ export function makeBoneHands(ctx) {
     const heroes = K.heroes(), nearest = heroes.reduce((m, h) => Math.min(m, Math.abs(h.x - e.x)), 1e9);
     if (nearest > 560) { e.mode = s.mode; K.grav(e, dt); return; }
     if (nearest < 240) ctx.beastSeen(e.t);
-    if (e.tokOut && /Tell$/.test(s.mode)) { s.mode = 'stand'; s.spots = null; s.aim = null; }
+    /* (the purse puts e.mode back to what it was and sets tokOut; mine was written last frame, so a Tell in s.mode that e.mode no longer shows was TURNED AWAY - held or not, the tell is gone) */
+    if (/Tell$/.test(s.mode) && (e.tokOut || (e.mode !== s.mode && !(e.stagger > 0)))) { s.mode = 'stand'; s.spots = null; s.aim = null; fx = fx.filter(f => f.o !== e); }
     if (struck) { const c = boneStruck(s); if (c) { ctx.number(e.x, e.y - e.h - 12, 'CUT SHORT', '#ffd36b'); K.sfx('clatter'); if (c === 'volleyTell' || c === 'aimTell') fx = fx.filter(f => f.o !== e); } }
     if (e.stagger > 0 && (s.mode === 'stand' || /Tell$/.test(s.mode))) { e.mode = s.mode; K.grav(e, dt); return; }
     s.x = e.x; s.y = e.y;
@@ -91,7 +92,7 @@ export function makeBoneHands(ctx) {
       a.life -= dt; a.vy += a.g * dt; a.x += a.vx * dt; a.y += a.vy * dt;
       if (a.life <= 0 || solid(a.x, a.y)) { a.dead = true; if (!a.flat) ctx.dust(a.x, a.floorY || a.y, 3); continue; }
       if (!a.flat && a.vy > 0 && a.y >= (a.floorY || a.y + 1)) { a.dead = true; ctx.dust(a.x, a.floorY, 4); }
-      hitSeats({ l: a.x - 3, r: a.x + 3, t: a.y - 2, b: a.y + 2 }, a.high && a.flat, (P, pp) => {
+      hitSeats({ l: a.x - 3, r: a.x + 3, t: a.y - 2, b: a.y + 1.5 }, a.high && a.flat, (P, pp) => {
         if (a.dead) return; a.dead = true;
         const res = ctx.damagePlayer(a.x - Math.sign(a.vx), a.dmg, { who: a.owner, name: a.name, unblockable: !!a.unblock, pierce: false });
         if (!res || res === 'blocked') ctx.sparks && ctx.sparks(a.x, a.y, -Math.sign(a.vx), 3);

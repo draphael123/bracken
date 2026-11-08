@@ -11,7 +11,7 @@ export function makeBeastHands(ctx) {
   let fx = [];   /* {k:'ring'|'lane'|'puff', x, y, t, life, ...} */
   const isMine = q => BEAST_IDS.includes(q.t);
   H.owns = e => !!e && BEAST_IDS.includes(e.t);
-  H.on = () => ctx.enemies().some(isMine);
+  H.on = () => ctx.enemies().some(isMine) || fx.length > 0;
   H.clear = () => { fx = []; };
 
   H.spawn = (base, ent) => {
@@ -38,7 +38,8 @@ export function makeBeastHands(ctx) {
     if (nearest > 560) { e.mode = s.mode; K.grav(e, dt); return; }
     if (nearest < 240) ctx.beastSeen(e.t);
     /* the token purse turned its windup away (src/attack-tokens.js): the tell is taken back, as the host puts the mode back */
-    if (e.tokOut && /Tell$/.test(s.mode)) { s.mode = 'stand'; s.ringX = null; s.up = false; }
+    /* (the purse puts e.mode back to what it was and sets tokOut; mine was written last frame, so a Tell in s.mode that e.mode no longer shows was TURNED AWAY - held or not, the tell is gone) */
+    if (/Tell$/.test(s.mode) && (e.tokOut || (e.mode !== s.mode && !(e.stagger > 0)))) { s.mode = 'stand'; s.ringX = null; s.up = false; fx = fx.filter(f => f.o !== e); }
     if (struck) { const c = beastStruck(s); if (c) { ctx.number(e.x, e.y - e.h - 12, 'CUT SHORT', '#ffd36b'); K.sfx('yelp'); fx = fx.filter(f => f.o !== e); } }
     if (e.stagger > 0 && (s.mode === 'stand' || /Tell$/.test(s.mode))) { e.mode = s.mode; K.grav(e, dt); return; }
     s.x = e.x; s.y = e.y;

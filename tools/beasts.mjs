@@ -130,6 +130,29 @@ ok(/if \(BST\.BEASTS_SHIPS\) BEASTS\.push\(/.test(main) && /t: 'snowrunner', nam
 ok(/function devPen\(name\) \{\r?\n  if \(!isDev\(\)/.test(main) && /isDev\(\) && q\.get\('pen'\)/.test(main), 'the test room is dev only: devPen opens with isDev() and the boot hook reads ?pen only when ?dev=1');
 for (const [name, rows] of Object.entries(PENS)) ok(rows.every(r => [...B.BEAST_IDS, 'skelsoldier', 'skelarcher', 'skelmage'].includes(r.t)), 'pen ' + name + ' names real foes (' + rows.map(r => r.t).join(', ') + ')');
 
+/* ---- the HANDS in node (a fake ctx, tools/foe-ctx-fake.mjs): spawn, the brain each frame, a blow once per hero per attack, a parry reaching the foe, the pin ---- */
+{ const { fakeCtx } = await import('./foe-ctx-fake.mjs'), { makeBeastHands } = await import('../src/beasts-hands.js'), realRand = Math.random;
+  const mk = (seats, kind, x = 0, face = 1) => { const F = fakeCtx(seats), H = makeBeastHands(F.ctx), e = H.spawn(F.base(x, face), { t: kind, face }); F.enemies.push(e); e.st.cd = 0; return { F, H, e }; };
+  const go = (r, n, dt = DT) => { for (let i = 0; i < n; i++) { r.e.hp0 = r.e.hp; r.H.foeUpdate(r.e, dt); r.H.update(dt); } };
+  Math.random = () => 0.1;
+  try {
+    { const r = mk([{ x: 40 }], 'snowrunner'); ok(r.H.owns(r.e) && r.e.t === 'snowrunner' && r.e.w === 18 && r.e.hp === 18 && r.e.st.kind === 'snowrunner', 'the hands spawn a snowrunner (18x10, hp 18) that they own');
+      go(r, 80); const h = r.F.hits().filter(l => l[2] === 'THE SNAP'); ok(h.length === 1 && h[0][1] === 6, 'the SNAP lands ONCE (a 6) however many frames its box is out'); ok(r.F.log.some(l => l[0] === 'chill' && l[1] === 0.15), 'and the 0.15 chill call is made on the hero it bites (the shim)'); }
+    { const r = mk([{ x: 86 }], 'snowrunner'); r.F.st.res = false; go(r, 100); const h = r.F.hits().filter(l => l[2] === 'THE THROAT LEAP'); ok(h.length === 1 && h[0][3] === true, 'the THROAT LEAP is struck once per hero (a ducking or rolling hero returns false and it is not tried again), unblockable'); }
+    { const r = mk([{ x: 40, parryT: 0.1 }], 'snowrunner'); r.F.st.res = 'blocked'; go(r, 50); ok(r.e.st.mode === 'parried' && r.e.open > 0 && r.F.log.some(l => l[0] === 'num' && l[1] === 'YELPS'), 'a PARRIED snap (blocked with the parry window up) sends it yelping, open'); }
+    { const r = mk([{ x: 40, parryT: 0 }], 'snowrunner'); r.F.st.res = 'blocked'; go(r, 50); ok(r.e.st.mode !== 'parried', 'a plain block does not parry it'); }
+    { const r = mk([{ x: 120 }], 'greymane'); r.F.st.res = (x, d) => d; go(r, 140); const h = r.F.hits().filter(l => l[2] === 'THE POUNCE'); ok(h.length === 1 && r.F.heroes[0].snare >= 0.5, 'the POUNCE lands in its ring: a 14 and the hero is PINNED (snare ' + r.F.heroes[0].snare.toFixed(2) + ')'); ok(['pin', 'pinRest'].includes(r.e.st.mode) || r.e.st.pinned !== undefined, 'and he holds him (' + r.e.st.mode + ')');
+      const q = mk([{ x: 40 }], 'greymane'); q.e.st.mode = 'pin'; q.F.heroes[0].snare = 0.6; q.H.take(q.e, 10, 40, 'light'); ok(q.F.heroes[0].snare <= 0.1 && q.e.st.freed, 'a hit on the greymane while he holds a hero frees him'); }
+    { const r = mk([{ x: 150 }], 'greymane'); r.F.heroes[0].x = 150; go(r, 40); r.F.heroes[0].x = 300; go(r, 110); ok(r.F.hits().filter(l => l[2] === 'THE POUNCE').length === 0, 'the hero stepped out of the ring: no hit, and he lands WINDED (' + r.e.st.mode + ')'); }
+    { const r = mk([{ x: 150 }], 'bruin'); r.F.st.res = (x, d) => d; go(r, 140); const h = r.F.hits().filter(l => l[2] === 'THE CHARGE'); ok(h.length === 1 && r.F.heroes[0].vx > 100, 'the CHARGE runs him over: a 16 and a knockdown launch (vx ' + r.F.heroes[0].vx.toFixed(0) + ')'); }
+    { const r = mk([{ x: 36 }], 'bruin'); r.F.st.res = 'blocked'; r.F.heroes[0].parryT = 0.1; go(r, 100); ok(r.e.st.mode === 'rearOpen' || r.e.st.up !== undefined, 'a parried maul leaves him on his back legs'); }
+    { const F = fakeCtx([{ x: 46 }]), H = makeBeastHands(F.ctx), a = H.spawn(F.base(0, 1), { t: 'snowrunner', face: 1 }), b = H.spawn(F.base(0, 1), { t: 'snowrunner', face: 1 }); F.enemies.push(a, b); a.st.cd = b.st.cd = 0; let both = 0;
+      for (let i = 0; i < 200; i++) { for (const e of [a, b]) { e.hp0 = e.hp; H.foeUpdate(e, DT); } if (/Tell$|^(snap|leap)$/.test(a.st.mode) && /Tell$|^(snap|leap)$/.test(b.st.mode)) both++; }
+      ok(both === 0, 'two runners at one hero: never both winding up or biting at once (the one-at-a-time pack rule, 200 frames)'); }
+    { const F = fakeCtx([{ x: 40, id: 1 }, { x: -40, id: 2 }]), H = makeBeastHands(F.ctx), a = H.spawn(F.base(0, 1), { t: 'snowrunner' }), b = H.spawn(F.base(2, 1), { t: 'snowrunner' }); F.enemies.push(a, b); a.st.cd = b.st.cd = 99; for (const e of [a, b]) { e.hp0 = e.hp; H.foeUpdate(e, DT); }
+      for (const e of [a, b]) { e.hp0 = e.hp; H.foeUpdate(e, DT); } ok(a.st.hunt && b.st.hunt && a.st.hunt.p !== b.st.hunt.p, 'co-op through the hands: two runners take the two seats (' + (a.st.hunt && a.st.hunt.p.id) + ', ' + (b.st.hunt && b.st.hunt.p.id) + ')'); }
+  } finally { Math.random = realRand; } }
+
 /* ---- the flag: no live level holds one ---- */
 { const ids = new Set(B.BEAST_IDS), hits = []; for (const lv of LEVELS) { let L; try { L = lv.build(); } catch { continue; }
     for (const e of L.ents || []) if (ids.has(e.t)) hits.push(lv.id + ':' + e.t); for (const r of L.garrison || []) if (Array.isArray(r) && ids.has(r[0])) hits.push(lv.id + ':' + r[0]);
