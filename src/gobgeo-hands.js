@@ -128,6 +128,9 @@ export function makeGobGeoHands(ctx) {
     r.vy += (r.g || 0) * dt; const nx = r.x + r.vx * dt, ny = r.y + r.vy * dt;
     if (solid(nx, ny)) { r.dead = true; ctx.burst(nx, ny, 5, ['#5c5c6e', '#868698'], 50, 0.3); ctx.dust(nx, ny, 2); return; }
     r.x = nx; r.y = ny;
+    /* THE RANGER's tap is a bow shot, not a blade: an arrow of hers IN FLIGHT that meets the rock knocks it back the same way (as src/battering-beast-hands.js reads her arrows) */
+    for (const pp of ctx.players || []) for (const ar of pp.rgArrows || []) { if (r.back || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - r.x) < r.r + 10 && Math.abs(ar.y - r.y) < r.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(r, 'blow'); } }
+    if (r.back) return;
     /* a hero's blow that meets it (his swing, once a blow) sends it back; else it lands on him: a parry sends it back, a block breaks it, a hit hurts */
     seats(P1 => { if (r.dead || r.back || P1.dead) return;
       const hb = ctx.attackBox(); const key = 'gg' + r.id;
