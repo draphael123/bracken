@@ -33,11 +33,11 @@ try {
   assert.ok(await pg.evalp(`BK.ui.titleSelect("WHAT'S NEW")`) && (await pg.evalp('BK.ui.titleTop()')).includes('EXTRAS'), "the title board has an EXTRAS row that holds WHAT'S NEW");
   await pg.evalp('(()=>{ BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleTop().indexOf("EXTRAS"); return 1; })()');
   let r = await pg.evalp(REC);
-  assert.ok(r.some(x => x.s === newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
+  assert.ok(!r.some(x => x.s === newest), "the top-level EXTRAS row shows NO date (claude/titlemenu2, Daniel 11-08): " + r.map(x => x.s).join(' / '));
   assert.equal(await pg.evalp('BK.WN.hasNew()'), true, 'a dot until it is opened');
-  /* (claude/titlemenu) the 8 NOV date and the dot show on the EXTRAS row too; then open EXTRAS and walk onto WHAT'S NEW */
-  r = await pg.evalp(REC); assert.ok(r.some(x => x.s === newest), 'the EXTRAS row shows the newest date: ' + r.map(x => x.s).join(' / '));
+  /* (claude/titlemenu2, Daniel 11-08) the date and the dot stay off the EXTRAS row; they show on WHAT'S NEW inside it */
   await pg.evalp(`(()=>{ BK.ui.titleSelect("WHAT'S NEW"); return 1; })()`);
+  r = await pg.evalp(REC); assert.ok(r.some(x => x.s === newest), "WHAT'S NEW inside EXTRAS shows the newest date: " + r.map(x => x.s).join(' / '));
   for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   await pg.evalp('BK.step(5)');
   assert.equal(await pg.evalp('BK.state'), 'whatsnew', 'choosing the row opens the list');

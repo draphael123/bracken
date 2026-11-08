@@ -1,13 +1,23 @@
 [
   {
     "date": "2026-11-08",
-    "batch": 153,
+    "batch": 155,
     "lines": [
       "HIGHCROWN rebuilt: a longer climb with battlements, two alarm towers and a bell tower",
       "Ring a bell or rope with any blow: a gate drops, a hatch opens, murder holes drop on foes",
       "NEW BOSS: the Goblin Princess, cornered in her bell tower after a chase along the wall",
       "Goblin Queen: ring the bell to drop the grate on her; the winch holds back her guards",
       "The Captains Hall and the bakehouse yard stay, with new banquet and belfry rooms"
+    ]
+  },
+  {
+    "date": "2026-11-08",
+    "batch": 154,
+    "lines": [
+      "The title is alive: the heroes walk in to the fire",
+      "A controls line under PRESS ANY KEY: keyboard or gamepad, 1 to 4 players",
+      "Leave the title idle and the game plays itself, arcade style (any key stops it)",
+      "A tidier title menu, and PLAY WITH AI under PLAY TOGETHER"
     ]
   },
   {

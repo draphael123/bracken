@@ -274,7 +274,7 @@ import * as DCARD from './death-card.js';   /* THE DEATH CARD AND ITS RECAP (cla
 import * as MPX from './map-dots.js'; import { MAP_BLURB } from './map-blurbs.js';   /* ONE MAP PIXEL SCALE (claude/mapscale): hard discs and rings, block-vote portraits, whole-line blurbs */
 import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uiscreens) */
 import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
-import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscreens): the wood closed over the picture, the fronds part, the knight walks in */
+import * as AT from './attract.js'; import * as TC from './title-card.js';   /* THE LIVING TITLE SCENE (claude/intro): the sign eases down, the heroes walk in, PRESS ANY KEY blinks under it */
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PANEL */
 import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
@@ -7506,7 +7506,7 @@ const partyBodies = () => inWoodNow() || !coopWant ? players : [players[0]].conc
 function partyDismissWant(sd) { const seats = wantSeats().filter(q => q !== sd); coopWant = seats.length ? { hero: seats[0].hero, ally: !!seats[0].ally, seats } : null; partySave(); profReconcile(); }
 /* THE PARTY BOARD (the tavern's board station; src/party-board.js draws it): the four seats and, on each empty one, JOIN / INVITE / AI PARTNER */
 const seatKind = p => p === players[0] ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local';
-function partyBoardOpen() {
+function partyBoardOpen(opt) {
   PBOARD.open({
     seats: () => { const out = [], bodies = partyBodies(); for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = bodies[n - 1];
         if (!p) { out.push({ n, empty: true }); continue; }
@@ -7532,7 +7532,7 @@ function partyBoardOpen() {
     ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     dismiss: n => { const p = partyBodies()[n - 1]; if (!p || !p.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; if (p.want) { partyDismissWant(p.want); SFX.ui(); return { ok: true }; } burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); seatDrop(p); SFX.ui(); return { ok: true }; },
     sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
-  });
+  }, opt);
 }
 /* in a hero's own pass: a joiner walking in is walked by the room; a hero at the wardrobe has his keys taken by its card */
 function tavHands(pp) {
@@ -8459,7 +8459,7 @@ let teachCard = null, teachQ = [], teachCalmT = 0;
 const teachKeys = () => { const w = opnWords(), pad = !!padLast, lf = a => CTL.labelFor(SET.binds, pad ? 'pad1' : 'kb', a, 1);
   return TCH.on ? { ...w, flask: 'THE FLASK BUTTON', skill1: 'THE SKILL BUTTON', skill2: 'THE SECOND SKILL BUTTON', menu: 'THE SKILLS BUTTON' } : { ...w, skill1: lf('throw'), skill2: lf('skill2'), menu: lf('talents') || 'Q' }; };
 const teachAdd = id => { if (!saltDue() || FC.told(PROG, id) || teachQ.includes(id) || (teachCard && teachCard.id === id)) return false; teachQ.push(id); return true; };
-const teachReal = () => !!(L && !L.opening && !L.arenaYard && !L.tavern && !L.trial && !L.hidden);
+const teachReal = () => !!(!attractOn && L && !L.opening && !L.arenaYard && !L.tavern && !L.trial && !L.hidden);
 /* a boss death: the same boss, BOSS_HINT_AT times, not beaten: his hint card is owed (it shows after the respawn) */
 function bossNoteDeath() { const id = bossActive && L && L.arena && L.arena.boss; if (!id || !saltDue() || !teachReal()) return; if (FC.noteBossDeath(PROG, id, !!(PROG[curId()] && PROG[curId()].cleared))) teachAdd(FC.hintId(id)); saveProgress(); }
 /* every frame from update(): holds the world while a card is up (the confirm key is armed after FC.ARM_S), else pops the next owed one. Explainers wait for a calm moment; a boss hint comes straight after the respawn. Returns true while a card holds the frame. */
@@ -12106,7 +12106,7 @@ const saveUnstarted = r => !r || (!r.heroPicked && !LEVELS.some(l => r[l.id]) &&
    close it). A group with ONE row left shows that row directly. SWAP HERO left the title (inn, store, pause menu keep it). Row ids are unchanged: every handler and tool still names LOCAL CO-OP, ARENA YARD... */
 const titleRushRow = () => rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [];   /* (still off in the demo and without ?modes) */
 const titleEditorRow = () => MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'];
-const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow(), titleEditorRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
+const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow(), titleEditorRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
 const titleGroupRows = g => TITLE_GROUPS[g] ? TITLE_GROUPS[g]() : null;
 const titleTop = () => { const out = !saveUnstarted(readSlot(slot)) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   const grp = g => { const r = titleGroupRows(g); if (r.length > 1) out.push(g); else if (r.length === 1) out.push(r[0]); };
@@ -12144,6 +12144,7 @@ function demoEndOpen() {
     map: () => { DEND.close(); state = 'map'; gotoLevelNode(levelIndex); saveProgress(); SFX.menuClose(); },
     menu: () => { DEND.close(); setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); } });
 }
+function titleGo() { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* CONTINUE (and PLAY WITH AI once its partners are seated): the saved game, or an unstarted save's opening and hero pick */
 const titleItems = () => titleSub === 'OPTIONS' ? titleOptRows().concat(['BACK']) : titleSub ? (titleGroupRows(titleSub) || []).concat(['BACK']) : titleTop();
 /* (claude/touchrows, Daniel 11-04) THE TOUCH TITLE IS A PAGED LIST: every row is >= 44 CSS px tall (a thumb), so only a few fit the 180 px picture; the rest are a page away (an UP row and a DOWN row,
    drawn as rows too, 44 px each). titleWin turns (item count, slot count, the selected item, the first shown item) into what each slot holds. Keys and pads still walk the whole list: the window follows. */
@@ -12151,8 +12152,8 @@ let titleOff = 0;
 const TITLE_LABEL = { 'LOCAL CO-OP': 'PLAY TOGETHER (SAME SCREEN)', 'ONLINE CO-OP': 'PLAY ONLINE WITH A FRIEND' };
 const TITLE_SUBLABEL = { 'LOCAL CO-OP': 'SAME SCREEN', 'ONLINE CO-OP': 'ONLINE WITH A FRIEND' };   /* (claude/titlemenu) inside PLAY TOGETHER the two rows read short; shown alone on the top level they keep the long label */
 const titleLabel = (k, sub) => (sub && TITLE_SUBLABEL[k]) || TITLE_LABEL[k] || k;
-const titleHasNew = k => (k === "WHAT'S NEW" || k === 'EXTRAS');   /* the 8 NOV date and the new-dot show on WHAT'S NEW and on the EXTRAS row that holds it */   /* (claude/polish150) what the two co-op title rows READ; the row keys (LOCAL CO-OP / ONLINE CO-OP) stay the ids every handler and tool uses */
-const TITLE_HINT = { 'LOCAL CO-OP': 'PLUG IN A PAD, PRESS JUMP TO JOIN', 'ONLINE CO-OP': 'HOST, SHARE THE CODE' };   /* the one line under the selected row: the footer line the board already had, so it adds no row */
+const titleHasNew = k => k === "WHAT'S NEW";   /* the 8 NOV date and the new-dot show on WHAT'S NEW only (inside EXTRAS); the EXTRAS row itself stays plain (Daniel 11-08, claude/titlemenu2) */   /* (claude/polish150) what the two co-op title rows READ; the row keys (LOCAL CO-OP / ONLINE CO-OP) stay the ids every handler and tool uses */
+const TITLE_HINT = { 'LOCAL CO-OP': 'PLUG IN A PAD, PRESS JUMP TO JOIN', 'ONLINE CO-OP': 'HOST, SHARE THE CODE', 'PLAY WITH AI': 'THE COMPUTER PLAYS YOUR PARTNER' };   /* the one line under the selected row: the footer line the board already had, so it adds no row */
 function titleSlots() { const css = Math.max(0.5, S / (DPR || 1)); let rh = Math.max(11, Math.ceil(44 / css)); const room = Math.max(40, VH - 54); let n = Math.floor(room / rh); if (n < 3) { n = 3; rh = Math.floor(room / 3); } return { rh, n: Math.min(12, n) }; }
 function titleWin(len, slots, sel, off) {
   const lay = o => { const up = o > 0 ? 1 : 0, left = len - o; if (left <= slots - up) return { up, down: 0, c: left }; return { up, down: 1, c: slots - up - 1 }; };
@@ -12325,6 +12326,101 @@ function levelJump(id, heroId, campaign) {
   const go = () => { loadLevel(li); startGame(); camX = P.x - VW / 2; camY = P.y - 100; };
   if (campaign) campaignKit(id, h).then(go); else { window.BK.setHero(h); window.BK.reset({ fresh: true }); go(); }
   return true;
+}
+/* ---------- ATTRACT MODE (claude/intro, Daniel 11-08; src/attract.js has the timing, the clips and the rule) ----------
+   ~20 s idle on the title scene or the main menu (no submenu, no save prompt, no recent press of any kind) and the game plays itself: a bot walks and fights the first woods for
+   ~9 s a clip, a co-op pair among them and a boss glimpse. Any key, click, tap or pad press ends it THAT FRAME and is not also a menu choice (the press is eaten in the capture phase, and
+   a pad's in update(), before anything reads it). It NEVER touches the save: it runs behind bossJumpOn (the boss jump's sandbox: saveProgress, credits, records and the act card all
+   stand down), on a COPY of PROG that is put back, and the party is put back too; tools/attract.mjs compares every localStorage key and PROG before and after. Off with ?noattract,
+   window.__NOATTRACT, BK.manualSimulation or a webdriver page (every tool), and in reduce-motion. The hands are the AI partner's (the lab's duel hands + the playtest walker). */
+let attractOn = false, attract = null, attractSnap = null, attractIdle = 0, attractTouched = false, attractSwallow = 0, attractForce = false;
+const attractOff = () => q.has('noattract') || !!window.__NOATTRACT || (!attractForce && (!!(window.BK && window.BK.manualSimulation) || !!navigator.webdriver));
+const attractBlock = () => AT.blockedBy({ off: attractOff(), reduceMotion: !!SET.reduceMotion, noAudio: !audioReady(), state, pressCard, titleSub, hidden: !!document.hidden,
+  overlay: UNLUI.isOpen || SWAPUI.isOpen || FBF.isOpen() || BUGUI.isOpen() || DEND.isOpen() || PBOARD.shown(),   /* (the party board of PLAY WITH AI is a screen over the title) */
+  savePrompt: !!saveBlocked || !!saveFail });
+const attractPoke = () => { attractTouched = true; };
+function attractNext() {
+  if (!attract) return;
+  const i = AT.nextClip(attract.i); if (i < 0) { attractStop(); return; }
+  attract.i = i; attract.t = 0; attract.f = 0; attract.walk = null; attract.read = null; attract.next = false;
+  const c = AT.CLIPS[i], li = LEVELS.findIndex(l => l.id === c.level);
+  if (li < 0 || (DS.DEMO && DS.demoLocked(LEVELS[li]))) { attractNext(); return; }
+  coopWant = c.buddy ? { hero: c.buddy, ally: true, seats: [{ hero: c.buddy, ally: true }] } : null;   /* the pair is in memory only (partyToWant / partySave are never called) */
+  window.BK.setHero(c.hero); window.BK.reset({ fresh: true });
+  loadLevel(li); startGame();
+  if (c.kind === 'boss' && L.arena && !L.arena.carpet) {   /* the boss's door, one tile inside its own trigger (the boss jump's own spot) */
+    const A = L.arena, tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
+    let sx = tx * TS + 8; if (A.trigger !== undefined && A.trigger < 1e8) { if (!A.reverse && sx <= A.trigger) sx = A.trigger + 8; else if (A.reverse && sx >= A.trigger) sx = A.trigger - 8; }
+    checkpoint = { x: sx, y: (ty + 1) * TS }; respawn(); }
+  camX = P.x - VW / 2; camY = P.y - 100; transT = 1; transKind = 'fade'; if (c.kind !== 'boss') bannerT = 0;   /* the wood's name card is not for a clip (a boss's own name card is the glimpse) */
+}
+function attractBegin() {
+  if (attractOn) return false;
+  if (!LABMOD || !PTMOD || !WDMOD) { allyLoad(); return false; }   /* the bot's modules (a dynamic import), asked for ahead; the clip waits for them */
+  attractSnap = { prog: structuredClone(PROG), want: coopWant, li: levelIndex, bj: bossJumpOn };
+  attractOn = true; bossJumpOn = true; attract = { i: -1, t: 0, f: 0 };
+  attractNext(); return true;
+}
+function attractStop() {
+  if (!attractOn) return;
+  const S = attractSnap; attractOn = false; attract = null; attractSnap = null; attractIdle = 0; attractTouched = false;
+  if (coop()) coopEnd();
+  coopWant = S.want; bossJumpOn = S.bj;
+  for (const k in PROG) delete PROG[k]; Object.assign(PROG, S.prog);
+  levelIndex = S.li; bossActive = false; miniActive = false; bannerT = 0; actCard = null;
+  applySkin(); applyUpgrades();
+  state = 'title'; clearPresses(); transT = 1; transKind = 'fade';
+}
+/* THE HANDS, one frame, inside update() before player one reads the keys: the foe within reach is fought with the lab's duel hands, otherwise he walks on to the right (the playtest
+   walker: jumps, rides, swims). He is not let die - below a third of his health he is topped up, as the level video does - because the clip is a picture of the game, not a test of it. */
+function attractHands() {
+  const A = attract; if (!A || !LABMOD || !PTMOD || !WDMOD || state !== 'play') return;
+  for (const k in keys) keys[k] = false;
+  const fightOn = bossActive || miniActive, waking = enemies.some(e => e.alive && e.maxHp && e.mode === 'wake');   /* a boss that is waking is his name card: the hero stands, and the clip's clock waits for the fight itself */
+  if (!waking) A.t += 1 / 60; A.f++; if (A.t >= AT.CLIP_S) A.next = true;
+  if (A.waking && !waking) A.walk = null; A.waking = waking;   /* a walker that stood through the wake thinks it is stuck: a fresh one when the fight starts */
+  for (const p of players) if (!p.dead && p.hp < p.maxHp * 0.34) p.hp = p.maxHp;
+  if (P.dead || P.down > 0 || waking) return;
+  if (!A.walk) { A.walk = PTMOD.makeBot(window.BK, { fightThrough: true }); A.walk.drink = false; A.read = WDMOD.makeEliteRead({}); }
+  let foe = null, best = 1e9;
+  for (const e of enemies) { if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
+    if (Math.abs(e.y - P.y) > 40) continue; const d = Math.abs(e.x - P.x); if (d > (fightOn && e.maxHp ? 520 : 120)) continue; if (d < best) { best = d; foe = e; } }
+  if (foe) { LABMOD.labDuelFrame(window.BK, hero(), foe, A.f, 'human', A.read);
+    if ((keys.left || keys.right) && allySafeGoal(P.x + (keys.right ? 12 : -12)) === P.x) keys.left = keys.right = false; return; }
+  A.walk(allySafeGoal(P.x + 260));
+}
+/* the wait: called every title frame; true when it began a clip (update() returns, the state is 'play') */
+function attractTickIdle(dt) {
+  const held = Object.values(keys).some(Boolean);
+  const blocked = attractBlock() !== '';
+  attractIdle = AT.idleStep(attractIdle, dt, blocked, anyPress || held || attractTouched); attractTouched = false;
+  if (attractIdle > AT.PRELOAD_S && !blocked) allyLoad();
+  return attractIdle >= AT.IDLE_S && attractBegin();
+}
+/* the top of update(): a press (a pad's rose into anyPress; a key's and a tap's are eaten earlier, in the capture phase) ends it; a clip that ran out hands over; a clip that left the wood ends it */
+function attractTop() {
+  if (anyPress) { attractStop(); return true; }
+  if (state !== 'play') { attractStop(); return true; }
+  if (attract && attract.next) { attractNext(); return true; }
+  return false;
+}
+function attractEat(e) {
+  const now = performance.now();
+  if (attractOn) { attractStop(); attractSwallow = now + AT.SWALLOW_MS; }
+  else if (now < attractSwallow) { /* the rest of the press that ended it */ }
+  else { attractPoke(); return; }
+  e.stopImmediatePropagation(); if (e.cancelable && !(e.type === 'keydown' && (e.ctrlKey || e.metaKey || /^F\d+$/.test(e.key)))) e.preventDefault();
+}
+for (const t of ['keydown', 'pointerdown', 'mousedown', 'touchstart', 'click']) addEventListener(t, attractEat, { capture: true, passive: false });
+addEventListener('mousemove', attractPoke, { passive: true });
+/* the picture over the clip: a small DEMO plate and PRESS ANY KEY, and the fade out of its last half second */
+function drawAttract() {
+  const A = attract; if (!A) return;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+  const tag = Math.floor(time * 1.5) % 3 !== 2 ? 'DEMO  PRESS ANY KEY' : 'DEMO', w = inkW('DEMO  PRESS ANY KEY', 6) + 10;
+  g.fillStyle = 'rgba(8,6,12,0.6)'; g.fillRect(VW - w - 4, VH - 14, w, 11); text(tag, VW - 4 - (w >> 1), VH - 12, '#fff6e0', 'center', 6);
+  const left = AT.CLIP_S - A.t; if (left < AT.FADE_S) { g.globalAlpha = Math.min(1, 1 - left / AT.FADE_S); g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); }
+  g.restore();
 }
 function bjOpen() { state = 'bossjump'; bjI = 0; bjWait = 0; bjHero = hero(); SFX.uiSel(); }
 function updateBossJump() {
@@ -32996,6 +33092,7 @@ let evState = state;
 function update(dt) {
   if (state !== evState) { BUG.evlog('screen ' + evState + ' > ' + state); evState = state; }
   time += dt; if (REC.on || REC.msgT > 0) REC.frame(REC_CTX, dt);
+  if (attractOn && attractTop()) { clearPresses(); return; }   /* (claude/intro) a press ends the attract clip, and is not also read by anything below */
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
@@ -33013,7 +33110,8 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < TC.PART_S + TC.WALK_S) { if (anyPress && time - pressAt > 0.15) { pressAt = time - 9; titleSince = time - 1; } /* the fronds are parting and he is walking in: a press now skips ahead, and is not also a menu choice */ } else if (pausePress && !titleSub) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
+  if (state === 'title') { if (attractTickIdle(dt)) return; ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (PBOARD.shown()) { leftPress = rightPress = confirmPress = pausePress = upPress = downPress = atkPress = jumpPress = dodgePress = throwPress = anyPress = false; }   /* (claude/titlemenu2) the party board over the title (PLAY WITH AI) has the keys and the pad: the title takes no press, and none is left waiting for when the board closes */
+  else if (pressCard) { if (introAt === null) introAt = time; if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < 0.5) { /* the board is sliding in: a press now is the press that started it, not also a menu choice */ } else if (pausePress && !titleSub) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
     else {
       const items = titleItems();
       if (titleSub && (pausePress || (atkPress && !confirmPress))) { titleI = titleBackTo(); titleSub = null; SFX.ui(); pausePress = false; atkPress = false; }   /* (ESC / X / the back key closes the open submenu, as BACK does; ENTER is attack AND confirm, so a press that is also a confirm takes the row, it does not go back) */
@@ -33022,8 +33120,9 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'NEW GAME', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
-        else if (k === 'CONTINUE' || (k === 'NEW GAME' && readSlot(slot))) { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; if (!PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id])) { state = 'heropick'; heroPick = { i: 0, stage: 'pick' }; if (openingDue()) openingStart(); } }   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
+        if (['CONTINUE', 'NEW GAME', 'BOSS RUSH', 'ARENA YARD', 'DUEL (BETA)', 'LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        else if (k === 'CONTINUE' || (k === 'NEW GAME' && readSlot(slot))) titleGo();
+        else if (k === 'PLAY WITH AI') partyBoardOpen({ ai: true, done: n => { if (n > 0) titleGo(); } });   /* (claude/titlemenu2, Daniel 11-08) the party board opened on its AI PARTNER picker; PLAY then takes the road CONTINUE takes, with the partners wanted for the first wood */   /* (claude/demoaudit 11-06) A FIRST VISIT IS NOT A SAVE TO CONTINUE: the game writes an empty save 1 at boot, so a new player's first row is CONTINUE and it went straight to the map - no opening, no hero pick, no roadside lesson, no inn. An unstarted save now takes the same road as an empty slot picked on CHOOSE A SAVE */
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotInn = false; bookAsk = false; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'ARENA YARD') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); yardEnter(false); }   /* (claude/arenayard) straight into the Arena Yard */
@@ -33166,6 +33265,7 @@ function update(dt) {
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
+  if (attractOn) attractHands();   /* (claude/intro) the attract clip's player one: the bot's hands, before anything reads the keys */
   for (const pp of players) if (pp.ai) { allyPurse(pp); asPlayer(pp, () => allyTick()); }   /* (claude/aicompanions) a linked companion's pickups go to YOUR purse (allyPurse) */
   if (trnArrive && !trnArrive.done) trnArriveTick(dt);   /* (claude/transwm) stepping off the ferry: their hands are taken for ~1.7 s */
   /* THE NEXT CUT KEEPS ITS DIRECTION: releasing UP or DOWN during recovery must not turn the queued cut into a plain swing.
@@ -36772,8 +36872,20 @@ function drawSelect() {
 let titleLeaves = [], HORIZON = null, HORIZON_REGION = null, titleSince = 0;
 /* THE PRESS ANY KEY CARD: up on the first title of a run (not with ?nocard, and a key pressed before the page was drawn counts: the browser has had its gesture). A key, a tap or a pad button
    starts the audio and parts the fronds; pressAt is when. It replaces the in-level PRESS A KEY FOR SOUND banner, which stays only as the fallback for a run that never passes the title. */
-let pressCard = !q.has('nocard'), pressAt = null;
-function dismissPress() { if (!pressCard) return; pressCard = false; pressAt = time; titleSince = time + TC.SETTLE_S; SFX.uiSel(); }
+let pressCard = !q.has('nocard'), pressAt = null, introAt = null;
+function dismissPress() { if (!pressCard) return; pressCard = false; pressAt = time; titleSince = time; SFX.uiSel(); }
+/* (claude/intro) SECONDS INTO THE WALK-IN, from the first drawn frame of a title that opened on the press prompt. Infinity = everybody simply there: reduce-motion, ?nocard, a tool, and every later visit to the title (the walk-in is once per page). */
+const introS = () => introAt === null || SET.reduceMotion ? Infinity : time - introAt;
+/* (claude/intro) WHO IS ON THE TITLE ROAD: the slot's own hero at the fire's right hand and four more on open ground (the menu board takes the right of the picture): the heroes you own, then the starters. Seats are dx from the fire; order is the walk-in turn, farthest seat first. */
+const TITLE_SEATS = [{ dx: 20, face: -1 }, { dx: 34, face: -1 }, { dx: -40, face: 1 }, { dx: -62, face: 1 }, { dx: -84, face: 1 }];
+const TITLE_STARTERS = ['knight', 'warden', 'geomancer', 'ranger', 'pyro'];
+function titleCast() {
+  const mine = hero(), others = PICK.filter(h => h !== mine && heroOwned(h)), n = 5;   /* FIVE round the fire, however deep the roster (the demo's five is the whole cast) */
+  for (const h of TITLE_STARTERS) if (others.length < n - 1 && h !== mine && !others.includes(h)) others.push(h);
+  const list = [mine, ...others].slice(0, n).map((h, i) => ({ h, main: i === 0, dx: TITLE_SEATS[i].dx, face: TITLE_SEATS[i].face }));
+  list.slice().sort((a, b) => b.dx - a.dx).forEach((c, i) => { c.order = i; });
+  return list;
+}
 /* THE FAR COUNTRY ON THE TITLE SCREEN IS YOUR OWN. A new save and a save twenty woods deep looked at the same
    ridge: now the horizon carries what you have been through - the crags, then the sea, then the haunted country
    inland - and the picture ages with the campaign. */
@@ -36917,17 +37029,16 @@ function drawTitle(cx, cy) {
       g.globalAlpha = (1 - ph) * 0.22; g.fillStyle = '#6a5a58';
       g.fillRect(Math.round(fx + Math.sin(i * 2.1 + time * 0.8 + ph * 3) * (4 + ph * 14)), Math.round(fy - 16 - ph * 62), 2 + Math.round(ph * 3), 2 + Math.round(ph * 2)); }
     g.globalAlpha = 1;
-    { const w = TC.walkIn(pressCard && state === 'title' ? -1 : pressAt === null ? null : time - pressAt, fx + 20, -1);   /* he is simply there unless the card ran: then he walks in from the left after the fronds part */
-      if (w.x > -30) { const dn = K.R.dance && K.R.dance.length ? (time - titleSince + 9) % 9 : 0;   /* (claude/titleregion) the slot's own hero (K is his frames, skin and gear), and every nine seconds he dances for two */
-        if (!w.walking && dn > 6.8) drawSet(K, 'dance', Math.floor((dn - 6.8) * 10), Math.round(w.x), fy, w.face, false); else drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); } }
-    /* AND THE ONES YOU HAVE WON STAND WITH HIM. The camp was one knight however far the save had got; every class
-       you own is at the fire now, so the title screen shows the roster - and the empty ground shows who is missing. */
-    { const seats = [[-40, 1], [-62, 1], [34, -1], [-84, 1], [-106, 1]];   /* all of them on the open ground: the menu board takes the right of the picture, and two of the old seats sat behind it */
-      PICK.filter(h => h !== hero() && heroOwned(h)).slice(0, seats.length).forEach((h, i) => {
-        const [dx, face] = seats[i], set = preview('titlecamp:' + h + ':' + gearNow(h), () => heroSet(null, null, false, h));
-        drawSet(set, 'idle', Math.floor(time * 4.5 + i * 3), fx + dx, fy, face, false); }); } }
+    /* (claude/intro) THE CAST WALKS IN. Five heroes (the slot's own, then the ones you own, then the starters to fill the five: the demo's five are the whole cast) come in along the road from the left in turn, the one with the farthest seat first,
+       and settle round the fire on their idle frames. The slot's own hero is the one at the fire's right hand, and every nine seconds he dances for two. Reduce-motion, ?nocard, a tool and every later visit: all of them simply there. */
+    { const cast = titleCast(), is = introS();
+      cast.forEach(c => { const w = TC.castAt(is, c.order, fx + c.dx, c.face);
+        if (!w.here && !w.walking && w.x <= -40) return;   // not on the road yet
+        if (c.main) { const dn = K.R.dance && K.R.dance.length ? (time - titleSince + 9) % 9 : 0;   /* (claude/titleregion) the slot's own hero (K is his frames, skin and gear), and every nine seconds he dances for two */
+          if (!w.walking && dn > 6.8) drawSet(K, 'dance', Math.floor((dn - 6.8) * 10), Math.round(w.x), fy, w.face, false); else drawSet(K, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5)), Math.round(w.x), fy, w.face, false); return; }
+        const set = preview('titlecamp:' + c.h + ':' + gearNow(c.h), () => heroSet(null, null, false, c.h));
+        drawSet(set, w.walking ? 'run' : 'idle', Math.floor(time * (w.walking ? 10 : 4.5) + c.order * 3), Math.round(w.x), fy, w.face, false); }); } }
   drawTitleBracken();
-  if ((pressCard && state === 'title') || (pressAt !== null && time - pressAt < TC.PART_S)) TC.drawPressFronds(g, time, pressCard ? 0 : (time - pressAt) / TC.PART_S, VW, VH);
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
   const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
@@ -37544,23 +37655,26 @@ function render() {
     if (bossActive && boss && boss.alive && boss.t === 'bzchief' && BZH && state !== 'menu' && state !== 'win' && state !== 'gameover') BZH.drawHud(g, VW, VH, hpBy() - hpLift(), time);   /* (claude/warcairn2) HIS RAGE, as the hero Berserker's: a RAGE bar over his plate */
     if (state !== 'menu' && state !== 'win' && state !== 'gameover') { const pe = bossActive && boss && boss.alive ? boss : miniActive && !bossActive ? miniOne() : null; if (pe && pe.alive) RP.drawPoiseBar(g, pe, VW / 2 - 60, hpBy() + hpBh() + 2, 120); }   /* (claude/riposte) THE POISE BAR, under his health: thin, gold, white while broken (every BAR/%/NUMBERS mode: the numbers are his health's, above the bar) */
   }
-  if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */
-  if (state === 'title' && !pressCard) {
+  if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); }   /* THE PRESS PROMPT: a tap anywhere is the press (its words are drawn under the sign, below) */
+  if (state === 'title') {
+    if (pressCard && introAt === null) introAt = time;   /* (claude/intro) the walk-in starts with the first drawn frame of the press prompt */
     /* THE TITLE IS ONE SCENE (claude/titlescene, 2026-10-09). The sign hangs across the top of the picture, whole (it ran off the
        left edge), with the tagline CARVED INTO ITS OWN FOOT instead of floating on the art; the menu is a wayside board on two posts
        that stands on the same road as the camp, so it belongs to the picture, not pasted over it; the camp moved left to make
        room, so the board covers neither the gate nor the knight. No footer: the board says what you can pick. */
-    const since = pressCard ? 0 : Math.max(0, time - titleSince), e = easeOutBack(Math.min(1, since / 0.7));
-    if (pressAt !== null && !pressCard && time - pressAt < 0.4) TC.drawPressText(g, text, UI, time, VW, VH, Math.max(0, 1 - (time - pressAt) / 0.4), touchOn);
-    const sway = Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
-    const lw = 192, lh = 38, lx = touchOn ? 4 : Math.round(Math.round(VW / 2) - lw / 2), tcx = lx + (lw >> 1);   /* (claude/touchrows) on touch the tall board covers the sign right of x178: the sign stands left of it so the whole tagline shows */
+    const since = pressCard ? 0 : Math.max(0, time - titleSince);   /* the board's clock: it slides in after the press */
+    const signSince = SET.reduceMotion ? 99 : introAt !== null ? time - introAt : since, e = easeOutBack(Math.min(1, signSince / TC.SIGN_S));   /* (claude/intro) the sign eases down at the start of the intro, once; reduce-motion and a tool: it is there */
+    const sway = SET.reduceMotion ? 0 : Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
+    const lw = 192, lh = 38, lxMid = Math.round(Math.round(VW / 2) - lw / 2), lx = touchOn ? Math.round(pressCard ? lxMid : lxMid + (4 - lxMid) * Math.min(1, since / 0.5)) : lxMid, tcx = lx + (lw >> 1);   /* on touch the sign sits mid-screen under the prompt, then slides left to make room for the tall board */   /* (claude/touchrows) on touch the tall board covers the sign right of x178: the sign stands left of it so the whole tagline shows */
     g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
     text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
     { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (since - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    { const a = Math.max(0, Math.min(1, (signSince - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    /* (claude/intro) PRESS ANY KEY under the sign (TAP TO START on touch), blinking, with what the game takes under it; it fades as it is pressed */
+    { const pa = pressCard ? Math.max(0, Math.min(1, (introS() - TC.PROMPT_AT) / 0.4)) : pressAt !== null ? Math.max(0, 1 - (time - pressAt) / TC.PROMPT_FADE) : 0; if (pa > 0) TC.drawPrompt(g, text, inkW, UI, time, tcx, 46, pa, touchOn, !!SET.reduceMotion); }
     // the menu: a board on two posts, standing on the road to the right of the camp
-    { const items = titleItems(), TS_ = touchOn ? titleSlots() : null, n = TS_ ? Math.min(TS_.n, Math.max(items.length, titleTop().length, 7)) : Math.max(items.length, titleTop().length), RH = TS_ ? TS_.rh : Math.max(7, Math.min(11, Math.floor(88 / n))),   /* (batch150) 88 not 96: with UNLOCKS (and SWAP HERO) the board has 12-13 rows and its top edge cut the sign's tagline; 7 px is the floor */
+    if (!pressCard) { const items = titleItems(), TS_ = touchOn ? titleSlots() : null, n = TS_ ? Math.min(TS_.n, Math.max(items.length, titleTop().length, 7)) : Math.max(items.length, titleTop().length), RH = TS_ ? TS_.rh : Math.max(7, Math.min(11, Math.floor(88 / n))),   /* (batch150) 88 not 96: with UNLOCKS (and SWAP HERO) the board has 12-13 rows and its top edge cut the sign's tagline; 7 px is the floor */
       mw = Math.min(VW - 110, Math.max(126, ...items.map(k => inkW(titleLabel(k, titleSub), 8) + 40), ...titleTop().map(k => inkW(titleLabel(k, null), 8) + 40), ...Object.keys(TITLE_GROUPS).flatMap(g => titleGroupRows(g).map(k => inkW(titleLabel(k, g), 8) + 40)), ...Object.values(TITLE_HINT).map(h => inkW(h, 6) + 16))), mx = VW - mw - 16, mh = n * RH + 20, my = VH - 22 - 8 - mh;
       const slide = easeOutBack(Math.min(1, Math.max(0, (since - 0.25) / 0.5))); const ox = Math.round((1 - slide) * 160);   /* (160: at 140 a sliver of the board showed at the right edge while the press card was up) */
       const bx = mx + ox, by0 = my + mh;
@@ -37590,6 +37704,7 @@ function render() {
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
+  if (attractOn) drawAttract();   /* (claude/intro) */
   if (state === 'title' && !pressCard) { const vl = WN.versionLine(BUILD.sha); if (vl) text(vl, 5, VH - 8, UI.dim, 'left', 6); }   /* the build, small (src/whatsnew.js versionLine) */
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
@@ -37886,7 +38001,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     get treeTab() { return treeBranch; }, set treeTab(v) { treeBranch = v === 1 ? 1 : 0; treeI = 0; treePage = 0; },
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) pressAt = null; }, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get rulesRow() { return rulesRow; }, set rulesRow(v) { rulesRow = v | 0; }, lowerAsk: () => lowerModeAsk(), lowerOk, menuItem: () => menuItems()[menuI], get menuMsg() { return menuMsg; }, set menuMsg(v) { menuMsg = v; }, set menuMsgT(v) { menuMsgT = v; },   /* (claude/diff3) the pause menu's SAVE MODE row, for the tools */ get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get slotInn() { return slotInn; }, set slotInn(v) { slotInn = !!v; }, get bookAsk() { return bookAsk; }, set bookAsk(v) { bookAsk = !!v; bookYes = false; }, get shrineAsk() { return shrineAsk; }, set shrineAsk(v) { shrineAsk = !!v; shrineYes = false; }, get shrineYes() { return shrineYes; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) { pressAt = null; introAt = null; } }, get introAt() { return introAt; }, set introAt(v) { introAt = v; }, introS: () => { const s = introS(); return isFinite(s) ? s : -1; }, attract: { get on() { return attractOn; }, get idle() { return attractIdle; }, set idle(v) { attractIdle = v; }, get clip() { return attract ? attract.i : -1; }, get t() { return attract ? attract.t : 0; }, get force() { return attractForce; }, set force(v) { attractForce = !!v; }, begin: () => attractBegin(), stop: () => attractStop(), next: () => { if (attract) attract.next = true; }, blocked: () => attractBlock(), off: () => attractOff(), get clips() { return AT.CLIPS; }, get want() { return coopWant; } }   /* -1: everybody simply there */, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get rulesRow() { return rulesRow; }, set rulesRow(v) { rulesRow = v | 0; }, lowerAsk: () => lowerModeAsk(), lowerOk, menuItem: () => menuItems()[menuI], get menuMsg() { return menuMsg; }, set menuMsg(v) { menuMsg = v; }, set menuMsgT(v) { menuMsgT = v; },   /* (claude/diff3) the pause menu's SAVE MODE row, for the tools */ get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get slotInn() { return slotInn; }, set slotInn(v) { slotInn = !!v; }, get bookAsk() { return bookAsk; }, set bookAsk(v) { bookAsk = !!v; bookYes = false; }, get shrineAsk() { return shrineAsk; }, set shrineAsk(v) { shrineAsk = !!v; shrineYes = false; }, get shrineYes() { return shrineYes; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleWin: () => { const it = titleItems(), ts = titleSlots(); return touchOn ? { ...titleWin(it.length, Math.min(ts.n, Math.max(it.length, titleTop().length, 7)), titleI, titleOff), rh: ts.rh, css: S / (DPR || 1) } : null; }, titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleSub === 'OPTIONS'; }, set titleOpts(v) { titleSub = v ? 'OPTIONS' : null; }, get titleSub() { return titleSub; }, set titleSub(v) { titleSub = v || null; }, titleSelect: n => titleSelect(n),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),
