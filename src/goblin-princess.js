@@ -80,6 +80,7 @@ export function makeGoblinPrincessHands(ctx) {
   const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any; };
   H.on = () => !!(L() && (L().gpChase || L().gpRehearsal || A()));
   H.owns = e => e.t === 'gprincess';
+  H.towersLit = () => new Set(TW.keys());   /* (claude/hc3art) the signal braziers burn on the towers whose alarm she rang */
   H.hidden = e => !!(e && e.mode === 'sleep' && L() && L().gpChase && !chaseDone);   /* (claude/hc3art, highcrown3 q7) not drawn in her tower while the chase is still running along the wall */
   H.fight = () => F;
   H.load = () => { F = null; C = null; chaseDone = false; TW = new Map(); RH = null; };

@@ -3,6 +3,7 @@
 // a winch drum). Same stone as the rest of Highcrown (STONE in highcrown2_art.js) and the Queen's purple + gold.
 //   the BATTLEMENTS  drawFar (the outer wards, the hills, the haze - parallax, behind the facades), drawParapet (merlons, crenels, snow, loops: behind the walkers), drawTowers (machicolation
 //                    course, arch rings, loops, banners), the broken stretch's ragged ends
+//                    drawTowerTops (the archers' roofs: snow caps, loops, pennants, the signal brazier)
 //   the BELL TOWER   drawBellTowerTop (belfry arches, louvres, finial), drawHatch (her roof hatch, shut / open to the sky)
 //   the PROPS        drawGuardDoor (shut oak / raised / iron gate down), drawWinchBox, drawBellAt (cast bronze, swung), drawRope, drawMurderHole (the slot, the chain, the stone), drawStone
 //   the ROOMS        paintRoom: THE CAPTAINS HALL (guard hall) and THE BANQUET HALL (feast hall), keyed off the 'royal' interiors at those columns
@@ -152,6 +153,29 @@ export function drawTowers(g, cx, cy, VW, time) {                               
     for (const [lx, ly] of [[T.x0 + 2, 8], [T.x1 - 2, 8], [T.x0 + 4, 11], [T.x0 + 6, 11], [(T.x0 + T.x1) / 2, 8]]) { const sx = Math.round(lx * TS + 7 - cx), sy = Math.round(ly * TS - cy); R(g, sx - 2, sy - 1, 5, 1, S.f); R(g, sx - 1, sy, 3, 10, '#07070b'); R(g, sx - 2, sy, 1, 10, S.e); R(g, sx - 1, sy + 4, 3, 1, '#07070b'); R(g, sx - 3, sy + 10, 7, 1, S.a); }   // the archers' loops
     const wave = Math.sin(time * 2.2 + T.x0) * 1.5; for (const bx of [X0 + 7, X1 - 15]) { R(g, bx - 1, top + 3, 12, 2, S.dk); R(g, bx, top + 5, 10, 18, '#4e1e72'); R(g, bx, top + 5, 10, 1, '#e0b040'); R(g, bx + 4 + Math.round(wave), top + 10, 2, 6, '#e0b040'); R(g, bx + 3 + Math.round(wave), top + 12, 4, 2, '#e0b040'); for (let i = 0; i < 5; i++) R(g, bx + i * 2, top + 23 + (i & 1), 2, 2, '#e0b040'); }   // the Queen's banner: a crown on purple
   } }
+
+// THE TOWER TOPS (the archers' roofs): the merlons (tile columns x0, x1 and x0+4..5 on rows 5-6) get snow caps, a cut loop in the broad one, a pennant pole on each end; a signal BRAZIER (an iron basket on three legs) stands in
+// the crenel by the west merlon: cold coals until her alarm sounds, then it burns (lit = a Set of tower ids, from goblin-princess.js). Nothing here moves a tile.
+export function drawTowerTops(g, cx, cy, VW, time, lit) {
+  for (const T of K.TOWERS) {
+    if (!inSpan(T.x0, T.x1, cx, VW)) continue; const id = T.x0 === K.TOWERS[0].x0 ? 'tower1' : 'tower2', on = !!(lit && lit.has && lit.has(id));
+    const top = Math.round(5 * TS - cy), floor = Math.round(7 * TS - cy), X = c => Math.round(c * TS - cx);
+    for (const [a, b] of [[T.x0, T.x0], [T.x1, T.x1], [T.x0 + 4, T.x0 + 5]]) { const x = X(a), w = (b - a + 1) * TS;
+      R(g, x, top - 2, w, 3, SNOW); R(g, x, top - 2, w, 1, '#ffffff'); R(g, x + 1, top + 1, w - 2, 1, SNOW_D); R(g, x - 1, top + 2, w + 2, 2, S.f); R(g, x - 1, top + 3, w + 2, 1, S.mor);   // the cap stone, the snow on it
+      for (let y = top + 6; y < floor - 2; y += 8) { R(g, x, y, w, 1, S.mor); } R(g, x - 1, floor - 3, w + 2, 3, S.a);                                                                // courses, the shadow at the foot
+      if (w > 20) { const lx = x + (w >> 1) - 1; R(g, lx - 2, top + 8, 5, 1, S.f); R(g, lx - 1, top + 9, 3, 16, '#07070b'); R(g, lx - 2, top + 9, 1, 16, S.e); R(g, lx - 1, top + 15, 3, 1, '#07070b'); R(g, lx - 3, top + 25, 7, 1, S.a); } }   // the archers' loop, a cross-slit
+    const pole = (a, col, flip) => { const x = X(a) + (flip ? 11 : 3), w = Math.sin(time * 2.6 + a) * 1.5; R(g, x, top - 22, 2, 21, '#8a919c'); R(g, x, top - 22, 2, 1, '#c9a040'); R(g, x - 1, top - 24, 4, 2, '#c9a040');
+      for (let i = 0; i < 9; i++) R(g, x + 2 + i, top - 20 + Math.round(w * i / 9) + (i >> 2), 1, 7 - (i >> 1), i & 1 ? col : col);   // the pennant, tapering
+      R(g, x + 2, top - 20, 6, 1, '#e0b040'); };
+    pole(T.x0, '#5a2a7a', false); pole(T.x1, '#2c6a2c', true);
+    const bx = X(T.x0 + 2) + 8;                                                                                   // the signal brazier in the crenel
+    R(g, bx - 6, floor - 3, 3, 3, '#34343f'); R(g, bx + 4, floor - 3, 3, 3, '#34343f'); R(g, bx - 1, floor - 3, 3, 3, '#34343f');
+    R(g, bx - 7, floor - 12, 15, 3, '#3a3a48'); R(g, bx - 7, floor - 12, 15, 1, '#8a8aa0'); R(g, bx - 6, floor - 9, 13, 6, '#22222c'); for (const dx of [-5, -1, 3, 6]) R(g, bx + dx, floor - 9, 1, 6, '#5a5a6c');
+    if (!on) { R(g, bx - 5, floor - 14, 11, 2, '#2a2420'); px(g, bx - 2, floor - 14, '#5a3a2a'); px(g, bx + 2, floor - 15, '#3a2a22'); }
+    else { const f = 0.5 + 0.5 * Math.sin(time * 11 + T.x0); for (let k = 0; k < 4; k++) { g.globalAlpha = (0.05 + 0.03 * f) * (k + 1) / 2; R(g, bx - 8 - (3 - k) * 5, floor - 20 - (3 - k) * 5, 17 + (3 - k) * 10, 20 + (3 - k) * 5, '#ff8a3c'); } g.globalAlpha = 1;
+      for (let i = 0; i < 5; i++) { const fh = 8 + ((i * 5 + Math.floor(time * 12 + i * 2)) % 4) * 3; R(g, bx - 5 + i * 2, floor - 13 - fh, 3, fh, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, bx - 4 + i * 2, floor - 13 - fh + 4, 1, fh - 4, '#ffd36b'); }
+      R(g, bx - 5, floor - 14, 11, 2, '#ff6a2c'); } }
+}
 
 // ---------------- THE BELL TOWER ----------------
 export function drawBellTowerTop(g, cx, cy, VW, time) {

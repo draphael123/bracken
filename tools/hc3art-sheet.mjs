@@ -26,6 +26,9 @@ parts.push(['princess parts', cell(200, 50, '#2a1a3a', g => { GPA.drawGem(g, 10,
 parts.push(['battlements walk', cell(640, 190, '#0c1226', g => { const cx = 527 * 16, cy = 22 * 16 - 150; HA.drawFar(g, cx, cy, 640, 190, 0); g.fillStyle = '#363949'; g.fillRect(0, 150, 640, 40); g.fillStyle = '#74788e'; g.fillRect(0, 150, 640, 1);
   HA.drawParapet(g, cx, cy, 640, 0); g.fillStyle = '#2a2d38'; g.fillRect((557 * 16 - cx), 0, 160, 150 - 8 * 16 + 8 * 16 - 0); HA.drawTowers(g, cx, cy, 640, 0.3);
   const T = HA.K.TOWERS[0]; HA.drawGuardDoor(g, T.door * 16 + 8 - cx, 150, 'up', 0.5, 0.2); HA.drawWinchBox(g, T.winch * 16 + 8 - cx, 150, T.door * 16 + 8 - cx, 0, 1, 3, true, 0); HA.drawBellAt(g, T.bell * 16 + 8 - cx, 150 - 50, 2, 0, 0); })]);
+parts.push(['tower top cold / lit', cell(360, 130, '#0c1226', g => { const tile = (cx, a, b, r0, r1) => { g.fillStyle = '#2a2d38'; g.fillRect(a * 16 - cx, r0 * 16, (b - a + 1) * 16, (r1 - r0 + 1) * 16); };
+  for (const [lit, ox] of [[false, 0], [true, 180]]) { g.save(); g.translate(ox, 0); const cx = 556 * 16, T = HA.K.TOWERS[0]; tile(cx, T.x0, T.x1, 7, 14); tile(cx, T.x0, T.x0, 5, 6); tile(cx, T.x1, T.x1, 5, 6); tile(cx, T.x0 + 4, T.x0 + 5, 5, 6); g.translate(-0, 0);
+    HA.drawTowerTops(g, cx, 0, 180, 0.4, lit ? new Set(['tower1']) : null); g.restore(); } })]);
 parts.push(['broken stretch', cell(300, 190, '#0c1226', g => { const cx = 570 * 16, cy = 22 * 16 - 150; HA.drawFar(g, cx, cy, 300, 190, 0); g.fillStyle = '#363949'; g.fillRect(0, 150, 90, 40); g.fillRect(200, 150, 100, 40); HA.drawParapet(g, cx, cy, 300, 0); HA.drawGapRubble(g, cx, cy, 0); })]);
 parts.push(['bell tower top', cell(420, 130, '#0c1226', g => { const cx = 622 * 16 + 8, cy = 0; g.fillStyle = '#2a2d38'; g.fillRect(8, 32, 400, 98); HA.drawBellTowerTop(g, cx, cy, 420, 0.3); })]);
 parts.push(['captains hall', cell(480, 160, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 160, HA.K.CAPT, 10, 0); })]);
