@@ -28,7 +28,7 @@ export function asOn() {
   return false;
 }
 export const AS_RULE = 'THE SHIP CLIMBS AS YOU FEED ITS BURNERS. HIGH IS CLEAR AND COLD; LOW IS WARM AND NEAR THE SAND.';
-export const AS_NAME = 'THE DESERT AIRSHIP';   /* working name (brief Q2: rec 'THE DUSKWING' for the ship - Daniel's pick) */
+export const AS_NAME = 'THE DUSKWING';   /* player-facing level name (Daniel approved 11-06; was 'THE DESERT AIRSHIP' working name) */
 export const AS = { H: 40, D: 26, holdTop: 28, holdFloor: 34, W: 426 };   /* D: the main deck's floor row (feet on D - 1); the hold's air rows holdTop..holdFloor-1 */
 
 /* ---- THE RULE'S NUMBERS ---- */
