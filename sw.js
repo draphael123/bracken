@@ -4,7 +4,7 @@
    The cache is keyed by VERSION: bumping it throws every old copy away on the next activate. Audio (126 MB) and everything
    cross-origin is left alone: this is not an offline mirror of the sound, it is a shell that starts. */
 const VERSION = 'bracken-shell-v2';   /* v2: the pixel fonts are local files now (fonts/), kept with the shell; the old font cache is dropped on activate */
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './fonts/PressStart2P-Regular.ttf', './fonts/Silkscreen-Regular.ttf'];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './assets/ui/title-mark.png', './fonts/PressStart2P-Regular.ttf', './fonts/Silkscreen-Regular.ttf'];
 const CACHEABLE = /\.(?:js|mjs|json|webmanifest|html|css|png|svg|ttf|woff2?)$/i;
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
