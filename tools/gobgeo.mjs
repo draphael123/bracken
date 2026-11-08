@@ -130,8 +130,8 @@ const sec = L.rocklocks.find(k => k.id === 'gg-secret'); ok(sec && sec.kind === 
 { const T2 = GOBGEO.T2, bell = L.ents.find(e => e.t === 'gatebell' && e.id === 'gg-t2'); ok(bell && bell.gate === T2.gate, 'tower 2 has its gate bell over the arch');
   for (let y = T2.gy[0]; y <= T2.gy[1]; y++) ok(at(T2.gate, y) === T.AIR, 'the arch is open (the bell drops its gate) at row ' + y);
   ok(L.ents.filter(e => e.answers === 'gg-t2').length === 2, 'the shield-bearer and the heavy answer it');
-  const g5 = geos.find(e => e.x === T2.geo); const gx = g5.x * 16 + 8, gy = (g5.y + 1) * 16 - 11, bx = T2.bell * 16 + 8, bt = (T2.bellRow + 1) * 16 - 60, bb = (T2.bellRow + 1) * 16 + 30;
-  let hitN = 0, tries = 0; for (let hx = 585; hx <= 598; hx++) { tries++; const x0 = hx * 16 + 8, y0 = 22 * 16 - 14, k = (bx - x0) / (gx - x0), y = y0 + (gy - y0) * k; if (y >= bt && y <= bb) hitN++; }
+  const g5 = geos.find(e => e.x === T2.geo); const gx = g5.x * 16 + 8, gy = (g5.y + 1) * 16 - 11, bx = T2.bell * 16 + 8, bt = (T2.bellRow + 1) * 16 - 100, bb = (T2.bellRow + 1) * 16 + 30;
+  let hitN = 0, tries = 0; for (let hx = 586; hx <= 598; hx++) { tries++; const x0 = hx * 16 + 8, y0 = 22 * 16 - 14, k = (bx - x0) / (gx - x0), y = y0 + (gy - y0) * k; if (y >= bt && y <= bb) hitN++; }
   ok(hitN === tries, 'from the last walk, the line home to the tower-2 Geomancer rings the bell (' + hitN + '/' + tries + ')'); }
 { const cap = L.ents.filter(e => e.t === 'weight' && e.unstable && e.x > 429 && e.x < 482); ok(cap.length === 3, 'crown-exam\'s pin: the Captains Hall keeps three falling lamps');
   ok(cap.every(w => L.ents.some(e => (e.t === 'soldier' || e.t === 'javelin') && Math.abs(e.x - (w.x + 2)) <= 1 && e.y === 13)), 'and every balcony its guard'); }

@@ -16,11 +16,11 @@
 // Geomancer bound to it: the seal fails on its own if he is dead - never a soft-lock) }]. src/gobgeo-hands.js reads them.
 export const GOBGEO = {
   CAPT: 431,
-  TEACH: { gate: 441, rows: [10, 19], seal: 16, geo: 448 },
+  TEACH: { gate: 441, rows: [10, 19], seal: 18, geo: 448 },
   SHIELD: { guard: 455, geo: 458 },
   LAMP: { lamp: 471, ledge: [476, 478], row: 14, net: 476, geo: 478, heavy: 470 },
   T1: { face: 557, box: [7, 13], open: [11, 13], room: [558, 560, 10, 13], ledge: [555, 556, 14], steps: [[549, 550, 18], [552, 553, 15]], geo: 559 },
-  T2: { bell: 601, bellRow: 11, gate: 602, gy: [15, 21], geo: 604, shield: 588, heavy: 594 },
+  T2: { bell: 601, bellRow: 14, gate: 602, gy: [15, 21], geo: 604, shield: 588, heavy: 594 },
 };
 
 export function gobgeoLay(R, { T, TS }) {
@@ -55,13 +55,14 @@ export function gobgeoLay(R, { T, TS }) {
   for (let x = Lp.ledge[0]; x <= Lp.ledge[1]; x++) if (at(x, Lp.row) === T.AIR) set(x, Lp.row, T.ONEWAY);
   for (let y = Lp.row; y <= 19; y++) if (at(Lp.net, y) === T.AIR || at(Lp.net, y) === T.ONEWAY) set(Lp.net, y, T.NET);
   R.routeSupports.push({ x: Lp.ledge[1], y: Lp.row, bottom: Lp.row + 2, top: 10, kind: 'hcchain' });
-  ent('gobgeo', Lp.geo, Lp.row - 1, { face: -1, leash: 8 });
+  ent('gobgeo', Lp.geo, Lp.row - 1, { face: -1, leash: 8, sight: 340 });   /* he watches the whole hall from his ledge: you can send his rock home from beyond the chandelier's own reach (it falls by itself within 100 px) */
   ent('sign', 464, 19, { text: 'SEND HIS ROCK UP INTO THE CHANDELIER AND IT FALLS ON WHOEVER STANDS UNDER IT.' });
   coins([477, Lp.row - 1]);
 
   // ============ THE BATTLEMENTS, TOWER 1: THE OLD STONE (a secret) ============
   const T1 = B.T1;
   for (let y = T1.room[2]; y <= T1.room[3]; y++) for (let x = T1.room[0]; x <= T1.room[1]; x++) set(x, y, T.AIR);     /* the chamber in the tower's body (sealed) */
+  (R.interiors || (R.interiors = [])).push([T1.room[0], T1.room[1], T1.room[2], T1.room[3], 'hcguard']);   /* the chamber reads as a room, not as wall */
   R.rocklocks.push({ id: 'gg-secret', kind: 'crack', x: T1.face, y: 10, box: [T1.face, T1.face, T1.box[0], T1.box[1]], cells: [[T1.face, T1.open[0], T1.open[1]]] });
   R.reachDoors.push({ x0: T1.face, x1: T1.face, y0: T1.open[0], y1: T1.open[1] });
   for (let x = T1.ledge[0]; x <= T1.ledge[1]; x++) set(x, T1.ledge[2], T.ONEWAY);

@@ -33,7 +33,7 @@ export function makeGobGeoHands(ctx) {
 
   /* ---------- HIS BODY ---------- */
   H.spawn = (base, e) => { const hp = (ctx.EHP && ctx.EHP.gobgeo) || GG.hp;
-    return { ...base, t: 'gobgeo', w: GG.w, h: GG.h, hp, maxHp0: hp, speed: GG.speed, face: e.face || -1, perch: !!e.perch, sealId: e.seal || null, cd: GG.first,
+    return { ...base, t: 'gobgeo', w: GG.w, h: GG.h, hp, maxHp0: hp, speed: GG.speed, face: e.face || -1, perch: !!e.perch, sight: e.sight || 0, sealId: e.seal || null, cd: GG.first,
       ...newGeo({ post: e.leash === 0 ? null : base.x, leash: e.leash || GG.leash }) }; };
   const standable = (tx, ty) => ctx.standable ? ctx.standable(tx, ty) : false;
   H.foeUpdate = (e, dt) => {
@@ -52,8 +52,8 @@ export function makeGobGeoHands(ctx) {
     const m = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (m && m.ground) e.vy = 0;
   };
   const staffTop = e => ({ x: e.x + e.face * 13, y: e.y - 36 });
-  function throwRock(e, P) { const s = st(), o = { x: e.x + e.face * 2, y: e.y - 36 }, t = P || { x: e.x + e.face * 120, y: e.y };
-    const v = lob(o.x, o.y, t.x, t.y - 12);
+  function throwRock(e, P) { const s = st(), o = { x: e.x + e.face * 2, y: e.y - (e.perch ? 42 : 36) }, t = P || { x: e.x + e.face * 120, y: e.y };
+    const v = lob(o.x, o.y, t.x, t.y - 12, GG.rock, e.perch ? 1.15 : 0);   /* from a roof: a high arc over its merlons */
     s.rocks.push({ kind: 'rock', x: o.x, y: o.y, vx: v.vx, vy: v.vy, g: GG.rock.g, owner: e, back: false, t: 0, life: GG.rock.life, id: ++s.rid, r: GG.rock.r, dmg: GG.rock.dmg });
     s.n.thrown++; sfx('leap'); }
   function throwSlates(e, P) { const s = st(), o = { x: e.x + e.face * 20, y: e.y - 12 }, t = P || { x: e.x + e.face * 120, y: e.y };
@@ -87,7 +87,7 @@ export function makeGobGeoHands(ctx) {
     const L = ctx.L;
     for (const k of L.rocklocks || []) { if (S.smashed.has(k.id)) continue; if (inBox(x, y, { l: k.box[0] * TS, r: (k.box[1] + 1) * TS, t: k.box[2] * TS, b: (k.box[3] + 1) * TS })) return { k: 'lock', o: k }; }
     for (const pr of ctx.props()) {
-      if (pr.t === 'gatebell' && inBox(x, y, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 60, b: pr.y + 30 }))   /* the bell, its yoke and its rope */ return { k: 'bell', o: pr };
+      if (pr.t === 'gatebell' && inBox(x, y, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 100, b: pr.y + 30 }))   /* the bell, and its iron hanger up the tower face */ return { k: 'bell', o: pr };
       if (pr.t === 'weight' && pr.lamp && !pr.scenery && pr.state === 'hang' && inBox(x, y, { l: pr.x - 9, r: pr.x + 9, t: pr.y, b: pr.y + pr.len + 16 })) return { k: 'lamp', o: pr };
     }
     const B = ctx.boss ? ctx.boss() : null;
@@ -142,6 +142,7 @@ export function makeGobGeoHands(ctx) {
 
   /* ONCE A FRAME: the stone in flight, the seals whose Geomancer is gone, the chandeliers coming down, the bits */
   H.update = dt => {
+    if (typeof window !== 'undefined' && window.BK && !window.BK.gobgeo) window.BK.gobgeo = () => H;   /* the debug handle (window.BK is made after the hands) */
     const s = st(); if (!s) return;
     for (const r of s.rocks) if (!r.dead) rockStep(r, dt);
     s.rocks = s.rocks.filter(r => !r.dead);
@@ -177,6 +178,5 @@ export function makeGobGeoHands(ctx) {
   };
   H.read = () => S && { rocks: S.rocks.map(r => ({ kind: r.kind, x: r.x, y: r.y, back: r.back })), smashed: [...S.smashed], n: { ...S.n } };
   H.test = { sendBack: r => sendBack(r, 'test'), rocks: () => S && S.rocks, state: () => S, smash: (k, why) => smashLock(k, why) };
-  if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { gobgeo: () => H });
   return H;
 }

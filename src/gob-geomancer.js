@@ -59,7 +59,7 @@ export function geoStep(s, dt, w) {
   if (s.stagger > 0) { if (s.mode.endsWith('Tell')) { out.events.push({ ev: 'cancel', move: s.mode }); s.held = false; } s.mode = 'stagger'; s.modeT = 0; return out; }
   if (s.mode === 'stagger') { s.mode = 'idle'; s.cd = Math.max(s.cd, 0.6); }
   const dx = w.tx - s.x, adx = Math.abs(dx), dy = w.ty - s.y;
-  const sees = adx < GG.sight && dy > -GG.sightUp && dy < GG.sightDown + (s.perch ? 200 : 0);
+  const sees = adx < (s.sight || GG.sight) && dy > -GG.sightUp && dy < GG.sightDown + (s.perch ? 200 : 0);
   if (sees) s.face = Math.sign(dx) || s.face;
   /* a move in its tell */
   if (s.mode.endsWith('Tell')) { s.modeT -= dt;
@@ -89,8 +89,8 @@ export function geoStep(s, dt, w) {
 }
 
 /* THE LOB: the velocity that lands a rock from (x0, y0) on (x1, y1) under g; flight time from the distance, clamped */
-export function lob(x0, y0, x1, y1, R = GG.rock) {
-  const d = Math.hypot(x1 - x0, y1 - y0), T = clamp(d / R.v, R.tMin, R.tMax);
+export function lob(x0, y0, x1, y1, R = GG.rock, minT = 0) {
+  const d = Math.hypot(x1 - x0, y1 - y0), T = Math.max(minT, clamp(d / R.v, R.tMin, R.tMax));   /* minT: a high arc (from a roof, over its merlons) */
   return { vx: (x1 - x0) / T, vy: (y1 - y0) / T - 0.5 * R.g * T, T };
 }
 /* THE VOLLEY: n slates aimed at (x1, y1), spread deg apart, at v */
