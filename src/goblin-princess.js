@@ -18,18 +18,18 @@ import * as BW from './bell-winch.js';
 import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
-  hp: 1500, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
+  hp: 1600, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
   resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.2, capK: 0.15, endAt: 0.1,
   gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
-  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 27, reach: 30, stagger: 1.2 },
-  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 10, reach: 30, preen: 1.6 },
-  trinket: { tell: 0.5, n: [2, 3], dmg: 10, life: 1.5, fly: 0.7, g: 520, r: 4 },
+  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 32, reach: 30, stagger: 1.2 },
+  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 12, reach: 30, preen: 1.6 },
+  trinket: { tell: 0.5, n: [2, 3], dmg: 12, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 5, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
   bell: { cd: 10, queue: 1.0, glow: 0.9, glowUp: 0.6, pin: 2.8, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: 16, stun: 2.5 },
-  stomp: { tell: 0.5, t: 0.5, dmg: 15, speed: 220 },
+  stomp: { tell: 0.5, t: 0.5, dmg: 18, speed: 220 },
   tantrum: 1.0, escape: 2.0,
   chase: { lead: 150, run: 175, hold: 260, ring: 0.6, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
   reh: { cd: 10, queue: 1.0, glow: 0.9, walk: 110, walkMax: 3.5, pin: 2.8, pinMul: 1.2, under: 14, hornAfter: 4, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
@@ -106,6 +106,7 @@ export function makeGoblinPrincessHands(ctx) {
       const n0 = ctx.parries ? ctx.parries() : 0, h0 = P.hp;
       const r = ctx.damagePlayer(o.fromX ?? e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock });
       if (F) F.hurt[name] = (F.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp));
+      if (F) globalThis.__gpHurt = F.hurt;   /* (hcproof) the per-move damage tally, read by tools/boss-run.mjs */
       const parried = !!(ctx.parries && ctx.parries() > n0); if (parried && F) F.n.parries++;
       if (o.push && !P.dead) { const dir = sign(P.x - (o.fromX ?? e.x)), k = r === 'blocked' || parried ? 0.5 : 1; P.vx = dir * o.push * 2 * k; }
       out.push({ pp, r, parried }); });
