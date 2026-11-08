@@ -54,11 +54,11 @@ assert.equal(demoShaped(JSON.parse(full), LEVELS), false, 'a full-game save (Scr
 assert.equal(tag({ wood: { cleared: true } }, LEVELS).demoSave, 1); assert.equal(tag({ scree: { cleared: true } }, LEVELS).demoSave, undefined);
 /* (claude/lives2) DIFFICULTY + LIVES in the demo: every mode but MASTER is pickable (MASTER waits on a road clear the demo cannot reach), the save's mode rides a demo save through the import unchanged, and the lives count follows the mode */
 { const { MODE_IDS, modeOf, livesFor, setMode } = await import('../src/lives.js');
-  assert.deepEqual(MODE_IDS, ['story', 'easy', 'normal', 'master'], 'the card steps VERY EASY / EASY / NORMAL / MASTER');
+  assert.deepEqual(MODE_IDS, ['story', 'easy', 'normal', 'hard', 'master'], 'the card steps VERY EASY / EASY / NORMAL / HARD / MASTER');
   for (const m of MODE_IDS) { const sv = JSON.stringify({ hero: 'knight', wood: { cleared: true }, mode: m, lives: 'on', rulesSet: 1 }); const back = JSON.parse(prepareImport(sv, LEVELS)); assert.equal(modeOf(back), m, 'a demo save keeps its mode through the import: ' + m); assert.equal(back.lives, 'on'); }
-  assert.deepEqual(MODE_IDS.map(m => livesFor({ mode: m })), [10, 5, 3, 1], 'lives per level by mode');
-  const p = {}; assert.equal(setMode(p, 'easy', LEVELS.map(l => l.id), false), 'easy', 'EASY is pickable in the demo'); assert.equal(setMode(p, 'master', LEVELS.map(l => l.id), false), 'easy', 'MASTER stays locked without a road clear');
-  console.log('ok  MODES   demo: EASY pickable, MASTER locked, mode + lives ride a demo save, counts 10/5/3/1'); }
+  assert.deepEqual(MODE_IDS.map(m => livesFor({ mode: m })), [10, 5, 3, 2, 1], 'lives per level by mode');
+  const p = {}; assert.equal(setMode(p, 'easy', LEVELS.map(l => l.id), false), 'easy', 'EASY is pickable in the demo'); assert.equal(setMode(p, 'master', LEVELS.map(l => l.id), false), 'easy', 'MASTER stays locked without a road clear'); assert.equal(setMode(p, 'hard', LEVELS.map(l => l.id), false), 'hard', 'HARD is open from the start, demo included');
+  console.log('ok  MODES   demo: EASY and HARD pickable, MASTER locked, mode + lives ride a demo save, counts 10/5/3/2/1'); }
 /* every use of the flag in src/main.js: pinned, each of the shape that is a no-op when the flag is off */
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const uses = main.split(/\r?\n/).flatMap((ln, i) => [...ln.matchAll(/\bDS\.(DEMO\b|demoLocked|demoEndsHere)[^;]{0,70}/g)].map(m => ({ i, t: m[0] })));

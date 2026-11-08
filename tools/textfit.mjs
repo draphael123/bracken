@@ -191,7 +191,7 @@ async function pageTextFit(input) {
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
     /* (claude/lives2) THE NEW-SAVE RULES CARD: LIVES OFF and ON x every difficulty (the ON value reads 'ON: 10 LIVES' ... 'ON: 1 LIFE'), the LIVES and DIFFICULTY rows each highlighted */
     { const P0 = window.BK.PROG, was = [P0.lives, P0.mode];
-      for (const lv of ['off', 'on']) for (const md of ['story', 'easy', 'normal', 'master']) for (const row of [0, 1]) frame('new-save rules [' + lv + ' / ' + md + ' / row ' + row + ']', () => { P0.lives = lv; P0.mode = md; BK.state = 'heropick'; BK.ui.heroPickStage = 'rules'; BK.ui.rulesRow = row; }, { settle: 20 });
+      for (const lv of ['off', 'on']) for (const md of ['story', 'easy', 'normal', 'hard', 'master']) for (const row of [0, 1]) frame('new-save rules [' + lv + ' / ' + md + ' / row ' + row + ']', () => { P0.lives = lv; P0.mode = md; BK.state = 'heropick'; BK.ui.heroPickStage = 'rules'; BK.ui.rulesRow = row; }, { settle: 20 });
       P0.lives = was[0]; P0.mode = was[1]; BK.ui.heroPickStage = 'pick'; }
     await yieldNow(); }
   /* THE TRIAL PROMPT (hero pick, stage 'trial'): its 64-letter sentence ran off both edges of the screen (UIQUICK 2026-10-04); every hero's name over it */
@@ -320,6 +320,10 @@ async function pageTextFit(input) {
     /* (claude/shrinekey) THE BACK-TO-SHRINE QUESTION, and the pause menu in the lesson + the yard (the greyed NO SHRINE HERE line) */
     frame('shrine ask', () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.shrineAsk = true; }, { settle: 40 }); BK.ui.shrineAsk = false;
     for (const id of ['lesson', 'arena-yard', 'arenayard']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; try { toPlay(li, 'knight'); } catch (e) { continue; } for (let i = 0; i < BK.ui.menuCount(); i++) frame('menu ' + id + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 }); }
+    /* (claude/diff3) THE LOWER-DIFFICULTY QUESTION on the pause menu's SAVE MODE row, for every mode, LIVES on and off (the NOW line follows it) */
+    { const P0 = window.BK.PROG, was = [P0.lives, P0.mode], rows = BK.ui.menuCount(); let si = -1; for (let i = 0; i < rows; i++) { BK.ui.menuI = i; if (BK.ui.menuItem() === 'Save mode') si = i; }
+      if (si >= 0) for (const md of ['hard', 'normal', 'easy', 'story', 'master']) for (const lv of ['off', 'on']) frame('lower mode [' + md + ' / lives ' + lv + ']', () => { P0.mode = md; P0.lives = lv; BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = si; BK.ui.menuMsg = ''; BK.ui.lowerAsk(); }, { settle: 30 });
+      P0.mode = was[1]; P0.lives = was[0]; BK.ui.menuMsg = ''; }
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }
