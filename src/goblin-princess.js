@@ -28,7 +28,7 @@ export const GP = {
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 5, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
-  bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.5, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
+  bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: 16, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: 18, speed: 220 },
   tantrum: 1.0, escape: 2.0,
@@ -82,7 +82,7 @@ export function makeGoblinPrincessHands(ctx) {
      an arrow drops there), so the ranger plays her bell tower as the blades do (hcproof sec 'why the bots win': she could not ring, crank or knock a gem) */
   const usedShots = new WeakSet();
   const shotOn = box => { for (const q of (ctx.shots ? ctx.shots() : [])) { if (!q || usedShots.has(q) || q.x < box.l - 3 || q.x > box.r + 3 || q.y < box.t - 3 || q.y > box.b + 3) continue;
-    usedShots.add(q); if (q.state === 'fly') { q.state = 'drop'; q.vx = (q.vx || 0) * -0.1; q.vy = -40; } else if (q.life > 0 && q.state === undefined) q.life = 0; return true; } return false; };
+    usedShots.add(q); if (F) F.n.shots++; if (q.state === 'fly') { q.state = 'drop'; q.vx = (q.vx || 0) * -0.1; q.vy = -40; } else if (q.life > 0 && q.state === undefined) q.life = 0; return true; } return false; };
   const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any || shotOn(box); };
   H.on = () => !!(L() && (L().gpChase || L().gpRehearsal || A()));
   H.owns = e => e.t === 'gprincess';
@@ -207,7 +207,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (!F.bolt && SAFE.has(e.mode) && BW.ringFresh(F.M, t)) { F.M.queued = 0; boltBegin(e); }
   }
   function boltBegin(e) {
-    const up = onLanding(e); F.bolt = { state: up ? 'up' : 'run', wait: up ? GP.bell.glowUp : GP.bell.glow, hup: 0 };
+    const up = onLanding(e); F.bolt = { state: up ? 'up' : 'run', wait: up ? GP.bell.glowUp : GP.bell.glow, hup: 0, t0: now() };
     set(e, 'bolt', 9); e.hiding = false; ctx.number(e.x, e.y - 50, 'EEK! SHE BOLTS FOR THE HATCH', '#ff6b6b'); sfx('bellow');
     if (!F.said.release) { F.said.release = 1; ctx.hint && ctx.hint('THE WINCH HOLDS THE GRATE. STRIKE IT WHEN THE GRATE BLAZES, WITH HER UNDER IT. TOO SOON AND SHE DUCKS.'); }
   }
@@ -217,8 +217,8 @@ export function makeGoblinPrincessHands(ctx) {
     if (B.state === 'run') { e.x += sign(dx) * Math.min(Math.abs(dx), GP.bell.bolt * dt); if (Math.abs(dx) < 6) { B.state = 'hup'; B.hup = GP.bell.hup; ctx.number(e.x, e.y - 40, 'HUP!', '#ffd36b'); } return; }
     if (B.state === 'hup') { B.hup -= dt; const k = 1 - Math.max(0, B.hup) / GP.bell.hup; e.y = fl() - (fl() - Ar.land.y) * k - Math.sin(k * Math.PI) * 10; if (B.hup <= 0) { e.y = Ar.land.y; B.state = 'up'; } return; }
     if (B.state === 'up') { e.x += sign(dx) * Math.min(Math.abs(dx), GP.bell.bolt * dt); if (Math.abs(dx) < 4) { B.state = 'glow'; } return; }
-    if (B.state === 'glow') { B.wait -= dt; F.glowK = 0.75 * (1 - Math.max(0, B.wait) / GP.bell.glow);
-      if (B.wait <= 0) { B.state = 'ready'; B.left = GP.bell.win; B.readyT = now(); B.react = GP.bell.react[0] + Math.random() * (GP.bell.react[1] - GP.bell.react[0]); F.glowK = 1;
+    if (B.state === 'glow') { B.wait -= dt; const left = Math.max(B.wait, GP.bell.lead - (now() - B.t0)); F.glowK = 0.75 * (1 - Math.min(1, Math.max(0, left) / GP.bell.glow));   /* (the blaze waits GP.bell.lead s from the ring: time to run from the rope to the winch) */
+      if (left <= 0) { B.state = 'ready'; B.left = GP.bell.win; B.readyT = now(); B.react = GP.bell.react[0] + Math.random() * (GP.bell.react[1] - GP.bell.react[0]); F.glowK = 1;
         ctx.number(Ar.winch || e.x, fl() - 44, 'NOW!', '#ffd36b'); ctx.sfx.tell && ctx.sfx.tell(false); } return; }
     if (B.state === 'ready') { B.left -= dt; F.glowK = 1; if (B.left <= 0) { F.bolt = null; F.glowK = 0; F.n.slips++; set(e, 'ducked', GP.bell.duck); ctx.number(e.x, e.y - 50, 'SHE SLIPS OUT FROM UNDER IT', '#c9c9d6'); } }
   }
