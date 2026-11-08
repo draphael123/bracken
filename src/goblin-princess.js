@@ -20,17 +20,17 @@ import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from '.
 
 export const GP = {
   hp: 1200, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
-  resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0.1, shotUp: 0.75,
+  resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0.1, shotUp: 0.85,
   gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
-  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 35, reach: 30, stagger: 1.0 },
-  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 15, reach: 30, preen: 1.2 },
-  trinket: { tell: 0.5, n: [2, 3], dmg: 10, life: 1.5, fly: 0.7, g: 520, r: 4 },
+  lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 31, reach: 30, stagger: 1.0 },
+  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 13, reach: 30, preen: 1.2 },
+  trinket: { tell: 0.5, n: [2, 3], dmg: 9, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 6, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
   bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
-  tiara: { tell: 0.6, out: 220, speed: 300, dmg: 20, stun: 2.5 },
-  stomp: { tell: 0.5, t: 0.5, dmg: 22, speed: 220 },
+  tiara: { tell: 0.6, out: 220, speed: 300, dmg: 18, stun: 2.5 },
+  stomp: { tell: 0.5, t: 0.5, dmg: 20, speed: 220 },
   tantrum: 1.0, escape: 2.0,
   chase: { lead: 150, run: 175, hold: 260, ring: 0.6, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
   reh: { cd: 12, queue: 1.0, glow: 0.9, walk: 110, walkMax: 3.5, pin: 2.5, pinMul: 1.15, under: 14, hornAfter: 4, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
@@ -285,7 +285,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (!F) return dmg;
     if (e.mode === 'escape') return 0;   /* (the end of the fight: she is through the hatch - not a guard, a finish) */
     let d = dmg * gpMul(e);
-    if (!gpOpen(e) && onLanding(e) && [].concat(tag || []).includes('shot')) d = dmg * GP.shotUp;   /* (claude/hcfix) UP ON THE LANDING she has no room to dodge an arrow: a SHOT there is x0.75 (a blade must jump up to her and gets 0.4x) */
+    if (!gpOpen(e) && onLanding(e) && [].concat(tag || []).includes('shot')) d = dmg * GP.shotUp;   /* (claude/hcfix) UP ON THE LANDING she has no room to dodge an arrow: a SHOT there is x GP.shotUp (a blade must jump up to her and gets 0.4x) */
     if (gpOpen(e)) {   /* (claude/hcfix) the PREEN is capped too: uncapped, one riposte HEAVY took 340 of her bar and a warden ended her in 12 s */
       const cap = e.maxHp * GP.capK, room = Math.max(0, cap - F.openTaken); if (d > room) { d = room; F.n.capped++; } F.openTaken += d; if (F.openTaken >= cap - 0.01) e.modeT = Math.min(e.modeT, 0.3); }
     const floor = e.maxHp * GP.endAt; if (e.hp - d <= floor) { d = Math.max(0, e.hp - floor); escapeBegin(e); }
