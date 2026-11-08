@@ -1,3 +1,4 @@
+import { BONES_SHIPS } from './bones.js'; import { BONE_LEVELS, bonesPlace } from './bones-placements.js';   /* (claude/foes) THE SKELETON SET's by-level swaps: wrapped ONLY while BONES_SHIPS, so with the flag off every build() is untouched */
 import { CAST_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
@@ -8851,5 +8852,6 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
+if (BONES_SHIPS) for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && BONE_LEVELS.includes(lv.id)) lv.build = (...a) => bonesPlace(b(...a), lv.id); }   /* (claude/foes) the skeleton set's rows, over the raw ents (src/bones-placements.js) */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && CAST_SWAPS[lv.id]) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */

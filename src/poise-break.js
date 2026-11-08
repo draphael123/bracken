@@ -12,7 +12,7 @@
 // drawOpen. BK.combat2().OPEN.breaks counts breaks for tools/finishers.mjs.
 
 export const POISE_EXTRA = new Set(['ambusher', 'apprentice', 'bannerbearer', 'bonegob', 'burngob', 'corpse', 'cutthroat', 'feeler', 'husk',
-  'jelly', 'lanternshade', 'merrowcaller', 'sheargob', 'slinger', 'tippler', 'vulture', 'zombie']);
+  'jelly', 'lanternshade', 'merrowcaller', 'sheargob', 'slinger', 'tippler', 'vulture', 'zombie', 'greymane', 'skelsoldier']);   /* (claude/foes) the greymane and the skeleton soldier carry the light bar */
 export const POISE_EXTRA_HEAVY = new Set(['bonecorsair', 'drownedcaptain', 'drownedknight', 'gaffer', 'scorpion', 'tidemarauder']);
 
 export const OPEN = { breaks: 0, lean: 0.22, starR: 7, stars: 3, retell: 0.35 };

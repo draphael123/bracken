@@ -108,8 +108,9 @@ export const ROSTER = {
   3: { front: ['tideguard', 'watch', 'bellguard', 'merrowbrute'], flank: ['cutlass', 'sailor', 'boarder', 'bonecorsair', 'drownedknight', 'crab', 'wight'], back: ['scout', 'netter', 'marine', 'merrowspear', 'lookout', 'seawitch'],
        heavy: ['merrowbrute', 'drownedknight', 'holdfast', 'tidemarauder'], support: ['bosun', 'merrowcaller', 'lanternshade', 'snuffer'], water: ['eel', 'angler', 'urchin', 'puffer', 'lamprey', 'siren', 'manta', 'jelly'],
        note: 'the sea: fights in the tide and the swim; water foes hold the water, boarders the decks' },
-  4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer'],
+  4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy', 'skelsoldier'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer', 'skelarcher', 'skelmage'],
        heavy: ['hedgeknight', 'armour', 'barrowrider', 'brute'], support: ['bannerbearer', 'gobpriest', 'barker', 'snuffer'], note: 'the old kingdom: knights, the risen dead and the fair folk - a banner or a priest to kill first' },
+  6: { front: [], flank: ['snowrunner', 'greymane'], back: [], heavy: ['bruin'], support: [], note: 'the frozen reach (claude/foes, behind BEASTS_SHIPS): a pack that circles - the runners flank, the greymane leads, the bruin stands alone' },
   5: { front: ['shield', 'construct'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm', 'mummy'], support: ['sapper', 'vulture'],   /* (claude/lategameb: the act's second front kind is the Buried City's construct, the third heavy the Sealed Pyramid's mummy - kinds the game already spawns; a ksar plate-bearer and a brass-scorpion variant are a content lane's) */
        note: 'the desert: feinting cutthroats, slingers on the ledges, every fight in the sun or the flood' },
 };

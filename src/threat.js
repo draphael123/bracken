@@ -130,6 +130,9 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      glowing mask and its bells - a read (where to LOOK) rather than a fight. WEIGHED UP after Daniel approved the greybox (2026-09-29): the fair read INDEX 34 against ~117 and no bodies are to be added, so a mummer is a 5 (constant attention: you may never turn your back) and the hobby-horse a 6 (the elite that charges 22 the moment
      a back is turned, committed and long) */
   mummer: 5, hobbyhorse: 6, stringjack: 5, barker: 7, wickerman: 7,   /* (claude/fairfix) the string-jack weighs a mummer; the barker an elite caller who does little harm himself but turns every hero */
+  /* THE FROST BEASTS and THE SKELETON SET (claude/foes, src/beasts.js, src/bones.js): weighed against the men already in this table. A snowrunner is a hound's job at the hound's price (18 health, a 6 bite and an 8 leap, quick, never alone); a greymane a soldier's weight and more (70 health, 12 / 14 + a pin);
+     a bruin a brute (120 health, 14 maul, a 16 charge with knockdown - a 5); a skeleton soldier the zombie's 38 -> 44 and a shield (3), the archer the apprentice's 34 -> 22 (2.5), the mage 18 health with a homing wisp and a wave (3) */
+  snowrunner: 2, greymane: 4, bruin: 5, skelsoldier: 3, skelarcher: 2.5, skelmage: 3,
   hornsman: 4,   /* THE HORNSMAN (claude/palisadefoe, src/hornsman.js): 26 health, a maul (! 11) at arm's length - and a horn that hurries every archer in earshot: a support the towers lean on */
   stagehand: 5,   /* THE STAGEHAND (the Maskwright's Theatre): 56 health, an unblockable 18 in front and a 16 dropped on you from above; slow */
   spotlamp: 0, flylock: 0, flatwinch: 0, stagetrap: 0, startrap: 0,   /* THE MASKWRIGHT'S THEATRE's machinery (src/theatre-rig.js): a lamp, a rope-lock, a winch, a stage trap and the star trap fight nobody */
