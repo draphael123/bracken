@@ -1,0 +1,39 @@
+name: Full pixel trace lossless codec fidelity only
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/full-pixel-trace-codec-nov08.c
+      - tools/full-pixel-trace-codec-nov08.mjs
+      - .github/workflows/full-pixel-trace-codec-nov08.yml
+permissions: {contents: read}
+jobs:
+  fidelity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Compile test artifact encoder only
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v clang
+          clang --version > "$RUNNER_TEMP/pixel-codec-clang.txt"
+          clang --target=wasm32 -O3 -msimd128 -ffreestanding -nostdlib -Wl,--no-entry -Wl,--export=diff -Wl,--export=__heap_base -Wl,--export-memory -Wl,--initial-memory=131072 -Wl,-z,stack-size=32768 tools/full-pixel-trace-codec-nov08.c -o "$RUNNER_TEMP/full-pixel-trace-codec-nov08.wasm"
+      - name: Compare every encoded and reconstructed byte against independent scalar oracle
+        run: node tools/full-pixel-trace-codec-nov08.mjs
+        env:
+          CODEC_OUT: ${{ runner.temp }}/full-pixel-trace-codec-nov08
+          CODEC_WASM: ${{ runner.temp }}/full-pixel-trace-codec-nov08.wasm
+          CODEC_COMPILER: ${{ runner.temp }}/pixel-codec-clang.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-pixel-trace-codec-nov08
+          path: |
+            ${{ runner.temp }}/full-pixel-trace-codec-nov08/
+            ${{ runner.temp }}/full-pixel-trace-codec-nov08.wasm
+            ${{ runner.temp }}/pixel-codec-clang.txt
+          if-no-files-found: error
