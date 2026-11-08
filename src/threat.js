@@ -75,6 +75,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   winchmaster: 6,
   /* the mage is a shooter that moves and a floor you must leave: the storm shaman's job with a red half, at his weight */
   gobmage: 3,
+  gobgeo: 3.5,   /* (claude/gobgeo) THE GOBLIN GEOMANCER: a lob, a volley and a burst, all sent back - the gobmage's weight and a little more */
   /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */
   /* THE MAGE'S FOLLY: a topiary is a read (it shivers first), the armour a slow wall, a piece and a broom nearly nothing, a mimic a trap, an imp a shooter that moves, a turret one that does not */
   topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, tome: 2.5, homunculus: 5, archmage: 6, glyph: 0, gplate: 0, vatspit: 0, rune: 0,
