@@ -60,22 +60,22 @@ function poly(g, pts, c, ol) {
   fillPoly(g, pts, c);
 }
 /* two-bone arm: the elbow drops (or goes back) from the shoulder-hand line */
-function arm(g, sx, sy, tx, ty, L1 = 9, L2 = 9.5) {
+function arm(g, sx, sy, tx, ty, L1 = 8.5, L2 = 9) {
   let dx = tx - sx, dy = ty - sy, d = Math.hypot(dx, dy) || 1; const reach = L1 + L2 - 0.6; if (d > reach) { tx = sx + dx / d * reach; ty = sy + dy / d * reach; dx = tx - sx; dy = ty - sy; d = reach; }
   const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, L1 * L1 - a * a)), ux = dx / d, uy = dy / d;
   const e1 = [sx + ux * a - uy * h, sy + uy * a + ux * h], e2 = [sx + ux * a + uy * h, sy + uy * a - ux * h];
   const e = (e1[1] - e1[0] * 0.5) > (e2[1] - e2[0] * 0.5) ? e1 : e2;
   return { sx, sy, ex: Math.round(e[0]), ey: Math.round(e[1]), hx: Math.round(tx), hy: Math.round(ty) };
 }
-function drawArm(g, A, dark, stage = 0) {                  // stage 1 = the puffed sleeve (drawn BEHIND the head), 2 = the glove and hand (in front of it), 0 = both
+function drawArm(g, A, dark, stage = 0) {                  // stage 1 = the puffed sleeve (drawn BEHIND the head), 2 = the glove and hand (in front of it), 0 = both. THICK arms.
   const sl = dark ? GM2.map(c => shade(c, -0.16)) : GM, gl = dark ? GL.map(c => shade(c, -0.06)) : GL, pk = dark ? PK.map(c => shade(c, -0.1)) : PK;
   if (stage !== 2) {
-    tube(g, A.sx, A.sy, A.ex, A.ey, 6, sl);                                                                                      // the puffed sleeve
-    blob(g, A.sx, A.sy - 1, 4.4, 4, sl); px(g, A.sx - 2, A.sy - 3, pk[4]); px(g, A.sx - 1, A.sy - 3, pk[3]); rect(g, A.sx - 3, A.sy + 2, 7, 1, GD[1]); }
+    tube(g, A.sx, A.sy, A.ex, A.ey, 8, sl);                                                                                      // the sleeve, tight over a fat arm
+    blob(g, A.sx, A.sy - 1, 5.8, 5.2, sl); px(g, A.sx - 3, A.sy - 4, pk[4]); px(g, A.sx - 2, A.sy - 4, pk[3]); rect(g, A.sx - 4, A.sy + 3, 9, 1, GD[1]); }
   if (stage !== 1) {
-    tube(g, A.ex, A.ey, A.hx, A.hy, 4, gl);                                                                                     // the glove: forearm
-    rect(g, A.ex - 2, A.ey - 1, 5, 2, GD[2]); px(g, A.ex - 1, A.ey - 1, GD[4]); rect(g, A.ex - 2, A.ey + 1, 5, 1, GD[1]);       // the gold cuff at the elbow
-    blob(g, A.hx, A.hy, 3, 3, gl); px(g, A.hx + 2, A.hy - 1, gl[1]); }                                                            // the hand
+    tube(g, A.ex, A.ey, A.hx, A.hy, 6, gl);                                                                                     // the glove: a fat forearm
+    rect(g, A.ex - 3, A.ey - 1, 7, 2, GD[2]); px(g, A.ex - 2, A.ey - 1, GD[4]); rect(g, A.ex - 3, A.ey + 1, 7, 1, GD[1]);
+    blob(g, A.hx, A.hy, 4, 3.8, gl); px(g, A.hx + 3, A.hy - 1, gl[1]); px(g, A.hx + 2, A.hy + 2, gl[0]); px(g, A.hx + 1, A.hy + 1, gl[1]); }                                                            // the hand, a thumb and knuckles
 }
 /* a ruby */
 function ruby(g, x, y, big) { if (big) { rect(g, x - 1, y - 1, 3, 3, RB[2]); px(g, x - 1, y - 1, RB[3]); rect(g, x, y + 1, 2, 1, RB[1]); px(g, x + 1, y, RB[1]); } else { px(g, x, y, RB[2]); px(g, x - 1, y - 1, RB[3]); } }
@@ -84,11 +84,11 @@ const GM2 = ['#7a1c5c', '#b02a78', '#dc50a4', '#f87cc4', '#ffb4dc'];
 function skirt(g, o) {
   const { cx, waistY, hemY: hemY0, hw, sk, ph, tilt } = o, H0 = Math.max(4, hemY0 - waistY), span = hw * 2;
   const swag = (x, xa, segW, amp, p0) => { const f = ((((x - xa) / segW) + p0) % 1 + 1) % 1; return Math.round(amp * Math.sin(Math.PI * f)); };
-  const yA = waistY + Math.round(H0 * 0.38), yB = hemY0 - 8, bump = (y) => (y >= yA && y < yA + 8 ? 2.8 * Math.sin(Math.PI * (y - yA + 0.5) / 8) : 0) + (y >= yB && y < yB + 9 ? 3 * Math.sin(Math.PI * (y - yB + 0.5) / 9) : 0);   // the tier edges puff out: a bell, not a triangle
+  const yA = waistY + Math.round(H0 * 0.38), yB = hemY0 - 8, bump = (y) => (y >= yA && y < yA + 8 ? 2.4 * Math.sin(Math.PI * (y - yA + 0.5) / 8) : 0) + (y >= yB && y < yB + 9 ? 2.6 * Math.sin(Math.PI * (y - yB + 0.5) / 9) : 0);   // the tier edges puff out: a bell, not a triangle
   for (let y = waistY; y <= hemY0 + Math.abs(tilt || 0) + 2; y++) {
-    const k = Math.min(1, (y - waistY) / H0), half = 5.5 + (hw - 5.5) * (0.55 * Math.pow(k, 0.5) + 0.45 * Math.pow(k, 2)) + bump(y), c = cx + sk * Math.pow(k, 1.6), xa = Math.round(c - half), xb = Math.round(c + half);
+    const k = Math.min(1, (y - waistY) / H0), half = 11 + (hw - 11) * (0.55 * Math.pow(k, 0.5) + 0.45 * Math.pow(k, 2)) + bump(y), c = cx + sk * Math.pow(k, 1.6), xa = Math.round(c - half), xb = Math.round(c + half);
     for (let x = xa; x <= xb; x++) {
-      const u = (x - c) / half, hemY = hemY0 - Math.round((tilt || 0) * Math.max(-1, Math.min(1, u))) + Math.round(1.1 * Math.sin((x - xa) * 0.5 + ph * 6)); if (y > hemY) continue;
+      const u = (x - c) / half, hemY = hemY0 - Math.round((tilt || 0) * Math.max(-1, Math.min(1, u))) + Math.round(1.2 * Math.sin((x - xa) * 0.62 + ph * 6)); if (y > hemY) continue;
       const yo1 = waistY + Math.round(H0 * 0.38) + swag(x, xa, Math.max(6, span / 4.2), 3, ph + 0.2), yo2 = hemY - 8 + swag(x, xa, Math.max(7, span / 3.3), 3, ph);
       let col;
       if (y >= hemY - 2) { col = y === hemY ? GD[1] : y === hemY - 1 ? GD[2] : GD[3]; if (y === hemY - 1 && ((x - xa) % 5 === 2)) col = GD[4]; if (y === hemY && x === xa) col = GD[0]; }
@@ -114,67 +114,80 @@ function skirt(g, o) {
       px(g, x, y, col); } }
 }
 
-/* the head: hair behind, long ears, a big green head with a lit top left, a pointed nose, readable eyes, fangs, a fringe, the tiara */
-function eye(g, x, y, w, kind, brow, far) {
-  const lash = (xx, yy) => { px(g, xx, yy, INK); px(g, xx - 1, yy - 1, INK); };
+/* the head (the 11-08 UGLY pass: squat, lumpy, warty, a double chin and no neck; small beady eyes under a heavy brow ridge; a wide grumpy mouth with crooked fangs) */
+const IVO = '#f4ecc8', IVOD = '#bca878', SCL = '#f0dca8';
+function wart(g, x, y) { px(g, x, y, SK[3]); px(g, x + 1, y, SK[4]); px(g, x, y + 1, SK[1]); px(g, x + 1, y + 1, SK[2]); }
+function fang(g, x, y, h, lean) {                                  // a crooked tusk growing UP from the lower jaw: wide at the root, bent, one side shaded
+  for (let i = 0; i < h; i++) { const xx = x + Math.round(i * lean * 0.5); rect(g, xx, y - i, i >= h - 1 ? 1 : 2, 1, IVO); px(g, xx + (i >= h - 1 ? 0 : 1), y - i, IVOD); }
+}
+function eye(g, x, y, w, kind, far) {
+  const sc = () => { rect(g, x, y, w, 3, SCL); px(g, x, y, SK[1]); px(g, x + w - 1, y, SK[1]); };
   if (kind === 'open' || kind === 'angry' || kind === 'wide' || kind === 'smug') {
-    const tall = kind === 'wide' ? 3 : 2, iw = w >= 6 ? 3 : 2;
-    rect(g, x + 1, y - tall, w - 2, 1, EYEW); rect(g, x, y - tall + 1, w, tall * 2 - 1, EYEW); rect(g, x + 1, y + tall, w - 2, 1, EYEW);
-    const ix = x + w - iw - 1;
-    if (kind === 'wide') { rect(g, x + 1, y - 1, w - 2, 3, IRIS); px(g, x + 2, y, INK); px(g, x + 2, y + 1, INK); px(g, x + 1, y - 1, '#fff'); px(g, x + w - 1, y - tall, EYEW); }
-    else { rect(g, ix, y - 1, iw + 1, 3, IRIS); rect(g, ix + 1, y - 1, 1, 3, INK); px(g, ix, y - 1, '#fff'); px(g, ix, y + 1, '#c07a10'); }
-    rect(g, x, y - tall - 1, w, 1, INK); if (!far) lash(x + w, y - tall - 1);
-    if (kind === 'smug') { rect(g, x, y - tall, w, 2, SK[1]); rect(g, x, y - tall + 1, w, 1, INK); if (!far) px(g, x + w, y - tall, INK); }
-    if (kind === 'angry') { rect(g, x, y - tall - 1, w, 2, SK[0]); for (let i = 0; i < w + 2; i++) { const yy = y - tall - 3 + Math.round((far ? i : (w + 1 - i)) * 0.8); px(g, x - 1 + i, yy, HR[0]); px(g, x - 1 + i, yy + 1, SK[0]); } }
-  } else if (kind === 'shut') { px(g, x, y - 1, INK); rect(g, x + 1, y, w - 2, 1, INK); px(g, x + w - 1, y - 1, INK); if (!far) lash(x + w, y - 1); }
-  else if (kind === 'happy') { px(g, x, y, INK); rect(g, x + 1, y - 1, w - 2, 1, INK); px(g, x + w - 1, y, INK); if (!far) lash(x + w, y - 1); }
-  else if (kind === 'cry') { px(g, x, y - 1, INK); px(g, x + 1, y, INK); rect(g, x + 2, y, w - 3, 1, INK); px(g, x + w - 1, y - 1, INK); px(g, x + 1, y + 1, '#bfe8ff'); px(g, x + 1, y + 2, '#9ad8ff'); px(g, x + w - 2, y + 1, '#bfe8ff'); px(g, x + w - 2, y + 2, '#9ad8ff'); px(g, x + w - 2, y + 3, '#9ad8ff'); }
-  else if (kind === 'spiral') { circle(g, x + w / 2, y, w / 2 + 0.4, EYEW); px(g, x + 1, y, INK); px(g, x + 1, y - 1, INK); px(g, x + 2, y - 1, INK); px(g, x + 2, y + 1, INK); px(g, x + 3, y, INK); px(g, x + 3, y + 1, INK); }
-  if (brow === 'up') { rect(g, x, y - 5, w, 1, HR[1]); px(g, x + w, y - 6, HR[1]); } else if (brow === 'flat') rect(g, x, y - 5, w, 1, HR[1]);
+    if (kind === 'wide') { rect(g, x, y - 1, w, 5, SCL); px(g, x, y - 1, SK[1]); px(g, x + w - 1, y - 1, SK[1]); rect(g, x + w - 3, y + 1, 2, 2, INK); px(g, x + w - 3, y + 1, '#fff'); rect(g, x - 1, y - 2, w + 2, 1, SK[0]); }
+    else { sc(); rect(g, x + w - 3, y, 2, 3, INK); px(g, x + w - 3, y, '#fff'); rect(g, x - 1, y - 1, w + 2, 1, SK[0]); }                    // a bead of a pupil, a heavy lid
+    rect(g, x, y + 3, w, 1, SK[1]);                                                                                                                // the eye bag
+    if (kind === 'smug') { rect(g, x - 1, y - 1, w + 2, 2, SK[0]); rect(g, x, y, w, 1, SK[1]); }
+    if (kind === 'angry') { for (let i = 0; i < w + 3; i++) { const yy = y - 3 + Math.round((far ? i : (w + 2 - i)) * 0.7); px(g, x - 1 + i, yy, HR[0]); px(g, x - 1 + i, yy + 1, HR[0]); px(g, x - 1 + i, yy + 2, SK[0]); } }
+  } else if (kind === 'shut') { rect(g, x, y + 1, w, 1, INK); px(g, x - 1, y, INK); px(g, x + w, y, INK); rect(g, x, y + 2, w, 1, SK[1]); }
+  else if (kind === 'happy') { rect(g, x, y, w, 1, INK); px(g, x - 1, y + 1, INK); px(g, x + w, y + 1, INK); rect(g, x, y + 2, w, 1, SK[1]); }
+  else if (kind === 'cry') { rect(g, x, y + 1, w, 1, INK); px(g, x - 1, y, INK); px(g, x + w, y, INK); rect(g, x + 1, y + 2, 2, 3, '#9ad8ff'); px(g, x + 1, y + 2, '#fff'); rect(g, x + w - 2, y + 3, 2, 3, '#9ad8ff'); }
+  else if (kind === 'spiral') { rect(g, x - 1, y - 1, w + 2, 5, SCL); px(g, x, y, INK); px(g, x + 1, y, INK); px(g, x + 1, y + 2, INK); px(g, x + 2, y + 2, INK); px(g, x + 2, y + 1, INK); px(g, x + 3, y + 1, INK); px(g, x + 3, y + 3, INK); }
 }
 function head(g, hx, hy, p) {
-  const eu = p.ears === 1 ? -6 : p.ears === 2 ? 7 : 0, fly = q(p.fly);
-  /* the hair behind: a big dark mass, a top bun with a pink bow and a gold pin, a long ringlet */
-  ellipse(g, hx - 3, hy, 10.5, 10.5, HR[1]); ellipse(g, hx - 5, hy - 2, 7, 7, HR[2]); ellipse(g, hx - 7, hy - 4, 3, 3, HR[3]);
-  const tx = hx - 12 - fly, ty = hy + 7 + (p.air ? -3 : 0);
-  tube(g, hx - 7, hy - 2, hx - 12 - fly * 0.6, hy + 5, 6, HR); blob(g, tx, ty + 3, 3.8, 4.2, HR); px(g, tx - 2, ty + 1, HR[4]); px(g, tx - 1, ty, HR[3]); px(g, tx + 1, ty + 6, HR[0]); px(g, hx - 10 - fly * 0.5, hy + 2, HR[4]); px(g, hx - 11 - fly * 0.6, hy + 4, HR[3]); rect(g, hx - 14 - fly * 0.6, hy + 3, 5, 2, PK[2]); px(g, hx - 14 - fly * 0.6, hy + 3, PK[4]); px(g, hx - 10 - fly * 0.6, hy + 4, PK[1]);   // the ringlet, tied with a bow
-  blob(g, hx - 6, hy - 12, 3.8, 3.6, HR); px(g, hx - 8, hy - 14, HR[4]); px(g, hx - 7, hy - 15, HR[3]); px(g, hx - 4, hy - 10, GD[3]);
-  /* the ears: long leaf ears, the near one bigger; the inner ear pink, the edge lit */
-  for (const [side, len, dy] of [[-1, 18, 0], [1, 20, 1]]) {
-    const e = side * 1, bx = hx + e * 7, tipx = hx + e * (6 + len), tipy = hy - 10 + eu + dy, mx = hx + e * (6 + len * 0.55), my = hy - 8 + eu * 0.55 + dy;
-    const P = [[bx, hy - 5 + dy], [mx - e * 2, my - 3], [tipx, tipy], [mx + e * 1, my + 5], [bx + e * 1, hy + 2 + dy]];
+  const eu = p.ears === 1 ? -6 : p.ears === 2 ? 7 : 0, fly = q(p.fly), SKd = SK.map(c => shade(c, -0.14));
+  /* the hair behind: a wide dark mass, a top bun with a pink bow, a stubby ringlet */
+  ellipse(g, hx - 3, hy - 1, 12.5, 10.5, HR[1]); ellipse(g, hx - 6, hy - 3, 8, 6.5, HR[2]); ellipse(g, hx - 8, hy - 5, 3, 3, HR[3]);
+  const tx = hx - 14 - fly, ty = hy + 6 + (p.air ? -3 : 0);
+  blob(g, hx - 12 - fly * 0.5, hy + 2, 4, 4.2, HR); blob(g, tx, ty + 3, 3.6, 3.8, HR); px(g, tx - 2, ty + 1, HR[4]); px(g, tx - 1, ty, HR[3]); px(g, tx + 1, ty + 6, HR[0]);
+  rect(g, hx - 15 - fly * 0.6, hy + 2, 5, 2, PK[2]); px(g, hx - 15 - fly * 0.6, hy + 2, PK[4]); px(g, hx - 11 - fly * 0.6, hy + 3, PK[1]);
+  blob(g, hx - 7, hy - 13, 3.8, 3.6, HR); px(g, hx - 9, hy - 15, HR[4]); px(g, hx - 8, hy - 16, HR[3]); px(g, hx - 5, hy - 11, GD[3]);
+  /* the ears: long leaf ears, thick at the root, the inner ear pink, the edge lit */
+  for (const [side, len, dy] of [[-1, 16, 0], [1, 18, 1]]) {
+    const e = side, bx = hx + e * 9, tipx = hx + e * (9 + len), tipy = hy - 9 + eu + dy, mx = hx + e * (9 + len * 0.55), my = hy - 7 + eu * 0.55 + dy;
+    const P = [[bx - e * 1, hy - 7 + dy], [mx - e * 2, my - 4], [tipx, tipy], [mx + e * 1, my + 6], [bx, hy + 3 + dy]];
     poly(g, P, SK[2], INK2);
-    fillPoly(g, [[bx + e * 3, hy - 3 + dy], [mx - e * 1, my - 0.5], [tipx - e * 4, tipy + 1.6], [mx + e * 0.5, my + 3], [bx + e * 3, hy + dy]], side > 0 ? '#c8688a' : '#a85878');
-    fillPoly(g, [[bx + e * 4, hy - 2 + dy], [mx, my + 0.5], [tipx - e * 6, tipy + 3], [mx, my + 2.4]], side > 0 ? '#e898b0' : '#c47890');
-    line(g, bx, hy - 5 + dy, mx - e * 2, my - 3, SK[4], 1); line(g, mx - e * 2, my - 3, tipx, tipy, SK[3], 1);                // the lit top edge
-    line(g, bx + e * 1, hy + 2 + dy, mx + e * 1, my + 5, SK[0], 1);                                                                  // the shaded underside
-    if (side > 0) { px(g, tipx - 4, tipy + 3, GD[3]); px(g, tipx - 3, tipy + 3, GD[2]); }                                           // a tiny gold stud
-  }
-  blob(g, hx, hy, 9.8, 9.4, SK);                                                                                                       // the head
-  rect(g, hx - 1, hy + 8, 4, 3, SK[1]);                                                                                                // under the chin
-  px(g, hx + 7, hy + 7, SK[1]); px(g, hx + 6, hy + 8, SK[1]);                                                                          // a jaw
-  /* cheeks */
-  const flush = p.flush ? 1 : 0, ck = flush ? '#e8402c' : '#d8607e', ck2 = flush ? '#ff7a58' : '#ee8aa0';
-  ellipse(g, hx + 6, hy + 4.4, flush ? 3.2 : 1.6, flush ? 2.2 : 1, ck); px(g, hx + 5, hy + 3, ck2); if (flush) { ellipse(g, hx - 1, hy + 4.4, 2.2, 1.6, ck); px(g, hx - 2, hy + 4, ck2); }
-  /* the nose: a goblin's, pointed, out past the face's edge */
-  rect(g, hx + 9, hy + 2, 3, 2, SK[2]); px(g, hx + 12, hy + 3, SK[1]); px(g, hx + 9, hy + 2, SK[3]); px(g, hx + 10, hy + 2, SK[4]); rect(g, hx + 9, hy + 4, 3, 1, SK[1]);
-  /* the eyes */
-  const eyes = p.eyes || 'open', brow = (eyes === 'open' || eyes === 'wide') ? (p.browUp ? 'up' : 'flat') : null;
-  eye(g, hx - 3, hy, 5, eyes, brow, true); eye(g, hx + 4, hy, 6, eyes, brow, false);
-  /* the mouth */
-  const mouth = p.mouth || 'smile', mx = hx + 5, my = hy + 6, W1 = '#fff';
-  if (mouth === 'smile') { rect(g, mx - 3, my, 7, 1, DR); px(g, mx + 4, my - 1, DR); px(g, mx - 4, my - 1, DR); rect(g, mx - 3, my + 1, 6, 1, '#b84a68'); px(g, mx + 1, my + 1, W1); px(g, mx + 1, my + 2, W1); }
-  else if (mouth === 'smirk') { rect(g, mx - 3, my + 1, 6, 1, DR); rect(g, mx + 3, my, 2, 1, DR); px(g, mx + 5, my - 1, DR); px(g, mx - 4, my + 1, DR); px(g, mx + 2, my + 2, W1); px(g, mx + 2, my + 3, W1); rect(g, mx - 3, my + 2, 5, 1, '#b84a68'); }
-  else if (mouth === 'grin') { rect(g, mx - 4, my - 1, 9, 4, DR); rect(g, mx - 3, my - 1, 7, 1, W1); rect(g, mx - 3, my, 1, 2, W1); rect(g, mx + 3, my, 1, 2, W1); rect(g, mx - 2, my + 2, 5, 1, TONG); px(g, mx - 4, my - 2, DR); px(g, mx + 5, my - 2, DR); }
-  else if (mouth === 'pout') { rect(g, mx - 2, my + 1, 5, 1, DR); rect(g, mx - 2, my + 2, 5, 1, '#b84a68'); px(g, mx - 3, my + 2, DR); px(g, mx + 3, my + 2, DR); px(g, mx - 1, my + 2, '#e888a0'); }
-  else if (mouth === 'shout') { rect(g, mx - 3, my - 1, 7, 6, DR); px(g, mx - 3, my - 1, SK[2]); px(g, mx + 3, my - 1, SK[2]); rect(g, mx - 2, my + 3, 5, 2, TONG); rect(g, mx - 2, my - 1, 1, 2, W1); rect(g, mx + 2, my - 1, 1, 2, W1); rect(g, mx - 3, my + 5, 7, 1, DR); }
-  else { rect(g, mx - 4, my - 2, 9, 7, DR); px(g, mx - 4, my - 2, SK[2]); px(g, mx + 4, my - 2, SK[2]); rect(g, mx - 3, my + 3, 7, 2, TONG); rect(g, mx - 3, my - 2, 1, 3, W1); rect(g, mx + 3, my - 2, 1, 3, W1); rect(g, mx - 4, my + 5, 9, 1, DR); }
-  /* the fringe: swept across the brow, a lit streak */
-  for (let x = hx - 10; x <= hx + 8; x++) { const bot = x < hx - 6 ? hy + 4 : Math.round(hy - 6 + 1.5 * Math.sin((x - hx) * 0.62) + (x > hx + 5 ? 1 : 0)); for (let y = hy - 10; y <= bot; y++) { const inHead = ((x - hx) / 9.8) ** 2 + ((y - hy) / 9.4) ** 2 <= 1.12; if (!inHead) continue; px(g, x, y, y === bot ? HR[0] : (y < hy - 7 && x < hx + 1) ? HR[3] : y < hy - 6 ? HR[2] : HR[1]); } }
-  for (let x = hx - 4; x < hx + 3; x++) px(g, x, hy - 9, HR[4]);
-  /* the tiara */
+    fillPoly(g, [[bx + e * 3, hy - 4 + dy], [mx - e * 1, my - 0.5], [tipx - e * 4, tipy + 1.6], [mx + e * 0.5, my + 3.5], [bx + e * 3, hy + dy]], side > 0 ? '#b8586e' : '#9a4a5e');
+    line(g, bx - e, hy - 7 + dy, mx - e * 2, my - 4, SK[4], 1); line(g, mx - e * 2, my - 4, tipx, tipy, SK[3], 1);
+    line(g, bx, hy + 3 + dy, mx + e * 1, my + 6, SK[0], 1);
+    wart(g, mx - e * 3, my + 1); }
+  /* the double chin: two jowls under the head, darker, wider than the neck that is not there */
+  blob(g, hx + 1, hy + 10.5, 8, 3.2, SKd); blob(g, hx + 1, hy + 8.5, 10.5, 3.8, SKd);
+  blob(g, hx, hy, 11.2, 9.6, SK);                                                                                                       // the big round head
+  /* the lumps: a heavy brow ridge, puffy cheeks, warts */
+  rect(g, hx - 3, hy - 6, 13, 3, SK[2]); rect(g, hx - 2, hy - 6, 11, 1, SK[3]); rect(g, hx - 3, hy - 3, 13, 1, SK[0]); px(g, hx - 4, hy - 5, SK[2]); px(g, hx + 10, hy - 5, SK[1]); px(g, hx + 10, hy - 4, SK[1]);
+  ellipse(g, hx + 7, hy + 3.5, 3.6, 2.4, SK[3]); ellipse(g, hx + 7.5, hy + 4, 2.8, 1.6, SK[2]); ellipse(g, hx - 3, hy + 4, 2.4, 1.8, SK[2]); px(g, hx - 4, hy + 3, SK[3]);
+  wart(g, hx - 7, hy + 1); wart(g, hx + 9, hy - 8); wart(g, hx + 4, hy + 11); px(g, hx + 5, hy + 10, HR[1]); wart(g, hx - 1, hy - 8);
+  /* cheeks: a sullen pink, a tantrum's red */
+  const flush = p.flush ? 1 : 0, ck = flush ? '#e8402c' : '#b86a6e', ck2 = flush ? '#ff7a58' : '#d88a8a';
+  ellipse(g, hx + 7, hy + 4.5, flush ? 3.4 : 1.8, flush ? 2.4 : 1, ck); px(g, hx + 6, hy + 3, ck2); if (flush) { ellipse(g, hx - 3, hy + 4.6, 2.4, 1.8, ck); px(g, hx - 4, hy + 4, ck2); }
+  /* the nose: a fat bulb, nostrils, a wart on the tip */
+  blob(g, hx + 12, hy + 2, 3.4, 3.2, SK); px(g, hx + 13, hy + 4, INK); px(g, hx + 11, hy + 4, INK); wart(g, hx + 11, hy - 1);
+  /* the eyes: small and beady */
+  const eyes = p.eyes || 'open';
+  eye(g, hx - 1, hy - 2, 4, eyes, true); eye(g, hx + 6, hy - 2, 5, eyes, false);
+  /* the mouth: wide, grumpy, down at the corners, crooked fangs */
+  const mouth = p.mouth || 'smile', mx = hx + 3, my = hy + 6;
+  if (mouth === 'smile' || mouth === 'smirk') {
+    rect(g, mx - 7, my, 15, 1, DR); px(g, mx - 8, my + 1, DR); px(g, mx + 8, my + 1, DR); px(g, mx - 9, my + 2, DR); px(g, mx + 9, my + 2, DR);
+    rect(g, mx - 6, my + 1, 13, 2, '#7a4a3a'); rect(g, mx - 5, my + 1, 11, 1, '#9a6a52'); px(g, mx - 6, my + 3, SK[0]); rect(g, mx - 5, my + 3, 11, 1, SK[1]);
+    fang(g, mx - 5, my + 1, 3, -1); fang(g, mx + 3, my + 1, 4, 1); if (mouth === 'smirk') { px(g, mx + 8, my, DR); px(g, mx + 9, my - 1, DR); fang(g, mx - 1, my + 1, 2, 0); } }
+  else if (mouth === 'grin') {
+    rect(g, mx - 7, my - 1, 15, 5, DR); rect(g, mx - 6, my + 2, 13, 2, TONG); for (let i = -6; i <= 6; i += 2) rect(g, mx + i, my - 1, 1, 1 + ((i * 7) & 1), IVO);
+    fang(g, mx - 6, my + 3, 4, 1); fang(g, mx + 4, my + 3, 5, -1); fang(g, mx - 1, my + 3, 2, 0); rect(g, mx - 7, my + 4, 15, 1, SK[0]); px(g, mx - 8, my, DR); px(g, mx + 8, my, DR); }
+  else if (mouth === 'pout') {
+    rect(g, mx - 6, my + 1, 13, 1, DR); px(g, mx - 7, my + 2, DR); px(g, mx + 7, my + 2, DR); rect(g, mx - 4, my + 2, 9, 2, '#9a6a52'); rect(g, mx - 4, my + 4, 9, 1, SK[0]); fang(g, mx - 4, my + 2, 2, 0); fang(g, mx + 3, my + 2, 3, 1); }
+  else if (mouth === 'shout') {
+    rect(g, mx - 7, my - 1, 15, 7, DR); rect(g, mx - 4, my + 4, 9, 2, TONG); rect(g, mx - 6, my - 1, 13, 1, IVO); for (const i of [-5, -2, 2, 5]) rect(g, mx + i, my, 1, 1 + (i & 1), IVO);
+    fang(g, mx - 6, my + 5, 3, 1); fang(g, mx + 4, my + 5, 4, -1); rect(g, mx - 7, my + 6, 15, 1, SK[0]); }
+  else {
+    rect(g, mx - 8, my - 2, 17, 9, DR); rect(g, mx - 5, my + 4, 11, 3, TONG); rect(g, mx - 7, my - 2, 15, 1, IVO); for (const i of [-6, -3, 1, 4, 6]) rect(g, mx + i, my - 1, 1, 1 + ((i * 3) & 1), IVO);
+    fang(g, mx - 7, my + 6, 3, 1); fang(g, mx + 5, my + 6, 4, -1); rect(g, mx - 8, my + 7, 17, 1, SK[0]); }
+  /* a thin fringe above the ridge, a lit streak */
+  for (let x = hx - 11; x <= hx + 9; x++) { const bot = x < hx - 7 ? hy + 3 : Math.round(hy - 8 + 1.2 * Math.sin((x - hx) * 0.6)); for (let y = hy - 11; y <= bot; y++) { const inHead = ((x - hx) / 11.2) ** 2 + ((y - hy) / 9.6) ** 2 <= 1.1; if (!inHead) continue; px(g, x, y, y === bot ? HR[0] : (y < hy - 9 && x < hx + 1) ? HR[3] : y < hy - 8 ? HR[2] : HR[1]); } }
+  for (let x = hx - 5; x < hx + 3; x++) px(g, x, hy - 10, HR[4]);
+  /* the tiara, perched on the lumps */
   const t = p.tiara || 'on';
-  if (t === 'on' || t === 'crooked') { const cr = t === 'crooked', tx = hx - 6 + (cr ? 3 : 0), ty = hy - 12 + (cr ? 2 : 0); tiara(g, tx, ty, cr); }
+  if (t === 'on' || t === 'crooked') { const cr = t === 'crooked', tx = hx - 6 + (cr ? 3 : 0), ty = hy - 14 + (cr ? 2 : 0); tiara(g, tx, ty, cr); }
 }
 function tiara(g, tx, ty, cr) {
   rect(g, tx - 1, ty + 4, 15, 3, GD[0]); rect(g, tx, ty + 4, 13, 2, GD[2]); rect(g, tx, ty + 4, 13, 1, GD[4]); rect(g, tx, ty + 6, 13, 1, GD[1]);
@@ -188,10 +201,10 @@ function tiara(g, tx, ty, cr) {
    (ALL numbers are first-pass pixels; draw() scales them by 1.4) */
 function draw(g, p) {
   const by = q(p.by), lean = q(p.lean), crouch = q(p.crouch), slump = q(p.slump), sk = q(p.skirt), air = q(p.air);
-  const waistY = G - 29 + crouch + by, shY = waistY - 11 - slump, hemY = p.sit ? G - 3 : Math.min(G - 4, G - 6 + by + Math.min(2, Math.round(crouch * 0.25)));
+  const waistY = G - 27 + crouch + by, shY = waistY - 10 - slump, hemY = p.sit ? G - 3 : Math.min(G - 4, G - 6 + by + Math.min(2, Math.round(crouch * 0.25)));
   const bcx = y => Math.round(CX + lean * 0.8 * Math.max(0, Math.min(1, (waistY - y) / (waistY - shY))));
-  const hx = CX + lean + q(p.tilt), hy = shY - 8 + (p.slump ? slump : 0) - air;
-  const bsh = [bcx(shY) - 8, shY + 4], fsh = [bcx(shY) + 8, shY + 4];
+  const hx = CX + lean + q(p.tilt), hy = shY - 3 + (p.slump ? slump : 0) - air;
+  const bsh = [bcx(shY) - 11, shY + 3], fsh = [bcx(shY) + 11, shY + 3];
   const ba = p.ba || [-5, 5], fa = p.fa || [5, 6];
   /* back arm and its fan, behind everything */
   const BA = arm(g, bsh[0], bsh[1], bsh[0] + q(ba[0]), bsh[1] + q(ba[1]));
@@ -199,17 +212,16 @@ function draw(g, p) {
   drawArm(g, BA, true);
   if (p.fan === 0) fanClosedOver(g, BA.hx, BA.hy, p.fanDir || 1);
   /* the sash's tail, hair, the gown, the slippers, the bodice */
-  const hw = 17 + q(p.flare) + (crouch > 6 ? 2 : 0);
+  const hw = 21 + q(p.flare) + (crouch > 6 ? 2 : 0);
   if (!p.sit) skirt(g, { cx: Math.round(CX + lean * 0.3), waistY: waistY - 1, hemY, hw, sk, ph: p.ph || 0, tilt: q(p.hemTilt) });
   else { sitMound(g, hemY, hw, waistY); }
-  if (!p.sit) { const [la, lb] = p.legs || [0, 0]; for (const [off, front] of [[lb, 0], [la, 1]]) { const fx = CX + q(off) + (front ? 4 : -4), lift = front ? q(p.lift) : q(p.liftB), fy = G - 1 - lift, top = hemY - 1;
+  if (!p.sit) { const [la, lb] = p.legs || [0, 0]; for (const [off, front] of [[lb, 0], [la, 1]]) { const fx = CX + q(off) + (front ? 5 : -5), lift = front ? q(p.lift) : q(p.liftB), fy = G - 1 - lift, top = hemY - 1;
       if (lift > 1) tube(g, fx, top, fx + 1, fy - 3, 4, GL); else { rect(g, fx - 1, hemY + 1, 3, Math.max(0, G - 3 - hemY - 1), SK[1]); }
       slipper(g, fx, fy, front); } }
-  for (let y = waistY - 3; y <= waistY + 2; y++) for (let x = bcx(waistY) - 6; x <= bcx(waistY) + 6; x++) { if (y >= waistY - 1 && y <= waistY) px(g, x, y, PU[x < bcx(waistY) - 2 ? 3 : x > bcx(waistY) + 2 ? 1 : 2]); }   // (sash is drawn with the bodice)
-  const tailx = bcx(waistY) - 6;                                                                                                          // the purple sash's tail
-  tube(g, tailx, waistY, tailx - 4 - Math.round(sk * 0.3), waistY + 9, 3, PU); px(g, tailx - 4 - Math.round(sk * 0.3), waistY + 10, PU[0]); px(g, tailx - 3 - Math.round(sk * 0.3), waistY + 10, PU[1]);
+  const tailx = bcx(waistY) - 12;                                                                                                          // the purple sash's tail
+  tube(g, tailx, waistY + 6, tailx - 4 - Math.round(sk * 0.3), waistY + 14, 3, PU); px(g, tailx - 4 - Math.round(sk * 0.3), waistY + 15, PU[0]); px(g, tailx - 3 - Math.round(sk * 0.3), waistY + 15, PU[1]);
   bodice(g, bcx, waistY, shY, hy);
-  if (p.purse) purse(g, bcx(waistY) - 11, waistY + 4, p.purse);
+  if (p.purse) purse(g, bcx(waistY) - 17, waistY + 6, p.purse);
   /* the front sleeve, the head, then the glove, the blade, the bell, the tiara in hand */
   const FA = arm(g, fsh[0], fsh[1], fsh[0] + q(fa[0]), fsh[1] + q(fa[1]));
   drawArm(g, FA, false, 1);
@@ -223,15 +235,19 @@ function draw(g, p) {
 }
 
 function slipper(g, x, y, front) {
-  rect(g, x - 4, y - 3, 9, 4, INK2); rect(g, x - 3, y - 3, 8, 3, PK[front ? 3 : 2]); rect(g, x - 3, y - 3, 8, 1, PK[4]); rect(g, x - 3, y - 1, 8, 1, PK[1]); rect(g, x - 3, y, 8, 1, GD[1]); px(g, x + 4, y - 2, GD[3]); px(g, x + 5, y - 2, GD[2]); px(g, x, y - 2, GD[3]);
+  rect(g, x - 5, y - 4, 12, 5, INK2); rect(g, x - 4, y - 4, 10, 4, PK[front ? 3 : 2]); rect(g, x - 4, y - 4, 10, 1, PK[4]); rect(g, x - 4, y - 2, 10, 1, PK[1]); rect(g, x - 4, y - 1, 10, 1, GD[1]); px(g, x + 5, y - 3, GD[3]); px(g, x + 6, y - 3, GD[2]); px(g, x, y - 3, GD[3]); px(g, x + 2, y - 3, GD[3]);
 }
-function bodice(g, bcx, waistY, shY, hy) {
-  for (let y = shY - 1; y <= waistY - 2; y++) { const c = bcx(y), k = (waistY - y) / (waistY - shY), half = Math.round(5.4 + k * 3);
-    for (let x = c - half; x <= c + half; x++) { let col = x < c - 2 ? PK[3] : x < c + 2 ? PK[2] : x < c + half - 1 ? PK[1] : PK[0]; if (x === c - half) col = PK[4]; px(g, x, y, col); }
-    if (((y - shY) & 1) === 0 && y > shY + 2) { px(g, c, y, GD[2]); px(g, c - 1, y + 1, GD[1]); px(g, c + 1, y + 1, GD[1]); } }
-  { const c = bcx(shY + 1); rect(g, c - 4, shY - 1, 9, 3, SK[2]); rect(g, c - 4, shY - 1, 9, 1, SK[3]); rect(g, c - 3, shY + 2, 7, 1, SK[1]); rect(g, c - 5, shY + 2, 11, 1, GD[2]); rect(g, c - 5, shY + 2, 4, 1, GD[4]); ruby(g, c, shY + 5, 1); void hy; }   // the neckline's gold trim, the brooch
-  const c = bcx(waistY), c0 = c - 6;
-  rect(g, c0 - 1, waistY - 3, 14, 4, INK2); rect(g, c0, waistY - 2, 13, 3, PU[2]); rect(g, c0, waistY - 2, 13, 1, PU[4]); rect(g, c0, waistY, 13, 1, PU[1]); rect(g, c + 1, waistY - 2, 4, 3, GD[0]); rect(g, c + 2, waistY - 2, 2, 3, GD[3]); px(g, c + 2, waistY - 2, GD[4]);   // the Queen's purple sash and a gold clasp
+/* the bulk: a round chest and a big round belly in a tight pink gown (strain wrinkles, a belly roll between them), the Queen's purple sash under the belly */
+function bodice(g, bcx, waistY, shY) {
+  const cy = shY + 3, by0 = waistY + 1;
+  blob(g, bcx(cy), cy, 12.5, 7.5, PK);                                                                                                  // the chest, shoulders and all
+  blob(g, bcx(by0), by0, 16, 10.5, PK);                                                                                                   // the belly, drawn over the chest: its outline is the roll
+  const c = bcx(by0);
+  for (let y = by0 - 8; y <= by0 + 8; y += 3) { const half = 16 * Math.sqrt(Math.max(0, 1 - ((y - by0) / 10.5) ** 2)); if (half > 5) { px(g, Math.round(c - half * 0.55), y, PK[0]); px(g, Math.round(c - half * 0.55) + 1, y + 1, PK[0]); px(g, Math.round(c + half * 0.5), y, PK[4]); } }   // strain wrinkles
+  for (const y of [by0 - 4, by0, by0 + 4]) { px(g, c + 2, y, GD[3]); px(g, c + 3, y, GD[2]); px(g, c + 2, y + 1, GD[1]); }   // gold buttons straining
+  const sy = by0 + 6; for (let y = sy; y < sy + 3; y++) { const half = Math.round(16 * Math.sqrt(Math.max(0, 1 - ((y - by0) / 10.5) ** 2))); rect(g, c - half + 1, y, half * 2 - 1, 1, y === sy ? PU[3] : y === sy + 1 ? PU[2] : PU[1]); }
+  rect(g, c + 3, sy - 1, 5, 5, GD[0]); rect(g, c + 4, sy, 3, 3, GD[2]); px(g, c + 4, sy, GD[4]);                                           // a gold clasp
+  ruby(g, bcx(cy) + 1, cy + 3, 1);                                                                                                       // the brooch under the chins
 }
 function sitMound(g, hemY, hw, waistY) {
   for (let y = waistY + 2; y <= hemY; y++) { const k = (y - waistY - 2) / Math.max(1, hemY - waistY - 2), half = Math.round(7 + (hw - 7) * Math.pow(k, 0.55)), c = CX;
