@@ -1,0 +1,47 @@
+name: Core backdrop recorder native exactness
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/core-backdrop-recorder-native-nov08/manifest.json
+      - tools/core-backdrop-recorder-native-nov08/cases.mjs
+      - tools/core-backdrop-recorder-native-nov08/component.mjs
+      - tools/core-backdrop-recorder-native-nov08/component-page.mjs
+      - .github/workflows/core-backdrop-recorder-native-nov08.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [arguments-0, arguments-8, arguments-16, arguments-24, arguments-32, gpu-owner, before-module-shard-0, before-module-shard-1, before-module-shard-2, after-module-shard-0, after-module-shard-1, after-module-shard-2, factory-chars-shard-0, factory-chars-shard-1, factory-chars-shard-2, factory-chars-shard-3, factory-chars-shard-4, factory-chars-shard-5, factory-chars-shard-6, factory-chars-shard-7, factory-chars-shard-8, factory-chars-shard-9, factory-chars-shard-10, factory-chars-shard-11, factory-chars-shard-12, factory-chars-shard-13, factory-strawking, factory-prince, factory-reef, factory-city, factory-pirates, factory-masthead, factory-tidebound, factory-frost, factory-foes2, factory-soldiers, factory-shore, factory-drowned-knights, factory-foes1, factory-monastery, factory-sea_wildlife, factory-canal_foes_art, factory-gargoyle-whelp, factory-hunt, factory-scalder, factory-art-shard-0, factory-art-shard-1, factory-art-shard-2, factory-art-shard-3, factory-art-shard-4, factory-art-shard-5, factory-art-shard-6, factory-art-shard-7, factory-art-shard-8, factory-art-shard-9, factory-art-shard-10, factory-art-shard-11, factory-art-shard-12, factory-art-shard-13, factory-lw_props-shard-0, factory-lw_props-shard-1, factory-reef_props-shard-0, factory-reef_props-shard-1, factory-reef_props-shard-2, whole-0, whole-1, whole-2, whole-3, whole-4, whole-5, whole-6, whole-7, whole-8, whole-9, whole-10, whole-11, whole-12, whole-13, whole-14, whole-15, whole-16, whole-17, whole-18, whole-19, whole-20, whole-21, whole-22, whole-23, whole-24, whole-25, whole-26, whole-27, whole-28, whole-29, whole-30, whole-31, whole-32, recorder-additional, recorder-private-entry, core-backdrop-0, core-backdrop-3, core-backdrop-6, core-backdrop-9, core-backdrop-12, core-backdrop-15, core-backdrop-18, core-backdrop-21, core-backdrop-24, core-backdrop-27]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Full original native graph snapshot, original scopes and observer captures
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/core-backdrop-recorder-native-nov08/component.mjs
+        env:
+          PRIVATE_NATIVE_RECORDER_GROUP: ${{ matrix.group }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/core-backdrop-recorder-native-${{ matrix.group }}-nov07
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: core-backdrop-recorder-native-${{ matrix.group }}-nov07
+          path: |
+            ${{ runner.temp }}/core-backdrop-recorder-native-${{ matrix.group }}-nov07/
+            ${{ runner.temp }}/skyroad-spans-strict-profile.jsonl
+          if-no-files-found: error
