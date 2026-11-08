@@ -32,7 +32,7 @@ try {
       frameLoop(60*5,()=>{BK.keys.block=true;});BK.keys.block=false;res.crown[h].plainStuns=BK.gqHands().read().stuns;
     }
     /* the flee */
-    load('knight');{const q=wake();q.hp=2;BK.P.hp=Math.round(BK.P.maxHp*0.3);BK.P.flasks=0;BK.hurt?BK.hurt(q,50):null;BK.sim(60*2);res.misc.flee={stage:BK.gqStage(),hp:BK.P.hp/BK.P.maxHp,flasks:BK.P.flasks,active:BK.bossActive};}
+    load('knight');{const q=wake();q.hp=2;BK.P.hp=Math.round(BK.P.maxHp*0.3);BK.P.flasks=0;{const hu=BK.hurt||(BK.env&&BK.env().hurt);if(hu)hu(q,50,BK.P.x);}   /* (claude/hcfix) BK.hurt is BK.env().hurt */ let hpMax=0;for(let i=0;i<120;i++){BK.sim(1);hpMax=Math.max(hpMax,BK.P.hp/BK.P.maxHp);}   /* (claude/hcfix) the best hp in the 2 s: the escape's burning floor ticks right after the heal */ res.misc.flee={stage:BK.gqStage(),hp:hpMax,flasks:BK.P.flasks,active:BK.bossActive};}
     return res;})()`);
   out.errors = pg.errors.slice(0, 3);
 } finally { pg.close(); }
