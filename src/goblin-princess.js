@@ -20,13 +20,13 @@ import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from '.
 export const GP = {
   hp: 1500, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
   resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.12, endAt: 0.1,
-  gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
+  gap: [0.38, 0.3],                                                         /* between her moves; phase two x0.8 */
   lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 28, reach: 30, stagger: 1.2 },
   flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 12, reach: 30, preen: 1.6 },
-  trinket: { tell: 0.5, n: [2, 3], dmg: 8, life: 1.5, fly: 0.7, g: 520, r: 4 },
+  trinket: { tell: 0.5, n: [2, 3], dmg: 6, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 5, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
-  guards: { at: [0.85, 0.6, 0.35], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
+  guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
   bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: 16, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: 18, speed: 220 },
