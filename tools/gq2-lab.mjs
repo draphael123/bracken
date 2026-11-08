@@ -70,7 +70,7 @@ console.log('== CLOCKS (src/lab-gqueen.js)');
   const row = gqLabRow(S, w.e, f, spf);
   ok(row.stage === 'roof' && row.stuns === 2 && row.skip === 'stall', 'the row: stage, stuns, skip (' + JSON.stringify(row) + ')');
   ok(Math.abs(row.p1Secs - 10) < 0.2 && Math.abs(row.escSecs - GQ_ESC_STALL) < 2 && row.p2Secs > 5 && Math.abs(row.p1Secs + GQ3.flee.tell + row.escSecs + row.p2Secs - f * spf) < 0.3, 'the row adds up to the whole row (her flee tell between): p1 ' + row.p1Secs + ' s, escape ' + row.escSecs + ' s, p2 ' + row.p2Secs + ' s');
-  ok(row.barLeft === 25, 'barLeft is the CURRENT bar (P2: 400 of ' + GQ3.hp2 + ' = ' + row.barLeft + '%)');
+  ok(row.barLeft === Math.round(100 * 400 / GQ3.hp2), 'barLeft is the CURRENT bar (P2: 400 of ' + GQ3.hp2 + ' = ' + row.barLeft + '%)');
   w.e.alive = false; ok(gqLabRow(S, w.e, f, spf).stage === 'won' && gqLabRow(S, w.e, f, spf).barLeft === 0, 'a dead queen reads won, bar 0');
 }
 { const w = make(), S = gqLabState(); let f = 0;
