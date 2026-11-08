@@ -167,7 +167,7 @@ export function drawTowerTops(g, cx, cy, VW, time, lit) {
     const pole = (a, col, flip) => { const x = X(a) + (flip ? 11 : 3), w = Math.sin(time * 2.6 + a) * 1.5; R(g, x, top - 22, 2, 21, '#8a919c'); R(g, x, top - 22, 2, 1, '#c9a040'); R(g, x - 1, top - 24, 4, 2, '#c9a040');
       for (let i = 0; i < 9; i++) R(g, x + 2 + i, top - 20 + Math.round(w * i / 9) + (i >> 2), 1, 7 - (i >> 1), i & 1 ? col : col);   // the pennant, tapering
       R(g, x + 2, top - 20, 6, 1, '#e0b040'); };
-    pole(T.x0, '#5a2a7a', false); pole(T.x1, '#2c6a2c', true);
+    pole(T.x0, '#9a4ad0', false); pole(T.x1, '#4aa84a', true);
     const bx = X(T.x0 + 2) + 8;                                                                                   // the signal brazier in the crenel
     R(g, bx - 6, floor - 3, 3, 3, '#34343f'); R(g, bx + 4, floor - 3, 3, 3, '#34343f'); R(g, bx - 1, floor - 3, 3, 3, '#34343f');
     R(g, bx - 7, floor - 12, 15, 3, '#3a3a48'); R(g, bx - 7, floor - 12, 15, 1, '#8a8aa0'); R(g, bx - 6, floor - 9, 13, 6, '#22222c'); for (const dx of [-5, -1, 3, 6]) R(g, bx + dx, floor - 9, 1, 6, '#5a5a6c');
@@ -263,7 +263,33 @@ const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = can
       else { R(g, x - 2, ry + 6, 11, 9, '#a85a2c'); R(g, x - 2, ry + 6, 11, 2, '#e08a4c'); R(g, x - 3, ry + 5, 13, 1, '#6a3414'); R(g, x - 1, ry + 14, 9, 2, '#6a3414'); px(g, x, ry + 9, '#f0b070'); px(g, x + 1, ry + 9, '#f0b070'); } } }
   R(g, sv - 58, h - 90, 3, 20, '#34343f'); R(g, sv - 14, h - 90, 3, 20, '#34343f'); R(g, sv - 58, h - 92, 47, 2, '#34343f');
   return c; });
+// THE BELFRY CHAMBER (her room, the 'hchall' interior at 624): a bell-chamber of dark ashlar with a corbelled vault, tall louvred openings onto the snow-night, the vault pulley-holes the ropes run through, and
+// her touches - rose-and-gold drapes with the tiara, a heap of gilt cushions and a little tea table by her guardroom door, a gem-box on a stone shelf.
+const bakeBelfry = (w, h) => once('belfry' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
+  ashlar(g, w, h, '#262833', '#383b4c', '#12131a', 624);
+  for (let y = 0; y < 14; y++) R(g, 0, y, w, 1, y < 2 ? S.f : y < 7 ? S.d : S.c); R(g, 0, 14, w, 2, S.mor);
+  for (let x = 6; x < w - 8; x += 20) { R(g, x, 16, 9, 5, S.c); R(g, x + 1, 21, 7, 3, S.b); R(g, x + 2, 24, 5, 2, S.a); }                                  // the vault's corbels
+  R(g, 0, h - 26, w, 26, '#1d1e28'); R(g, 0, h - 26, w, 2, S.d); R(g, 0, h - 25, w, 1, S.f); for (let x = 0; x < w; x += 24) { R(g, x, h - 24, 1, 24, S.mor); R(g, x + 3, h - 22, 18, 16, '#232532'); R(g, x + 3, h - 22, 18, 1, S.b); }
+  const n = 3, gap = Math.floor(w / n);
+  for (let i = 0; i < n; i++) { const wx = i * gap + (gap >> 1) - 14, wy = 36, ww = 28, wh = 84;                                                    // the tall louvred openings
+    R(g, wx - 3, wy - 3, ww + 6, wh + 4, S.dk); R(g, wx, wy, ww, wh, '#0a0f22');
+    for (let k = 0; k < ww / 2; k++) { const d = Math.round((ww / 2 - k) * 0.7); R(g, wx + k, wy, 1, d, S.dk); R(g, wx + ww - 1 - k, wy, 1, d, S.dk); }
+    for (let yy = wy + 18; yy < wy + wh; yy += 6) { R(g, wx, yy, ww, 2, '#16161f'); R(g, wx, yy, ww, 1, S.c); }                                      // the louvre boards (stone-grey slats: a bell-chamber's)
+    R(g, wx - 3, wy - 3, 1, wh + 4, S.e); R(g, wx + ww + 2, wy - 3, 1, wh + 4, S.a); R(g, wx - 4, wy + wh + 1, ww + 8, 3, S.f);
+    for (let k = 0; k < 5; k++) px(g, wx + 4 + (k * 7) % (ww - 8), wy + 8 + k * 3, '#9fb4e8'); }
+  for (let i = 0; i <= n; i++) { const px0 = i * gap - 4; if (px0 > 0 && px0 < w - 8) { R(g, px0, 16, 8, h - 42, S.e); R(g, px0, 16, 1, h - 42, S.g); R(g, px0 + 7, 16, 1, h - 42, S.a); R(g, px0 - 2, 16, 12, 3, S.f); R(g, px0 - 2, h - 30, 12, 4, S.d); } }   // pilasters between the openings
+  for (const cx2 of [Math.round(w * 0.12), Math.round(w * 0.5), Math.round(w * 0.86)]) { R(g, cx2 - 4, 16, 9, 5, S.dk); R(g, cx2 - 2, 18, 5, 3, '#06060a'); }   // the pulley holes in the vault
+  princessBanner(g, Math.round(w * 0.30), 20, 44); princessBanner(g, Math.round(w * 0.70), 20, 44);
+  const cy2 = h - 26;                                                                                                                                 // her cushions and tea table, by the door side (east)
+  const cu = (x, y, col, hi) => { R(g, x, y - 5, 14, 5, col); R(g, x + 1, y - 6, 12, 1, hi); R(g, x, y - 5, 14, 1, hi); R(g, x + 6, y - 6, 2, 1, '#e0b040'); px(g, x - 1, y - 1, col); px(g, x + 14, y - 1, col); R(g, x + 1, y - 1, 12, 1, '#6a1c44'); };
+  cu(68, cy2, '#c8508a', '#e8a0c8'); cu(84, cy2, '#7a3aa0', '#a870d0'); cu(76, cy2 - 5, '#e0b040', '#fff6c8');
+  R(g, 108, cy2 - 12, 18, 2, '#e8e0f0'); R(g, 108, cy2 - 12, 18, 1, '#ffffff'); R(g, 112, cy2 - 10, 2, 10, '#c9a040'); R(g, 120, cy2 - 10, 2, 10, '#c9a040'); R(g, 110, cy2 - 1, 14, 1, '#a8841c');
+  R(g, 111, cy2 - 16, 4, 4, '#f0d0e8'); R(g, 111, cy2 - 16, 4, 1, '#ffffff'); R(g, 116, cy2 - 15, 3, 3, '#e0b040'); R(g, 120, cy2 - 17, 5, 5, '#c9d1dc'); px(g, 122, cy2 - 18, '#ffffff');   // a teacup, a gilt cup, a silver pot
+  R(g, 10, cy2 - 22, 24, 3, S.f); R(g, 10, cy2 - 22, 24, 1, S.g); R(g, 12, cy2 - 19, 3, 6, S.c); R(g, 29, cy2 - 19, 3, 6, S.c);                           // a stone shelf with her gem-box (west)
+  R(g, 16, cy2 - 29, 12, 7, '#7a3aa0'); R(g, 16, cy2 - 29, 12, 2, '#e0b040'); R(g, 21, cy2 - 31, 2, 3, '#e0b040'); for (let k = 0; k < 3; k++) px(g, 18 + k * 3, cy2 - 26, ['#ff4a6a', '#4ad0ff', '#7aff8a'][k]);
+  return c; });
 export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
+  if (st === 'hchall' && tx0 === K.BT[0] + 1) { g.drawImage(bakeBelfry(w, h), sx, sy); const k = 0.5 + 0.5 * Math.sin(time * 1.7); g.globalAlpha = 0.05 + 0.02 * k; g.fillStyle = '#9fb4ff'; g.fillRect(sx, sy + 30, w, h - 60); g.globalAlpha = 1; return true; }
   if (st !== 'royal') return false;
   if (tx0 === K.CAPT) { g.drawImage(bakeCapt(w, h), sx, sy); const k = 0.5 + 0.5 * Math.sin(time * 2.3); g.globalAlpha = 0.06 + 0.02 * k; g.fillStyle = '#ffb45c'; g.fillRect(sx, sy + h - 50, w, 50); g.globalAlpha = 1; return true; }
   if (tx0 === K.BANQ) { g.drawImage(bakeBanq(w, h), sx, sy);

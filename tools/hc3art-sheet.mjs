@@ -41,6 +41,7 @@ parts.push(['tower top cold / lit', cell(360, 130, '#0c1226', g => { const tile 
     HA.drawTowerTops(g, cx, 0, 180, 0.4, lit ? new Set(['tower1']) : null); g.restore(); } })]);
 parts.push(['broken stretch', cell(300, 190, '#0c1226', g => { const cx = 570 * 16, cy = 22 * 16 - 150; HA.drawFar(g, cx, cy, 300, 190, 0); g.fillStyle = '#363949'; g.fillRect(0, 150, 90, 40); g.fillRect(200, 150, 100, 40); HA.drawParapet(g, cx, cy, 300, 0); HA.drawGapRubble(g, cx, cy, 0); })]);
 parts.push(['bell tower top', cell(420, 130, '#0c1226', g => { const cx = 622 * 16 + 8, cy = 0; g.fillStyle = '#2a2d38'; g.fillRect(8, 32, 400, 98); HA.drawBellTowerTop(g, cx, cy, 420, 0.3); })]);
+parts.push(['belfry chamber (her room)', cell(384, 240, '#000', g => { HA.paintRoom(g, 'hchall', 0, 0, 384, 240, HA.K.BT[0] + 1, 7, 0.3); HA.drawGuardDoor(g, 312, 240, 'shut'); HA.drawWinchBox(g, 280, 240, 312, 0, 1, 3, false, 0); HA.drawBellAt(g, 200, 50, 0, 0, 0.3); HA.drawRope(g, 56, 18, 240, 0, 0); HA.drawHatch(g, 248, 18, 0, 0); })]);
 parts.push(['captains hall', cell(480, 160, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 160, HA.K.CAPT, 10, 0); })]);
 parts.push(['banquet hall', cell(480, 256, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 256, HA.K.BANQ, 10, 0); })]);
 for (const [n, c] of parts) { if (!sig(c).k) bad.push(n + ': nothing drawn'); }
