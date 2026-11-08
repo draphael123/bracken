@@ -209,5 +209,6 @@ export function makeLesson(api) {
     lines.forEach((ln, i) => api.text(ln, x + w / 2, y + 14 + i * 8, '#fff6e0', 'center', 6));
     g.globalAlpha = 1;
   }
-  return { st, on, tick, reset, dummyHit, event, blow, innCard, drawStep, drawCard, test, finish };
+  const cardUp = () => !!st.card, dismissCard = () => { const was = !!st.card; st.card = null; return was; };   /* (claude/polish151) the inn card can be closed by key */
+  return { st, on, tick, reset, dummyHit, event, blow, innCard, cardUp, dismissCard, drawStep, drawCard, test, finish };
 }

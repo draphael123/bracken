@@ -33209,6 +33209,7 @@ function update(dt) {
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
   if (!updateWarp(dt)) { clearPresses(); return; }
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
+  if ((pausePress || (dodgePress && padLast)) && L && L.tavern && OPN.cardUp()) { OPN.dismissCard(); pausePress = false; dodgePress = false; SFX.menuClose(); }   /* (claude/polish151, first5 audit) the inn's welcome card closes on the back keys (ESC / P / pad START and B, the store's own), not only its 9 s timeout; the key is spent so the pause menu does not open under it */
   if (pausePress && DUELO && DUELO.rosterOpen()) { DUELO.rosterEsc(); pausePress = false; }   /* (claude/duelroster) ESC on the pick screen is BACK, not the pause menu */
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
