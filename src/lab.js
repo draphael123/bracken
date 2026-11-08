@@ -1,4 +1,4 @@
-import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js';   /* (claude/gorm2) KING GORM 2 played: his hall's ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
+import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js'; import { gqLabState, gqLabStep, gqLabRow } from './lab-gqueen.js';   /* (claude/gq2) THE GOBLIN QUEEN 3's three stages in one row */   /* (claude/gorm2) KING GORM 2 played: his hall's ropes, his glade's hangings, the escape skipped to his glade */ import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
 import { AMBUSH_TARGET } from './ambush.js';
 import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
@@ -576,7 +576,7 @@ export async function fightLab(BK, opts = {}) {
    committed, so a bot that treated him as open swung at his plate for the whole fight. */
 const OPEN = (b, BK) => { const g = BK && BK.bossOpen ? BK.bossOpen(b) : null; return g === null || g === undefined ? OPEN0(b) : g; };
 const DK_FREE = new Set(['rest', 'stuck', 'wrench', 'reel', 'open', 'held', 'pinned', 'down', 'stagger', 'staggered', 'winded', 'skid', 'downed', 'rise', 'catch', 'idle']);   /* (claude/herobots) modes a Death Knight may begin his slow swing in */
-const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? (b.open > 0 || ['cutRec', 'thrustRec', 'grabMiss', 'brandRec'].includes(b.mode)) : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || (b.phase === 2 && !!b.plateOff)) : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
+const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open > 0 : b.t === 'troll' && b.hill ? b.mode === 'pinned' : b.t === 'closedhelm' ? (b.open > 0 || ['cutRec', 'thrustRec', 'grabMiss', 'brandRec'].includes(b.mode)) : b.t === 'king' ? (b.mode === 'held' || b.open > 0) : b.t === 'gqueen' ? (b.mode === 'pinned' || b.mode === 'stunned' || b.stage === 'roof') : b.t === 'roc' ? (b.mode === 'stuck' || b.mode === 'skid' || b.mode === 'downed') : true;
 /* THE RED MARKS, from tools/tells.mjs (scratchpad hardtells.mjs writes this line): a tell no shield turns is dodged, never guarded */
 export const HARD_TELLS = new Set(["lance|charge","lance|sweepTell","troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
@@ -770,6 +770,65 @@ function rollWhenDue(BK, press0) {
   if (winding && left > rollLate(e)) return;
   P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; if (callerRollBad(BK)) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
 }
+/* (claude/gqueen3) THE GOBLIN QUEEN 3's HANDS: a BUILT bot must PARRY her crown and her shards (a parry is her main opening). BK.gqShots() -> [{id, x, y, vx, vy, kind: 'crown' | 'rock' | 'storm', home}], BK.gqStage() -> 'hall' | 'escape' | 'roof'.
+   The time to impact is read from the shot; a hero's own beat then decides the key (the same shapes as the other parries: a SHIELD hero releases C and raises it in the last GQ_RAISE s - humanGuard; a DEFLECT hero taps it
+   GQ_TAP s out, respecting BUSY_C; the pyro taps the ward EMBER_LEAD s out; the pirate taps C). A human tries LABP.parryTry (start 0.7) of the shots, decided ONCE per shot; the rest are ducked (the crown) or rolled (a shard). */
+let gqf = null;
+export const GQ_RAISE = 0.06, GQ_TAP = 0.08, GQ_PIRATE = 0.06;
+export function parryAt(BK, h, tti) {
+  const P = BK.P, k = BK.keys;
+  if (SHIELDED(h)) { k.block = tti <= GQ_RAISE; return true; }
+  if (DEFLECTS(h)) { k.block = tti <= GQ_TAP && BUSY_C(h, P) <= 0.001 && !P.cWas; return true; }
+  if (h === 'pyro') { k.block = emberReady(BK, h) && tti <= EMBER_LEAD && !P.cWas; return true; }
+  if (h === 'pirate') { k.block = tti <= GQ_PIRATE && !P.cWas; return true; }
+  return false;
+}
+export function parryShot(BK, h, q, force) {   /* force: the page tool (tools/gqueen3-page.mjs) always tries */
+  const P = BK.P, k = BK.keys; if (!q || q.home || !P || P.dead) return false;
+  const sp = Math.hypot(q.vx || 0, q.vy || 0); if (sp < 1) return false;
+  const dx = P.x - q.x, dy = (P.y - 9) - q.y; if ((q.vx || 0) * dx <= 0) return false;   /* flying away from the hands */
+  const tti = (Math.hypot(dx, dy) - 8) / sp;
+  if (q.id !== undefined && P.labGqId !== q.id) { P.labGqId = q.id; P.labGqTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); }
+  if (!force && !P.labGqTry) return false;
+  P.face = Math.sign(q.x - P.x) || P.face; k.left = k.right = false;
+  return parryAt(BK, h, tti);
+}
+/* the escape up her burning hall: the table's route (L.gqEscape.route, tile stand-spots), a jump whenever the next spot is higher or the tile ahead is air; the portal is the last spot */
+function gqEscapeBot(BK, P, k) {
+  const E = BK.L && BK.L.gqEscape; if (!E) return null;
+  let i = P.labGqWp || 0; const R = E.route.concat([[E.portal.x, E.portal.y]]);
+  while (i < R.length - 1 && Math.abs(P.x - (R[i][0] * 16 + 8)) < 12 && Math.abs(P.y - (R[i][1] + 1) * 16) < 16) i++;
+  P.labGqWp = i; const wx = R[i][0] * 16 + 8, wy = (R[i][1] + 1) * 16, dir = Math.sign(wx - P.x) || 1;
+  const aheadAir = BK.L.grid[Math.floor((P.y + 2) / 16) * BK.L.W + Math.floor((P.x + dir * 12) / 16)] === 0;
+  if (P.ground && !(P.labJump > 0) && (wy < P.y - 6 || aheadAir) && Math.abs(P.x - wx) < 70) { BK.press('jump'); P.labJump = 10; }
+  return { goal: wx, strike: false };
+}
+/* her P1 hall and her tower top, as a player reads them. Returns { goal, strike } to take the frame, or null (the rest of the chain: her quake's jump, the open branch, the bell, the hunt) */
+function gqueenReact(BK, boss, P, k, A, h) {
+  const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
+  if (stage === 'escape') return gqEscapeBot(BK, P, k);
+  let best = null, bt = 9;
+  for (const q of shots) { if (q.home) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
+  if (best && bt < 0.6) {
+    if (parryShot(BK, h, best)) return { goal: null, strike: false };
+    if (best.kind === 'crown') k.down = bt < 0.5; else if (bt < 0.22 && P.ground) BK.press('dodge');   /* not trying this one: the crown is ducked, a shard rolled */
+    return { goal: null, strike: false };
+  }
+  const R0 = rd && rd.roof;
+  if (stage === 'roof' && R0) {
+    const m = boss.mode;
+    if (m === 'lashHighTell') { if (boss.modeT < 0.3) k.down = true; return { goal: null, strike: false }; }
+    if (m === 'lashLowTell') { if (boss.modeT < 0.2 && P.ground) { BK.press('jump'); P.labJump = 12; } return { goal: null, strike: false }; }
+    if (m === 'ambushTell' && R0.ambushX !== undefined) { P.face = Math.sign(R0.ambushX - P.x) || P.face; k.left = k.right = false; parryAt(BK, h, boss.modeT); return { goal: null, strike: false }; }
+    if (R0.geysers && R0.geysers.some(g => Math.abs(g.x - P.x) < 16 && g.at - BK.time < 0.25 && g.at - BK.time > -0.1)) { if (P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 12; } return { goal: null, strike: false }; }
+  }
+  if (stage === 'hall' && !BK.bossOpen(boss) && boss.mode !== 'ringTell') {
+    /* THE HUNT: stand 80-160 px off her, facing her, and let the crown come (parried it stuns her; the open branch then closes and cuts) */
+    const toward = Math.sign(boss.x - P.x) || 1, gap = Math.abs(boss.x - P.x);
+    if (boss.mode === 'crownToss' || boss.mode === 'crownTossTell' || boss.mode === 'portalTell' || boss.mode === 'portalCast') { P.face = toward; return { goal: gap > 170 ? boss.x - toward * 120 : gap < 80 ? boss.x - toward * 120 : null, strike: false }; }
+  }
+  return null;
+}
 /* (claude/flasklever) THE HUMAN PARRY. A SHIELD hero's guard held from the first frame of a tell is a block, never a parry (the perfect guard is the first 0.11 s of a raised
    guard). A player parries by raising it as the blow lands: on a yellow tell he TRIES (LABP.parryTry of them) and holds the guard back until the tell's last parryLead s -
    as READ (the eyes' modeT carries a reader's error, so some land on the beat and some a hair late or early). Run with the eyes' state on, just before the world steps.
@@ -921,7 +980,9 @@ async function runbossLab(BK, opts) {
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
        on its BODY - drawn, moving at you - from the frame it moves, not only once the running pose itself has been seen a reaction late */
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
+    const GQS = boss.t === 'gqueen' ? gqLabState() : null, gqSpf = (BK.SET.speed || 1) / 60;   /* (claude/gq2) her hall, the escape, the tower top: the stage clocks + stuns (src/lab-gqueen.js) */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
+      if (GQS) gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf);   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
       if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
@@ -2311,8 +2372,8 @@ async function runbossLab(BK, opts) {
          and strike the winch as he runs under it - a quarter-second ahead of him, as a human leads a moving thing. Nothing is dropped for the bot */
       const lgate = boss.t === 'lance' ? lanceDuty(BK, boss, P, A, open) : null;   /* (claude/lance4) a tower bell, a rope post, the great bell */
       /* HIGHCROWN's hall bell (claude/bosswave2): rung when she stands under its grate and the bell is in reach - a human glancing up at it */
-      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
-      const gateDuty = lgate;
+      const hbell = boss.t === 'gqueen' && !open ? BK.props().find(p => p.t === 'winch' && p.bell && !(p.open > 0) && false && Math.abs(boss.x - (p.gate * 16 + 8)) < 12 + (boss.w || 20) / 2 && Math.abs(p.x - P.x) < 24 && Math.abs(p.y - P.y) < 30) : null;
+      const gateDuty = lgate; let gqDuty = null;
       // THE ANSWER, on the beat. The paladin's aegis and the death knight's blood ward take a moment to come up, so they hold C from the start of the tell
       /* THE PALADIN'S WARD only breaks to his own sword met on the beat: the knight's guard in its last tenth of a second, the
          freebooter's tap just before it lands, the aegis raised in the last half second, the blood ward LET GO as it lands, a roll through for the
@@ -2636,6 +2697,7 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false; }
       /* THE GOBLIN QUEEN'S QUAKE (claude/gqueen2): her shadow is where she lands - off the floor as she comes down on it, and over her floor waves;
          asked before the open branch, because plate off she leaps AT you */
+      else if (boss.t === 'gqueen' && (gqf = gqueenReact(BK, boss, P, k, A, h))) { goal = gqf.goal; strike = gqf.strike; }   /* (claude/gqueen3) the crown and the shards are PARRIED, the lash ducked / jumped, the escape climbed */
       else if (boss.t === 'gqueen' && ((boss.mode === 'hallLeap' && boss.tx !== undefined && Math.abs(boss.tx - P.x) < 100 && boss.modeT - 0.8 < 0.16) || BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4))) { goal = null; strike = false; if (P.ground) { BK.press('jump'); P.labJump = 14; } }
       /* THE LAMPREEVE (claude/weakboss), played the way his hall teaches it: when he goes for a lamp, get to that lamp first, on its far side
          from him, and strike it while the hood is on it - the flare blinds him, and then he is open (the branch below). With your light taken
@@ -2791,36 +2853,11 @@ async function runbossLab(BK, opts) {
          destination. The open branch above closes to sword reach after a catch. The cage activation below is an
          environmental lab assist, not evidence that the pilot climbed to and operated its pressure plate. */
       else if (boss.t === 'king') { const gh = gormHands({ BK, boss, P, k, A, h, f }); if (gh) { goal = gh.goal; strike = gh.strike; } else { goal = boss.x; strike = true; } }   /* (claude/gorm2) src/lab-gorm.js: nothing dropped for the bot any more - it brings the archers down with rocks and cuts the pegs itself */
-      /* THE GOBLIN QUEEN, played as her court teaches it (docs/briefs/goblin-queen-court.md, 2026-09-29). She holds court beside the standing
-         pillar nearest you, on its far side: so WAIT BY A PILLAR, crack it twice while she is away from it, and when she lands beside it and points,
-         the third blow - it totters, and comes down on her. In her second round the pillars are down: a blow to her back while she points cracks her
-         plate, and the chandeliers do the rest (and plate off she is simply open, the branch above). Nothing is broken or dropped for the bot: a real
-         swing on the pillar's own box, a real jump and swing at a chain. Her quake is jumped (the branch above, open or not). */
-      else if (boss.t === 'gqueen') { const cs = BK.props().filter(p => p.t === 'weight' && p.gq && p.state === 'hang');
-        const ps = BK.props().filter(p => p.t === 'qpillar' && !p.broken), AX0 = A.x0 + 24, fr = Math.floor(A.floor / 16) - 1;
-        let fx = Math.floor(A.x0 / 16); while (fx < Math.floor(A.x1 / 16) && L.grid[fr * L.W + fx + 1] !== T.SOLID) fx++; const AX1 = Math.min(A.x1 - 24, (fx + 1) * 16 - 10);   /* the hall floor ends at her dais */
-        /* HER DECREE runs along the floor both ways, three beats: a wave coming at the hands is jumped (it only takes a hero standing on the floor) */
-        const wave = BK.waves().some(w => w.royal && w.life > 0 && Math.abs(w.x - P.x) < 34 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4);
-        const court = boss.mode === 'point' && boss.courtP && !boss.courtP.broken ? boss.courtP : null;
-        /* the pillar the hands wait by: the one she is going to (her aim), else the one it already cracked, else the nearest to the hands */
-        const aimP = (boss.mode === 'hallLeapTell' || boss.mode === 'hallLeap' || boss.mode === 'quake') && boss.court && boss.courtP && !boss.courtP.broken ? boss.courtP : null;
-        const tp = court || aimP || ps.filter(p => !(p.totter > 0)).sort((a, b) => ((b.blows || 0) - (a.blows || 0)) || (Math.abs(a.x - P.x) - Math.abs(b.x - P.x)))[0] || null;
-        const strikeP = p => { const side = Math.sign(p.x - P.x) || 1, at = Math.max(AX0, Math.min(AX1, p.x - side * 15)); goal = at; strike = false;
-          if (Math.abs(P.x - at) < 7 && P.ground && P.atk < 0 && !(p.totter > 0)) { P.face = side; k.left = false; k.right = false; goal = null; BK.press('atk'); swings++; } };
-        const rb = boss.mode === 'ringTell' ? BK.props().find(p => p.t === 'winch' && p.bell && p.bossGate) : null, rgx = rb ? rb.gate * 16 + 8 : 0;   /* (claude/highcrown2) SHE RINGS HER BELL: off the grate's column while it glows */
-        if (wave && P.ground) { BK.press('jump'); P.labJump = 12; goal = null; strike = false; }
-        else if (rb && Math.abs(P.x - rgx) < 40) { goal = Math.max(AX0, Math.min(AX1, rgx + (P.x < rgx ? -52 : 52))); strike = false; }
-        else if (P.labCut > 0) { P.labCut--; k.jump = true; if (P.labCut === 6 && P.atk < 0) { BK.press('atk'); swings++; } goal = null; }
-        else if (court) strikeP(court);                                                      /* SHE HOLDS COURT BESIDE IT: bring it down */
-        else if (tp && tp.totter > 0) { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign(boss.x - tp.x) || 1) * 40)); strike = false; }   /* it goes: stand off its fall */
-        else if (boss.phase === 2 && boss.mode === 'point') { goal = boss.x; strike = true; }  /* HER BACK, while she points (her plate) */
-        else { const under = cs.find(c => Math.abs(c.x - boss.x) < boss.w / 2 + 6 && Math.abs(c.x - P.x) < 28);
-          if (under && boss.mode !== 'hallLeapTell' && boss.mode !== 'hallLeap') { strike = false; goal = null; if (P.ground) { P.face = Math.sign(under.x - P.x) || P.face; BK.press('jump'); P.labCut = 16; } }
-          else if (tp && boss.phase !== 2) { const far = Math.abs(boss.x - tp.x) > 110 && !aimP;
-            if (far && (tp.blows || 0) < 2) strikeP(tp);                                        /* crack it twice while she is away from it */
-            else { goal = Math.max(AX0, Math.min(AX1, tp.x - (Math.sign((aimP ? boss.tx : boss.x) - tp.x) || 1) * 15)); strike = false; } }   /* and wait by it, on the side away from her */
-          /* wait just on HER side of the nearest chandelier: she stops 56 px short of you, which is right under it */
-          else { const c = cs.sort((a, b) => Math.abs(a.x - boss.x) - Math.abs(b.x - boss.x))[0]; goal = c ? c.x - (Math.sign(boss.x - c.x) || 1) * 22 : boss.x - Math.sign(d || 1) * 70; strike = false; } } }
+      /* THE GOBLIN QUEEN 3 (claude/gqueen3): the crown and the shards are parried (gqueenReact above), her quake is jumped (the branch above), she is cut when STUNNED / PINNED / on the tower top (the open branch). Between: hunt her - stand 80-170 px off, face her, and let the crown come. */
+      else if (boss.t === 'gqueen' && BK.gqHands && BK.gqHands() && BK.gqHands().labDuty && (gqDuty = BK.gqHands().labDuty(P))) { goal = gqDuty.x; strike = false; P.face = Math.abs(P.x - gqDuty.x) < 10 ? gqDuty.face : P.face; if (gqDuty.swing && Math.abs(P.x - gqDuty.x) < 10 && P.atk < 0) BK.press('atk'); }   /* (claude/gq2mech) the hands' duty: the winch, the bell, then clear of the grate */
+      else if (boss.t === 'gqueen') { const toward = Math.sign(boss.x - P.x) || 1, gap = Math.abs(boss.x - P.x), rb = boss.mode === 'ringTell' ? BK.props().find(p => p.t === 'winch' && p.bell && p.bossGate) : null, rgx = rb ? rb.gate * 16 + 8 : 0;
+        if (rb && Math.abs(P.x - rgx) < 40) { goal = Math.max(A.x0 + 24, Math.min(A.x1 - 24, rgx + (P.x < rgx ? -52 : 52))); strike = false; }   /* off the grate's column while it glows */
+        else { P.face = toward; goal = gap > 170 ? boss.x - toward * 120 : gap < 80 ? boss.x - toward * 130 : null; strike = false; } }
       /* THE RAM LORD's OVERHANGS (claude/scree2, src/ram-lord.js), played as the sign says: while he is not open and not warded, wait at an armed
          overhang's prop on the wall's side of it; when he stands in its fall line (the prop glints), knock the prop out with a real swing on its own box, and
          stay off the line. Open (stunned, or in the wall), the default below: in and cut. */
@@ -3197,7 +3234,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: gqLabRow(GQS, boss, f, gqSpf) } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
