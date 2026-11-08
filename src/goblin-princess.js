@@ -370,6 +370,7 @@ export function makeGoblinPrincessHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => {
     const Lv = L(); if (!Lv) return;
     if (Lv.gpChase && C && !chaseDone && (C.state === 'run' || C.state === 'ring')) { const sp = GPA.sheet(), f = C.state === 'ring' ? GPA.GPF.bell : GPA.GPF.bolt + (Math.floor(time * 9) & 1); g.drawImage(sp.R[f], R(C.x - cx - sp.ax), R(C.y - cy - sp.ay)); }
+    if (Lv.gpChase && !chaseDone && (!C || C.state === 'idle')) { const sp = GPA.sheet(), Ch = Lv.gpChase; g.drawImage(sp.L[GPA.GPF.stand + (time % 3.2 < 0.16 ? 1 : 0)], R(Ch.start - cx - sp.ax), R(Ch.floor - cy - sp.ay)); }   /* (claude/hc3art) before the chase starts she stands on the wall, preening, facing the stair she expects you up */
     if (Lv.gpChase) for (const Tw of Lv.gpChase.towers) { const W = TW.get(Tw.id), fy = R(Tw.floor - cy);
       guardSet(g, W, Tw.door, Tw.winch, fy, GP.chase.horn, cx, time);
       HC3A.drawBellAt(g, R(Tw.bell - cx), fy - 58, W ? Math.sin(time * 14) * 2.5 : 0, 0, time); }   /* HER alarm bell, cast bronze on an iron beam: it swings while it is sounding */
