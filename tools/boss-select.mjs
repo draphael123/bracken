@@ -13,10 +13,10 @@ try {
   // Start with a pre-records save in slot 3; the other four slots must remain untouched.
   await pg.evalp(`(()=>{localStorage.clear();localStorage.setItem(${JSON.stringify(slotKey)},${JSON.stringify(JSON.stringify(seed))});localStorage.setItem('bracken.slot','2');window.__old=1;setTimeout(()=>location.assign('/?noopening=1'),0)})()`);
   for (let i = 0; i < 240; i++) { await sleep(150); if (await pg.evalp('!window.__old&&window.BK?.slot===2').catch(() => false)) break; }
-  const before = await pg.evalp('({slot:BK.slot,xp:BK.PROG.xp.knight,flaskUp:BK.PROG.flaskUp,records:BK.PROG.bossRecords,items:BK.ui.titleTop()})');
+  const before = await pg.evalp('({slot:BK.slot,xp:BK.PROG.xp.knight,flaskUp:BK.PROG.flaskUp,records:BK.PROG.bossRecords,items:BK.ui.titleTop(),sel:BK.ui.titleSelect("BOSS SELECT")})');
   ok(before.slot === 2 && before.xp === 840 && before.flaskUp === 1, 'old save did not migrate with its real kit');
   ok(JSON.stringify(before.records) === '{}', 'old save did not get empty records in memory');
-  ok(before.items.includes('BOSS SELECT'), 'title has no Boss Select entry');
+  ok(before.sel, 'title has no Boss Select entry');
   const rows = await pg.evalp(`(()=>{BK.bossSelect.open('title');return BK.bossSelect.rows()})()` , 120000);
   const table = await pg.evalp('BK.bossJump.table()', 120000);
   ok(rows.length === table.length && rows.length > 40, 'list is not derived from the full boss table');

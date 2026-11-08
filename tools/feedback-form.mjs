@@ -44,7 +44,7 @@ const foc = () => pg.evalp(FOC);
 try {
   /* ---- B. the form from the title ---- */
   const b = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.ui.pressCard = false; BK.state = 'title'; BK.step(150);
-    const items = BK.ui.titleItems(); const i = items.indexOf('GIVE FEEDBACK'); BK.ui.titleI = i; const before = { st: BK.state, i: BK.ui.titleI };
+    const found = BK.ui.titleSelect('GIVE FEEDBACK'); const items = BK.ui.titleItems(); const i = found ? BK.ui.titleI : -1; const before = { st: BK.state, i: BK.ui.titleI };
     BK.press('confirm'); BK.step(3); await new Promise(r => setTimeout(r, 80));
     const root = document.getElementById('fbform'); if (!root) return { items, i, open: false };
     const q = s => [...root.querySelectorAll(s)];
@@ -91,7 +91,7 @@ try {
   await pg.evalp(`(()=>{ window.__pad = { id: 'fake', index: 0, connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()`);
   /* (batch150) hold the pad for whole animation frames, not 90 ms of wall clock: a slow frame under load swallowed the press (flaky 2 of 3 runs) */
   const padTap = async (btn, ax) => { await pg.evalp(`(async()=>{ const frames = n => new Promise(r => { const f = () => --n <= 0 ? r() : requestAnimationFrame(f); requestAnimationFrame(f); }); const p = window.__pad; ${ax ? `p.axes[${ax[0]}] = ${ax[1]};` : `p.buttons[${btn}].pressed = true;`} await frames(4); p.axes[0] = 0; p.axes[1] = 0; p.buttons.forEach(x => x.pressed = false); await frames(3); })()`); };
-  await pg.evalp(`(()=>{ BK.state='title'; BK.ui.titleI = BK.ui.titleItems().indexOf('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); })()`);
+  await pg.evalp(`(()=>{ BK.state='title'; BK.ui.titleSelect('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); })()`);
   assert.equal(await pg.evalp(`!!document.getElementById('fbform')`), true, 'the form re-opens'); const d0 = await pg.evalp(`JSON.stringify(BK.ui.titleI)`);
   assert.equal(await foc(), 'rate1'); await padTap(15); assert.equal(await foc(), 'rate2', 'd-pad RIGHT walks'); await padTap(14); assert.equal(await foc(), 'rate1', 'd-pad LEFT walks');
   await padTap(13); assert.ok(/^like:/.test(await foc()), 'd-pad DOWN reaches the liked chips: ' + await foc());
@@ -120,7 +120,7 @@ try {
     const I = window.Image; window.Image = function (...a) { const i = new I(...a); Object.defineProperty(i, 'src', { set(v) { reqs.push('img:' + v); } }); return i; };
     const FB = await import('/src/feedback-form.js'); localStorage.removeItem('bracken-fb-last'); localStorage.removeItem('bracken-fb-local'); FB.test.resetDraft();
     BKT.PROG.coins = 424242; BKT.PROG.secretField = 'SAVEMARKER';
-    const out = { reqs }; BK.state = 'title'; BK.ui.pressCard = false; BK.step(3); BK.ui.titleI = BK.ui.titleItems().indexOf('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); const q = s => document.querySelector('#fbform ' + s);
+    const out = { reqs }; BK.state = 'title'; BK.ui.pressCard = false; BK.step(3); BK.ui.titleSelect('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); const q = s => document.querySelector('#fbform ' + s);
     out.noRating = await (async () => { q('#fbsend').click(); await new Promise(r => setTimeout(r, 60)); return q('.fbmsg').textContent; })();
     q('button.fbrate[data-n="5"]').click(); q('button[data-topic="Music"]').click(); const ta = q('#fbtext'); ta.value = 'x'.repeat(1500); out.maxLen = ta.maxLength; ta.value = 'loved the music ' + 'y'.repeat(1200).slice(0, 600); ta.dispatchEvent(new Event('input'));
     q('#fbsend').click(); await new Promise(r => setTimeout(r, 120)); out.thanks = document.getElementById('fbform').innerText;

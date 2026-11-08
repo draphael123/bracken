@@ -200,7 +200,12 @@ async function pageTextFit(input) {
   if (want('opening')) { BK.ui.openingStart(); for (let i = 0; i < 3; i++) frame('opening #' + i, () => { BK.state = 'opening'; BK.ui.opening.i = i; BK.ui.opening.t = 1; }, { settle: 2 });
     for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('opening #3 [' + h + ']', () => { BK.state = 'opening'; BK.ui.opening.i = 3; BK.ui.opening.t = 1; }, { settle: 2 }); }   /* (claude/thornroad) the last page names the picked hero: every hero's name must fit */
     BK.state = 'title'; await yieldNow(); }
-  if (want('title')) { frame('title scene', () => { BK.state = 'title'; BK.ui.pressCard = false; }, { settle: 120 }); BK.state = 'title'; await yieldNow(); }   /* THE TITLE SCENE (claude/titlescene): the sign, its tagline and the menu board, every line measured */
+  if (want('title')) { frame('title scene', () => { BK.state = 'title'; BK.ui.pressCard = false; }, { settle: 120 }); BK.state = 'title';
+    /* (claude/titlemenu, Daniel 11-08) the six-row top level, every submenu, and the EXTRAS badge: each row selected in turn */
+    for (const row of ['CHOOSE A SAVE', 'PLAY TOGETHER', 'MORE MODES', 'OPTIONS', 'EXTRAS', 'CONTINUE']) frame('title top: ' + row, () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf(row)); }, { settle: 90 });
+    for (const [sub, rows] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP', 'BACK']], ['MORE MODES', ['ARENA YARD', 'DUEL (BETA)', 'BOSS SELECT', 'BACK']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS', 'BACK']], ['OPTIONS', ['SETTINGS', 'REPORT A BUG', 'BACK']]]) for (const row of rows) frame('title ' + sub + ': ' + row, () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSub = sub; BK.ui.titleI = Math.max(0, BK.ui.titleItems().indexOf(row)); }, { settle: 60 });
+    BK.ui.titleSub = null; BK.ui.titleI = 0;
+    await yieldNow(); }   /* THE TITLE SCENE (claude/titlescene): the sign, its tagline and the menu board, every line measured */
   if (want('press')) { frame('press card', () => { BK.state = 'title'; BK.ui.pressCard = true; }, { settle: 3 }); BK.ui.pressCard = false; BK.state = 'title'; await yieldNow(); }
   if (want('mapcard')) { const pr = BKT.PROG, keep = JSON.stringify(pr);
     for (const [l] of campaign) { pr[l.id] = { cleared: true, medal: 3, silver: 7, best: 3599, gold: 999, total: 999, quest: true, noHit: true, iron: true, allGold: true }; }
@@ -274,7 +279,7 @@ async function pageTextFit(input) {
     for (const n of [4, 3, 2]) { BK.aiComp.arm(['geomancer', 'berserker', 'reaper'].slice(0, n - 1), ['support', 'balanced', 'defensive'].slice(0, n - 1), n - 1); frame('map party x' + n, () => { BK.state = 'map'; BK.PROG.xp = BK.PROG.xp || {}; }, { settle: 3 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
-    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleOpts = false; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf('ARENA YARD')); }, { settle: 120 });
+    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSelect('ARENA YARD'); }, { settle: 120 });
     for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('hero card [' + h + '] (Z to the Arena Yard)', () => { BK.state = 'herocard'; }, { settle: 5 }); }
     BK.state = 'title'; await yieldNow(); }
   /* (claude/arenayard) THE ARENA YARD: every sign in it (the talk pages) and every page of THE MOVE BOARD, for every hero (it reads the hero at the board) */
@@ -294,7 +299,7 @@ async function pageTextFit(input) {
       await yieldNow(); }
     toPlay(li, 'knight'); BK.lesson().O.st.i = 12; frame('lesson door plate', () => { BK.state = 'play'; const p = BK.players()[0]; p.x = 154 * 16 + 8; p.y = 20 * 16 - 0.01; p.vy = 0; p.ground = true; BK.sim(30); }, { settle: 4 });
     frame('inn welcome card', () => { BK.state = 'play'; BK.lesson().O.innCard(9); }, { settle: 20 });
-    frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; const top = BK.ui.titleTop(); BK.ui.titleI = top.indexOf('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
+    frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; BK.ui.titleSelect('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
     frame('map footer', () => { BK.state = 'map'; }, { settle: 20 }); }
 
   /* THE HIDDEN BOSS LIST (SHIFT+B on the title, docs/PLAYTEST.md): every row selected in turn (every boss and mini name against its wood's name), and every hero's name on the hero line */

@@ -30,12 +30,14 @@ try {
   const newest = await pg.evalp('BK.WN.shortDate(BK.WN.newestDate())');
   const newestExpected = await pg.evalp(`BK.WN.shortDate(${JSON.stringify(data[0].date)})`);
   assert.equal(newest, newestExpected, 'the newest entry comes from updates.json');
-  assert.ok((await pg.evalp('BK.ui.titleTop()')).includes("WHAT'S NEW"), "the title board has the WHAT'S NEW row");
+  assert.ok(await pg.evalp(`BK.ui.titleSelect("WHAT'S NEW")`) && (await pg.evalp('BK.ui.titleTop()')).includes('EXTRAS'), "the title board has an EXTRAS row that holds WHAT'S NEW");
+  await pg.evalp('(()=>{ BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleTop().indexOf("EXTRAS"); return 1; })()');
   let r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
   assert.equal(await pg.evalp('BK.WN.hasNew()'), true, 'a dot until it is opened');
-  const idx = await pg.evalp(`BK.ui.titleTop().indexOf("WHAT'S NEW")`);
-  await pg.evalp(`(()=>{ BK.ui.titleI = ${idx}; return 1; })()`);
+  /* (claude/titlemenu) the 8 NOV date and the dot show on the EXTRAS row too; then open EXTRAS and walk onto WHAT'S NEW */
+  r = await pg.evalp(REC); assert.ok(r.some(x => x.s === newest), 'the EXTRAS row shows the newest date: ' + r.map(x => x.s).join(' / '));
+  await pg.evalp(`(()=>{ BK.ui.titleSelect("WHAT'S NEW"); return 1; })()`);
   for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
   await pg.evalp('BK.step(5)');
   assert.equal(await pg.evalp('BK.state'), 'whatsnew', 'choosing the row opens the list');

@@ -79,16 +79,22 @@ try {
   await section('title', async () => {
     await sleep(1500);
     const items = await E('BK.ui.titleItems()'), hits = await E('BK.touch.hitBoxes()');
-    const tw = await E('BK.ui.titleWin()'); ok(hits.length === tw.rows.length && items.length > 0 && !items.includes('GIVE FEEDBACK') && !items.includes('CREDITS'), 'the title drew ' + hits.length + ' tap boxes for ' + tw.rows.length + ' window rows of ' + items.length + ' items (GIVE FEEDBACK / CREDITS fold under OPTIONS on touch)');
+    const tw = await E('BK.ui.titleWin()'); ok(hits.length === tw.rows.length && items.length > 0 && !items.includes('GIVE FEEDBACK') && !items.includes('CREDITS'), 'the title drew ' + hits.length + ' tap boxes for ' + tw.rows.length + ' window rows of ' + items.length + ' items (the six-row top level; GIVE FEEDBACK / CREDITS fold under EXTRAS)');
     notes.push('title items: ' + items.join(', '));
     // every box is a real size for a thumb (at least 30 CSS px tall) and on screen
     const th = await E('BK.touch.hitBoxes().map(h => { const [x0, y0] = BK.touch.gameToClient(h.x, h.y), [x1, y1] = BK.touch.gameToClient(h.x + h.w, h.y + h.h); return { w: x1 - x0, h: y1 - y0, x: x0, y: y0 }; })');
     ok(th.every(r => r.h >= 43 && r.x >= 0 && r.x + r.w <= 844 && r.y >= 0 && r.y + r.h <= 390), 'a title tap box is off screen or sliver-thin: ' + JSON.stringify(th[0]));
     ok(!items.includes('SETTINGS') && !items.includes('SOUND TEST') && !items.includes('CONTROLS'), 'SETTINGS / SOUND TEST / CONTROLS sit under OPTIONS, not on the title: ' + items.join('|'));
-    ok(items.includes('OPTIONS'), 'no OPTIONS on the title');
+    ok(items.includes('OPTIONS') && items.includes('EXTRAS') && items.includes('PLAY TOGETHER') && items.includes('MORE MODES') && !items.includes('SWAP HERO'), 'the touch title is the six-row top level: ' + items.join('|'));
+    /* (claude/titlemenu, Daniel 11-08) every group opens by tap, shows a BACK row, and BACK (a tap) returns to the top level on the group's row */
+    for (const [g, want] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP']], ['MORE MODES', ['ARENA YARD', 'BOSS SELECT']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS']]]) {
+      await tapTitleItem(g); const gi = await E('BK.ui.titleItems()'), gh = await E('BK.touch.hitBoxes()');
+      ok(want.every(k => gi.includes(k)) && gi[gi.length - 1] === 'BACK' && gh.length >= want.length + 1, g + ' opened by tap with ' + gh.length + ' boxes: ' + gi.join('|'));
+      await tapTitleItem('BACK'); await sleep(250); const back = await E('({ sub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI] })'); ok(back.sub === null && back.on === g, 'a tap on BACK returned to the top level on ' + g + ': ' + JSON.stringify(back));
+    }
     await tapTitleItem('OPTIONS');
     const sub = await E('BK.ui.titleItems()'), subHits = await E('BK.touch.hitBoxes()');
-    ok(sub.includes('SETTINGS') && sub.includes('GIVE FEEDBACK') && sub.includes('CREDITS') && subHits.length >= 3, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
+    ok(sub.includes('SETTINGS') && sub.includes('REPORT A BUG') && sub.includes('BACK') && subHits.length >= 3, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
     await tapTitleItem('SETTINGS');
     ok(await E('BK.state') === 'menu', 'a tap on SETTINGS did not open Settings (state ' + await E('BK.state') + ')');
   });

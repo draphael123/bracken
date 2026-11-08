@@ -216,7 +216,7 @@ try {
       const p=BK.players()[0];__stand(p,3,1);BK.sim(5);BK.press('talk');BK.sim(3);out.door=BK.yard().state();out.nearDoor=BK.yard().Y.spotNear(p);
       // the title row ARENA YARD, the hero card's Z and the pause row all lead here (and there is no PRACTICE row)
       BK.yard().leave();for(let i=0;i<400&&BK.state==='play';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}
-      BK.state='title';const top=BK.ui.titleTop();out.titleRow=top.indexOf('ARENA YARD')>=0;out.oldRow=top.includes('PRACTICE');BK.ui.titleI=top.indexOf('ARENA YARD');BK.ui.pressCard=false;BK.press('confirm');
+      BK.state='title';out.titleRow=BK.ui.titleSelect('ARENA YARD');out.oldRow=BK.ui.titleTop().includes('PRACTICE')||BK.ui.titleItems().includes('PRACTICE');BK.ui.pressCard=false;BK.press('confirm');
       for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromTitleRow=at();
       BK.yard().leave();for(let i=0;i<400&&BK.state==='play';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}
       BK.state='herocard';BK.press('confirm');for(let i=0;i<400&&at()!=='yard';i++){BK.sim(1);await new Promise(r=>setTimeout(r,5));}out.fromHeroCard=at();

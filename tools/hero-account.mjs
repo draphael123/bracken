@@ -113,8 +113,7 @@ const save = (extra = {}) => { const p = migrateProgress(null).progress; Object.
   const heroFeats = [...main.matchAll(/^\s*\{ id: '(\w+)'[^\n]*feat: '(boss:\w+)'/gm)].map(m => m[2]), bz = /const BZ_WIN = \{[^}]*feat: '(boss:\w+)'/.exec(main);
   const all = new Set([...heroFeats.filter(f => f.startsWith('boss:')), ...(bz ? [bz[1]] : [])]);
   for (const f of ['boss:unburied', 'boss:church', 'boss:warcairn']) ok(all.has(f), 'C: ' + f + ' is a feat main.js HEROES carries');
-  ok(/'SWAP HERO'\] : \['NEW GAME', 'CHOOSE A SAVE'\]/.test(main), 'C: the title has a SWAP HERO row only for a started save');
-  ok(/k === 'SWAP HERO'\) \{ loadSlot\(slot\); applySkin\(\); applyUpgrades\(\); if \(!SWAPUI\.open\(\)\) SFX\.buzz\(\); \}/.test(main), 'C: the title row loads the current save and opens the swap panel');
+  ok(!/\['CONTINUE', 'CHOOSE A SAVE', 'SWAP HERO'\]/.test(main) && !/k === 'SWAP HERO'\) \{ loadSlot/.test(main), 'C: SWAP HERO left the title (claude/titlemenu, Daniel 11-08; the inn, store and pause menu keep it)');
   const tav = readFileSync(new URL('../src/tavern.js', import.meta.url), 'utf8');
   ok(/id: 'wardrobe', x: 40, name: 'SWAP HERO', verb: 'SWAP', first: 'SWAP HERO:/.test(tav), 'C: the tavern\'s wardrobe station is SWAP HERO (verb SWAP) with a first-visit line');
   const ctl = readFileSync(new URL('../src/controls.js', import.meta.url), 'utf8');

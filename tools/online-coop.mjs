@@ -60,7 +60,7 @@ try {
   const before = await guest.evalp(`(()=>{localStorage.clear();localStorage.setItem('bracken.progress.0',${JSON.stringify(SAVE)});localStorage.setItem('bracken.slot','0');localStorage.setItem('bracken.settings',${JSON.stringify(SETS)});const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);o[k]=localStorage.getItem(k);}return JSON.stringify(o);})()`);
 
   // ---- 1. the gate ----
-  const top = await H('BK.ui.titleTop()');
+  const top = await H("(()=>{BK.ui.titleSelect('LOCAL CO-OP');const a=BK.ui.titleItems();BK.ui.titleSub=null;BK.ui.titleI=0;return a})()");   /* (claude/titlemenu) the two co-op rows live under PLAY TOGETHER now */
   ok(top.indexOf('ONLINE CO-OP') === top.indexOf('LOCAL CO-OP') + 1, '1: the title has ONLINE CO-OP right after LOCAL CO-OP: ' + top.join(', '));
   await H('(()=>{const h=BK.PROG.heroes;for(const k in h)if(k!=="knight")delete h[k];BK.PROG.coopLegacy=false;})()');
   await H('BKONLINE.open()');   /* (Daniel 10-15) co-op is open with ONE hero: no lock, no second hero needed */
