@@ -1,4 +1,5 @@
 import { LESSON_TIPS } from './opening-tutorial.js';
+import { DEMO } from './demo-flag.js';
 // src/loading-screen.js - THE LOADING SCREEN (claude/loadbar, 2026-09-30). Daniel: "progress bars for loading and a hero do a dance
 // at them." A pixel bar with the percentage and a line of what is loading, and the player's own hero beside it (since claude/hubpolish: standing at the
 // fire in his own idle frames, with the others you own round it - see heroReady / campReady below).
@@ -143,6 +144,17 @@ export const TIPS = [
   'THE BRACKEN HAS GROWN OVER THE OLD ROAD.',
   'SOMEONE LEFT THE FIRE LIT. NOBODY WILL SAY WHO.',
 ];
+/* (claude/fastload, Daniel 11-07: the itch demo's first start) WHAT THE DEMO SAYS WHILE IT LOADS: what the slice is, how the demo saves, and the rules a first-timer meets in the first wood. No key letters (keys can be rebound);
+   every line is true of the demo build (tools/uiscreens.mjs holds each to two rows). The demo shows these first, then the shared TIPS that apply to the slice (not the desert's). */
+export const DEMO_TIPS = [
+  'THE DEMO: THE ROAD UP TO KING GORM. THE BURNING VILLAGE OPENS WHEN HE FALLS.',
+  'THE DEMO SAVES IN THIS BROWSER. COME BACK ON THE SAME PAGE AND KEEP GOING.',
+  'TIP: EVERY BOSS BLOW IS TOLD FIRST: A WINDUP, THEN THE RELEASE. WATCH THE WINDUP.',
+  'TIP: FIVE HEROES PLAY DIFFERENTLY. CHANGE HERO AT THE INN WARDROBE.',
+  'TIP: LOCAL CO-OP IS ON THE TITLE SCREEN. TWO HEROES MAKE THE ROAD KINDER.',
+  'TIP: THE FIRST LOAD IS THE LONGEST. THE BROWSER KEEPS THE FILES FOR NEXT TIME.',
+];
+export const tipList = (demo = DEMO) => demo ? [...DEMO_TIPS, ...TIPS.filter(t => !/DESERT/.test(t))] : TIPS;
 /* a line cut into rows of at most n letters, on spaces (the 3 x 5 pixel font is 4 dots a letter: 74 letters is 296 of the picture's 320) */
 function wrapGlyph(s, n) { s = String(s); if (s.length > n) n = Math.min(n, Math.ceil(s.length / Math.ceil(s.length / n)) + 5);   /* (two even rows, not one full row and a stub) */ const out = []; let cur = ''; for (const w of String(s).split(' ')) { if (cur && (cur + ' ' + w).length > n) { out.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; } if (cur) out.push(cur); return out; }
 /* THE SCENE: the knight by a campfire, under the bracken, with the mountain behind. Everything is a few rectangles; it moves on the clock. */
@@ -218,7 +230,7 @@ function paint(now) {
   text(S.label || 'LOADING', bx, by - 14, '#c9b892', 2, 'left');
   text(pct + '%', bx + bw, by - 14, CREAM, 2, 'right');
   // A TIP OR A LINE OF THE WOOD'S OWN, changing every few seconds (picked off the clock, so a still is repeatable)
-  { const line = TIPS[(Math.floor(t / TIP_MS) + S.tipSeed) % TIPS.length], ph = (t % TIP_MS) / TIP_MS, al = ph < 0.08 ? ph / 0.08 : ph > 0.92 ? (1 - ph) / 0.08 : 1;
+  { const tl = S.tips || TIPS, line = tl[(Math.floor(t / TIP_MS) + S.tipSeed) % tl.length], ph = (t % TIP_MS) / TIP_MS, al = ph < 0.08 ? ph / 0.08 : ph > 0.92 ? (1 - ph) / 0.08 : 1;
     ag.globalAlpha = Math.max(0, Math.min(1, al));
     wrapGlyph(line, 74).forEach((r, i) => text(r, 160, 159 + i * 7, line.startsWith('TIP') ? GOLD : CREAM, 1, 'center')); ag.globalAlpha = 1; }
   if (S.job === 'boot' && S.firstVisit) text('FIRST VISIT: EVERYTHING IS FETCHED FRESH. NEXT TIME IS QUICKER.', 160, 174, DIM, 1, 'center');
@@ -277,6 +289,9 @@ let bootOn = false;
 function bootProgress() {
   if (!bootOn || S.seen.has('modules')) return;
   let n = 0; try { n = performance.getEntriesByType('resource').filter(r => /\.js(\?|$)/.test(r.name) && r.responseEnd > 0).length; } catch {}
+  /* (claude/fastload) the itch build writes window.__BOOT_FILES = { 'main.js': bytes, ... } (the bundle's own files): the bar then moves by BYTES ARRIVED, so the 8 MB main.js is most of the step, not 1 of 23 equal ones */
+  const BF = typeof window !== 'undefined' && window.__BOOT_FILES; if (BF) { let have = 0, all = 0; try { const got = new Set(performance.getEntriesByType('resource').filter(r => r.responseEnd > 0).map(r => r.name.split('?')[0].split('/').pop())); for (const f in BF) { all += BF[f]; if (got.has(f)) have += BF[f]; } } catch {}
+    if (all > 0) { const f = Math.min(0.98, have / all); S.moduleFrac = Math.max(S.moduleFrac, f); S.true = Math.max(S.true, Math.min(1, (S.doneW + f * JOBS.boot.modules) / S.total)); return; } }
   let want = 190; try { want = +localStorage.getItem('bracken.bootmods') || want; } catch {}
   const f = Math.min(0.98, n / want); S.moduleFrac = Math.max(S.moduleFrac, f);
   S.true = Math.max(S.true, Math.min(1, (S.doneW + f * JOBS.boot.modules) / S.total));
@@ -284,7 +299,7 @@ function bootProgress() {
 export function bootStart() {
   if (bootOn || !hasDom) return; bootOn = true; begin('boot', true); hold(HELD_BOOT);
   try { S.firstVisit = !localStorage.getItem('bracken.bootmods'); } catch { /* no storage: say nothing about a first visit */ }
-  S.tipSeed = Math.floor(Math.random() * TIPS.length);
+  S.tips = tipList(); S.tipSeed = DEMO ? 0 : Math.floor(Math.random() * TIPS.length);   /* the demo opens on what the demo is, then the rest */
   const go = () => { show(); };
   if (document.body) go(); else addEventListener('DOMContentLoaded', go, { once: true });
   const poll = () => { if (!bootOn) return; bootProgress(); setTimeout(poll, 60); }; poll();

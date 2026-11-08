@@ -5,10 +5,12 @@
 //   BOSS HINTS  'hint:<arena boss id>' - after BOSS_HINT_AT deaths to the SAME boss that this save has not beaten, ONE card on his main tell / opening (read from his code: the
 //               header of the file named in each row). Never easier, never a number change: it only says what the fight already shows.
 // Pure: main.js owns the state and the keys (teachKeys), the draw takes main.js's text/wrap. tools/first-cards.mjs is the node check.
-import { CARD, SECOND_SLOT_LEVEL } from './progression.js';
+import { CARD, SECOND_SLOT_LEVEL, equipped, skillFor } from './progression.js';
 export const ARM_S = 0.9;          // seconds before the confirm key may dismiss a card
 export const BOSS_HINT_AT = 3;     // deaths to the same boss before his hint card (Daniel: "2-3")
 export const CALM_S = 7;           // seconds of calm play in a real level before the skills card
+/* the skills card waits until the current hero has an ABILITY equipped (claude/starterskill: every hero starts with one, so it normally fires at once; a hero with an empty slot waits) */
+export const skillsReady = (PROG, hero, lv) => !!PROG && equipped(PROG, hero, lv).some(id => !!id && !!skillFor(hero, id)?.active);
 
 /* k = the player's own words: { flask, skill1, skill2, menu } */
 export const EXPLAIN = {

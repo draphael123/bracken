@@ -97,7 +97,7 @@ export function layoutPlates(nodes, VW = 320) {
    218 x 58 (a store's 218 x 26) in one of four corners, and the camera may put the node anywhere from a fifth to the bottom of the screen.
    Header bar on top, footer strip under. placePanel picks the first (anchor, corner) whose panel, header and footer cover no node box and no plate
    in view; the game and tools/map-spacing.mjs both call it, so what the lint proves is what is drawn. */
-export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900 };
+export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900, CAMTOP: 0 };   /* CAMTOP: the highest the camera may go (the demo's map stops at the wood sheet, batch150: its card must be placed for the camera it really gets) */
 export const NEAR = 0;   // what counts as "around the selected node": anything within this many px of it, and its road neighbours, must stay readable
 export const ANCHORS = [0.55, 0.4, 0.7, 0.3, 0.8, 0.25, 0.9, 0.2, 0.35, 0.45, 0.6, 0.65, 0.75, 0.85];   // the node's screen height, as a fraction of VH (0.55 = the map's own default)
 export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 208), h: nd.kind === 'store' ? 26 : 54 }; }   /* 54 of 180 = 30% of the screen (the style guide's cap; it was 58) */
@@ -116,7 +116,7 @@ export function placePanel(nd, nodes, plates, S = SCREEN, quick = false) {   /* 
   const mustKeep = r => care.has(r.id) || Math.hypot(Math.max(0, r.x - nd.x, nd.x - r.x - r.w), Math.max(0, r.y - nd.y, nd.y - r.y - r.h)) <= NEAR;
   const must = rects.filter(mustKeep), others = rects.filter(r => !mustKeep(r));
   for (const a of ANCHORS) {
-    const camY = Math.max(0, Math.min(S.MAPH - S.VH, nd.y - S.VH * a)), ai = ANCHORS.indexOf(a), sy = nd.y - camY;
+    const camY = Math.max(S.CAMTOP || 0, Math.min(S.MAPH - S.VH, nd.y - S.VH * a)), ai = ANCHORS.indexOf(a), sy = nd.y - camY;
     if (!(sy > S.HEADER + 8 && sy < S.VH - S.FOOTER - 8) && bestOk) continue;
     const view = r => { const q = { x: r.x, y: r.y - camY, w: r.w, h: r.h }; return q.y < S.VH && q.y + q.h > 0 ? { ...q, id: r.id, what: r.what } : null; };
     const mustV = must.map(view).filter(Boolean), othersV = quick ? [] : others.map(view).filter(Boolean);

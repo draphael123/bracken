@@ -89,7 +89,8 @@ try {
 
   /* ---- D. gamepad (a fake pad in the page) ---- */
   await pg.evalp(`(()=>{ window.__pad = { id: 'fake', index: 0, connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()`);
-  const padTap = async (btn, ax) => { await pg.evalp(`(async()=>{ const p = window.__pad; ${ax ? `p.axes[${ax[0]}] = ${ax[1]};` : `p.buttons[${btn}].pressed = true;`} await new Promise(r => setTimeout(r, 90)); p.axes[0] = 0; p.axes[1] = 0; p.buttons.forEach(x => x.pressed = false); await new Promise(r => setTimeout(r, 90)); })()`); };
+  /* (batch150) hold the pad for whole animation frames, not 90 ms of wall clock: a slow frame under load swallowed the press (flaky 2 of 3 runs) */
+  const padTap = async (btn, ax) => { await pg.evalp(`(async()=>{ const frames = n => new Promise(r => { const f = () => --n <= 0 ? r() : requestAnimationFrame(f); requestAnimationFrame(f); }); const p = window.__pad; ${ax ? `p.axes[${ax[0]}] = ${ax[1]};` : `p.buttons[${btn}].pressed = true;`} await frames(4); p.axes[0] = 0; p.axes[1] = 0; p.buttons.forEach(x => x.pressed = false); await frames(3); })()`); };
   await pg.evalp(`(()=>{ BK.state='title'; BK.ui.titleI = BK.ui.titleItems().indexOf('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); })()`);
   assert.equal(await pg.evalp(`!!document.getElementById('fbform')`), true, 'the form re-opens'); const d0 = await pg.evalp(`JSON.stringify(BK.ui.titleI)`);
   assert.equal(await foc(), 'rate1'); await padTap(15); assert.equal(await foc(), 'rate2', 'd-pad RIGHT walks'); await padTap(14); assert.equal(await foc(), 'rate1', 'd-pad LEFT walks');

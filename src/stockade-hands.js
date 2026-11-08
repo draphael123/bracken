@@ -315,7 +315,7 @@ export function makeStockadeHands(ctx) {
   }
   /* (claude/stockade3-1101) CRUSHED: the logs knock him down where he stands - his 'planted' read (x2, the quarter cap), as SILENCED and BLASTED */
   function crushChief(ch, p) {
-    const m = ch.maxHp || 1; ch.hp = Math.max(1, ch.hp - Math.round(m * CRUSH.hit)); ctx.number(ch.x, ch.y - ch.h - 4, String(Math.round(m * CRUSH.hit)), '#ffffff');
+    const m = ch.maxHp || 1; ch.hp = Math.max(1, ch.hp - Math.round(m * CRUSH.hit)); ctx.number(ch.x, ch.y - ch.h - 4, Math.round(m * CRUSH.hit), '#ffffff');
     if (ch.mode === 'horn') ch.hornCd = ch.phase === 2 ? HORN.every2 : HORN.every;
     ch.mode = 'planted'; ch.modeT = CRUSH.open; ch.openHp0 = ch.hp; ch.vx = 0; ch.stagger = Math.max(ch.stagger || 0, 0.3); ch.poseKind = 'crushed'; ch.crushN = (ch.crushN || 0) + 1; lst.crushed++;
     ctx.shake(6); say(ch.x, ch.y - ch.h - 12, 'crushedHim', '#8fd160');

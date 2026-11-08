@@ -60,9 +60,9 @@ export const mayBuy = ({ where, fight, atShrine }) => where === 'map' || where =
 export const BUY_HINT = 'VIEW ONLY: BUY AT A SHRINE, MAP OR SHOP';
 /* the footer of each page (drawn fitted): where buying is allowed, and where it is not */
 export const STORE_HELP = {
-  buy: 'L/R tabs  Z buy  ESC back',
+  buy: 'L/R tabs  Z buy',
   look: 'Z equip  buy at a shrine, map or shop',
-  skills: 'TAB/Q tabs  L/R list  Z buy  F slot  X more',
+  skills: 'TAB tabs  L/R list  Z buy  F slot  X more',
   skillsLook: BUY_HINT,
   passives: 'PASSIVES COME WITH LEVELS',
 };

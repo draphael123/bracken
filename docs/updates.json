@@ -1,6 +1,27 @@
 [
   {
     "date": "2026-11-07",
+    "batch": 150,
+    "lines": [
+      "New save: choose LIVES (off, or 5 plus one per 100 coins) and your DIFFICULTY",
+      "Every hero starts with a first skill ready; UNLOCKS shows how to open everything",
+      "SWAP HERO: heroes you unlock are yours in every save, with bonus XP to catch up",
+      "After a level: onward or back to the map. The tutorial now teaches every swing",
+      "Sporewood shows how to grow the mushrooms; the store has a BACK button",
+      "A hard-won win over King Gorm shows the burning wood; the level timer starts off"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "batch": 149,
+    "lines": [
+      "Starting at the War Cairn boss now wakes the Chieftain right away",
+      "Picking the Undead Archmage from the boss list wakes him at once",
+      "Boss list: all 69 fights re-checked to start awake at the door"
+    ]
+  },
+  {
+    "date": "2026-11-07",
     "batch": 148,
     "lines": [
       "THE DUEL PIT (BETA) is open: pick a fighter, then set lives, health, rounds and the bot",

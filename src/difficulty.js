@@ -59,3 +59,5 @@ export function canSwitch(from, to, prog = {}, unlocked = masterUnlocked()) {
   if (from === 'master') return to === 'normal';                                                              /* down to Normal, never back */
   return true;                                                                                                 /* story <-> normal, any time */
 }
+/* the dev/test override in force (?difficulty= or setOverride), or null: the new-save card lets MASTER be picked when it is set (claude/lives DIFFPICK) */
+export const overrideId = () => override;

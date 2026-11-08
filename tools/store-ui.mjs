@@ -26,7 +26,7 @@ for(const h of ['knight','pyro','paladin','pirate','reaper','warden','geomancer'
 {let rand=0;const R=Math.random;Math.random=()=>{rand++;return R()};const cv=document.createElement('canvas');cv.width=146;cv.height=76;const cg=cv.getContext('2d');const fr=document.createElement('canvas');fr.width=16;fr.height=26;for(const s of SKILLS.filter(s=>s.active))for(let t=0;t<4;t+=.1)AP.drawAbilityPreview(cg,0,0,146,76,{id:s.id,hero:s.hero,t,idle:[fr],atk:[fr,fr],icon:null});AP.drawAbilityPreview(cg,0,0,146,76,{id:'nope',hero:'x',t:1,idle:[],atk:[],icon:null});Math.random=R;out.rand=rand;}
 // buying still works: an ability from the tree (at the map), a skin from the store
 BK.setHero('knight');BK.reset({fresh:true});BKT.PROG.xp.knight=xpFloor(12);BKT.PROG.coins=1000;BK.applyUpgrades();BK.load(0);BK.state='map';dispatchEvent(new KeyboardEvent('keydown',{key:'q'}));BK.sim(1);dispatchEvent(new KeyboardEvent('keyup',{key:'q'}));out.treeOpen=BK.state;BK.ui.treeTab=0;BK.ui.treeI=0;
-const n0=BKT.treeNodes()[0],c0=BKT.PROG.coins;BK.press('confirm');BK.sim(1);out.msg=BK.ui.treeMsg;out.boughtSkill=!!BKT.PROG.skillOwned.knight[n0.id]&&BKT.PROG.coins===c0-n0.price;
+const n0=BKT.treeNodes()[0];delete BKT.PROG.skillOwned.knight[n0.id];BKT.PROG.loadouts.knight=[];/* (claude/starterskill: the first ability is the free starter; buy it from none) */const c0=BKT.PROG.coins;BK.press('confirm');BK.sim(1);out.msg=BK.ui.treeMsg;out.boughtSkill=!!BKT.PROG.skillOwned.knight[n0.id]&&BKT.PROG.coins===c0-n0.price;
 BK.ui.storeOpen('map','skins');BK.ui.storeI=1;const c1=BKT.PROG.coins;BK.step(2);BK.press('confirm');BK.sim(1);out.boughtSkin=BKT.PROG.coins<c1;
 return out;})()`);
 assert.deepEqual(r.unshaped,[],'an ability has no preview shape: '+r.unshaped);
