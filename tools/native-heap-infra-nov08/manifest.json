@@ -989,14 +989,23 @@
       "tools/private-hero-profile-guard-preload-nov01.mjs": "677953beff668e81b2000ecce4ce54344d8da4372462976a31013581ae95af0e",
       "tools/browser-profile.mjs": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
       "tools/process-memory.mjs": "fafe9c59b4f6c05b60ec2c7e36fe78d554e2b1290bbee6cd2d822b430c2e6ed1",
-      "tools/ports.mjs": "3c0904f86806cff1213ad93af0f293999ea169f24cdde749fee64e875767dad5"
+      "tools/ports.mjs": "21bf29ed6e6b0c2b3abfc6cbaeed3d4f2ba742956e45a43a152f14143f1a0573"
     },
     "historicalSourceManifest": {
       "file": "tools/baseline-memory-profile-source/manifest.json",
       "sha256": "28e881ef3f9773cd2f598ce799a7b6d6b0b4216c6a3f27cd1e01339247e6725b"
     },
     "requirePositiveRendererAllocationSamples": true,
-    "requireCallstackIdentityAndPositiveAllocatedBytes": true
+    "requireCallstackIdentityAndPositiveAllocatedBytes": true,
+    "helperHashRecovery": {
+      "initialRun": 42438284874,
+      "initialController": "ca6b25e5ad100137365ea4eaf9d1c46e9473276d",
+      "result": "outputs/receipts/native-heap-infra-result-nov08.json",
+      "canonicalGitBlobSha256": "21bf29ed6e6b0c2b3abfc6cbaeed3d4f2ba742956e45a43a152f14143f1a0573",
+      "localCrlfSha256": "3c0904f86806cff1213ad93af0f293999ea169f24cdde749fee64e875767dad5",
+      "onlyExpectedCanonicalHelperHashCorrected": true,
+      "noSourceAlgorithmOrGuardRelaxation": true
+    }
   },
   "baseline": [
     {
