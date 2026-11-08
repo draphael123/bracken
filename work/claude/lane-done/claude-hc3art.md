@@ -37,3 +37,7 @@ exit 0: gprincess (109), gq2mech, bell-winch, hc3art-sheet, crown-exam, gqueen3,
 ## Questions (rec first)
 1. The Captains Hall / Banquet room art is keyed off the 'royal' interiors' west columns (K.CAPT 431, K.BANQ 479 in hc3_art.js). Rec: keep; if the level is re-shifted update K (a crown-exam assert tying K to the built level is a cheap follow-up).
 2. Bakehouse oven positions are hard-coded columns (K.YARD) on the current ledges. Rec: keep; the proof lane should check none clips a ledge tile above it.
+
+---
+# Round 2 (claude/hc3art, off highcrown3 d013aa614 + master 6743648c2)
+Full report: scratch/lane-reports/hc3art.md. Added: Princess hidden until the chase is done and visible standing before it; her cameo in the Queen's intro; tower tops (snow caps, loops, pennants, a signal brazier lit by her alarm); her room painted as a belfry chamber; banquet tables, chandeliers, servery pot rail, rose-and-tiara banners; Captains Hall shields on the crown; hop frame fixed; hc3art-sheet ties the art's columns to the built level. No browser run (gate151 flag was up): in-game stills OWED.
