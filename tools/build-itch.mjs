@@ -124,7 +124,7 @@ export async function buildItch({ out = join(ROOT, 'dist-itch'), zip = true, log
   writeFileSync(join(site, 'index.html'), html);
   /* ---- static files ---- */
   const put = (rel, from = rel) => { mkdirSync(dirname(join(site, rel)), { recursive: true }); copyFileSync(join(ROOT, from), join(site, rel)); };
-  for (const f of ['favicon.ico', 'icons/favicon-32.png', 'icons/icon-192.png', 'icons/apple-touch-icon-180.png', 'fonts/PressStart2P-Regular.ttf', 'fonts/Silkscreen-Regular.ttf', 'fonts/OFL-PressStart2P.txt', 'fonts/OFL-Silkscreen.txt', 'audio/manifest.json', 'audio/CREDITS.txt']) put(f);
+  for (const f of ['favicon.ico', 'icons/favicon-32.png', 'icons/icon-192.png', 'icons/apple-touch-icon-180.png', 'assets/ui/title-mark.png', 'fonts/PressStart2P-Regular.ttf', 'fonts/Silkscreen-Regular.ttf', 'fonts/OFL-PressStart2P.txt', 'fonts/OFL-Silkscreen.txt', 'audio/manifest.json', 'audio/CREDITS.txt']) put(f);
   const man = JSON.parse(readFileSync(join(ROOT, 'audio', 'manifest.json'), 'utf8')); let sfx = 0; for (const u of Object.values(man).flat()) { put(u.replace(/^\.\//, '')); sfx++; }
   for (const f of T.keepFiles) put('audio/' + f);
   mkdirSync(join(site, 'docs'), { recursive: true });

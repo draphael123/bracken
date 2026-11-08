@@ -287,6 +287,8 @@ import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js'
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
 let VW = 320, VH = 180;
+/* THE TITLE MARK (11-08, Daniel's logo): assets/ui/title-mark.png, drawn on the title at 1:1 in the 320x180 picture (the canvas itself is what scales it, so it stays crisp at any integer zoom). Until it has loaded (or where there is no Image, a tool) the old drawn plank sign is the fallback. */
+const TITLE_MARK = typeof Image !== 'undefined' ? Object.assign(new Image(), { src: 'assets/ui/title-mark.png' }) : null; const titleMarkReady = () => !!(TITLE_MARK && TITLE_MARK.complete && TITLE_MARK.naturalWidth > 0);
 const disp = document.getElementById('c');
 /* A PHONE (claude/mobile2): a coarse primary pointer. Decided once, here, because a canvas's context options cannot change after its first getContext.
    SET.phoneRes ('auto' | 'on' | 'off', Settings > TOUCH > Phone mode) and ?phoneres=1 / 0 override the detection (SET is not built yet, so it is read from storage). */
@@ -37736,11 +37738,13 @@ function render() {
     const signSince = SET.reduceMotion ? 99 : introAt !== null ? time - introAt : since, e = easeOutBack(Math.min(1, signSince / TC.SIGN_S));   /* (claude/intro) the sign eases down at the start of the intro, once; reduce-motion and a tool: it is there */
     const sway = SET.reduceMotion ? 0 : Math.sin(time * 0.9) * 1.2, ly = Math.round(2 - (1 - e) * 70 + sway);
     const lw = 192, lh = 38, lxMid = Math.round(Math.round(VW / 2) - lw / 2), lx = touchOn ? Math.round(pressCard ? lxMid : lxMid + (4 - lxMid) * Math.min(1, since / 0.5)) : lxMid, tcx = lx + (lw >> 1);   /* on touch the sign sits mid-screen under the prompt, then slides left to make room for the tall board */   /* (claude/touchrows) on touch the tall board covers the sign right of x178: the sign stands left of it so the whole tagline shows */
-    g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
-    text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22);   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
+    const useMark = titleMarkReady();   /* (title-mark: Daniel's logo replaces the plank sign and the drawn word) */
+    if (useMark) { const mw_ = TITLE_MARK.naturalWidth, mh_ = TITLE_MARK.naturalHeight, mx_ = Math.round(tcx - mw_ / 2); g.drawImage(TITLE_MARK, mx_, ly + 3); if (window.__textRec) textRec('text', { s: 'THORNROAD', x0: mx_, y0: ly + 3, w: mw_, h: mh_, size: 22 }); }
+    else { g.drawImage(PROP.plank, 0, 0, PROP.plank.width, PROP.plank.height, lx, ly, lw, lh);
+    text('THORNROAD', tcx, ly + 4, UI.gold, 'center', 22); }   /* (one call: the face draws its own shadow, and a second THORNROAD 2px off it is what textfit calls a collision) */
     // a glint runs along the letters every few seconds
-    { const k = ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
-    { const a = Math.max(0, Math.min(1, (signSince - 0.5) / 0.4)); g.globalAlpha = a; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(lx + 10, ly + 25, lw - 20, 10); text('a road, a crown, a mountain', tcx, ly + 27, UI.text, 'center', 6); g.globalAlpha = 1; }
+    { const k = useMark ? 0 : ((time - titleSince) % 5.5) / 0.7; if (k > 0 && k < 1) { g.save(); g.beginPath(); g.rect(lx + 6, ly + 3, lw - 12, lh - 6); g.clip(); const sx = lx - 20 + k * (lw + 40); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35; g.fillStyle = '#fff6c8'; g.beginPath(); g.moveTo(sx, ly); g.lineTo(sx + 10, ly); g.lineTo(sx - 4, ly + lh); g.lineTo(sx - 14, ly + lh); g.closePath(); g.fill(); g.restore(); } }
+    { const a = Math.max(0, Math.min(1, (signSince - 0.5) / 0.4)); g.globalAlpha = a; const tgY = ly + (useMark ? 33 : 25), tgW = useMark ? inkW('a road, a crown, a mountain', 6) + 12 : lw - 20; g.fillStyle = 'rgba(20,12,8,0.6)'; g.fillRect(Math.round(tcx - tgW / 2), tgY, tgW, 10); text('a road, a crown, a mountain', tcx, tgY + 2, UI.text, 'center', 6); g.globalAlpha = 1; }
     /* (claude/intro) PRESS ANY KEY under the sign (TAP TO START on touch), blinking, with what the game takes under it; it fades as it is pressed */
     { const pa = pressCard ? Math.max(0, Math.min(1, (introS() - TC.PROMPT_AT) / 0.4)) : pressAt !== null ? Math.max(0, 1 - (time - pressAt) / TC.PROMPT_FADE) : 0; if (pa > 0) TC.drawPrompt(g, text, inkW, UI, time, tcx, 46, pa, touchOn, !!SET.reduceMotion); }
     // the menu: a board on two posts, standing on the road to the right of the camp
