@@ -78,7 +78,7 @@ for (const m of ['walk', 'lungeTell', 'lunge', 'flurry', 'fanTell', 'trinketTell
   ok(gpMul({ mode: m }) >= 0.4 && gpMul({ mode: m }) <= 0.5, m + ': ' + gpMul({ mode: m }) + 'x (>= 0.4, never 0)');
 ok(gpMul({ mode: 'walk', hiding: true }) === 0.4, 'hiding behind a guard: 0.4x (the floor)');
 ok(gpMul({ mode: 'pinned' }) === 1.35 && gpMul({ mode: 'stunned' }) === 1.25 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.35, stunned x1.25, preen / stagger x1.0');
-ok(GP.hp === 1700 && GP.endAt === 0.1 && GP.bell.pin === 3.5, 'hp 1700 base, she ends at 10 %, the pin is 3.5 s');
+ok(GP.hp === 2400 && GP.endAt === 0.1 && GP.bell.pin === 3.5, 'hp 2400 base, she ends at 10 %, the pin is 3.5 s');
 
 console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate -> PINNED');
 { const w = make(); free(w); const gx = w.A.grate.col * TS + 8;
