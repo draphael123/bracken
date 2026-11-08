@@ -37,7 +37,7 @@ ok(canSwitch('story', 'normal') && canSwitch('normal', 'story'), 'Very Easy <-> 
 ok(!canSwitch('normal', 'master', {}, false) && canSwitch('normal', 'master', {}, true), 'Master only once unlocked (a Normal clear)');
 ok(!canSwitch('normal', 'master', { modeChosen: true }, true), 'Master is chosen at a save\'s creation, not switched into later');
 ok(canSwitch('master', 'normal') && !canSwitch('master', 'story') && !canSwitch('normal', 'master', { masterDropped: true }, true), 'a Master save drops to Normal, never back (and not straight to Very Easy)');
-ok(modeId('easy') === 'story' && modeId('master') === 'master' && modeId('bogus') === null, 'the tool names (easy|normal|master) map onto the modes');
+ok(modeId('easy') === 'easy' && modeId('veryeasy') === 'story' && modeId('story') === 'story' && modeId('master') === 'master' && modeId('bogus') === null, 'the tool names (easy|normal|master) map onto the modes');
 setOverride('master'); ok(df('take') === MODES.master.take, 'setOverride wins'); setOverride(null); ok(df('take') === 1, 'no override: the save\'s (normal)');
 
 /* PAGE */
@@ -46,7 +46,7 @@ let R;
 try {
   R = await pg.evalp(`(async()=>{
     const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; BK.SET.speed = 1; const out = {};
-    for (const m of ['story', 'normal', 'master']) { BK.difficulty.setOverride(m); const o = {};
+    for (const m of ['story', 'easy', 'normal', 'master']) { BK.difficulty.setOverride(m); const o = {};
       BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'spire')); BK.state = 'play'; BK.start(); BK.god = false; BK.sim(5); BK.reset();
       const P = BK.P; P.inv = 0; P.hp = P.maxHp = 400; P.block = false; const h0 = P.hp; BKT.damagePlayer(P.x + 40, 20, { noKnock: true }); o.hit = h0 - P.hp;
       o.flaskMax = BK.flaskMax(); P.flasks = 0; BKT.shrineFill ? BKT.shrineFill() : null; o.shrine = P.flasks;
@@ -63,5 +63,10 @@ ok(Math.abs(R.master.hit / n.hit - MODES.master.take) < 0.1, 'Master: a blow lan
 ok(R.story.flaskMax === n.flaskMax + 1 && R.master.flaskMax === Math.max(1, n.flaskMax - 1), 'flask max: Very Easy +1, Master -1 (min 1): ' + [R.story.flaskMax, n.flaskMax, R.master.flaskMax]);
 if (n.shrine !== null && n.shrine !== undefined) ok(n.shrine === 1 && R.story.shrine === R.story.flaskMax && R.master.shrine === 0, 'a shrine: Normal gives one, Very Easy all, Master none: ' + [R.story.shrine, n.shrine, R.master.shrine]);
 ok(Math.abs(R.story.openFrames / n.openFrames - MODES.story.open) < 0.12 && Math.abs(R.master.openFrames / n.openFrames - MODES.master.open) < 0.12, 'a told opening lasts x open (frames ' + [R.story.openFrames, n.openFrames, R.master.openFrames] + ')');
+ok(Math.abs(R.easy.hit / n.hit - MODES.easy.take) < 0.08, 'Easy: a blow lands at x' + MODES.easy.take + ' (' + R.easy.hit + ' vs ' + n.hit + ')');
+ok(R.easy.flaskMax === n.flaskMax + 1, 'flask max: Easy +1 (' + R.easy.flaskMax + ' vs ' + n.flaskMax + ')');
+if (n.shrine !== null && n.shrine !== undefined) ok(R.easy.shrine === 1, 'a shrine: Easy gives one, like Normal (' + R.easy.shrine + ')');
+ok(Math.abs(R.easy.openFrames / n.openFrames - MODES.easy.open) < 0.12, 'Easy: a told opening lasts x' + MODES.easy.open + ' (frames ' + [R.easy.openFrames, n.openFrames] + ')');
+for (const k of Object.keys(MODES.normal)) if (typeof MODES.easy[k] === 'number' && typeof MODES.story[k] === 'number' && k !== 'phase') ok(Math.abs(MODES.easy[k] - (MODES.story[k] + MODES.normal[k]) / 2) < 0.51, 'EASY ' + k + ' sits between Very Easy and Normal');
 if (fails.length) { console.log('DIFFICULTY: ' + fails.length + ' FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('difficulty: ok (normal = identity, every key hooked, master keeps tells + floor, picker rules, per-mode damage / flasks / shrines / openings in the page)');

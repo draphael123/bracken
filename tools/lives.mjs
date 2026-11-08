@@ -8,7 +8,7 @@
    D. SAVES        PROG.lives survives migrateProgress, export, and a demo save's prepareImport; an old save with no field loads as OFF
    Run: node tools/lives.mjs */
 import { readFileSync } from 'node:fs';
-import { LIVES_START, LIVES_PER_COINS, livesOf, lockedOf, setLives, lockIn, startLives, coinTick, loseLife, leftWord, cardTag, modeOf, setMode, stepMode, cardTags, MODE_BLURB, MODE_IDS } from '../src/lives.js';
+import { LIVES_START, LIVES_PER_COINS, livesOf, lockedOf, setLives, lockIn, startLives, coinTick, loseLife, leftWord, cardTag, modeOf, setMode, stepMode, cardTags, MODE_BLURB, MODE_IDS, LIVES_BY_MODE, livesFor, livesValue, livesBlurb, coinLivesOn } from '../src/lives.js';
 import * as DFM from '../src/difficulty.js';
 import { migrateProgress, exportProgress } from '../src/progression.js';
 import { prepareImport, tag } from '../src/demo-save.js';
@@ -33,7 +33,7 @@ ok(cardTag({ lives: 'on' }) === 'LIVES' && cardTag({}) === '' && cardTag({ lives
 
 /* B. THE RULE */
 ok(LIVES_START === 5 && LIVES_PER_COINS === 100, '5 lives, a life per 100 coins');
-ok(startLives({ lives: 'on' }) === 5 && startLives({}) === Infinity && startLives({ lives: 'off' }) === Infinity, 'entering a level: 5 when ON, no pool when OFF');
+ok(startLives({ lives: 'on' }) === 3 && startLives({ lives: 'on', mode: 'easy' }) === 5 && startLives({}) === Infinity && startLives({ lives: 'off' }) === Infinity, 'entering a level: the difficulty count when ON (default NORMAL = 3), no pool when OFF');
 { let c = 0, gained = 0; for (let i = 0; i < 250; i++) { const r = coinTick(c, 1); c = r.coins; gained += r.gained; }
   ok(gained === 2 && c === 250, '250 single coins grant exactly 2 lives (' + gained + ')');
   const a = coinTick(95, 9); ok(a.gained === 1 && a.coins === 104, 'a pile of 9 that crosses the hundred grants it once');
@@ -61,7 +61,7 @@ has(/if \(lifeRule\(\)\) \{ lives = LV\.loseLife\(lives\)\.lives;/, 'a death cos
 has(/function die\(killer\)[\s\S]{0,1800}deathCost\(P, killer\)/, 'the normal death rules (deathCost: shrine respawn, salt) still run');
 has(/else if \(lifeRule\(\) && lives <= 0 && !bossSelectFight\) \{ state = 'gameover'/, 'no lives left -> the GAME OVER state (otherwise respawn as ever)');
 has(/if \(state === 'gameover'\) \{ if \(confirmPress \|\| pausePress\) \{ state = 'map'; gotoLevelNode\(levelIndex\)/, 'GAME OVER -> the WORLD MAP');
-has(/if \(livesOn\(\)\) \{ g\.drawImage\(K\.R\.idle\[0\]/, 'the heart row draws only when LIVES is ON on a campaign wood');
+has(/if \(livesOn\(\)\) \{ const ln = 'x' \+ Math\.max\(0, lives\), lx = [\s\S]{0,400}hudStrip\(2, 28[\s\S]{0,60}g\.drawImage\(PROP\.hudLife, 4, 30\)/, 'the lives row (icon + count, on a strip in the MINIMAL HUD, never idle-hidden) draws only when LIVES is ON on a campaign wood');
 has(/text\(PROG\.lives === 'on' \? 'GAME OVER'/, 'the card says GAME OVER');
 has(/const newRulesDue = \(\) => !PROG\.rulesSet && !PROG\.heroPicked && !LEVELS\.some/, 'the rules card is due only for a save that has not started');
 has(/heroPick\.stage === 'rules'/, 'the rules card is a stage before the hero pick');
@@ -87,11 +87,27 @@ ok(modeOf({}) === 'normal' && modeOf(null) === 'normal' && modeOf({ mode: 'bogus
   setMode(p, 'normal', IDS, true); lockIn(p);
   ok(setMode(p, 'story', IDS, true) === 'normal' && p.mode === 'normal', 'LOCKED with the first level: the mode refuses a change');
   const q = { [IDS[0]]: { cleared: true } }; ok(setMode(q, 'story', IDS) === 'normal', 'an old save with a level record cannot be moved off NORMAL'); }
-ok(stepMode('normal', 1) === 'master' && stepMode('normal', -1) === 'story' && stepMode('story', -1) === 'story' && stepMode('master', 1) === 'master', 'the row steps VERY EASY - NORMAL - MASTER without wrapping');
-ok(MODE_IDS.join() === 'story,normal,master' && DFM.MODES.story.label === 'VERY EASY' && DFM.MODES.master.label === 'MASTER', 'labels come from src/difficulty.js');
+ok(stepMode('normal', 1) === 'master' && stepMode('normal', -1) === 'easy' && stepMode('easy', -1) === 'story' && stepMode('story', 1) === 'easy' && stepMode('story', -1) === 'story' && stepMode('master', 1) === 'master', 'the row steps VERY EASY - EASY - NORMAL - MASTER without wrapping');
+ok(MODE_IDS.join() === 'story,easy,normal,master' && DFM.MODES.easy.label === 'EASY' && DFM.MODES.story.label === 'VERY EASY' && DFM.MODES.master.label === 'MASTER', 'labels come from src/difficulty.js');
 ok(MODE_IDS.every(id => MODE_BLURB[id] && MODE_BLURB[id].length <= 60), 'one short line per mode');
 ok(cardTags({}).length === 0 && cardTags({ lives: 'on' }).map(t => t[0]).join() === 'LIVES', 'an old save shows no mode tag (LIVES only if ON)');
 ok(cardTags({ rulesSet: 1 }).map(t => t[0]).join() === 'NORMAL' && cardTags({ rulesSet: 1, mode: 'master', lives: 'on' }).map(t => t[0]).join() === 'MASTER,LIVES' && cardTags({ mode: 'story' })[0][0] === 'VERY EASY', 'the slot card shows the chosen mode (then LIVES)');
+/* F. LIVES BY DIFFICULTY (Daniel 11-08) + EASY */
+ok(LIVES_BY_MODE.story === 10 && LIVES_BY_MODE.easy === 5 && LIVES_BY_MODE.normal === 3 && LIVES_BY_MODE.master === 1, 'lives per level: VERY EASY 10, EASY 5, NORMAL 3, MASTER 1');
+for (const [m, n] of Object.entries(LIVES_BY_MODE)) ok(startLives({ lives: 'on', mode: m }) === n && livesFor({ mode: m }) === n && startLives({ lives: 'off', mode: m }) === Infinity, 'startLives follows the save mode: ' + m + ' ' + n);
+ok(MODE_IDS.every(id => LIVES_BY_MODE[id] >= 1 && MODE_BLURB[id]), 'every mode has a count and a line');
+ok(livesFor({}) === 3 && livesFor({ mode: 'bogus' }) === 3, 'an old save (no mode) is NORMAL: 3');
+ok(livesValue({}) === 'OFF' && livesValue({ lives: 'on' }) === 'ON: 3 LIVES' && livesValue({ lives: 'on', mode: 'story' }) === 'ON: 10 LIVES' && livesValue({ lives: 'on', mode: 'master' }) === 'ON: 1 LIFE' && livesValue({ lives: 'on', mode: 'easy' }) === 'ON: 5 LIVES', 'the card shows the count next to ON');
+ok(coinLivesOn({}) && coinLivesOn({ mode: 'story' }) && coinLivesOn({ mode: 'easy' }) && !coinLivesOn({ mode: 'master' }), '+1 per 100 coins on every mode but MASTER');
+ok(/no coin lives/.test(livesBlurb({ lives: 'on', mode: 'master' })) && /\+1 per 100/.test(livesBlurb({ lives: 'on' })), 'the card blurb says so');
+{ const E = DFM.MODES.easy, S = DFM.MODES.story, N = DFM.MODES.normal;   /* EASY sits halfway on every number */
+  for (const k of ['take', 'stagger', 'parry', 'open', 'death', 'affix']) ok(Math.abs(E[k] - (S[k] + N[k]) / 2) < 0.02, 'EASY ' + k + ' is halfway (' + E[k] + ')');
+  ok(E.flaskAdd === 1 && E.shrine === 'one' && E.punish === false && E.flinch === true && E.stale === null && E.poise === 1 && E.gap === 1, 'EASY keeps the whole-number rules: +1 flask, one-flask shrines, no punish'); }
+ok(DFM.modeId('easy') === 'easy' && DFM.modeId('veryeasy') === 'story' && DFM.modeId('story') === 'story', 'the ?difficulty= names: easy is EASY, veryeasy/story is VERY EASY');
+ok(DFM.canSwitch('story', 'easy') && DFM.canSwitch('easy', 'normal') && DFM.canSwitch('normal', 'easy') && !DFM.canSwitch('master', 'easy'), 'difficulty.js canSwitch handles the new mode');
+has(/function livesCoin\(n\) \{ if \(!livesOn\(\) \|\| !LV\.coinLivesOn\(PROG\)\) return;/, 'MASTER earns no coin lives');
+has(/text\('< ' \+ LV\.livesValue\(PROG\) \+ ' >'/, 'the LIVES row shows the count');
+has(/hudLife: outline\(fromGrid\(\[/, 'the lives icon is a baked HUD icon');
 /* the mode is the save's: handed to difficulty.js, and the ?difficulty= override still wins */
 DFM.setOverride(null); DFM.setSaveMode('story'); ok(DFM.mode() === 'story', 'setSaveMode hands the saved mode to difficulty.js');
 DFM.setOverride('master'); ok(DFM.mode() === 'master' && DFM.overrideId() === 'master', 'the ?difficulty= override still wins over the save'); DFM.setOverride(null); DFM.setSaveMode('normal');
