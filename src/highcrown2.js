@@ -20,6 +20,7 @@
                                BELL at the top: rung (by you, or by its sentry) the grate on the stair head drops and the hall's watch turns
                                out on the stair side of it. The kitchen floor is gone (the Kitchen Gate owns the kitchens now).
                             THE CHAPEL (rows 10-19, as it was), then the Captains Hall, the Banquet Hall, the Leads and HER HALL (as they were). */
+import { gobgeoLay } from './gobgeo-level.js';   /* (claude/gobgeo) */
 export const HC2 = {
   START: { x: 8, y: 63 },
   WINCH_GATE: 25, WINCH: 20,                      // the bailey gate and its winch
@@ -360,5 +361,5 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   R.gusts = (R.gusts || []).concat([{ x0: B.W1[0] * TS, x1: B.W1[1] * TS, y0: 8 * TS, y1: (S + 1) * TS, dir: -1, period: 6.5, on: 1.4, phase: 0, told: true },
     { x0: B.W2[0] * TS, x1: B.W2[1] * TS, y0: 8 * TS, y1: (S + 7) * TS, dir: -1, period: 5.5, on: 1.8, phase: 2, told: true }]);   /* headwind gusts, told (crosswind on the walk, stronger over the broken stretch) */
   R.hc3 = true;
-  return R;
+  return gobgeoLay(R, { T, TS });   /* (claude/gobgeo) THE GOBLIN GEOMANCER's rooms, laid last on these final columns (src/gobgeo-level.js) */
 }
