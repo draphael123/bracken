@@ -128,7 +128,7 @@ console.log('== WIRING (main.js, level.js, gqueen-hands.js)');
 { const m = rd('src/main.js'), lv = rd('src/level.js'), h = rd('src/gqueen-hands.js');
   ok(/!\(pr\.bell && pr\.bossGate && GQH && GQH\.on\(\)\)/.test(m), 'the generic bell strike steps aside for her hall bell (the hands own it, every seat)');
   ok(/grate: \(hold, by\) => gqGrateDrop\(hold, by\)/.test(m) && /westGate: open => gqWestGate\(open\)/.test(m) && /attackBox: \(\) => attackBox\(\), bell: \(\) => gqBell\(\)/.test(m) && /pin: \(e, x, by, txt, secs\) => gqPinFor/.test(m), 'GQH ctx: attackBox, bell, grate, pin, westGate');
-  ok(/e\.pinBy === 'lure'\) dmg = Math\.round\(dmg \* 1\.35\)/.test(m) && GM.pinMul === 1.35, 'pinned by the lure: x1.35 a blow');
+  ok(/e\.pinBy === 'lure'\) dmg = Math\.round\(dmg \* GQ3\.mech\.pinMul\)/.test(m) && GM.pinMul > 1 && GM.pinMul <= 1.35, 'pinned by the lure: x' + GM.pinMul + ' a blow (GQ3.mech.pinMul: a bigger window than her plate)');   /* (claude/hcqueen) the tune lane's number, read from the hands */
   ok(/OUTSIDE AN OPENING her plate turns a blade to 0\.4/.test(m), 'the 0.4x floor outside openings is untouched');
   ok(/RING THE HALL BELL YOURSELF: she storms to the sound/.test(m) && /crank the winch by the west door/.test(m), 'the bestiary text describes the lure and the winch');
   ok(/RING THE HALL BELL: SHE STORMS TO THE SOUND/.test(lv) && /CRANK THE WINCH BY THE DOOR/.test(lv) && /OR RING THE HALL BELL: SHE STORMS TO THE SOUND/.test(m), 'the hall signs and the first-WARDED tip say it');
