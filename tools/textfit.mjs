@@ -189,6 +189,10 @@ async function pageTextFit(input) {
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
+    /* (claude/lives2) THE NEW-SAVE RULES CARD: LIVES OFF and ON x every difficulty (the ON value reads 'ON: 10 LIVES' ... 'ON: 1 LIFE'), the LIVES and DIFFICULTY rows each highlighted */
+    { const P0 = window.BK.PROG, was = [P0.lives, P0.mode];
+      for (const lv of ['off', 'on']) for (const md of ['story', 'easy', 'normal', 'hard', 'master']) for (const row of [0, 1]) frame('new-save rules [' + lv + ' / ' + md + ' / row ' + row + ']', () => { P0.lives = lv; P0.mode = md; BK.state = 'heropick'; BK.ui.heroPickStage = 'rules'; BK.ui.rulesRow = row; }, { settle: 20 });
+      P0.lives = was[0]; P0.mode = was[1]; BK.ui.heroPickStage = 'pick'; }
     await yieldNow(); }
   /* THE TRIAL PROMPT (hero pick, stage 'trial'): its 64-letter sentence ran off both edges of the screen (UIQUICK 2026-10-04); every hero's name over it */
   if (want('trial')) { for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'go'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
@@ -200,7 +204,12 @@ async function pageTextFit(input) {
   if (want('opening')) { BK.ui.openingStart(); for (let i = 0; i < 3; i++) frame('opening #' + i, () => { BK.state = 'opening'; BK.ui.opening.i = i; BK.ui.opening.t = 1; }, { settle: 2 });
     for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('opening #3 [' + h + ']', () => { BK.state = 'opening'; BK.ui.opening.i = 3; BK.ui.opening.t = 1; }, { settle: 2 }); }   /* (claude/thornroad) the last page names the picked hero: every hero's name must fit */
     BK.state = 'title'; await yieldNow(); }
-  if (want('title')) { frame('title scene', () => { BK.state = 'title'; BK.ui.pressCard = false; }, { settle: 120 }); BK.state = 'title'; await yieldNow(); }   /* THE TITLE SCENE (claude/titlescene): the sign, its tagline and the menu board, every line measured */
+  if (want('title')) { frame('title scene', () => { BK.state = 'title'; BK.ui.pressCard = false; }, { settle: 120 }); BK.state = 'title';
+    /* (claude/titlemenu, Daniel 11-08) the six-row top level, every submenu, and the EXTRAS badge: each row selected in turn */
+    for (const row of ['CHOOSE A SAVE', 'PLAY TOGETHER', 'MORE MODES', 'OPTIONS', 'EXTRAS', 'CONTINUE']) frame('title top: ' + row, () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf(row)); }, { settle: 90 });
+    for (const [sub, rows] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP', 'BACK']], ['MORE MODES', ['ARENA YARD', 'DUEL (BETA)', 'BOSS SELECT', 'BACK']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS', 'BACK']], ['OPTIONS', ['SETTINGS', 'REPORT A BUG', 'BACK']]]) for (const row of rows) frame('title ' + sub + ': ' + row, () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSub = sub; BK.ui.titleI = Math.max(0, BK.ui.titleItems().indexOf(row)); }, { settle: 60 });
+    BK.ui.titleSub = null; BK.ui.titleI = 0;
+    await yieldNow(); }   /* THE TITLE SCENE (claude/titlescene): the sign, its tagline and the menu board, every line measured */
   if (want('press')) { frame('press card', () => { BK.state = 'title'; BK.ui.pressCard = true; }, { settle: 3 }); BK.ui.pressCard = false; BK.state = 'title'; await yieldNow(); }
   if (want('mapcard')) { const pr = BKT.PROG, keep = JSON.stringify(pr);
     for (const [l] of campaign) { pr[l.id] = { cleared: true, medal: 3, silver: 7, best: 3599, gold: 999, total: 999, quest: true, noHit: true, iron: true, allGold: true }; }
@@ -274,7 +283,7 @@ async function pageTextFit(input) {
     for (const n of [4, 3, 2]) { BK.aiComp.arm(['geomancer', 'berserker', 'reaper'].slice(0, n - 1), ['support', 'balanced', 'defensive'].slice(0, n - 1), n - 1); frame('map party x' + n, () => { BK.state = 'map'; BK.PROG.xp = BK.PROG.xp || {}; }, { settle: 3 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
-    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleOpts = false; BK.ui.titleI = Math.max(0, BK.ui.titleTop().indexOf('ARENA YARD')); }, { settle: 120 });
+    frame('title ARENA YARD row', () => { BK.state = 'title'; BK.ui.pressCard = false; BK.ui.titleSelect('ARENA YARD'); }, { settle: 120 });
     for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); frame('hero card [' + h + '] (Z to the Arena Yard)', () => { BK.state = 'herocard'; }, { settle: 5 }); }
     BK.state = 'title'; await yieldNow(); }
   /* (claude/arenayard) THE ARENA YARD: every sign in it (the talk pages) and every page of THE MOVE BOARD, for every hero (it reads the hero at the board) */
@@ -294,7 +303,7 @@ async function pageTextFit(input) {
       await yieldNow(); }
     toPlay(li, 'knight'); BK.lesson().O.st.i = 12; frame('lesson door plate', () => { BK.state = 'play'; const p = BK.players()[0]; p.x = 154 * 16 + 8; p.y = 20 * 16 - 0.01; p.vy = 0; p.ground = true; BK.sim(30); }, { settle: 4 });
     frame('inn welcome card', () => { BK.state = 'play'; BK.lesson().O.innCard(9); }, { settle: 20 });
-    frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; const top = BK.ui.titleTop(); BK.ui.titleI = top.indexOf('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
+    frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; BK.ui.titleSelect('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
     frame('map footer', () => { BK.state = 'map'; }, { settle: 20 }); }
 
   /* THE HIDDEN BOSS LIST (SHIFT+B on the title, docs/PLAYTEST.md): every row selected in turn (every boss and mini name against its wood's name), and every hero's name on the hero line */
@@ -316,6 +325,10 @@ async function pageTextFit(input) {
     /* (claude/shrinekey) THE BACK-TO-SHRINE QUESTION, and the pause menu in the lesson + the yard (the greyed NO SHRINE HERE line) */
     frame('shrine ask', () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.shrineAsk = true; }, { settle: 40 }); BK.ui.shrineAsk = false;
     for (const id of ['lesson', 'arena-yard', 'arenayard']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; try { toPlay(li, 'knight'); } catch (e) { continue; } for (let i = 0; i < BK.ui.menuCount(); i++) frame('menu ' + id + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 }); }
+    /* (claude/diff3) THE LOWER-DIFFICULTY QUESTION on the pause menu's SAVE MODE row, for every mode, LIVES on and off (the NOW line follows it) */
+    { const P0 = window.BK.PROG, was = [P0.lives, P0.mode], rows = BK.ui.menuCount(); let si = -1; for (let i = 0; i < rows; i++) { BK.ui.menuI = i; if (BK.ui.menuItem() === 'Save mode') si = i; }
+      if (si >= 0) for (const md of ['hard', 'normal', 'easy', 'story', 'master']) for (const lv of ['off', 'on']) frame('lower mode [' + md + ' / lives ' + lv + ']', () => { P0.mode = md; P0.lives = lv; BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = si; BK.ui.menuMsg = ''; BK.ui.lowerAsk(); }, { settle: 30 });
+      P0.mode = was[1]; P0.lives = was[0]; BK.ui.menuMsg = ''; }
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }
@@ -380,6 +393,10 @@ async function pageTextFit(input) {
     frame('hud [' + h + '] PLATE meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true, mixN: 5, mixAt: BK.time, mixLast: 'x' }); window.BK.PROG.tonics = 3; });   /* (claude/riposteart: the MIX-UP chain's five pips are on the bar too) */
     frame('hud [' + h + '] PLATE swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
     BK.SET.hud = 'minimal'; P.swim = false;
+    /* (claude/lives2) THE LIVES ROW (icon + xN + LIVES) with LIVES ON, in both HUDs, at the widest counts (10 = VERY EASY, 3 = NORMAL, 1 = MASTER, red) */
+    if (h === 'knight') { const was = [window.BK.PROG.lives, BK.lives]; window.BK.PROG.lives = 'on';
+      for (const hm of ['full', 'minimal']) { BK.SET.hud = hm; for (const n of [10, 3, 1]) frame('hud [' + h + '] ' + hm + ' lives x' + n, () => { BK.state = 'play'; BK.lives = n; }, { settle: 6 }); }
+      BK.SET.hud = 'minimal'; window.BK.PROG.lives = was[0]; BK.lives = was[1]; }
     frame('hud [' + h + '] minimal hurt and winded', () => { BK.state = 'play'; Object.assign(P, { hp: Math.max(1, P.maxHp * 0.4), st: 0, mixN: 5, mixAt: BK.time, mixLast: 'x' }); });
     if (h === 'ranger') {   /* (claude/rangerhud) THE QUIVER ROW under the XP bar: bow / knife stance, full / low / empty, arrows lying out in the world, both HUDs */
       for (const hm of ['full', 'minimal']) { BK.SET.hud = hm; for (const [nm, st, q, ly] of [['bow full', 'bow', 5, 0], ['bow low', 'bow', 1, 3], ['bow empty', 'bow', 0, 5], ['knife', 'knife', 3, 2]])

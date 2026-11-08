@@ -15,7 +15,7 @@ import { MAX_LEN } from '../src/bug-report.js';
 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 assert.ok(PAUSE_ROWS.includes('Report a bug'), 'the pause menu has a Report a bug row');
-assert.ok(/const titleItems = \(\) => titleOpts \? \[[^\]]*'REPORT A BUG'/.test(main), 'the title OPTIONS list has REPORT A BUG');
+assert.ok(/const titleOptRows = \(\) => \[[^\]]*'REPORT A BUG'/.test(main), 'the title OPTIONS list has REPORT A BUG');
 assert.ok(/k === 'Report a bug'\) openBugReport\(\)/.test(main) && /k === 'REPORT A BUG'\) openBugReport\(\)/.test(main), 'both rows open the board');
 assert.ok(!/mailto:/.test(main + readFileSync(new URL('../src/bug-report-ui.js', import.meta.url), 'utf8')), 'no mailto: Daniel decided on a code, not an email');
 console.log('ok  A static       the pause row, the title OPTIONS row, both wired; no mailto');

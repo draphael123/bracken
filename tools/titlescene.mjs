@@ -25,7 +25,7 @@ try {
   console.log('ok  title          sign + tagline + ' + menu.length + ' menu items all whole on screen, tagline clear of the board, one menu size, no footer');
 
   /* ---- 1b. OPTIONS (Daniel 10-09): SETTINGS + SOUND TEST + CONTROLS are ONE row; the board has six rows; the list under OPTIONS holds the three and BACK ---- */
-  assert.equal(t.items.length, 12, 'the title board is twelve rows (batch150: claude/unlocks added UNLOCKS; an unstarted save reads NEW GAME where a started one reads CONTINUE; ARENA YARD and DUEL (BETA) are both there, with ONLINE CO-OP, BOSS SELECT, the what-is-new row, GIVE FEEDBACK and CREDITS): ' + t.items.join('|'));
+  assert.deepEqual(t.items, ['NEW GAME', 'CHOOSE A SAVE', 'PLAY TOGETHER', 'MORE MODES', 'OPTIONS', 'EXTRAS'], 'the title board is SIX rows (claude/titlemenu, Daniel 11-08; an unstarted save reads NEW GAME where a started one reads CONTINUE; no SWAP HERO): ' + t.items.join('|'));
   assert.ok(t.items.includes('OPTIONS') && !t.items.some(k => ['SETTINGS', 'SOUND TEST', 'CONTROLS'].includes(k)), 'one OPTIONS row, the three are not top-level: ' + t.items.join('|'));
   const o = await pg.evalp(`(()=>{ BK.ui.titleI = BK.ui.titleItems().indexOf('OPTIONS'); BK.press('confirm'); BK.step(3); const sub = BK.ui.titleItems(); const opened = BK.ui.titleOpts; BK.press('pause'); BK.sim(2); BK.step(2); return { sub, opened, closed: !BK.ui.titleOpts, on: BK.ui.titleItems()[BK.ui.titleI] }; })()`);
   assert.deepEqual(o.sub, ['SETTINGS', 'SOUND TEST', 'CONTROLS', 'REPORT A BUG', 'BACK'], 'OPTIONS opens SETTINGS, SOUND TEST, CONTROLS, REPORT A BUG, BACK');   /* (DELIBERATE DESIGN CHANGE, claude/shipfix, Daniel 10-11: REPORT A BUG is a row under OPTIONS, before BACK) */
@@ -34,6 +34,23 @@ try {
   assert.ok(e2.opened && e2.st === 'title' && e2.sub.includes('BACK'), 'ESC on the title top level opens the OPTIONS list (not Settings directly): ' + JSON.stringify(e2));
   assert.ok(e2.closed && e2.st2 === 'title', 'ESC again closes the OPTIONS list and stays on the title: ' + JSON.stringify(e2));
   console.log('ok  options        OPTIONS groups SETTINGS / SOUND TEST / CONTROLS under one row of a six-row board; ESC closes it');
+
+  /* ---- 1c. (claude/titlemenu, Daniel 11-08) THE THREE GROUPS: each opens in place with its rows and a BACK row; ESC, X (the back key) and BACK all return to the top level on the group's own row; SWAP HERO is not on the title ---- */
+  const GRP = { 'PLAY TOGETHER': ['LOCAL CO-OP', 'ONLINE CO-OP'], 'MORE MODES': ['ARENA YARD', 'DUEL (BETA)', 'BOSS SELECT'], 'EXTRAS': ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
+  for (const [g, rows] of Object.entries(GRP)) for (const how of ['pause', 'atk', 'BACK']) {
+    const w = await pg.evalp('(()=>{ BK.state = "title"; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleItems().indexOf(' + JSON.stringify(g) + '); BK.press("confirm"); BK.step(3); const sub = BK.ui.titleItems(), at = BK.ui.titleSub, i0 = BK.ui.titleI;' +
+      (how === 'BACK' ? 'BK.ui.titleI = sub.indexOf("BACK"); BK.press("confirm");' : 'BK.press(' + JSON.stringify(how) + ');') + ' BK.sim(2); BK.step(2); return { sub, at, i0, closedSub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI], st: BK.state, top: BK.ui.titleItems() }; })()');
+    const want = rows.filter(k => k !== 'DUEL (BETA)' || w.sub.includes('DUEL (BETA)'));
+    assert.deepEqual(w.sub, want.concat(['BACK']), g + ' opens ' + want.join(' / ') + ' and BACK: ' + w.sub.join('|'));
+    assert.ok(w.at === g && w.i0 === 0 && w.closedSub === null && w.on === g && w.st === 'title' && w.top.length === 6, g + ' closes with ' + how + ' on its own row of the six: ' + JSON.stringify(w));
+  }
+  /* ENTER is attack AND confirm: inside a submenu it must TAKE the row (not go back); X alone goes back */
+  const kk = async (k, code, vk) => { for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: vk }); await pg.evalp('BK.step(3)'); };
+  await pg.evalp('(()=>{ BK.state = "title"; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleItems().indexOf("EXTRAS"); 0; })()'); await kk('Enter', 'Enter', 13);
+  const en = await pg.evalp('({ sub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI] })'); assert.deepEqual(en, { sub: 'EXTRAS', on: "WHAT'S NEW" }, 'ENTER opens EXTRAS and stays in it: ' + JSON.stringify(en));
+  await kk('Enter', 'Enter', 13); assert.equal(await pg.evalp('BK.state'), 'whatsnew', 'ENTER inside EXTRAS takes the row, it is not a back press'); await pg.evalp('BK.state = "title"; BK.ui.titleSub = null; BK.ui.titleI = 0; 0');
+  assert.ok(!t.items.includes('SWAP HERO'), 'no SWAP HERO on the title');
+  console.log('ok  groups         PLAY TOGETHER / MORE MODES / EXTRAS open in place, with BACK; ESC, X and BACK return to the top level');
 
   /* ---- 2. THE HERO PICK ---- */
   const h = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); const out = []; const { VW, VH } = BK.view;

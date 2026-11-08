@@ -14,7 +14,7 @@ const until = async (fn, ms, what) => { const t0 = Date.now(); let v; while (Dat
 try {
   await s.send('Emulation.setDeviceMetricsOverride', { width: 1000, height: 1000, deviceScaleFactor: 1, mobile: false });
   await s.send('Page.navigate', { url: s.embedUrl }); const r = await s.waitState('title'); note(r.st === 'title', 'host: title in the iframe (' + r.secs.toFixed(1) + ' s)');
-  const top = await s.ev('BK.ui.titleTop()'); note(top.includes('ONLINE CO-OP'), 'host: the title has ONLINE CO-OP in the demo build (' + top.join(', ') + ')');
+  const top = await s.ev("(()=>{BK.ui.titleSelect('ONLINE CO-OP');const a=BK.ui.titleItems();BK.ui.titleSub=null;BK.ui.titleI=0;return a})()"); note(top.includes('ONLINE CO-OP'), 'host: the title has ONLINE CO-OP in the demo build (' + top.join(', ') + ')');
   const api = await s.ev('({ online: typeof window.BKONLINE, guestApi: typeof window.BKGUEST })'); info('globals: ' + JSON.stringify(api));
   await s.click(480, 270); await sleep(300); await s.key('Shift', 'ShiftLeft', 16); await sleep(500);   /* a first gesture, as a player's click */
   await s.ev('BKONLINE.open()'); await sleep(800); await s.shot('c01-board');

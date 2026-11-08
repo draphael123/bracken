@@ -16,9 +16,13 @@ try {
   for (let i = 0; i < 160 && !(await E('typeof window.BK === "object" && !!window.BK.lookPass', 3000).catch(() => false)); i++) await sleep(300);
   await sleep(1500); await key('x', 'KeyX'); await sleep(2500);
   await E('(()=>{const o=CanvasRenderingContext2D.prototype.drawImage;window.__bad=[];CanvasRenderingContext2D.prototype.drawImage=function(im,...a){if(im==null||im===undefined){window.__bad.push({st:BK.state,pk:Object.keys(BK.PROP).length,id:BK.L&&BK.L.id,ent:BK.L&&BK.L.entities&&BK.L.entities.length,inst:new Error().stack.split(String.fromCharCode(10))[2].slice(-30),t:Math.round(performance.now()),duel:BK.duel().debug().on});}return o.call(this,im,...a);};return 1})()'); R.titleItems = await E('BK.ui.titleItems()'); R.titleState = await E('BK.state'); await shot('1-title');
-  const idx = R.titleItems.indexOf('DUEL (BETA)'); R.duelRowIdx = idx;
+  /* (claude/titlemenu, Daniel 11-08) DUEL (BETA) lives under MORE MODES: walk to that row, open it, walk to DUEL, confirm with Enter (X is the submenu's back key) */
+  const gi = R.titleItems.indexOf('MORE MODES'); R.subItems = await E("(()=>{BK.ui.titleSelect('DUEL (BETA)');const a=BK.ui.titleItems();BK.ui.titleSub=null;BK.ui.titleI=0;return a})()");
+  const idx = R.subItems.indexOf('DUEL (BETA)'); R.duelRowIdx = idx;
+  for (let i = 0; i < gi; i++) await key('ArrowDown', 'ArrowDown');
+  await key('Enter', 'Enter'); await sleep(300);
   for (let i = 0; i < idx; i++) await key('ArrowDown', 'ArrowDown');
-  await shot('2-title-on-duel'); await key('x', 'KeyX'); await sleep(2500);
+  await shot('2-title-on-duel'); await key('Enter', 'Enter'); await sleep(2500);
   R.ecAfterTitleX = ec(); R.afterTitle = await E('({st:BK.state,lvl:BK.L&&BK.L.id,card:BK.duel().debug().card,ships:BK.duel().ships})'); await shot('3-inn-card');
   /* the card: FIGHT (row 0) with one human -> a bot of the picked hero */
   R.ecBeforeFight = ec(); await key(' ', 'Space'); await sleep(2500); R.ecAfterFight = ec();

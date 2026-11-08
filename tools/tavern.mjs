@@ -105,10 +105,10 @@ if (PAGE.length) {
 
     if (PAGE.includes('join')) {
       console.log('join');
-      const top = await E('BK.ui.titleTop()');
+      const top = await E("(()=>{BK.ui.titleSelect('LOCAL CO-OP');const a=BK.ui.titleItems();BK.ui.titleSub=null;BK.ui.titleI=0;return a})()");   /* (claude/titlemenu) under PLAY TOGETHER */
       ok(top.includes('LOCAL CO-OP') && top.includes('ONLINE CO-OP'), 'the title keeps LOCAL CO-OP and ONLINE CO-OP: ' + top.join(','));
       for (const row of ['LOCAL CO-OP', 'ONLINE CO-OP']) {
-        const r = await E(`(async()=>{BK.coopEnd();BK.load(0);BK.state='title';BK.ui.titleOpts=false;BK.ui.titleI=BK.ui.titleTop().indexOf(${JSON.stringify(row)});BK.ui.pressCard=false;BK.press('confirm');BK.step(1);
+        const r = await E(`(async()=>{BK.coopEnd();BK.load(0);BK.state='title';BK.ui.titleSelect(${JSON.stringify(row)});BK.ui.pressCard=false;BK.press('confirm');BK.step(1);
           for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));
           await new Promise(r=>setTimeout(r,200));const b=document.getElementById('olhost');const o={st:BK.state,tav:!!(BK.L&&BK.L.tavern),board:!!(b&&b.style.display!=='none'),txt:b?b.innerText.slice(0,400):''};
           if(b)[...b.querySelectorAll('button')].find(x=>x.textContent==='BACK').click();return o;})()`);
