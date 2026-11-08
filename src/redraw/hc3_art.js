@@ -212,6 +212,21 @@ const ashlar = (g, w, h, base, lit, mor, seed) => { const rnd = mulberry(seed); 
   for (let i = 0; i < w * h / 90; i++) { const x = (rnd() * w) | 0, y = (rnd() * h) | 0; px(g, x, y, rnd() < 0.5 ? lit : mor); } };
 function banner(g, x, y, h, col, trim, glyph) { R(g, x - 1, y, 14, 2, S.dk); R(g, x, y, 12, 1, '#8a8aa0'); R(g, x + 1, y + 2, 10, h, col); R(g, x + 1, y + 2, 1, h, trim); R(g, x + 10, y + 2, 1, h, '#000000'); for (let i = 0; i < 5; i++) R(g, x + 1 + i * 2, y + 2 + h, 2, 2 + (i & 1) * 2, trim);
   if (glyph) { const cy = y + 2 + (h >> 1) - 3; R(g, x + 3, cy + 2, 6, 3, trim); for (const dx of [3, 5, 7, 9]) R(g, x + dx - 1 + (dx > 5 ? 0 : 0), cy - (dx === 5 || dx === 7 ? 1 : 0), 1, 3, trim); px(g, x + 6, cy + 3, '#ff4a6a'); } }
+function princessBanner(g, x, y, h) { banner(g, x, y, h, '#a8386e', '#f0d0e8', false);                                                               // the Goblin Princess's colours: rose, with a gold tiara and three gems
+  const cy = y + 2 + (h >> 1) - 3; R(g, x + 2, cy + 3, 8, 2, '#e0b040'); R(g, x + 2, cy + 3, 8, 1, '#fff6c8'); for (const dx of [2, 5, 8]) R(g, x + dx, cy - (dx === 5 ? 1 : 0), 1, 4 + (dx === 5 ? 1 : 0), '#e0b040'); px(g, x + 6, cy + 3, '#ff4a6a'); px(g, x + 4, cy + 4, '#4ad0ff'); px(g, x + 8, cy + 4, '#7aff8a'); }
+function feastTable(g, x, w, fl) {                                                                                // a long banquet table: white cloth to the floor, a purple runner, gilt goblets, a roast, loaves, candelabra
+  const top = fl - 22; R(g, x, top, w, 3, '#e8e0f0'); R(g, x, top, w, 1, '#ffffff'); R(g, x + 1, top + 3, w - 2, 19, '#cfc4de'); R(g, x + 1, top + 3, w - 2, 2, '#b3a6c8');
+  for (let k = x + 5; k < x + w - 3; k += 7) { R(g, k, top + 5, 1, 17, '#a094b8'); R(g, k + 1, top + 5, 1, 17, '#dcd2ea'); } R(g, x + 1, fl - 3, w - 2, 3, '#e0b040'); R(g, x + 1, fl - 3, w - 2, 1, '#fff6c8'); R(g, x, fl - 1, w, 1, S.mor);
+  R(g, x + 8, top, w - 16, 2, '#7a3aa0'); R(g, x + 8, top, w - 16, 1, '#e0b040'); R(g, x + 8, top + 2, w - 16, 1, '#4e1e72');
+  for (let k = x + 12; k < x + w - 14; k += 15) { const m = ((k - x) / 15) | 0;
+    if (m % 4 === 0) { R(g, k, top - 3, 4, 3, '#e0b040'); R(g, k + 1, top - 5, 2, 2, '#e0b040'); px(g, k, top - 3, '#fff6c8'); }
+    else if (m % 4 === 1) { R(g, k - 3, top - 2, 14, 2, '#c9d1dc'); R(g, k - 1, top - 6, 10, 4, '#7a4a22'); R(g, k, top - 7, 8, 1, '#a8682c'); px(g, k + 3, top - 5, '#d8a060'); px(g, k + 6, top - 4, '#5a3216'); }
+    else if (m % 4 === 2) { R(g, k + 1, top - 2, 3, 2, '#c9a870'); R(g, k + 5, top - 3, 4, 3, '#a8884e'); R(g, k + 5, top - 3, 4, 1, '#d8b878'); R(g, k, top - 1, 10, 1, '#c9d1dc'); }
+    else { R(g, k + 2, top - 10, 1, 8, '#c9a040'); R(g, k - 1, top - 10, 7, 1, '#c9a040'); R(g, k + 3, top - 2, 3, 2, '#c9a040'); for (const cx2 of [k - 1, k + 2, k + 5]) { R(g, cx2, top - 14, 1, 4, '#fff6e0'); } } } }
+const CHAND = [{ cx: 224, y: 50 }, { cx: 388, y: 50 }];                                                          // the banquet's two iron candle-rings (flames are drawn live)
+function chandelier(g, cx, y) { for (let yy = 22; yy < y; yy += 3) R(g, cx, yy, 1, 2, yy & 1 ? '#b0b0c4' : '#6a6a7c'); R(g, cx - 2, 20, 5, 3, S.dk);
+  R(g, cx - 18, y, 37, 2, '#34343f'); R(g, cx - 18, y, 37, 1, '#8a8aa0'); R(g, cx - 19, y - 3, 2, 5, '#34343f'); R(g, cx + 18, y - 3, 2, 5, '#34343f'); R(g, cx - 1, y + 2, 3, 6, '#34343f'); px(g, cx, y + 8, '#c9a040');
+  for (const dx of [-16, -8, 0, 8, 16]) { R(g, dx + cx - 1, y - 6, 3, 6, '#fff6e0'); R(g, dx + cx, y - 7, 1, 1, '#5a3a14'); } }
 const lancet = (g, x, y, w, h, shaftK) => { R(g, x - 2, y - 2, w + 4, h + 3, S.dk); R(g, x, y, w, h, '#0c1226'); for (let i = 0; i < w / 2; i++) { const d = Math.round((w / 2 - i) * 0.8); R(g, x + i, y, 1, d, S.dk); R(g, x + w - 1 - i, y, 1, d, S.dk); }
   R(g, x - 2, y - 2, 1, h + 3, S.e); R(g, x + w + 1, y - 2, 1, h + 3, S.a); R(g, x - 3, y + h + 1, w + 6, 2, S.f); R(g, x + (w >> 1), y + 3, 1, h - 3, S.dk); R(g, x, y + (h >> 1), w, 1, S.dk); for (let k = 0; k < 2; k++) px(g, x + 2 + k * (w - 5), y + 6 + k, '#9fb4e8'); void shaftK; };
 const bakeCapt = (w, h) => once('capt' + w + 'x' + h, () => { const [c, g] = canvas(w, h);
@@ -236,8 +251,9 @@ const bakeBanq = (w, h) => once('banq' + w + 'x' + h, () => { const [c, g] = can
     R(g, ax - 2, 40, aw + 4, 90, S.dk); R(g, ax, 42, aw, 88, '#0a0f22'); for (let k = 0; k < aw / 2; k++) { const d = Math.round((aw / 2 - k) * 0.55); R(g, ax + k, 42, 1, d, S.dk); R(g, ax + aw - 1 - k, 42, 1, d, S.dk); }
     R(g, ax - 2, 40, 1, 90, S.e); R(g, ax + aw + 1, 40, 1, 90, S.a); R(g, ax - 3, 130, aw + 6, 3, S.f); for (let y = 52; y < 126; y += 18) R(g, ax, y, aw, 1, S.dk); R(g, ax + (aw >> 1), 42, 1, 88, S.dk);
     for (let k = 0; k < 6; k++) px(g, ax + 4 + (k * 7) % (aw - 8), 50 + k * 12, '#9fb4e8'); }
-  for (let x = 24; x < w - 40; x += 80) { R(g, x, 20, 30, 3, '#8a8aa0'); banner(g, x + 4, 22, 54, '#4e1e72', '#e0b040', true); }                                                // the Queen's banners hung between windows
+  for (let x = 24, i = 0; x < w - 40; x += 80, i++) { R(g, x, 20, 30, 3, '#8a8aa0'); if (i % 3 === 1) princessBanner(g, x + 4, 22, 54); else banner(g, x + 4, 22, 54, '#4e1e72', '#e0b040', true); }                                                // the Queen's banners hung between windows
   R(g, 0, h - 30, w, 30, '#1f1c25'); R(g, 0, h - 30, w, 2, S.d); for (let x = 0; x < w; x += 24) { R(g, x, h - 28, 1, 28, S.mor); R(g, x + 3, h - 26, 18, 18, '#262330'); R(g, x + 3, h - 26, 18, 1, S.b); }
+  feastTable(g, 168, 132, h); feastTable(g, 340, 84, h); for (const c of CHAND) chandelier(g, c.cx, c.y);   /* the long tables, the candle-rings */
   const sv = (31 * 16);                                                                                                                                                                  // the servery door's end: a plate rack and a serving shelf (the door is at 510)
   R(g, sv - 56, h - 72, 44, 5, S.f); R(g, sv - 56, h - 72, 44, 1, S.g); for (let i = 0; i < 6; i++) { R(g, sv - 54 + i * 7, h - 82, 5, 10, '#c9c9d6'); R(g, sv - 54 + i * 7, h - 82, 5, 1, '#ffffff'); R(g, sv - 53 + i * 7, h - 80, 3, 6, '#9a9aa8'); }
   R(g, sv - 58, h - 90, 3, 20, '#34343f'); R(g, sv - 14, h - 90, 3, 20, '#34343f'); R(g, sv - 58, h - 92, 47, 2, '#34343f');
@@ -246,6 +262,7 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
   if (st !== 'royal') return false;
   if (tx0 === K.CAPT) { g.drawImage(bakeCapt(w, h), sx, sy); const k = 0.5 + 0.5 * Math.sin(time * 2.3); g.globalAlpha = 0.06 + 0.02 * k; g.fillStyle = '#ffb45c'; g.fillRect(sx, sy + h - 50, w, 50); g.globalAlpha = 1; return true; }
   if (tx0 === K.BANQ) { g.drawImage(bakeBanq(w, h), sx, sy);
+    for (const c of CHAND) for (const dx of [-16, -8, 0, 8, 16]) { const fh = 3 + ((Math.floor(time * 9 + dx + c.cx) % 3 + 3) % 3); R(g, sx + c.cx + dx - 1, sy + c.y - 6 - fh - 1, 3, fh, '#ff9a3c'); R(g, sx + c.cx + dx, sy + c.y - 6 - fh, 1, fh - 1, '#ffd36b'); }
     const hx = sx + 40, hy = sy + h - 30; R(g, hx - 6, hy - 70, 62, 70, S.dk); R(g, hx - 10, hy - 76, 70, 8, S.d); R(g, hx - 10, hy - 76, 70, 1, S.f); R(g, hx - 4, hy - 68, 58, 68, '#0a0810'); R(g, hx - 6, hy - 70, 3, 70, S.e); R(g, hx + 53, hy - 70, 3, 70, S.a);   // the great hearth on the west wall
     const f = 0.5 + 0.5 * Math.sin(time * 7); for (let i = 0; i < 5; i++) { const fh = 18 + ((i * 7 + Math.floor(time * 9 + i * 3)) % 4) * 4; g.globalAlpha = 0.85; R(g, hx + 4 + i * 10, hy - fh, 8, fh, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, hx + 6 + i * 10, hy - fh + 6, 4, fh - 6, '#ffd36b'); g.globalAlpha = 1; }
     g.globalAlpha = 0.08 + 0.04 * f; g.fillStyle = '#ff9a3c'; g.fillRect(sx, sy + h - 120, w, 120); g.globalAlpha = 1; return true; }
