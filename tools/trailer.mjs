@@ -243,7 +243,7 @@ async function recordOne(s, seed) {
 }
 const freeMB = () => { const r = spawnSync('powershell', ['-NoProfile', '-Command', '[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)'], { encoding: 'utf8' }); return +r.stdout.trim() || 0; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function waitRam() { for (let i = 0; i < 10 && freeMB() < 1500; i++) { console.log('free RAM ' + freeMB() + ' MB < 1500: waiting 2 min'); await sleep(120000); } }
+async function waitRam() { for (let i = 0; i < 10 && freeMB() < 3000; i++) { console.log('free RAM ' + freeMB() + ' MB < 3000: waiting 2 min'); await sleep(120000); } }
 
 async function record() {
   const want = opt('shots', 'all'), pf = opt('parts', ''), pids = pf ? new Set(pf.split(',').flatMap(f => partsOf(f).parts.filter(p => p.clip).map(p => p.clip))) : null;   /* --parts=main,demo,vertical: exactly the clips those cuts use, each recorded once */
@@ -444,7 +444,7 @@ function cards3() {
   const dt = (txt, y, size, col = 'fff6e0') => `drawtext=fontfile=font.ttf:text='${txt}':fontsize=${size}:fontcolor=0x${col}:x=(w-text_w)/2:y=${y}:shadowcolor=0x000000:shadowx=1:shadowy=1`;
   const up = ',scale=1920:1080:flags=neighbor,format=rgb24', blank = ['-f', 'lavfi', '-i', `color=c=${BG}:s=320x180`];
   const run = (name, vf) => { const r = ff([...blank, '-vf', vf.join(',') + up, '-frames:v', '1', join(CARDS, name + '.png')], { cwd: CARDS }); console.log('card ' + name + (r.status === 0 ? '' : ' FAILED ' + r.stderr.slice(0, 300))); if (r.status !== 0) process.exitCode = 1; };
-  run('title3', [dt('THORNROAD', 66, 24, 'ffd34a'), dt('A HAND-DRAWN PIXEL', 104, 8, 'c9b27c'), dt('ACTION PLATFORMER', 116, 8, 'c9b27c')]);
+  run('title3', [dt('THORNROAD', 66, 24, 'ffd34a'), dt('A PIXEL ACTION PLATFORMER', 108, 8, 'c9b27c')]);
   run('end3', [dt('THORNROAD', 38, 24, 'ffd34a'), dt('FREE DEMO', 76, 16, 'a8e06e'), dt('PLAY NOW - WISHLIST THE FULL GAME', 104, 8), ...(url ? [dt(url, 120, 8, 'c9b27c')] : []), dt('MUSIC - GREAT BOSS', 146, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 158, 8, '9aa39a')]);
   run('end3-short', [dt('THORNROAD', 44, 24, 'ffd34a'), dt('FREE DEMO', 84, 16, 'a8e06e'), dt('PLAY NOW', 112, 8), ...(url ? [dt(url, 126, 8, 'c9b27c')] : []), dt('MUSIC - GREAT BOSS', 146, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 158, 8, '9aa39a')]);
 }

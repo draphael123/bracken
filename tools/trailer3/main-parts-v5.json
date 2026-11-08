@@ -1,0 +1,186 @@
+{
+ "out": "thornroad-trailer-v5.mp4",
+ "vertical": false,
+ "track": "audio/boss4.ogg",
+ "trackStart": 0,
+ "parts": [
+  {
+   "clip": "c3_gorm_pyro",
+   "secs": 1.7,
+   "sect": "hook"
+  },
+  {
+   "clip": "verb_kings",
+   "secs": 1.7,
+   "sect": "hook",
+   "start": 30
+  },
+  {
+   "clip": "demo_queen",
+   "secs": 1.7,
+   "sect": "hook"
+  },
+  {
+   "card": "title3",
+   "secs": 3,
+   "sect": "title"
+  },
+  {
+   "clip": "verb_spore",
+   "secs": 2.6,
+   "sect": "rules",
+   "cap": "EVERY LEVEL HAS ITS OWN RULE",
+   "start": 95
+  },
+  {
+   "clip": "verb_comb",
+   "secs": 3.2,
+   "sect": "rules"
+  },
+  {
+   "clip": "s3_palprop",
+   "secs": 2.8,
+   "sect": "rules"
+  },
+  {
+   "clip": "s3_palbeast",
+   "secs": 3.2,
+   "sect": "rules"
+  },
+  {
+   "clip": "verb_kings",
+   "secs": 2.6,
+   "sect": "rules",
+   "start": 0
+  },
+  {
+   "clip": "verb_barrel",
+   "secs": 3,
+   "sect": "rules"
+  },
+  {
+   "clip": "demo_fen",
+   "secs": 2,
+   "sect": "rules"
+  },
+  {
+   "clip": "s3_shrine",
+   "secs": 2.2,
+   "sect": "world",
+   "cap": "A WORLD TO WALK"
+  },
+  {
+   "clip": "s3_map",
+   "secs": 3.4,
+   "sect": "world"
+  },
+  {
+   "clip": "s3_ferry",
+   "secs": 3.4,
+   "sect": "world",
+   "start": 140,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
+  },
+  {
+   "clip": "s3_smoke",
+   "secs": 2.6,
+   "sect": "world",
+   "start": 290,
+   "mask": [
+    430,
+    324,
+    210,
+    28,
+    "0x05040a"
+   ]
+  },
+  {
+   "clip": "s3_tutorial",
+   "secs": 2.6,
+   "sect": "learn",
+   "start": 70,
+   "zoom": 0
+  },
+  {
+   "clip": "s3_heropick",
+   "secs": 2.4,
+   "sect": "heroes",
+   "cap": "MULTIPLE HEROES"
+  },
+  {
+   "clip": "s3_store_buy",
+   "secs": 3.2,
+   "sect": "heroes"
+  },
+  {
+   "clip": "s3_inn_join",
+   "secs": 3.8,
+   "sect": "coop",
+   "cap": "CO-OP FOR UP TO FOUR"
+  },
+  {
+   "clip": "s3_inn_dance",
+   "secs": 4,
+   "sect": "coop",
+   "cap": "DANCE TOGETHER"
+  },
+  {
+   "clip": "s3_inn_wardrobe",
+   "secs": 2.2,
+   "sect": "coop"
+  },
+  {
+   "clip": "s3_inn_book",
+   "secs": 2.2,
+   "sect": "coop"
+  },
+  {
+   "clip": "c3_wood_party",
+   "secs": 2.6,
+   "sect": "coop"
+  },
+  {
+   "clip": "s3_duel_roster",
+   "secs": 3,
+   "sect": "duel",
+   "cap": "DUEL YOUR FRIENDS"
+  },
+  {
+   "clip": "s3_duel_2v2",
+   "secs": 5.6,
+   "sect": "duel"
+  },
+  {
+   "clip": "hero_knight",
+   "secs": 2.2,
+   "sect": "fights",
+   "cap": "HEAVY BOSS FIGHTS"
+  },
+  {
+   "clip": "hero_warden",
+   "secs": 2.2,
+   "sect": "fights"
+  },
+  {
+   "clip": "hero_geomancer",
+   "secs": 2.4,
+   "sect": "fights"
+  },
+  {
+   "clip": "demo_stockade",
+   "secs": 3.2,
+   "sect": "fights"
+  },
+  {
+   "card": "end3",
+   "secs": 4.8,
+   "sect": "end"
+  }
+ ]
+}

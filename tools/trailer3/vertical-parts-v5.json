@@ -1,0 +1,94 @@
+{
+ "out": "thornroad-vertical-v5.mp4",
+ "vertical": true,
+ "track": "audio/boss4.ogg",
+ "trackStart": 0,
+ "parts": [
+  {
+   "clip": "c3_gorm_pyro",
+   "secs": 1.5,
+   "sect": "hook",
+   "vcrop": {
+    "w": 432,
+    "h": 252,
+    "x": [
+     180,
+     200
+    ],
+    "y": 70
+   }
+  },
+  {
+   "card": "title3",
+   "secs": 2.2,
+   "sect": "title"
+  },
+  {
+   "clip": "verb_spore",
+   "secs": 2,
+   "sect": "rules",
+   "cap": "LEVELS WITH RULES",
+   "start": 95
+  },
+  {
+   "clip": "verb_comb",
+   "secs": 2.4,
+   "sect": "rules",
+   "start": 110
+  },
+  {
+   "clip": "s3_palbeast",
+   "secs": 2.4,
+   "sect": "rules",
+   "vcrop": {
+    "w": 432,
+    "h": 240,
+    "x": 196,
+    "y": 110
+   }
+  },
+  {
+   "clip": "s3_inn_dance",
+   "secs": 3,
+   "sect": "coop",
+   "cap": "CO-OP + DANCE",
+   "vcrop": {
+    "w": 480,
+    "h": 270,
+    "x": [
+     20,
+     160
+    ],
+    "y": 0
+   }
+  },
+  {
+   "clip": "s3_duel_2v2",
+   "secs": 3.4,
+   "sect": "duel",
+   "cap": "DUEL YOUR FRIENDS",
+   "vcrop": {
+    "w": 640,
+    "h": 300,
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "clip": "s3_store_buy",
+   "secs": 2,
+   "sect": "duel",
+   "vcrop": {
+    "w": 640,
+    "h": 360,
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "card": "end3-short",
+   "secs": 3.4,
+   "sect": "end"
+  }
+ ]
+}
