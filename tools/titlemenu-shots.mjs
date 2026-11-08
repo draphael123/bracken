@@ -8,7 +8,7 @@ const pg = await openPage({ audio: false, fonts: true });
 const pause = ms => new Promise(r => setTimeout(r, ms));
 const snap = async name => { const r = await pg.send('Page.captureScreenshot', { format: 'png' }); const f = join(out, name + '.png'); writeFileSync(f, Buffer.from(r.result.data, 'base64')); console.log(f); };
 const E = s => pg.evalp(s);
-const show = async (name, js) => { await E('BK.ui.pressCard = false; BK.state = "title"; ' + js + '; BK.step(120); 0'); await pause(150); await snap(name); };
+const show = async (name, js) => { await E('BK.ui.pressCard = false; BK.state = "title"; ' + js + '; BK.step(120); for (let i = 0; i < 60; i++) BK.draw1(); 0'); await pause(150); await snap(name); };
 const started = 'BK.PROG.heroPicked = true; BK.PROG.xp = { knight: 50 }; BKT.PROG.heroPicked = true; BKT.PROG.xp = { knight: 50 }; BKT.saveNow()';
 try {
   await E('BK.manualSimulation = true; BK.setHero("knight"); BK.reset({ fresh: true }); 0');
@@ -17,6 +17,8 @@ try {
   await show('2-top-continue', 'BK.ui.titleSub = null; BK.ui.titleI = 0');
   await show('3-top-extras-badge', 'BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleTop().indexOf("EXTRAS")');
   for (const g of ['PLAY TOGETHER', 'MORE MODES', 'EXTRAS', 'OPTIONS']) await show('4-sub-' + g.toLowerCase().replace(/ /g, '-'), 'BK.ui.titleSub = ' + JSON.stringify(g) + '; BK.ui.titleI = 0');
+  /* after up/down inside submenus: the bar must follow the cursor */
+  for (const g of ['EXTRAS', 'MORE MODES', 'PLAY TOGETHER']) { await show('4b-' + g.toLowerCase().replace(/ /g, '-') + '-after-down-down', 'BK.ui.titleSub = ' + JSON.stringify(g) + '; BK.ui.titleI = 0; BK.press("down"); BK.step(3); BK.press("down"); BK.step(3)'); console.log(g, await E('BK.ui.titleItems()[BK.ui.titleI]')); }
   console.log(JSON.stringify({ top: await E('BK.ui.titleTop()') }));
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));
   /* the demo build: ?demo=1 */

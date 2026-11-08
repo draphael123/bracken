@@ -29,3 +29,6 @@ Two page CRASHES (boss-select, touch) on the first try were memory contention wi
 ## Questions for Daniel (rec first)
 1. The demo's MORE MODES still lists DUEL (BETA) (it did before). Rec: leave; hide it in the demo only if you say so (one word in TITLE_GROUPS).
 2. ESC on the top level still opens OPTIONS (unchanged). Rec: keep.
+
+## Coordinator note: bar vs cursor in 4-sub-extras.png (11-08)
+Not an off-by-one. The bar eases toward its row on each DRAW (titleBarY += 0.3 of the gap), and the stills tool used BK.step(), which updates without drawing every frame, so the bar was grabbed mid-slide from the previous screen's row. The bar is placed from the index in the CURRENT list (slotOf = rows.findIndex(idx === titleI)), not a top-level index. tools/titlemenu-shots.mjs now draws 60 frames before each still; every still was re-taken (bar and cursor agree on all, top level and submenus), plus 4b-* stills after down, down inside EXTRAS / MORE MODES / PLAY TOGETHER (cursor GIVE FEEDBACK / BOSS SELECT / BACK, bar on the same row).
