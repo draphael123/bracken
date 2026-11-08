@@ -148,12 +148,15 @@ try {
   });
   await section('map', async () => {
     await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = false; BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.setDev(true); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200);
-    const hs = await E('BK.touch.hitBoxes()'), mn = await E('BK.mapNodes()');
-    ok(hs.length === mn.hitOrder.length && hs.length > 5, 'the map drew ' + hs.length + ' node boxes for ' + mn.hitOrder.length + ' nodes');
+    const hsAll = await E('BK.touch.hitBoxes()'), mn = await E('BK.mapNodes()');
+    // (claude/reds151, STALE: claude/mapclean) the node boxes come first, one per node; the map now adds up to two more after them: the info card (tap = MORE page) and the NAMES chip
+    const hs = hsAll.slice(0, mn.hitOrder.length), extra = hsAll.slice(mn.hitOrder.length);
+    ok(hsAll.length >= mn.hitOrder.length && hsAll.length <= mn.hitOrder.length + 2 && hs.length > 5, 'the map drew ' + hsAll.length + ' boxes for ' + mn.hitOrder.length + ' nodes (+ at most the card and the NAMES chip)');
+    const underExtra = h => extra.some(x => h.x < x.x + x.w && h.x + h.w > x.x && h.y < x.y + x.h && h.y + h.h > x.y);   // a node box under the card or the chip would be tapped as the card or the chip
     const here = mn.hitOrder.indexOf(mn.node), next = mn.hitOrder.findIndex((n, k) => k > here && !mn.spur[n]);
     ok(here >= 0 && next >= 0, 'could not find the node under the hero and the next one');
     // the next node may be off the top or bottom of the view: the camera follows the hero, so ask for the one that is on screen
-    const onScreen = hs.map((h, k) => ({ k, y: h.y })).filter(o => o.y > 8 && o.y < 160 && o.k !== here);
+    const onScreen = hs.map((h, k) => ({ k, y: h.y, u: underExtra(h) })).filter(o => o.y > 8 && o.y < 160 && o.k !== here && !o.u);
     ok(onScreen.length > 0, 'no other node is on screen on the map');
     const tgt = onScreen.map(o => o.k).filter(k => !mn.spur[mn.hitOrder[k]] && !mn.locked[mn.hitOrder[k]])[0];
     if (tgt !== undefined) {
