@@ -2699,7 +2699,7 @@ function* loadLevelG(i) {
   for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
-    if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
+    if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text, mute: !!e.mute }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6, ...(e.offer ? { y0: py - 6, hung: !marks.has('offer:' + e.x + ',' + e.y), y: marks.has('offer:' + e.x + ',' + e.y) ? py - 6 : py - 6 - e.offer * TS, key: 'offer:' + e.x + ',' + e.y } : {}) });   /* (claude/monastery2) THE MONKS' OFFERING: a silver hung in its basket over a belfry, let down when its bell is struck */
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
@@ -5633,7 +5633,7 @@ function drawMap() {
   if (!map.walking && NODES[map.node]) { const pp4 = mapPanelFor(NODES[map.node]); plateRes.push({ x: pp4.x - 1, y: cY + pp4.y - 1, w: pp4.w + 2, h: pp4.h + 2 });
     if (touchOn && !secretFx) { const nw4 = Math.ceil(textW('NAMES', 6)) + 8; plateRes.push({ x: (pp4.x < 60 ? VW - nw4 - 4 : 4) - 1, y: cY + 21, w: nw4 + 2, h: 13 }); } }
   for (const n3 of NODES) if (!nodeSecret(n3) && !demoOut(n3)) { const b3 = mapNodeBox(n3); plateAvoid.push({ x: b3.x, y: b3.y, w: b3.w, h: b3.h }); }
-  if (DS.DEMO) { capBox = DEND.mapCaptionBox(textW, VW, NODES[map.node] && NODES[map.node].id, false, [...plateAvoid.map(r => ({ x: r.x, y: r.y - cY, w: r.w, h: r.h })), ...(map.walking ? [] : [(() => { const pp3 = mapPanelFor(NODES[map.node]); return { x: pp3.x, y: pp3.y, w: pp3.w, h: pp3.h }; })()])]);
+  if (DS.DEMO) { capBox = DEND.mapCaptionBox(textW, VW, NODES[map.node] && NODES[map.node].id, false, [...plateAvoid.map(r => ({ x: r.x, y: r.y - cY, w: r.w, h: r.h })), ...(mapHintBox ? [{ x: mapHintBox.x, y: mapHintBox.y - cY, w: mapHintBox.w, h: mapHintBox.h }] : []), /* (claude/polish151, ported from first5's fix on mapfix151's structure) the caption steps clear of the red 'BEAT KING GORM WITHOUT DYING' tag at Kingswood */ ...(map.walking ? [] : [(() => { const pp3 = mapPanelFor(NODES[map.node]); return { x: pp3.x, y: pp3.y, w: pp3.w, h: pp3.h }; })()])]);
     if (capBox) plateRes.push({ x: capBox.x - 2, y: cY + capBox.y - 2, w: capBox.w + 4, h: capBox.h + 4 }); }
   const plateHard = NODES.filter(n3 => !nodeSecret(n3) && !(nodeLocked(n3) && n3.kind === 'level' && !LEVELS[n3.level].secret) && (namesAll || plateShown.has(n3.id))).map(n3 => { const a3 = mapPlates().plates.get(n3.id); return { id: n3.id, r: { x: a3.x, y: a3.y, w: a3.w, h: a3.h } }; });   /* the boards that will be drawn: a moved board must not land on one */
   const plateBounds = { x: 3, y: cY + 20, w: VW - 6, h: VH - 31 }, plateDone = [];
@@ -6884,7 +6884,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     text('LIVES', bx + 14, by + 26, rulesRow === 0 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 22, bw - 12, 34, () => { rulesRow = 0; rulesToggle(1, 0); initAudio(); });
     text('< ' + (on ? 'ON' : 'OFF') + ' >', bx + bw - 14, by + 26, on ? '#8fd160' : '#ffd36b', 'right', 8);
     const say = (s, y0, col) => wrap(s, tw, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, y0 + i * 8, col, 'center', 6));   /* (batch150) WRAPPED, never cut: the card is narrow */
-    say(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you to the last shrine, as ever', by + 38, UI.text);
+    say(on ? '5 lives a level, +1 per 100 coins, then back to the map' : 'a death sends you back to the last shrine you lit: retry as often as you like', by + 38, UI.text);
     rowHi(1, by + 62);
     text('DIFFICULTY', bx + 14, by + 62, rulesRow === 1 ? UI.title : UI.dim); TCH.hit(bx + 6, by + 58, bw - 12, 34, () => { rulesRow = 1; rulesToggle(1, 1); initAudio(); });
     text('< ' + LV.modeLabel(md) + ' >', bx + bw - 14, by + 62, LV.modeCol(md), 'right', 8);
@@ -31925,7 +31925,7 @@ function updateEmbers(dt) {
 const NPC_NAME = { ferryman: 'THE FERRYMAN' };
 function talkers() { // everything that can be talked to and is in reach, nearest first
   const out = [];
-  for (const sg of signs) if (Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
+  for (const sg of signs) if (!sg.mute && Math.abs(sg.x - P.x) < 28 && Math.abs(sg.y - P.y) < 48) out.push({ x: sg.x, y: sg.y, lines: [sg.text], who: sg, name: null });
   for (const pr of props) {
     if (pr.raftCall && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, who: pr, raftCall: true });
     if (pr.t === 'npc' && pr.kind !== 'keeper' && pr.kind !== 'ferryman' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) out.push({ x: pr.x, y: pr.y, lines: NPC_LINES(pr), who: pr, name: pr.name || NPC_NAME[pr.kind] || null });
@@ -33209,6 +33209,7 @@ function update(dt) {
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
   if (!updateWarp(dt)) { clearPresses(); return; }
   if (edTesting && pausePress) { edResume(); return; } // testing your own wood: ESC goes back to the editor, not the pause menu
+  if ((pausePress || (dodgePress && padLast)) && L && L.tavern && OPN.cardUp()) { OPN.dismissCard(); pausePress = false; dodgePress = false; SFX.menuClose(); }   /* (claude/polish151, first5 audit) the inn's welcome card closes on the back keys (ESC / P / pad START and B, the store's own), not only its 9 s timeout; the key is spent so the pause menu does not open under it */
   if (pausePress && DUELO && DUELO.rosterOpen()) { DUELO.rosterEsc(); pausePress = false; }   /* (claude/duelroster) ESC on the pick screen is BACK, not the pause menu */
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
@@ -37330,8 +37331,8 @@ function render() {
     if (isReaper() && (P.bd || 0) > 0.4) drawDebt(15, 6, 45, 5, P);   /* (claude/bloodknight) BLOOD DEBT: the red segment past his health, draining */
     if (isReaper()) drawDebtBack(15, 6, 45, 5, P);
     if (isReaper() && time - (P.bkPayAt ?? -9) < 0.4) { g.strokeStyle = 'rgba(255,74,90,' + (0.9 * (1 - (time - P.bkPayAt) / 0.4)).toFixed(2) + ')'; g.lineWidth = 1; g.strokeRect(14.5, 5.5, 46, 6); }   /* (claude/heroblocksa) the bar flashes where a held blow's blood was paid */   /* (claude/bkfeel) and the part a reclaim filled flashes white-hot, the bar ringed crimson (a parry's ALL-BACK rings wider) */
-    if (isReaper() && (P.bd || 0) > 0.4) text(NDSP.shownHp(Math.max(0, P.hp)), 17, 5, '#fff6e0', 'left', 8, 'outline');   /* (claude/bkblood) while he owes, the number steps to the bar's head so the red segment at its end is SEEN (it sat under the number) */
-    else text(NDSP.shownHp(Math.max(0, P.hp)), 59, 5, '#fff6e0', 'right', 8, 'outline');   /* the number is ON the bar's end: one readout, no column beside it */
+    { const hs = NDSP.shownHp(Math.max(0, P.hp)), hst = stampOf(hs, 8, '#fff6e0', 'shadow'), hl = isReaper() && (P.bd || 0) > 0.4, hx = hl ? 18 : 57 - hst.w;   /* (claude/polish151, first5 audit: the number's last glyph ran into the bar's frame at x 60 and read "1'0'") the number sits INSIDE the bar, 3 px off the frame, on its own dark plate so 1, 2 and 3 digits and a decimal read plain over red, green or the bar's track; while a Blood Knight owes it steps to the bar's head (claude/bkblood) so the red segment at the bar's end is SEEN */
+      g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(hx - 1, 5, hst.w + 2, Math.min(hst.h, 8)); text(hs, hx, 5, '#fff6e0', 'left', 8, 'shadow'); }
     { const gw = g; g = gShown; RP.drawPips(g, P, 70, 6, !!SET.reduceMotion); g = gw; }   /* (claude/riposte) THE MIX-UP CHAIN: its gold pips beside the health bar, in both HUDs (steady with reduced motion) */
     hudShow(); flaskRowEnd = 4; flaskRowRect = null; if (flaskN) { const fm = SV.flaskMax(PROG), fn = P.flasks | 0, dt0 = 1 / 60;   /* THE FLASK ROW (claude/flasks2, Daniel 10-08: "the number of flasks isn't clear - the abilities cover it up"): its OWN row under the health and stamina bars (y 20-28, HUD-SLIM's slot), the skill slots never over it (x >= 70, y <= 20). A bottle a flask - full red, drunk an empty glass, OVER the max (a broken shrine's) gold - and the count beside them. It FLASHES when flasks come back (a shrine, a death, a buy) and SHAKES RED when one is spilled */
       if (flaskHud.last >= 0 && fn > flaskHud.last && state === 'play') flaskHud.flashT = Math.max(flaskHud.flashT, 0.8); flaskHud.last = fn;
