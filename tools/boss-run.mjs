@@ -40,7 +40,7 @@ export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {
      so no fight inherits localStorage or page state and we skip the old page's extra reload. */
   const worker = async () => { for (;;) { const F = queue.shift(); if (!F) return; let row, pg; const { lvl, js } = fightJs(F, secs);
     try { pg = await openRetry({ browserPort: keeper.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
-    catch (e) { row = { err: String(e.message).slice(0, 120) }; }
+    catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; }
     finally { if (pg) await pg.close(); }
     const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...row }; out.push(rec); if (onRow) onRow(rec, out); } };
   try { await Promise.all(Array.from({ length: Math.min(jobs, list.length) }, () => worker())); } finally { await keeper.close(); }
