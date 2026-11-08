@@ -342,4 +342,35 @@ function sweep(hero, seats, lab = labOK) {
   { const { install } = await import('./node-canvas.mjs'); install(); const { LEVELS } = await import('../src/level.js'), { pacing } = await import('./pacing.mjs'); const P = pacing(LEVELS.find(l => l.id === 'highlines'));
     ok(P.stats.routeTiles >= 300, 'the highlines walk is one route of ' + P.stats.routeTiles + ' tiles (the lines are ways)'); ok(P.stats.offLoot.filter(s => /^silver@/.test(s)).length >= 2, 'both secrets (on side lines S2, S4) are OFF the route: ' + P.stats.offLoot.join(', ')); } }
 
+/* 18. (claude/linekit) THE HANDS (src/highlines-hands.js) with stub hooks: the tuck, let go first, a DOWN that is only a drop, the ally's hand, the climb camera */
+{ const { makeHighLinesHands, MOVE_SKILLS } = await import('../src/highlines-hands.js');
+  const mk = (extra = {}) => { const L = lab(); L.highlines = true; L.climbCam = true; const P = mkBody('knight', 0, 0); P.hp = 100; const st = { keys: {}, pr: {}, spent: 0, calls: [] };
+    const players = [P], H = makeHighLinesHands({ L, TS, T: {}, sfx: {}, players: () => players, P: () => P, keys: () => st.keys, presses: () => st.pr, eatJump: () => { st.calls.push('eat'); }, jumpUp: () => false, callout: () => {}, number: () => {}, shake: () => {}, time: () => 0, asPlayer: (p, fn) => fn(), damage: () => 'miss', tileAt: () => 0, spend: () => { st.spent++; return true; }, ...extra });
+    H.load(); return { L, P, H, st, kit: H.kit() }; };
+  const hang = (S, id, x) => { const z = S.kit.lines[id]; S.P.x = x; S.P.y = lineY(z, x) + z.hang; S.P.vx = S.P.vy = 0; S.P.ground = false; S.P.lk = { id, x, dir: z.dir, haul: 0, buf: 0, sway: 0, swayV: 0, v: 0 }; S.P.lkHeld = true; };
+  /* the tuck: the dodge press on a line is i-frames + one stamina spend, and he stays on the line; off a line it is nothing */
+  { const S = mk(); hang(S, 'LO', 40 * TS); S.P.inv = 0; S.st.pr = { dodge: true }; S.H.seat(DT); ok(S.P.lk && S.P.lk.id === 'LO' && S.P.inv >= LK.TUCK - 1e-9 && S.st.spent === 1, 'hands: DODGE on a line is the tuck (i-frames ' + S.P.inv + ', one spend, still on LO)');
+    S.st.pr = { dodge: true }; S.H.seat(DT); ok(S.st.spent === 1, 'hands: a second press inside the cooldown spends nothing (' + S.st.spent + ')');
+    const G = mk(); G.P.x = 3 * TS; G.P.y = 10 * TS; G.st.pr = { dodge: true }; G.H.seat(DT); ok(G.st.spent === 0 && !G.P.lk, 'hands: DODGE off a line is no tuck and costs nothing here (main.js owns the roll)');
+    const E = mk({ spend: () => false }); hang(E, 'LO', 40 * TS); E.P.inv = 0; E.st.pr = { dodge: true }; E.H.seat(DT); ok(E.P.inv === 0 && E.P.lk, 'hands: winded (spend refused) - no tuck, no i-frames, still riding'); }
+  /* let go first: a movement skill's press, an ultimate, and a movement flag that rises after he took hold; a flag that was already up when he grabbed does not */
+  { ok(['lunge', 'cinderStep', 'holyCharge', 'hammerLeap', 'harrier', 'boarding', 'rgLeap', 'risingCut'].every(k => MOVE_SKILLS.has(k)) && !MOVE_SKILLS.has('rgSmoke'), 'hands: the movement skills are the let-go set (a smoke bomb is not one)');
+    const S = mk(); hang(S, 'LO', 40 * TS); ok(S.H.moveSkill('rgSmoke') === false && S.P.lk, 'a non-moving skill keeps the grip'); ok(S.H.moveSkill('lunge') === true && !S.P.lk && !S.P.lkHeld && S.P.lkSkip === 'LO', 'hands: a lunge pressed on the line lets go first (0.6 s skip)');
+    const U = mk(); hang(U, 'LO', 40 * TS); ok(U.H.letGoFirst() && !U.P.lk && U.P.lkSkip === 'LO', 'hands: an ultimate lets go first'); ok(!U.H.letGoFirst(), 'and off a line it is a no-op');
+    const F = mk(); hang(F, 'LO', 40 * TS); F.H.seat(DT); F.P.lungeT = 0.2; F.H.seat(DT); ok(!F.P.lk && F.P.lkSkip === 'LO', 'hands: a movement flag that rose on the line (lungeT) lets go');
+    const O = mk(); O.P.hleapT = 1.0; O.P.x = 3 * TS; O.P.y = 10 * TS; O.H.seat(DT); hang(O, 'LO', 40 * TS); O.H.seat(DT); O.H.seat(DT); ok(O.P.lk, 'hands: a flag already up when he took hold (a leap landing near a rope) does not shake him off'); }
+  /* a DOWN that drops clears the plunge that would ride the same press */
+  { const S = mk(); hang(S, 'LO', 40 * TS); S.st.keys = { down: true }; S.st.pr = { atk: true }; S.P.abuf = 0.1; S.P.abufDown = true; S.H.seat(DT);
+    ok(!S.P.lk && S.P.abuf === 0 && S.P.abufDown === false && S.P.plunge === false && S.P.vy === LK.DROP_VY, 'hands: DOWN (even with a blow pressed) is the drop and nothing else - no plunge rides it'); }
+  /* the AI partner: takes the line the leader holds (UP) when one is in reach, cranks a winch every 0.3 s, does nothing on a line the leader is not on */
+  { const S = mk(), lead = mk(); hang(lead, 'LO', 40 * TS); const keys = {}, presses = []; const z = S.kit.lines.LO; S.P.x = 41 * TS; S.P.y = lineY(z, S.P.x) + 14; S.P.ground = false;
+    ok(S.H.allyLine(S.P, lead.P, keys, k => presses.push(k), 1) === true && keys.up === true, 'ally: the leader holds a line and one is in reach - UP, and the frame is the line\'s');
+    const k2 = {}; ok(S.H.allyLine(S.P, { lk: null }, k2, () => {}, 1) === false && !k2.up, 'ally: the leader is not on a line - nothing');
+    const k3 = {}; const far = mk(); far.P.x = 3 * TS; far.P.y = 10 * TS; ok(far.H.allyLine(far.P, lead.P, k3, () => {}, 1) === false && !k3.up, 'ally: no line in reach - nothing (the leash catches it)');
+    const W = mk(); hang(W, 'W1', 14 * TS); const pr = []; let t = 0; for (let i = 0; i < 60; i++) { t += DT; W.H.allyLine(W.P, null, {}, k => pr.push(k), t); } ok(pr.length >= 3 && pr.length <= 4 && pr.every(k => k === 'atk'), 'ally: on a grip winch it cranks (atk) every 0.3 s: ' + pr.length + ' strokes in 1 s');
+    const G = mk(); hang(G, 'LO', 40 * TS); const pg = []; for (let i = 0; i < 60; i++) G.H.allyLine(G.P, null, {}, k => pg.push(k), i * DT); ok(pg.length === 0 && G.H.allyLine(G.P, null, {}, () => {}, 2) === true, 'ally: riding a glide it only rides (no attack, the frame is the line\'s)'); }
+  /* the climb camera: the hands gate it on L.climbCam and on a seat on a winch */
+  { const S = mk(); hang(S, 'W1', 14 * TS); ok(S.H.climbCam() && S.H.climbCam().foot === LK.CLIMB_FOOT, 'hands: climbCam on a winch'); const G = mk(); hang(G, 'LO', 40 * TS); ok(G.H.climbCam() === null, 'hands: climbCam null on a glide');
+    const N = mk(); N.L.climbCam = false; hang(N, 'W1', 14 * TS); ok(N.H.climbCam() === null, 'hands: a level without L.climbCam never moves the camera'); } }
+
 console.log('line-kit: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');
