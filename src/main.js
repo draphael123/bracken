@@ -272,7 +272,7 @@ import * as DCARD from './death-card.js';   /* THE DEATH CARD AND ITS RECAP (cla
 import * as MPX from './map-dots.js'; import { MAP_BLURB } from './map-blurbs.js';   /* ONE MAP PIXEL SCALE (claude/mapscale): hard discs and rings, block-vote portraits, whole-line blurbs */
 import * as MCARD from './map-card.js';   /* THE MAP CARD'S POSTCARD (claude/uiscreens) */
 import * as OP from './opening-panels.js';   /* THE FIRST-RUN OPENING (claude/uiscreens): four illustrated panels before the first hero pick */
-import * as TC from './title-card.js';   /* THE LIVING TITLE SCENE (claude/intro): the sign eases down, the heroes walk in, PRESS ANY KEY blinks under it */
+import * as AT from './attract.js'; import * as TC from './title-card.js';   /* THE LIVING TITLE SCENE (claude/intro): the sign eases down, the heroes walk in, PRESS ANY KEY blinks under it */
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PANEL */
 import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
@@ -8449,7 +8449,7 @@ let teachCard = null, teachQ = [], teachCalmT = 0;
 const teachKeys = () => { const w = opnWords(), pad = !!padLast, lf = a => CTL.labelFor(SET.binds, pad ? 'pad1' : 'kb', a, 1);
   return TCH.on ? { ...w, flask: 'THE FLASK BUTTON', skill1: 'THE SKILL BUTTON', skill2: 'THE SECOND SKILL BUTTON', menu: 'THE SKILLS BUTTON' } : { ...w, skill1: lf('throw'), skill2: lf('skill2'), menu: lf('talents') || 'Q' }; };
 const teachAdd = id => { if (!saltDue() || FC.told(PROG, id) || teachQ.includes(id) || (teachCard && teachCard.id === id)) return false; teachQ.push(id); return true; };
-const teachReal = () => !!(L && !L.opening && !L.arenaYard && !L.tavern && !L.trial && !L.hidden);
+const teachReal = () => !!(!attractOn && L && !L.opening && !L.arenaYard && !L.tavern && !L.trial && !L.hidden);
 /* a boss death: the same boss, BOSS_HINT_AT times, not beaten: his hint card is owed (it shows after the respawn) */
 function bossNoteDeath() { const id = bossActive && L && L.arena && L.arena.boss; if (!id || !saltDue() || !teachReal()) return; if (FC.noteBossDeath(PROG, id, !!(PROG[curId()] && PROG[curId()].cleared))) teachAdd(FC.hintId(id)); saveProgress(); }
 /* every frame from update(): holds the world while a card is up (the confirm key is armed after FC.ARM_S), else pops the next owed one. Explainers wait for a calm moment; a boss hint comes straight after the respawn. Returns true while a card holds the frame. */
@@ -12306,6 +12306,100 @@ function levelJump(id, heroId, campaign) {
   const go = () => { loadLevel(li); startGame(); camX = P.x - VW / 2; camY = P.y - 100; };
   if (campaign) campaignKit(id, h).then(go); else { window.BK.setHero(h); window.BK.reset({ fresh: true }); go(); }
   return true;
+}
+/* ---------- ATTRACT MODE (claude/intro, Daniel 11-08; src/attract.js has the timing, the clips and the rule) ----------
+   ~20 s idle on the title scene or the main menu (no submenu, no save prompt, no recent press of any kind) and the game plays itself: a bot walks and fights the first woods for
+   ~9 s a clip, a co-op pair among them and a boss glimpse. Any key, click, tap or pad press ends it THAT FRAME and is not also a menu choice (the press is eaten in the capture phase, and
+   a pad's in update(), before anything reads it). It NEVER touches the save: it runs behind bossJumpOn (the boss jump's sandbox: saveProgress, credits, records and the act card all
+   stand down), on a COPY of PROG that is put back, and the party is put back too; tools/attract.mjs compares every localStorage key and PROG before and after. Off with ?noattract,
+   window.__NOATTRACT, BK.manualSimulation or a webdriver page (every tool), and in reduce-motion. The hands are the AI partner's (the lab's duel hands + the playtest walker). */
+let attractOn = false, attract = null, attractSnap = null, attractIdle = 0, attractTouched = false, attractSwallow = 0, attractForce = false;
+const attractOff = () => q.has('noattract') || !!window.__NOATTRACT || (!attractForce && (!!(window.BK && window.BK.manualSimulation) || !!navigator.webdriver));
+const attractBlock = () => AT.blockedBy({ off: attractOff(), reduceMotion: !!SET.reduceMotion, state, pressCard, titleSub, hidden: !!document.hidden,
+  overlay: UNLUI.isOpen || SWAPUI.isOpen || FBF.isOpen() || BUGUI.isOpen() || DEND.isOpen(),
+  savePrompt: !!saveBlocked || !!saveFail });
+const attractPoke = () => { attractTouched = true; };
+function attractNext() {
+  if (!attract) return;
+  const i = AT.nextClip(attract.i); if (i < 0) { attractStop(); return; }
+  attract.i = i; attract.t = 0; attract.f = 0; attract.walk = null; attract.read = null; attract.next = false;
+  const c = AT.CLIPS[i], li = LEVELS.findIndex(l => l.id === c.level);
+  if (li < 0 || (DS.DEMO && DS.demoLocked(LEVELS[li]))) { attractNext(); return; }
+  coopWant = c.buddy ? { hero: c.buddy, ally: true, seats: [{ hero: c.buddy, ally: true }] } : null;   /* the pair is in memory only (partyToWant / partySave are never called) */
+  window.BK.setHero(c.hero); window.BK.reset({ fresh: true });
+  loadLevel(li); startGame();
+  if (c.kind === 'boss' && L.arena && !L.arena.carpet) {   /* the boss's door, one tile inside its own trigger (the boss jump's own spot) */
+    const A = L.arena, tx = A.start ? A.start[0] : Math.round(A.trigger / TS) + (A.reverse ? -1 : 1), ty = A.start ? A.start[1] : Math.round(A.floor / TS) - 1;
+    let sx = tx * TS + 8; if (A.trigger !== undefined && A.trigger < 1e8) { if (!A.reverse && sx <= A.trigger) sx = A.trigger + 8; else if (A.reverse && sx >= A.trigger) sx = A.trigger - 8; }
+    checkpoint = { x: sx, y: (ty + 1) * TS }; respawn(); }
+  camX = P.x - VW / 2; camY = P.y - 100; transT = 1; transKind = 'fade';
+}
+function attractBegin() {
+  if (attractOn) return false;
+  if (!LABMOD || !PTMOD || !WDMOD) { allyLoad(); return false; }   /* the bot's modules (a dynamic import), asked for ahead; the clip waits for them */
+  attractSnap = { prog: structuredClone(PROG), want: coopWant, li: levelIndex, bj: bossJumpOn };
+  attractOn = true; bossJumpOn = true; attract = { i: -1, t: 0, f: 0 };
+  attractNext(); return true;
+}
+function attractStop() {
+  if (!attractOn) return;
+  const S = attractSnap; attractOn = false; attract = null; attractSnap = null; attractIdle = 0; attractTouched = false;
+  if (coop()) coopEnd();
+  coopWant = S.want; bossJumpOn = S.bj;
+  for (const k in PROG) delete PROG[k]; Object.assign(PROG, S.prog);
+  levelIndex = S.li; bossActive = false; miniActive = false; bannerT = 0; actCard = null;
+  applySkin(); applyUpgrades();
+  state = 'title'; clearPresses(); transT = 1; transKind = 'fade';
+}
+/* THE HANDS, one frame, inside update() before player one reads the keys: the foe within reach is fought with the lab's duel hands, otherwise he walks on to the right (the playtest
+   walker: jumps, rides, swims). He is not let die - below a third of his health he is topped up, as the level video does - because the clip is a picture of the game, not a test of it. */
+function attractHands() {
+  const A = attract; if (!A || !LABMOD || !PTMOD || !WDMOD || state !== 'play') return;
+  for (const k in keys) keys[k] = false;
+  A.t += 1 / 60; A.f++; if (A.t >= AT.CLIP_S) A.next = true;
+  for (const p of players) if (!p.dead && p.hp < p.maxHp * 0.34) p.hp = p.maxHp;
+  if (P.dead || P.down > 0) return;
+  if (!A.walk) { A.walk = PTMOD.makeBot(window.BK, { fightThrough: true }); A.walk.drink = false; A.read = WDMOD.makeEliteRead({}); }
+  let foe = null, best = 1e9;
+  for (const e of enemies) { if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
+    if (Math.abs(e.y - P.y) > 40) continue; const d = Math.abs(e.x - P.x); if (d > 120) continue; if (d < best) { best = d; foe = e; } }
+  if (foe) { LABMOD.labDuelFrame(window.BK, hero(), foe, A.f, 'human', A.read);
+    if ((keys.left || keys.right) && allySafeGoal(P.x + (keys.right ? 12 : -12)) === P.x) keys.left = keys.right = false; return; }
+  const bossE = enemies.find(e => e.alive && e.maxHp && (bossActive || miniActive));
+  A.walk(allySafeGoal(bossE ? bossE.x : P.x + 260));
+}
+/* the wait: called every title frame; true when it began a clip (update() returns, the state is 'play') */
+function attractTickIdle(dt) {
+  const held = Object.values(keys).some(Boolean);
+  const blocked = attractBlock() !== '';
+  attractIdle = AT.idleStep(attractIdle, dt, blocked, anyPress || held || attractTouched); attractTouched = false;
+  if (attractIdle > AT.PRELOAD_S && !blocked) allyLoad();
+  return attractIdle >= AT.IDLE_S && attractBegin();
+}
+/* the top of update(): a press (a pad's rose into anyPress; a key's and a tap's are eaten earlier, in the capture phase) ends it; a clip that ran out hands over; a clip that left the wood ends it */
+function attractTop() {
+  if (anyPress) { attractStop(); return true; }
+  if (state !== 'play') { attractStop(); return true; }
+  if (attract && attract.next) { attractNext(); return true; }
+  return false;
+}
+function attractEat(e) {
+  const now = performance.now();
+  if (attractOn) { attractStop(); attractSwallow = now + AT.SWALLOW_MS; }
+  else if (now < attractSwallow) { /* the rest of the press that ended it */ }
+  else { attractPoke(); return; }
+  e.stopImmediatePropagation(); if (e.cancelable && !(e.type === 'keydown' && (e.ctrlKey || e.metaKey || /^F\d+$/.test(e.key)))) e.preventDefault();
+}
+for (const t of ['keydown', 'pointerdown', 'mousedown', 'touchstart', 'click']) addEventListener(t, attractEat, { capture: true, passive: false });
+addEventListener('mousemove', attractPoke, { passive: true });
+/* the picture over the clip: a small DEMO plate and PRESS ANY KEY, and the fade out of its last half second */
+function drawAttract() {
+  const A = attract; if (!A) return;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+  const tag = Math.floor(time * 1.5) % 3 !== 2 ? 'DEMO  PRESS ANY KEY' : 'DEMO', w = inkW('DEMO  PRESS ANY KEY', 6) + 10;
+  g.fillStyle = 'rgba(8,6,12,0.6)'; g.fillRect(VW - w - 4, VH - 14, w, 11); text(tag, VW - 4 - (w >> 1), VH - 12, '#fff6e0', 'center', 6);
+  const left = AT.CLIP_S - A.t; if (left < AT.FADE_S) { g.globalAlpha = Math.min(1, 1 - left / AT.FADE_S); g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); }
+  g.restore();
 }
 function bjOpen() { state = 'bossjump'; bjI = 0; bjWait = 0; bjHero = hero(); SFX.uiSel(); }
 function updateBossJump() {
@@ -33074,6 +33168,7 @@ let evState = state;
 function update(dt) {
   if (state !== evState) { BUG.evlog('screen ' + evState + ' > ' + state); evState = state; }
   time += dt; if (REC.on || REC.msgT > 0) REC.frame(REC_CTX, dt);
+  if (attractOn && attractTop()) { clearPresses(); return; }   /* (claude/intro) a press ends the attract clip, and is not also read by anything below */
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
@@ -33091,7 +33186,7 @@ function update(dt) {
     edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
-  if (state === 'title') { ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (introAt === null) introAt = time; if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < 0.5) { /* the board is sliding in: a press now is the press that started it, not also a menu choice */ } else if (pausePress && !titleSub) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
+  if (state === 'title') { if (attractTickIdle(dt)) return; ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (pressCard) { if (introAt === null) introAt = time; if (anyPress) dismissPress(); } else if (pressAt !== null && time - pressAt < 0.5) { /* the board is sliding in: a press now is the press that started it, not also a menu choice */ } else if (pausePress && !titleSub) { titleSub = 'OPTIONS'; titleI = 0; SFX.ui(); pausePress = false; }   /* (Daniel 10-09: ESC on the title top level opens the OPTIONS list, not Settings; ESC / BACK closes it) */
     else {
       const items = titleItems();
       if (titleSub && (pausePress || (atkPress && !confirmPress))) { titleI = titleBackTo(); titleSub = null; SFX.ui(); pausePress = false; atkPress = false; }   /* (ESC / X / the back key closes the open submenu, as BACK does; ENTER is attack AND confirm, so a press that is also a confirm takes the row, it does not go back) */
@@ -33244,6 +33339,7 @@ function update(dt) {
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
+  if (attractOn) attractHands();   /* (claude/intro) the attract clip's player one: the bot's hands, before anything reads the keys */
   for (const pp of players) if (pp.ai) { allyPurse(pp); asPlayer(pp, () => allyTick()); }   /* (claude/aicompanions) a linked companion's pickups go to YOUR purse (allyPurse) */
   if (trnArrive && !trnArrive.done) trnArriveTick(dt);   /* (claude/transwm) stepping off the ferry: their hands are taken for ~1.7 s */
   /* THE NEXT CUT KEEPS ITS DIRECTION: releasing UP or DOWN during recovery must not turn the queued cut into a plain swing.
@@ -37674,6 +37770,7 @@ function render() {
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
+  if (attractOn) drawAttract();   /* (claude/intro) */
   if (state === 'title' && !pressCard) { const vl = WN.versionLine(BUILD.sha); if (vl) text(vl, 5, VH - 8, UI.dim, 'left', 6); }   /* the build, small (src/whatsnew.js versionLine) */
   if (state === 'slots') drawSlots();
   if (state === 'bestiary') drawBestiary();
@@ -37970,7 +38067,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     get treeTab() { return treeBranch; }, set treeTab(v) { treeBranch = v === 1 ? 1 : 0; treeI = 0; treePage = 0; },
     get bestI() { return bestI; }, set bestI(v) { bestI = v; },
     get bestTab() { return bestTab; }, set bestTab(v) { bestTab = v; },
-    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) { pressAt = null; introAt = null; } }, get introAt() { return introAt; }, set introAt(v) { introAt = v; }, introS: () => { const s = introS(); return isFinite(s) ? s : -1; }   /* -1: everybody simply there */, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get rulesRow() { return rulesRow; }, set rulesRow(v) { rulesRow = v | 0; }, lowerAsk: () => lowerModeAsk(), lowerOk, menuItem: () => menuItems()[menuI], get menuMsg() { return menuMsg; }, set menuMsg(v) { menuMsg = v; }, set menuMsgT(v) { menuMsgT = v; },   /* (claude/diff3) the pause menu's SAVE MODE row, for the tools */ get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get slotInn() { return slotInn; }, set slotInn(v) { slotInn = !!v; }, get bookAsk() { return bookAsk; }, set bookAsk(v) { bookAsk = !!v; bookYes = false; }, get shrineAsk() { return shrineAsk; }, set shrineAsk(v) { shrineAsk = !!v; shrineYes = false; }, get shrineYes() { return shrineYes; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
+    get slotI() { return slotI; }, set slotI(v) { slotI = v; }, get opening() { return opening; }, openingStart, get pressCard() { return pressCard; }, set pressCard(v) { pressCard = !!v; if (v) { pressAt = null; introAt = null; } }, get introAt() { return introAt; }, set introAt(v) { introAt = v; }, introS: () => { const s = introS(); return isFinite(s) ? s : -1; }, attract: { get on() { return attractOn; }, get idle() { return attractIdle; }, set idle(v) { attractIdle = v; }, get clip() { return attract ? attract.i : -1; }, get t() { return attract ? attract.t : 0; }, get force() { return attractForce; }, set force(v) { attractForce = !!v; }, begin: () => attractBegin(), stop: () => attractStop(), next: () => { if (attract) attract.next = true; }, blocked: () => attractBlock(), off: () => attractOff(), get clips() { return AT.CLIPS; }, get want() { return coopWant; } }   /* -1: everybody simply there */, get deathRecap() { return deathRecap; }, get winPrevBest() { return winPrevBest; }, get heroPickI() { return heroPick.i; }, set heroPickI(v) { heroPick = { i: v, stage: 'pick' }; }, get heroPickStage() { return heroPick.stage; }, set heroPickStage(v) { heroPick.stage = v; }, get rulesRow() { return rulesRow; }, set rulesRow(v) { rulesRow = v | 0; }, lowerAsk: () => lowerModeAsk(), lowerOk, menuItem: () => menuItems()[menuI], get menuMsg() { return menuMsg; }, set menuMsg(v) { menuMsg = v; }, set menuMsgT(v) { menuMsgT = v; },   /* (claude/diff3) the pause menu's SAVE MODE row, for the tools */ get fixAsk() { return fixAsk; }, set fixAsk(v) { fixAsk = v; fixI = 0; }, get fixI() { return fixI; }, titleItems: () => titleItems(), titleTop: () => titleTop(), get slotInn() { return slotInn; }, set slotInn(v) { slotInn = !!v; }, get bookAsk() { return bookAsk; }, set bookAsk(v) { bookAsk = !!v; bookYes = false; }, get shrineAsk() { return shrineAsk; }, set shrineAsk(v) { shrineAsk = !!v; shrineYes = false; }, get shrineYes() { return shrineYes; }, get eraseAsk() { return eraseAsk; }, set eraseAsk(v) { eraseAsk = v; eraseYes = false; },   /* (tools/textfit.mjs 'pick': every card of the hero pick, selected in turn) */
     get titleI() { return titleI; }, set titleI(v) { titleI = v; }, titleItems: () => titleItems(), titleWin: () => { const it = titleItems(), ts = titleSlots(); return touchOn ? { ...titleWin(it.length, Math.min(ts.n, Math.max(it.length, titleTop().length, 7)), titleI, titleOff), rh: ts.rh, css: S / (DPR || 1) } : null; }, titleRegion: () => titleRegion(), titleTrack: () => titleTrack(), titleTop: () => titleTop(), get titleOpts() { return titleSub === 'OPTIONS'; }, set titleOpts(v) { titleSub = v ? 'OPTIONS' : null; }, get titleSub() { return titleSub; }, set titleSub(v) { titleSub = v || null; }, titleSelect: n => titleSelect(n),
     get menuI() { return menuI; }, set menuI(v) { menuI = v; },
     get menuKind() { return menuKind; }, set menuKind(v) { menuKind = v; }, mapOpen: () => mapOpen('pause'), mapLook: (tx, ty) => { const G = mapGeom(); mapPX = tx - G.vw / 2; mapPY = ty - G.vh / 2; mapClamp(G); }, get map() { return { fog, fogW, fogH, x: mapPX, y: mapPY, geom: L ? mapGeom() : null }; }, wayTarget: () => wayTarget(), get wayLast() { return wayLast; }, set wayLast(v) { wayLast = v; }, get wayWhy() { return wayWhy; }, wayRank: (x, y) => wayRank(x, y), keyDoorsOf: () => props.filter(k => k.t === 'key' && !k.got).map(k => ({ kind: k.kind, key: [k.x, k.y], doors: keyDoors(k).map(d => [d.x, d.y]) })),

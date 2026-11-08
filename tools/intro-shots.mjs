@@ -25,6 +25,22 @@ try {
     await pause(1800); await snap('touch-walk'); await pause(3500); await snap('touch-idle');
     await pg.evalp('BK.ui.pressCard = false; 0'); await pause(900); await snap('touch-after-tap');
   }
+  if (which === 'attract') {   /* the attract clips: a still two seconds and seven seconds into each, and the return to the title on a press */
+    await pg.evalp(`BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.SET.reduceMotion = false; BK.ui.pressCard = false; BK.state = 'title'; BK.ui.attract.force = true; BK.step(3); 0`);
+    await pg.evalp(`BK.ui.attract.idle = 25; 0`);
+    for (let i = 0; i < 80 && !(await pg.evalp('BK.ui.attract.on')); i++) { await pg.evalp('BK.step(5); 0'); await pause(60); }
+    let last = -1, shots = 0;
+    for (let g = 0; g < 4000 && (await pg.evalp('BK.ui.attract.on')) && shots < 8; g++) {
+      const c = await pg.evalp('BK.ui.attract.clip'), t = await pg.evalp('BK.ui.attract.t');
+      if (c !== last) { last = c; var done2 = false, done7 = false; }
+      if (!done2 && t >= 2) { done2 = true; await snap('attract-clip' + c + '-2s'); shots++; }
+      if (!done7 && t >= 7) { done7 = true; await snap('attract-clip' + c + '-7s'); shots++; }
+      await pg.evalp('BK.step(15); 0'); await pause(20);
+    }
+    await pg.evalp('BK.ui.attract.next(); BK.step(3); 0');
+    await pg.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowDown', code: 'ArrowDown', windowsVirtualKeyCode: 40 }); await pg.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowDown', code: 'ArrowDown', windowsVirtualKeyCode: 40 });
+    await pg.evalp('BK.step(40); 0'); await pause(150); await snap('attract-return-title');
+  }
   if (want('reduce')) {
     await pg.evalp(`BK.SET.reduceMotion = true; BK.ui.pressCard = true; BK.state = 'title'; BK.step(30); 0`); await pause(120); await snap('reduce');
     await pg.evalp(`BK.SET.reduceMotion = false; 0`);
