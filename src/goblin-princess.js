@@ -231,6 +231,8 @@ export function makeGoblinPrincessHands(ctx) {
   }
   H.update = (e, dt) => {
     if (!F || !e.alive) return; const Ar = F.A, P = nearest(e), t = now();
+    if (F.hp0 !== undefined) { const lost = F.hp0 - e.hp - (F.tookSince || 0); if (lost > 0.5) { F.n.bypass = (F.n.bypass || 0) + Math.round(lost); F.n.bypassAt = (F.n.bypassAt || '') + e.mode + ':' + Math.round(lost) + ' '; } } F.hp0 = e.hp; F.tookSince = 0;   /* (claude/hcfix) bar lost NOT through H.take (a measuring aid) */
+    globalThis.__gpN = F.n;
     e.modeT -= dt; e.anim = (e.anim || 0) + dt;
     if (!onLanding(e) && e.mode !== 'hopUp' && e.mode !== 'escape' && !(F.bolt && F.bolt.state === 'hup')) e.y = fl();
     if (e.mode === 'sleep') { set(e, 'wake', 1.2); ctx.number(e.x, e.y - 50, 'TSK! YOU AGAIN?', '#ff9ad0'); return; }
@@ -279,13 +281,14 @@ export function makeGoblinPrincessHands(ctx) {
     if (!onLanding(e)) e.x = Math.max(Ar.x0 + 10, Math.min(Ar.xMax, e.x)); else e.x = Math.max(Ar.land.x0 + 6, Math.min(Ar.land.x1 - 6, e.x));
   };
   /* A BLOW ON HER: 0.5x outside openings (0.4x hiding), the opening's multiplier inside one (no more than GP.capK of her bar an opening); at 10 % she escapes */
-  H.take = (e, dmg) => {
+  H.take = (e, dmg, tag) => {
     if (!F) return dmg;
     if (e.mode === 'escape') return 0;   /* (the end of the fight: she is through the hatch - not a guard, a finish) */
     let d = dmg * gpMul(e);
-    if (gpOpen(e) && e.mode !== 'preen') { const cap = e.maxHp * GP.capK, room = Math.max(0, cap - F.openTaken); if (d > room) { d = room; F.n.capped++; } F.openTaken += d; if (F.openTaken >= cap - 0.01) e.modeT = Math.min(e.modeT, 0.3); }
+    if (gpOpen(e)) {   /* (claude/hcfix) the PREEN is capped too: uncapped, one riposte HEAVY took 340 of her bar and a warden ended her in 12 s */
+      const cap = e.maxHp * GP.capK, room = Math.max(0, cap - F.openTaken); if (d > room) { d = room; F.n.capped++; } F.openTaken += d; if (F.openTaken >= cap - 0.01) e.modeT = Math.min(e.modeT, 0.3); }
     const floor = e.maxHp * GP.endAt; if (e.hp - d <= floor) { d = Math.max(0, e.hp - floor); escapeBegin(e); }
-    return d;
+    F.tookSince = (F.tookSince || 0) + d; if (d > (F.n.bigD || 0)) { F.n.bigD = Math.round(d); F.n.bigAt = e.mode + ' raw ' + Math.round(dmg) + ' tag ' + String(tag || '') + ' hp ' + Math.round(e.hp) + '/' + Math.round(e.maxHp); } return d;
   };
   function escapeBegin(e) {
     if (e.mode === 'escape') return; F.bolt = null; F.tiara = null; F.ripples = []; F.wave = null;
