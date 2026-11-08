@@ -9,6 +9,8 @@
 //   held(P)           true while the kit places the seat on a line: main.js skips moveBody for him that frame (the kit already put him there)
 //   mover(m)          a mover tagged m.lk follows the kit's moving floor of that id (main.js's own rider-carry does the rest)
 //   owns(e) / spawn(e) / hookUpdate(e, dt) / hookTake(e, dmg, fromX)   THE HOOKJACK as a main.js foe (any blow, any shot: hurtEnemy routes it here)
+//   (claude/linekit) letGoFirst() / moveSkill(k)   a movement skill or an ultimate lets go of the line first (0.6 s skip), then runs as on the ground
+//   climbCam()        L.climbCam: { foot, lead } while ANY seat hangs on a winch (main.js eases it), else null     allyLine(p, lead, keys, press, t)  the AI partner's hand on a line (no new brain)
 //   shoveRider(P, vx) a gale harpy's beat on a rider swings him on his line (it does not tear him off)
 //   drawWorld / drawRider / drawHook   the greybox pictures (art owed: docs/linekit.md, zipclimb-plan.md 6)
 import * as LKT from './line-kit.js';
@@ -16,6 +18,10 @@ import * as HLA from './redraw/high_lines_art.js'; import { drawHookjack } from 
 import { HK, HK_SAY, newHook, hookStep, hookTake as hkTake, drawHook as hkDraw } from './hookjack.js';
 
 export const HLX_SAY = { take: 'STRIKE TO HAUL. THE RATCHET HOLDS YOU.', glide: 'JUMP KICKS OFF. DOWN DROPS. HOLD BACK TO BRAKE.', points: 'THE POINTS: YOU TOOK THE BRANCH', parted: 'THE LINE PARTS', creak: 'THE LINE CREAKS', gust: 'THE GUST IS COMING' };
+/* movement skills (a lunge, a dash, a vault, a leap, a rising cut) - pressing one on a line lets go FIRST */
+export const MOVE_SKILLS = new Set(['lunge', 'cinderStep', 'holyCharge', 'hammerLeap', 'harrier', 'boarding', 'rgLeap', 'risingCut']);
+const MV_FLAGS = ['plunge', 'lungeT', 'chargeT', 'hleapT', 'riseT', 'pounceT', 'pounceRec', 'dodge', 'dashRec'];
+const mvMask = P => { let m = 0; for (let i = 0; i < MV_FLAGS.length; i++) if (P[MV_FLAGS[i]] > 0 || P[MV_FLAGS[i]] === true) m |= 1 << i; return m; };
 export function makeHighLinesHands(c) {
   let kit = null, lastSwipe = -9; const told = new Set();
   const on = () => !!(c.L && c.L.highlines && kit);
@@ -53,8 +59,14 @@ export function makeHighLinesHands(c) {
     if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb); if (post) { lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
     /* a jump pressed on an UP key (ArrowUp / W, main.js jumpUpKey) is the take and the points, never the kick: the kick is Z / Space / the pad's A */
     const was = P.lk ? P.lk.id : null;
-    const ev = LKT.riderStep(kit, P, { up: !!k.up, down: !!k.down, left: !!k.left, right: !!k.right, upPress: !!pr.up, jumpPress: !!pr.jump && !(c.jumpUp && c.jumpUp()), strike, hb }, dt);
+    /* LET GO FIRST: a movement flag that rose AFTER he took hold (a skill, a dash, a leap, a plunge) is not a hang - the grip goes (0.6 s skip) and the move runs as on the ground */
+    if (P.lk) { const m = mvMask(P); if (m & ~(P.lkMv || 0)) { lineSfx(LKT.releaseRider(kit, P) || {}); P.lkHeld = false; return; } P.lkMv = m; } else P.lkMv = mvMask(P);
+    /* THE TUCK: the dodge button on a line is i-frames, never a roll (main.js clears its dodge buffer for a held seat) - it costs the dodge's stamina once per cooldown */
+    const tuck = !!(P.lk && pr.dodge && !(P.lkTuckCd > 0) && (!c.spend || c.spend()));
+    const ev = LKT.riderStep(kit, P, { up: !!k.up, down: !!k.down, left: !!k.left, right: !!k.right, dodgePress: tuck, upPress: !!pr.up, jumpPress: !!pr.jump && !(c.jumpUp && c.jumpUp()), strike, hb }, dt);
     for (const e of ev) { lineSfx(e);
+      if (e.t === 'drop') { P.abuf = 0; P.abufDown = false; P.plunge = false; }   /* a DOWN never does anything else: it drops - no plunge rides the same press */
+      if (e.t === 'tuck') sfx('pStep');
       if (e.t === 'take') { const z = kit.lines[e.id]; say(z.kind === 'winch' ? HLX_SAY.take : HLX_SAY.glide); }
       if (e.t === 'points') say(HLX_SAY.points); }
     if (P.lk) { c.eatJump(); P.climb = false; P.onMover = null; }   /* hanging: the jump was the kick, and nothing else stands him anywhere */
@@ -62,6 +74,18 @@ export function makeHighLinesHands(c) {
     if (!P.lk) LKT.windPush(kit, P, dt);
   }
   const held = P => !!(on() && P && P.lk && P.lkHeld);
+  /* a movement skill / an ultimate: let go first (called from main.js's skillPress and the ultimate's fire) */
+  function letGoFirst() { if (!on()) return false; const P = c.P(); if (!P || !P.lk) return false; const e = LKT.releaseRider(kit, P); if (e) { P.lkHeld = false; lineSfx(e); } return !!e; }
+  const moveSkill = k => MOVE_SKILLS.has(k) && letGoFirst();
+  /* L.climbCam: the look main.js eases toward while any seat hangs on a winch */
+  const climbCam = () => (on() && c.L.climbCam ? LKT.climbLook(kit, c.players()) : null);
+  /* THE AI PARTNER (no new brain): it takes a line the leader is holding when one is in reach (UP), cranks a winch every 0.3 s, and otherwise rides the leash. true = this frame is the line's */
+  function allyLine(p, lead, keys, press, t) {
+    if (!on() || !p) return false;
+    if (p.lk) { const z = kit.lines[p.lk.id]; if (z && z.kind === 'winch' && z.d.drive !== 'post' && t - (p.aiCrank || -9) >= LKT.LK.STROKE_T) { p.aiCrank = t; press('atk'); } return true; }
+    if (lead && lead.lk && !p.dead && !(p.down > 0)) { const z = LKT.findLine(kit, p, true, false); if (z) { keys.up = true; return true; } }
+    return false;
+  }
   /* ---------- THE HOOKJACK ---------- */
   const owns = e => !!e && e.t === 'hookjack';
   function spawn(e) { const o = newHook({ line: e.line || null, role: e.role, dir: e.dir || -1 }); if (kit && e.line && kit.lines[e.line] && e.role !== 'cutter') { const z = kit.lines[e.line]; o.lx = Math.max(z.xa + 8, Math.min(z.xb - 8, e.x * c.TS + 8)); } return o; }
@@ -85,5 +109,5 @@ export function makeHighLinesHands(c) {
   }
   function drawRider(g, P, cx, cy) { if (on() && P && P.lk) HLA.drawGrip(g, kit, P.lk, cx, cy, c.time()); }
   function drawHook(g, e, cx, cy, time) { if (e.alive) drawHookjack(g, e, cx, cy, time); }
-  return { on, load, reset, world, seat, held, mover, owns, spawn, hookUpdate, hookTake, shoveRider, drawWorld, drawRider, drawHook, kit: () => kit, HK, HK_SAY };
+  return { on, load, reset, world, seat, held, letGoFirst, moveSkill, climbCam, allyLine, mover, owns, spawn, hookUpdate, hookTake, shoveRider, drawWorld, drawRider, drawHook, kit: () => kit, HK, HK_SAY };
 }

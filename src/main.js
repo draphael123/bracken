@@ -1143,7 +1143,7 @@ const skillAt = index => { if (typeof DUELO !== 'undefined' && DUELO && DUELO.on
   /* A TRIAL'S LENT SKILLS fill the F and G the hero has nothing on (Daniel 11-01: he has ONE slot now, so G is lent after his F is taken by his own) */
   if (trialLend && index < 2) { const lent = [...trialLend].filter(k => skillFor(hero(), k)?.active && !eq.includes(k)); return lent[index - eq.slice(0, index).filter(k => skillFor(hero(), k)?.active).length] || null; } return null; };
 const skillNow = () => skillAt(0), skill2Now = () => skillAt(1);
-const skillPress = k => [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k);
+const skillPress = k => { const pr = [P.fRelease || (throwPress && !(isReaper() && (P.harvest >= 100 || P.fHeld > 0))), skill2Press, skill3Press, skill4Press].some((pressed,i) => pressed && skillAt(i) === k); if (pr && P.lk && typeof HLX !== 'undefined' && HLX) HLX.moveSkill(k); return pr; };   /* (claude/linekit) a movement skill pressed on a high line lets go of it FIRST (0.6 s skip), then runs as on the ground */
 applySkin(); LS.heroReady(K); LS.emptyReady(() => { try { return !PROG.heroPicked && !heroLevel() && !Object.values(PROG).some(v => v && typeof v === 'object' && v.cleared); } catch { return false; } });   /* (Daniel 11-01) a new game: an empty fire */ await LS.step('hero');   /* the hero first, so the loading screen has his dance to show */
 const SPR = { mother: bakeMotherIcon(), sprig: bakeSprig(), shield: bakeShield(), spit: bakeSpitter(), wasp: bakeWasp(), seed: bakeSeed(), thorn: bakeThornback(), queen: bakeQueen(), archer: bakeArcher(), frog: bakeFrog(), hopper: bakeHopper('green'), hopper_yellow: bakeHopper('yellow'), hopper_blue: bakeHopper('blue'), sapper: bakeSapper(), bomb: bakeBomb(), brute: bakeBrute(), hound: bakeHound(), dog: bakeHound({ h: '#e8e0d0', H: '#3a3040', e: '#2a2230' }), fox: bakeFox(), chief: bakeChief(), sporeling: bakeSporeling(), lurker: bakeLurker(), drone: bakeDrone(), shaman: bakeShaman(), spitcap: bakeSpitcap(), weaver: bakeWeaver(), thief: bakeThief(), pike: bakePike(), folk: bakeFolk(false), folk2: bakeFolk(true), master: null, king: null }; await LS.step('art1');
 /* THE HEXED FIELDS' creatures, its family and its two big ones */ { try { SPR.scarecrow = FF.bakeScarecrow(); SPR.rook = FF.bakeRook(); SPR.farmhand = FF.bakeFarmhand(); SPR.pumpkin = FF.bakePumpkin(); SPR.marshlight = FF.bakeMarshlight(); SPR.haunt = FF.bakeHaunt(); SPR.boo = FF.bakeBoo(); const fg = FF.bakeFarmGhosts(); SPR.ghostfarmer = fg.farmer; SPR.ghostwife = fg.wife; SPR.ghostchild = fg.child; SPR.ploughman = SK.bakePloughman(); SPR.strawking = SK.bakeStrawKing(); SPR.ploughHead = SK.bakePloughHead(); } catch (err) { console.error('the fields art', err); } }
@@ -2157,6 +2157,7 @@ function allyTick() {
   if (down) { const d = down.x - p.x;
     if (Math.abs(d) > 7) { keys[d > 0 ? 'right' : 'left'] = true; if (p.ground && Math.abs(p.vx) < 6 && p.aiT % 18 === 0) apress('jump'); }
     Object.assign(S, AIC.stuckStep(S, 0, fdt, true)); return; }
+  if (typeof HLX !== 'undefined' && HLX && HLX.on() && HLX.allyLine(p, one !== p ? one : null, keys, apress, time)) { Object.assign(S, AIC.stuckStep(S, 0, fdt, true)); return; }   /* (claude/linekit) the line kit's AI hook: take the line the leader holds (UP), crank a winch every 0.3 s; otherwise the LEASH catches it */
   const dLead = Math.abs(one.x - p.x) + Math.abs(one.y - p.y) * 0.5;
   /* TWO. IT FELL: IT WAITS */
   if (one !== p && time - (p.hazT ?? -99) < AIC.CATCH.wait && dLead > AIC.CATCH.near) { S.wait = true; keys.block = LABMOD.SHIELDED(h); return; }
@@ -11196,7 +11197,7 @@ function updatePlayer(dt) {
   /* ONE ULTIMATE INPUT FOR EVERY HERO (claude/ults, src/ultimate.js; Daniel 11-01): UP + C with the hero's meter / condition FULL fires his ultimate. Tap C stays his block / deflect / ward, hold C his guard.
      It runs BEFORE the hero blocks and, when it fires, eats the C press for the frame (P.cWas) and the held C until it is let go (P.ultHold), so no tap or guard rides on the same key. A hero registers with ultRegister (one line); nothing here names a hero. */
   { const ultPress = keys.block && !P.ultCWas; P.ultCWas = !!keys.block; if (!keys.block) P.ultHold = false;
-    if (ultPress && keys.up && ultHas(hero()) && !stunned && !dodging && !attacking && !P.plunge && !thrown && !rushing() && !(P.charge > 0) && !(P.blastT > 0) && ultReady(hero()) && ultFire(hero())) { P.cWas = true; P.bkCWas = true; P.cBuf = 0; P.ultHold = true; } }
+    if (ultPress && keys.up && ultHas(hero()) && !stunned && !dodging && !attacking && !P.plunge && !thrown && !rushing() && !(P.charge > 0) && !(P.blastT > 0) && ultReady(hero()) && (typeof HLX !== 'undefined' && HLX && P.lk && HLX.letGoFirst(), true) && ultFire(hero())) { P.cWas = true; P.bkCWas = true; P.cBuf = 0; P.ultHold = true; } }
   if (isPyro()) { // (claude/pyrokit) TAP C = THE FLAME WARD (src/flame-ward.js); HOLD C = THE HELD FIREBALL (the ward folds into it at FW_K.fold); a FULL bar's press of C = CONFLAGRATION. DOWN held still = STOKE. UP + C = her L10 card (THE JET held, THE EMBER SHOT tapped) - see PYRO_KIT
     P.heat = Math.max(0, Math.min(100, (P.heat || 0))); P.overheat = 0;
     P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt); P.jetRecover = Math.max(0, (P.jetRecover || 0) - dt); P.stokeLock = Math.max(0, (P.stokeLock || 0) - dt);
@@ -11448,6 +11449,7 @@ function updatePlayer(dt) {
      THE BLADE COMMITS: once swung, its recovery finishes before the feet may go. ==== */
   const airDodge = !P.ground && !P.swim;
   if (MCH && MCH.riding(P)) P.dbuf = 0;   /* (no roll out of a cart: left and right are the brake and the boost) */
+  if (typeof HLX !== 'undefined' && HLX && HLX.held(P)) P.dbuf = 0;   /* (claude/linekit) a seat on a high line does not roll: the dodge button is THE TUCK (i-frames, stays on the line - src/highlines-hands.js seat) */
   if (P.dbuf > 0 && !P.rgRecall && (!airDodge || !P.dashedAir) && !attacking && !stunned && !P.plunge && !dodging && !(P.perch > 0) && !(P.dashRec > 0) && !dashStriking() && P.dodgeCd <= 0 && !rushing() && !(P.pounceT > 0) && !(P.pounceRec > 0) && !(P.winded && (P.stFlash = 0.35, P.dbuf = 0, true))) {   /* WEIGHT: no roll while EXHAUSTED (the red flash says so) */   /* (the dash attack is committed: no dodge out of it, nor out of its end-lag) */
     const held = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     const dir = P.dbufDir || (isWarden() ? -P.face : isRg() ? (held === P.face ? P.face : -P.face) : held || P.face);   /* (claude/ranger) HER BUTTON IS THE BACKFLIP: away from what she faces, unless she holds the way she faces */
@@ -30578,7 +30580,7 @@ HVR = makeHangingRopes({ get L() { return L; }, TS, T, sfx: SFX, movers: () => m
   perchCut: (k, how) => owlPerchCut(k, how), owlOn: k => !!(boss && boss.t === 'owl' && boss.alive && bossActive && boss.perchI === k && OWL_PERCHED.has(boss.mode)) });
 /* THE HIGH LINES' HANDS (claude/highlines1, src/highlines-hands.js): main.js owns the world; the module owns the line kit on the level and THE HOOKJACK */
 HLX = makeHighLinesHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], P: () => P, keys: () => keys, presses: () => pressRead(), eatJump: () => { jumpPress = false; P.jbuf = 0; }, jumpUp: () => jumpUpKey,
-  callout: t => callout(t), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), time: () => time, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), tileAt: (tx, ty) => tileAt(tx, ty) });
+  callout: t => callout(t), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), time: () => time, asPlayer: (p, fn) => asPlayer(p, fn), damage: (x, d, o) => damagePlayer(x, d, o), tileAt: (tx, ty) => tileAt(tx, ty), spend: () => spend(dodgeCost(false)) });
 /* KINGSWOOD 2's HANDS (claude/kingswood2, src/kingswood-hands.js): main.js owns the world; the module owns the royal ropes, the log traps, the procession and the oak */
 /* THE ROOKERY's HANDS (claude/rookery, src/rookery-hands.js): its cracked rocks and their roosts, the shrieker's marks, the landmark */
 RKH = makeRookeryHands({ get L() { return L; }, TS, T, sfx: SFX, players: () => players || [P], enemies: () => enemies, time: () => time,
@@ -32936,7 +32938,7 @@ function updateParticles(dt) {
    reversal never snaps), and on a long fall it leads DOWN further the longer you fall. It is OFF - the camera is exactly what it was - wherever something else owns the frame: a
    boss or mini fight (arena locks), any camLock, a chase (autoscroll or not), the spiral stair, the Deep Rails' cart, a wind/gale ride, a flight, the shared co-op camera, and
    with Reduce motion. Off, the lead resets to 0 so it builds up again from nothing. */
-let camLead = 0, camFallT = 0;
+let camLead = 0, camFallT = 0, camClimbK = 0;   /* (claude/linekit) camClimbK: 0..1, the L.climbCam ease (a seat on a winch) */
 function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && !coop() && !bossActive && !miniActive && !camLock && !chases.some(c => c.st.phase === 'run') && !(L && L.spiral) && !(MCH && MCH.on()) && !P.windRide && !P.galeRide && !P.fly && !P.dead; }
 /* (claude/transwm) THE LEVEL-TO-LEVEL TRANSITION (src/transitions.js is the timeline and the table, src/transitions-art.js the pictures). A boss falls -> the clear is CREDITED (winLevel, first) ->
    the way opens -> the heroes walk out -> the ferry carries them (scene) -> fade -> the next level loads and begins with them stepping off. state stays 'win' while TRN is set (no card:
@@ -33107,13 +33109,15 @@ function updateCamera(dt) {
   const LA = lookaheadOn();
   if (LA) { const run = Math.abs(P.vx) > 14 ? Math.sign(P.vx) * Math.min(1, Math.abs(P.vx) / 70) : 0; camLead += (run * VW / 6 - camLead) * Math.min(1, dt * 2.2);
     camFallT = !P.ground && P.vy > 200 ? camFallT + dt : 0; } else { camLead = 0; camFallT = 0; }
+  { const cl = typeof HLX !== 'undefined' && HLX && HLX.on() ? HLX.climbCam() : null, tgt = cl ? 1 : 0, stp = dt / 0.4; camClimbK += Math.max(-stp, Math.min(stp, tgt - camClimbK)); }   /* (claude/linekit) L.climbCam: a seat on a winch - the foot line 0.68 -> 0.80 and the view leads 40 px up, eased over 0.4 s (co-op: either seat) */
+  const camFoot = CAM_FOOT + (0.80 - CAM_FOOT) * camClimbK, climbUp = 40 * camClimbK;
   const fallLead = LA && SET.lookDown && camFallT > 0.25 ? Math.min(40, (camFallT - 0.25) * 70) : 0;   /* a long fall: the camera runs ahead of you, down */
   const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) + fallLead : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  let tx = P.x + (LA ? P.face * 24 + camLead : P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28))) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + (LA ? P.face * 24 + camLead : P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28))) - VW / 2, ty = P.y - (VH * camFoot) - climbUp + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
-  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
+  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * camFoot - climbUp + lookDown; }
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
   /* THE WINCHMASTER's room is wider than any zoomed view (round five, claude/winch3: five more columns so his housings are wide enough to

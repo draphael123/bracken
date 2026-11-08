@@ -46,6 +46,8 @@ export const LK = {
   MIN_TELL: 1.0, GRACE: 3, TAIL: 1.35, HEAD: 0.6, SWAY: 10, SWAY_K: 18, SWAY_DAMP: 2.2, AIR_PUSH: 1.5, SHOVE_CAP: 320,   /* wind */
   GUARD_PUSH: 24, KNOCK_VX: 60, KNOCK_VY: -80, SEATS: 4, POST_BOX: [11, 14],
   FOE_SPEED: 110,
+  TUCK: 0.25, TUCK_CD: 0.5,                                           /* (claude/linekit) THE TUCK: DODGE on a line = this many s of i-frames, and he stays on the line */
+  CLIMB_FOOT: 0.80, CLIMB_LEAD: 40, CLIMB_EASE: 0.4,                 /* (claude/linekit) L.climbCam: the camera's foot line while a seat is on a winch, its up-lead px, the ease s */
 };
 const px = t => t * TS;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -135,7 +137,7 @@ function letGo(P, z, hard, rel) { P.lk = null; P.lkSkip = z ? z.id : null; P.lkR
 /* ---------------- ONE SEAT, ONE FRAME ---------------- */
 export function riderStep(kit, P, inp = {}, dt) {
   const ev = [];
-  P.lkRel = Math.max(0, (P.lkRel || 0) - dt);
+  P.lkRel = Math.max(0, (P.lkRel || 0) - dt); P.lkTuckCd = Math.max(0, (P.lkTuckCd || 0) - dt);
   if (P.lkSkip && (P.ground || P.swim || P.climb)) P.lkSkip = null;
   let r = P.lk;
   if (r) { const z = kit.lines[r.id];
@@ -147,12 +149,17 @@ export function riderStep(kit, P, inp = {}, dt) {
   if (!r) return ev;
   let z = kit.lines[r.id];
   const W = windAt(kit, r.x, lineY(z, r.x) + z.hang - 8);
+  /* THE TUCK (claude/linekit, plan C): DODGE on a line = LK.TUCK s of i-frames (P.inv, the one the game's own damage reads), no roll displacement - he stays on the line */
+  r.tuck = Math.max(0, (r.tuck || 0) - dt);
+  if (inp.dodgePress && !(P.lkTuckCd > 0)) { r.tuck = LK.TUCK; P.lkTuckCd = LK.TUCK_CD; P.inv = Math.max(P.inv || 0, LK.TUCK); ev.push({ t: 'tuck', id: z.id }); }
+  P.lkTuck = r.tuck;
   /* LET GO: JUMP kicks off (carrying the line's speed and the sway), DOWN drops */
   if (inp.jumpPress) { const steer = inp.left ? -LK.KICK_STEER : inp.right ? LK.KICK_STEER : 0;
     P.vx = r.dir * r.v * LK.KICK_VX + r.swayV + steer; P.vy = LK.KICK_VY; P.ground = false; letGo(P, z, false); ev.push({ t: 'kick', id: z.id }); return ev; }
   if (inp.down) { P.vx = r.dir * r.v * 0.4 + r.swayV; P.vy = LK.DROP_VY; letGo(P, z, false, LK.RELEASE * 0.5); ev.push({ t: 'drop', id: z.id }); return ev; }
   /* HOW FAST ALONG IT */
   let v = 0;
+  if (inp.strike && z.kind !== 'winch') ev.push({ t: 'swing', id: z.id });   /* A LINE SWING (claude/linekit, plan C): the hero's own forward blow, no step, no lunge, the line carries him as it did - the game fires the blow, the kit only tells it */
   if (z.kind === 'winch') {
     if (z.d.drive === 'post') { if (inp.strike && inp.hb) { const p = kitStrike(kit, inp.hb); if (p) ev.push({ t: 'strike', post: p.kind }); } v = z.run > 0 ? z.speed : 0; }
     else {   /* GRIP: every blow while hanging is a crank stroke; the ratchet holds between */
@@ -185,6 +192,16 @@ export function riderStep(kit, P, inp = {}, dt) {
   P.x = r.x + r.sway; P.y = lineY(z, r.x) + z.hang; P.vx = r.dir * v; P.vy = z.slope * P.vx;
   P.ground = false; P.cling = true; P.lkHeld = true; P.coyote = 0; if (v > 0 || z.kind !== 'winch') P.face = r.dir;
   return ev;
+}
+
+/* LET GO FIRST (claude/linekit, plan C): a movement skill (lunge, dash, vault, leap, plunge) or an ultimate that moves the hero lets go of the line, skips it 0.6 s, and then runs as on the ground */
+export function releaseRider(kit, P) {
+  const r = P.lk; if (!r) return null; const z = kit.lines[r.id]; letGo(P, z, false); return { t: 'release', id: r.id };
+}
+/* THE CLIMB CAMERA (L.climbCam): { foot, lead } while ANY seat hangs on a winch - the foot line drops to CLIMB_FOOT and the view leads up toward the winch's high end; null otherwise (main.js eases it over CLIMB_EASE) */
+export function climbLook(kit, bodies) {
+  for (const b of bodies || []) if (b && b.lk && !b.dead) { const z = kit.lines[b.lk.id]; if (z && z.kind === 'winch') return { foot: LK.CLIMB_FOOT, lead: LK.CLIMB_LEAD, id: z.id }; }
+  return null;
 }
 
 /* ---------------- THE WORLD, ONE FRAME ---------------- */
