@@ -7,7 +7,7 @@
 import * as GA from './redraw/gqueen_art.js'; import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
-  crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 2.6, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
+  crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.0, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
   portal: { cd: 8, cd2: 6, tell: 1.0, n: 2, n2: 3, glow: 0.9, gap: 0.35, fan: 3, spread: 14, v: 210, dmg: 10, minDist: 90, home: 320, stun: 2.2, stunHp: 0.03, clankHp: 0.01, rows: [12, 13, 14, 15, 16], r: 4 },
 };
 GQ3.hp2 = 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
@@ -18,7 +18,7 @@ GQ3.esc = { fire: 3, fireEvery: 0.8, push: 150, fan: 4.5, cue: 0.5, collapse: 0.
 /* (claude/gq2mech) HIGHCROWN'S MECHANICS IN HER HALL (Daniel 11-06): (1) THE BELL IS YOURS - ring it (a blow on the bell) and she STORMS to the sound; under the grate when it drops she is PINNED ~4 s (a bigger
    window, x1.35 a blow); the bell has a cooldown. (2) THE BARRACKS GATE (her west door) rises at 66 / 33 % of her hall bar: crank the winch (3 blows, each inside 2 s of the last, any seat) before the horn
    runs out and the gate drops on her guards; fail and they join her. Hall only. Numbers are starting values for the tune lane. */
-GQ3.mech = { bellCd: 13, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 4.0, pinMul: 1.35, contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
+GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 4.0, pinMul: 1.35, contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
@@ -735,6 +735,8 @@ export function makeGQueenHands(ctx) {
     S.esc.checked = true; if (persist) persist.stage = 'roof'; ctx.setCheckpoint(E.check.x * TS + 8, (E.check.y + 1) * TS);
     S.esc.step = null; toRoof(); return e.stage === 'roof';
   };
+  /* (claude/hcfix) tools/hcfix-fights-sheet.mjs: start each told move the way her own chooser does (the mark, the sound, the set-up), for the stills */
+  Object.assign(H.test = H.test || {}, { start: k => { const e = q(); if (!e || !S) return false; if (k === 'lash') startLash(e); else if (k === 'ambush') startAmbush(e); else if (k === 'geyser') startGeyser(e); else if (k === 'leap') startLeap(e); else if (k === 'crown') roofCrown(e); else if (k === 'portal') roofPortal(e); else return false; return e.mode; } });
   Object.assign(H.test = H.test || {}, { toss:() => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
   return H;
 }
