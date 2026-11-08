@@ -174,7 +174,7 @@ try {
     await E('BK.ui.storeOpen("map", "heroes")'); await sleep(900);
     ok(await E('BK.state') === 'store', 'the store did not open');
     const hs = await E('BK.touch.hitBoxes()'), nt = await E('BK.ui.tabs()'); ok(hs.length >= nt + 1, 'the store drew ' + hs.length + ' tap boxes (' + nt + ' tabs + item rows)');
-    const sw = 1;   /* (rel139fix, claude/hubpolish) a SWAP HERO pill is the first tap box on every tab but SKILLS, so the tabs follow it */
+    const sw = 2;   /* (rel139fix, claude/hubpolish) a SWAP HERO pill is a tap box on every tab but SKILLS; (batch150, menuback) the BACK button is the very first box: the tabs follow both */
     await gameTap(2 + sw); ok(await E('BK.ui.storeTab') === 2, 'a tap on the third store tab did not open it (' + await E('BK.ui.storeTab') + ')');
     await sleep(400);
     if ((await E('BK.ui.items()')) > 1) { await gameTap(nt + 1 + sw); ok(await E('BK.ui.storeI') === 1, 'a tap on the second store row did not pick it (' + await E('BK.ui.storeI') + ')'); }
