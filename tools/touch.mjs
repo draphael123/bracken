@@ -500,6 +500,7 @@ try {
     await E('BK.touchCtx.length = 0; BK.enemies().forEach(e => { e.alive = false; e.hp = 0; }); BK.sim(2); BK.P.face = 1');
     // auto-interact: pushing into a doorway and standing there uses it; off, it does not
     const D = (await dbg()).layout.dpad;
+    await E('BK.P.x = 184; BK.P.vx = 0; BK.P.vy = 0; BK.sim(3)');   /* (autodoor) clear of the wood's signs (tiles 5 and 18): a dodge in thumb-friendly leaves him beside the first, and a sign's READ outranks a door's ENTER */
     await E("BK.P.vx = 0; BK.props().push({ t: 'doorway', id: 'tAuto', needs: null, test: 1, x: BK.P.x, y: BK.P.y })"); await tk(); await tk();
     await down(1, ...pointAt(D, 0, 0.75)); await E('BK.P.vx = 0; BK.P.coyote = 1'); for (let i = 0; i < 6; i++) await tk(0.1); ok(!(await snap()).talk, 'Auto-interact OFF still used the door');
     await E('BK.SET.touchAutoUse = true'); for (let i = 0; i < 6; i++) { await E('BK.P.vx = 0; BK.P.coyote = 1'); await tk(0.1); } { const dd2 = await dbg(); ok((await snap()).talk, 'Auto-interact ON did not use the door after standing against it (verb ' + JSON.stringify(dd2.verb) + ', keys ' + JSON.stringify(await keysNow()) + ', vx ' + await E('BK.P.vx') + ', ground ' + await E('BK.P.ground') + ')'); } await up(1); await E('BK.SET.touchAutoUse = false; BK.sim(3)');
