@@ -34,11 +34,12 @@ try {
     /* 3. THE MURDER HOLES: all six loaded; #1 struck for real, the hero held on the slot so the camera stays (mid-fall, spent) */
     fresh(); const holes = BK.props().filter(p => p.t === 'murderhole').sort((a, b) => a.n - b.n); log.push('holes ' + holes.map(h => h.n + '@' + Math.round(h.x / 16) + '/' + Math.round(h.y0 / 16)).join(' '));
     for (const h of holes) { BK.tp(Math.round(h.x / 16), Math.round(h.y0 / 16) - 1); run(30); snap('hole-' + h.n + '-loaded', 'murder hole #' + h.n + ' LOADED'); }
-    const h1 = holes[0]; if (h1) { BK.tp(Math.round(h1.x / 16), Math.round(h1.y0 / 16) - 1); run(30); const px0 = BK.P.x, py0 = BK.P.y; log.push('hero ' + Math.round(px0) + '/' + Math.round(py0) + ' slot ' + Math.round(h1.x) + '/' + h1.y0 + ' ground ' + BK.P.ground);
-      const pin = k => { for (let i = 0; i < k; i++) { hold(); BK.P.x = px0; BK.P.y = py0; BK.P.vx = 0; BK.P.vy = 0; BK.step(1); } };
+    const h1 = holes[0]; if (h1) { BK.tp(Math.round(h1.x / 16), Math.round(h1.y0 / 16) - 2); run(30);   /* (on the stone OVER the slot: the vault's walk) */ const px0 = BK.P.x, py0 = BK.P.y; log.push('hero ' + Math.round(px0) + '/' + Math.round(py0) + ' slot ' + Math.round(h1.x) + '/' + h1.y0 + ' ground ' + BK.P.ground);
+      const pin = k => { for (let i = 0; i < k; i++) { hold(); BK.keys.down = true; BK.P.x = px0; BK.P.y = py0; BK.P.vx = 0; BK.P.vy = 0; BK.step(1); } };   /* DOWN held: the camera looks down the stone's fall line */
+      pin(70);
       BK.P.atk = -1; BK.press('atk'); let fell = false; for (let i = 0; i < 20 && !h1.stone; i++) pin(1); log.push('after swing loaded ' + h1.loaded + ' stone ' + !!h1.stone);
       for (const k of [8, 8, 8]) { pin(k); snap('hole-1-fall-' + n, 'hole #1 struck: ' + (h1.stone ? 'the stone MID-FALL, ' + Math.round(h1.stone.y - h1.y0) + ' px down' : 'landed')); }
-      pin(90); snap('hole-1-spent', 'hole #1 SPENT (reloading ' + h1.reload.toFixed(1) + ' s)'); }
+      pin(90); BK.keys.down = false; snap('hole-1-spent', 'hole #1 SPENT (reloading ' + h1.reload.toFixed(1) + ' s)'); }
     return { shots, sheet: sheet.toDataURL('image/png'), n, log }; })()`);
   for (const [id, png] of Object.entries(d.shots)) writeFileSync(join(dir, id + '.png'), Buffer.from(png.split(',')[1], 'base64'));
   writeFileSync(join(dir, 'sheet.png'), Buffer.from(d.sheet.split(',')[1], 'base64'));
