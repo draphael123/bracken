@@ -275,8 +275,9 @@ if (PAGE.length) {
       ok(o.c1 && o.c2 && o.c3 && o.afterView === 'seats' && o.btns.includes('PLAY') && o.want[0] === 'warden:balanced', 'a DEFAULT warden is seated and the seats list ends in PLAY: ' + o.btns.join('|'));
       ok(o.ai2.length >= 2 && o.ai2.every(d => d === false) && o.want.length === 2 && o.stillTitle === 'title', 'a second partner can be added before PLAY (up to three), the title waits');
       ok(o.c8 && !o.shown && (o.after === 'map' || o.after === 'heropick') && o.want2 === 2, 'PLAY leaves the board and takes the CONTINUE road (' + o.after + ') with both partners wanted');
-      const e = await E(T + `const o={};BK.ui.titleSelect('PLAY WITH AI');BK.press('confirm');BK.step(3);await new Promise(r=>setTimeout(r,60));o.open=!!__board();
-        window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,60));BK.step(3);o.shown=!!__board();o.st=BK.state;o.want=((BK.tavern.want()||{}).seats||[]).length;o.sub=BK.ui.titleSub;return o;})()`);
+      const e0 = await E(T + `const o={};BK.ui.titleSelect('PLAY WITH AI');BK.press('confirm');BK.step(3);await new Promise(r=>setTimeout(r,60));o.open=!!__board();return o;})()`);
+      for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });   /* a real ESC key */
+      const e = { ...e0, ...(await E(`(async()=>{await new Promise(r=>setTimeout(r,60));BK.step(3);return { shown: !!__board(), st: BK.state, want: ((BK.tavern.want()||{}).seats||[]).length, sub: BK.ui.titleSub };})()`)) };
       ok(e.open && !e.shown && e.st === 'title' && e.want === 0 && e.sub === 'PLAY TOGETHER', 'ESC on the picker with nobody seated returns to the title, nothing started: ' + JSON.stringify(e));
     }
 

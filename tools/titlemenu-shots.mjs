@@ -10,7 +10,7 @@ const snap = async name => { const r = await pg.send('Page.captureScreenshot', {
 const E = s => pg.evalp(s);
 const show = async (name, js) => { await E('BK.ui.pressCard = false; BK.state = "title"; ' + js + '; BK.step(120); for (let i = 0; i < 60; i++) BK.draw1(); 0'); await pause(150); await snap(name); };
 /* (claude/titlemenu2) PLAY WITH AI: ENTER on the row opens the party board on its AI PARTNER picker; ESC closes it */
-const aiShot = async name => { await E('BK.ui.pressCard = false; BK.state = "title"; BK.ui.titleSelect("PLAY WITH AI"); BK.step(120); for (let i = 0; i < 60; i++) BK.draw1(); BK.press("confirm"); BK.step(3); 0'); await pause(400); await snap(name); await E('window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })); 0'); await pause(100); };
+const aiShot = async name => { await E('BK.ui.pressCard = false; BK.state = "title"; BK.ui.titleSelect("PLAY WITH AI"); BK.step(120); for (let i = 0; i < 60; i++) BK.draw1(); BK.press("confirm"); BK.step(3); 0'); await pause(400); await snap(name); for (const type of ["keyDown", "keyUp"]) await pg.send("Input.dispatchKeyEvent", { type, key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 }); await pause(100); };
 const started = 'BK.PROG.heroPicked = true; BK.PROG.xp = { knight: 50 }; BKT.PROG.heroPicked = true; BKT.PROG.xp = { knight: 50 }; BKT.saveNow()';
 try {
   await E('BK.manualSimulation = true; BK.setHero("knight"); BK.reset({ fresh: true }); 0');
