@@ -32,7 +32,7 @@ if (SHOT) {
     const dir = join(ROOT, 'work', 'loadbar'); mkdirSync(dir, { recursive: true });
     if (before) {
       await pg.send('Network.enable'); await pg.send('Network.setBlockedURLs', { urls: ['*/src/main.js'] });
-      await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?shot=' + Date.now() }); await sleep(2500);
+      await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?noattract&shot=' + Date.now() }); await sleep(2500);
       const shot = await pg.send('Page.captureScreenshot', { format: 'png' });
       writeFileSync(join(dir, 'before.png'), Buffer.from(shot.result.data, 'base64'));
     } else {

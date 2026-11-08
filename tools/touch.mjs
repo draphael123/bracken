@@ -38,7 +38,7 @@ const move = async (id, x, y) => { active.set(id, { x, y }); await sendTouch('to
 const up = async (id) => { const p = active.get(id); active.delete(id); await pg.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ x: p.x, y: p.y, id }] }); await sleep(40); };   /* (touchEnd lists the points that LEAVE, not the ones that stay) */
 const tap = async (x, y, hold = 60) => { await down(9, x, y); await sleep(hold); await up(9); };
 const goto = async (query = '', keepCard = false) => {   /* (keepCard: the one page that tests the PRESS ANY KEY card itself; every other page takes the card down, as a player's first tap does) */
-  await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?touch=1&nosw' + query });
+  await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?touch=1&nosw&noattract' + query });
   await sleep(1500);
   for (let i = 0; i < 160; i++) { const r = await E('typeof window.BK === "object" && !!window.BK.lookPass', 3000).catch(() => false); if (r) break; await sleep(300); }
   DPR = await E('document.getElementById("c").width / innerWidth');   // syncDpr
@@ -68,11 +68,13 @@ try {
   await section('press-card', async () => {
     await sleep(800);
     ok(await E('BK.ui.pressCard') === true, 'a fresh touch page opens on the press card');
+    { await E('window.__textRec = []'); await sleep(2600); const said = await E('(() => { const s = [...new Set((window.__textRec || []).filter(t => t.kind === "text").map(t => t.s))]; window.__textRec = null; return s; })()');   /* (claude/intro) the living scene: TAP TO START under the sign, and not the keyboard line */
+      ok(said.includes('TAP TO START'), 'a touch page says TAP TO START (' + said.join(' / ') + ')'); ok(!said.some(s => /KEYBOARD OR GAMEPAD|PRESS ANY KEY/.test(s)), 'and not the keyboard prompt or its controls line'); }
     const hs = await E('BK.touch.hitBoxes()'); ok(hs.length === 1 && hs[0].w >= 300 && hs[0].h >= 170, 'the card is ONE whole-screen tap box (' + hs.length + ' drawn)');
     await gameTap(0); await sleep(400);
     ok(await E('BK.ui.pressCard') === false, 'a tap did not take the card down');
     ok(await E('BK.state') === 'title', 'and it opened nothing else (state ' + await E('BK.state') + ')');
-    await sleep(2600);   // the fronds part, the knight walks in, the sign settles, the menu comes in
+    await sleep(1400);   // the board slides in
   });
 
   // ===================== 4+5: TAP MENUS, from the title =====================
