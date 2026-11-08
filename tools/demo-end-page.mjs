@@ -14,7 +14,9 @@ const run = async (demo) => {
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(ki); BK.start(); BK.sim(10); BK.coopSave.win(); BK.sim(5);
     const st1 = BK.state; BK.press('confirm'); BK.sim(5); await new Promise(r => setTimeout(r, 150));
     const card = document.getElementById('demoend');
-    return { demo: ${demo}, st1, st2: BK.state, card: !!card, text: card ? card.innerText : null, buttons: card ? [...card.querySelectorAll('button')].map(b => b.id + ':' + b.textContent) : null, focus: document.activeElement && document.activeElement.id }; })()`);
+    return { demo: ${demo}, st1, st2: BK.state, card: !!card, text: card ? card.innerText : null, buttons: card ? [...card.querySelectorAll('button')].map(b => b.id + ':' + b.textContent) : null, focus: document.activeElement && document.activeElement.id,
+    teaser: card ? card.querySelectorAll('.tz canvas').length : 0, tzPainted: card ? [...card.querySelectorAll('.tz canvas')].every(c => c.width === 64 && c.getContext('2d').getImageData(1, 1, 1, 1).data[3] === 255) : false,
+    follow: card && card.querySelector('#defollowbtn') ? { text: card.querySelector('#defollowbtn').textContent, disabled: card.querySelector('#defollowbtn').disabled, links: card.querySelectorAll('a[href]').length } : null }; })()`);   /* (demoend2) 5 vignettes painted; the follow button is shut + no <a> while FOLLOW_URL is blank (OWED browser run) */
 };
 try {
   const a = await run(true); console.log(JSON.stringify(a, null, 1));

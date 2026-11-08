@@ -97,10 +97,10 @@ export function layoutPlates(nodes, VW = 320) {
    218 x 58 (a store's 218 x 26) in one of four corners, and the camera may put the node anywhere from a fifth to the bottom of the screen.
    Header bar on top, footer strip under. placePanel picks the first (anchor, corner) whose panel, header and footer cover no node box and no plate
    in view; the game and tools/map-spacing.mjs both call it, so what the lint proves is what is drawn. */
-export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900 };
+export const SCREEN = { VW: 320, VH: 180, HEADER: 19, FOOTER: 11, MAPH: 900, CAMTOP: 0 };   /* CAMTOP: the highest the camera may go (the demo's map stops at the wood sheet, batch150: its card must be placed for the camera it really gets) */
 export const NEAR = 0;   // what counts as "around the selected node": anything within this many px of it, and its road neighbours, must stay readable
 export const ANCHORS = [0.55, 0.4, 0.7, 0.3, 0.8, 0.25, 0.9, 0.2, 0.35, 0.45, 0.6, 0.65, 0.75, 0.85];   // the node's screen height, as a fraction of VH (0.55 = the map's own default)
-export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 208), h: nd.kind === 'store' ? 26 : 54 }; }   /* 54 of 180 = 30% of the screen (the style guide's cap; it was 58) */
+export function panelSize(nd) { return { w: Math.min(SCREEN.VW - 12, 160), h: nd.kind === 'store' ? 22 : 40 }; }   /* (claude/mapclean, Daniel 11-07: the COMPACT card, 160 x 40 = 22% of the screen; it was 208 x 54) */
 export function plateNodes(NODES, nameOf) { return NODES.map(n => ({ id: n.id, x: n.x, y: n.y, kind: n.kind, spur: !!n.spur, plate: n.plate, label: n.kind === 'store' ? (n.id === 'highstore' ? 'HIGH STORE' : 'STORE') : plateLabel(nameOf(n)) /* (claude/deeprails2) n.board: a short board name where the full one will not fit (the full name stays on the info card) */, twoLine: TWO_LINE.has(n.id), reach: n.id === 'palisadewood' ? 46 : 0 }   /* ONE-LINE BOARDS (Daniel 10-09): the name only; medal, silver and quest live on the selected node's info card */)); }
 const hitR = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 /* the nodes beside this one on the road: the last and next ROAD node in list order (a spur: the one it hangs off, and nothing else) */
@@ -116,7 +116,7 @@ export function placePanel(nd, nodes, plates, S = SCREEN, quick = false) {   /* 
   const mustKeep = r => care.has(r.id) || Math.hypot(Math.max(0, r.x - nd.x, nd.x - r.x - r.w), Math.max(0, r.y - nd.y, nd.y - r.y - r.h)) <= NEAR;
   const must = rects.filter(mustKeep), others = rects.filter(r => !mustKeep(r));
   for (const a of ANCHORS) {
-    const camY = Math.max(0, Math.min(S.MAPH - S.VH, nd.y - S.VH * a)), ai = ANCHORS.indexOf(a), sy = nd.y - camY;
+    const camY = Math.max(S.CAMTOP || 0, Math.min(S.MAPH - S.VH, nd.y - S.VH * a)), ai = ANCHORS.indexOf(a), sy = nd.y - camY;
     if (!(sy > S.HEADER + 8 && sy < S.VH - S.FOOTER - 8) && bestOk) continue;
     const view = r => { const q = { x: r.x, y: r.y - camY, w: r.w, h: r.h }; return q.y < S.VH && q.y + q.h > 0 ? { ...q, id: r.id, what: r.what } : null; };
     const mustV = must.map(view).filter(Boolean), othersV = quick ? [] : others.map(view).filter(Boolean);
@@ -136,4 +136,27 @@ export function placePanel(nd, nodes, plates, S = SCREEN, quick = false) {   /* 
     }
   }
   return bestOk || first;
+}
+
+/* (claude/mapfix151, Daniel 11-07) A BOARD NEVER SITS UNDER THE MAP'S OWN FURNITURE. layoutPlates places boards in the world, once; the compass, the footer, the header, the info card, the NAMES chip and the demo's caption live on the SCREEN and
+   move across them as the camera does. At draw time a board whose rectangle meets one of those (or runs off the screen's side) is moved to the nearest free spot: above, below, left or right of its node, or a short slide
+   from where it was. Everything is in one frame of reference (the caller passes world or screen, as long as it is the same for all). `reserved` is what it may not touch, `avoid` what it should not (boards already placed, nodes);
+   `bounds` is the allowed area. A board that is clear is returned as it was, so nothing moves unless it has to. */
+export function nudgePlate(pl, nd, reserved, avoid, bounds, hard = [], maxMove = Infinity) {   /* hard: boards it may not land on; maxMove: the furthest it may travel (a board whose node is off the screen only slides a little) */
+  const inB = r => r.x >= bounds.x && r.y >= bounds.y && r.x + r.w <= bounds.x + bounds.w && r.y + r.h <= bounds.y + bounds.h;
+  const bad = r => reserved.some(q => hitR(r, q)) || !inB(r);
+  if (!bad(pl)) return pl;
+  const { w, h } = pl, cands = [];
+  const around = [[nd.x - w / 2, nd.y - 22 - h], [nd.x - w / 2, nd.y + 8], [nd.x - w - 10, nd.y - h / 2 - 4], [nd.x + 12, nd.y - h / 2 - 4], [nd.x - w / 2, nd.y - 30 - h], [nd.x - w / 2, nd.y + 16]];
+  for (const [x, y] of around) cands.push([x, y]);
+  for (const d of [4, 8, 12, 16, 22, 30]) for (const [dx, dy] of [[0, -d], [0, d], [-d, 0], [d, 0], [-d, -d], [d, -d], [-d, d], [d, d]]) cands.push([pl.x + dx, pl.y + dy]);
+  let best = null;
+  for (const [cx, cy] of cands) {
+    const x = Math.max(bounds.x, Math.min(bounds.x + bounds.w - w, Math.round(cx))), y = Math.round(cy), r = { x, y, w, h };
+    if (bad(r) || hard.some(q => hitR({ x: r.x - 1, y: r.y - 1, w: r.w + 2, h: r.h + 2 }, q)) || Math.hypot(x - pl.x, y - pl.y) > maxMove) continue;
+    const over = avoid.filter(q => hitR({ x: r.x - 1, y: r.y - 1, w: r.w + 2, h: r.h + 2 }, q)).length, far = Math.hypot(x + w / 2 - nd.x, y + h / 2 - nd.y);
+    const cost = over * 40 + far * 0.5 + Math.hypot(x - pl.x, y - pl.y) * 0.3;
+    if (!best || cost < best.cost) best = { r, cost };
+  }
+  return best ? { ...pl, ...best.r } : null;   /* null: nowhere clear on the screen (it would be under the furniture anyway): the board is not drawn */
 }

@@ -48,7 +48,7 @@ ok('the walk: slower is never under WALK_MIN, a long way is a run capped at WALK
   ok('reduce-motion slows the slide (parallax speed dropped), keeps the boarding', TRM.sceneScroll(F.poleAt + 6, true) < TRM.sceneScroll(F.poleAt + 6) * 0.6); }
 /* ---- the source wiring ---- */
 ok('the clear is credited BEFORE the cutscene: winLevel() runs, then trnBegin()', /else \{ winLevel\(\); trnBegin\(\); \}/.test(src));
-ok('rush, boss select, trials, shops and the editor never start one', /function trnBegin\(\) \{\n?\s*if \(TRN \|\| !L \|\| !LEVELS\[levelIndex\] \|\| rushOn\(\) \|\| bossSelectFight \|\| edTesting \|\| L\.trial \|\| L\.shop\) return false;/.test(src.replace(/\r\n/g, '\n')));
+ok('rush, boss select, trials, shops and the editor never start one', /function trnBegin\(direct = false\) \{[^\n]*\n?\s*if \(TRN \|\| \(trnChoice && !direct\) \|\| !L \|\| !LEVELS\[levelIndex\] \|\| rushOn\(\) \|\| bossSelectFight \|\| edTesting \|\| L\.trial \|\| L\.shop\) return false;/.test(src.replace(/\r\n/g, '\n')));
 ok('the next level loads through loadThen (the map start\'s own path) and startGame', /loadThen\(tr\.to, \(\) => \{ TRN = null; startGame\(\); trnArriveBegin\(entry\); \}\)/.test(src));
 ok('the win card and the HUD plates stay down while a transition runs', (src.match(/state === 'win' && !TRN/g) || []).length >= 3);
 ok('any press skips: the update hands anyPress to the timeline', /TRM\.step\(tl, dt, \{ press: anyPress, ready \}\)/.test(src));
@@ -64,7 +64,7 @@ if (process.argv.includes('--browser')) {
     const run = flag => ev(`(async()=>{ const out = {}; BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'); BK.setHero('knight'); BK.reset({ fresh: true }); delete BK.PROG.transSeen; BK.SET.transitions = undefined; BK.trans.force(${flag}); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.start(); BK.sim(30);
       const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
       for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); }
-      out.killed = !!e && !e.alive; let tr = false; for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; }
+      out.killed = !!e && !e.alive; let tr = false; for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } { const ch = BK.trans.choice(); if (ch && ch.t >= BK.trans.TRM.CHOICE_ARM_S) BK.press('confirm'); } if (BK.state === 'win' && !BK.trans.choice()) break; }
       out.tr = tr; out.state = BK.state; out.lvl = BK.trans.levelId(); out.wood = !!(BK.PROG.wood && BK.PROG.wood.cleared); out.scene = tr ? !!BK.trans.tr.scene : null;
       if (tr) { for (let i = 0; i < 1500 && (BK.trans.tr || BK.trans.levelId() === 'wood'); i++) { if (i % 200 === 100) BK.press('atk'); BK.sim(2); } out.after = BK.trans.levelId(); out.arrive = !!(BK.trans.arrive && BK.trans.arrive.entry && !BK.trans.arrive.ferry); }
       return out; })()`);

@@ -13,27 +13,27 @@
 //   sfx, hint(msg), told() / tell(), hurtFoe(e, d, x), topple(e) -> bool
 import * as CT from './carry-throw.js'; import * as FPA from './redraw/fen_planks_art.js';   /* (claude/fenroad2art) the bundle, the plank, the ghost */
 export const PLANK = { reachX: 16, reachY: 18, dmg: 6, stagger: 0.9, col: '#e8c27a', len: 7, keep: 4, layT: 0.35, throwT: 0.25 };
-export const PLANK_SAY = { take: 'A PLANK: E LAYS IT, ATTACK THROWS IT', laid: 'THE PLANK IS DOWN', dropped: 'A BLOW: YOU DROP THE PLANK', lost: 'THE FEN TAKES THE PLANK', down: 'YOU SET THE PLANK DOWN', stagger: 'THE PLANK STAGGERS IT' };
-export const PLANK_HINT = 'E TAKES A PLANK. CARRIED, YOU ARE SLOW AND CANNOT SWING. E AT A BROKEN EDGE LAYS IT ACROSS; ATTACK THROWS IT - A STILT-WALKER LOSES HIS STILTS.';
+export const PLANK_SAY = { take: 'A PLANK: E LAYS IT, ATTACK THROWS IT', laid: 'THE PLANK IS DOWN', dropped: 'A BLOW: YOU DROP THE PLANK', lost: 'THE FEN TAKES THE PLANK', down: 'YOU SET THE PLANK DOWN', stagger: 'THE PLANK STAGGERS IT', clunk: 'THE PLANK BOUNCES OFF' };
+export const PLANK_HINT = 'E TAKES A PLANK. CARRIED, YOU ARE SLOW AND CANNOT SWING. E NEAR A BROKEN EDGE (A FEW STEPS OFF, EITHER SIDE) LAYS IT ACROSS; ATTACK THROWS IT - A STILT-WALKER LOSES HIS STILTS, THE BOG TROLL REELS.';
 /* THE HERO'S POSE HOOKS (the art lane draws them for every hero - src/main.js reads none yet): P.plankPose = 'carry' (the plank on his shoulder, both hands),
    'lay' (crouched, the plank going down in front: PLANK.layT s), 'throw' (the plank heaved two-handed overhead: PLANK.throwT s) */
 export const PLANK_POSES = ['carry', 'lay', 'throw'];
 CT.addKind('plank', { aims: { low: { vx: 100, vy: -100 }, mid: { vx: 175, vy: -170 }, high: { vx: 120, vy: -280 } }, g: 640, r: 4, ring: 11, dots: 14 });
 
 export function makeFenPlanks(ctx) {
-  let bundles = [], items = [], arc = null, near = null, ahead = null;
+  let bundles = [], items = [], arc = null, near = null, ahead = null, glow = null;
   const W = { n: { taken: 0, laid: 0, thrown: 0, foeHits: 0, toppled: 0, dropped: 0, lost: 0, setDown: 0 } };
   const TS = 16, R = Math.round;
   const held = P => (P && P.carry && P.carry.t === 'fplank' ? P.carry : null);
   const handAt = P => ({ x: P.x + (P.face || 1) * 4, y: P.y - 20 });
   const boxOf = e => ({ l: e.x - (e.w || 14) / 2 - 3, r: e.x + (e.w || 14) / 2 + 3, t: e.y - (e.h || 26) - 3, b: e.y + 3 });
   const inBox = (e, x, y) => { const b = boxOf(e); return x > b.l && x < b.r && y > b.t && y < b.b; };
-  const foes = () => ctx.enemies().filter(e => e.alive && !e.harmless && !e.boss && !(e.t === 'leech' && e.mode === 'lurk'));
+  const foes = () => ctx.enemies().filter(e => e.alive && !e.harmless && (!e.boss || e.t === 'bogtroll') && !(e.t === 'leech' && e.mode === 'lurk'));
   const target = (x, y) => { for (const f of foes()) if (inBox(f, x, y)) return f; return null; };
   const arcFor = (P, aim) => { const h = handAt(P), a = CT.KINDS.plank.aims[aim], v = { vx: (P.face || 1) * a.vx, vy: a.vy };
     return CT.predictArc('plank', h.x, h.y, v, ctx.solidPx, { stopAt: (x, y) => target(x, y) }); };
   W.on = () => bundles.length > 0;
-  W.reset = () => { const L = ctx.L(); items = []; arc = null; near = null; ahead = null; bundles = ((L && L.bundles) || []).map(([x, row, o]) => ({ x: x * TS + 8, y: (row + 1) * TS, max: o && o.stock ? o.stock : 0, stock: o && o.stock ? o.stock : -1, refill: o && o.refill ? o.refill : 0, t: 0 })); };
+  W.reset = () => { const L = ctx.L(); items = []; arc = null; near = null; ahead = null; glow = null; bundles = ((L && L.bundles) || []).map(([x, row, o]) => ({ x: x * TS + 8, y: (row + 1) * TS, max: o && o.stock ? o.stock : 0, stock: o && o.stock ? o.stock : -1, refill: o && o.refill ? o.refill : 0, t: 0 })); };
   W.held = () => !!held(ctx.P());
   W.bundles = () => bundles.map(b => ({ x: b.x, y: b.y, stock: b.stock }));   /* (stock -1: a level bundle, never runs out) */
   const reachable = P => { if (!P || P.dead || P.carry || !P.ground) return null;
@@ -45,6 +45,7 @@ export function makeFenPlanks(ctx) {
     if (!W.on() || !P || P.dead) return false;
     const h = held(P);
     if (h) { const F = ctx.fen(), slot = F && F.slotAhead ? F.slotAhead(P) : null;
+      if (slot && slot.d > 0) P.face = (slot.x0 * 16 > P.x ? 1 : -1);   /* (claude/bogtroll2b) laid from either side: you turn to the hole */
       if (slot && F.lay(slot)) { P.carry = null; h.state = 'gone'; W.n.laid++; P.plankPose = 'lay'; P.plankPoseT = PLANK.layT; ctx.sfx.stone ? ctx.sfx.stone() : ctx.sfx.thud && ctx.sfx.thud(); ctx.number(P.x, P.y - 34, PLANK_SAY.laid, PLANK.col); return true; }
       if (!P.ground) return false;
       P.carry = null; h.state = 'rest'; h.x = P.x + (P.face || 1) * 10; h.y = P.y; h.restT = 0; W.n.setDown++; ctx.dust(h.x, h.y, 3); return true; }
@@ -75,6 +76,8 @@ export function makeFenPlanks(ctx) {
         q.spin = (q.spin || 0) + dt * 14 * Math.sign(q.vx || 1);
         const k = CT.KINDS.plank, px = q.x, py = q.y; CT.stepArc(q, dt, k.g);
         const e = target(q.x, q.y);
+        if (e && e.boss) { const st = ctx.plankBoss ? ctx.plankBoss(e) : false; W.n.foeHits++; if (st) { W.n.bossStuns = (W.n.bossStuns || 0) + 1; ctx.hurtFoe(e, PLANK.dmg, q.x, 0); } else ctx.number(e.x, e.y - (e.h || 20) - 8, PLANK_SAY.clunk, '#c8d8e8');
+          ctx.burst(q.x, q.y, 10, ['#c9b27c', '#8a6a40', '#e8c27a'], 90, 0.5); q.state = 'rest'; q.vx = -Math.sign(q.vx || 1) * 30; q.vy = -80; q.bounce = true; continue; }   /* (claude/bogtroll2b) a plank on the BOG TROLL: stuns him above water (src/bog-troll.js plankStun); warded / pinned: it clunks off and lies where it falls */
         if (e) { W.n.foeHits++; const top = e.t === 'stiltwalker' && ctx.topple(e); if (top) W.n.toppled++; else { ctx.hurtFoe(e, PLANK.dmg, q.x, PLANK.stagger); if (e.alive) ctx.number(e.x, e.y - (e.h || 20) - 8, PLANK_SAY.stagger, '#ffd36b'); }
           ctx.burst(q.x, q.y, 10, ['#c9b27c', '#8a6a40', '#e8c27a'], 90, 0.5); q.state = 'rest'; q.vx = -Math.sign(q.vx || 1) * 30; q.vy = -80; q.bounce = true; continue; }
         if (inWater(q.x, q.y)) { lose(q, q.x, q.y); continue; }
@@ -92,9 +95,10 @@ export function makeFenPlanks(ctx) {
     { const rest = items.filter(q => q.state === 'rest'); if (rest.length > PLANK.keep) { rest[0].state = 'gone'; items = items.filter(q => q.state !== 'gone'); } }
     near = reachable(P);
     const F = ctx.fen(); ahead = held(P) && !P.dead && F && F.slotAhead ? F.slotAhead(P) : null;
+    glow = held(P) && !P.dead && F && F.slotNearest ? F.slotNearest(P, 640, 80, false) : null;   /* (claude/bogtroll2b) the nearest valid hole glows while you carry a plank */
     arc = held(P) && !P.dead && !ahead ? arcFor(P, CT.aimOf('plank', P.face || 1, ctx.keys ? ctx.keys() : {}).aim) : null;
   };
-  W.read = () => ({ bundles: W.bundles(), held: W.held(), ahead: ahead ? { id: ahead.id, x0: ahead.x0, x1: ahead.x1, row: ahead.row } : null, resting: items.filter(q => q.state === 'rest').map(q => ({ x: q.x, y: q.y })), flying: items.filter(q => q.state === 'fly').length, n: { ...W.n } });
+  W.read = () => ({ bundles: W.bundles(), held: W.held(), glow: glow ? { id: glow.id, d: Math.round(glow.d) } : null, ahead: ahead ? { id: ahead.id, x0: ahead.x0, x1: ahead.x1, row: ahead.row } : null, resting: items.filter(q => q.state === 'rest').map(q => ({ x: q.x, y: q.y })), flying: items.filter(q => q.state === 'fly').length, n: { ...W.n } });
   /* ---------- DRAWING (GREYBOX: the art lane draws the bundle, the plank and the hero's carry/lay/throw poses) ---------- */
   const plankAt = (g, x, y, len, ang, alpha = 1) => { g.save(); g.globalAlpha = alpha; g.translate(R(x), R(y)); g.rotate(ang); const w = len * 8;
     g.fillStyle = '#3e2c1c'; g.fillRect(-w - 1, -3, w * 2 + 2, 5); g.fillStyle = '#a07a48'; g.fillRect(-w, -2, w * 2, 3); g.fillStyle = '#c99a5a'; g.fillRect(-w, -2, w * 2, 1);
@@ -111,6 +115,9 @@ export function makeFenPlanks(ctx) {
       else if (q.state === 'rest') { FPA.drawPlank(g, x, y - 3, 0, 1); if (!held(ctx.P())) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 5 + q.x); rc(x - 15, y - 8, 30, 1, '#fff6d8'); g.globalAlpha = 1; } } }
     const P = ctx.P();
     if (near && ctx.text) ctx.text('E: A PLANK', R(near.x - cx), R(near.y - cy) - 30, PLANK.col, 'center');
+    /* (claude/bogtroll2b) THE GLOW: the nearest valid hole while you carry a plank - a warm pulsing bar along its lip and two ticks; brighter when E will lay it from where you stand */
+    if (glow && !ahead) { const x0 = glow.x0 * TS - cx, x1 = (glow.x1 + 1) * TS - cx, y = glow.row * TS - cy; g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(R(x0), R(y - 2), R(x1 - x0), 4); g.fillRect(R(x0), R(y - 14), 2, 12); g.fillRect(R(x1 - 2), R(y - 14), 2, 12); g.globalAlpha = 1; }
+    if (ahead) { const x0 = ahead.x0 * TS - cx, x1 = (ahead.x1 + 1) * TS - cx, y = ahead.row * TS - cy; g.globalAlpha = 0.45 + 0.3 * Math.sin(time * 8); g.fillStyle = '#fff0b0'; g.fillRect(R(x0), R(y - 3), R(x1 - x0), 5); g.fillRect(R(x0), R(y - 18), 2, 16); g.fillRect(R(x1 - 2), R(y - 18), 2, 16); g.globalAlpha = 1; }
     /* WHERE IT WILL GO DOWN: a ghost plank across the broken stretch in front of you, and the word */
     if (ahead && P) { const x0 = ahead.x0 * TS - cx, x1 = (ahead.x1 + 1) * TS - cx, y = ahead.row * TS - cy + 2; g.globalAlpha = 0.45 + 0.25 * Math.sin(time * 6);
       g.globalAlpha = 1; FPA.drawGhost(g, x0, x1, y - 1, time); if (ctx.text) ctx.text('E: LAY IT', R((x0 + x1) / 2), R(y - 22), PLANK.col, 'center'); }

@@ -1,0 +1,6 @@
+# stockfloat (Daniel 11-07, ?demo=1 Chieftain fight)
+CAUSE: SA.drawPile (src/redraw/stockade2_art.js) always drew the pile's 12x34 STAKE at the pile's hang point ("it stays when the logs go"). That is right for a pile on a walk's edge, but the two HALL piles (hall-l/hall-r, level.js:499, row 12) and the yard pile (pile-y, beam:true) hang from a rafter beam in open air. When cut, drawTie stops drawing the beam (live=false) but the stake stayed -> a pole stub with its cut rope-end floating at ~1/5 and ~4/5 of the hall. Art only; no tiles/collision were involved (piles clear no cells; the war tower and lookout already fall). Palisade Wood does not use drawPile.
+FIX: for beam piles (p.beam) not hung/creaking, the stake falls and tips with the logs, then lies by the heap. Non-beam piles (walk-edge stakes) unchanged. Lookout (drawLookFall), war tower, posts/scaffold routeSupports reviewed: no stray pieces.
+CHECKS: node --check src/redraw/stockade2_art.js OK. Node tools (chief3/stockade2/stockade3, logic-only, do not draw) NOT run: free RAM 1.0 GB < 2.5 GB gate. OWED: run them when RAM allows.
+OWED BROWSER STILLS: Great Hall (chief arena), before cut (stakes+beam at rafters), 0.3s into a hall pile fall (stake tipping with logs), 3s after (stake lying beside heap, nothing mid-air); same for the yard pile pile-y (~final col 144).
+QUESTIONS: none.

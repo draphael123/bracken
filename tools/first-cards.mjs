@@ -19,8 +19,8 @@ for (const id of Object.keys(FC.BOSS_HINTS)) assert.ok(id in DEMO_BOSS, 'a hint 
 assert.ok(!FC.hasHint('toString') && !FC.hasHint('abbot'), 'prototype keys / non-demo bosses must not match');
 
 /* TRUE: each hint's claims, anchored in the boss's own code (file, tokens that must appear) */
-const CLAIMS = { oldtusker: ['old-tusker.js', ['plunge', 'four strokes', 'RAMS']], hornetqueen: ['hornet-queen.js', ['STUCK', 'WINDED', 'smoke']], frog: ['frog-king.js', ['royal', 'yellow', 'DAZED', 'WINDED']],
-  bogtroll: ['bog-troll.js', ['ROTTEN', 'STUCK', 'DRAG']], chief: ['main.js', ['club', 'rack', 'parry the arrows']], mother: ['mother-cap2.js', ['SEED CAPS', 'KNOT', 'SPRING SPORE']],
+const CLAIMS = { oldtusker: ['old-tusker.js', ['plunge', 'four strokes', 'RAMS']], hornetqueen: ['hornet-queen.js', ['STUCK', 'WINDED', 'smoke']], frog: ['frog-king.js', ['royal', 'yellow', 'DAZED', 'BELLOW', 'sac', 'BELLY-UP', 'stamina']],
+  bogtroll: ['bog-troll.js', ['ROTTEN', 'STUCK', 'DRAG']], chief: ['main.js', ['club', 'rack', 'parry the arrows', 'THREE BLOWS', 'SPENT: CUT HIM']], mother: ['mother-cap2.js', ['SEED CAPS', 'KNOT', 'SPRING SPORE']],
   huntmaster: ['huntmaster.js', ['GOLD ARROW', 'SPORE POD', 'STAGGERS LONG']], grandmother: ['potion-hands.js', ['GREEN BRAMBLE', 'BLUE BUBBLES', 'RED CAULDRON']], batteringbeast: ['battering-beast.js', ['SCAFFOLD', 'PROP', 'STUCK']],
   king: ['gorm-king.js', ['cage', 'unblockable', 'LOG ROLL', 'BELLY QUAKE']], pyromancer: ['pyro-boss.js', ['WATER', 'CANCELS', 'SPENT']] };
 for (const [id, [file, toks]] of Object.entries(CLAIMS)) { const src = rd(file).toLowerCase(); for (const t of toks) assert.ok(src.includes(t.toLowerCase()), id + ': "' + t + '" is not in ' + file); }

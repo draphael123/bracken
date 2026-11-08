@@ -21,7 +21,7 @@ export const TABLE = [
        WALK-OUT   scene null: [open,] walk, fade. The boss falls, the way out opens (a gate / wall in the arena's last column, OUTSIDE the fight - tiles go to air AFTER the kill, no fairness change; open.kind picks the
                   gate's look, 'light' = no wall to open, only the spill of light beyond), the party walks out, fade, the next level ARRIVES from the left (arrive.walk).
        GATE-END   a level that ends at an exit gate (L.gateAfterBoss: Hornet's Nest, Fen Road, Rootway) starts its row when the party walks INTO the gate: no open beat, the gate is the way.
-       SCENE      on top of the walk: 'ferry' (Hornet's Nest -> Marsh: the jetty, the ferryman), 'road' (Fen Road -> Stockade: the laid road to the walls), 'smoke' (Kingswood -> Burning Village:
+       SCENE      on top of the walk: 'ferry' (Hornet's Nest -> Marsh: the jetty, the ferryman), 'road' (Fen Road -> Stockade: the laid road to the walls), 'mountain' (Kingswood -> Scree Path: the wood burning behind, the mountain ahead), 'smoke' (Kingswood -> Burning Village:
                   Gorm falls, smoke on the horizon). Scene beats carry sc: true (the ferry's are shore + ride). when: the row plays only if PROG has those flags (entryFor's ctx).
      walk.to: the column the party walks to (default: the level's last column + 1 tile). */
   { from: 'wood', to: 'hornetsnest', scene: null,   /* (claude/hornetsnest2) THE LUMBER TRAIL -> THE HORNET'S NEST: a WALK-OUT, no ferry */
@@ -54,9 +54,25 @@ export const TABLE = [
   { from: 'kings', to: 'burning', scene: 'smoke', when: { burningOpen: true },   /* KING GORM falls (a clean fight: the spur is OPEN): the court road, and SMOKE on the horizon - the village is burning */
     beats: [{ id: 'walk', dur: 1.6, max: 2.8 }, { id: 'smoke', dur: 5.4, sc: true }, { id: 'fade', dur: 0.8 }],
     walk: { to: 478 }, endOnMap: true, arrive: null, bar: 12 },   /* (Daniel 11-02 17:53) NOT auto-loaded: after the smoke the party ends on the WORLD MAP with the spur node lit (the player chooses to go) */
-  { from: 'kings', to: 'scree', scene: null, when: { burningOpen: false },   /* GORM fell the party in a life (the spur stays shut): the plain walk-out onto the road to the Scree Path (beyond the demo) */
-    beats: [{ id: 'walk', dur: 2.0, max: 3.0 }, { id: 'fade', dur: 0.7 }], walk: { to: 478 }, arrive: { ferry: false, walk: 1.3 } },
+  { from: 'kings', to: 'scree', scene: 'mountain', when: { burningOpen: false },   /* (claude/gormburn, Daniel 11-07) GORM fell the party in a life (the spur stays shut): out of the court, THE WOOD BURNING behind them, THE MOUNTAIN ahead - they walk to it, then the Scree Path. In the DEMO (demoEnd) it is the teaser: scene -> the END CARD (the Scree Path is locked) */
+    beats: [{ id: 'walk', dur: 1.8, max: 2.8 }, { id: 'mountain', dur: 7.0, sc: true }, { id: 'fade', dur: 0.8 }],
+    walk: { to: 478 }, demoEnd: true, arrive: { ferry: false, walk: 1.3 }, bar: 12 },
 ];
+/* ------------------------------------------------------------- THE MOUNTAIN SCENE (scene 'mountain': KINGSWOOD -> THE SCREE PATH; claude/gormburn, Daniel 11-07). Gorm is down but the clean win was missed: the party walks out onto the court
+   road (0 .. inT), the leader looks BACK (lookAt .. turnAt) at THE WOOD BURNING on the horizon (smoke and glow), turns, and the camera pans right (panAt, panDur) while they walk on toward THE MOUNTAIN, which comes up and fills
+   the right of the frame. No dialogue, no caption. Reduce-motion: no pan - one dip to dark. */
+export const MOUNTAIN = { dur: 7.0, inT: 1.0, stopX: 0.30, lookAt: 1.3, turnAt: 2.4, panAt: 2.4, panDur: 4.2, bar: 12, panPx: 250 };
+export function mountainHero(i, n, s, VW) {
+  const to = VW * MOUNTAIN.stopX - i * 14, from = -24 - i * 14, e = smooth(clamp01(s / MOUNTAIN.inT));
+  return { x: from + (to - from) * e, walking: s < MOUNTAIN.inT - 0.1 };
+}
+/* face (1 right, -1 left: the look back at the fire) and walking (in on the road, then on with the pan) */
+export function mountainStance(s, reduce = false) {
+  return { face: s >= MOUNTAIN.lookAt && s < MOUNTAIN.turnAt ? -1 : 1, walking: s < MOUNTAIN.inT - 0.1 || (!reduce && s >= MOUNTAIN.panAt + 0.15) };
+}
+export const mountainPan = (s, reduce = false) => (reduce ? (s >= MOUNTAIN.panAt + 0.25 ? 1 : 0) : smooth((s - MOUNTAIN.panAt) / MOUNTAIN.panDur));
+export const mountainRise = s => smooth((s - 0.2) / 2.2);   /* the columns standing up over the wood */
+export const mountainGlow = s => smooth(s / 1.2);           /* the red sky behind */
 /* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
 export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
 /* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */
@@ -176,3 +192,28 @@ export const smokeRise = s => smooth((s - SMOKE.backAt + 0.4) / 2.8);
 export const smokeGlow = s => smooth((s - 1.0) / 3.6);
 /* the caption's opacity (0..1) */
 export const smokeWord = s => smooth((s - SMOKE.wordAt) / 0.6);
+
+/* ------------------------------------------------------------- THE CHOICE CARD (claude/transchoice, Daniel 11-07).
+   A boss falls and the clear is credited; before the walk-out starts, the level-complete card is up and, ARM_S seconds in, this small card asks: ONWARD TO <NEXT> (first, the default: plays
+   the transition exactly as it always did) or RETURN TO THE MAP (ends on the world map with the next node under the cursor, like an endOnMap row: the store, the inn and the hero swap are
+   there). Pure: main.js owns the keys and the drawing. A row that already ends on the map (entry.endOnMap) never asks. A level that returns to the map by itself (TRANSITIONS = NEVER, a
+   FIRST TIME row already seen, a level with no row) has no auto-load to interrupt, so it shows nothing: the level-complete card's own Z goes to the map. The seen-flag (FIRST TIME) is set
+   only when ONWARD is taken, so a trip to the map does not use the cutscene up.
+   MASHING: nothing is taken before CHOICE_ARM_S (the tally is on screen, a hero still mashing attack as the boss fell must not pick), and a press only counts once the card is armed. */
+export const CHOICE_ARM_S = 1.2;
+export const CHOICE_ONWARD = 'onward', CHOICE_MAP = 'map';
+export const CHOICE_LABELS = [CHOICE_ONWARD, CHOICE_MAP];
+export const needsChoice = entry => !!entry && !entry.endOnMap;
+export const choiceRows = nextName => ['ONWARD TO ' + String(nextName || 'THE NEXT WOOD').toUpperCase(), 'RETURN TO THE MAP'];
+export function choiceStart(entry, nextName) { return { entry, nextName, sel: 0, t: 0, picked: null }; }
+export const choiceArmed = c => !!c && c.picked === null && c.t >= CHOICE_ARM_S;
+/* one frame. keys: { up, down, left, right, confirm } (edge presses this frame). Returns 'onward' | 'map' when a row is taken, else null. */
+export function choiceStep(c, dt, keys = {}) {
+  if (!c || c.picked !== null) return null;
+  c.t += dt;
+  if (c.t < CHOICE_ARM_S) return null;
+  if (keys.up || keys.left) c.sel = 0;
+  if (keys.down || keys.right) c.sel = 1;
+  if (keys.confirm) { c.picked = CHOICE_LABELS[c.sel]; return c.picked; }
+  return null;
+}

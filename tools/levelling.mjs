@@ -21,10 +21,10 @@ const check = (name, fn) => { try { fn(); } catch (e) { fails.push(name + ': ' +
 
 /* 1. SOLD AND SLOTTED */
 check('passives are not sold', () => {
-  for (const n of SKILLS.filter(n => !n.active)) { const p = migrateProgress(null).progress; p.coins = 99999;
+  for (const n of SKILLS.filter(n => !n.active)) { const p = migrateProgress(null).progress; p.coins = 99999; if (p.skillOwned[n.hero]) delete p.skillOwned[n.hero][n.id];   /* (claude/starterskill: the level-1 skill is a free starter now) */
     const err = buySkill(p, n.hero, n.id, 99); assert(err, n.hero + '/' + n.id + ' was sold'); assert.equal(p.coins, 99999, n.id + ' took coins'); assert(!p.skillOwned[n.hero]?.[n.id]); } });
 check('abilities are still sold, at their level', () => {
-  for (const n of SKILLS.filter(n => n.active)) { const p = migrateProgress(null).progress; p.coins = 99999;
+  for (const n of SKILLS.filter(n => n.active)) { const p = migrateProgress(null).progress; p.coins = 99999; if (p.skillOwned[n.hero]) delete p.skillOwned[n.hero][n.id];   /* (claude/starterskill: the level-1 skill is a free starter now) */
     assert.equal(buySkill(p, n.hero, n.id, n.level), null, n.id); assert.equal(p.coins, 99999 - n.price); } });
 check('passives are not slotted', () => {
   for (const n of SKILLS.filter(n => !n.active)) { const p = migrateProgress(null).progress; p.skillOwned[n.hero] = { [n.id]: true };

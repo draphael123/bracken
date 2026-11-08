@@ -111,7 +111,10 @@ ok(arenaReached(floodReach(L, T, { hero: 'knight' })), 'every hole laid: the cro
   const ex = holes.filter(h => h.x >= SECTIONS[3][1] && h.x <= SECTIONS[3][2]); ok(ex.length >= 2 && cps.some(c => c > ex.at(-1).x && c <= SECTIONS[3][2]), 'EXAM: two holes on THE PALISADE ROAD, a shrine after them'); }
 { const w = mkWorld(), h = holes[0], P = { x: h.x * TS - 6, y: ROAD * TS, ground: true, dead: false, face: 1 }; w.players.push(P);
   ok(w.H.slotAhead(P) && w.H.slotAhead(P).id === h.id, 'stood at the near edge facing the hole: it is the slot ahead');
-  P.face = -1; ok(!w.H.slotAhead(P), 'facing away: no slot'); P.face = 1; P.x = h.x * TS - 40; ok(!w.H.slotAhead(P), 'two tiles back: no slot'); P.x = h.x * TS - 6;
+  P.face = -1; ok(w.H.slotAhead(P) && w.H.slotAhead(P).id === h.id, '(bogtroll2b) facing away: still the slot (either facing)'); P.face = 1; P.x = h.x * TS - 44; ok(w.H.slotAhead(P) && w.H.slotAhead(P).id === h.id, 'about 3 tiles back (44 px): still the slot');
+  P.x = h.x * TS - 70; ok(!w.H.slotAhead(P), 'over 3 tiles back (70 px): no slot'); ok(w.H.slotNearest(P, 640, 80, false) && w.H.slotNearest(P, 640, 80, false).id === h.id, 'but the glow finds it from afar');
+  P.x = (h.x + h.w) * TS + 30; ok(w.H.slotAhead(P) && w.H.slotAhead(P).id === h.id, 'from the FAR side, 30 px past the hole: the slot');
+  P.x = h.x * TS - 6; P.y = ROAD * TS - 14; ok(w.H.slotAhead(P), 'feet a little off the row (generous vertical): the slot'); P.y = ROAD * TS - 60; ok(!w.H.slotAhead(P), 'a storey up: no slot'); P.y = ROAD * TS; P.x = h.x * TS - 6;
   ok(w.H.lay(w.H.slotAhead(P)) && [...Array(h.w).keys()].every(i => w.grid[ROAD * W + h.x + i] === T.PLANK) && w.H.sag('laid:' + h.id) && !w.H.slotAhead(P), 'E LAYS IT: the hole is road, a laid section, no slot now');
   P.x = (h.x + 3) * TS; for (let f = 0; f < 60 * (SAG.holdLaid - 0.2); f++) w.H.update(1 / 60); ok(w.H.sag('laid:' + h.id).st === 'bow', 'a laid plank SAGS LIKE THE REST (bowing under you, ' + SAG.holdLaid + ' s hold)');
   for (let f = 0; f < 30; f++) w.H.update(1 / 60); ok(w.H.sag('laid:' + h.id).st === 'under' && w.grid[ROAD * W + h.x + 3] === T.AIR, 'held past its hold it goes under');

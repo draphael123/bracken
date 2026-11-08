@@ -42,6 +42,7 @@ export const POSE = {
   hurl: { torso: [-2, -0.15], armF: [30, -34], armB: [-18, 0], head: [6, -2, -0.2] },
   stuck: { torso: [14, 0], armF: [24, -20], armB: [-24, -16], head: [2, 4, -0.5], mouth: true, wreck: true, flail: true },
   heave: { torso: [8, 0.05], armF: [22, 0], armB: [-22, 0], head: [6, 2, 0.1], wreck: true },
+  stun: { torso: [10, 0.12], armF: [14, 14], armB: [-14, 14], head: [8, 6, 0.5], mouth: true, dazed: true },   /* (claude/bogtroll2b) reeling from a plank: arms hanging, head lolling, stars over him (drawOver) */
   sink: { torso: [10, 0], armF: [16, 6], armB: [-16, 6], head: [6, 4, 0] },
   ripTell: { torso: [6, 0.3], armF: [30, 2], armB: [22, 2], head: [12, 4, 0.3], grip: true },
   rip: { torso: [-6, -0.15], armF: [14, -50], armB: [-12, -50], head: [4, -4, -0.3], mouth: true, planks: true },
@@ -90,6 +91,10 @@ export function makeBogTrollHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'bogtroll';
+  /* (claude/bogtroll2b) A THROWN PLANK HITS HIM (src/fen-planks.js): up out of the water it stuns him (src/bog-troll.js plankStun) - true if it did */
+  H.plankStun = e => { if (!S || !e || e.t !== 'bogtroll' || !BTM.plankStun(e, S)) return false; ctx.dropTells && ctx.dropTells(e.x); /* the told move is stopped: its red !! badge (floorY - markH, the same spot as the STUNNED label) must not linger over the word */ ctx.number(e.x, S.G.floorY - 64, BTM.BT_SAY.stun, '#ffd36b'); ctx.ring && ctx.ring(e.x, S.G.floorY - 16, 34, '#ffd36b'); ctx.sfx.clank && ctx.sfx.clank(); ctx.shake && ctx.shake(3); return true; };
+  /* (claude/bogtroll2b) is he HUNTING (under the boards, bulge or swim)? - the crossing's rotten sections pulse under a hero then */
+  H.hunting = () => { const e = live(); return !!(S && e && BTM.btUnder(e)); };
   H.phase = () => (S ? S.ph : 1);
   H.clear = () => { S = null; BOSS_PHASE.bogtroll = 1; };
   const live = () => { const e = ctx.boss; return e && e.alive && e.t === 'bogtroll' ? e : null; };
@@ -128,14 +133,14 @@ export function makeBogTrollHands(ctx) {
     BTM.stepTroll(e, S, dt, heroes(), world(e));
     if (e.mode === 'heave' && !S.told.relay) { S.told.relay = 1; ctx.hint && ctx.hint(BTM.BT_RELAY); }   /* (claude/bogtroll2) the road does not mend: the planks are the way to his next lure */
     e.w = e.mode === 'stuck' || e.mode === 'stuckIn' ? BT.stuck.w : BT.w;   /* stuck, he is sprawled across the wreck: struck from the boards that hold at its ends */
-    e.phase = S.ph; e.open = BTM.btOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
+    e.phase = S.ph; e.open = BTM.btOpen(e) || BTM.btStun(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
   /* A BLOW ON HIM (B15; src/bog-troll.js takeBlow) - the turned share clanks and says why */
   H.take = (e, dmg, tag) => { if (!S) return dmg; const [d, word] = BTM.takeBlow(e, S, dmg);
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 16, S.G.floorY - 16, sd, 4);
       if (!S.told.hide && word === BTM.BT_SAY.hide) { S.told.hide = 1; ctx.hint && ctx.hint('HIS PEAT HIDE TURNS A BLOW. STAND ON A ROTTEN SECTION AND STEP OFF AS HIS BULGE SETS: HE STICKS IN IT.'); } }
     return d; };
-  H.barName = e => 'THE BOG TROLL' + (BTM.btOpen(e) ? '  ' + (BTM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
+  H.barName = e => 'THE BOG TROLL' + (BTM.btOpen(e) || BTM.btStun(e) ? '  ' + (BTM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
   H.end = () => { if (S) S.clods = []; BOSS_PHASE.bogtroll = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, ripped: S.ripped, wave: S.wave ? { x: Math.round(S.wave.x), dir: S.wave.dir } : null, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   /* THE BOT'S VIEW (src/lab.js): the rotten sections standing, and the water where there are no boards (ripped or collapsed) */
@@ -192,7 +197,8 @@ export function makeBogTrollHands(ctx) {
       g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.tx), Y(G.floorY) - 1, BT.hurl.r, 3, 0, 0, 7); g.stroke(); }
     /* THE READ (B10) */
     const x = X(e.x), y = Y(G.floorY - 10);
-    if (BTM.btOpen(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1));
+    if (BTM.btStun(e)) for (let i = 0; i < 3; i++) { const a = time * 5 + i * 2.1; ctx.text('*', X(e.x) + R(Math.cos(a) * 14), Y(G.floorY - 46) + R(Math.sin(a) * 3), '#ffd36b', 'center', 6); }   /* (claude/bogtroll2b) stars over the reeling head */
+    if (BTM.btOpen(e) || BTM.btStun(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1));
       g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 30, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       const by = Y(G.floorY - 52); ctx.text(BTM.OPEN_NAME[e.mode] || 'OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * kk), 3); }
     if (S.ward > 0 && !BTM.btUnder(e) && e.mode !== 'sink') { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 32, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;

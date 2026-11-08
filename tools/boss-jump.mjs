@@ -10,8 +10,11 @@
 // mini whose save says it is already down, the carpet sky fight, the last row) and for &hero=, a level id, a bad hero, a bad id; and SHIFT+B
 // on the title screen opens the same list, scrolls it, and ENTER jumps into the chosen fight with the chosen hero.
 //   BJ_ONLY=queen,frog node tools/boss-jump.mjs      only those rows (debugging)
-import { openPage } from './cdp.mjs';
-const pg = await openPage({ audio: false, fonts: false }); const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
+import { recycler } from './page-recycle.mjs';
+/* (fix149, as claude/botmem did for mash-bot) BK.load leaks 40-65 MB of native memory per call and this tool made ~70 of them in ONE page: memguard's 3 GB cap killed it late in the table ("page CRASHED", boss-jump rel148). The page is now a fresh one every ~6 loads (tools/page-recycle.mjs); each page is seeded and navigated by init, and the SAVE-UNTOUCHED comparison is made after EVERY fight against that page's own starting storage. */
+let pg = null, s0 = null; const infra = [];
+const rc = recycler({ init: async p => { pg = p; await nav('/?bj=table'); s0 = await store(); } });
+const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SAVE = { hero: 'knight', heroes: { knight: true }, wood: { cleared: true, mini: true, medal: 2 }, kings: { cleared: true, mini: true } };
 /* Put the page on `url` with the seeded save in storage (written by the page being left, so it is there before the new one loads) */
@@ -22,7 +25,9 @@ async function nav(url, seed = true) {
   throw new Error('page never came up on ' + url);
 }
 const store = () => pg.evalp('JSON.stringify(Object.keys(localStorage).sort().map(k=>[k,localStorage.getItem(k)]))', 8000);
-const argOf = r => r.kind === 'mini' ? r.level + ':mini' : r.t;
+/* (fix149) the table has had a second mini since claude/forgemaster (THE DEEP RAILS' Forgemaster, kind 'mini2', 10-26): it is read, asked for (<level>:mini2) and fought as a mini, in the table's order mini, mini2, boss - the check still said two kinds and read 69 rows against 68 */
+const isMini = r => r.kind === 'mini' || r.kind === 'mini2';
+const argOf = r => isMini(r) ? r.level + ':' + r.kind : r.t;
 /* the fight, as it stands after a jump: what the probes below read */
 const FIGHT = `(kind,t)=>{const A=kind==='mini'?BK.L.mini:BK.L.arena;const e=BK.enemies().find(q=>q.t===t&&q.alive&&(kind==='boss'||q.mini||q.t==='greathound'));
   return{state:BK.state,arena:A&&A.boss,hasBoss:!!e,hp:BK.P.hp,maxHp:BK.P.maxHp,god:!!BK.god,hero:BK.PROG.hero,on:BK.bossJump.on,seed:!!(BK.PROG.wood&&BK.PROG.wood.cleared)};}`;
@@ -40,34 +45,41 @@ const judge = (id, p, k) => {
 };
 let table, results = [];
 try {
-  await nav('/?bj=table');
-  const rows = await pg.evalp('(async()=>{const {LEVELS}=await import("/src/level.js");const want=[];for(const lv of LEVELS){let b;try{b=lv.build();}catch{continue;}for(const k of ["mini","arena"])if(b[k]&&b[k].boss)want.push(lv.id+":"+k+":"+b[k].boss);}return{table:BK.bossJump.table(),want};})()', 120000);
-  table = rows.table; const tt = table.map(r => r.level + ':' + (r.kind === 'mini' ? 'mini' : 'arena') + ':' + r.t);
+  pg = await rc.page(0);   /* (init: the seeded save, on the table page) */
+  const rows = await pg.evalp('(async()=>{const {LEVELS}=await import("/src/level.js");const want=[];for(const lv of LEVELS){let b;try{b=lv.build();}catch{continue;}for(const k of ["mini","mini2","arena"])if(b[k]&&b[k].boss)want.push(lv.id+":"+k+":"+b[k].boss);}return{table:BK.bossJump.table(),want};})()', 120000);
+  table = rows.table; const tt = table.map(r => r.level + ':' + (isMini(r) ? r.kind : 'arena') + ':' + r.t);
   ok(table.length > 40, 'the boss table is nearly empty: ' + table.length);
   ok(JSON.stringify(tt) === JSON.stringify(rows.want), 'the table is not every arena and mini the levels build, in order: ' + tt.length + ' vs ' + rows.want.length);
   ok(new Set(table.map(r => r.t)).size === table.length, 'a boss id appears twice in the table (the URL id would be ambiguous)');
   ok(table.every(r => r.name && r.levelName), 'a row has no name');
   const only = (process.env.BJ_ONLY || '').split(',').filter(Boolean);
-  const s0 = await store();
   ok(s0.includes('bracken.progress.0'), 'the seeded save is not in storage');
   for (const r of table) {
     if (only.length && !only.includes(r.t)) continue;
-    const t0 = Date.now(), id = r.kind + ' ' + r.t + ' (' + r.level + ')', k = { t: r.t, kind: r.kind === 'mini' ? 'mini' : 'boss' };
-    const went = await pg.evalp('BK.manualSimulation=true,BK.bossJump.go(' + JSON.stringify(argOf(r)) + ')', 60000);
-    ok(went === true, id + ': go() found no such boss');
-    judge(id, await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')'), k);
-    const p = await pg.evalp('(' + KILL + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')', 600000);
-    ok(p.woke, id + ': the fight never woke within ten seconds of the door');
+    const t0 = Date.now(), id = r.kind + ' ' + r.t + ' (' + r.level + ')', k = { t: r.t, kind: isMini(r) ? 'mini' : 'boss' };
+    let p;
+    try {
+      p = await rc.run(async () => {
+        const went = await pg.evalp('BK.manualSimulation=true,BK.bossJump.go(' + JSON.stringify(argOf(r)) + ')', 60000);
+        ok(went === true, id + ': go() found no such boss');
+        judge(id, await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')'), k);
+        const q = await pg.evalp('(' + KILL + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')', 600000);
+        ok(q.woke, id + ': the fight never woke within ten seconds of the door');
+        ok((await store()) === s0, id + ': THE SAVE CHANGED (a key or value in localStorage differs from the page start, after the boss was cut down and the fight run out)');
+        return q;
+      }, 1);
+    } catch (e) { if (!e.infraKilled) throw e; infra.push(id); console.log('  ' + id.padEnd(34) + 'INFRA-KILLED (memguard took the page twice)'); await rc.reset(); continue; }
     results.push({ id, killed: p.killed });
     console.log('  ' + id.padEnd(34) + 'woke at frame ' + String(p.wokeAt).padEnd(4) + (p.killed ? 'cut down' : 'NOT cut down').padEnd(14) + ((Date.now() - t0) / 1000).toFixed(1) + 's');
   }
-  ok((await store()) === s0, 'THE SAVE CHANGED across ' + results.length + ' fights, each cut down and run out (localStorage before and after differ)');
+  ok(!infra.length, 'INFRA-KILLED, not judged (memguard took the page twice; rerun BJ_ONLY=' + infra.map(x => x.split(' ')[1]).join(',') + '): ' + infra.join('; '));
+  await rc.reset(); pg = await rc.page(0);   /* a fresh page for the URL / hero / chord section below */
   /* THE REAL URL, for the kinds of fight: it must land in the same place through ?boss= (the handler at the foot of main.js) */
   const urls = [table[0], table.find(r => r.kind === 'mini'), table.find(r => r.t === 'undeadmage'), table[table.length - 1]].filter(Boolean);
   for (const r of urls) {
     if (only.length) break;
     await nav('/?boss=' + argOf(r)); const before = await store();
-    const k = { t: r.t, kind: r.kind === 'mini' ? 'mini' : 'boss' };
+    const k = { t: r.t, kind: isMini(r) ? 'mini' : 'boss' };
     judge('URL ?boss=' + argOf(r), await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')'), k);
     const p = await pg.evalp('(' + KILL + ')(' + JSON.stringify(k.kind) + ',' + JSON.stringify(r.t) + ')', 600000);
     ok(p.woke, 'URL ?boss=' + argOf(r) + ': the fight never woke'); ok((await store()) === before, 'URL ?boss=' + argOf(r) + ': THE SAVE CHANGED');
@@ -103,7 +115,7 @@ try {
     ok(chord.jumped === 'play' && chord.boss && chord.gotHero === chord.wantHero && chord.on, 'ENTER on the last row must jump into that fight with the chosen hero: ' + JSON.stringify(chord));
     ok((await store()) === c0, 'the chord jump changed the save');
   }
-} finally { pg.close(); }
+} finally { await rc.close(); }
 for (const x of fails) console.log('  ' + x);
 if (fails.length) { console.log('BOSS-JUMP: ' + fails.length + ' problem(s)'); process.exit(1); }
 console.log('BOSS-JUMP: all ' + results.length + ' boss and mini fights load through ?boss=<id> at full health with no god mode and wake at the door; ' + results.filter(x => x.killed).length + ' were cut down and run out and the save (every localStorage key) never changed; the real URL, &hero=, level ids, <level>:mini, a bad id and SHIFT+B all behave.');

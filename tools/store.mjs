@@ -170,10 +170,11 @@ for(const [name,old] of Object.entries(SEEDS)){
     if(k.id==='none'||(t.id==='smith'&&k.id==='tonic'))continue;
     if(had&&!(k.state==='owned'||k.state==='equipped'))rec.problems.push(how+': '+t.id+'/'+k.id+' was owned, shows '+k.state);
     if(had&&wearKey&&old[wearKey]===k.id&&k.state!=='equipped')rec.problems.push(how+': '+t.id+'/'+k.id+' was worn, shows '+k.state);
-    if(!had&&(k.state==='owned'||k.state==='equipped')&&!(t.id==='skins'&&k.id==='bracken')&&!(t.id==='weapons'&&k.id==='steel')&&!(t.id==='music'&&k.id==='select')&&!(t.id==='heroes'&&k.id==='knight'))rec.problems.push(how+': '+t.id+'/'+k.id+' shows '+k.state+' but the save never owned it');
+    /* (batch150: the hero roster is ACCOUNT-WIDE since claude/heroroster2, and it lives in memory across these seeds, so the HEROES tab shows what the DEVICE owns; the per-save check stays for skins, weapons, charms, music) */
+    if(!had&&(k.state==='owned'||k.state==='equipped')&&!(t.id==='skins'&&k.id==='bracken')&&!(t.id==='weapons'&&k.id==='steel')&&!(t.id==='music'&&k.id==='select')&&t.id!=='heroes')rec.problems.push(how+': '+t.id+'/'+k.id+' shows '+k.state+' but the save never owned it');
     if(!had&&k.needs&&!(old[k.needs]&&old[k.needs].cleared)&&k.state!=='locked')rec.problems.push(how+': '+t.id+'/'+k.id+' is open but '+k.needs+' was never cleared');
     if(!had&&k.needs&&(old[k.needs]&&old[k.needs].cleared)&&!k.feat&&k.state!=='buy')rec.problems.push(how+': '+t.id+'/'+k.id+' should be buyable: '+k.needs+' is cleared');
-    if(!had&&!k.needs&&!k.feat&&k.state!=='buy'&&k.state!=='enter')rec.problems.push(how+': '+t.id+'/'+k.id+' could be bought, shows '+k.state);}}
+    if(!had&&t.id!=='heroes'&&!k.needs&&!k.feat&&k.state!=='buy'&&k.state!=='enter')rec.problems.push(how+': '+t.id+'/'+k.id+' could be bought, shows '+k.state);}}
   BK.press('pause');BK.sim(2);}
  const vals=Object.values(rec.entries);rec.sameEverywhere=vals.every(v=>v===vals[0]);
  rec.tonics=P.tonics;rec.flaskUp=P.flaskUp;rec.refund=P.tonicRefund||0;rec.kept={skillOwned:JSON.stringify(P.skillOwned.knight||{}),loadout:JSON.stringify(P.loadouts.knight||[])};

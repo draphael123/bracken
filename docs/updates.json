@@ -1,5 +1,37 @@
 [
   {
+    "date": "2026-11-08",
+    "batch": 151,
+    "lines": [
+      "Frog King: swell-throat BELLOW can be burst with three sac blows; fewer hoppers",
+      "Bog Troll: lay planks from farther away; a thrown plank stuns him",
+      "Goblin Chieftain: shorter openings, kegs need a timed kick, a told three-blow combo",
+      "World map: names show near your cursor only; hold C to show every name",
+      "One badge per map node, a smaller info card, no ghosts of beaten bosses"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "batch": 150,
+    "lines": [
+      "New save: choose LIVES (off, or 5 plus one per 100 coins) and your DIFFICULTY",
+      "Every hero starts with a first skill ready; UNLOCKS shows how to open everything",
+      "SWAP HERO: heroes you unlock are yours in every save, with bonus XP to catch up",
+      "After a level: onward or back to the map. The tutorial now teaches every swing",
+      "Sporewood shows how to grow the mushrooms; the store has a BACK button",
+      "A hard-won win over King Gorm shows the burning wood; the level timer starts off"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "batch": 149,
+    "lines": [
+      "Starting at the War Cairn boss now wakes the Chieftain right away",
+      "Picking the Undead Archmage from the boss list wakes him at once",
+      "Boss list: all 69 fights re-checked to start awake at the door"
+    ]
+  },
+  {
     "date": "2026-11-07",
     "batch": 148,
     "lines": [

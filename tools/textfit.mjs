@@ -288,11 +288,11 @@ async function pageTextFit(input) {
   /* (claude/tutorial1) THE ROADSIDE LESSON: every step's panel for every hero (the keyboard's words; the pad's and touch's are measured by tools/lesson-opening.mjs line lengths), every sign in it, the inn's welcome card, the title's INN line and the map's footer */
   if (want('lesson')) { const li = lvm.LEVELS.findIndex(l => l.id === 'lesson'), done = new Set();
     for (const h of ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger']) { try { toPlay(li, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'lesson ' + h, s: 'load: ' + e.message, n: 1 }); continue; }
-      for (let i = 0; i <= 8; i++) frame('lesson step ' + i + ' [' + h + ']', () => { BK.state = 'play'; BK.lesson().O.st.i = i; }, { settle: 2 });
+      for (let i = 0; i <= 12; i++) frame('lesson step ' + i + ' [' + h + ']', () => { BK.state = 'play'; BK.lesson().O.st.i = i; }, { settle: 2 });
       for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key); const lines = t.lines.filter(Boolean);
         for (let p = 0; p < lines.length; p++) frame('lesson sign @' + t.x + ' page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }); BK.state = 'play'; }
       await yieldNow(); }
-    toPlay(li, 'knight'); BK.lesson().O.st.i = 8; frame('lesson door plate', () => { BK.state = 'play'; const p = BK.players()[0]; p.x = 104 * 16 + 8; p.y = 20 * 16 - 0.01; p.vy = 0; p.ground = true; BK.sim(30); }, { settle: 4 });
+    toPlay(li, 'knight'); BK.lesson().O.st.i = 12; frame('lesson door plate', () => { BK.state = 'play'; const p = BK.players()[0]; p.x = 154 * 16 + 8; p.y = 20 * 16 - 0.01; p.vy = 0; p.ground = true; BK.sim(30); }, { settle: 4 });
     frame('inn welcome card', () => { BK.state = 'play'; BK.lesson().O.innCard(9); }, { settle: 20 });
     frame('title: LOCAL CO-OP row', () => { BK.state = 'title'; const top = BK.ui.titleTop(); BK.ui.titleI = top.indexOf('LOCAL CO-OP'); BK.ui.pressCard = false; }, { settle: 90 });
     frame('map footer', () => { BK.state = 'map'; }, { settle: 20 }); }

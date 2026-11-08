@@ -58,7 +58,7 @@ export const GORM = {
   rage: { tellT: 2.0, tempo: 1.35, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 6, chargeFirst: 1.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.16, dmg: 28 },
 };
 export const GORM_SAY = {
-  wake: 'KING GORM UNDERLEAF', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
+  wake: 'KING GORM', litter: 'THE LITTER BREAKS. HE STANDS', horn: 'THE HUNTING HORN', boar: 'THE ROYAL BOAR', penned: 'PENNED',
   locked: 'ITS ARCHERS HOLD THE ROPE', free: 'THE ROPE IS FREE: STRIKE THE PEG', file: 'THE COURT\'S BOWS FILE IN', knocked: 'KNOCKED DOWN',
   caught: 'CAUGHT', open: 'HIS HEAD IS UP. HE IS OPEN', warded: 'WARDED',
   torch: 'THE COURT TORCHES THE WOOD', healed: 'YOU CATCH YOUR BREATH', run: 'RUN', burning: 'THE FIRE HAS YOU', branch: 'A BURNING BRANCH',

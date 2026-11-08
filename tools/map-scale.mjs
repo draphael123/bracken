@@ -58,7 +58,7 @@ const { openPage } = await import('./cdp.mjs');
 const pg = await openPage({ audio: false });
 try {
   const r = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.reset({ fresh: true }); BK.mapLook('wood'); BK.step(20); const boxes = JSON.parse(JSON.stringify(BK.mapPortraits())); const bl = BK.mapBlurbs(); return { boxes, bl }; })()`, 120000);
-  for (const b of r.bl) if (b.w > b.max) bad.push('blurb "' + b.text + '" (' + b.id + ') is ' + b.w + ' px wide, the card line holds ' + b.max + ': say it shorter in src/map-blurbs.js');
+  /* (claude/mapclean, Daniel 11-07) the compact card no longer prints the one-line blurb (it is on the levels list and the loading screen), so there is no card line to fit it into: that check is gone. */
   const at = Object.fromEntries(NODES.map(n => [n.id, n]));
   const names = { hornetsnest: 'hornetsnest', wood: 'wood', hanging: 'hanging', crown: 'crown', scree: 'scree', marsh: 'marsh', stockade: 'stockade', spore: 'spore', kings: 'kings', castle: 'crown' };
   for (const [k, box] of Object.entries(r.boxes)) { const nd = at[names[k]], rec = (LANDMARKS[nd.id] || []).map(([dx, dy, w, h]) => ({ x: nd.x + dx, y: nd.y + dy, w, h }));
