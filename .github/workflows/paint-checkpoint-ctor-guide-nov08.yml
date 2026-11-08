@@ -1,0 +1,41 @@
+name: During-paint checkpoint actual Game guide
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/paint-checkpoint-ctor-guide-nov08/manifest.json
+      - tools/paint-checkpoint-ctor-guide-nov08.mjs
+      - tools/paint-checkpoint-ctor-guide-page-nov08.mjs
+      - .github/workflows/paint-checkpoint-ctor-guide-nov08.yml
+permissions: {contents: read}
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: span-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Controlled whole-Game material and exactness guide
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/paint-checkpoint-ctor-guide-nov08.mjs
+        env:
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/paint-checkpoint-ctor-guide-nov08
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/skyroad-guide-strict-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paint-checkpoint-ctor-guide-nov08
+          path: |
+            ${{ runner.temp }}/paint-checkpoint-ctor-guide-nov08/
+            ${{ runner.temp }}/skyroad-guide-strict-profile.jsonl
+          if-no-files-found: error
