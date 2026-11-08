@@ -18,13 +18,15 @@ let shotN = 0;
 const opt = (k, d) => { const a = process.argv.find(s => s.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
 const has = k => process.argv.includes('--' + k);
 const FOES = +opt('foes', 8), ONLY = opt('levels', '') ? opt('levels', '').split(',') : null, REPORT = has('report');
-const pg = await openPage({ audio: false, fonts: false, seed: 1008 });
+let pg = await openPage({ audio: false, fonts: false, seed: 1008 });
 let bad = 0;
 /* FOUND BY THIS CHECK, NOT THE CANAL'S, reported and left to the level's owner (never silently passed: each prints KNOWN every run). Remove a line when it is fixed. */
 const KNOWN = new Set(['undercrown|shardling|shed', 'hurricane|petrel|dive', 'marsh|hopper|sit', 'minecart|miner|swing']);   /* (batch91 integ: a minecart miner's swing at 81,28 draws 0 px of 52 max (MIN_D 60) when the seeded stream reaches that level after this batch's merges; run alone, with the default sample or all 27 foes, the level is clean on this branch AND on master - the sample moved, the level did not: the level owner's) */   /* (batch81 integ: the sample is drawn from the seeded stream, so the merge moved it onto two more of the same kind: a diving storm petrel on the Hurricane Deck and a sitting marsh hopper beside the hero draw nothing the oracle can see on some frames. Neither level changed in this batch; both are the level owners' - see the report) */
 try {
-  const res = await pg.evalp(`(async()=>{
-    const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(ONLY)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
+  /* (batch150) ONE page held every level in one evaluate and crashed the renderer at ~3 GB on master too (73 levels now: gate148, rel148, batch150): the levels run in chunks of CHUNK, each on a fresh page, results merged */
+  const CHUNK = +opt('chunk', 8);
+  const runOnly = async only => await pg.evalp(`(async()=>{
+    const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(only)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
     const MIN_D = 60, MIN_PX = 3, MELEE = 72, SHOTS = ${has('shots')}, shots = [];
     BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
     const grab = () => { const c = BK.view.buf; return c.getContext('2d').getImageData(0, 0, c.width, c.height).data; };
@@ -67,6 +69,9 @@ try {
       row.reached = Math.round(B().x / TS); row.why = B().holdWhy + ' lamp ' + C().lamp + ' stops ' + C().stops.map(q => q.k.toFixed(1) + (q.up ? 'u' : 'd')).join(',') + ' hero ' + Math.round(P().x / TS) + ',' + Math.round(P().y / TS) + ' onbarge ' + !!(P().onMover && P().onMover.canal); out.tunnel.push(row); }
     return out;
   })()`, 3000000);
+  const allIds = await pg.evalp(`import('/src/level.js').then(m => m.LEVELS.map(l => l.id))`);
+  const wantIds = (ONLY || allIds).filter(id => allIds.includes(id)), res = { levels: [], tunnel: [] };
+  for (let i = 0; i < wantIds.length; i += CHUNK) { if (i > 0) { await pg.close(); pg = await openPage({ audio: false, fonts: false, seed: 1008 }); } const r = await runOnly(wantIds.slice(i, i + CHUNK)); res.levels.push(...r.levels); res.tunnel.push(...r.tunnel); }
   const show = (h, pre) => { if (h.png) { const f = join(ROOT, 'work/claude/tunnelfix/' + (++shotN) + '-' + h.t.split('/').join('_') + '-' + h.mode + '.png'); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, Buffer.from(h.png.split(',')[1], 'base64')); pre += '[' + f.slice(ROOT.length) + '] '; } console.log(pre + h.level + ' - ' + h.t + ' (' + h.mode + ') at ' + h.at.join(',') + ': ' + h.why); };
   for (const row of res.levels) {
     if (row.error) { console.log('skip ' + row.level + ': ' + row.error); continue; }
