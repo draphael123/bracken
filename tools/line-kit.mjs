@@ -9,7 +9,7 @@
        (or a pit = respawn) - no soft-lock, no stuck state; a drop from every point of every hand line lands on something
    12  lintLines: the lab is clean; every broken case is caught. */
 import assert from 'node:assert/strict';
-import { LK, TS, lineInit, riderStep, kitStep, kitStrike, windAt, windPush, platforms, lineRespawn, lineCut, foeRide, ridersOn, leadPoint, riderHit, lintLines, lineY, weightTops, cabFloor } from '../src/line-kit.js';
+import { LK, TS, lineInit, riderStep, kitStep, kitStrike, windAt, windPush, platforms, lineRespawn, lineCut, foeRide, ridersOn, leadPoint, riderHit, lintLines, lineY, weightTops, cabFloor, releaseRider, climbLook } from '../src/line-kit.js';
 import { LINEKIT_LAB } from '../src/linekit-lab.js';
 import { MOVE, HERO_MOVE_IDS, heroRunMul } from '../src/hero-move.js';
 
@@ -302,5 +302,44 @@ function sweep(hero, seats, lab = labOK) {
 
 /* 16. THE KIT NEVER TOUCHES THE SHARED ZIP LINE: no kit line in L.zipLines, and zipline.js is not imported */
 { const L = lab(); lineInit(L); ok(!L.zipLines, 'lineInit leaves L.zipLines alone (src/zipline.js and its six levels untouched)'); }
+
+/* 17. (claude/linekit, plan C/E) THE LINE RULES: a line swing, let go first, the tuck, DOWN always drops, the climb camera, the flag, the walk */
+{ /* (a) a line swing: an attack on a glide / free line fires the swing and never moves the rider off the line's own pace */
+  for (const id of ['LO', 'G1', 'F_r']) { const run1 = swing => { const L = lab(), S = statics(L), kit = lineInit(L), z = kit.lines[id], b = onLine(kit, id, z.dir > 0 ? z.xa + 40 : z.xb - 40), ev = [];
+      run(kit, [b], 0.5, () => (swing ? { strike: true } : {}), S, ev); return { x: b.lk ? b.lk.x : b.x, lk: !!b.lk, sw: ev.filter(e => e.t === 'swing').length, st: ev.filter(e => e.t === 'stroke').length }; };
+    const a = run1(true), c = run1(false);
+    ok(a.lk && a.x === c.x, id + ': swinging while riding does not move or slow the rider (' + a.x.toFixed(2) + ' vs ' + c.x.toFixed(2) + ')'); ok(a.sw >= 1 && a.st === 0, id + ': the swing is told, and is never a crank stroke'); }
+  { const L = lab(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS), ev = []; run(kit, [b], 1 / 60, () => ({ strike: true }), S, ev); ok(ev.some(e => e.t === 'stroke') && !ev.some(e => e.t === 'swing'), 'an attack on a WINCH is still the stroke, not a swing'); }
+  /* (b) let go first: a movement skill / ultimate releases the line, skips it, then the body is free */
+  { const L = lab(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'LO', 40 * TS); b.lkHeld = true; const e = releaseRider(kit, b);
+    ok(e && e.t === 'release' && !b.lk && !b.lkHeld && b.lkSkip === 'LO' && Math.abs(b.lkRel - LK.RELEASE) < 1e-9, 'releaseRider: let go, the line skipped, ' + LK.RELEASE + ' s');
+    const hang = () => { const z = kit.lines.LO; b.x = 41 * TS; b.y = lineY(z, b.x) + z.hang; b.vx = b.vy = 0; b.ground = false; };
+    let retook = false; for (let i = 0; i < Math.round(0.5 / DT); i++) { hang(); riderStep(kit, b, { up: true, upPress: i === 0 }, DT); if (b.lk) retook = true; } ok(!retook, 'UP held for 0.5 s on the line he just left: not taken (the 0.6 s skip)');
+    for (let i = 0; i < Math.round(0.3 / DT); i++) { hang(); riderStep(kit, b, { up: true }, DT); } ok(!!b.lk, 'and taken again once the skip is out'); ok(releaseRider(kit, mkBody('knight', 0, 0)) === null, 'releaseRider on a body with no line is a no-op'); }
+  /* (c) the tuck: i-frames 0.25 s, still on the line, no displacement, once per cooldown */
+  { const L = lab(), S = statics(L), kit = lineInit(L), a = onLine(kit, 'LO', 40 * TS), c = onLine(kit, 'LO', 40 * TS); a.inv = c.inv = 0; const ev = [];
+    for (let i = 0; i < 30; i++) { riderStep(kit, a, i === 0 ? { dodgePress: true } : {}, DT).forEach(e => ev.push(e)); riderStep(kit, c, {}, DT); }
+    ok(ev.filter(e => e.t === 'tuck').length === 1 && a.inv >= LK.TUCK - 1e-9 && c.inv === 0, 'the tuck: ' + LK.TUCK + ' s of i-frames (P.inv), none without it'); ok(!!a.lk && a.lk.id === 'LO' && a.lk.x === c.lk.x && a.x === c.x && a.y === c.y, 'the tuck stays on the line: not a pixel of roll displacement');
+    ok(a.lk.tuck === 0 && a.lkTuck === 0, 'the tuck window closes after ' + LK.TUCK + ' s (r.tuck ' + a.lk.tuck + ')'); const ev2 = []; for (let i = 0; i < 20; i++) riderStep(kit, a, { dodgePress: true }, DT).forEach(e => ev2.push(e)); ok(ev2.filter(e => e.t === 'tuck').length === 1, 'a tuck again inside the ' + LK.TUCK_CD + ' s cooldown is refused (mashing gives no free i-frames)'); }
+  /* (d) DOWN always drops - every kind, and at the points */
+  for (const [id, x] of [['W1', 14 * TS], ['W2', 45 * TS], ['S1', 52 * TS], ['F_r', 60 * TS], ['G1', 60 * TS], ['W2', 51.9 * TS]]) { const L = lab(), S = statics(L), kit = lineInit(L), b = onLine(kit, id, x), ev = [];
+    for (const e of riderStep(kit, b, { down: true, up: true, upPress: true }, DT)) ev.push(e);
+    ok(!b.lk && ev.some(e => e.t === 'drop') && !ev.some(e => e.t === 'points') && b.vy === LK.DROP_VY, 'DOWN drops off ' + id + ' at x ' + (x / TS).toFixed(1) + ' (UP in the same frame is ignored: a DOWN never does anything else)'); }
+  /* (e) the climb camera: only while a seat is on a winch */
+  { const L = lab(), kit = lineInit(L), w = onLine(kit, 'W1', 14 * TS), g = onLine(kit, 'LO', 40 * TS), f = mkBody('knight', 0, 0);
+    ok(climbLook(kit, [g, f]) === null && climbLook(kit, []) === null, 'no climb look with nobody on a winch (glide, ground)'); const cl = climbLook(kit, [g, w]);
+    ok(cl && cl.foot === LK.CLIMB_FOOT && cl.lead === LK.CLIMB_LEAD && cl.id === 'W1', 'a seat on a winch (either seat of two): foot ' + LK.CLIMB_FOOT + ', lead ' + LK.CLIMB_LEAD); w.dead = true; ok(climbLook(kit, [g, w]) === null, 'a dead seat on a winch does not hold the camera up');
+    ok(LK.CLIMB_FOOT > 0.68 && LK.CLIMB_EASE === 0.4, 'the foot line moves down the screen from the 0.68 default; eased over 0.4 s'); }
+  /* (f) THE FLAG: OFF now (hidden + dev + no needs, the Ore Road behind the Sky Road); ON in a stub (the needs chain, no cycle) */
+  { const { LEVELS, ROAD_OPEN, HL_SHIPS } = await import('../src/level.js'), hl = LEVELS.find(l => l.id === 'highlines'), ore = LEVELS.find(l => l.id === 'oreroad'), idx = id => LEVELS.findIndex(l => l.id === id);
+    ok(ROAD_OPEN.highlines === false && HL_SHIPS === false, 'flag OFF: ROAD_OPEN.highlines is false (the level ships only with the release lane)');
+    ok(hl && hl.hidden === true && hl.dev === true && !hl.needs, 'flag OFF: THE HIGH LINES is hidden + dev with no needs (reached by ?level=highlines only)'); ok(ore.needs === 'skyroad', 'flag OFF: oreroad.needs stays skyroad');
+    ok(idx('lesson') >= 0 && idx('lesson') < idx('highlines') && idx('highlines') === LEVELS.length - 1, 'highlines is appended AFTER lesson, and last (saves count levels by index)');
+    const stub = LEVELS.map(l => ({ id: l.id, needs: l.needs })); stub.find(l => l.id === 'highlines').needs = 'skyroad'; stub.find(l => l.id === 'oreroad').needs = 'highlines';
+    const chain = id => { const out = [], seen = new Set(); for (let l = stub.find(q => q.id === id); l; l = l.needs ? stub.find(q => q.id === l.needs) : null) { ok(!seen.has(l.id), 'flag ON stub: no needs cycle at ' + l.id); seen.add(l.id); out.push(l.id); } return out; };
+    const ch = chain('oreroad'); ok(ch[0] === 'oreroad' && ch[1] === 'highlines' && ch[2] === 'skyroad', 'flag ON stub: oreroad -> highlines -> skyroad (' + ch.slice(0, 4).join(' <- ') + ' ...)'); }
+  /* (g) the route walk follows the kit's lines, and a side line's secrets stay OFF the route (tools/pacing.mjs, L.lineKit) */
+  { const { install } = await import('./node-canvas.mjs'); install(); const { LEVELS } = await import('../src/level.js'), { pacing } = await import('./pacing.mjs'); const P = pacing(LEVELS.find(l => l.id === 'highlines'));
+    ok(P.stats.routeTiles >= 300, 'the highlines walk is one route of ' + P.stats.routeTiles + ' tiles (the lines are ways)'); ok(P.stats.offLoot.filter(s => /^silver@/.test(s)).length >= 2, 'both secrets (on side lines S2, S4) are OFF the route: ' + P.stats.offLoot.join(', ')); } }
 
 console.log('line-kit: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');

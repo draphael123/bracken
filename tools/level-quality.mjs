@@ -363,6 +363,11 @@ if (isMain) {
     console.log('\n' + clear + ' of ' + campaign.length + ' clear the bar. Columns: flat% = share of the route in long flat empty runs (limit ' + LIM.flatShareMax * 100 + '), ground% = share in long level-ground runs (' + LIM.terrainShareMax * 100 + '), bands = height bands on the route / % of width with a second height, gadg/dev = gadget kinds / those in 3+ places, secr = silver+relic off the route, chk = checkpoints, dens = designed encounters a screen.');
     process.exit(0);
   }
+  if (args.includes('--selftest')) {   /* (claude/linekit) THE LINE KIT'S ROWS: a kit-line level walks as ONE route (the lines are ways), and the secrets on its side lines (secret: true) count OFF the route */
+    const lv = LEVELS.find(l => l.id === 'highlines'); if (!lv) { console.log('selftest: highlines not built - skipped'); process.exit(0); }
+    const m = measure(lv), bad = []; if (m.routeTiles < 300) bad.push('the route is ' + m.routeTiles + ' tiles: the kit lines are not fed to the walk (tools/pacing.mjs L.lineKit)'); if (m.secrets < 2) bad.push('only ' + m.secrets + ' secret(s) off the route (side lines S2 and S4 are secret: true)');
+    if (!m.pass) bad.push('highlines misses the bar: ' + m.failed.join(', ')); console.log(bad.length ? 'level-quality selftest FAIL: ' + bad.join(' | ') : 'level-quality selftest ok (highlines: route ' + m.routeTiles + ' tiles, ' + m.secrets + ' secrets off the route, bar cleared)'); process.exit(bad.length ? 1 : 0);
+  }
   const want = ids.length ? ids : GATE; let failed = 0;
   for (const id of want) {
     const lv = LEVELS.find(l => l.id === id);

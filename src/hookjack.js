@@ -123,7 +123,7 @@ export function hookStep(e, dt, w) {
   }
 }
 /* A BLOW LANDS (the hands call this from hurtEnemy): returns the damage to take. Open -> whole, and a hanging Hookjack loses his grip; guarded front -> x HK.guard */
-export function hookTake(e, dmg, fromX, w) {
+export function hookTake(e, dmg, fromX, w, tag) {
   const front = Math.sign(fromX - e.x) === (e.face || 1);
   if (e.mode === 'saw') { e.mode = 'perch'; e.modeT = 1.6; e.stagger = 0.6; if (w) w.say(e.x, e.y - 24, HK_SAY.fell, '#8fd160'); return dmg; }   /* the saw stops; he is staggered */
   if (e.mode === 'footSpin' || e.mode === 'footTell') { e.mode = 'foot'; e.modeT = 0.8; e.stagger = 0.6; return dmg; }

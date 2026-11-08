@@ -100,7 +100,7 @@ export function makeHighLinesHands(c) {
     if (!on()) return; hookStep(e, dt, hkWorld());
     if (e.gone) { e.alive = false; }
   }
-  const hookTake = (e, dmg, fromX) => hkTake(e, dmg, fromX, hkWorld());
+  const hookTake = (e, dmg, fromX, tag) => hkTake(e, dmg, fromX, hkWorld(), tag);   /* (claude/linekit) the blow's tag rides along (blow-tags): the Hookjack's guard reads the blow, not a boss key */
   function shoveRider(P, vx) { if (!on() || !P.lk) return false; P.lk.swayV += vx * 0.5; return true; }
   /* ---------- DRAWING (greybox) ---------- */
   function drawWorld(g, cx, cy, VW, VH, time) {
