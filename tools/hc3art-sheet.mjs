@@ -46,7 +46,7 @@ parts.push(['captains hall', cell(480, 160, '#000', g => { HA.paintRoom(g, 'roya
 parts.push(['banquet hall', cell(480, 256, '#000', g => { HA.paintRoom(g, 'royal', 0, 0, 480, 256, HA.K.BANQ, 10, 0); })]);
 for (const [n, c] of parts) { if (!sig(c).k) bad.push(n + ': nothing drawn'); }
 const sheetItems = [...P.R.map(c => c), ...parts.map(p => p[1])];
-savePNG(big(P.R, { maxW: 9 * 58 + 6, bg: '#2a1a3a', pad: 4 }, 2), out);
+savePNG(big(P.R, { maxW: 7 * 92 + 8, bg: '#2a1a3a', pad: 4 }, 2), out);
 savePNG(sheet(parts.map(p => p[1]), { maxW: 1000, bg: '#14101c', pad: 6 }), out.replace('.png', '-world.png'));
 console.log(bad.length ? 'ISSUES:\n' + bad.join('\n') : 'hc3art: all ok', '(' + P.R.length + ' frames) ->', out);
 process.exit(bad.length ? 1 : 0);
