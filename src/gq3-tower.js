@@ -14,7 +14,8 @@ export const TW = {
   PARAPETS: { w: [778, 786], e: [826, 834], row: 16, stepW: [787, 788], stepE: [824, 825], stepRow: 18 },
   CUPOLA: { x0: 804, x1: 807, solid: [17, 19], frame: [803, 808, 14] },
   BAYS: [[779, 784], [795, 800], [811, 816], [827, 832]],                  // A, B, C, D: floor spans (cols) that burn, one at a time
-  RINGS: [{ id: 'dw', x: 782, y: 19 }, { id: 'de', x: 830, y: 19 }, { id: 'pw', x: 782, y: 15 }, { id: 'pe', x: 830, y: 15 }, { id: 'cu', x: 806, y: 13 }],
+  RINGS: [{ id: 'dw', x: 782, y: 19 }, { id: 'de', x: 830, y: 19 }, { id: 'pw', x: 782, y: 15 }, { id: 'pe', x: 830, y: 15 }, { id: 'cu', x: 806, y: 13 },
+    { id: 'dm', x: 799, y: 19, noStorm: true }, { id: 'dn', x: 811, y: 19, noStorm: true }],   /* (gq3fix) two MID-DECK rings (blink exits only - the portal storm still lights the five): on a 60-column deck split by the cupola, the two end rings were 380 px from a hero in the middle, so a blink's 1.2 s opening was never in a blade's reach */
   FOLLOW: { shrine: [795, 19], begin: 800 },                               // the roof shrine at the hatch top; the fight begins when you walk past col 800
   FOES: [['soldier', 795, 80], ['javelin', 798, 80], ['shield', 794, 68], ['archer', 789, 65], ['gobgeo', 796, 56], ['hound', 790, 44], ['hound', 797, 44], ['heavy', 796, 32]],
 };

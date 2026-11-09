@@ -59,7 +59,7 @@ if (RA && E && TWr) {
   ok(west.length === 0, 'the tower and its top are sealed: nothing walkable from the foot leads west of col ' + (TWr.DECK.x0 - 1));
   /* the deck: both parapets, the cupola frame, the bays are floor */
   ok(TWr.BAYS.every(([x0, x1]) => { for (let x = x0; x <= x1; x++) if (at(x, 20) !== T.SOLID || at(x, 19) !== T.AIR) return false; return true; }) && TWr.BAYS.length === 4, 'four roof bays A-D are deck floor');
-  ok(TWr.RINGS.length === 5 && TWr.RINGS.every(r => at(r.x, r.y) === T.AIR && (at(r.x, r.y + 1) === T.SOLID || at(r.x, r.y + 1) === T.ONEWAY)), 'five portal rings, each over footing');
+  ok(TWr.RINGS.length === 7 && TWr.RINGS.every(r => at(r.x, r.y) === T.AIR && (at(r.x, r.y + 1) === T.SOLID || at(r.x, r.y + 1) === T.ONEWAY)), 'seven portal rings, each over footing');
 }
 
 /* ================= SOURCE ================= */

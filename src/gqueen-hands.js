@@ -313,13 +313,16 @@ export function makeGQueenHands(ctx) {
     const R0 = S.roof; R0.blinkCd = G.p2.blinkCd; e.mode = 'blinkTell'; e.modeT = G.p2.blinkTell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('portalOpen');
     ctx.burst(e.x, e.y - 24, 10, ['#b28cff', '#e8dcff'], 60, 0.4);
   }
-  function pickExit(P0, minDx, noCupola) {
-    const rs = rings().map(r => ({ r, p: ringPos(r) })).filter(o => Math.abs(o.p.x - P0.x) >= minDx && !(noCupola && o.r.id === 'cu'));   /* (the crown flies at chest height: it cannot come out of the cupola's stone) */
-    if (!rs.length) return rings()[0] ? { r: rings()[0], p: ringPos(rings()[0]) } : null;
+  function pickExit(P0, minDx, noCupola, level) {
+    /* (gq3fix) EVERY HERO MUST BE ABLE TO HIT HER: she steps out of a ring on the HERO'S OWN LEVEL (the deck rings for a hero on the deck, the parapet rings for one up there). The cupola's top, 96 px over the deck and two climbs away, is where she
+       stood for her whole storm opening and her blinks - a blade could not reach her there (the melee heroes did 0 damage in P2 in three runs). */
+    const all = rings().map(r => ({ r, p: ringPos(r) })).filter(o => !(noCupola && o.r.id === 'cu')), dv = o => Math.abs(o.p.y - P0.y), best = level ? Math.min(...all.map(dv)) : 1e9;   /* level: blink + storm only (the crown flies at the hero's chest height from any ring) */
+    const rs = all.filter(o => dv(o) <= best + 8 && Math.abs(o.p.x - P0.x) >= minDx);   /* (the crown flies at chest height: it cannot come out of the cupola's stone) */
+    if (!rs.length) { const lv = all.filter(o => dv(o) <= best + 8).sort((a, b) => Math.abs(b.p.x - P0.x) - Math.abs(a.p.x - P0.x)); return lv[0] || (rings()[0] ? { r: rings()[0], p: ringPos(rings()[0]) } : null); }
     rs.sort((a, b) => Math.abs(a.p.x - P0.x) - Math.abs(b.p.x - P0.x)); return rs[Math.floor(Math.random() * Math.min(2, rs.length))];
   }
   function blinkGo(e) {
-    const R0 = S.roof, P0 = ctx.P(), ex = pickExit(P0, 60); if (!ex) { e.mode = 'rec'; e.modeT = 0.5; return; }
+    const R0 = S.roof, P0 = ctx.P(), ex = pickExit(P0, 60, false, true); if (!ex) { e.mode = 'rec'; e.modeT = 0.5; return; }
     ctx.burst(e.x, e.y - 24, 14, ['#3a2a4a', '#7a4aa0', '#c9a0ff'], 80, 0.5); e.hidden = true; e.vx = 0; e.mode = 'blinkGone'; e.modeT = G.p2.blinkGone + 5;
     R0.blink = { ring: ex.r.id, x: ex.p.x, y: ex.p.y, at: now() + G.p2.blinkGlow, kind: 'blink' }; sfx('portalOpen');
   }
@@ -327,7 +330,7 @@ export function makeGQueenHands(ctx) {
     if (!S) return undefined;
     if (!S.roof) roofBegin(e);
     const R0 = S.roof, P0 = ctx.P(), RA = L().arena, d = P0.x - e.x, ad = Math.abs(d), tt = now();
-    R0.lashCd -= dt; R0.ambushCd -= dt; R0.geyserCd -= dt; R0.leapCd = (R0.leapCd ?? 3) - dt;
+    R0.lashCd -= dt; R0.ambushCd -= dt; R0.geyserCd -= dt; R0.leapCd = (R0.leapCd ?? 3) - dt; R0.blinkCd -= dt;   /* (gq3fix) THE BLINK CLOCK WAS NEVER RUN DOWN: blinkCd started at 3 and only the blink itself reset it, so the P2 blink (and its stumble opening) never fired in any run - melee heroes, who wait for openings, had none */
     switch (e.mode) {
       case 'wake': if (e.modeT <= 0) { e.mode = 'roofStand'; e.modeT = 0.6; roofMus(1); ctx.number(e.x, e.y - 70, 'THE TOWER TOP', '#ffd36b'); } return 0;
       case 'roofStand': case 'stand': {
@@ -426,10 +429,10 @@ export function makeGQueenHands(ctx) {
     // ---- DESPERATION: the portal storm - the five rings light in order and each fans three shards; she stumbles out of the cupola ring ----
     const ps = R0.pstorm;
     if (ps) {
-      const rs = rings();
+      const rs = rings().filter(r => !r.noStorm);
       if (ps.i < rs.length && tt >= ps.at) { const r = rs[ps.i], p = ringPos(r), tg = target(); ps.lit = { id: r.id, until: tt + 0.35 }; fan(p.x, p.y - 14, tg.x, tg.y - 8, true); ps.i++; ps.at = tt + G.p2.stormStep; sfx('portalOpen'); }
       else if (ps.i >= rs.length && tt >= ps.at) {
-        R0.pstorm = null; const cu = rs.find(r => r.id === 'cu') || rs[rs.length - 1], cp = ringPos(cu);
+        R0.pstorm = null; const cu = (pickExit(P0, 40, false, true) || {}).r || rs[rs.length - 1], cp = ringPos(cu);   /* (gq3fix) a ring on your level, not the cupola's top */
         e.x = cp.x; e.y = cp.y - 1; e.vx = 0; e.vy = 0; e.hidden = false; e.mode = 'stormOpen'; e.modeT = G.p2.stormOpen; e.gqOpenTaken = 0;
         ctx.burst(cp.x, cp.y - 22, 18, ['#fff6c8', '#e8dcff', '#b28cff'], 100, 0.6); ctx.ring(cp.x, cp.y - 20, 26, '#fff6c8', 0.4); sfx('callerBlast'); ctx.number(cp.x, cp.y - 48, 'SHE STUMBLES OUT: STRIKE', '#8fd160');
       }
