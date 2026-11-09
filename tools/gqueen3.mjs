@@ -173,6 +173,30 @@ console.log('== HANDS (src/gqueen-hands.js in a fake world)');
       ok(w.e.mode === 'stunned' && w.H.test.roof().storm === null, 'a parried storm crown breaks into her: STUNNED, the storm ends'); }
     { const w = mk(); w.e.hp = Math.round(GQ3.hp2 * 0.65); w.e.mode = 'roofStand'; w.e.modeT = 9; w.step(60 * 2); ok(w.st.spawned.length === 2 && w.st.spawned.map(s => s.t).join() === 'soldier,javelin', 'at 66% two guards come up a hatch (a soldier and a javelin)'); }
   }
+  /* 8. (gq3 item 5) THE GEODE LOB: told 1.0 s, a red ring that locks, a lob; a blow / a parry sends it back (SENT BACK stun); else 18 and two low shards (8, jump) */
+  { const w = make({ mode: 'hit' }); w.P.x = 10750; w.e.x = 10900; w.e.geodeCd = 0; w.e.phase = 1; w.H.test.geodeBegin(); const Ge0 = w.H.test.geode();
+    ok(w.e.mode === 'geodeTell' && Ge0 && Ge0.state === 'tell' && Math.abs(w.e.modeT - GQ3.geode.tell) < 1e-9, 'the geode lob is told: geodeTell ' + GQ3.geode.tell + ' s');
+    w.step(30); w.P.x = 10700; w.step(60 * 0.2); const lockedAt = w.H.test.geode().tx; w.P.x = 10600; w.step(10); ok(w.H.test.geode().locked && w.H.test.geode().tx === lockedAt, 'the ring tracks the hero 0.6 s and then LOCKS (it does not follow a late dodge)');
+    w.P.x = lockedAt; w.step(60 * 0.4); ok(w.e.mode === 'geodeThrow' || w.e.mode === 'rec', 'the release pose, then recovery'); w.step(60 * 0.75);
+    ok(w.st.dmg.some(d => d.d === GQ3.geode.dmg && !d.o.unblockable), 'a geode that lands on the hero is 18, yellow'); ok(w.H.test.geodeBits().length === 2, 'and it shatters into 2 low shards (' + w.H.test.geodeBits().length + ')');
+    ok(w.st.dmg.some(d => d.d === GQ3.geode.shardDmg), 'a floor shard runs into a hero who stays put: 8 (a jump clears it)'); w.step(60 * 1); ok(w.H.test.geodeBits().length === 0, 'the shards run 40 px and are done'); }
+  { const w = make({ mode: 'hit' }); w.P.x = 10750; w.P.hitSet = new Set(); w.e.x = 10900; w.H.test.geodeBegin(); w.step(60 * 1.35); const Ge = w.H.test.geode();
+    ok(Ge && Ge.state === 'fly', 'in the air');
+    w.ctx.attackBox = () => ({ l: Ge.x - 14, r: Ge.x + 14, t: Ge.y - 14, b: Ge.y + 14 }); w.step(2);
+    ok(w.H.test.geode() && w.H.test.geode().state === 'back', 'a BLOW that meets it in the air sends it back'); w.ctx.attackBox = null; w.P.x = 0;
+    w.step(60 * 2); ok(w.e.mode === 'stunned' && w.e.hp === 2400 - Math.round(2400 * GQ3.geode.stunHp), 'SENT BACK: she is STUNNED (' + GQ3.geode.stun + ' s, ' + GQ3.geode.stunHp * 100 + '%)'); ok(w.H.test.geodeBits().length === 0 && !w.H.test.geode(), 'a returned geode does not shatter on the floor'); }
+  { const w = make({ mode: 'parry' }); w.P.x = 10750; w.e.x = 10900; w.H.test.geodeBegin(); w.step(60 * 4);
+    ok(w.e.mode === 'stunned' || w.H.read().stuns === 1, 'a PARRIED geode (on the landing) is sent back and stuns her once (stuns ' + w.H.read().stuns + ')'); }
+  { const w = make({ mode: 'hit' }); w.e.x = 10900; w.P.x = 10700; w.e.crownCd = 99; w.e.portalCd = 99; w.e.geodeCd = 0; w.e.phase = 1; ok(w.H.choose(w.e, 200) === true && w.e.mode === 'geodeTell', 'she chooses the lob at range (> 90 px)');
+    const w2 = make({ mode: 'hit' }); w2.e.x = 10900; w2.P.x = 10860; w2.e.crownCd = 99; w2.e.portalCd = 99; w2.e.geodeCd = 0; ok(w2.H.choose(w2.e, 40) === false, 'never up close (range > 90 px)');
+    const w3 = make({ mode: 'hit' }); w3.e.crownCd = 99; w3.e.portalCd = 99; w3.e.geodeCd = 0; w3.H.mech().lure = {}; ok(w3.H.choose(w3.e, 200) === false, 'never while the bell lure is live');
+    w.step(60 * 3); ok(w.e.geodeCd > 5 && w.e.geodeCd <= GQ3.geode.cd, 'cooldown ' + GQ3.geode.cd + ' s (' + GQ3.geode.cd2 + ' s below half)'); }
+  /* 9. (gq3 item 1) THE QUEEN ESCAPES: the tower top's bar empties -> kneel, sceptre slam + royal portal, she backs in, it snaps shut; untouchable meanwhile; then the ordinary death path with no corpse */
+  { const w = make({ mode: 'hit' }); w.e.stage = 'roof'; w.e.phase = 3; w.e.maxHp = w.e.hp = GQ3.hp2; Object.assign(w.Lw.arena, w.Lw.arenaRoof); w.H.test.begin(); w.e.x = 11600; w.e.y = w.Lw.arena.floor; w.e.hp = 0;
+    const spared = w.H.spare(w.e); ok(spared === true && w.e.alive && w.e.stage === 'fled' && w.e.mode === 'fledKneel' && w.e.hp >= 1, 'the roof bar empties: she is SPARED (a kneel, hp held at 1), not killed');
+    ok(w.H.fled(), 'the escape is running'); let seq = []; w.e.hurtLog = 0; for (let i = 0; i < 60 * 4; i++) { w.step(1); if (!seq.length || seq[seq.length - 1] !== w.e.mode) seq.push(w.e.mode); if (w.e.stage === 'fledDone') break; }
+    ok(seq.join('>').startsWith('fledKneel>fledSlam>fledBack>fledSnap'), 'kneel > sceptre slam (portal opens) > backs into it > it snaps shut (' + seq.join('>') + ')');
+    ok(w.e.gqFled === true && w.e.stage === 'fledDone', 'then the death path: gqFled set (main.js: no corpse, THE QUEEN HAS FLED, PROG.gqFled)'); }
 }
 
 console.log(fails ? 'FAIL gqueen3 (' + fails + ')' : 'ok  gqueen3'); process.exit(fails ? 1 : 0);
