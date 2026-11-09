@@ -63,7 +63,7 @@ export function buildGhostTrain({ painter, T, TS }) {
   /* THE POINTS: a lever (struck: straight <-> branch) and the junction it sets, met when the lead hero reaches column `at` */
   const junction = (id, lx, ly, at, straight, branch) => { points.push({ id, x: lx * TS + 8, y: (ly + 1) * TS, col: lx, at, set: 'straight' }); ent('gtpoints', lx, ly, { id });
     track.push({ id: 'j' + id, at, points: id, straight, branch }); };
-  const heap = (x0, x1, xc, top) => { for (let x = x0; x <= x1; x++) block(x, x, Math.min(FLOOR - 1, top + Math.abs(x - xc)), FLOOR - 1); };
+  const heap = (x0, x1, xc, top, flat = 0) => { for (let x = x0; x <= x1; x++) block(x, x, Math.min(FLOOR - 1, top + Math.max(0, Math.abs(x - xc) - flat)), FLOOR - 1); };   /* a coal heap: one row a column up to its top (flat: half its plateau) */
   const tub = c => { block(c.x0, c.x0, TUB, FLOOR - 1); block(c.x1, c.x1, TUB, FLOOR - 1); };
 
   // ================= 1. THE SIDING (0-35): TEACH =================
@@ -76,7 +76,8 @@ export function buildGhostTrain({ painter, T, TS }) {
   const well = car('well', 20, 33, { name: 'THE WELL WAGON' });
   gap(van0, well); sign(20, FLOOR - 1, GT_SAY.couple);
   air(23, 30, FLOOR, FLOOR + 2); block(23, 30, WELL, WELL + 1);                       /* the well: its floor slung low between the bogies (row 21) */
-  shelf(24, 26, WELL - 2); shelf(28, 29, WELL - 2);                                   /* THE FAIR'S RIDE CARS riding in it (their seats' backs: a step) */
+  /* THE FAIR'S RIDE riding in it: its two cars on the well floor (drawn, not footing: the well is crossed on its floor) and ITS PAINTED FACADE standing up out of the well - a dead end of cornices to climb (secret one at the top) */
+  shelf(23, 24, 15); shelf(26, 27, 12); shelf(24, 25, 9); shelf(27, 28, 6); ent('silver', 28, 5); props.push({ kind: 'facade', x: 26, f: WELL });
   props.push({ kind: 'ridecar', x: 25, f: WELL }, { kind: 'ridecar', x: 28.5, f: WELL });
   foe('bat', 27, 15, 'wellBats', { perch: true }); foe('bat', 31, 14, 'wellBats', { perch: true });
   coins([25, WELL - 3], [28, WELL - 3]);
@@ -100,7 +101,7 @@ export function buildGhostTrain({ painter, T, TS }) {
   lamp(c4, 80, { lit: true, draught: false }); lamp(c4, 89, { lit: true, draught: false });
   ghost(c4, 81, FLOOR - 1, 'firstClass'); ghost(c4, 88, FLOOR - 1, 'firstClass');
   foe('armour', 85, FLOOR - 1, 'firstClass', { face: -1 });                         /* THE GHOST-TRAIN RIDE'S SUIT OF ARMOUR: not a passenger - the lamps do not hold it */
-  shelf(77, 79, 14); shelf(81, 82, 16); ent('silver', 78, 13);                        /* THE LUGGAGE LOFT (secret one): rack to loft, over the first-class seats */
+  shelf(77, 79, 14); shelf(81, 82, 16); coins([78, 13]);                              /* THE LUGGAGE LOFT: rack to loft, over the first-class seats */
   coins([82, 15], [84, ROOF - 1], [90, ROOF - 1]);
   ent('gtbridge', 66, ROOF - 1, {});
   zones.push({ id: 'coachBridges', x0: 36, x1: 95, ev: { kind: 'bridge', len: 44, tell: 1.4 }, every: 6.5, phase: 2 });
@@ -128,19 +129,19 @@ export function buildGhostTrain({ painter, T, TS }) {
   shelf(144, 150, 16); shelf(144, 150, 14); shelf(153, 159, 16); shelf(153, 159, 14);
   lamp(c7, 146, { lit: false, oil: 6 }); lamp(c7, 151, { lit: false, oil: 6 }); lamp(c7, 157, { lit: false, oil: 6 });
   ghost(c7, 145, 15, 'sleeperTwo'); ghost(c7, 149, 13, 'sleeperTwo'); ghost(c7, 154, FLOOR - 1, 'sleeperTwo'); foe('boo', 152, FLOOR - 1, 'sleeperTwo');
-  ent('silver', 158, 13);                                                             /* THE UPPER BERTH (secret two): over the last of the sleepers */
+  coins([158, 13]);                                                                   /* the upper berth over the last of the sleepers */
   zones.push({ id: 'cutting', x0: 120, x1: 163, ev: { kind: 'tunnel', len: 1500, tell: 1.4 }, every: 7.5, phase: 1.5 });   /* THE CUTTING: tunnel after tunnel over the sleepers' roofs - the exam is inside */
   ent('gtbridge', 140, ROOF - 1, {});
 
   // ================= 5. THE COAL TRUCKS (164-195): COMBINE =================
-  const c8 = car('coal', 164, 177, { name: 'COAL TRUCK ONE' }); gap(c7, c8); tub(c8); heap(165, 176, 171, 8);
+  const c8 = car('coal', 164, 177, { name: 'COAL TRUCK ONE' }); gap(c7, c8); tub(c8); heap(165, 176, 171, 6, 1); air(164, 164, 16, FLOOR - 1); air(165, 168, 16, FLOOR - 1); coins([166, FLOOR - 1], [168, FLOOR - 1]);   /* the heap stands high (a plateau over the trucks); a coal hole in its back */
   sign(163, STEP - 1, GT_SAY.coal);
-  ghost(c8, 168, 10, 'firemen', { stoker: true }); ghost(c8, 174, 10, 'firemen', { stoker: true });   /* no lamp on a coal truck: its dead are awake */
+  ghost(c8, 168, 8, 'firemen', { stoker: true }); ghost(c8, 174, 8, 'firemen', { stoker: true });   /* no lamp on a coal truck: its dead are awake */
   foe('bat', 170, 4, 'coalBats', { perch: true });
-  junction('P2', 166, 12, 180, { kind: 'tunnel', len: 900, tell: 1.6 }, { kind: 'open' });
-  coins([171, 6], [169, 8], [173, 8]);
+  junction('P2', 166, 10, 180, { kind: 'tunnel', len: 900, tell: 1.6 }, { kind: 'open' });
+  coins([171, 4], [169, 6], [173, 6]);
   const c9 = car('coal', 180, 193, { name: 'COAL TRUCK TWO' }); gap(c8, c9); tub(c9); heap(181, 190, 186, 9);
-  shelf(191, 192, 16);
+  shelf(191, 192, 16); air(180, 180, 16, FLOOR - 1); air(181, 186, 16, FLOOR - 1); ent('silver', 186, FLOOR - 1);   /* THE COAL HOLE (secret two): a hatch in the truck's back, a crawl under the heap */
   foe('bonearcher', 186, 8, 'coalTwo', { face: -1 }); ghost(c9, 183, 11, 'coalTwo', { stoker: true });
   ent('check', 192, 15);                                                              /* SHRINE TWO: the engine door's (the front of the last coal truck) */
   sign(191, 15, GT_SAY.engineDoor);
