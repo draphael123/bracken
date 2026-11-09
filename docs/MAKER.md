@@ -9,6 +9,12 @@ maker only**; Boss Rush stays parked.
 wants the real combat, so the maker lives here now; that repo is reference only — its mouse-first editor, share
 links and help card are worth porting.)
 
+## Test site (not the live game)
+**https://bracken-maker.vercel.app/?maker=1** - its OWN Vercel project `bracken-maker` (Daniel 2026-11-09: separate from
+`bracken`, so it can never be promoted onto bracken-nine.vercel.app). Deploy from this worktree with
+`vercel deploy --prod --yes` (the worktree's `.vercel/` link points at `bracken-maker`; never run that from the main
+checkout, whose link is the live game). After `vercel link`, delete the `.env.local` it downloads (a Vercel token).
+
 ## How this lane stays mergeable
 - **Its code lives in its own files** (`src/maker-*.js`). `src/main.js` only gets thin hooks inside the editor
   section (`ED_TILES/ED_FOES/ED_THINGS`, `drawEdPalette`, `edPalClick`, two keys) plus `?maker=1` and `window.MKR`.
