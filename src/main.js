@@ -7202,7 +7202,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
       if (tPan) return; tMoved = true; const [x, y] = at(ev.touches[0]); edMouse(x, y, 0, false, true); }, { passive: false });
     disp.addEventListener('touchend', ev => { if (state !== 'editor') return; ev.preventDefault(); clearTimeout(tHold); if (!ev.touches.length) { if (!tPan) edMouseUpAll(); tPan = null; } }, { passive: false });
   }
-  disp.addEventListener('wheel', ev => { if (state !== 'editor') return;   /* (claude/maker) THE WHEEL SCROLLS THE LEVEL (sideways; SHIFT: up and down). Picking pieces is the icon strip's job now */
+  disp.addEventListener('wheel', ev => { if (state !== 'editor') return; if (MUI.browseWheel(ev.deltaY)) { ev.preventDefault(); return; }   /* (claude/maker) THE WHEEL SCROLLS THE LEVEL (sideways; SHIFT: up and down). Picking pieces is the icon strip's job now */
     if (ev.shiftKey) edCam.y += ev.deltaY * 0.6; else edCam.x += (ev.deltaY + (ev.deltaX || 0)) * 0.6; edClampCam(); ev.preventDefault(); }, { passive: false });
 }
 // Gamepad: A jump, X swing, B dodge, RB/LB block, Start pause, d-pad or left stick to move.
@@ -37314,7 +37314,7 @@ function edEnter() {
    iris on a test run; `here` (a cell) starts the knight there instead of at START - PLAY HERE / SHIFT+P. Back in the editor
    the view is where the knight got to. */
 function edPlay(here) {
-  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GOAL GATE down first (ITEMS)'); SFX.buzz(); return; }
+  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GOAL GATE down first (START/GOAL tab)'); SFX.buzz(); return; }
   edPush(); edTesting = true; edPlayed = true; MKJ.whoosh(); edRunHere = !!here; edJustCleared = false;
   /* (claude/maker) PLAYERS: the test run's party is the level's (an AI ally or a second player), never the campaign's; put back on return */
   if (edCoopWas === undefined) edCoopWas = coopWant;
@@ -37400,6 +37400,7 @@ function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v && !
 
 // ---- input ----
 function edKey(k, ev) {
+  if (MUI.browseKey(k)) return true;   /* (claude/maker) the FIND browser types its search */
   if (MUI.panelOpen()) { if (k === 'escape' || k === 'enter') { if (MUI.closePanel() === 'settings') music.stop(); } return true; }   /* (claude/maker) */
   const shift = ev && ev.shiftKey, ctrl = ev && (ev.ctrlKey || ev.metaKey);
   if (ctrl && k === 'z') { edPop(); return true; }
@@ -37563,7 +37564,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawGears(g, edDoc, cx, cy); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }

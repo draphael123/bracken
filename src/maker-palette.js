@@ -82,6 +82,13 @@ const THING_NAMES = { mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM',
   'key:brass': 'BRASS KEY', 'key:iron': 'IRON KEY', 'key:bone': 'BONE KEY', 'lockgate:brass': 'BRASS GATE', 'lockgate:iron': 'IRON GATE',
   'lockgate:bone': 'BONE GATE', pushblock: 'PUSH BLOCK', firevent: 'FIRE JET', roller: 'ROLLING PUFFBALL' };
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
+/* (claude/maker) ONE PIECE PER IDEA: the palette shows one KEY, one LOCKED GATE and one MOVING PLATFORM; the metal and the way it
+   moves are settings (SHIFT+CLICK). The other variants stay valid ids (old levels, the checks) but are on no tab. */
+export const HIDDEN_THINGS = ['mover:up', 'key:iron', 'key:bone', 'lockgate:iron', 'lockgate:bone'];
+const SHOWN_NAME = { 'key:brass': 'KEY', 'lockgate:brass': 'LOCKED GATE', mover: 'MOVING PLATFORM' };
+export const paletteName = id => SHOWN_NAME[id] || thingName(id);
+/* what a piece can be set to, by name, for the palette's line and the hover card */
+export const settingLabels = id => pieceRows(entFor(id, 0, 0)).map(r => r.label);
 
 // names: the bestiary's, where it has one (main.js BEASTS), else the id in capitals
 let NAMES = {}, DESCS = {};
@@ -321,11 +328,11 @@ const ELITE_ROW = { key: 'elite', label: 'ELITE', values: [false, true], show: v
 const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === -1 ? 'LEFT' : 'RIGHT'), def: 1 };   /* spawnEnt: e.face || 1, so unset means RIGHT */
 export function pieceRows(e) {
   if (FOES.includes(e.t)) return ELITE_KINDS.has(e.t) && !BOSSES.includes(e.t) ? [FACE, ELITE_ROW] : [FACE];
-  if (e.t === 'mover' && e.vert) return [
+  if (e.t === 'mover' && e.vert) return [{ key: 'vert', label: 'MOVES', values: [false, true], show: v => (v ? 'UP AND DOWN' : 'SIDE TO SIDE'), def: false },
     { key: 'rise', label: 'HOW HIGH', values: [1, 2, 3, 4, 5, 6, 8, 10], show: tiles, def: 4 },
     { key: 'period', label: 'ONE TRIP TAKES', values: [2, 2.5, 3.2, 4, 5, 6], show: secs, def: 3.2 },
     { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
-  if (e.t === 'mover') return [
+  if (e.t === 'mover') return [{ key: 'vert', label: 'MOVES', values: [false, true], show: v => (v ? 'UP AND DOWN' : 'SIDE TO SIDE'), def: false },
     { key: 'range', label: 'HOW FAR', values: [1, 2, 3, 4, 6, 8, 10, 12], show: tiles, def: 4 },
     { key: 'speed', label: 'SPEED', values: [20, 34, 50, 70], show: v => ({ 20: 'SLOW', 34: 'STEADY', 50: 'QUICK', 70: 'FAST' })[v], def: 34 },
     { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
@@ -346,6 +353,7 @@ export const rowValue = (e, r) => (e[r.key] !== undefined ? e[r.key] : r.def);
 // step a row: returns true if the grid changed (a gate's bars grew or shrank)
 export function stepRow(doc, e, r, d) {
   const i = r.values.indexOf(rowValue(e, r)), v = r.values[((i < 0 ? 0 : i) + d + r.values.length) % r.values.length];
+  if (e.t === 'mover' && r.key === 'vert') { e.vert = v; if (v) { if (e.rise === undefined) e.rise = 4; if (e.period === undefined) e.period = 3.2; } else { if (e.range === undefined) e.range = 4; if (e.speed === undefined) e.speed = 34; } return false; }   /* (claude/maker) one MOVING PLATFORM, two ways to move */
   if (e.t === 'lockgate' && r.key === 'h') {
     const old = e.h || 4; for (let k = 0; k < old; k++) { const y = e.y - k; if (y >= 0 && doc.grid[y * doc.W + e.x] === T.PORT) doc.grid[y * doc.W + e.x] = T.AIR; }
     e.h = v; afterPlace(doc, e); return true;
@@ -428,7 +436,7 @@ const LINE = {
   coin: 'A coin.', silver: 'A silver coin: the rare one.', check: 'A checkpoint: you come back here when you fall.', gate: 'The goal. Every level needs one.',
   mover: 'A platform that slides side to side. Drag its gold handle to set how far.', 'mover:up': 'A lift that rises and sinks. Drag its gold handle to set how high.',
   lever: 'Hit it with your sword: it opens its door.', plate: 'Stand on it (or push a block onto it): it opens its door.',
-  key: 'Pick it up to open the gate of the same metal.', lockgate: 'A locked gate: the key of its metal opens it.', pushblock: 'A block you can push, onto a plate or into a gap.',
+  key: 'Pick it up to open the gate of the same metal.', 'key:brass:one': 'Pick it up: it opens the LOCKED GATE of its metal (brass, iron or bone).', 'lockgate:brass:one': 'Bars only the KEY of its metal opens.', 'mover:one': 'A platform that slides side to side or rises and sinks. Drag its gold handle to set how far.', lockgate: 'A locked gate: the key of its metal opens it.', pushblock: 'A block you can push, onto a plate or into a gap.',
   crusher: 'Drops from above on a beat. Do not be under it.', firevent: 'Spits fire on a beat. Jump it.', roller: 'Rolls along the floor. Jump it.',
   rockfall: 'Rocks fall here on a beat.', vent: 'A blast of air on a beat: it lifts you.', firepit: 'A fire pit that flares on a beat.',
   mend: 'A heart: it heals you.', switch: 'Hit it: every RED block and every BLUE block swap.', 'sw:red': 'Solid until a SWITCH is hit, then gone (and back again).', 'sw:blue': 'Empty until a SWITCH is hit, then solid (and gone again).',
@@ -458,6 +466,7 @@ export function describe(cat, id) {
   if (cat === 0) { const k = typeof id === 'string' && id.startsWith('mat:') ? null : id;
     if (typeof id === 'string' && id.startsWith('sw:')) return { name: (TILES.find(t => t[1] === id) || [id])[0], line: LINE[id], tags: [] }; return { name: (TILES.find(t => t[1] === id) || [String(id)])[0], line: k === null ? MAT_LINE[id.slice(4)] : LINE[k] || '', tags: [] }; }
   if (cat === 2) { const k = String(id).split(':')[0], metal = String(id).split(':')[1]; let line = LINE[id] || LINE[k] || '';
+    if (SHOWN_NAME[id]) return { name: SHOWN_NAME[id], line: LINE[id + ':one'] || line, tags: [] };
     if (metal) line = line.replace('the same metal', metal).replace('its metal', 'the ' + metal + ' one'); return { name: thingName(id), line, tags: [] }; }
   return { name: String(id), line: '', tags: [] };
 }
@@ -515,7 +524,7 @@ export const GUIDE = [
   { say: 'FILL THE GAP: pick GROUND (top left), then click-drag across the hole', done: d => [22, 23, 24, 25, 26, 27].every(x => isSolidId(d.grid[20 * d.W + x])) },
   { say: 'ADD AN ENEMY: open ENEMIES, click the GOBLIN, then click on the ground', done: d => d.ents.some(e => FOES.includes(e.t)) },
   { say: 'MAKE A SLOPE: GROUND > SLOPE, then drag from the floor up and across', done: d => d.grid.some(v => v >= 20 && v <= 25) },
-  { say: 'PUT THE GOAL GATE near the far end: ITEMS > GOAL GATE', done: d => d.ents.some(e => e.t === 'gate') },
+  { say: 'PUT THE GOAL GATE near the far end: START/GOAL > GOAL GATE', done: d => d.ents.some(e => e.t === 'gate') },
   { say: 'PRESS PLAY and reach the gate. ESC comes back here', done: (d, c) => c.played },
   { say: 'THAT IS A LEVEL! SHARE sends it to a friend. Try the examples in HELP next', done: () => false, last: true },
 ];
@@ -764,4 +773,14 @@ export function drawRampPreview(g, doc, cx, cy, cur, time) {
       const yl = half === 0 ? (rise ? TS : 0) : rise ? (half === 1 ? TS : TS / 2) : (half === 1 ? TS / 2 : 0), yr = half === 0 ? (rise ? 0 : TS) : rise ? (half === 1 ? TS / 2 : 0) : (half === 1 ? TS : TS / 2);
       g.moveTo(px, py + yl); g.lineTo(px + TS, py + yr); g.lineTo(px + TS, py + TS); g.lineTo(px, py + TS); g.closePath(); g.fill(); } }
   g.globalAlpha = 1;
+}
+
+/* (claude/maker) A GEAR on every placed piece that has settings (foes too, once one is set off its default), so SHIFT+CLICK is not
+   a secret. Foes all FACE somewhere, so a gear on each would be noise: theirs shows when they are set (elite, facing left). */
+export function drawGears(g, doc, cx, cy) {
+  for (const e of doc.ents) { const rows = pieceRows(e); if (!rows.length) continue;
+    if (FOES.includes(e.t) && !rows.some(r => !r.text && e[r.key] !== undefined && e[r.key] !== r.def)) continue;
+    const x = e.x * TS - cx + 13, y = e.y * TS - cy + 1;
+    g.fillStyle = '#1b1626'; g.fillRect(x - 3, y - 1, 7, 7); g.fillStyle = '#ffd36b';
+    g.fillRect(x - 1, y - 1, 3, 1); g.fillRect(x - 1, y + 5, 3, 1); g.fillRect(x - 3, y + 1, 1, 3); g.fillRect(x + 3, y + 1, 1, 3); g.fillRect(x - 2, y, 5, 5); g.fillStyle = '#1b1626'; g.fillRect(x, y + 2, 1, 1); }
 }

@@ -36,10 +36,18 @@ try {
     const missing = []; P.TILES.forEach((tt, i) => { const v = tt[1]; if (typeof v === 'string' && v.startsWith('mat:')) return; if (v >= 20 && v <= 25) return; if (!shown.has('0:' + i)) missing.push(tt[0]); });
     P.FOES.forEach((f, i) => { if (!shown.has('1:' + i)) missing.push(f); }); P.THINGS.forEach((f, i) => { if (!shown.has('2:' + i) && !P.HIDDEN_THINGS.includes(f)) missing.push(f); });
     r.badItems = bad; r.missing = missing;
+    // 4. one piece per idea: a moving platform turns into a lift and back; the key and gate show one name; START is on a tab
+    const mv = P.entFor('mover', 5, 5), vr = P.pieceRows(mv).find(q => q.key === 'vert'); P.stepRow(d, mv, vr, 1); r.toLift = mv.vert === true && mv.rise === 4 && P.pieceRows(mv).some(q => q.key === 'rise');
+    P.stepRow(d, mv, P.pieceRows(mv).find(q => q.key === 'vert'), 1); r.backToSlide = mv.vert === false && mv.range === 4;
+    r.oneKey = P.paletteName('key:brass') === 'KEY' && P.settingLabels('key:brass').includes('METAL') && P.settingLabels('lockgate:brass').includes('OPENS WITH');
+    r.startOnTab = U.GROUPS.some(g => g.name === 'START/GOAL' && g.items.some(q => q.cat === 3 && q.i === 0));
+    // 5. FIND: typing narrows every piece to the matches
+    const kd = k => { dispatchEvent(new KeyboardEvent('keydown', { key: k })); dispatchEvent(new KeyboardEvent('keyup', { key: k })); };
+    MKR.mount(); U.openFind(null); for (const k of 'gob') kd(k); r.findTyped = U.browseOpen() && U.findText() === 'gob'; kd('Escape'); r.findCleared = U.browseOpen() && U.findText() === ''; kd('Escape'); r.findClosed = !U.browseOpen();
     return r;
   })()`, 200000);
   console.log(JSON.stringify(r));
-  for (const k of ['allStyled', 'stampKept', 'bgOwn', 'playStyled', 'saved', 'steepR', 'gentleL', 'gentleR', 'highFirst', 'click', 'applied', 'walkedUp']) assert(r[k], 'maker style: ' + k + ' failed ' + JSON.stringify(r));
+  for (const k of ['allStyled', 'stampKept', 'bgOwn', 'playStyled', 'saved', 'steepR', 'gentleL', 'gentleR', 'highFirst', 'click', 'applied', 'walkedUp', 'toLift', 'backToSlide', 'oneKey', 'startOnTab', 'findTyped', 'findCleared', 'findClosed']) assert(r[k], 'maker style: ' + k + ' failed ' + JSON.stringify(r));
   assert.deepEqual(r.badItems, [], 'tab items that are not pieces');
   assert.deepEqual(r.missing, [], 'pieces on no tab');
   assert.deepEqual(pg.errors, [], 'page errors: ' + pg.errors.join(' | '));

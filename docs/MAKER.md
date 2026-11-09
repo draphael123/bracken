@@ -172,6 +172,19 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   Making them follow the style needs per-place art in resolveTiles.
 - `tools/maker-style.mjs` (in the suite).
 
+## Done (2026-11-09, SHOW THE REAL OPTIONS - Daniel picked the browser, one-piece-per-idea and the ITEMS split)
+- FIND (first tab) or a second click on any tab opens THE BROWSER: every piece with its name, every tab as a section, and
+  ALL ENEMIES under what they do (first tag). Type to search name / tag / heading ("gob" finds 20). Wheel, arrows or PgUp/PgDn
+  scroll; a click holds the piece and jumps the strip to it; ESC clears the search, then closes.
+  Caveat: 89 of the 147 non-boss foes have no tag beyond FIGHTS, so they all sit under WALKERS AND FIGHTERS. Hand-sorting
+  (like HAND_TAGS) would fix that.
+- One piece per idea: one KEY and one LOCKED GATE (the metal is a setting), and one MOVING PLATFORM (new MOVES row: side to
+  side / up and down; stepRow fills in the other mode's defaults). The old variant ids are in `MKP.HIDDEN_THINGS`.
+- Settings are shown, not secret: the strip's line has a SETTINGS: ... chip, the hover card lists a placed piece's values,
+  and a gear marks every placed piece with settings (foes only once set off their default).
+- Tabs: FIND / GROUND / LEDGES / BLOCKS / ENEMIES / ALL ENEMIES (incl. water) / BOSSES / START/GOAL (START moved out of
+  TOOLS) / PICKUPS / SWITCHES / HAZARDS / DECOR / TOOLS.
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.

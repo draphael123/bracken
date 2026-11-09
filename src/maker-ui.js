@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -14,32 +14,41 @@ const MECH = ['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:ir
 const HAZ = ['crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit'];
 /* THE STARTER CAST: fifteen you can read at a glance (Mario Maker shows a few, not all); the rest are one tab over */
 const STARTER = ['sprig', 'shield', 'archer', 'brute', 'hound', 'wasp', 'spit', 'hopper', 'sapper', 'harpy', 'zombie', 'wight', 'goat', 'rockgoblin', 'shaman'];
-/* (claude/maker) THE TABS GROUP PIECES BY WHAT THEY DO (Daniel: "Mario Maker groups pieces together"): one GROUND that wears the
-   level's STYLE, ledges you stand on, blocks, hazards. A group lists {cat, i} items, so tiles and pieces share a tab. The old
-   per-material ground pieces and the six slope tiles stay in TILES (old levels and the checks use them) but are not shown:
-   the STYLE swatches and the one SLOPE piece replace them. */
+/* the ALL ENEMIES tab and the browser sort foes under what they DO (their first tag) */
+const HEADS = [['WATER', 'SWIMMERS (place them in water)'], ['FLIES', 'FLYERS'], ['SHOOTS', 'SHOOTERS AND THROWERS'], ['THROWS', 'SHOOTERS AND THROWERS'], ['BOMBS', 'SHOOTERS AND THROWERS'],
+  ['HEAVY', 'HEAVY AND SHIELDED'], ['SHIELD', 'HEAVY AND SHIELDED'], ['CHARGES', 'FAST AND CHARGING'], ['FAST', 'FAST AND CHARGING'], ['LEAPS', 'FAST AND CHARGING'],
+  ['RISES', 'RISERS AND CASTERS'], ['SUMMONS', 'RISERS AND CASTERS']];
+const HEAD_ORDER = ['WALKERS AND FIGHTERS', 'FAST AND CHARGING', 'HEAVY AND SHIELDED', 'SHOOTERS AND THROWERS', 'FLYERS', 'RISERS AND CASTERS', 'SWIMMERS (place them in water)'];
+const headOf = t => { const tags = describe(1, t).tags; for (const [k, h] of HEADS) if (tags.includes(k)) return h; return 'WALKERS AND FIGHTERS'; };
+let allMemo = null, allKey = null;   /* the bestiary (the tags) arrives after this module loads: sort again once it has */
+const allFoes = () => { const k = describe(1, 'archer').line; if (allMemo && allKey === k) return allMemo; allKey = k;
+  return (allMemo = fo(FOES.filter(t => !BOSSES.includes(t)).map(t => ({ t, h: headOf(t) })).sort((a, b) => HEAD_ORDER.indexOf(a.h) - HEAD_ORDER.indexOf(b.h)).map(q => q.t))); };
+/* (claude/maker) THE TABS GROUP PIECES BY WHAT THEY DO (Daniel: "Mario Maker groups pieces together"; "show what the real options
+   are"). A group lists {cat, i} items, so tiles, pieces and the START tool share tabs. One piece per idea: the metals of a key and
+   the way a platform moves are SETTINGS (the other variants and the six slope tiles stay valid ids, on no tab). */
 const tl = ids => ids.map(id => ({ cat: 0, i: TILES.findIndex(t => t[1] === id) })).filter(q => q.i >= 0);
 const th = ids => ids.map(id => ({ cat: 2, i: THINGS.indexOf(id) })).filter(q => q.i >= 0);
 const fo = ts => ts.map(t => ({ cat: 1, i: FOES.indexOf(t) })).filter(q => q.i >= 0);
 export const GROUPS = [
   { name: 'GROUND', style: true, items: tl([T.AIR, T.SOLID, 'ramp', 'hill', 'water', 'shallows', 'poison']) },
-  { name: 'LEDGES', items: [...tl([T.ONEWAY, 'crumble', T.PLANK, T.SHELF, T.RAIL, T.REED, T.CRYST, T.NET, T.CLIMB]), ...th(['mover', 'mover:up'])] },
+  { name: 'LEDGES', items: [...tl([T.ONEWAY, 'crumble', T.PLANK, T.SHELF, T.RAIL, T.REED, T.CRYST, T.NET, T.CLIMB]), ...th(['mover'])] },
   { name: 'BLOCKS', items: [...tl([T.CRATE, T.SOFT, T.ICE, T.PALISADE, 'sw:red', 'sw:blue', T.BOUNCER]), ...th(['pushblock'])] },
   { name: 'ENEMIES', items: fo(STARTER) },
-  { name: 'MORE ENEMIES', items: fo(FOES.filter(t => !WATER_FOES.includes(t) && !STARTER.includes(t) && !BOSSES.includes(t))) },
+  { name: 'ALL ENEMIES', heads: true, get items() { return allFoes(); } },
   { name: 'BOSSES', items: fo(BOSSES) },
-  { name: 'WATER ENEMIES', items: fo(WATER_FOES) },
-  { name: 'ITEMS', items: th(THINGS.filter(t => !MECH.includes(t) && !HAZ.includes(t))) },
-  { name: 'MECHANISMS', items: [...th(MECH.filter(t => t !== 'pushblock' && t !== 'mover' && t !== 'mover:up')), ...tl([T.PORT])] },
+  { name: 'START/GOAL', items: [{ cat: 3, i: 0 }, ...th(['gate', 'check'])] },
+  { name: 'PICKUPS', items: th(['coin', 'silver', 'mend']) },
+  { name: 'SWITCHES', items: [...th(['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass']), ...tl([T.PORT])] },
   { name: 'HAZARDS', items: [...tl([T.SPIKE, T.WEB]), ...th(HAZ)] },
+  { name: 'DECOR', items: th(['sign', 'torch', 'lantern', 'brazier', 'glow', 'barrel', 'puffball', 'npc']) },
   { name: 'TOOLS', cat: 3, items: null },   // filled from the editor's own tool list
 ];
 const TOOL_NAMES = { SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
-const TOOL_SHOWN = ['SELECT', 'START', 'LINK', 'EDIT'];
+const TOOL_SHOWN = ['SELECT', 'LINK', 'EDIT'];   /* START lives on START & GOAL */
 const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], find: '', bScroll: 0, bCells: [], bHover: null, hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
@@ -145,6 +154,7 @@ function drawStyles(c) {   /* STYLE: one swatch per style; the level's is ringed
     UI.swatches.push(r); });
   return STYLE_W;
 }
+const itemLabel = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) : cat === 2 ? paletteName(THINGS[i]) : itemName(c, 3, i);
 function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
@@ -166,11 +176,12 @@ export function drawChrome(c) {
   // ---- top: tabs ----
   g.fillStyle = 'rgba(12,10,18,0.9)'; g.fillRect(0, 0, VW, TOP);
   UI.tabs = []; let tx = 4;
-  GROUPS.forEach((gr, gi) => { const w = Math.ceil(c.textW(gr.name, 6)) + 10, sel = gi === UI.group, has = gi === groupOf(c);
+  { const w = Math.ceil(c.textW('FIND', 6)) + 10, on = UI.panel === 'browse'; g.fillStyle = on ? '#8a6a2a' : '#5a4a2a'; g.fillRect(tx, 1, w, TAB_H - 2); text('FIND', tx + w / 2, 3, '#ffe9a8', 'center', 6); UI.tabs.push({ x: tx, y: 0, w, h: TAB_H, find: true }); tx += w + 5; }   /* (claude/maker) every piece, searchable */
+  GROUPS.forEach((gr, gi) => { const w = Math.ceil(c.textW(gr.name, 6)) + 8, sel = gi === UI.group, has = gi === groupOf(c);
     g.fillStyle = sel ? '#3f6a3a' : 'rgba(46,38,64,0.9)'; g.fillRect(tx, 1, w, TAB_H - 2);
     if (has && !sel) { g.fillStyle = '#ffd36b'; g.fillRect(tx, TAB_H - 2, w, 1); }
-    text(gr.name, tx + w / 2, 3, sel ? '#d8f09a' : '#c8bcd8', 'center', 6); UI.tabs.push({ x: tx, y: 0, w, h: TAB_H, gi }); tx += w + 3; });
-  { const bad = c.noGate || c.problems, s0 = c.noGate ? 'NO GOAL GATE YET (ITEMS)' : c.problems ? c.problems + (c.problems > 1 ? ' PIECES' : ' PIECE') + " WON'T WORK (RED)" : c.doc.name, room = VW - 6 - tx;
+    text(gr.name, tx + w / 2, 3, sel ? '#d8f09a' : '#c8bcd8', 'center', 6); UI.tabs.push({ x: tx, y: 0, w, h: TAB_H, gi }); tx += w + 2; });
+  { const bad = c.noGate || c.problems, s0 = c.noGate ? 'NO GOAL GATE YET (START/GOAL)' : c.problems ? c.problems + (c.problems > 1 ? ' PIECES' : ' PIECE') + " WON'T WORK (RED)" : c.doc.name, room = VW - 6 - tx;
     if (room > 30) text(c.fitText(s0, room, 6), VW - 4, 3, bad ? '#ff6b6b' : '#ffd36b', 'right', 6); }
   // ---- top: the icon strip ----
   ICON_STYLE = c.doc.style || null; UI.swatches = [];
@@ -195,6 +206,8 @@ export function drawChrome(c) {
   let lx = 6; const head = (h ? '' : 'HOLDING ') + (show.cat === 3 ? itemName(c, 3, show.i) : dsc.name);
   text(head, lx, ly, h ? '#ffffff' : '#d8f09a', 'left', 6); lx += Math.ceil(c.textW(head, 6)) + 8;
   for (const t of dsc.tags) { const w = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, ly - 1, w, 9); text(t, lx + w / 2, ly, '#1b1626', 'center', 6); lx += w + 3; }
+  { const sl = show.cat === 1 || show.cat === 2 ? settingLabels(show.cat === 1 ? FOES[show.i] : THINGS[show.i]) : [];   /* (claude/maker) the piece's SETTINGS, so they are not a secret */
+    if (sl.length) { const st = 'SETTINGS: ' + sl.join(', '), w = Math.ceil(c.textW(st, 6)) + 6; g.fillStyle = '#5a4a2a'; g.fillRect(lx, ly - 1, w, 9); text(st, lx + w / 2, ly, '#ffe9a8', 'center', 6); lx += w + 3; } }
   if (dsc.line) text(c.fitText(dsc.line, VW - recentW - lx - 6, 6), lx + 4, ly, '#c8bcd8', 'left', 6);
   UI.recentCells = []; { const R = RECENT; let rx = VW - 4 - R.length * 14; if (R.length) text('RECENT', rx - 4, ly, '#8a7fa0', 'right', 6);
     for (const r of R) { const cell = { x: rx, y: ly - 3, w: 13, h: 13, cat: r.cat, i: r.i }; g.fillStyle = r.cat === c.cat && r.i === c.sel ? '#3f6a3a' : 'rgba(30,26,40,0.9)'; g.fillRect(cell.x, cell.y, 13, 13);
@@ -212,7 +225,7 @@ export function drawChrome(c) {
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
   if (UI.guide >= 0) drawGuide(c);
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
-  if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
+  if (UI.panel === 'browse') drawBrowse(c); else if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
 }
 const groupOf = c => GROUPS.findIndex((gr, gi) => groupIdx(c, gi).some(q => q.cat === c.cat && q.i === c.sel));
 
@@ -258,14 +271,15 @@ const HELP = [
   ['GROUND & STYLE', 'the STYLE swatches (GROUND tab) reskin all the ground: wood, castle, city...  SHIFT+paint keeps a cell in its style'],
   ['SLOPES / WATER', 'SLOPE: drag from the low end to the high end (wide = gentle).  WATER: drag a box.  HILL: paint tops, ramps make themselves'],
   ['DOORS', 'paint DOOR tiles; a LEVER or PLATE opens the nearest (TOOLS > LINK picks one)'],
-  ['START / GOAL', 'TOOLS > START sets where the knight begins; every level needs a GOAL GATE (ITEMS)'],
+  ['START / GOAL', 'the START/GOAL tab: START sets where the knight begins; every level needs a GOAL GATE'],
+  ['FIND', 'FIND (or click a tab twice) shows every piece with its name; type to search: GOB, FLIES, WATER...'],
   ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
   ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS (AI ally / player 2), the hero you test as, name and size'],
   ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link once you have BEATEN the level with PLAY; OPEN takes one'],
   ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
-  const { g, text } = c, w = 560, h = 226, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
+  const { g, text } = c, w = 560, h = 238, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
   HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(c.fitText(b, w - 116, 6), x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
   UI.rows = []; const by = y + h - 34, btn = (bx, w2, label, key, col) => { const r = { x: bx, y: by, w: w2, h: 13, key }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + w2 / 2, r.y + 3, '#ffffff', 'center', 6); UI.rows.push(r); };
   btn(x + 12, 120, 'START THE GUIDE', 'guide', '#3f6a8a');
@@ -278,6 +292,7 @@ function drawHelp(c) {
 // returns null when the click is for the level, else { consumed } plus at most one of:
 //   pick: { cat, i } | act: 'play'|'undo'|'save'|'load'|'new'|'slot'|'name'|'width+'|'width-'|'theme+'|'theme-'|'music'|'closeSettings'
 export function uiMouse(c, mx, my, down) {
+  if (UI.panel === 'browse') return browseMouse(c, mx, my, down);
   UI.hover = null;
   if (UI.panel) {
     if (!down) return { consumed: true };
@@ -311,7 +326,7 @@ export function uiMouse(c, mx, my, down) {
   const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)) || (UI.recentCells || []).find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
   if (cell) UI.hover = { kind: 'cell', cat: cell.cat, i: cell.i }; else if (btn) UI.hover = { kind: 'btn', b: btn.b };
   if (!down) return { consumed: true };
-  if (tab) { UI.group = tab.gi; return { consumed: true, act: 'ui' }; }
+  if (tab) { if (tab.find || tab.gi === UI.group) { openBrowse(tab.find ? null : tab.gi); return { consumed: true, act: 'ui' }; } UI.group = tab.gi; return { consumed: true, act: 'ui' }; }   /* (claude/maker) a second click on a tab: see all of it */
   { const s0 = (UI.swatches || []).find(q => inR(q, mx, my)); if (s0) { UI.hover = { kind: 'style', k: s0.k }; if (down) return { consumed: true, act: 'style', style: s0.k }; return { consumed: true }; } }
   if (arr) { const idx = groupIdx(c, UI.group), per = Math.floor((VW - 40 - (GROUPS[UI.group].style ? STYLE_W : 0)) * 1 / CELL) * ROWS, pages = Math.max(1, Math.ceil(idx.length / per)); UI.page[UI.group] = (UI.page[UI.group] + arr.d + pages) % pages; return { consumed: true, act: 'ui' }; }
   if (cell) return { consumed: true, pick: { cat: cell.cat, i: cell.i } };
@@ -368,12 +383,13 @@ function drawMinimap(c) {
 
 // ---------------- the card for a placed piece under the mouse ----------------
 function drawEntCard(c, e) {
-  const { g, text, VW, VH } = c, d = describeEnt(e), w = 250, lines = [d.line], h = 30;
+  const { g, text, VW, VH } = c, d = describeEnt(e), w = 250, lines = [d.line], rows = pieceRows(e), h = rows.length ? 40 : 30;
   const x = Math.max(4, Math.min(VW - w - 4, c.mouse.x + 12)), y = Math.max(TOP + 4, Math.min(VH - BOT - h - 4, c.mouse.y - h - 8));
   g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   let lx = x + 6; text(d.name, lx, y + 4, '#ffd36b', 'left', 6); lx += Math.ceil(c.textW(d.name, 6)) + 6;
   for (const t of d.tags) { const tw = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, y + 3, tw, 9); text(t, lx + tw / 2, y + 4, '#1b1626', 'center', 6); lx += tw + 3; }
   text(c.fitText(lines[0] || '', w - 12, 6), x + 6, y + 17, '#e8dcc0', 'left', 6);
+  if (rows.length) text(c.fitText(rows.map(r => r.label + ' ' + (r.text ? '...' : r.show(rowValue(e, r)))).join('  ') + '   (SHIFT+CLICK)', w - 12, 6), x + 6, y + 28, '#ffe9a8', 'left', 6);   /* (claude/maker) */
 }
 
 // ---------------- the guide: five steps, each ticked off by what you have actually done ----------------
@@ -387,4 +403,71 @@ function drawGuide(c) {
   text(lab, x + 6, y + 5, '#ffd36b', 'left', 6);
   text(c.fitText(st.say, w - lw - 46, 6), x + 6 + lw, y + 5, '#ffffff', 'left', 6);
   const sk = { x: x + w - 34, y: y + 2, w: 30, h: 12 }; g.fillStyle = '#4a3e64'; g.fillRect(sk.x, sk.y, sk.w, sk.h); text(st.last ? 'OK' : 'SKIP', sk.x + 15, sk.y + 3, '#e8dcc0', 'center', 6); UI.guideSkip = sk;
+}
+
+/* (claude/maker) THE BROWSER (FIND, or a second click on a tab): every piece under a heading, with its name, searchable by typing.
+   With no search it shows every tab as a section (ALL ENEMIES split by what they do) and starts at the tab it was opened from;
+   typing narrows it to the pieces whose name, tags or heading match. A click holds the piece and closes it. */
+function openBrowse(gi) { UI.panel = 'browse'; UI.find = ''; UI.bFrom = gi; UI.bScroll = 0; UI.bJump = gi; }
+export const browseOpen = () => UI.panel === 'browse';
+export const openFind = gi => openBrowse(gi);   /* (tools/maker-style.mjs) */
+export const findText = () => UI.find;
+function browseSections(c) {
+  const out = [], q = UI.find.trim().toLowerCase();
+  GROUPS.forEach((gr, gi) => { if (gr.cat === 3) return;
+    const items = gr.items.filter(it => it.cat !== 3 || true);
+    if (gr.heads) { const by = new Map(); for (const it of items) { const h = headOf(FOES[it.i]); if (!by.has(h)) by.set(h, []); by.get(h).push(it); } for (const [h, list] of by) out.push({ gi, head: gr.name + ': ' + h, items: list }); }
+    else out.push({ gi, head: gr.name, items }); });
+  if (!q) return out;
+  const seen = new Set(), hits = [];
+  for (const sec of out) for (const it of sec.items) { const k = it.cat + ':' + it.i; if (seen.has(k)) continue;
+    const dsc = it.cat === 3 ? { name: itemLabel(c, 3, it.i), tags: [] } : describe(it.cat, it.cat === 0 ? TILES[it.i][1] : it.cat === 1 ? FOES[it.i] : THINGS[it.i]);
+    const hay = (itemLabel(c, it.cat, it.i) + ' ' + dsc.name + ' ' + dsc.tags.join(' ') + ' ' + sec.head + ' ' + (it.cat === 1 ? FOES[it.i] : '')).toLowerCase();
+    if (hay.includes(q)) { seen.add(k); hits.push(it); } }
+  return [{ gi: -1, head: hits.length ? hits.length + ' FOUND' : 'NOTHING MATCHES "' + UI.find.toUpperCase() + '"', items: hits }];
+}
+const BW = 66, BH = 46;
+function drawBrowse(c) {
+  const { g, text, VW, VH } = c, w = VW - 20, h = VH - 20, { x, y } = panelBox(c, w, h, 'EVERY PIECE');
+  const box = { x: x + 10, y: y + 18, w: w - 20, h: 14 };
+  g.fillStyle = '#0e0b16'; g.fillRect(box.x, box.y, box.w, box.h); g.strokeStyle = '#ffd36b'; g.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+  text(UI.find ? UI.find.toUpperCase() + ((c.time * 2 | 0) % 2 ? '_' : '') : 'TYPE TO SEARCH (A NAME, OR FLIES, WATER, SHOOTS...)   CLICK A PIECE TO HOLD IT   ESC CLOSES', box.x + 6, box.y + 4, UI.find ? '#ffffff' : '#8a7fa0', 'left', 6);
+  const top = box.y + box.h + 6, bot = y + h - 22, cols = Math.max(1, Math.floor((w - 20) / BW)), secs = browseSections(c);
+  let yy = 0; const lay = [];
+  for (const sec of secs) { lay.push({ head: sec.head, y: yy, gi: sec.gi }); yy += 12; sec.items.forEach((it, k) => lay.push({ it, x: (k % cols) * BW, y: yy + Math.floor(k / cols) * BH })); yy += Math.ceil(sec.items.length / cols) * BH + 6; }
+  const maxS = Math.max(0, yy - (bot - top));
+  if (UI.bJump !== undefined && UI.bJump !== null) { const j = lay.find(q => q.head && q.gi === UI.bJump); UI.bScroll = j ? j.y : 0; UI.bJump = null; }
+  UI.bScroll = Math.max(0, Math.min(maxS, UI.bScroll)); UI.bMax = maxS;
+  g.save(); g.beginPath(); g.rect(x + 4, top, w - 8, bot - top); g.clip(); UI.bCells = [];
+  for (const q of lay) { const qy = top + q.y - UI.bScroll; if (qy > bot || qy < top - BH) continue;
+    if (q.head) { text(q.head, x + 10, qy + 2, '#d8f09a', 'left', 6); g.fillStyle = 'rgba(216,240,154,0.25)'; g.fillRect(x + 10 + Math.ceil(c.textW(q.head, 6)) + 6, qy + 5, w - 40 - Math.ceil(c.textW(q.head, 6)), 1); continue; }
+    const cx0 = x + 10 + q.x, it = q.it, sel = it.cat === c.cat && it.i === c.sel, hov = UI.bHover && UI.bHover.cat === it.cat && UI.bHover.i === it.i;
+    g.fillStyle = sel ? '#3f6a3a' : hov ? 'rgba(90,80,120,0.9)' : 'rgba(30,26,40,0.9)'; g.fillRect(cx0 + 1, qy + 1, BW - 2, BH - 2);
+    g.save(); g.beginPath(); g.rect(cx0 + 2, qy + 2, BW - 4, BH - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(cx0 + BW / 2 - 12, qy + 2); g.scale(1.5, 1.5); try { itemIcon(g, c, it.cat, it.i, 0, 0); } catch (e) {} g.restore();
+    { const nm = itemLabel(c, it.cat, it.i).replace(/ \(.*\)$/, ''), col = sel ? '#d8f09a' : '#e8dcc0';   /* a long name goes on two lines */
+      if (c.textW(nm, 6) <= BW - 4 || !nm.includes(' ')) text(c.fitText(nm, BW - 4, 6), cx0 + BW / 2, qy + BH - 9, col, 'center', 6);
+      else { const w0 = nm.split(' '); let a = w0.shift(); while (w0.length > 1 && c.textW(a + ' ' + w0[0], 6) <= BW - 4) a += ' ' + w0.shift(); text(c.fitText(a, BW - 4, 6), cx0 + BW / 2, qy + BH - 15, col, 'center', 6); text(c.fitText(w0.join(' '), BW - 4, 6), cx0 + BW / 2, qy + BH - 8, col, 'center', 6); } }
+    if (qy >= top && qy + BH <= bot + BH / 2) UI.bCells.push({ x: cx0, y: Math.max(qy, top), w: BW, h: Math.min(BH, bot - qy), cat: it.cat, i: it.i }); }
+  g.restore();
+  if (maxS > 0) { const th2 = Math.max(16, (bot - top) * (bot - top) / (yy || 1)), ty = top + (bot - top - th2) * (UI.bScroll / maxS); g.fillStyle = 'rgba(255,211,107,0.5)'; g.fillRect(x + w - 6, ty, 3, th2); }
+  const hv = UI.bHover, foot = hv ? (() => { const d = hv.cat === 3 ? { name: itemLabel(c, 3, hv.i), line: '' } : describe(hv.cat, hv.cat === 0 ? TILES[hv.i][1] : hv.cat === 1 ? FOES[hv.i] : THINGS[hv.i]); const sl = hv.cat === 1 || hv.cat === 2 ? settingLabels(hv.cat === 1 ? FOES[hv.i] : THINGS[hv.i]) : []; return itemLabel(c, hv.cat, hv.i) + ': ' + (d.line || '') + (sl.length ? '   SETTINGS: ' + sl.join(', ') : ''); })() : 'WHEEL OR ARROWS SCROLL';
+  text(c.fitText(foot, w - 24, 6), x + 12, y + h - 14, hv ? '#ffffff' : '#8a7fa0', 'left', 6);
+}
+export function browseKey(k) {
+  if (UI.panel !== 'browse') return false;
+  if (k === 'escape') { if (UI.find) UI.find = ''; else UI.panel = null; return true; }
+  if (k === 'backspace') { UI.find = UI.find.slice(0, -1); UI.bScroll = 0; return true; }
+  if (k === 'arrowdown' || k === 'pagedown') { UI.bScroll += k === 'pagedown' ? 200 : 40; return true; }
+  if (k === 'arrowup' || k === 'pageup') { UI.bScroll -= k === 'pageup' ? 200 : 40; return true; }
+  if (k.length === 1 && /[a-z0-9 '-]/.test(k) && UI.find.length < 20) { UI.find += k; UI.bScroll = 0; return true; }
+  return true;   // the browser owns the keys while it is open
+}
+export function browseWheel(dy) { if (UI.panel !== 'browse') return false; UI.bScroll += dy * 0.5; return true; }
+function browseMouse(c, mx, my, down) {
+  const cell = UI.bCells.find(q => inR(q, mx, my)); UI.bHover = cell ? { cat: cell.cat, i: cell.i } : null;
+  if (!down) return { consumed: true };
+  if (UI.tabs.some(q => q.find && inR(q, mx, my))) { UI.panel = null; return { consumed: true, act: 'ui' }; }   /* FIND again closes it */
+  if (cell) { UI.panel = null; const gi = GROUPS.findIndex(gr => (gr.items || []).some(q => q.cat === cell.cat && q.i === cell.i)); if (gi >= 0) { UI.group = gi; const per = Math.floor((c.VW - 40 - (GROUPS[gi].style ? STYLE_W : 0)) / CELL) * ROWS, n = GROUPS[gi].items.findIndex(q => q.cat === cell.cat && q.i === cell.i); UI.page[gi] = Math.floor(n / Math.max(1, per)); }
+    return { consumed: true, pick: { cat: cell.cat, i: cell.i } }; }
+  return { consumed: true };
 }
