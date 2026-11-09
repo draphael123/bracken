@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor, styleBanned } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, shareReady, ownHero, drawArrowSign, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor, styleBanned } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -40,7 +40,7 @@ export const GROUPS = [
   { name: 'PICKUPS', items: th(['coin', 'silver', 'mend']) },
   { name: 'SWITCHES', items: [...th(['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass']), ...tl([T.PORT])] },
   { name: 'HAZARDS', items: [...tl([T.SPIKE, T.WEB]), ...th(HAZ)] },
-  { name: 'DECOR', items: th(['sign', 'torch', 'lantern', 'brazier', 'glow', 'barrel', 'puffball', 'npc']) },
+  { name: 'DECOR', items: th(['arrow', 'sign', 'torch', 'lantern', 'brazier', 'glow', 'barrel', 'puffball', 'npc']) },
   { name: 'TOOLS', cat: 3, items: null },   // filled from the editor's own tool list
 ];
 const TOOL_NAMES = { SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
@@ -165,7 +165,7 @@ export function drawTileGhost(g, id, x, y) { try { tileIcon(g, id, x, y); } catc
 function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
-  else if (cat === 2) thingIcon(g, THINGS[i], x, y, c.time, c);
+  else if (cat === 2) { if (THINGS[i] === 'arrow') drawArrowSign(g, x + 8, y + 18, 0); else thingIcon(g, THINGS[i], x, y, c.time, c); }
   else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
@@ -230,12 +230,23 @@ export function drawChrome(c) {
   g.fillStyle = 'rgba(12,10,18,0.9)'; g.fillRect(0, VH - BOT, VW, BOT);
   UI.btns = []; let bx = 4;
   for (const b of BUTTONS) { const w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx, y: VH - BOT + 2, w, h: BOT - 4, b }, hov = UI.hover && UI.hover.kind === 'btn' && UI.hover.b === b;
-    const clr = b === 'SHARE' && isCleared(c.doc);   /* (claude/maker) THE CLEAR CHECK: SHARE lights up once the level has been beaten as it stands */
+    const clr = b === 'SHARE' && shareReady(c.doc);   /* (claude/maker) THE CLEAR CHECK: SHARE lights up once the level has been beaten as it stands */
     g.fillStyle = b.startsWith('PLAY') ? (hov ? '#5a9a3a' : '#3f7a2c') : clr ? (hov ? '#3a8a9a' : '#2c6a7a') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
     text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : clr ? '#bff0ff' : b === 'SHARE' ? '#7a6f8a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
+  if (!UI.panel && UI.guide < 0) {   /* (claude/maker) THE CHECKLIST, bottom left of the level: what this level still needs, and the next step */
+    const d = c.doc, hasGoal = d.ents.some(e => e.t === 'gate'), own = ownHero(d), beat = isCleared(d), ready = hasGoal && (own || beat);
+    const items = [['START', true], ['GOAL', hasGoal], [own ? 'OWN HERO' : 'BEATEN', own || beat]];
+    const next = !hasGoal ? 'NEXT: PUT A GOAL GATE DOWN (START/GOAL TAB)' : !ready ? 'NEXT: PLAY IT FROM THE START TO THE GOAL' : 'READY TO SHARE';
+    const ws = items.map(([lab]) => Math.ceil(c.textW(lab, 6)) + 8), tw = ws.reduce((a2, b2) => a2 + b2 + 3, 0) + Math.ceil(c.textW(next, 6)) + 14, y = VH - BOT - 15;
+    g.fillStyle = 'rgba(12,10,18,0.85)'; g.fillRect(4, y, tw, 13); let x = 7;
+    items.forEach(([lab, ok], k) => { g.fillStyle = ok ? '#3f6a3a' : '#5a2a2a'; g.fillRect(x, y + 2, ws[k], 9); text(lab, x + ws[k] / 2, y + 3, ok ? '#d8f09a' : '#ffb0a0', 'center', 6); x += ws[k] + 3; });
+    text(next, x + 4, y + 3, ready ? '#8fd160' : '#ffd36b', 'left', 6); }
+  /* (claude/maker) A NEW, EMPTY LEVEL says where to begin */
+  if (!UI.panel && c.doc.ents.every(e => e.t === 'gate')) { const s1 = 'PICK A PIECE UP TOP, CLICK IN THE LEVEL TO PLACE IT, THEN PRESS PLAY'; const w = Math.ceil(c.textW(s1, 6)) + 16, x = Math.round((VW - w) / 2), y = TOP + 30;
+    g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x, y, w, 14); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, 13); text(s1, VW / 2, y + 4, '#ffd36b', 'center', 6); }
   if (UI.guide >= 0) drawGuide(c);
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
   if (UI.panel === 'browse') drawBrowse(c); else if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
@@ -258,7 +269,7 @@ function settingRows(c) {
     { key: 'weather', label: 'WEATHER', value: d.weather ? d.weather.toUpperCase() : "THE BACKGROUND'S OWN" },
     { key: 'goal', label: 'GOAL', value: goalName(d.goal), hint: 'what must be done before the goal gate lets you through' },
     { key: 'players', label: 'PLAYERS', value: playersName(d.players), hint: 'who plays the test runs' },
-    { key: 'hero', label: 'TEST AS', value: d.hero ? ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) : 'YOUR OWN HERO' },
+    { key: 'hero', label: 'HERO', value: !d.hero || d.hero === 'own' ? 'YOUR OWN (from your save, upgrades and all)' : ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) + ' (starter kit: the same for everyone)' },
     { key: 'width', label: 'WIDTH', value: d.W + ' TILES' },
     { key: 'height', label: 'HEIGHT', value: d.H + ' TILES (rows go on at the top)' },
     { key: 'name', label: 'NAME', value: d.name, click: true },
@@ -287,8 +298,8 @@ const HELP = [
   ['START / GOAL', 'the START/GOAL tab: START sets where the knight begins; every level needs a GOAL GATE'],
   ['FIND', 'FIND (or click a tab twice) shows every piece with its name; type to search: GOB, FLIES, WATER...'],
   ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
-  ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS (AI ally / player 2), the hero you test as, name and size'],
-  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link once you have BEATEN the level with PLAY; OPEN takes one'],
+  ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS, the HERO (your own, or a set hero on a starter kit), name and size'],
+  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link (a set-hero level must be BEATEN first); OPEN takes one'],
   ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
@@ -324,7 +335,7 @@ export function uiMouse(c, mx, my, down) {
     if (r.key === 'weather') { d.weather = WEATHERS[(WEATHERS.indexOf(d.weather ?? null) + r.d + WEATHERS.length) % WEATHERS.length]; return { consumed: true, act: 'remount' }; }
     if (r.key === 'goal') { d.goal = GOALS[(GOALS.indexOf(d.goal ?? null) + r.d + GOALS.length) % GOALS.length]; return { consumed: true }; }   /* (claude/maker) */
     if (r.key === 'players') { d.players = PLAYERS[(PLAYERS.indexOf(d.players ?? null) + r.d + PLAYERS.length) % PLAYERS.length]; return { consumed: true }; }
-    if (r.key === 'hero') { const L = [null, ...c.heroes.map(h => h.id)]; d.hero = L[(L.indexOf(d.hero ?? null) + r.d + L.length) % L.length]; return { consumed: true }; }
+    if (r.key === 'hero') { const L = ['own', ...c.heroes.map(h => h.id)]; d.hero = L[(Math.max(0, L.indexOf(d.hero || 'own')) + r.d + L.length) % L.length]; return { consumed: true }; }
     if (r.key === 'music') { const L = [null, ...MUSIC_NAMES]; d.music = L[(L.indexOf(d.music ?? null) + r.d + L.length) % L.length]; return { consumed: true, act: 'music' }; }
     return { consumed: true };
   }

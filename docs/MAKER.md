@@ -202,6 +202,19 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   toggles the lock (`L.mkBossLocks`: shut until it falls). A boss with no `lockGoal` (older levels) still locks.
 - `tools/maker-erase-links.mjs` (in the suite).
 
+## Done (2026-11-09, WHO PLAYS IT + GUIDANCE + ARROW - Daniel: "import an existing character or have a demo character")
+- SETTINGS > HERO: YOUR OWN (`'own'`, or null on older levels) plays with each player's saved hero, upgrades and all. A hero
+  id is that hero on the STARTER KIT (campaign-kit `kitCfg(LEVELS[0], hero, lvl 1)`), the same for everyone. The save's
+  PROG is structuredCloned before and put back after (saving held), and maker-hero checks it comes back byte-for-byte.
+  New levels default to a set hero (knight).
+- Clear check: only a set-hero run marks BEATEN. An own-hero level can be shared unchecked ("NOT CHECKED: EACH PLAYER
+  BRINGS THEIR OWN HERO"); a set-hero level must be beaten first (`MKP.shareReady`).
+- Guidance: a bottom-left checklist (START / GOAL / BEATEN or OWN HERO) with the next step, and a hint on an empty level.
+- ARROW SIGN (DECOR): eight directions as a setting (POINTS), drawn by the maker in the editor and in play
+  (`MKP.drawArrows`); scenery only.
+- `tools/maker-hero.mjs` (in the suite).
+- Later (Daniel agreed): SETS OF LEVELS played in order, one hero for the set.
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.

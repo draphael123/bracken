@@ -14,7 +14,7 @@ try {
     const P = await import('/src/maker-palette.js'); MKR.enter(); (await import('/src/maker-ui.js')).closePanel(); const r = {};
     const key = k => { dispatchEvent(new KeyboardEvent('keydown', { key: k })); BK.step(1); dispatchEvent(new KeyboardEvent('keyup', { key: k })); BK.step(2); };
     const toGate = () => { BK.tp(55, 19); BK.step(90); return BK.state; };
-    const lvl = (ents, goal) => { const d = MKR.blank(60, 28); d.ents = [{ t: 'gate', x: 55, y: 19 }, ...ents]; d.start = { x: 3, y: 19 }; d.goal = goal || null; MKR.doc = d; return d; };
+    const lvl = (ents, goal) => { const d = MKR.blank(60, 28); d.ents = [{ t: 'gate', x: 55, y: 19 }, ...ents]; d.start = { x: 3, y: 19 }; d.goal = goal || null; d.hero = 'knight'; MKR.doc = d; return d; };   /* a set hero: only its runs mark a level BEATEN */
 
     // 1. the clear
     let d = lvl([]); r.notYet = !P.isCleared(d);

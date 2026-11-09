@@ -62,7 +62,7 @@ export const FOES = [
 export const WATER_FOES = ['urchin', 'angler', 'puffer', 'jelly', 'lamprey', 'eel', 'leech'];
 FOES.push(...WATER_FOES);
 
-export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up',
+export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up', 'arrow',
   // MECHANISMS (claude/maker step 3): a lever or a plate opens a column of DOOR tiles (the nearest, or the one LINK points at);
   // a key opens the gate of its own metal; the rest are traps and weights
   'mend', 'switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone',
@@ -78,7 +78,7 @@ const ENT_FOR = {
   crusher: { t: 'crusher', every: 3 }, firevent: { t: 'firevent', every: 2.8 }, roller: { t: 'roller', face: -1, speed: 55 },
 };
 export const entFor = (id, x, y) => ({ ...(ENT_FOR[id] || { t: id }), x, y });
-const THING_NAMES = { mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
+const THING_NAMES = { arrow: 'ARROW SIGN', mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
   'key:brass': 'BRASS KEY', 'key:iron': 'IRON KEY', 'key:bone': 'BONE KEY', 'lockgate:brass': 'BRASS GATE', 'lockgate:iron': 'IRON GATE',
   'lockgate:bone': 'BONE GATE', pushblock: 'PUSH BLOCK', firevent: 'FIRE JET', roller: 'ROLLING PUFFBALL' };
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
@@ -353,6 +353,7 @@ export function pieceRows(e) {
     { key: 'speed', label: 'SPEED', values: [20, 34, 50, 70], show: v => ({ 20: 'SLOW', 34: 'STEADY', 50: 'QUICK', 70: 'FAST' })[v], def: 34 },
     { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
   if (e.t === 'sign') return [{ key: 'text', label: 'IT SAYS', text: true }];
+  if (e.t === 'arrow') return [{ key: 'dir', label: 'POINTS', values: [0, 1, 2, 3, 4, 5, 6, 7], show: v => ARROW_DIRS[v], def: 0 }];
   if (e.t === 'crusher') return [{ key: 'every', label: 'DROPS EVERY', values: [1.5, 2, 3, 4, 6], show: secs, def: 3 }];
   if (e.t === 'firevent') return [{ key: 'every', label: 'FLAMES EVERY', values: [1.5, 2, 2.8, 4, 6], show: secs, def: 2.8 }];
   if (e.t === 'rockfall') return [{ key: 'every', label: 'A ROCK EVERY', values: [1.2, 1.8, 2.5, 3.5, 5], show: secs, def: 2.5 }];
@@ -456,7 +457,7 @@ const LINE = {
   crusher: 'Drops from above on a beat. Do not be under it.', firevent: 'Spits fire on a beat. Jump it.', roller: 'Rolls along the floor. Jump it.',
   rockfall: 'Rocks fall here on a beat.', vent: 'A blast of air on a beat: it lifts you.', firepit: 'A fire pit that flares on a beat.',
   mend: 'A heart: it heals you.', switch: 'Hit it: every RED block and every BLUE block swap.', 'sw:red': 'Solid until a SWITCH is hit, then gone (and back again).', 'sw:blue': 'Empty until a SWITCH is hit, then solid (and gone again).',
-  sign: 'A sign with your words on it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
+  sign: 'A sign with your words on it.', arrow: 'An arrow sign: shows the way. SHIFT+CLICK it to point it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
   lantern: 'A lantern: light.', npc: 'A villager.',
 };
 const MAT_LINE = { grass: 'Grass on earth, whatever the background.', cobble: "A village's cobbles.", shore: 'Shore rock.', reef: 'Reef rock.', city: 'City stone.', masonry: 'Castle stone.', deck: "A ship's deck." };
@@ -818,3 +819,19 @@ const STYLE_BAN = {
 };
 export function styleBanned(style, cat, id) { if (!style || cat !== 0) return false; return (STYLE_BAN[style] || []).includes(id); }
 export const bannedIn = (doc, style) => { const L0 = STYLE_BAN[style] || []; let n = 0; for (const v of doc.grid) if (L0.includes(v)) n++; return n; };
+
+/* (claude/maker) THE ARROW SIGN: a post with a board pointing one of eight ways (dir 0 = right, counter-clockwise). Drawn by the
+   maker in the editor and in play (the engine has no such piece); it is scenery, nothing touches it. */
+export const ARROW_DIRS = ['RIGHT', 'UP-RIGHT', 'UP', 'UP-LEFT', 'LEFT', 'DOWN-LEFT', 'DOWN', 'DOWN-RIGHT'];
+export function drawArrowSign(g, x, y, dir) {   // x, y: the foot of the post, on screen
+  g.fillStyle = '#5a3a1e'; g.fillRect(x - 1, y - 14, 3, 14);
+  g.fillStyle = '#3a2412'; g.fillRect(x - 9, y - 26, 19, 13); g.fillStyle = '#c8a26a'; g.fillRect(x - 8, y - 25, 17, 11);
+  const a = -(dir || 0) * Math.PI / 4, c0 = Math.cos(a), s0 = Math.sin(a), cx = x + 0.5, cy = y - 19.5, pt = (u, v) => [cx + u * c0 - v * s0, cy + u * s0 + v * c0];
+  g.fillStyle = '#7a1e12'; g.beginPath(); for (const [u, v] of [[-5, -1.2], [1, -1.2], [1, -3.5], [5.5, 0], [1, 3.5], [1, 1.2], [-5, 1.2]]) { const [px, py] = pt(u, v); g.lineTo(px, py); } g.closePath(); g.fill();
+}
+export function drawArrows(g, ents, cx, cy) { for (const e of ents || []) if (e.t === 'arrow') drawArrowSign(g, Math.round(e.x * TS + 8 - cx), Math.round((e.y + 1) * TS - cy), e.dir || 0); }
+/* (claude/maker) WHO PLAYS IT: 'own' = each player's own saved hero (upgrades and all); a hero id = that hero on a STARTER KIT,
+   the same for everyone. Only a starter-kit run can mark the level BEATEN (a strong save could clear what a fresh hero cannot).
+   null = an older level: its own hero. */
+export const ownHero = d => !d.hero || d.hero === 'own';
+export const shareReady = d => ownHero(d) || isCleared(d);

@@ -127,6 +127,7 @@ import { GORM, GORM_SAY, GORM_WORDS, gormTake } from './gorm.js'; import { makeG
 import { makeGlassSeaHands } from './glass-sea-hands.js'; import { makeColossusHands } from './glass-colossus-hands.js'; import * as COG from './glass-colossus.js'; import * as GSF from './glass-foes.js'; import * as GSAR from './redraw/glasssea_art.js'; import * as COART from './redraw/glass_colossus_art.js'; import * as GST from './redraw/glasssea_tiles.js'; let GSH = null, COH = null;   /* THE GLASS SEA (claude/glasssea, the greybox): the mirrors, the beams, the cracks, the night; THE GLASS COLOSSUS */
 import { makeNestHands } from './hornets-nest-hands.js'; import { makeHornetQueenHands, bakeHornetQueenCard, warmQueen } from './hornet-queen-hands.js'; import * as HQM from './hornet-queen.js'; import * as HHM from './honey-hornet.js';   /* (claude/hornetsnest2) THE AMBER HORNET */   /* THE HORNET QUEEN 2 (claude/hornetsnest): src/hornet-queen.js the fight, -hands.js the world and the drawing; she fells the old boar's pines too */ import * as HSW from './hornet-swarm.js'; import * as HNA from './redraw/hornets_nest_art.js';   /* THE HORNET'S NEST (claude/hornetsnest): its comb, wax, smoke pots and brood cells (src/hornets-nest-hands.js), THE SWARM (src/hornet-swarm.js), its foe skins */ import { makeOldTuskerHands, bakeOldTuskerCard } from './old-tusker-hands.js'; import * as OTA from './redraw/old_tusker_art.js'; import * as OTM from './old-tusker.js';   /* OLD TUSKER (claude/oldtusker): THE LUMBER TRAIL's great boar - src/old-tusker.js the fight, -hands.js the world and the drawing */ import { makeBuriedCityHands } from './buried-city-hands.js'; import { makeHourglassKingHands } from './hourglass-king-hands.js'; import * as HKG from './hourglass-king.js'; import * as CON from './construct.js'; import * as SPT from './redraw/sealed_pyramid_tiles.js'; import * as SPB from './redraw/sealed_pyramid_backdrop.js'; import * as BCA from './redraw/buried_city_art.js'; import * as BCB from './redraw/buried_city_backdrop.js'; import * as BCT from './redraw/buried_city_tiles.js'; import * as BCFA from './redraw/buried_city_fix_art.js'; let BCH = null, HGK = null; import { makeSealedPyramidHands } from './sealed-pyramid-hands.js'; import { makeScarabMotherHands } from './scarab-mother-hands.js'; import * as SMG from './scarab-mother.js'; import * as MUM from './mummy.js'; import * as SPA from './redraw/sealed_pyramid_art.js'; let PYH = null, SMH = null, TKH = null, OTH = null; let FRH = null, BTH = null, FPK = null, HNS = null, HQH = null; import { makeFenPlanks } from './fen-planks.js'; import * as BLM from './bog-leech.js';   /* (claude/fenroad2) LAY THE ROAD (src/fen-planks.js) and THE BOG LEECH (src/bog-leech.js) */ import { makeFenRoadHands } from './fen-road-hands.js'; import { makeBogTrollHands, bakeBogTrollCard } from './bog-troll-hands.js'; import * as BTM from './bog-troll.js'; import * as SWM from './stilt-walker.js';   /* THE FEN ROAD (claude/fenroad): the road's bowed sections, lashings, crew gaps and horizon (src/fen-road-hands.js), THE BOG TROLL (src/bog-troll.js + -hands.js), THE GOBLIN STILT-WALKER (src/stilt-walker.js) */ import { makeTombKingHands } from './tomb-king-hands.js'; import * as TKG from './tomb-king.js';   /* THE COFFIN KING (claude/pyramidboss): THE SEALED PYRAMID's boss (src/tomb-king.js + hands); the Scarab Mother is its mini */   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the traps, the plates, the counterweights, the storm, the sealed tomb (src/sealed-pyramid-hands.js); the mummy (src/mummy.js); THE SCARAB MOTHER (src/scarab-mother.js + hands) */   /* THE BURIED CITY (claude/buriedcity, the greybox): the sand rooms, the levers, the great sand-gate, the clockwork vault (src/buried-city-hands.js); the clockwork construct (src/construct.js); THE HOURGLASS KING (src/hourglass-king.js + hands) */
 import { makeKsarHands } from './ksar-hands.js'; import { makeHawkMistressHands } from './hawk-mistress-hands.js'; import * as HMG from './hawk-mistress.js'; import * as KSF from './ksar-foes.js'; import * as KSA from './redraw/ksar_art.js'; import * as KST from './redraw/ksar_tiles.js'; let KSH = null, HMH = null, WRK = null, OWK = null;   /* THE BANDIT KSAR (claude/ksar, the greybox): the gongs, the throw, the gate winch; THE HAWK-MISTRESS */
+import * as CKIT from './campaign-kit.js';   /* (claude/maker) a set hero's starter kit */
 import * as FGA from './redraw/forge_art.js'; import * as MCK from './redraw/minecart_skins.js'; import * as MCB from './redraw/minecart_backdrop.js'; import * as MCT from './redraw/minecart_tiles.js'; import { makeMinecartHands } from './minecart-hands.js'; import { makeDrillHands } from './great-drill-hands.js'; import * as GDG from './great-drill.js'; let MCH = null, GDH = null; import { makeForgeRails, FORGE as FGR_K } from './forge-rails.js'; let FGR = null;   /* (claude/forgemaster) THE SMELTER FLOOR and THE FORGE: the loop, the junction levers, the slag plugs, the loader (src/forge-rails.js) */   /* THE DEEP RAILS (claude/minecart, the greybox): the cart, the points, the hazards, the goblin carts; THE GREAT DRILL */
 import { makeVotiveHands, VOTIVE_IDS, VOTIVE_N } from './votive-hands.js'; let VTH = null;   /* WAYMEET's three votive lamps (claude/towpathchurch): light them, the hill road to THE LIT CHURCH opens */
 import { makeVillageHands, stageAt } from './village-hands.js'; let VWH = null;   /* (claude/burning3) THE BURNING VILLAGE 3: burst tanks, SOAKED, oil fire, told falling debris, the fire's three stages */
@@ -4937,7 +4938,7 @@ function danceAfterBoss() {
 }
 function winLevel() { return asHost(winLevel0); }   /* (claude/coopprogress) a seat who reaches the gate last ends it from his pass: the win is still the save's */
 function winLevel0() {
-  if (edTesting && !edRunHere) { edDoc.cleared = MKP.docSig(edDoc); edJustCleared = true; }   /* (claude/maker) THE CLEAR CHECK: beaten from START, so it can be SHARED */
+  if (edTesting && !edRunHere && !MKP.ownHero(edDoc)) { edDoc.cleared = MKP.docSig(edDoc); edJustCleared = true; }   /* (a run with your own saved hero proves nothing for anyone else) */   /* (claude/maker) THE CLEAR CHECK: beaten from START, so it can be SHARED */
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
   PROG.done = PROG.done || {};
@@ -35362,6 +35363,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) { let nr = 1e9; for (const p of (players || [P])) if (Math.abs(p.y - gate.y) < 90) nr = Math.min(nr, Math.abs(p.x - gate.x));   /* (EG: the landmark of this region, lantern dark until you near it; the trigger above is untouched) */
     EG.draw(g, EG.kindOf(LEVELS[levelIndex].id), gate.x, gate.y, cx, cy, time, nr, !!(L.arena && !escape && !L.sandWalk && !L.gateOpen), gate.eg || (gate.eg = {}), EGSFX); }
+  if (L.custom) MKP.drawArrows(g, L.ents, cx, cy);   /* (claude/maker) the ARROW signs */
   if (L.custom && L.mkStart) EG.draw(g, EG.kindOf(LEVELS[levelIndex].id), L.mkStart.x * TS + 8, (L.mkStart.y + 1) * TS, cx, cy, time, 0, false, L.mkStartEg || (L.mkStartEg = {}), EG_QUIET);   /* (claude/maker) THE START GATE you came out of */
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
@@ -37315,7 +37317,7 @@ function edRespawn() {
 function edEnter() {
   MKP.setNames(BEASTS); MKP.setEliteKinds(Object.keys(ELITE)); MUI.firstVisit();   /* (claude/maker) the HELP card, once */   /* (claude/maker) the palette speaks the bestiary's names */
   edThemeList();
-  if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
+  if (!edDoc) { edDoc = edLoad(edSlot); if (!edDoc) { edDoc = edBlank(); edDoc.hero = 'knight'; } }   /* (claude/maker) a new level: a set hero */
   edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
   edMount(true); music.stop(); setView('zoom'); music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);   /* (claude/maker) the level's music, quietly, while you build */
   edCam.x = Math.max(0, edDoc.start.x * TS - VW / 2); edCam.y = Math.max(0, LH * TS - VH);
@@ -37331,7 +37333,9 @@ function edPlay(here) {
   { const me = edDoc.hero || hero(), mate = (HEROES.find(x => x.id !== me) || {}).id;
     coopWant = edDoc.players && mate ? { hero: mate, ally: edDoc.players === 'ally', seats: [{ hero: mate, ally: edDoc.players === 'ally' }] } : null; }
   /* (claude/maker) TEST AS another hero: switched in memory, saving held off for the run (as the boss jump does), put back on return */
-  if (edDoc.hero && edDoc.hero !== hero() && HEROES.some(x => x.id === edDoc.hero)) { edHeroWas = hero(); edSaveWas = saveBlocked; saveBlocked = true; window.BK.setHero(edDoc.hero); window.BK.reset({ fresh: true }); }
+  if (!MKP.ownHero(edDoc) && HEROES.some(x => x.id === edDoc.hero)) { edHeroWas = hero(); edSaveWas = saveBlocked; saveBlocked = true;   /* (claude/maker) A SET HERO on the STARTER KIT, the same for everyone */
+    edProgWas = typeof structuredClone === 'function' ? structuredClone(PROG) : JSON.parse(JSON.stringify(PROG));   /* the save's own progress, put back on return (it never reaches a save: saving is held) */
+    const kc = CKIT.kitCfg(LEVELS, LEVELS[0].id, edDoc.hero, 1, null); CKIT.kitPre(window.BKT, window.BK, kc); window.BK.setHero(edDoc.hero); window.BK.reset({ fresh: true }); CKIT.kitPost(window.BKT, window.BK, kc); }
   CUSTOM.build = () => { const o = edLevelObj(edDoc, true); if (here) o.START = { x: here.x, y: here.y }; return o; };
   const i = edIndex(); LEVELS[i].name = edDoc.name; LEVELS[i].sub = 'made by hand';
   loadLevel(i); startGame(); bannerT = 0; transT = 0; transPrev = state; edSay('');
@@ -37342,7 +37346,7 @@ function edPlayHere(tx) {   /* the first standing place in that column, from the
 }
 function edResume() { const px = P.x, py = P.y; edTesting = false;
   if (coop()) coopEnd(); if (edCoopWas !== undefined) { coopWant = edCoopWas; edCoopWas = undefined; }   /* (claude/maker) the campaign's party back */
-  if (edHeroWas) { window.BK.setHero(edHeroWas); window.BK.reset({ fresh: true }); saveBlocked = edSaveWas; edHeroWas = null; }   /* (claude/maker) your own hero back */ state = 'editor'; edMount(false); music.stop(); if (edDoc.music !== 'none') music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);
+  if (edHeroWas) { if (edProgWas) { for (const k of Object.keys(PROG)) delete PROG[k]; Object.assign(PROG, edProgWas); edProgWas = null; } window.BK.setHero(edHeroWas); window.BK.reset({ fresh: true }); saveBlocked = edSaveWas; edHeroWas = null; }   /* your own hero, and its progress, back */   /* (claude/maker) your own hero back */ state = 'editor'; edMount(false); music.stop(); if (edDoc.music !== 'none') music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);
   setView('zoom');   /* the editor's size first: centred with the play view's width, the knight sat at the left edge */
   edCam.x = px - VW / 2; edCam.y = py - VH * 0.6; edClampCam(); transT = 0; transPrev = 'editor'; MKJ.whoosh(true); edSay(edJustCleared ? 'CLEARED! SHARE IS READY' : 'back in the editor'); if (edJustCleared) MKJ.place('piece'); edJustCleared = false; }
 
@@ -37438,7 +37442,7 @@ function edKey(k, ev) {
   if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; MKP.showSelected(edCat, edSel[edCat], VW); SFX.ui(); return true; }
   if (k === 's') { edSave(shift ? 1 : edSlot); return true; }
   if (k === 'l') { const d = edLoad(edSlot); if (d) { edPush(); edDoc = d; edMount(true); edSay('loaded slot ' + (edSlot + 1)); } else edSay('slot ' + (edSlot + 1) + ' is empty'); return true; }
-  if (k === 'n') { edPush(); edDoc = edBlank(); edMount(true); edSay('a new wood'); return true; }
+  if (k === 'n') { edPush(); edDoc = edBlank(); edDoc.hero = 'knight'; edMount(true); edSay('a new wood'); return true; }
   if (k === 'f') { edSlot = (edSlot + 1) % ED_SLOTS; edSay('slot ' + (edSlot + 1) + (edLoad(edSlot) ? ' (' + edLoad(edSlot).name + ')' : ' (empty)')); return true; }
   if (k === 't') { edPush(); edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); return true; }
   if (k === 'x') { edPush(); edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); return true; }
@@ -37504,7 +37508,7 @@ function edCamLim() { return { x0: -TS * 2, x1: Math.max(-TS * 2, LW * TS - VW +
 function edClampCam() { const m = edCamLim(); edCam.x = Math.max(m.x0, Math.min(m.x1, edCam.x)); edCam.y = Math.max(m.y0, Math.min(m.y1, edCam.y)); }
 function edCamXY() { edClampCam(); return [Math.round(edCam.x), Math.round(edCam.y)]; }
 /* (claude/maker) ONE REDRAW A FRAME: painting marks the level dirty; the frame redraws the tiles and puts the landmarks back once */
-let edHeroWas = null, edSaveWas = false, edPlayed = false; let edLastCell = null; let edEraseBox = null, edStartEg = {};
+let edHeroWas = null, edSaveWas = false, edPlayed = false, edProgWas = null; let edLastCell = null; let edEraseBox = null, edStartEg = {};
 /* (claude/maker) ERASE > BOX: everything (or only one kind) inside the box; returns how many cells and pieces went */
 function edEraseRect(a, b, what) {
   const x0 = Math.max(1, Math.min(a.x, b.x)), x1 = Math.min(LW - 2, Math.max(a.x, b.x)), y0 = Math.max(0, Math.min(a.y, b.y)), y1 = Math.min(LH - 1, Math.max(a.y, b.y)); let n = 0;
@@ -37555,8 +37559,8 @@ function edUiAct(u) {
   else if (a === 'pieceStep') { edPush(); if (MKP.stepRow(edDoc, u.piece, u.row, u.d)) edMount(false); else edRespawn(); }
   else if (a === 'pieceText') { const t = prompt('What does the sign say?', u.piece.text || ''); if (t !== null) { edPush(); u.piece.text = t.toUpperCase().slice(0, 80); edRespawn(); } }
   else if (a === 'pieceRemove') { edPush(); const i = edDoc.ents.indexOf(u.piece); if (i >= 0) edDoc.ents.splice(i, 1); edRespawn(); edSay('removed'); }
-  else if (a === 'share' && !MKP.isCleared(edDoc)) { edSay(edDoc.cleared ? 'CHANGED SINCE YOU BEAT IT: PLAY IT TO THE GOAL AGAIN, THEN SHARE' : 'BEAT IT FIRST: PLAY FROM THE START TO THE GOAL, THEN SHARE'); SFX.buzz(); }   /* (claude/maker) THE CLEAR CHECK */
-  else if (a === 'share') { MKP.shareLink(edDoc).then(url => { history.replaceState(null, '', url); const done = () => edSay('LINK COPIED: ANYONE WHO OPENS IT GETS THIS LEVEL');
+  else if (a === 'share' && !MKP.shareReady(edDoc)) { edSay(edDoc.cleared ? 'CHANGED SINCE YOU BEAT IT: PLAY IT TO THE GOAL AGAIN, THEN SHARE' : 'BEAT IT FIRST: PLAY FROM THE START TO THE GOAL, THEN SHARE'); SFX.buzz(); }   /* (claude/maker) THE CLEAR CHECK */
+  else if (a === 'share') { MKP.shareLink(edDoc).then(url => { history.replaceState(null, '', url); const done = () => edSay(MKP.ownHero(edDoc) ? 'LINK COPIED (NOT CHECKED: EACH PLAYER BRINGS THEIR OWN HERO)' : 'LINK COPIED: ANYONE WHO OPENS IT GETS THIS LEVEL');
       if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url)); else prompt('Copy this link:', url); }).catch(() => edSay('could not make a link')); }
   else if (a === 'open') { const s0 = prompt('Paste a level link (or its code):'); if (s0) MKP.fromShareCode(s0).then(d => { edPush(); edDoc = d; edMount(true); edSay('opened ' + d.name); }).catch(() => edSay('that link did not open')); }
   if (a !== 'play') SFX.ui();
@@ -37595,7 +37599,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawGears(g, edDoc, cx, cy); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawSelInfo(g, edDoc, cx, cy, text); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawGears(g, edDoc, cx, cy); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawSelInfo(g, edDoc, cx, cy, text); MKP.drawArrows(g, edDoc.ents, cx, cy); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
