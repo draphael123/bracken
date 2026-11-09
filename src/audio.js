@@ -1255,6 +1255,12 @@ Object.assign(SFX, {
   yelp() { tone('sawtooth', 700, 1400, 0.12, 0.14); noise(0.08, 0.15, 1800, 1.2, 0.04); },
   squelch() { noise(0.16, 0.28, 500, 0.5); tone('sine', 220, 50, 0.2, 0.18); },
   puff() { noise(0.3, 0.3, 900, 0.4); tone('triangle', 320, 70, 0.22, 0.12); },
+  trWhistle() { tone('sine', 880, 760, 0.5, 0.18); tone('sine', 1320, 1140, 0.5, 0.1); noise(0.45, 0.06, 3000, 1.4); },   /* (claude/gtart) THE GHOST TRAIN: a steam whistle, a minor-second over a breath */
+  trWake() { tone('sine', 300, 180, 0.5, 0.12); tone('triangle', 420, 240, 0.45, 0.07, 0.06); noise(0.3, 0.05, 1200, 0.8, 0.02); },   /* a dead passenger stirring: a thin falling moan */
+  trWhoosh() { noise(0.22, 0.2, 1400, 0.5); tone('sine', 520, 160, 0.2, 0.08); },   /* a swung lantern, a grasp */
+  trSizzle() { noise(0.18, 0.16, 5200, 1.1); noise(0.12, 0.1, 3600, 1.0, 0.1); },   /* an ember landing */
+  trFire() { noise(0.55, 0.3, 700, 0.5); tone('sawtooth', 110, 60, 0.5, 0.12); noise(0.3, 0.12, 2400, 1.0, 0.1); },   /* the firebox jet and its hand */
+  trCall() { tone('sawtooth', 230, 140, 0.3, 0.2); tone('square', 175, 110, 0.28, 0.1, 0.02); noise(0.1, 0.1, 900, 0.8); },   /* the Conductor's TUNNEL AHEAD! call */
   /* DEEP RAILS 3 (claude/dr3art): the Great Drill's spin-up whine, its lunge, the chain's rattle, the dynamite's fuse, a stomp on the Foreman's iron lid, the switch's latch and the bridge swinging down.
      Synth first; REC (below) lays the clips already on disk over them (clang, r_charge, r_chain, r_hiss, r_latch, r_creak - no new files) */
   drillWhine() { tone('sawtooth', 200, 1500, 0.9, 0.09); tone('square', 100, 760, 0.9, 0.045, 0.05); noise(0.9, 0.12, 3200, 1.2, 0.1); },

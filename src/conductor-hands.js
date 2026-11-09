@@ -1,18 +1,20 @@
 // src/conductor-hands.js - THE CONDUCTOR's HANDS (claude/ghosttrain, the OPUS GREYBOX). src/conductor.js is the fight (pure); this binds it to the world: his told blows on the
 // heroes (keyed once a blow), THE HOLES he punches (tiles, through src/ghost-train-hands.js setCell so a reset puts every board back), THE UNCOUPLING (the gangway, then the van
 // left on the line, the camera's lock moved on), THE EMERGENCY BRAKES (a hero's blow on a live handle: strike(hb)), THE LURCH - and the greybox drawing.
-// GREYBOX (the sonnet art lane draws the final, src/redraw/conductor_art.js to come): every move its own windup pose and release pose (POSE, B16), its own sound (SOUND).
+// ART (claude/gtart: src/redraw/conductor_art.js): every move its own windup pose and release pose (POSE, B16), its own sound (SOUND).
 // main.js calls (one tagged line each): spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, read.
 import * as CDM from './conductor.js';
 import { CD_SAY } from './gt-lines.js';
 import { GT } from './ghost-train.js';
+import * as CA from './redraw/conductor_art.js';
+import * as GA from './redraw/gt_art.js';
 const { CD } = CDM;
 
-export const SOUND = { swingTell: s => (s.tell)(), swing: s => (s.whoosh || s.tell)(), punchTell: s => { (s.clank || s.tell)(); (s.clank || s.tell)(); }, punch: s => (s.crack || s.clank || s.thud)(),
-  boards: s => (s.crack || s.thud)(), call: s => (s.gobShout || s.roar || s.tell)(), whistle: s => (s.whistle || s.tell)(), chain: s => (s.clank || s.tell)(), clank: s => (s.clank || s.thud)(),
-  brake: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, thud: s => (s.thud)(), rise: s => (s.whoosh || s.tell)(), fuse: s => (s.fireWhoosh || s.boom || s.thud)(),
-  blastTell: s => (s.charge || s.tell)(), blast: s => (s.fireWhoosh || s.whoosh || s.thud)(), sparksTell: s => (s.tell)(), sparks: s => (s.puff || s.thud)(), ember: s => (s.sizzle || s.puff || s.thud)(),
-  graspTell: s => (s.charge || s.tell)(), grasp: s => (s.fireWhoosh || s.whoosh || s.tell)(), roar: s => (s.boreRoar || s.roar || s.thud)() };
+export const SOUND = { swingTell: s => (s.tell)(), swing: s => (s.trWhoosh || s.tell)(), punchTell: s => { (s.clank || s.tell)(); (s.clank || s.tell)(); }, punch: s => (s.crack || s.clank || s.thud)(),
+  boards: s => (s.crack || s.thud)(), call: s => (s.trCall || s.roar || s.tell)(), whistle: s => (s.trWhistle || s.tell)(), chain: s => (s.clank || s.tell)(), clank: s => (s.clank || s.thud)(),
+  brake: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, thud: s => (s.thud)(), rise: s => (s.trWhoosh || s.tell)(), fuse: s => (s.trFire || s.boom || s.thud)(),
+  blastTell: s => (s.charge || s.tell)(), blast: s => (s.trFire || s.trWhoosh || s.thud)(), sparksTell: s => (s.tell)(), sparks: s => (s.puff || s.thud)(), ember: s => (s.trSizzle || s.puff || s.thud)(),
+  graspTell: s => (s.charge || s.tell)(), grasp: s => (s.trFire || s.trWhoosh || s.tell)(), roar: s => (s.boreRoar || s.roar || s.thud)() };
 /* THE POSE A MODE WEARS (greybox, local px, facing right, feet at 0,0): lantern hand [x, y], punch hand [x, y], lean, mouth, and what shows. Windup and release differ for every move */
 export const POSE = {
   sleep: { lan: [8, -16], pun: [-6, -14], lean: 0, mouth: 'shut', eyes: 'shut' },
@@ -90,34 +92,26 @@ export function makeConductorHands(ctx) {
   H.strike = hb => { if (!S || !hb || !ctx.bossActive) return; const e = live(); if (!e) return;
     for (const b of S.G.brakes) { if (!CDM.brakeLive(S, b)) continue; if (hb.l < b.x + 8 && hb.r > b.x - 8 && hb.t < b.y + 10 && hb.b > b.y - 10 && (!ctx.hitOnce || ctx.hitOnce(b))) CDM.pullBrake(e, S, b.id, world(e)); } };
   H.pull = id => { const e = live(); return e && S ? CDM.pullBrake(e, S, id, world(e)) : 'none'; };
-  H.take = (e, dmg) => { if (!S) return dmg; const [d, word] = CDM.takeBlow(e, S, dmg);
+  H.take = (e, dmg, tag) => { if (!S) return dmg; const [d, word] = CDM.takeBlow(e, S, dmg);
     if (word === 'COAT') { e.chipHit = ctx.time ? ctx.time() : 0; e.guardFx = 0.2; e.guardWord = CD_SAY.warded; if (!S.told.coat) { S.told.coat = 1; ctx.hint && ctx.hint(CD_SAY.warded + '. ' + CD_SAY.rule + '.'); } }
     if (word === 'HOLDS') ctx.number(e.x, e.y - CD.markH, CD_SAY.holds, '#bfe6f5');
     return d; };
   H.barName = e => CD_SAY.name + (CDM.cdOpen(e) ? '  ' + CDM.OPEN_NAME[e.mode] : S && S.fused ? '  THE FIREBOX' : '');
-  H.end = () => { if (S) { for (const h of S.holes) if (h.st === 'open') for (const c of h.cells) if (GTH() && GTH().carAt(c.x * TS + 8)) GTH().restoreCell(c.x, c.y); S.holes = []; S.blasts = []; S.embers = []; S.tunnel = null; S.unc = null; S.won = true; } };
+  H.end = e => { if (S) { for (const h of S.holes) if (h.st === 'open') for (const c of h.cells) if (GTH() && GTH().carAt(c.x * TS + 8)) GTH().restoreCell(c.x, c.y); S.holes = []; S.blasts = []; S.embers = []; S.tunnel = null; S.unc = null; S.won = true; if (e) S.corpse = { x: e.x, y: e.y, t0: null }; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, press: +S.press.toFixed(2), gone: [...S.gone], x0: S.x0, fused: S.fused, holes: S.holes.length, tunnel: CDM.tunnelSpan(S), n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
-  /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.walk, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy) - (p.float ? 10 + Math.sin(time * 4) * 2 : 0);
-    if (p.fused) { const gl = p.glow || 0; rect(g, ex - 10, ey - 26, 12, 24, gl ? (gl > 1 ? '#fff1a0' : '#ff9a3c') : '#c0401a'); rect(g, ex - 8, ey - 22, 2, 2, '#ffe9a0'); rect(g, ex - 3, ey - 22, 2, 2, '#ffe9a0');
-      if (p.hand) rect(g, ex - 10 - p.hand, ey - 12, p.hand, 5, 'rgba(255,154,60,0.9)'); if (p.chuff) rect(g, ex + 70, ey - 140 - (time * 40) % 20, 10, 10, 'rgba(200,200,210,0.5)'); return; }
-    const a = p.burn ? 0.6 + 0.4 * Math.sin(time * 20) : 0.92; g.globalAlpha = a;
-    if (p.flat) { rect(g, ex - 16, ey - 8, 30, 8, '#2a3048'); rect(g, ex + 12 * f, ey - 10, 6, 6, '#c8d0e8'); g.globalAlpha = 1; return; }
-    const lean = p.lean * f; rect(g, ex - 6 + lean * 0.3, ey - 26, 12, 24, '#2a3048'); rect(g, ex - 7 + lean * 0.4, ey - 34, 14, 3, '#1a1e30');   /* the coat; the cap's peak */
-    rect(g, ex - 4 + lean * 0.5, ey - 33, 8, 7, '#c8d0e8'); rect(g, ex - 3 + lean * 0.5 + (f > 0 ? 2 : 0), ey - 30, 2, p.eyes === 'shut' ? 1 : 2, p.eyes === 'shut' ? '#5a6078' : '#ff6b6b');
-    if (p.mouth !== 'shut') rect(g, ex - 1 + lean * 0.5, ey - 27, 3, p.mouth === 'wide' ? 3 : 1, '#0a0a10');
-    const lx = ex + p.lan[0] * f, ly = ey + p.lan[1]; rect(g, lx - 2, ly - 3, 5, 6, '#ffe9a0'); rect(g, lx - 3, ly - 4, 7, 1, '#8a849a');
-    const px = ex + p.pun[0] * f, py = ey + p.pun[1]; rect(g, px - 2, py - 2, 5, 4, '#c8ccd4'); if (p.clack && (time * 8) % 2 < 1) rect(g, px - 4, py - 6, 9, 2, '#fff');
-    if (p.cup) rect(g, ex + 6 * f, ey - 30, 4, 4, '#c8d0e8'); g.globalAlpha = 1; };
+  /* ================= THE DRAWING (claude/gtart: src/redraw/conductor_art.js; the world's pieces in src/redraw/gt_art.js) ================= */
+  H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.walk, ex = R(e.x - cx), ey = R(e.y - cy) - (p.float ? 10 + Math.sin(time * 4) * 2 : 0);
+    if (p.fused) { CA.drawFirebox(g, ex, ey, { glow: p.glow || 0, hand: p.hand || 0, time, mouth: p.mouth, chuff: p.chuff }); if (e.flash > 0) { g.globalAlpha = 0.35; rect(g, ex - 18, ey - 37, 22, 34, '#ffffff'); g.globalAlpha = 1; } return; }
+    CA.drawConductor(g, ex, ey, p, { face: e.face || 1, time, flash: e.flash || 0, mode: e.mode });
+    if (e.guardFx > 0) GA.glow(g, ex, ey - 22, 28, '#bfe6f5', Math.min(0.5, e.guardFx * 2.5), 2); };   /* (the coat holds: a pale ward-shimmer) */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const x = v => R(v - cx), y = v => R(v - cy);
-    for (const h of S.holes) for (const c of h.cells) { if (h.st === 'tell') { const k = (time * 10) % 2 < 1; rect(g, x(c.x * TS), y(c.y * TS) - 1, TS, 3, k ? '#ff4a2a' : '#ff9a5c'); } else rect(g, x(c.x * TS), y(c.y * TS), TS, TS, 'rgba(0,0,0,0.6)'); }
-    const sp = CDM.tunnelSpan(S); if (sp) { const a = Math.max(0, x(sp[0])), b = Math.min(VW, x(sp[1])); if (b > a) { rect(g, a, 0, b - a, y(GT.ROOF * TS) - 2, 'rgba(6,6,12,0.85)'); rect(g, a, y((GT.ROOF - 2) * TS), b - a, 5, '#3a3444'); } }
-    else if (S.tunnel) { const k = 1 + S.tunnel.t / CD.tunnel.tell; rect(g, VW - 12, 0, 12, VH, 'rgba(255,90,60,' + (0.2 + 0.4 * Math.max(0, k)).toFixed(2) + ')'); }
-    for (const b of S.blasts) rect(g, x(b.x0), y(b.y) - CD.blast.h, b.x1 - b.x0, CD.blast.h, 'rgba(255,140,40,0.75)');
-    for (const m of S.embers) { const mx = x(m.x), my = y(m.y); if (!m.hot) { rect(g, mx - 7, my - 1, 14, 2, 'rgba(255,90,60,0.7)'); } else rect(g, mx - 4, my - 6, 8, 6, '#ff9a3c'); }
-    if (S.unc) { const c = S.unc.c; rect(g, x(c.x) - 1, y(c.y) - 30, 3, 30, S.unc.st === 'tell' ? '#ff4a2a' : '#ffd36b'); }
-    for (const b of S.G.brakes) { if (!CDM.brakeLive(S, b)) continue; const bx = x(b.x), by = y(b.y); rect(g, bx - 2, by - 8, 4, 12, '#ff4a2a'); rect(g, bx - 4, by - 10, 8, 3, '#c0401a');
-      rect(g, bx - 8, by - 18, 16, 3, '#1a1626'); rect(g, bx - 8, by - 18, R(16 * S.press), 3, S.press >= 1 ? '#8fd160' : '#c8a040'); }
-    const fb = S.G.firebox; rect(g, x(fb.x) - 4, y(fb.y) - 22, 6, 18, S.fused ? '#ff9a3c' : '#5a2a1a'); };
+    for (const h of S.holes) for (const c of h.cells) { if (h.st === 'tell') CA.drawHoleTell(g, x(c.x * TS), y(c.y * TS), TS, time); else CA.drawHoleOpen(g, x(c.x * TS), y(c.y * TS), TS); }
+    const sp = CDM.tunnelSpan(S); if (sp) { const a = Math.max(0, x(sp[0])), b = Math.min(VW, x(sp[1])); if (b > a) GA.drawTunnel(g, a, b, y((GT.ROOF - 2) * TS), VH, time); }
+    else if (S.tunnel) GA.warnSignal(g, VW, VH, 1 + S.tunnel.t / CD.tunnel.tell, time, 'tunnel');
+    for (const b of S.blasts) CA.drawJet(g, x(b.x0), x(b.x1), y(b.y), CD.blast.h, time, true);
+    for (const m of S.embers) GA.drawEmberMark(g, x(m.x), y(m.y), Math.max(0.3, (m.t ?? 0) - (CD.sparks.act || 0) + 0.3), !!m.hot, CD.sparks.tell || 1, time);
+    if (S.unc) { const c = S.unc.c; CA.drawUncouple(g, x(c.x), y(c.y), S.unc.st === 'tell', time); }
+    for (const b of S.G.brakes) { if (!CDM.brakeLive(S, b)) continue; CA.drawBrake(g, x(b.x), y(b.y), S.press, time, true); }
+    if (S.corpse) { const k = S.corpse; if (k.t0 == null) k.t0 = time; const t = time - k.t0; if (t >= 0 && t < 2.6) CA.drawCorpse(g, x(k.x), y(k.y), t); } };
   return H;
 }

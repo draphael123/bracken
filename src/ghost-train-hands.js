@@ -2,16 +2,17 @@
 // roofs, the told low bridges and tunnels sweeping down the train, the gusts, the stack's sparks), THE LAMPS (lit / out / guttering; a tunnel puts the draughty ones out),
 // THE GHOST PASSENGERS (asleep in a lamp's light, awake in the dark: their own small machine), THE COUPLINGS (a pin struck from the car ahead leaves the car behind on the
 // line), THE POINTS (a lever: straight on into the tunnel, or the branch), and THE TRACKS (a hero who falls between cars is hurt and put back on the train, never killed).
-// GREYBOX DRAWING (the sonnet art lane draws the final): flat shapes in the act's palette. main.js calls (one tagged line each): spawn, ghost, takeGhost, on, reset, update,
+// ART (claude/gtart: src/redraw/gt_art.js, gt_tiles.js; the greybox shapes are gone). main.js calls (one tagged line each): spawn, ghost, takeGhost, on, reset, update,
 // strike, drawBack, drawOver, drawGhost, read. Pure enough for node: tools/ghosttrain.mjs drives it with a fake ctx.
 import { GT } from './ghost-train.js';
 import { GT_SAY } from './gt-lines.js';
+import * as GA from './redraw/gt_art.js';
 
 export const GHOST = { hp: 34, stokerHp: 50, speed: 42, wake: 0.6, settle: 0.5, sense: 220, senseY: 120, graspTell: 0.5, grasp: 0.2, reach: 22, dmg: 12, stokerDmg: 14, cd: 1.1, darkFor: 0.25 };
 export const MOTION = { bridgeDmg: 18, tunnelDmg: 22, again: 0.9, flicker: 1.2, tracks: 20, cutTell: 0.5, recede: 2.2, sparkR: 13 };
-const SOUND = { low: s => (s.whistle || s.tell)(), tunnel: s => (s.whistle || s.tell)(), gust: s => (s.gust || s.whoosh || s.tell)(), lit: s => (s.ui || s.tell)(), out: s => (s.puff || s.thud || s.tell)(),
-  wake: s => (s.ghostWake || s.moan || s.tell)(), graspTell: s => (s.tell)(), grasp: s => (s.whoosh || s.tell)(), pin: s => (s.clank || s.thud)(), part: s => (s.crack || s.clank || s.thud)(),
-  points: s => (s.clank || s.ui || s.thud)(), tracks: s => (s.thud)(), ember: s => (s.sizzle || s.puff || s.thud)(), sparksTell: s => (s.tell)() };
+const SOUND = { low: s => (s.trWhistle || s.tell)(), tunnel: s => (s.trWhistle || s.tell)(), gust: s => (s.gust || s.trWhoosh || s.tell)(), lit: s => (s.ui || s.tell)(), out: s => (s.puff || s.thud || s.tell)(),
+  wake: s => (s.trWake || s.moan || s.tell)(), graspTell: s => (s.tell)(), grasp: s => (s.trWhoosh || s.tell)(), pin: s => (s.clank || s.thud)(), part: s => (s.crack || s.clank || s.thud)(),
+  points: s => (s.clank || s.ui || s.thud)(), tracks: s => (s.thud)(), ember: s => (s.trSizzle || s.puff || s.thud)(), sparksTell: s => (s.tell)() };
 const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 
@@ -142,37 +143,39 @@ export function makeGhostTrainHands(ctx) {
   /* ---------------- WHAT A TOOL READS ---------------- */
   H.read = () => S && { t: +S.t.toFixed(2), tun: S.tun ? { kind: S.tun.kind, t: +S.tun.t.toFixed(2), tell: S.tun.tell, told: told(), span: tunSpan() } : null, gust: S.gust > 0, cut: [...S.cut], fired: [...S.fired], lastJunction: S.lastJunction || null,
     lamps: gt().lamps.map(lp => ({ id: lp.id, on: lp.on, flick: lp.flick })), points: gt().points.map(p => ({ id: p.id, set: p.set })), embers: S.embers.length, n: { ...S.n } };
-  /* ================= THE GREYBOX DRAWING ================= */
+  /* ================= THE DRAWING (claude/gtart: src/redraw/gt_art.js; tiles: src/redraw/gt_tiles.js) ================= */
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
-  /* behind the tiles: the night, THE GROUND STREAMING PAST under and behind the train (sleepers, telegraph poles, the hexed fields' fences), a tunnel's walls */
+  const livecars = () => gt().cars.filter(c => !S.cut.has(c.i));
+  /* behind the tiles: the night (by section), the ground streaming past, a car left on the line, every car's interior / open back, the gangways, the ride's facade */
   H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = gt(), sp = GT.speed;
-    const groundY = y((GT.FLOOR + 3) * TS);
-    rect(g, 0, groundY, VW, VH - groundY, '#1c1824'); rect(g, 0, groundY, VW, 2, '#4a4458');
-    for (let k = 0, off = ((time * sp) % 24); k < VW / 24 + 2; k++) rect(g, R(k * 24 - off), groundY + 3, 12, 3, '#3a3040');          /* the sleepers, flying back */
-    for (let k = 0, off = ((time * sp * 0.45) % 140); k < VW / 140 + 2; k++) { const px = R(k * 140 - off); rect(g, px, groundY - 70, 3, 70, '#2a2436'); rect(g, px - 8, groundY - 66, 19, 2, '#2a2436'); }   /* telegraph poles */
-    for (let k = 0, off = ((time * sp * 0.2) % 60); k < VW / 60 + 2; k++) rect(g, R(k * 60 - off), groundY - 14, 2, 14, '#28222e');    /* the fields' fences, far */
-    const tsn = tunSpan(); if (tsn && S.tun.kind === 'tunnel' && !told()) { const a = Math.max(0, x(tsn[0])), b = Math.min(VW, x(tsn[1])); if (b > a) { rect(g, a, 0, b - a, VH, 'rgba(6,6,12,0.86)'); rect(g, a, y((GT.ROOF - 2) * TS), b - a, 6, '#3a3444'); } }
-    for (const r of S.recede) { const dx = -r.t * r.t * 90; rect(g, x(r.x0 + dx), y(GT.ROOF * TS), r.x1 - r.x0, (GT.FLOOR - GT.ROOF + 2) * TS, 'rgba(60,56,80,' + (1 - r.t / MOTION.recede).toFixed(2) + ')'); }
-    /* the wheels under every car still on the train */
-    for (const c of G.cars) { if (S.cut.has(c.i)) continue; for (const wx of [c.x0 + 2, c.x0 + 4, c.x1 - 4, c.x1 - 2]) { const cxp = x(wx * TS + 8), cyp = y((GT.FLOOR + 3) * TS) - 6; g.fillStyle = '#4a4458'; g.beginPath(); g.arc(cxp, cyp, 6, 0, Math.PI * 2); g.fill(); rect(g, cxp - 6 + ((time * 30) % 12 < 6 ? 0 : 6), cyp - 1, 6, 2, '#8a849a'); } } };
-  /* over the tiles: the dark in a dark car, the lamps and their light, the coupling pins, the points, a bridge / tunnel tell, the sparks' marks */
-  H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = gt();
-    for (const c of G.cars) { if (S.cut.has(c.i) || !c.closed) continue; const a0 = (c.body ? c.body[0] : c.x0) + 1;
-      for (let tx = a0; tx < c.x1; tx++) for (let sx = 0; sx < 2; sx++) { const px = tx * TS + sx * 8 + 4; if (x(px) < -8 || x(px) > VW + 8) continue; if (G.lamps.some(lp => lp.car === c.i && lp.on && Math.abs(lp.x - px) <= lp.r)) continue;
-        const top = c.kind === 'dining' && tx > c.x0 + 4 && tx < c.x1 - 4 ? GT.CLER + 1 : GT.ROOF + 1; rect(g, x(tx * TS + sx * 8), y(top * TS), 8, (GT.FLOOR - top) * TS, 'rgba(4,4,14,0.62)'); } }
-    for (const lp of G.lamps) { if (S.cut.has(lp.car)) continue; const lx = x(lp.x), ly = y(lp.y); if (lx < -40 || lx > VW + 40) continue; rect(g, lx - 1, ly - 10, 2, 6, '#5a5266');
-      const on = lp.on && !(lp.flick && (time * 14) % 2 < 1); rect(g, lx - 3, ly - 5, 6, 7, on ? '#ffe9a0' : '#3a3444'); rect(g, lx - 4, ly - 6, 8, 1, '#8a849a');
-      if (on) { g.fillStyle = 'rgba(255,220,140,0.10)'; g.beginPath(); g.arc(lx, ly, lp.r * 0.6, 0, Math.PI * 2); g.fill(); } }
-    for (const cp of G.couplings) { if (cp.cut || S.cut.has(cp.ahead)) continue; rect(g, x(cp.pinX) - 2, y(cp.pinY) - 8, 4, 10, cp.arena ? '#6a6480' : '#c8a040'); rect(g, x(cp.g0 * TS), y(GT.FLOOR * TS) + 2, (cp.g1 - cp.g0 + 1) * TS, 3, '#5a5266'); }
-    for (const p of G.points) { const px = x(p.x), py = y(p.y); rect(g, px - 4, py - 3, 8, 3, '#5a5266'); const lean = p.set === 'branch' ? 5 : -5; g.strokeStyle = '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(px, py - 3); g.lineTo(px + lean, py - 16); g.stroke(); rect(g, px + lean - 2, py - 19, 4, 4, p.set === 'branch' ? '#8fd160' : '#ff6b6b'); }
-    const T0 = S.tun; if (T0 && told()) { const k = T0.t / T0.tell; rect(g, VW - 10, 0, 10, VH, 'rgba(255,90,60,' + (0.15 + 0.35 * Math.max(0, k)).toFixed(2) + ')'); }
-    if (T0 && T0.kind === 'bridge') { const sp = tunSpan(); if (sp) { rect(g, x(sp[0]), y((GT.ROOF - 2) * TS) + 4, Math.max(4, sp[1] - sp[0]), 10, '#4a4458'); } }
-    for (const m of S.embers) { const mx = x(m.x), my = y(m.y); if (!m.hot) { const k = 1 - Math.max(0, m.t - 0.3) / m.tell; rect(g, mx - 6, my - 1, 12, 2, 'rgba(255,90,60,' + (0.3 + 0.5 * k).toFixed(2) + ')'); rect(g, mx - 1, my - 40 + 34 * k, 2, 3, '#ffd36b'); } else { rect(g, mx - 4, my - 6, 8, 6, '#ff9a3c'); } } };
-  /* A GHOST PASSENGER (greybox): a pale hooded shape, its eyes shut asleep, open and red awake, its hands out on the grasp's windup */
-  H.drawGhost = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), bob = Math.sin(time * 3 + e.hx) * 1.5, asleep = H.asleep(e);
-    const a = asleep ? 0.45 : 0.85; g.fillStyle = (e.stoker ? 'rgba(200,170,150,' : 'rgba(200,214,240,') + a + ')'; g.fillRect(ex - 5, R(ey - 14 + bob), 10, 12); g.fillRect(ex - 4, R(ey - 2 + bob), 2, 2); g.fillRect(ex + 2, R(ey - 2 + bob), 2, 2);
-    g.fillStyle = asleep ? '#5a6078' : '#ff6b6b'; g.fillRect(ex - 3 + (e.face > 0 ? 1 : 0), R(ey - 11 + bob), 2, asleep ? 1 : 2); g.fillRect(ex + 1 + (e.face > 0 ? 1 : 0), R(ey - 11 + bob), 2, asleep ? 1 : 2);
-    if (e.mode === 'graspTell' || e.mode === 'grasp') { g.fillStyle = '#e8ecff'; const reach = e.mode === 'grasp' ? 12 : 4; g.fillRect(ex + e.face * (5 + reach) - 2, R(ey - 9 + bob), 4, 3); }
-    if (asleep) { g.fillStyle = 'rgba(191,230,245,0.7)'; g.fillRect(ex + 6, R(ey - 18 + Math.sin(time * 2) * 2), 2, 2); } };
+    const groundY = y((GT.FLOOR + 3) * TS), mid = (cx + VW / 2) / TS, secs = G.sections || [], sec = GA.secIndex(mid, secs), nx = secs[sec + 1], mixv = nx && nx[1] - mid < 8 ? 1 - (nx[1] - mid) / 8 : 0;
+    const horizon = Math.max(60, Math.min(VH - 30, y(GT.ROOF * TS) + 10));
+    GA.drawSky(g, cx, VW, VH, horizon, time, sec, mixv); GA.drawGround(g, groundY - 3, VW, VH, time, sp, cx);
+    for (const r of S.recede) { const dx = -r.t * r.t * 90; GA.drawCarGhost(g, x(r.x0 + dx), x(r.x1 + dx), y(GT.ROOF * TS), (GT.FLOOR - GT.ROOF + 2) * TS, Math.max(0, 0.6 * (1 - r.t / MOTION.recede)), time); }
+    const tsn = tunSpan(); if (tsn && S.tun.kind === 'tunnel' && !told()) { const a = Math.max(0, x(tsn[0])), b = Math.min(VW, x(tsn[1])); if (b > a) { g.globalAlpha = 0.88; g.fillStyle = '#04040a'; g.fillRect(a, 0, b - a, VH); g.globalAlpha = 1; } }
+    for (const c of G.cars) { if (S.cut.has(c.i)) continue; if (c.closed) GA.drawCarInterior(g, c, x, y, time, sp, { VW }); else GA.drawOpenBack(g, c, x, y, time, sp, VW); }
+    for (const pr of G.props) GA.drawProp(g, pr, x, y, time);
+    for (const h of G.hatches) if (!S.cut.has(h.car)) GA.drawHatch(g, h.x0, h.x1, x, y);
+    for (const cp of G.couplings) { if (cp.cut || S.cut.has(cp.ahead)) continue; GA.drawCoupling(g, x, y, cp, time, !cp.arena); } };
+  /* over the tiles: the bogies and buffers, the dark in a dark car (graded by the nearest lit lamp) and the lamps with their light, the points, the tunnel's mouth, a bridge, the gust, the tells, the sparks' marks */
+  H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = gt(), groundY = y((GT.FLOOR + 3) * TS);
+    for (const c of livecars()) { for (const t0 of (c.kind === 'well' ? [c.x0 + 1, c.x1 - 1] : [c.x0 + 3, c.x1 - 3])) { const bx = x(t0 * TS + 8); if (bx > -40 && bx < VW + 40) GA.drawBogie(g, bx, groundY, time); } GA.drawBuffers(g, x, y, c, VW); }
+    for (const c of livecars()) { if (!c.closed) continue; const a0 = (c.body ? c.body[0] : c.x0) + 1, lits = G.lamps.filter(lp => lp.car === c.i && lp.on);
+      for (let tx = a0; tx < c.x1; tx++) for (let sx = 0; sx < 2; sx++) { const pxw = tx * TS + sx * 8 + 4, scr = x(tx * TS + sx * 8); if (scr < -8 || scr > VW + 8) continue; let al = 0.66;
+        for (const lp of lits) { const d = Math.abs(lp.x - pxw); if (d < lp.r) al = Math.min(al, 0.16 + 0.5 * (d / lp.r) * (d / lp.r)); }
+        const top = c.kind === 'dining' && tx > c.x0 + 4 && tx < c.x1 - 4 ? GT.CLER + 1 : GT.ROOF + 1; GA.darkSpan(g, scr, y(top * TS), 8, (GT.FLOOR - top) * TS, al); } }
+    for (const lp of G.lamps) { if (S.cut.has(lp.car)) continue; const lx = x(lp.x), ly = y(lp.y); if (lx < -60 || lx > VW + 60) continue; const car = G.cars[lp.car], kind = car && car.kind === 'dining' ? 'chand' : lp.oil ? 'oil' : 'gas';
+      if (lp.on) GA.lightPool(g, lx, y(GT.FLOOR * TS), lp.r, 0.14);
+      GA.drawLamp(g, lx, ly, { on: lp.on, flick: lp.flick, r: lp.r, time, kind, oilFrac: lp.oil ? Math.max(0, (lp.oilT || 0) / lp.oil) : 1 }); }
+    for (const p of G.points) GA.drawPoints(g, p, x, y, time);
+    const T0 = S.tun, sp0 = tunSpan();
+    if (T0 && T0.kind === 'tunnel' && sp0 && !told()) { const a = Math.max(0, x(sp0[0])), b = Math.min(VW, x(sp0[1])); if (b > a) GA.drawTunnel(g, a, b, y((GT.ROOF - 2) * TS), VH, time); }
+    if (T0 && told()) GA.warnSignal(g, VW, VH, T0.t / T0.tell, time, T0.kind);
+    if (T0 && T0.kind === 'bridge' && sp0 && !told()) GA.drawBridge(g, x(sp0[0]), Math.max(4, sp0[1] - sp0[0]), y((GT.ROOF - 2) * TS) + 2, time);
+    if (S.gust > 0 || S.gustTell > 0) GA.gustStreaks(g, VW, y((GT.ROOF - 7) * TS), y(GT.ROOF * TS), time, S.gust > 0 ? 0.55 : 0.25);
+    for (const m of S.embers) GA.drawEmberMark(g, x(m.x), y(m.y), m.t, !!m.hot, m.tell, time);
+    const en = G.cars.find(c => c.kind === 'engine'); if (en && !S.cut.has(en.i)) { const sx = x(259 * TS + 16), sy = y(7 * TS); if (sx > -200 && sx < VW + 300) GA.stackSmoke(g, sx, sy, time); } };
+  /* A GHOST PASSENGER / DEAD FIREMAN (src/redraw/gt_art.js drawGhostArt) */
+  H.drawGhost = (g, e, cx, cy, time) => { GA.drawGhostArt(g, R(e.x - cx), R(e.y - cy), { asleep: H.asleep(e), mode: e.mode, face: e.face || 1, stoker: !!e.stoker, seat: !!e.seat, time, hx: e.hx || 0, anim: e.anim || 0 }); };
   return H;
 }
