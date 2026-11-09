@@ -1,0 +1,5 @@
+# claude/hcfix1 (Daniel 11-09 Highcrown photos)
+1. Dark column ripple: camera moire. The same concentric rainbow arcs lie over the brick and banner in the photo; in the game frame the column is flat dark (src/crown_tiles.js ashlar/pillar, no scanline/shaft overlay). Not a fix target.
+2. Creature = the Crag Ram (goat rider, src/main.js 'goat') on the Crag Walk entry, level.js crown build (X+14, 59 -> col 107, row 59), left over from the cut level; no Highcrown brief wants it. Its sprite/telegraph (the pink checker block by its head) was the "banner-foot dither". Replaced by a castle hound (same ledge, face -1).
+3. Orange bars in the banquet alcove = the Banquet's "great hearth" background (src/redraw/hc3_art.js paintRoom, K.BANQ): pure art, no hazard, five flame bars. Redrawn as a hearth: fire-brick back, hearthstone, corbels, firedogs, two logs, embers, tapered flames.
+Checks: level-quality crown ok (pilot/curve hashes changed: re-run level1-pilot crown --write/--curve owed), crown-exam ok, ambush-listed ok, checkpoint-gaps ok. Shots: work/claude/shots/hcfix1/.
