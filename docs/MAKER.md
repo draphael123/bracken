@@ -77,6 +77,15 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   `doc.mat` -> `L.mat`; resolveTiles reads the cell's material as the place whose skin it wears (`MAT_SET`).
 - `tools/maker-paint.mjs` (in the suite). skins + ground-depth still green (real levels draw as before).
 
+## Done (2026-11-09, BATCH 1 of Daniel's fix list)
+- UNDO remembers the level's size/name/theme: undoing WIDER / NARROWER / NEW put the old grid into the new width.
+- A piece can't be placed INSIDE the ground; painting ground over a piece removes it; a WATER kind out of water is
+  placed but marked red ("NO WATER"), and the top bar counts problem pieces (`MKP.problems`).
+- Tile redraws are batched: painting marks the level dirty, `edFlush` redraws once a frame (was once per tile).
+- Getting around: mouse WHEEL scrolls (SHIFT: up/down), MIDDLE-button drag pans, the camera can scroll past the
+  bars, and a MAP (minimap, bottom right, MAP button toggles) shows the whole level; click/drag it to go there.
+- `tools/maker-editing.mjs` (in the suite).
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and

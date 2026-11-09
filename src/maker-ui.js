@@ -26,7 +26,9 @@ const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a le
 const TOOL_SHOWN = ['START', 'LINK'];   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [] };
+const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+export function mouseUp() { UI.mapDrag = false; }
+export const mapRect = () => UI.map;   /* where the MAP was last drawn (tools/maker-editing.mjs clicks it) */
 export const panelOpen = () => !!UI.panel;
 const HELP_KEY = 'bracken.maker.helpSeen';
 export function firstVisit() { try { if (!localStorage.getItem(HELP_KEY)) { UI.panel = 'help'; localStorage.setItem(HELP_KEY, '1'); } } catch (e) {} }
@@ -122,7 +124,7 @@ function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.
 // ---------------- layout ----------------
 const TAB_H = 12, CELL = 22, ROWS = 2, NAME_H = 10, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
 export const BARS = { top: TOP, bottom: BOT };
-const BUTTONS = ['PLAY', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SETTINGS', 'HELP'];
+const BUTTONS = ['PLAY', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SETTINGS', 'MAP', 'HELP'];
 const inR = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 
 // c: { g, text, SPR, drawSet, VW, VH, time, cat, sel (the selected index in that cat), tools, slot, msg, msgT, doc, themes, tracks }
@@ -135,7 +137,8 @@ export function drawChrome(c) {
     g.fillStyle = sel ? '#3f6a3a' : 'rgba(46,38,64,0.9)'; g.fillRect(tx, 1, w, TAB_H - 2);
     if (has && !sel) { g.fillStyle = '#ffd36b'; g.fillRect(tx, TAB_H - 2, w, 1); }
     text(gr.name, tx + w / 2, 3, sel ? '#d8f09a' : '#c8bcd8', 'center', 6); UI.tabs.push({ x: tx, y: 0, w, h: TAB_H, gi }); tx += w + 3; });
-  { const s0 = c.noGate ? 'NO GOAL GATE YET (ITEMS)' : c.doc.name, room = VW - 6 - tx; if (room > 30) text(c.fitText(s0, room, 6), VW - 4, 3, c.noGate ? '#ff6b6b' : '#ffd36b', 'right', 6); }
+  { const bad = c.noGate || c.problems, s0 = c.noGate ? 'NO GOAL GATE YET (ITEMS)' : c.problems ? c.problems + (c.problems > 1 ? ' PIECES' : ' PIECE') + " WON'T WORK (RED)" : c.doc.name, room = VW - 6 - tx;
+    if (room > 30) text(c.fitText(s0, room, 6), VW - 4, 3, bad ? '#ff6b6b' : '#ffd36b', 'right', 6); }
   // ---- top: the icon strip ----
   const idx = groupIdx(c, UI.group), cols = Math.floor((VW - 40) / CELL), per = cols * ROWS, pages = Math.max(1, Math.ceil(idx.length / per));
   UI.page[UI.group] = Math.min(UI.page[UI.group], pages - 1); const p = UI.page[UI.group];
@@ -163,6 +166,7 @@ export function drawChrome(c) {
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
+  if (UI.mapOn) drawMinimap(c); else UI.map = null;
   if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c);
 }
 const groupOf = c => GROUPS.findIndex((gr, gi) => gr.cat === c.cat && groupIdx(c, gi).includes(c.sel));
@@ -208,7 +212,7 @@ const HELP = [
   ['PLAY', 'the PLAY button (or P) plays it with the real combat; ESC comes back here'],
   ['SETTINGS', 'background, music, time of day, weather, name and width'],
   ['SAVE / LOAD', 'three slots: SLOT picks one, SAVE and LOAD use it'],
-  ['MOVE AROUND', 'arrow keys or WASD'],
+  ['MOVE AROUND', 'mouse wheel (SHIFT+wheel: up/down), drag with the middle button, arrow keys, or click the MAP'],
 ];
 function drawHelp(c) {
   const { g, text } = c, w = 520, h = 168, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
@@ -236,6 +240,11 @@ export function uiMouse(c, mx, my, down) {
     return { consumed: true };
   }
   const { VW, VH } = c;
+  if (UI.map && (UI.mapDrag || inR(UI.map, mx, my))) {   /* THE MINIMAP: click or drag to look there */
+    if (down) UI.mapDrag = true; if (!UI.mapDrag) return { consumed: true };
+    const m = UI.map, fx = Math.max(0, Math.min(1, (mx - m.x) / m.w)), fy = Math.max(0, Math.min(1, (my - m.y) / m.h));
+    return { consumed: true, cam: { x: fx * c.LWp - VW / 2, y: fy * c.LHp - (VH - TOP - BOT) / 2 - TOP } };
+  }
   if (my >= TOP && my < VH - BOT) return null;   // the level
   const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
   if (cell) UI.hover = { kind: 'cell', cat: cell.cat, i: cell.i }; else if (btn) UI.hover = { kind: 'btn', b: btn.b };
@@ -243,8 +252,35 @@ export function uiMouse(c, mx, my, down) {
   if (tab) { UI.group = tab.gi; return { consumed: true, act: 'ui' }; }
   if (arr) { const idx = groupIdx(c, UI.group), per = Math.floor((VW - 40) / CELL) * ROWS, pages = Math.max(1, Math.ceil(idx.length / per)); UI.page[UI.group] = (UI.page[UI.group] + arr.d + pages) % pages; return { consumed: true, act: 'ui' }; }
   if (cell) return { consumed: true, pick: { cat: cell.cat, i: cell.i } };
+  if (btn && btn.b === 'MAP') { UI.mapOn = !UI.mapOn; return { consumed: true, act: 'ui' }; }
   if (btn) { if (btn.b === 'SETTINGS') { UI.panel = 'settings'; return { consumed: true, act: 'openSettings' }; } if (btn.b === 'HELP') { UI.panel = 'help'; return { consumed: true }; }
     return { consumed: true, act: btn.b.toLowerCase() }; }
   return { consumed: true };
 }
 export function closePanel() { const was = UI.panel; UI.panel = null; return was; }
+
+// ---------------- the minimap: the whole level, small, bottom right ----------------
+let MM = null, MMt = -1, MMdoc = null;
+const MMCOL = { 1: '#7a5230', 2: '#a8743f', 3: '#e8e0c8', 4: '#8a5a32', 8: '#a8743f', 9: '#b8a888', 10: '#c9463d', 11: '#a8743f', 12: '#e0b040', 13: '#6f6a62', 14: '#8b8378', 15: '#9a7a58', 16: '#bfe8ff', 17: '#e8e8f0', 18: '#a87ae0', 5: '#6faa4a', 7: '#8a5a32' };
+const MATCOL = { grass: '#5aa33e', cobble: '#9a968c', shore: '#d8c49a', reef: '#6fb0a0', city: '#6a6a7a', masonry: '#b3aca0', deck: '#a8743f' };
+function bakeMinimap(d) {
+  const c = document.createElement('canvas'); c.width = d.W; c.height = d.H; const g = c.getContext('2d');
+  g.fillStyle = '#1e2a3a'; g.fillRect(0, 0, d.W, d.H);
+  for (const r of d.water || []) { g.fillStyle = r.kind === 'poison' ? '#5c8a24' : '#3f8fd0'; g.fillRect(r.x0, r.y0, r.x1 - r.x0 + 1, r.y1 - r.y0 + 1); }
+  for (let y = 0; y < d.H; y++) for (let x = 0; x < d.W; x++) { const v = d.grid[y * d.W + x]; if (!v) continue;
+    const m = d.mat && d.mat[x + ',' + y]; g.fillStyle = m ? MATCOL[m] : v >= 20 && v <= 25 ? '#7a5230' : MMCOL[v] || '#888'; g.fillRect(x, y, 1, 1); }
+  for (const e of d.ents) { g.fillStyle = e.t === 'gate' ? '#ffd36b' : e.t === 'coin' || e.t === 'silver' ? '#ffe680' : FOES.includes(e.t) ? '#ff5a5a' : '#e8dcc0'; g.fillRect(e.x, e.y, 1, 1); }
+  g.fillStyle = '#8fd160'; g.fillRect(d.start.x, d.start.y, 1, 1);
+  return c;
+}
+function drawMinimap(c) {
+  const { g, VW, VH, doc } = c;
+  if (!MM || MMdoc !== doc || c.time - MMt > 0.25 || c.time < MMt) { MM = bakeMinimap(doc); MMt = c.time; MMdoc = doc; }
+  const k = Math.min(2, 220 / doc.W, 60 / doc.H), w = Math.round(doc.W * k), h = Math.round(doc.H * k), x = VW - w - 6, y = VH - BOT - h - 6;
+  g.fillStyle = 'rgba(12,10,18,0.85)'; g.fillRect(x - 3, y - 11, w + 6, h + 14);
+  c.text('MAP - CLICK TO GO THERE', x, y - 9, '#8a7fa0', 'left', 6);
+  g.imageSmoothingEnabled = false; g.drawImage(MM, x, y, w, h);
+  const vx = x + (c.cam.x / 16) * k, vy = y + ((c.cam.y + TOP) / 16) * k, vw = (VW / 16) * k, vh = ((VH - TOP - BOT) / 16) * k;
+  g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.strokeRect(Math.round(vx) + 0.5, Math.round(vy) + 0.5, Math.round(vw), Math.round(vh));
+  UI.map = { x, y, w, h };
+}

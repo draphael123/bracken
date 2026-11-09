@@ -272,3 +272,34 @@ export function engineMat(doc) {
   for (const [k, m] of Object.entries(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.SOLID) { out[y * doc.W + x] = m; any = true; } }
   return any ? out : null;
 }
+
+// ================= PIECES THAT WOULD NOT WORK (claude/maker batch 1) =================
+// A piece painted INSIDE the ground stays buried for the whole level; a WATER kind outside a pool never appears. The
+// editor refuses the first, warns about the second, and marks both in red (drawProblems); PLAY says how many there are.
+const SOLID_IDS = new Set([T.SOLID, T.CRATE, T.PALISADE, T.SOFT, T.ICE, T.CLIMB, T.CRYST]);
+export const isSolidId = v => SOLID_IDS.has(v) || (v >= 20 && v <= 25);
+const inWater = (doc, x, y) => (doc.water || []).some(r => r.kind !== 'shallows' && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
+const kindOf = id => (id.includes(':') ? id.split(':')[0] : id);
+const TILE_SITTERS = new Set(['lockgate']);   // a locked gate stands on its own bars
+export function placeProblem(doc, id, x, y) {
+  const t = kindOf(id), cell = doc.grid[y * doc.W + x];
+  if (isSolidId(cell) && !TILE_SITTERS.has(t)) return { refuse: true, say: "THAT'S INSIDE THE GROUND: PUT IT ON TOP" };
+  if (WATER_FOES.includes(t) && !inWater(doc, x, y)) return { say: nameOf(t) + ' ONLY APPEARS IN WATER: DRAG WATER AROUND IT' };
+  return null;
+}
+export function problems(doc) {
+  const out = [];
+  for (const e of doc.ents) {
+    const cell = doc.grid[e.y * doc.W + e.x];
+    if (isSolidId(cell) && !TILE_SITTERS.has(e.t)) out.push({ e, why: 'buried' });
+    else if (WATER_FOES.includes(e.t) && !inWater(doc, e.x, e.y)) out.push({ e, why: 'needs water' });
+  }
+  return out;
+}
+export function drawProblems(g, doc, cx, cy, t, text) {
+  const ps = problems(doc), a = 0.6 + 0.4 * Math.sin(t * 8);
+  for (const { e, why } of ps) { const x = e.x * TS - cx, y = e.y * TS - cy;
+    g.globalAlpha = a; g.strokeStyle = '#ff4a4a'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, TS - 2, TS - 2); g.globalAlpha = 1;
+    text(why === 'buried' ? 'BURIED' : 'NO WATER', x + 8, y - 8, '#ff6b6b', 'center', 6); }
+  return ps.length;
+}
