@@ -188,6 +188,8 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
 
+Object.assign(THREAT, { tyquint: 0, tyring: 0, tytarget: 0, tyhorse: 0, tygroom: 0, tyhurdle: 0, tyarcher: 3, tychampion: 6 });   /* (claude/tourney) THE TOURNEY: its quintains, rings, targets, horses, grooms and hurdles are machines; the horse archer, its boss */
+
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
 // A tall level is long, it is just long upwards, so the span counts height at three columns a row.
