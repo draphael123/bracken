@@ -5778,7 +5778,7 @@ const treeNodes = () => treeBranch === 1 ? passiveLadder(hero()) : skillsFor(her
 /* THE ONE STORE (src/store.js). Every way in comes through openStore(back, tab): the map's V and Q, Q in a wood, the pause menu's Store and Skills, a keeper's counter.
    `back` is the state it returns to. It opens anywhere outside a fight; BUYING (and slotting a skill) wants the map, a shop room or a lit shrine: loadoutSafe(). */
 const inFight = () => !!(bossActive || miniActive || ambushLive() || enemies.some(e => e.alive && !e.harmless && Math.abs(e.x - P.x) < 140 && Math.abs(e.y - P.y) < 70));
-const storeWhere = () => storeBack === 'map' ? 'map' : L && L.shop ? 'shop' : 'wood';
+const storeWhere = () => storeBack === 'map' ? 'map' : L && (L.shop || L.tavern) ? 'shop' : 'wood';   /* (claude/tavshop) the inn's bar is a shop: coins may be spent there */
 const atShrine = () => shrines.some(s => s.lit && Math.abs(s.x - P.x) < 36 && Math.abs(s.y - P.y) < 32);
 const loadoutSafe = () => { const away = storeBack !== 'map'; return mayBuy({ where: storeWhere(), fight: away && inFight(), atShrine: away && atShrine() }); };
 function openStore(back, tab) {
@@ -7592,7 +7592,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openUnlocks: () => UNLOCK_OPEN('inn'), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  openStore: () => openStore('play', 'heroes'), openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openUnlocks: () => UNLOCK_OPEN('inn'), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -33125,7 +33125,7 @@ function update(dt) {
   time += dt; if (REC.on || REC.msgT > 0) REC.frame(REC_CTX, dt);
   if (attractOn && attractTop()) { clearPresses(); return; }   /* (claude/intro) a press ends the attract clip, and is not also read by anything below */
   if (state !== 'play' || !isPyro()) SFX.jet(false);
-  music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && L.shop)));
+  music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && (L.shop || L.tavern))));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
   if (UNLUI.isOpen) { unlockFrame(dt); return; }   /* (claude/unlocks) THE UNLOCKS screen over the title, the pause menu, the inn */
   if (SWAPUI.isOpen && state !== 'store') { swapFrame(dt); return; }   /* (claude/hubpolish) the swap hero panel over the map or the pause menu */

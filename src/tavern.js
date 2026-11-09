@@ -30,6 +30,7 @@ export const STATIONS = [
   { id: 'guestbook', x: 10, name: 'THE GUEST BOOK', verb: 'SAVES', first: 'THE GUEST BOOK: YOUR SAVES - SWITCH, START A NEW ONE, OR CLEAR ONE. P1 KEEPS THE BOOK.' },   /* (claude/innsaves, Daniel 11-06) the real SAVES station: the five-slot save screen, from the inn */
   { id: 'saves', x: 14, name: 'CO-OP RULES', verb: 'READ', first: 'CO-OP RULES: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
   { id: 'unlocks', x: 27, name: 'THE UNLOCKS BOARD', verb: 'UNLOCKS', first: 'THE UNLOCKS BOARD: WHAT IS STILL LOCKED, HOW TO OPEN IT, AND HOW FAR YOU ARE.' },   /* (claude/unlocks, Daniel 11-07) the UNLOCKS screen, read-only: levels, heroes, skins, the rest */
+  { id: 'store', x: 31, name: 'THE BAR STORE', verb: 'STORE', first: 'THE BARKEEP IS THE TRADER: THE ONE STORE.' },
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
   { id: 'wardrobe', x: 40, name: 'SWAP HERO', verb: 'SWAP', first: 'SWAP HERO: PICK ANY HERO YOU OWN - A HERO UNLOCKED ON ANY SAVE IS YOURS ON EVERY SAVE. ALSO YOUR WEAPON, COLOUR AND RINGS.' },   /* (claude/heroroster2, Daniel 11-07) the wardrobe station (id kept) is SWAP HERO: the verb is SWAP */
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
@@ -51,6 +52,7 @@ export const TAVERN_ART = [
   ['door', 'the inn door in the west wall: oak with iron straps, a lamp over it, swung open while somebody walks in (2 frames: shut / open), the road and a signpost seen through it'],
   ['board', 'THE INVITE BOARD: a cork-and-timber notice board with pinned bills and a chalk slate for the four-letter room code (blank / chalked)'],
   ['unlocks', 'THE UNLOCKS BOARD: a plank board on a post between the long tables and the bar, UNLOCKS chalked on it with a small padlock hung from a nail'],
+  ['store', 'THE BAR STORE: the barkeep doubles as the trader - a hung STORE plank over the counter (src/tavern-art.js store); using it opens the one store (src/store.js, openStore in main.js)'],
   ['table', 'THE CAMPAIGN TABLE: a heavy map table with the world map spread on it, pins and a candle; the party standing round it reads as planning'],
   ['guestbook', 'THE GUEST BOOK: an open ledger on a wooden stand by the door side of the room with a small hanging SAVES sign (idle: a page edge stirs, 2 frames); opens the five save slots'],
   ['saves', 'CO-OP RULES (id saves): a painted board on a post by the party board, a chalked HOW CO-OP SAVES WORK (one page of the co-op guide opens on use)'],
@@ -95,6 +97,7 @@ export function makeTavern(api) {
     if (s.id === 'guestbook') { if (p.n !== 1) { say(p, 'P1 KEEPS THE BOOK', '#9aa39a'); api.hint('P1 KEEPS THE BOOK: ONLY PLAYER ONE CHANGES SAVES.', 4); api.sfx('ui'); return; } if (api.openBook) api.openBook(); return; }
     if (s.id === 'saves') { if (api.openSaves) api.openSaves(); return; }
     if (s.id === 'unlocks') { if (api.openUnlocks) api.openUnlocks(); return; }
+    if (s.id === 'store') { if (api.openStore) api.openStore(); return; }   /* (claude/tavshop, Daniel 11-04) THE BARKEEP IS THE TRADER: the same store, back to this spot */
     if (s.id === 'table') { api.takeRoad(); return; }
     if (s.id === 'wardrobe') { st.cardFor.set(p, { row: 0 }); api.sfx('uiSel'); return; }
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
@@ -141,7 +144,8 @@ export function makeTavern(api) {
     st.bellT = Math.max(0, st.bellT - dt); st.doorT = Math.max(0, st.doorT - dt);
     for (const p of api.players()) {
       const s = stationNear(p); st.near.set(p, s);
-      if (s && !st.saidFirst.has(s.id) && !seen(s.id)) { st.saidFirst.add(s.id); api.hint(s.first, 5); }
+      if (s && s.id === 'store') markSeen(s.id);   /* (the STORE plank says it: no first-visit hint, no glint - they sat over the prompt) */
+      else if (s && !st.saidFirst.has(s.id) && !seen(s.id)) { st.saidFirst.add(s.id); api.hint(s.first, 5); }
       const pr = p.n === 1 ? api.p1Press() : p.press || {};
       if (s && pr.talk && !st.cardFor.has(p)) { if (p.n === 1) api.eatTalk(); else pr.talk = false; use(s, p); }
       /* THE THROW DRILL: a partner who was flying (src/partner-throw.js ptF) and has landed - where? */
@@ -184,6 +188,7 @@ export function makeTavern(api) {
     TA.board(g, at('board'), fy, code, time, api.text);
     TA.guestbook(g, at('guestbook'), fy, time, api.text);
     TA.saves(g, at('saves'), fy, time, api.text);
+    TA.store(g, at('store'), fy, time, api.text);
     TA.tally(g, at('drills'), fy, DRILL_IDS.map(k => t.drills[k] | 0));
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time, api.text);
@@ -193,7 +198,7 @@ export function makeTavern(api) {
     TA.arena(g, at('arena'), fy, time, api.text, PVP_SHIPS);
     TA.mirror(g, at('wardrobe'), fy, time);
     /* THE GLINTS: a bobbing gold plate and a sparkle over every station not used yet */
-    for (const s of STATIONS) if (!seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
+    for (const s of STATIONS) if (s.id !== 'store' && !seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
     /* THE PROMPT over the station a player stands at: his key and the verb, in his colour */
     for (const p of api.players()) { const s = st.near.get(p); if (!s || st.cardFor.has(p)) continue; const lab = keyFor(p) + ' ' + (s.id === 'door' && p.n !== 1 ? 'LEAVE PARTY' : s.verb);
       api.text(lab, X(s.x), fy - 60 - (p.n - 1) * 8, colourOf(api.PROG().tavern, p.n).c, 'center', 6); }
