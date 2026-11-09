@@ -152,7 +152,7 @@ export function makeGobGeoHands(ctx) {
     /* A SEAL IS NEVER A SOFT-LOCK: one whose Geomancer is dead (however he died) and that a hero is near fails on its own */
     const P = ctx.hero();
     for (const k of ctx.L.rocklocks || []) { if (s.smashed.has(k.id) || !k.seal) continue;
-      const alive = ctx.enemies().some(e => e.alive && e.t === 'gobgeo' && e.sealId === k.id), near = P && Math.abs(P.x - (k.x + 0.5) * TS) < 260 && Math.abs(P.y - k.y * TS) < 200;
+      const alive = ctx.enemies().some(e => e.alive && e.t === 'gobgeo' && e.sealId === (k.seal || k.id)), near = P && Math.abs(P.x - (k.x + 0.5) * TS) < 260 && Math.abs(P.y - k.y * TS) < 200;
       if (alive || !near) { s.fail.set(k.id, 0); continue; }
       const t = (s.fail.get(k.id) || 0) + dt; s.fail.set(k.id, t); if (t >= GG.sealFail) smashLock(k, 'fail'); }
     /* A CHANDELIER A ROCK KNOCKED DOWN lands on everyone under it (the game's own weight flattens the one in its column; this is the crash round it) */
