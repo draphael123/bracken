@@ -1309,7 +1309,7 @@ function screePath() {
 
   // ---- 5b. THE GULLY: the last of the open hill before the fold. ----
   ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 304, 7, { kind: 'stone', v: 1 });
-  ent('harpy', 295, 2); ent('goat', 293, 8, { face: -1 });
+  ent('goat', 293, 8, { face: -1 });   /* (claude/scree3tune: the harpy at 295,2 is cut - a diver on top of the goat + rockgoblin squad + the sentry above it was 2 of the pilot's 8 deaths; the squad is the exam) */
   coins([296, 7], [302, 6]);
   // the Ram Lord's stile: a lip of rock one step up outside the fold gate. The goats can't take a step, the harpies don't come this far: a quiet place to stand before the fight.
   block(300, 311, 8, 8); ent('check', 308, 7);
@@ -1320,6 +1320,7 @@ function screePath() {
   // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
   // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
   ent('sign', 307, 7, { text: 'HIS HORNS TURN STEEL: GO ROUND HIM. WHEN HE STANDS UNDER AN OVERHANG, KNOCK OUT ITS PROP.' });   /* (claude/scree2: the reworked Ram Lord - src/ram-lord.js) */
+  ent('sign', 305, 7, { text: 'HE HORNS THE CLIFF AND A BOULDER ROLLS: JUMP IT. HIS BOULDERS KNOCK THE PROPS TOO.' });   /* (claude/scree3: the boulder butt) */
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
   for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall
@@ -1328,7 +1329,7 @@ function screePath() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'musMountain', night: false, glowNight: false,   /* (claude/scree3, Daniel 11-01 "the music doesn't totally fit": beardalaxy's 12.3 s 'mountain' loop repeated every dozen seconds; MintoDog's 32 s stage-select 'musMountain' (in the repo, CC0, benched since the windcaller took its own) plays here - one word to put 'mountain' back) */
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -1343,7 +1344,7 @@ function screePath() {
   GA.R.ropes = [{ x0: 279 * TS + 8, y0: 6 * TS + 4, x1: 305 * TS + 8, y1: 6 * TS + 4, posts: [[279 * TS + 8, 6 * TS + 4, 19 * TS], [305 * TS + 8, 6 * TS + 4, 19 * TS]] }]; // the ropeway cable the swing hangs from
   GA.R.moversExtra.push({ kind: 'lift', ropeway: true, x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
-  GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
+  GA.block(279, 283, 19, 25); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on a rock stack that goes down to the gorge floor (claude/scree3: it was an arch hung in the air over a 2-tile gap - the gorge bottom is two pockets now, each with its own rope ladder out)
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   GA.plat(285, 12, 3);
   GA.R.moversExtra.push({ kind: 'swing', px: 291 * TS, py: 6 * TS, arm: 100, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
@@ -1371,7 +1372,7 @@ function screePath() {
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
   G.ent('rockfall', 193, 5, { every: 3.6 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
   G.R.stone.push([200, 200, 13, 13], [208, 208, 13, 13]); G.block(200, 200, 13, 13); G.block(208, 208, 13, 13);
-  G.ent('goat', 203, 13, { face: -1 }); G.ent('goat', 206, 13, { face: 1 }); G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
+  G.ent('goat', 203, 13, { face: -1 });   /* (claude/scree3tune: ONE goat at the slide's foot, not a pair flanking the troll - two charges 3 tiles apart were an unreadable double hit) */ G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
   G.plat(202, 11, 2); G.plat(205, 9, 3); G.coins([206, 8]); // a perch over the goat pen
   // THE RIDGE ROAD: from the loft, a high line of ledges over the cairn field and the whole scree slope, harpies all the way, the miller's silver at the end
   for (const [x, y, n] of [[161, 5, 2], [165, 4, 3], [170, 3, 3], [176, 4, 3], [182, 3, 3], [188, 4, 3], [194, 3, 4], [200, 4, 3], [206, 3, 3], [212, 4, 3], [218, 5, 3], [224, 6, 3], [230, 7, 3], [236, 8, 3], [242, 9, 3], [248, 10, 3], [254, 11, 3], [260, 12, 3], [266, 13, 3], [272, 14, 3], [278, 15, 3], [284, 16, 3]]) G.plat(x, y, n);
@@ -8624,7 +8625,7 @@ const AMBUSH = {
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
        ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
-    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
+    waves: [[['troll', 180], ['goat', 178], ['sprig', 191]]] }],   /* (claude/scree3tune: the harpy is cut from THE GOAT TRACK - a diver over an elite troll's swat + the goat's charge was 4 of the pilot's 8 deaths; troll + goat + sprig is still the exam) */
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
        (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.

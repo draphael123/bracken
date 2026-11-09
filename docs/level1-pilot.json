@@ -205,14 +205,14 @@
   "seed": 1
  },
  "scree": {
-  "hash": "1e7b6c7c6795",
+  "hash": "bc7a99c1a942",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 35,
+  "hits": 33,
   "deaths": 5,
-  "kills": 32,
-  "lifts": 143,
+  "kills": 43,
+  "lifts": 132,
   "walked": 100,
   "bare": true
  },

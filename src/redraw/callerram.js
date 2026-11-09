@@ -29,6 +29,7 @@
 //     4 crash / land: dazed — legs splayed, head hung, X eyes, tongue out, sparks
 //     5 rear    (toss / stamp / call / butt) up on the hind legs, forehooves pawing, head tucked
 //     6 leap    forelegs folded, hind legs thrown back
+//     7 boulderTell (half reared, forehoof raking)  8 boulderButt (horns in the cliff, chips flying)  9 headIn (wedged, hauling free)  10 stompTell (forehoof hauled high)  [claude/scree3art]
 //   Canvas 77 x 59. Anchor (ax, ay) = (34, 57): between the fore and hind hooves; ay is the row just under the hooves
 //   (hooves' last coloured row 56, outline on 57 — the old bakeRamLord's convention).
 //   Figure ~63 wide (rump -29 .. muzzle +33 of ax) x ~42 tall standing (horn crown to hooves); the rear stands ~52.
@@ -245,13 +246,14 @@ const RM = {
   k: '#231d1a', K: '#5a5048', // hooves
   n: '#6a4a2a', N: '#3e2616', // harness leather
   r: '#ff4a3a', s: '#c98a7a', p: '#c9463d', y: '#ffd36b', w: '#eef2f6', W: '#b8c4d0',
+  t: '#a8865a', T: '#7a6046', q: '#d8b888', D: '#3e3024', // the hill's ochre rock: chips, grit and dust (claude/scree3art)
 };
 
 export function bakeRamLord() {
   const W = 77, H = 48, DX = 5, DY = 11; // design space: hooves' last row at y=45; DX/DY of margin and headroom (the rear) around it
   const rot = (x, y, cx, cy, a) => { const c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return [cx + dx * c - dy * s, cy + dx * s + dy * c]; };
   const A = { hf: [10, 28], hn: [16, 29], ff: [37, 28], fn: [45, 29] }; // where the legs leave the body
-  const frame = ({ bodyA = 0, pivot = [16, 31], off = [0, 0], poll = [48, 13], headA = 0.08, legs, steam = 0, daze = false, sparks = false, mouth = false }) => {
+  const frame = ({ bodyA = 0, pivot = [16, 31], off = [0, 0], poll = [48, 13], headA = 0.08, legs, steam = 0, daze = false, sparks = false, mouth = false, chips = null }) => {
     const B = keyBuf(W, H, DX, DY), g = B.g;
     const T = (x, y) => { const [X, Y] = rot(x, y, pivot[0], pivot[1], bodyA); return [X + off[0], Y + off[1]]; };
     const polyT = (pts, k) => fillPoly(g, pts.map(p => T(p[0], p[1])), k);
@@ -332,6 +334,7 @@ export function bakeRamLord() {
     const [NX, NY] = HT(15.5, 6.5);
     if (steam) { const d = steam > 1 ? 1.6 : 0.75; for (const [x, y, k] of [[2, -1, 'w'], [3, -2, 'W'], [4, -1, 'w'], [5, -3, 'W'], [2, 1, 'W'], [7, -2, 'w'], [8, -4, 'W'], [5, 0, 'w']]) px(cg, Math.round(NX + x * d) + DX, Math.round(NY + y * d) + DY, RM[k]); }
     if (sparks) for (const [x, y] of [[-14, -6], [-10, -11], [-4, -12], [-16, 0], [2, -13]]) px(cg, Math.round(PX + x) + DX, Math.round(PY + y) + DY, RM.y);
+    if (chips) for (const [x, y, k] of chips) px(cg, x + DX, y + DY, RM[k]);   // stone chips and grit, in design space: air, like the steam
     return c;
   };
   const F = [
@@ -349,7 +352,19 @@ export function bakeRamLord() {
     frame({ bodyA: -0.42, poll: [50, 15], headA: 0.1, mouth: true, legs: [['hf', 6, 38, 9, 45], ['hn', 12, 38, 15, 45], ['ff', 'rel', 7, 1, [9, 8]], ['fn', 'rel', 10, -2, [13, 5]]] }),
     // 6 leap: forelegs folded, hind legs thrown back
     frame({ bodyA: -0.12, off: [0, -3], poll: [49, 13], headA: 0.15, legs: [['hf', 'rel', -4, 5, [-9, 8]], ['hn', 'rel', -3, 6, [-8, 9]], ['ff', 'rel', 4, 5, [0, 8]], ['fn', 'rel', 5, 5, [1, 9]]] }),
-  ];
+  ].concat([
+    // 7 boulderTell: half reared and SCRAPING - head down and watching the wall, one forehoof raking the ground back, the other cocked, dust and a pebble thrown behind
+    frame({ bodyA: -0.2, poll: [50, 15], headA: 0.62, steam: 2, legs: [['hf', 5, 37, 6, 45], ['hn', 11, 38, 13, 45], ['ff', 'rel', 4, 7, [1, 14]], ['fn', 'rel', 9, 1, [12, 6]]],
+      chips: [[41, 44, 'q'], [39, 43, 'T'], [37, 44, 'q'], [35, 42, 't'], [43, 45, 'T'], [38, 40, 'q'], [33, 44, 'q'], [34, 41, 'q'], [31, 43, 'T'], [36, 38, 'q'], [29, 44, 't'], [40, 41, 'q']] }),
+    // 8 boulderButt: the lunge - horns driven into the cliff, body stretched low behind them, forelegs buckled, rock chips and sparks flying off the points
+    frame({ bodyA: 0.1, off: [1, 2], poll: [52, 18], headA: 1.15, daze: false, legs: [['hf', 2, 38, 0, 45], ['hn', 9, 39, 8, 45], ['ff', 42, 39, 48, 45], ['fn', 50, 40, 55, 45]],
+      chips: [[66, 12, 'q'], [69, 16, 't'], [68, 21, 'T'], [64, 9, 't'], [70, 11, 'q'], [66, 27, 'q'], [69, 30, 'T'], [62, 6, 'q'], [70, 20, 'y'], [67, 24, 'y'], [71, 25, 'q'], [65, 33, 't'], [61, 38, 'q'], [63, 40, 'T']] }),
+    // 9 headIn: wedged - horns still in the rock, hind legs braced wide and heaving back, rump high, head hauled down and turned from the room
+    frame({ bodyA: 0.17, off: [-1, 0], poll: [51, 17], headA: 1.25, steam: 1, legs: [['hf', 3, 36, -2, 45], ['hn', 9, 38, 6, 45], ['ff', 42, 38, 46, 45], ['fn', 49, 39, 53, 45]],
+      chips: [[67, 17, 'q'], [70, 22, 'T'], [66, 27, 't'], [68, 14, 'q'], [4, 44, 'q'], [1, 43, 'T'], [-2, 44, 'q'], [7, 42, 'q'], [-4, 42, 't'], [63, 36, 'q'], [65, 39, 'T']] }),
+    // 10 stompTell: one forehoof hauled HIGH over the shoulder, the other leg locked, head lowered - the heel of the whole hill about to come down
+    frame({ bodyA: -0.36, poll: [50, 15], headA: 0.5, mouth: true, steam: 2, legs: [['hf', 6, 38, 8, 45], ['hn', 12, 38, 15, 45], ['ff', 38, 38, 42, 45], ['fn', 'rel', 9, -3, [16, -12]]] }),
+  ]);
   return pack(F, 29 + DX, 46 + DY, 48, 32);
 }
 
