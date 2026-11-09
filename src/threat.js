@@ -187,6 +187,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      the snow cornices and the driven hatchets are things you work, not foes */
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
+Object.assign(THREAT, { gtlamp: 0, gtcoupling: 0, gtpoints: 0, gthatch: 0, gtbrake: 0, gtbridge: 0, gtghost: 2.5, conductor: 6 });   /* (claude/ghosttrain) THE GHOST TRAIN: its lamps, pins, points, hatches, brakes and bridge marks are machines; a ghost passenger, its boss */
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
