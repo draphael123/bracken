@@ -75,7 +75,7 @@ export function reviveTarget(bodies, me, cfg) {
      'wait'   it fell into a hazard in the last CATCH.wait s and he is still ahead: it stands still and waits for the pull instead of jumping again
      'raft'   it stands alone on a raft or ferry (a raft that leaves without its player would strand him: it never rides one without a human aboard)
    The meter builds over the leash's own LEASH.build (a rope to him, CATCH UP over its head) and the pull is the leash's puff. */
-export const CATCH = { far: 260, farY: 150, near: 72, stuck: 2.5, wait: 4, gain: 6 };
+export const CATCH = { far: 260, farY: 150, near: 72, stuck: 3.5, wait: 4, gain: 6 };
 export function catchWhy(me, lead, s) {
   if (!me || !lead || me === lead || me.dead || me.down > 0 || me.held || me.flying) return '';
   if (s && s.raft) return 'raft';

@@ -281,6 +281,8 @@ import * as HSWP from './hero-swap.js';   /* (claude/hubpolish) THE SWAP HERO PA
 import { makeShopLife } from './shop-life.js';   /* (claude/hubpolish) THE SHOPS ARE ALIVE */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
+import * as PNG from './ping.js'; const PINGS = PNG.makePings();   /* (claude/cooppr) PINGS / MARKERS: one button marks a foe or a spot; the AI partner reads it */
+import * as XPS from './xp-share.js';   /* (claude/coopai) CO-OP XP SHARE: kill and boss XP in full to every hero that damaged the foe */
 import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanions, brief-aicompanions.md 10-14): linked / default, the four behaviours, the catch-up, the lighter scaling - the pure half; allyTick below is the hands */
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
@@ -1624,7 +1626,7 @@ const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
 const REVIVE_T = 1.5;      /* and for how long, in seconds */
 const COOP_RULES = [
   'DOWN, NOT DEAD: STAND BY HIM ' + REVIVE_T + 's TO LIFT HIM',
-  'LEAVE HIM ' + DOWN_T + 's AND YOU BOTH GO BACK TO THE SHRINE',
+  'LEAVE HIM ' + DOWN_T + 's AND HE WAKES AT THE SHRINE ALONE, PAYING HIS OWN COST',
   'SCORED: KILLS, COINS, AND ABOVE ALL REVIVES',
 ];
 const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
@@ -1656,16 +1658,18 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, ping: pingPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { pingPress = !!o.ping; stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+let seatHostHero = null;
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
-  if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
+  if (p === players[0]) { const wP = P, wPass = passOn, wHero = PROG.hero, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; if (wPass && wPass !== p && seatHostHero) PROG.hero = seatHostHero; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; PROG.hero = wHero; } }   /* (claude/coopproof) nested in a seat's pass (the XP share pays player one from inside a lent seat's kill): HIS hero again, not the seat's - the XP went to the lent hero's row */   /* (inside a profiled seat's pass: player one's own values) */
+  const wSH = seatHostHero; if (!wSH) seatHostHero = PROG.hero;   /* (claude/coopproof) the host's hero, held while a seat's pass runs */
   const wP = P, wH = PROG.hero, wK = K, wKeys = keysRead(), wPress = pressRead(), wPass = passOn, sw = p.prof ? profIn(p.prof) : profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0;   /* (claude/coopprogress) HIS OWN SAVE for his pass */
   P = p; PROG.hero = p.hero; if (p.set) K = p.set; passOn = p;
   keysWrite(p.keys); pressWrite(p.press);
   try { return fn(); }
-  finally { if (sw) profOut(); p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
+  finally { seatHostHero = wSH; if (sw) profOut(); p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
 }
 function nearestHero(e) { let b = null, bd = 1e9;
   for (const p of players) { if (!upright(p)) continue; const d = Math.abs(p.x - e.x) + Math.abs(p.y - e.y) * 0.5; if (d < bd) { bd = d; b = p; } }
@@ -1719,19 +1723,49 @@ function partyToWant() {
 }
 const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
 function partyStart() { const seats = wantSeats(); if (!seats.length) { if (coop()) coopEnd(); return; } coopStart(seats[0].hero, seats[0].ally, seats); }
-function coopEnd() { if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
+function coopEnd() { PINGS.clear(); if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
 /* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
    the old room used to be would leave him in a wood that no longer exists. */
+/* ONE BODY WAKES AT THE LAST SHRINE (whole-room regroup and a lone bleed-out share it): full health and stamina, flasks refilled, a breath of grace. Runs in his own pass. */
+function coopWakeBody() { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); P.flasks = SV.deathRefill(P.flasks, SV.flaskMax(PROG)); if (P.ai) P.aiS = null; seatStamp(P); }
 function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); P.flasks = SV.deathRefill(P.flasks, SV.flaskMax(PROG)); if (P.ai) P.aiS = null; seatStamp(P); }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too; (claude/coopbalance) and every human seat's, as a solo death does (a flask over the max stays) */
+    asPlayer(p, coopWakeBody); }   /* (claude/aicompanions) a respawn restores an AI's flasks too; (claude/coopbalance) and every human seat's, as a solo death does (a flask over the max stays) */
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
    third of his health with a moment of grace. If the clock runs out with nobody there, or both of them are down
    at once, the pair of them wake at the last shrine and each is charged a death. */
+/* (claude/cooppr, Daniel 11-04) PING / MARK. The press is read in the pinger's own pass: a foe ahead of him, else the floor a few steps ahead; a downed hero marks HELP on himself. One per seat, a few seconds, in the seat's colour (drawPings); the host draws it, so online guests see it in the stream. The AI reads a person's ping in allyTick. */
+const pingFoeOk = e => e.alive && !e.harmless && !(e.dying > 0) && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'dummy';
+function pingFloor(x, y) { const tx = Math.max(0, Math.min(LW - 1, Math.floor(x / TS))), t0 = Math.max(0, Math.floor(y / TS) - 2); for (let ty = t0; ty < Math.min(LH, t0 + 10); ty++) if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) return ty * TS; return y; }
+function pingRead() {
+  if (!pingPress) return; pingPress = false;
+  if (!coop() || state !== 'play' || P.dead) return;
+  const t = PNG.pickTarget(P, enemies.filter(pingFoeOk), pingFloor); PINGS.put(P.n, t, !!P.ai);
+  if (t.kind === 'help') SFX.sting(); else SFX.ui();
+  ringAt(t.x, t.y - 4, t.kind === 'foe' ? 16 : 12, PARTY.colourOf(PROG.tavern, P.n).c, 0.35);
+}
+function drawPings(cx, cy) {
+  const ls = PINGS.list(); if (!ls.length) return;
+  for (const p of ls) {
+    const c = p.kind === 'help' ? { c: '#ff6b6b' } : p.ai ? { c: '#c9a0ff' } : PARTY.colourOf(PROG.tavern, p.n), fade = p.t < 0.8 ? p.t / 0.8 : 1, bob = Math.round(Math.sin(time * 8) * 2);
+    const top = p.kind === 'foe' ? (p.foe.h || 24) + 10 : p.kind === 'help' ? 40 : 18, sx = Math.round(p.x - cx), sy = Math.round(p.y - cy);
+    g.save(); g.globalAlpha = fade; g.fillStyle = c.c; g.strokeStyle = c.c; g.lineWidth = 1;
+    if (sx < 6 || sx > VW - 6) { const ex = sx < 6 ? 5 : VW - 5, dir = sx < 6 ? -1 : 1, ey = Math.max(14, Math.min(VH - 14, sy - top)); g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex - dir * 6, ey - 4); g.lineTo(ex - dir * 6, ey + 4); g.closePath(); g.fill(); text('P' + p.n, ex - dir * 14, ey + 2, c.c, 'center', 6); }   /* off the picture: an arrow on the edge it is past */
+    else {
+      if (p.kind !== 'foe') { g.beginPath(); g.ellipse(sx, sy, 7 + Math.sin(time * 6), 3, 0, 0, Math.PI * 2); g.stroke(); }
+      const ty = sy - top + bob; g.beginPath(); g.moveTo(sx, ty); g.lineTo(sx - 4, ty - 6); g.lineTo(sx + 4, ty - 6); g.closePath(); g.fill();   /* the down-pointing marker */
+      g.fillRect(sx - 1, ty - 12, 2, 6);
+      text(p.kind === 'help' ? 'HELP' : (p.ai ? 'ALLY' : 'P' + p.n), sx, ty - 14, c.c, 'center', 6);
+    }
+    g.restore();
+  }
+}
+/* (claude/cooppr, Daniel 11-04) A BOSS'S REWARD GOES TO EVERY SEAT'S OWN SAVE: the beaten boss (the road to buying the hero it opens) and his weapon ride the ledger's flags like the Burning Village's (src/coop-save.js UNLOCK_RE). A default AI / lent seat has no save and takes nothing. */
+function partyUnlock(kind, id) { if (!coop()) return; for (const p of players) if (p !== players[0] && p.prof && !p.ai && p.prof.led) CS.noteFlag(p.prof.led, kind + ':' + id); }
 function goDown(killer) {
   P.down = L && L.tavern ? DOWN_T_TAVERN : DOWN_T; P.reviveT = 0;   /* (claude/tavern) the sparring bell's down is shorter, and harmless */ P.hp = 0; P.killer = killer || null;
   P.atk = -1; P.block = false; P.wBrace = false; P.wthArm = false; P.wthHold = 0; wthSpears = []; P.rgGuard = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.fwUp = false; P.fwT = 0; P.fwRec = 0; P.fwCd = 0; P.cMode = null; P.fbHold = 0; P.stoking = false; P.stokeT = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
@@ -1741,7 +1775,7 @@ function goDown(killer) {
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
-  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } coopFall = true; }   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
+  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } if (players.some(q => q !== P && upright(q))) { P.bled = true; P.down = 0.001; } else coopFall = true; }   /* (claude/cooppr, Daniel 11-04) BLED OUT with somebody still standing: HE alone wakes at the shrine and pays his own cost (coopWatch); everybody down at once is still the party wipe */   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
   P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
   P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
   const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
@@ -1756,7 +1790,7 @@ function downedPlayer(dt) {
   P.anim += dt;
 }
 function reviveBy(helper) {
-  P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
+  PINGS.drop(P.n); P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
   P.st = P.maxSt; P.inv = 2; P.killer = null;
   helper.score.revives++; if (TAVO) TAVO.revived(helper, P);   /* (claude/tavern) the REVIVE drill */
   SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
@@ -1765,6 +1799,7 @@ function reviveBy(helper) {
 }
 function coopWatch() { if (DUELO && DUELO.on()) { coopFall = false; return; }   /* (claude/pvpduel) the duel calls its own rounds: never the shrine */
   if (!coop()) return;
+  for (const p of players) if (p.bled) { p.bled = false; if (p.down > 0 && players.some(q => q !== p && upright(q))) asPlayer(p, bleedBack); else if (p.down > 0) coopFall = true; }
   if (!coopFall && players.some(upright)) return;
   coopFall = false;
   if (L && L.tavern) { for (const p of players) if (p.down > 0) tavernStandUp(p); return; }   /* (claude/tavern) all of them down in the inn: everybody up, no shrine, no cost */
@@ -1781,6 +1816,16 @@ function allyStandUp(p) { const one = AIC.leadOf(players, p), side = one.face > 
   Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: Math.max(1, Math.round(p.maxHp / 3)), inv: 2, killer: null, x: one.x + side * PARTY.LEASH.side, y: one.y, vx: 0, vy: 0, onMover: null, atk: -1, plunge: false, dodge: 0, aiS: null }); p.hpShown = p.hp;
   if (moveBodyClear(p)) p.x = one.x; if (p.score) p.score.deaths++; p.aiUps = (p.aiUps || 0) + 1;
   burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30); callout(PARTY.tagOf(p) + ' GETS BACK UP'); }
+/* (claude/cooppr, Daniel 11-04) BLED OUT, ALONE: his down clock ran out while the other hero still stands. HE wakes at the last shrine (or, in a locked fight, at the arena's entry) and pays HIS OWN death cost - his dropped bundle, his bank stake if he is player one; his partner is not charged and keeps fighting. Runs in the bleeder's pass. */
+function bleedBack() {
+  const p = P; p.score.deaths++; p.dcDone = false; deathCost(p, p.killer); deaths++; gormNoteDeath();
+  const A = bossActive ? L.arena : miniActive ? L.mini : null, inFight = A && Number.isFinite(A.wallL) && Number.isFinite(A.floor);
+  coopWakeBody();
+  p.down = 0; p.reviveT = 0; p.dead = 0; p.killer = null; p.inv = 2; if (p.ai) p.aiS = null; PINGS.drop(p.n);
+  if (inFight) { p.x = (A.wallL + 2) * TS + 8; p.y = A.floor; if (moveBodyClear(p)) { p.x = checkpoint.x; p.y = checkpoint.y; } }   /* the walls are shut: he is let back in at the arena's entry, not locked out at the shrine */
+  SFX.mend(); ringAt(p.x, p.y - 10, 20, '#c9d1dc', 0.4); motes(p.x, p.y - 10, 10, 8);
+  number(p.x, p.y - 36, inFight ? 'BACK IN THE FIGHT' : 'BACK AT THE SHRINE', '#ff6b6b'); callout(PARTY.tagOf(p) + (inFight ? ' RETURNS' : ' WAKES AT THE SHRINE'));
+}
 function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); callout('ON YOUR FEET'); SFX.mend(); }
 /* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
 const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
@@ -2104,11 +2149,11 @@ function drawVictory4(px0, pw) {
    harness driving the game through a synchronous run of BK.sim() never unwinds the stack for it to resolve ON. That
    is not a hypothetical: the ally read as completely inert in its first test, and it was this. BK.allyReady() awaits
    it, so the labs and the tools can have the ally on its feet before the first frame they measure. */
-let LABMOD = null, PTMOD = null, WDMOD = null, allyLoading = null;
+let LABMOD = null, PTMOD = null, WDMOD = null, WGMOD = null, allyLoading = null, ALG = null;
 function allyLoad() {
   if (LABMOD && PTMOD && WDMOD) return Promise.resolve(true);
-  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js'), import('./walk-duel.js')])
-    .then(([a, b, c]) => { LABMOD = a; PTMOD = b; WDMOD = c; return true; }).catch(() => { allyLoading = null; return false; });
+  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js'), import('./walk-duel.js'), import('./walk-graph.js').catch(() => null)])
+    .then(([a, b, c, d]) => { LABMOD = a; PTMOD = b; WDMOD = c; WGMOD = d; return true; }).catch(() => { allyLoading = null; return false; });
   return allyLoading;
 }
 const apress = k => { if (k === 'grab') grabPress = true; if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; };
@@ -2118,8 +2163,36 @@ function allySafeGoal(gx) {
   if (tileAt(tx, ty) === T.SPIKE || tileAt(tx, ty + 1) === T.SPIKE) return P.x;
   if (LABMOD && P.hero !== 'pyro' && LABMOD.fireAt(window.BK, gx, P.y)) return P.x;   /* nor in a fire on the ground (hers does not burn her) */
   if ((L.pools || []).some(q => q.harm && gx > q.x0 - 8 && gx < q.x1 + 8 && P.y > q.y - 12)) return P.x;
+  if (P.ai && !window.NOGUARD) { const one = AIC.leadOf(players, P); if (one && one !== P && (L.pools || []).some(q => q.harm && q.deadly && gx > q.x0 - 8 && gx < q.x1 + 8 && one.x > q.x0 - 8 && one.x < q.x1 + 8 && one.y > q.y - 12)) return P.x; }   /* (coopvert2) nor after him into a deadly pool he is standing in */
   if (P.ai && P.onMover == null && movers.some(m => RAFTY(m) && !m.gone && gx > m.x - 6 && gx < m.x + (m.w || 16) + 6 && Math.abs(m.y - P.y) < 28 && !players.some(q => !q.ai && q.onMover === m))) return P.x;   /* (claude/aicompanions) nor onto a raft nobody is on: she would sail off with only the AI aboard */
   return gx;
+}
+/* (claude/coopvert2, Falling Tower: the AI went down in the orrery pit's poison three times) WHERE A FALL FROM x LANDS: the first floor under (x, y) - { y, ok }. Not ok = a harm pool (or spikes)
+   at the bottom, nothing to stand on, or a drop of more than 'maxRows' tiles. */
+function allyLanding(x, y, maxRows) {
+  const tx = Math.floor(x / TS), r0 = Math.floor((y - 1) / TS);
+  for (let ty = r0 + 1; ty < LH && ty <= r0 + 40; ty++) {
+    const t = tileAt(tx, ty);
+    if (t === T.SPIKE) return { y: ty * TS, ok: false };
+    if (isSolid(tx, ty) || (isOneWay(t) && ty * TS >= y - 2)) {
+      const top = ty * TS;
+      const wet = (L.pools || []).some(q => q.harm && x > q.x0 - 4 && x < q.x1 + 4 && top >= q.y - 6);
+      return { y: top, ok: !wet && ty - r0 <= maxRows }; } }
+  return { y: LH * TS, ok: false };
+}
+/* in the air: when the column it is falling down ends in a pool or spikes, steer to the nearest column (within 5 tiles) that lands safely; on the ground in a fight: never step off a ledge it
+   cannot land from (the duel hands walked it into the pit's poison) */
+function allyAirGuard(p) { if (window.NOGUARD) return;
+  if (p.climb || p.swim || p.onMover != null) return;
+  if (!p.ground) {   /* where it will LAND at the speed it has (the walker's drift carried it past the pit ledge's end), not under it now */
+    if (p.vy < 0) return;
+    const ld = allyLanding(p.x, p.y, 99), t = Math.max(0.05, Math.min(1, (ld.y - p.y) / Math.max(p.vy, 150))), xp = p.x + p.vx * t * 0.85;
+    if (ld.ok && allyLanding(xp, p.y, 99).ok) return;
+    let bx = null, bd = 1e9; for (let k = 0; k <= 12; k++) for (const d of [1, -1]) { const x = xp + d * k * 8; if (allyLanding(x, p.y, 99).ok && !isSolid(Math.floor(x / TS), Math.floor((p.y - 6) / TS)) && Math.abs(x - xp) < bd) { bd = Math.abs(x - xp); bx = x; } }
+    if (bx === null) return; const dx = bx - xp; keys.left = dx < -3; keys.right = dx > 3; return; }
+  const dir = keys.right ? 1 : keys.left ? -1 : 0; if (!dir || keys.jump || jumpPress) return;   /* (a jump at the lip is a gap crossing, not a step off) */
+  const ld = allyLanding(p.x + dir * 12, p.y, 5);   /* a floor about level with its feet ahead is no ledge */
+  if (ld.y > p.y + 2 && !ld.ok) keys.left = keys.right = false;
 }
 /* (claude/aicompanions) A LINKED COMPANION EARNS XP ONLY (brief 10-14): silver stays with YOUR save. Its pass plays out of its own save's view (asPlayer), so a coin
    it bends down for lands in that view's purse - here, between frames (no overlay up), it moves into player one's purse and the view's goes back to what it was. */
@@ -2132,6 +2205,52 @@ function allyPurse(p) {
 }
 /* A RAFT, A LIFEBOAT OR A FERRY: a mover that sails off with whoever stands on it - an AI never rides one without a person aboard (it would strand him) */
 const RAFTY = m => !!m && (m.kind === 'raft' || m.kind === 'lifeboat' || !!m.ferry);
+/* (claude/coopai) THE AI'S ROUTE (coopaudit fix 1): the walker is told an x only, so a leader on another ledge left it pushing at a wall until the stuck pull. The level's movement graph
+   (src/walk-graph.js, the walker's own, built once per level on first need) routes it from its footing to his; the first change of row on that route is where it must jump up or step off,
+   so it walks THERE (and hops at the lip) instead of straight at his x. No route for a moment = it holds and waits for the told catch-up instead of testing every wall. */
+function allyGraph() { if (!WGMOD) return null; if (ALG && ALG.L === L) return ALG.g; ALG = { L, g: null }; try { ALG.g = WGMOD.makeGraph(L, T, {}); } catch (err) { ALG.g = null; } return ALG.g; }
+const allyCell = (g, b) => g.near(Math.floor(b.x / TS), Math.floor((b.y - 1) / TS), 1, 2);
+function allyRoute(p, one, S) {
+  const g = allyGraph(); if (!g) { S.route = null; return; }
+  if (S.routeAt !== undefined && p.aiT - S.routeAt < 24 && S.routeFor === one) return;   /* about twice a second, not every frame */
+  S.routeAt = p.aiT; S.routeFor = one;
+  /* (claude/coopvert) a body in mid-air has no footing under it, so the route used to drop to 'none' for the length of every jump and the walker fell back to pushing at his x: both ends
+     remember the last footing they stood on (a leader up to 2.5 s old, itself up to 1 s) and route from there */
+  let a = allyCell(g, p), b = allyCell(g, one);
+  if (a >= 0 && p.ground) { S.selfCell = a; S.selfAt = p.aiT; } else if (a < 0 && !p.ground && S.selfCell !== undefined && p.aiT - S.selfAt < 60) a = S.selfCell;   /* (coopvert2) in the air only: standing on a stone the graph has no footing for (a failing floor) it used to route from a footing rows away and walk off the ledge */
+  if (b >= 0 && (one.ground || one.onMover != null)) { S.leadCell = b; S.leadAt = p.aiT; } else if (b < 0 && S.leadCell !== undefined && p.aiT - S.leadAt < 150) b = S.leadCell;
+  if (a < 0 || b < 0) { if (!(S.route && p.aiT - (S.routeOk || 0) < 40)) S.route = null; S.noWay = false; return; }
+  const path = g.path(a, v => v === b, 320);
+  if (!path) { S.route = null; S.noWay = true; return; }
+  S.noWay = false; S.route = path; S.routeOk = p.aiT;
+}
+/* the x it should walk to this frame given its route: the lip of the first climb or drop (and 'jump' when it stands at a climb's lip), or null when the route is flat */
+function allyRouteGoal(p, S) {
+  S.hop = false;
+  const r = S.route; if (!r || r.length < 2) return null;
+  const row = r[0][1]; let k = 1; while (k < r.length && r[k][1] === row) k++;
+  if (k >= r.length) return null;   /* flat to him: the plain x goal */
+  const lip = r[k - 1], land = r[k], lx = lip[0] * TS + 8;
+  /* (claude/coopvert) COMMITTED: once at the lip it walks to the landing and stays committed for 1.5 s - it used to flip between 'the lip' and 'the landing' as it crossed the 10 px
+     line and jiggle on a one-tile ledge (Sky Road) without ever leaving it. The walker itself makes the jump across a gap; a climb needs the hop at the lip. */
+  const cm = S.commit;
+  if (cm && p.aiT < cm.until && cm.lip === lip[0] + "," + lip[1]) { if (land[1] < lip[1]) { S.hop = true; if (p.ground && p.aiT % 14 === 0) apress('jump'); } return land[0] * TS + 8; }
+  if (Math.abs(p.x - lx) <= 10 && p.ground) {   /* at the lip: up needs the hop, down is a step */
+    S.commit = { until: p.aiT + 90, lip: lip[0] + "," + lip[1], landX: land[0] * TS + 8, up: land[1] < lip[1] };
+    if (land[1] < lip[1]) { S.hop = true; if (p.aiT % 14 === 0) apress('jump'); }
+    return land[0] * TS + 8; }
+  return lx;
+}
+/* an AI at a lit shrine the party lit is refilled once per life there (the shrine's own fill already runs for every seat when player one lights it; this covers one that
+   arrives later with its flasks spent - coopaudit fix 5) */
+function allyShrine(p) {
+  const fm = SV.flaskMax(PROG); if ((p.flasks | 0) >= fm) return;
+  const m = p.aiShr || (p.aiShr = {});
+  for (let i = 0; i < shrines.length; i++) { const s = shrines[i]; if (!s.lit || s.broken || m[i] === lifeN || !shrineLights(s, p.x, p.y, p.swim)) continue;
+    m[i] = lifeN; const shr = DFM.df('shrine'), give = shr === 'all' ? fm : shr === 'none' ? 0 : F2.shrineGives(PROG);
+    for (let j = 0; j < give; j++) p.flasks = SV.shrineRefill(p.flasks, fm);
+    if ((p.flasks | 0) > 0) number(p.x, p.y - 30, 'FLASKS', '#9fd8ff'); return; }
+}
 /* (claude/aicompanions) THE AI PARTNER'S HANDS - one frame, inside its own pass (every key it presses is its own). In order:
      ONE    a downed partner is the whole list (AIC.reviveTarget: a human first; SUPPORT lifts player one before anyone): straight at him and stand on him
      TWO    it fell into a hazard and he is still ahead: it WAITS for the catch-up puff (coopLeash, AIC.catchWhy 'wait') - never a second jump at the same gap
@@ -2151,8 +2270,9 @@ function allyTick() {
   if (!p.aiRead) p.aiRead = WDMOD.makeEliteRead({});
   for (const k in keys) keys[k] = false;
   const S = p.aiS || (p.aiS = { best: 1e9, stuckT: 0, wait: false, raft: false });
-  S.wait = false; S.raft = false;
+  S.wait = false; S.raft = false; if (p.aiT % 24 === 0 && S.noWay && !(S.noWayT > 0)) S.noWay = false;
   if (p.down > 0 || p.dead) { S.stuckT = 0; return; }
+  allyShrine(p);   /* (claude/coopai) flasks at a lit shrine */
   p.aiT = (p.aiT || 0) + 1;
   const h = p.hero, one = AIC.leadOf(players, p), fdt = 1 / 60;
   if (RAFTY(p.onMover) && !players.some(q => q !== p && !q.ai && q.onMover === p.onMover)) S.raft = true;
@@ -2168,15 +2288,20 @@ function allyTick() {
   /* THREE. THE FLASK */
   if ((p.flasks | 0) > 0 && !(p.drinkT > 0) && p.hp < p.maxHp * B.flask && p.ground && !p.climb && !(p.hurt > 0) && !(p.dodge > 0) && p.atk < 0 && !p.carry
     && !enemies.some(e => e.alive && windingUp(e) && Math.abs(e.x - p.x) < 80 && Math.abs(e.y - p.y) < 40)) tryDrink();
+  /* (claude/cooppr, Daniel 11-04) A PERSON'S PING: a marked foe is fought first (and followed past the usual stray and reach), a marked spot is walked to for a few seconds */
+  const pg = PINGS.aiRead(), pinged = pg && pg.kind === 'foe' ? pg.foe : null;
+  p.pingHold = PNG.holdSpot(p.pingHold, pg, time);
   /* FOUR. THE FOE */
   let foe = null, best = 1e9;
   for (const e of enemies) {
     if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
-    if (Math.abs(e.y - p.y) > 40) continue;
-    const d = Math.abs(e.x - p.x); if (d > B.engage) continue;
-    if (one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
-    if (B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
-    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0);
+    const dy = Math.abs(e.y - p.y), dx0 = Math.abs(e.x - p.x), ranged = h === 'ranger' || h === 'pyro', isPing = e === pinged;   /* (claude/coopai, coopaudit fix 2) a foe a ledge up or down: a ranged kit shoots ~96 px, the rest hop to ~56 when he is close */
+    if (!isPing && (dy > (ranged ? 96 : 56) || (dy > 40 && !ranged && dx0 > 60))) continue;
+    if (isPing && dy > 96) continue;
+    const d = dx0; if (d > (isPing ? B.engage + 120 : B.engage)) continue;
+    if (!isPing && one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
+    if (!isPing && B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
+    const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0) - (e.t === 'shaman' || e.t === 'archer' || e.t === 'priest' || e.cast !== undefined ? 60 : 0) + (dy > 40 ? 30 : 0) - (isPing ? 300 : 0);   /* (a person's ping first of all) casters and archers first; a foe on another ledge after the ones beside it */
     if (s < best) { best = s; foe = e; }
   }
   /* THE LAST HIT ON AN OPENING IS HIS */
@@ -2185,17 +2310,31 @@ function allyTick() {
   if (foe && !holdOff && !S.raft) {
     p.aiF = (p.aiF || 0) + 1;
     LABMOD.labDuelFrame(window.BK, h, foe, p.aiF, 'human', p.aiRead);
-    if (one !== p) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
+    if (one !== p && foe !== pinged) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
     if (B.guard && p.hp < p.maxHp * B.guard) { keys.atk = false; atkPress = false; p.abuf = 0; if (LABMOD.SHIELDED(h) && windingUp(foe)) keys.block = true; }   /* hurt and careful: it only defends */
     if ((keys.left || keys.right) && allySafeGoal(p.x + (keys.right ? 12 : -12)) === p.x) keys.left = keys.right = false;   /* never onto spikes, into fire or a harm pool for a fight */
+    allyAirGuard(p);
     return;
   }
   /* FIVE. WITH HIM: a step behind his shoulder, so it is never in front of his swing (off a lone raft: straight to him) */
   let goal = one.x + (one.face > 0 ? -B.back : B.back);
-  if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
+  if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) { const sx = one.x + (p.x >= one.x ? 26 : -26), st = tileAt(Math.floor(sx / TS), Math.floor(p.y / TS));
+    goal = (isSolid(Math.floor(sx / TS), Math.floor(p.y / TS)) || isOneWay(st)) ? sx : (isSolid(Math.floor((2 * one.x - sx) / TS), Math.floor(p.y / TS)) || isOneWay(tileAt(Math.floor((2 * one.x - sx) / TS), Math.floor(p.y / TS))) ? 2 * one.x - sx : p.x); }   /* never in his way - (claude/coopvert) but never off the ledge to do it: the other side, else it stands */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
+  const hold = p.pingHold && !S.raft ? p.pingHold : null;   /* (claude/cooppr) a marked spot: walk there (the route code below handles a row change), then go back to him */
+  if (hold && Math.abs(hold.x - p.x) < 10 && Math.abs(hold.y - p.y) < 24) p.pingHold = null;
+  else if (hold) goal = hold.x;
+  /* (claude/coopai) a leader on another row: the route's first lip is the goal (see allyRoute); no route for 1.5 s = hold and let the told catch-up come */
+  const tgt = p.pingHold || one;   /* (claude/cooppr) the route goes to a marked spot while one is held */
+  if (one !== p && !S.raft && (Math.abs(tgt.y - p.y) > 24 || S.stuckT > 0.8)) { allyRoute(p, tgt, S); const rg = allyRouteGoal(p, S); if (rg !== null) goal = rg; else if (S.commit && !p.ground && p.aiT < S.commit.until) { goal = S.commit.landX; S.hop = S.commit.up; }   /* (claude/coopvert) in the air on a committed hop: steer to the landing, not back at his x */ S.noWayT = S.noWay ? (S.noWayT || 0) + fdt : 0; if (S.noWayT > 1.5 && dLead > AIC.CATCH.near) { S.wait = true; keys.left = keys.right = false; return; } } else { S.noWayT = 0; S.route = null; S.noWay = false; }
+  S.hopHeld = false; S.dbgGoal = goal;
   p.aiWalk(allySafeGoal(goal));
+  /* (claude/coopvert) a climb's hop is HELD while it rises: the walker lets go of the key, and a tap is a one-tile hop that never clears the next ledge up (the Hornet's Nest well) */
+  if (S.hop && !holdOff && (p.ground || p.vy < 0) && !p.climb && !p.swim) { keys.jump = true; S.hopHeld = true; }
+  /* ...and in the air on a committed hop it steers to the landing itself: the walker lets the air carry it, and it drifted off the ledge it had just cleared */
+  if (S.commit && !p.ground && !p.climb && !p.swim && p.aiT < S.commit.until && !holdOff && one !== p) { const dx = S.commit.landX - p.x; keys.left = dx < -3; keys.right = dx > 3; }
+  allyAirGuard(p);
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */
@@ -4795,6 +4934,11 @@ function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
+  /* (claude/coopai) THE XP SHARE (Daniel 11-04): in co-op the first kill pays FULL to every hero that damaged the foe, each in HIS pass (his hero, his save, his catch-up and soft cap);
+     an AI or lent seat with no save of his own folds into player one, so a partner that takes the kill never costs him the XP. Solo: the old one-hero path. (claude/cooppr: a boss's reward credit rides the ledger flags, partyUnlock.) */
+  if (players && players.length > 1 && coop()) { const who = XPS.payeesOf(e, passOn, players); for (const q of who) { if (q === passOn) xpPay(e); else asPlayer(q, () => xpPay(e)); } return; }
+  xpPay(e); }
+function xpPay(e) {
   const id = curId(), base = xpFoe(e.t, e.xpRole, xpTierOf(id), e.elite); if (!base) return;
   const done = !!heroDone()[id], got = done ? null : xpGot(id), seen = done || (got.k || []).includes(e.xpKey);
   if (!seen) (got.k = got.k || []).push(e.xpKey);
@@ -7090,7 +7234,7 @@ function drawCoopPick() {
   { const h = list[coopPick.i] || 'knight';
     wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
   /* HOW CO-OP WORKS, which this screen never said: a fallen hero is DOWN, NOT DEAD (REVIVE_D / REVIVE_T lift him), the stake is
-     DOWN_T - leave him and the PAIR go back to the shrine - and the run is scored with a revive worth five kills. Every line was
+     DOWN_T - leave him and HE alone wakes at the shrine (both down = the pair) - and the run is scored with a revive worth five kills. Every line was
      measured with textW at size 6 against VW - 8: fitText trims silently, so these are written to fit, not trusted to it. */
   COOP_RULES.forEach((ln, i) => text(ln, VW / 2, top + ch + 31 + i * BODY_LH, i === 1 ? '#e8c860' : UI.dim, 'center', 6));
   text('EVERY CREATURE AND BOSS: TWICE THE HEALTH AND HURT', VW / 2, VH - 28, '#ff9a5c', 'center', 6);   /* the old wording ran off both edges at 320 wide, and fitText would not trim it: the line itself is shorter now */
@@ -7107,7 +7251,7 @@ function selectStart() {
 // ---------- input ----------
 const keys = {};
 let grabPress = false;   /* (claude/partnerthrow) GRAB: lift / throw your partner, or throw what you carry */
-let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false, stancePress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false, stancePress = false, pingPress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
 let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
@@ -7117,7 +7261,7 @@ let swapPress = false;   /* (claude/hubpolish) H in a menu or on the map: the sw
 const KEYS = {
   jump: ['z', 'Z', ' ', 'Space', 'ArrowUp', 'w', 'W', 'k', 'K'], atk: ['x', 'X', 'j', 'J', 'Enter'], block: ['c', 'C', 'l', 'L'], dodge: ['v', 'V', 'Shift'],
   throw: ['f', 'F', 'b', 'B'], grab: ['i', 'I'], skill2: ['g', 'G', 'n', 'N'], talk: ['e', 'E', 't', 'T'], flask: ['u', 'U', '1'], stance: ['2'],
-  left: ['ArrowLeft', 'a', 'A'], right: ['ArrowRight', 'd', 'D'], down: ['ArrowDown', 's', 'S'], up: ['ArrowUp', 'w', 'W'], pause: ['Escape', 'p', 'P'], talents: ['q', 'Q'], dance: ['h', 'H'], map: ['Tab'],
+  left: ['ArrowLeft', 'a', 'A'], right: ['ArrowRight', 'd', 'D'], down: ['ArrowDown', 's', 'S'], up: ['ArrowUp', 'w', 'W'], pause: ['Escape', 'p', 'P'], talents: ['q', 'Q'], dance: ['h', 'H'], map: ['Tab'], ping: ['y', 'Y'],   /* (claude/cooppr) PING / MARK: applyBinds only fills keys that exist here */
 };
 addEventListener('keydown', e => {
   if (e.repeat) { e.preventDefault(); return; }
@@ -7145,6 +7289,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.skill2)) skill2Press = true;
   if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
   if (isKey(e, KEYS.stance)) stancePress = true;   /* THE RANGER's STANCE */
+  if (isKey(e, KEYS.ping)) pingPress = true;   /* (claude/cooppr) PING / MARK */
   if (isKey(e, KEYS.flask)) flaskPress = true;   /* THE FLASK: drink (src/survival.js) */
   if (isKey(e, KEYS.talk)) { talkPress = true; keys.talk = true; }   /* (survival2) held: BREAK THE SHRINE is a hold */
   padLast = false;
@@ -7209,7 +7354,7 @@ function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
-  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'ping', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
   if (rose('pause') && L && L.tavern && state === 'play') pausePress = true;   /* (claude/tavernname) A JOINED PLAYER'S START opens the inn's settings menu, as player one's does */
   const rgBack = false;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) p.keys[k] = true; else if (k === 'dance' ? (st.prev[k] || rgBack) : st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
@@ -7246,7 +7391,7 @@ function pollGamepad() {
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; p1Pad = gp.index; } }   /* (claude/tavern) p1Pad: the pad player one plays on, never a joiner's */
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('ping')) pingPress = true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   const rgBack = false;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) keys[k] = true; else if (k === 'dance' ? (pad.prev[k] || rgBack) : pad.prev[k]) keys[k] = false; }
@@ -7306,7 +7451,7 @@ function padRawTick(gps) {
 // a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
 const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
-  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true; else if (k === 'stance') stancePress = true;
+  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true; else if (k === 'stance') stancePress = true; else if (k === 'ping') pingPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
 const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet || P.swim) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
@@ -7320,7 +7465,7 @@ const touchAutoFace = kind => { if (state !== 'play' || !P || P.dead || P.hurt >
 const touchSkillInfo = i => { const sk = skillAt(i); if (!sk) return null; const cd = skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0;
   return { id: sk, icon: skillIcon(sk), k: busy ? (cd > 0 ? Math.min(1, cd / max) : 1) : 0, secs: cd }; };
 const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, DEV: DPR_DEV, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
-  stance: () => null, press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
+  stance: () => null, ping: () => coop() && state === 'play', press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
   speed: () => (P ? Math.abs(P.vx || 0) : 0), padUsed: () => padLast, touched: () => { padLast = false; } });
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 /* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
@@ -7716,14 +7861,15 @@ function drawPartyMarks(cx, cy, phase = 'back') {
     if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down, ai: !!q.ai })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
-      bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); } }
+      bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); }
+    if (p.ai && p.aiS && !(p.leash > 0) && !(p.down > 0) && state === 'play') { const w = p.aiS.wait ? 'WAITS' : p.aiS.noWay ? 'NO WAY UP' : p.aiS.stuckT > 1.2 ? 'STUCK' : ''; if (w) { const wx = Math.max(30, Math.min(VW - 30, x)), wy = Math.max(8, Math.min(VH - 30, y - 44)), ww = inkW(w, 6) + 6; g.fillStyle = 'rgba(12,16,22,0.72)'; g.fillRect(Math.round(wx - ww / 2), wy - 2, ww, 10); text(w, wx, wy, w === 'STUCK' || w === 'NO WAY UP' ? '#ffd36b' : c.c, 'center', 6); } } }   /* (claude/coopvert2) a dark plate behind it: green on a forest backdrop was unreadable; the two 'it is not getting there' cues are amber */   /* (claude/coopai, coopaudit fix 7) the AI says why it is not with him, before the catch-up puff does */
   for (const f of leashFx) { g.globalAlpha = Math.min(1, f.t * 2) * 0.6; g.strokeStyle = '#e8e0d0'; g.beginPath(); g.moveTo(Math.round(f.x0 - cx), Math.round(f.y0 - cy) - 8); g.lineTo(Math.round(f.x1 - cx), Math.round(f.y1 - cy) - 8); g.stroke(); g.globalAlpha = 1; }
 }
 Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { swapPress = false; grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; jumpUpKey = false;
+function clearPresses() { swapPress = false; grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; pingPress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -9087,7 +9233,7 @@ function ptPass() {
     return sv; }
   if (r.eat) {   /* CARRYING HIM: no swing, roll, guard, skill or flask - the same rule as carrying a bucket */
     atkPress = false; keys.atk = false; P.abuf = 0; dodgePress = false; keys.dodge = false; P.dbuf = 0; keys.block = false; keys.throw = false;
-    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = stancePress = false; }
+    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = stancePress = pingPress = false; }
   return null;
 }
 function ptMasked(p, fn) {
@@ -9239,7 +9385,7 @@ const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (cl
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
   : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap * DFM.df('parry') : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!(P.fwUp && (P.fwT || 0) <= FW_K.perfect) : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
 const rpSkillBlow = () => P.atk < 0 && !P.plunge && time - (P.skillAt ?? -9) < 1.5;
-function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; if (DUELO) DUELO.hit(e, dmg, fromX); return; }   /* (claude/pvpduel) A DUELLIST'S PROXY: the blow is a hero's on a hero - src/pvp-duel.js routes it onto that seat through damagePlayer, before any foe rule */ const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */ if (e && e.t === 'dummy' && L && L.opening && OPN) OPN.dummyHit(P, tag, plunge);   /* (claude/tutorial2: and what KIND of blow it was - the straw yard credits heavy / rising / sweep / plunge from the tag) */   /* (claude/tutorial1) the lesson's attack step */
+function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; if (DUELO) DUELO.hit(e, dmg, fromX); return; }   /* (claude/pvpduel) A DUELLIST'S PROXY: the blow is a hero's on a hero - src/pvp-duel.js routes it onto that seat through damagePlayer, before any foe rule */ const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && dmg > 0 && passOn && players && players.length > 1) XPS.hitRecord(e, passOn);   /* (claude/coopai) whose blow: the XP share pays every hero that damaged the foe */ if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */ if (e && e.t === 'dummy' && L && L.opening && OPN) OPN.dummyHit(P, tag, plunge);   /* (claude/tutorial2: and what KIND of blow it was - the straw yard credits heavy / rising / sweep / plunge from the tag) */   /* (claude/tutorial1) the lesson's attack step */
   if (RGK && dmg > 0 && (e.rgMarkT || 0) > time) dmg = Math.round(dmg * RGK.markMul(e));
   if (WCH && dmg > 0 && e && !e.harmless && WCH.raging(P)) dmg = Math.round(dmg * WCM.WC.rage.dealt);   /* (claude/warcairn) WAR-RAGE: a drum struck - every blow lands a quarter harder a while (src/war-cairn-hands.js) */   /* (claude/ranger) THE RANGER'S MARK: every blow on her quarry lands harder (src/ranger.js) */   /* taken at once, so nothing this blow sets off inherits it */
   /* (claude/keyscore, B14) THE TAG IS EVERY BLOW'S NAME, the BLOW is a HERO'S HAND: a thrown prop ('throw') and a seed sent back ('reflect') reach every boss hook by their tag,
@@ -10923,6 +11069,7 @@ function updatePlayer(dt) {
   if(P.fRelease || P.dead || P.down > 0) P.fHeld = 0; }
   // The water ends an airborne chain once the downstroke has stopped; treading water must recover wind.
   if (P.ground || (P.swim && !P.plunge)) P.plungeN=0;
+  pingRead();   /* (claude/cooppr) a downed hero can ping too: HELP */
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
   if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (lifeRule() && lives <= 0 && !bossSelectFight) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
@@ -12612,7 +12759,7 @@ function queenWinded(e, blocked) {
 }
 function queenDies(who) {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === who?.t) bossSelectRecord();
-  if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
+  if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; partyUnlock('bossDown', curId()); saveProgress(); }
   setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
   for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && (e.drone || e.frogAdd)) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -12727,7 +12874,7 @@ function bossEnd(e) {
       shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.12; if (PBH) PBH.end(e);
       /* (claude/church2) HE IS BEATEN: the hero he is opens in the shop for silver (feat 'boss:church', the Death Knight's rule). Set on his death in his own level - not in a
          boss rush; a save that already owns the hero keeps him whatever this says */
-      if (!rushOn() && !SET.invincible && curId() === 'church') { PROG.bossDown = PROG.bossDown || {}; if (!PROG.bossDown.church) { PROG.bossDown.church = true; saveProgress(); number(e.x, e.y - 60, 'THE PALADIN CAN BE HAD IN THE SHOP', '#ffd36b'); } }
+      if (!rushOn() && !SET.invincible && curId() === 'church') { PROG.bossDown = PROG.bossDown || {}; if (!PROG.bossDown.church) { PROG.bossDown.church = true; partyUnlock('bossDown', 'church'); saveProgress(); number(e.x, e.y - 60, 'THE PALADIN CAN BE HAD IN THE SHOP', '#ffd36b'); } }
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 40, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 80, life: 1.6, max: 1.6, col: ['#d8dce4', '#d8b040', '#fff6c8'][i % 3], size: 2, grav: 200 });
       say('THE CHURCH IS STILL', '#ffd36b'); break; }
     case 'fogknight': { /* THE FOG LIFTS: the plate falls in a heap on the towpath, empty, and the fog goes off over the water toward the canal */
@@ -12886,7 +13033,7 @@ function hqDown() {
 // The Chieftain's death is not the end: the hall burns from the floor up and you climb the rafters to the way out.
 function chiefDies() {
   if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === 'chief') bossSelectRecord();
-  if (!bossJumpOn && !rushOn()) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
+  if (!bossJumpOn && !rushOn()) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; partyUnlock('bossDown', curId()); saveProgress(); }
   SFX.bossDown();
   setView('normal'); bossActive = false; camLock = null; slowT = 1.0; music.play(L.music || 'theme');
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -24006,7 +24153,7 @@ function unbDied(e) {
   /* HE IS BEATEN: the hero he is opens in the shop (his feat 'boss:unburied', and his gold route). Set on his death in his own
      level - not on clearing it, and not in a boss rush. A save that already owns the hero keeps him whatever this says. */
   if (e.t === 'bloodknight' && !rushOn() && !SET.invincible && curId() === 'unburied') { PROG.bossDown = PROG.bossDown || {};
-    if (!PROG.bossDown.unburied) { PROG.bossDown.unburied = true; saveProgress(); number(e.x, e.y - 60, 'THE BLOOD KNIGHT CAN BE HAD IN THE SHOP', '#c8b6ff'); } }
+    if (!PROG.bossDown.unburied) { PROG.bossDown.unburied = true; partyUnlock('bossDown', 'unburied'); saveProgress(); number(e.x, e.y - 60, 'THE BLOOD KNIGHT CAN BE HAD IN THE SHOP', '#c8b6ff'); } }
 }
 function unbReset() {
   UNB_FIELD = UNBF.newField(L, TS);
@@ -30660,7 +30807,7 @@ EHP.bzchief = BZCM.BZC.hp; EHP.drummer = WCM.WC.drummer.hp; KNOCK_SKIP.add('bzch
    is flipped; until then THE BERSERKER is sold as he always was), and anyone who beats him earns THE CHIEFTAIN'S AXES (a weapon skin: Q4). Set on his defeat in his own level - not in
    a boss rush, not with the invincible setting. A slot that already owns the Berserker keeps him (no refund) and the card says so */
 function bzchiefBeaten(e) { if (rushOn() || SET.invincible || curId() !== 'warcairn') return;
-  PROG.bossDown = PROG.bossDown || {}; PROG.bossDown.warcairn = true; PROG.swords = PROG.swords || {}; const axesNew = !PROG.swords.chiefaxes; PROG.swords.chiefaxes = true; saveProgress();
+  PROG.bossDown = PROG.bossDown || {}; PROG.bossDown.warcairn = true; partyUnlock('bossDown', 'warcairn'); PROG.swords = PROG.swords || {}; const axesNew = !PROG.swords.chiefaxes; PROG.swords.chiefaxes = true; partyUnlock('swords', 'chiefaxes'); saveProgress();
   const owned = !!(PROG.heroes && PROG.heroes.berserker); number(e.x, e.y - 70, owned ? BZCM.BZC_SAY.winOwned : BZCM.BZC_SAY.winNew, owned ? '#ff9a5c' : '#c8b6ff');
   hintSay('tip', 6, 'THE BERSERKER CHIEFTAIN YIELDS. ' + (owned ? "HIS AXES ARE YOURS: THE CHIEFTAIN'S AXES, IN THE STORE'S WEAPONS." : 'THE BERSERKER WILL FIGHT FOR YOU - 10 SILVER IN THE STORE.' + (axesNew ? ' AND HIS AXES ARE YOURS.' : ''))); }
 PBH = makePaladinHands({ heroT: () => hero(), burnTick: () => BURN_TICK, g: () => g, get hfx() { return HFX; }, get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
@@ -33341,7 +33488,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => duelPass(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); }))); coopWatch(); if (TAVO) TAVO.tick(wdt); if (DUELO) DUELO.post(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => duelPass(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); }))); coopWatch(); PINGS.tick(wdt); if (TAVO) TAVO.tick(wdt); if (DUELO) DUELO.post(wdt); if (YARD) YARD.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
@@ -37405,7 +37552,7 @@ function render() {
     if (z !== 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
     drawWorld(cx, cy, !heroHidden && !TRN);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
     if (TRN || trnArrive) trnDrawWorldOver(cx, cy);   /* (claude/transwm) the heroes' walk-out, the arrival ferry */
-    if (!heroHidden && !TRN) drawPartyMarks(cx, cy, 'front');   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
+    if (!heroHidden && !TRN) drawPartyMarks(cx, cy, 'front'); if (!TRN) drawPings(cx, cy);   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
     if (z !== 1) g.restore();
     if (tilt) g.restore();
     drawSeaHud();
@@ -38014,6 +38161,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     cam: () => ({ wide: partyCam.wide, view: viewMode, VW, VH, want: desiredView() }), leash: () => players.map(p => ({ n: p.n, m: p.leash || 0, why: p.leashWhy || '', pulls: p.leashes || 0 })), leashFx: () => leashFx.length,
     party: () => players.map(p => ({ n: p.n, hero: p.hero, src: p.src || null, ai: !!p.ai, sword: p.sword || null, colour: PARTY.colourOf(PROG.tavern, p.n).id, x: p.x, y: p.y, walkIn: p.walkIn || 0, down: p.down || 0 })),
     want: () => coopWant, seats: () => wantSeats(), next: () => partyNextLevel(), saveParty: () => partySave(), roster: () => partyRoster(), levelIndex: () => levelIndex,   /* (claude/partypersist) */ joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
+  asPlayer: (p, fn) => asPlayer(p, fn), pings: () => PINGS.list().map(p => ({ n: p.n, kind: p.kind, ai: p.ai, t: p.t, x: p.x, y: p.y })), coopDeaths: () => deaths, coopFell: () => coopFall,   /* (claude/coopproof) probe reads */
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   allyReady: () => allyLoad(),
   /* (claude/aicompanions) AI COMPANIONS, for tools/ai-companion.mjs: seat one from the board's own api, the party's scale, each AI seat's state, a party armed for the next wood */

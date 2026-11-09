@@ -63,12 +63,13 @@ const SKILL_OF = { throw: 0, skill2: 1, skill3: 2, skill4: 3 };
 const SPOT_FULL = {
   atk: [0, 0, 0.78], jump: [-0.55, -1.75, 0.7], dodge: [-1.95, -0.35, 0.52], block: [-2.35, -1.55, 0.52],
   interact: [-0.4, -3.2, 0.6], throw: [-1.75, -3.0, 0.4], skill2: [-2.85, -2.5, 0.4], skill3: [-3.75, -1.6, 0.4], skill4: [-4.2, -0.4, 0.4], ctx: [-3.2, -3.35, 0.42],
+  ping: [-5.1, -2.4, 0.4],   /* (claude/cooppr) PING / MARK: only in a co-op party (env.ping()) */
   stance: [-4.95, -1.05, 0.4],   /* (claude/rangerhud) THE RANGER's BOW / KNIFE: only when env.stance() says so */
 };
 /* SIMPLE: fewer, bigger, an arc round the thumb. ATTACK at the rest point, JUMP above it, DEFEND to its left, SKILL up-left; the two contextual buttons above. */
-const SPOT_SIMPLE = { atk: [0, 0, 0.9], jump: [-0.1, -1.95, 0.75], defend: [-2.0, -0.25, 0.68], skill: [-1.9, -1.95, 0.6], interact: [-1.15, -3.25, 0.55], ctx: [-2.95, -2.9, 0.5], stance: [-3.45, -1.05, 0.46] };
+const SPOT_SIMPLE = { atk: [0, 0, 0.9], jump: [-0.1, -1.95, 0.75], defend: [-2.0, -0.25, 0.68], skill: [-1.9, -1.95, 0.6], interact: [-1.15, -3.25, 0.55], ctx: [-2.95, -2.9, 0.5], stance: [-3.45, -1.05, 0.46], ping: [-4.0, -2.3, 0.42] };
 const SPOTS = { simple: SPOT_SIMPLE, full: SPOT_FULL };
-const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4' };
+const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4', ping: 'PING' };
 
 export function createTouch(env) {
   const { disp, q, SET } = env;
@@ -91,7 +92,8 @@ export function createTouch(env) {
   const preset = () => (SET.touchPreset === 'simple' || SET.touchPreset === 'full' || SET.touchPreset === 'custom' ? SET.touchPreset : hasPos() ? 'custom' : 'simple');   /* (a player who dragged buttons before presets existed keeps his layout: it is CUSTOM on the FULL buttons) */
   const baseOf = () => { const p = preset(); return p === 'custom' ? (SET.touchBase === 'simple' ? 'simple' : 'full') : p; };
   const hasStance = () => !!(env.stance && env.stance());   /* (claude/rangerhud) THE RANGER: a BOW / KNIFE button of her own, drawn with her current stance */
-  const btnSet = () => { const b = baseOf() === 'simple' ? SIMPLE_BTNS : FULL_BTNS; return hasStance() ? [...b, 'stance'] : b; };
+  const hasPing = () => !!(env.ping && env.ping());   /* (claude/cooppr) CO-OP PING: a 5th pill, only in a party */
+  const btnSet = () => { const b = baseOf() === 'simple' ? SIMPLE_BTNS : FULL_BTNS; return [...b, ...(hasStance() ? ['stance'] : []), ...(hasPing() ? ['ping'] : [])]; };
   const legacyAssist = () => SET.touchAssist !== false;   /* the one old switch (buffer + auto-face) is what the two new ones default to */
   const faceOn = () => (SET.touchFace === undefined ? legacyAssist() : SET.touchFace !== false), bufOn = () => (SET.touchBuf === undefined ? legacyAssist() : SET.touchBuf !== false);
   const aimOn = () => SET.touchAim !== false, useOn = () => SET.touchAutoUse === true, swipeOn = () => SET.touchSwipe === true, blockTog = () => !!SET.blockToggle;
@@ -116,7 +118,7 @@ export function createTouch(env) {
     return { t: v[0] * DPR, r: (v[1] || 0) * DPR, b: (v[2] || 0) * DPR, l: (v[3] || 0) * DPR };
   }
   function layout() {
-    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, Math.round(gm.S * 100), gm.offX | 0, size(), left(), layVer, hasStance() ? 'rg' : '', preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
+    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, Math.round(gm.S * 100), gm.offX | 0, size(), left(), layVer, hasStance() ? 'rg' : '', hasPing() ? 'pg' : '', preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
     if (lay && key === layKey) return lay; layKey = key;
     const { DPR } = env.geom(), s = Math.min(W, H) * 0.145 * size(), m = Math.max(10 * DPR, 0) , L = left(), sg = L ? -1 : 1;
     const pivX = L ? ins.l + m + s : W - ins.r - m - s, pivY = H - ins.b - m - 0.78 * s;
@@ -135,12 +137,12 @@ export function createTouch(env) {
         const top = ins.t + mb, bot = H - ins.b - m, pauseR = Math.min(0.4 * s, wi * 0.35), limit = top + 2 * pauseR + 0.14 * s, avail = bot - limit, cx1 = (bx0 + bx1) / 2, pos = {};
         let ok = false, f = Math.min(1, size());
         if (baseOf() === 'simple') {   // one column, the thumb at the bottom: ATTACK, JUMP, DEFEND, SKILL, then the two contextual ones
-          const order = hasStance() ? ['atk', 'jump', 'defend', 'stance', 'skill', 'interact', 'ctx'] : ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx'], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66, stance: 0.62 };
+          const order = [...(hasStance() ? ['atk', 'jump', 'defend', 'stance', 'skill', 'interact', 'ctx'] : ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx']), ...(hasPing() ? ['ping'] : [])], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66, stance: 0.62, ping: 0.64 };
           const rmax = Math.min(wi / 2, 0.95 * s) * Math.max(0.7, f); let used = 0; for (const k of order) used += 2 * rmax * wt[k] + 0.12 * rmax;
           const k2 = Math.min(1, avail / used); if (k2 >= 0.5) { ok = true; let y = bot; for (const k of order) { const r = rmax * k2 * wt[k]; pos[k] = [cx1, y - r, r]; y -= 2 * r + 0.12 * rmax * k2; } }
         } else {   // FULL: two columns of five rows (ATTACK on the outer edge)
-          const rows = [['atk', 'jump'], ['dodge', 'block'], ['throw', 'skill2'], ['skill3', 'skill4'], ['interact', 'ctx']]; if (hasStance()) rows.splice(2, 0, ['stance', 'stance_']);   /* the ranger's BOW / KNIFE sits right above the thumb's own buttons */
-          const r = Math.min(wi / 4, avail / (hasStance() ? 12.8 : 10.6)) * Math.max(0.7, f); if (r >= 17 * DPR) { ok = true; const cxo = L ? bx0 + wi * 0.25 : bx0 + wi * 0.75, cxi = L ? bx0 + wi * 0.75 : bx0 + wi * 0.25; rows.forEach((pr2, i) => { const y = bot - r - i * (2 * r + 0.1 * r); pos[pr2[0]] = [cxo, y, r]; pos[pr2[1]] = [cxi, y, r]; }); }
+          const rows = [['atk', 'jump'], ['dodge', 'block'], ['throw', 'skill2'], ['skill3', 'skill4'], ['interact', 'ctx']]; if (hasStance()) rows.splice(2, 0, ['stance', 'stance_']); if (hasPing()) rows.push(['ping', 'ping_']);   /* the ranger's BOW / KNIFE sits right above the thumb's own buttons */
+          const r = Math.min(wi / 4, avail / (10.6 + (hasStance() ? 2.2 : 0) + (hasPing() ? 2.2 : 0))) * Math.max(0.7, f); if (r >= 17 * DPR) { ok = true; const cxo = L ? bx0 + wi * 0.25 : bx0 + wi * 0.75, cxi = L ? bx0 + wi * 0.75 : bx0 + wi * 0.25; rows.forEach((pr2, i) => { const y = bot - r - i * (2 * r + 0.1 * r); pos[pr2[0]] = [cxo, y, r]; pos[pr2[1]] = [cxi, y, r]; }); }
         }
         if (ok) { bar = true; for (const k of set) if (pos[k]) { const [x, y, r] = pos[k]; btn[k] = { k, cx: x, cy: y, r }; } btn.pause = { k: 'pause', cx: cx1, cy: top + pauseR, r: pauseR };
           const dR2 = Math.min(1.45 * s, pwi / 2); dpadBar = { R: dR2, cx: (px0 + px1) / 2, cy: bot - dR2 * 0.1 - dR2, catchR: dR2 * 1.7 }; }
@@ -180,6 +182,7 @@ export function createTouch(env) {
       if (k === 'interact' && !verb) continue;
       if (k === 'ctx' && !ctx) continue;
       if (k === 'stance' && !hasStance()) continue;
+      if (k === 'ping' && !hasPing()) continue;
       out.push(L.btn[k]);
     }
     out.push(L.btn.pause); return out;
@@ -391,6 +394,7 @@ export function createTouch(env) {
       const n = SLOT_KEYS.length, a1 = dg.globalAlpha; for (let i = 0; i < n; i++) { if (!env.skillOn(i)) continue; const inf = env.skillInfo ? env.skillInfo(i) : null; dg.globalAlpha = a1 * (inf && inf.k > 0 ? 0.35 : 1); dg.beginPath(); dg.arc((i - (n - 1) / 2) * u * 0.42, u * 1.05, Math.max(1.5, u * 0.11), 0, 7); dg.fill(); } dg.globalAlpha = a1;
     }
     else if (k === 'stance') stanceIcon(r, u);
+    else if (k === 'ping') { dg.beginPath(); dg.arc(0, 0, u * 0.55, 0, Math.PI * 2); dg.stroke(); for (const [a, b2] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) { dg.beginPath(); dg.moveTo(a * u * 0.55, b2 * u * 0.55); dg.lineTo(a * u * 1.0, b2 * u * 1.0); dg.stroke(); } }   /* (claude/cooppr) a target mark */
     else if (k === 'interact' || k === 'ctx') { const word = (k === 'ctx' ? (ctx && ctx.label) : verb && verb.verb) || (k === 'ctx' ? 'THROW' : 'USE'), px = fit(String(word).toUpperCase(), r * 1.55, Math.round(r * 0.55)); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(String(word).toUpperCase(), 0, 1); }
     else if (k in SKILL_OF && skillNow && skillNow.icon) skillFace(k, r, skillNow);   // THE SKILL'S OWN GLYPH (the same picture the HUD slot and the store use), a whole-number scale so the pixels stay square, the wait swept over it
         else { dg.font = Math.round(r * 0.9) + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(LABEL[k] || '?', 0, 1); }

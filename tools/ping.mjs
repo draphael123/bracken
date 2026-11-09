@@ -1,0 +1,37 @@
+// node tools/ping.mjs - src/ping.js (pure): target pick, one per seat, ttl, foe follow/drop, AI read, spot hold. And src/controls.js carries the ping action.
+import * as P from '../src/ping.js';
+import * as CTL from '../src/controls.js';
+let bad = 0; const ok = (c, m) => { if (!c) { bad++; console.log('FAIL', m); } else console.log('ok  ', m); };
+const foe = (x, y, o = {}) => ({ alive: true, x, y, ...o });
+const a = foe(150, 100), b = foe(120, 100), behind = foe(60, 100), far = foe(400, 100), high = foe(120, 20), boss = foe(160, 100, { maxHp: 900 });
+let t = P.pickTarget({ x: 100, y: 100, face: 1 }, [a, b, far, behind, high]);
+ok(t.kind === 'foe' && t.foe === b, 'nearest foe ahead');
+ok(P.pickTarget({ x: 100, y: 100, face: 1 }, [far, high]).kind === 'spot', 'nothing near = spot');
+ok(P.pickTarget({ x: 100, y: 100, face: -1 }, [a]).kind === 'spot', 'foe behind him is not marked');
+ok(P.pickTarget({ x: 100, y: 100, face: 1 }, [a, boss]).foe === boss, 'boss preferred over a nearer grunt');
+t = P.pickTarget({ x: 100, y: 100, face: 1 }, [], () => 132);
+ok(t.kind === 'spot' && t.x === 156 && t.y === 132, 'spot is ahead, floor from floorAt');
+ok(P.pickTarget({ x: 100, y: 100, face: 1, down: 5 }, [a]).kind === 'help', 'downed = HELP on himself');
+ok(P.pickTarget({ x: 100, y: 100, face: 1 }, [foe(120, 100, { harmless: true }), foe(120, 100, { dying: 1 })]).kind === 'spot', 'harmless / dying not marked');
+const S = P.makePings();
+const p1 = S.put(1, { kind: 'foe', foe: b, x: 120, y: 100 }, false); S.put(2, { kind: 'spot', x: 5, y: 5 }, false);
+ok(S.list().length === 2, 'one each');
+S.put(1, { kind: 'spot', x: 9, y: 9 }, false); ok(S.list().length === 2 && S.of(1).kind === 'spot', 'a new ping replaces the old');
+const pf = S.put(1, { kind: 'foe', foe: b, x: 120, y: 100 }, false); b.x = 140; S.tick(0.1); ok(S.of(1).x === 140, 'foe ping follows the foe');
+b.alive = false; S.tick(0.1); ok(!S.of(1), 'foe ping goes when it dies');
+S.tick(PPING()); function PPING() { return P.PING.ttl + 0.1; } ok(S.list().length === 0, 'ttl ends it');
+const ai = S.put(2, { kind: 'foe', foe: a, x: 150, y: 100 }, true), hu = S.put(1, { kind: 'spot', x: 1, y: 2 }, false);
+ok(S.aiRead() === hu, 'AI reads the person ping, not its own');
+S.put(3, { kind: 'help', x: 1, y: 1 }, false); ok(S.aiRead() === hu && S.helpOf().n === 3, 'help is not a goal; helpOf finds it');
+let hold = P.holdSpot(null, hu, 10); ok(hold && hold.until === 10 + P.PING.aiHold, 'spot hold starts');
+ok(P.holdSpot(hold, hu, 12) === hold, 'same ping keeps the hold');
+ok(P.holdSpot(hold, null, 16.1) === null, 'hold ends');
+ok(P.holdSpot(null, { kind: 'foe', id: 9 }, 1) === null, 'foe pings are not held as goals');
+// controls: the ping action exists with a key, a pad button and a label, and does not steal dodge / block
+const kt = CTL.keysTable(CTL.emptyBinds()), pt = CTL.padTable(CTL.emptyBinds(), 'pad1');
+ok(kt.ping && kt.ping.includes('y'), 'key table has ping on Y');
+ok(!kt.dodge.includes('y') && !kt.ping.includes('v'), 'ping does not share a key with dodge');
+ok(pt.ping && pt.ping.length === 1, 'pad table has ping');
+ok(pt.block.includes(4) && pt.block.includes(5) && !pt.ping.some(b => pt.block.includes(b) || pt.jump.includes(b) || pt.atk.includes(b) || pt.dodge.includes(b)), 'pad ping does not take the guard');
+ok(CTL.actionLabel('ping') === 'PING / MARK', 'label');
+console.log(bad ? 'FAILED ' + bad : 'ALL OK'); process.exit(bad ? 1 : 0);
