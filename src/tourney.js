@@ -33,7 +33,8 @@ export function buildTourney({ painter, T, TS }) {
   const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };
   const block = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.SOLID), air = (x0, x1, y0, y1) => fill(x0, x1, y0, y1, T.AIR);
   const ground = (x0, x1, top) => { air(x0, x1, 0, top - 1); block(x0, x1, top, H - 1); };
-  const shelf = (x0, x1, y) => fill(x0, x1, y, y, T.ONEWAY);
+  const runs = [];   /* every board laid (stalls, lofts, benches, the stand's tiers, tents, rails): each stands on drawn timber (L.structures, main.js drawStructures) */
+  const shelf = (x0, x1, y) => { fill(x0, x1, y, y, T.ONEWAY); runs.push([x0, x1, y]); };
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
   const foe = (t, x, y, squad, o = {}) => ent(t, x, y, { squad, ...o });
@@ -49,7 +50,7 @@ export function buildTourney({ painter, T, TS }) {
   /* A TILT LANE: the lancer's beat [x0, x1] on floor f, the TILT RAIL (one-way, TY.RAIL) along it with a gap (the herald's gate) you must drop through */
   const lane = (x0, x1, f, gap, squad, o = {}) => { const xc = Math.round((x0 + x1) / 2), range = Math.floor((x1 - x0) / 2);
     foe('lancer', xc, f - 1, squad, { range, face: o.face || -1 }); lanes.push({ x0, x1, f, squad });
-    if (o.rail !== false) { const rr = f - 2; for (let x = x0; x <= x1; x++) if (!gap || x < gap[0] || x > gap[1]) set(x, rr, T.ONEWAY); rails.push({ x0, x1, row: rr, gap }); } };
+    if (o.rail !== false) { const rr = f - 2; for (let x = x0; x <= x1; x++) if (!gap || x < gap[0] || x > gap[1]) set(x, rr, T.ONEWAY); rails.push({ x0, x1, row: rr, gap }); if (gap) runs.push([x0, gap[0] - 1, rr], [gap[1] + 1, x1, rr]); else runs.push([x0, x1, rr]); } };
   /* THE HORSE at a ride's gate, and the groom at its end (drawn; the ride itself is positional: RIDES) */
   const horse = (r, f) => { ent('tyhorse', r.x0, f - 1, { ride: r.id }); };
   const groom = (r, f) => { ent('tygroom', r.x1, f - 1, { ride: r.id }); };
@@ -117,7 +118,7 @@ export function buildTourney({ painter, T, TS }) {
   foe('tyarcher', 244, G + 1, 'listArchers2', { x0: 238, x1: 250 });
   lane(251, 261, G, [255, 257], 'listLancerB', { face: -1 });
   hurdle(262, G);
-  groom(R2, G); sign(264, G - 1, TY_SAY.groom);
+  groom(R2, G); sign(264, G - 1, TY_SAY.groom2);
 
   // ================= 5. THE PAVILIONS (265-299): EXAM, ON FOOT =================
   ground(265, 299, G);
@@ -142,6 +143,9 @@ export function buildTourney({ painter, T, TS }) {
   ent('tychampion', 360, G - 1, { face: -1 });
   ent('torch', 303, G - 1);
 
+  /* THE TIMBER UNDER EVERY BOARD: from the board down to the first solid row under its west end */
+  const solidAt = (x, y) => L.grid[y * W + x] === T.SOLID;
+  const structures = runs.map(([x0, x1, y]) => { let fl = y + 1; while (fl < H - 1 && !solidAt(x0, fl)) fl++; return { x0, x1, top: y, floor: fl, kind: 'timber' }; });
   const A = TY.arena;
   const arena = { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: G * TS, y0: 10 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'tychampion', music: 'boss2', tint: '#ffe8b0', tintA: 0.05,
     /* THE FIGHT'S GEOMETRY (src/ty-champion.js geom): the lists, the pavilion his squire runs out of, where the rival knights come in */
@@ -150,7 +154,7 @@ export function buildTourney({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools: [], falls: [],
     arena, tourney: true,
     ty: { rides: RIDES.map(r => ({ ...r })), quints, rings, targets, hurdles, rails, lanes, props, sections: SECTIONS },
-    strikers, zipLines,
+    strikers, zipLines, structures,
     calm: [[0, W - 1, 0, H - 1]], noCoin: [[A.x0, W - 1, 0, H - 1]],
     checkRun: 200,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
