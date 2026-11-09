@@ -64,20 +64,21 @@ export function buildTourney({ painter, T, TS }) {
   coins([15, TY.RAIL - 1], [26, TY.RAIL - 1]);
   sign(31, G - 1, TY_SAY.quint);
   quint(34, G);
-  shelf(32, 41, 25); coins([37, 24], [39, 24], [41, 24]); props.push({ kind: 'loft', x0: 32, x1: 41, top: 25 });   /* THE STABLE LOFT: the quintain's carry puts you on it */
+  shelf(32, 41, 25); coins([37, 24], [39, 24]); ent('silver', 41, 24); props.push({ kind: 'loft', x0: 32, x1: 41, top: 25 });   /* THE STABLE LOFT: the quintain's carry puts you on it */
   sign(42, G - 1, TY_SAY.stable);
 
   // ================= 2. THE PRACTICE LISTS (44-119): TEACH, MOUNTED =================
   const R1 = RIDES[0];
   ground(44, 119, G); horse(R1, G); sign(45, G - 1, TY_SAY.ride); sign(48, G - 1, TY_SAY.couch);
+  shelf(50, 57, 26); coins([52, 25], [55, 25]); foe('swornsword', 57, G - 1, 'practiceFoot');   /* the first judges' bench; a sworn sword on the list (the lance takes him at a gallop) */
   ring(53, G); ring(58, G);
   hurdle(64, G); sign(62, G - 1, TY_SAY.hurdle);
-  ground(70, 82, G - 2); ring(75, G - 2); target(80, G - 2);                         /* THE BANK: up two rows (a jump), a ring and a straw target on it */
+  ground(70, 82, G - 2); ring(75, G - 2); target(80, G - 2); foe('tyarcher', 78, G - 3, 'bankArcher', { x0: 71, x1: 82 });                         /* THE BANK: up two rows (a jump), a ring and a straw target on it */
   shelf(66, 72, 25); coins([68, 24], [71, 24]);                                      /* the judges' bench over the bank (a mounted jump takes its coins) */
   ground(86, 88, G + 2);                                                            /* THE DITCH: two rows down and out again */
   quint(95, G, { mounted: true });                                                  /* a quintain at the gallop: strike it at pace and you are past the arm */
   shelf(98, 103, 26); coins([100, 25]);
-  lane(104, 116, G, null, 'practiceLancer', { rail: false });                        /* A LANCER in the list: couch at him and he goes over his horse's tail */
+  lane(104, 116, G, [109, 111], 'practiceLancer');                        /* A LANCER in the list: couch at him and he goes over his horse's tail */
   target(117, G);
   groom(R1, G); sign(119, G - 1, TY_SAY.groom);
 
@@ -88,7 +89,7 @@ export function buildTourney({ painter, T, TS }) {
   /* THE STAND: five tiers, three rows apart, each set back three columns; its back wall (151) runs from the top tier to the ground - the road goes over it */
   for (const [k, row] of [[0, 27], [1, 24], [2, 21], [3, 18], [4, 15]]) shelf(128 + 3 * k, 150, row);
   block(151, 151, 12, G - 1); block(151, 152, 12, 12);
-  shelf(146, 150, 9); ent('silver', 147, 8); props.push({ kind: 'royalbox', x0: 146, x1: 150, top: 9 });   /* THE ROYAL BOX (secret one): off the road, over the top tier */
+  shelf(145, 150, 9); coins([145, 8], [146, 8], [147, 8]); props.push({ kind: 'royalbox', x0: 145, x1: 150, top: 9 });   /* THE ROYAL BOX (secret one): off the road, over the top tier */
   coins([132, 23], [138, 17], [146, 14]);
   foe('swornsword', 133, 23, 'standKnights'); foe('swornsword', 140, 17, 'standKnights'); foe('crossbow', 148, 14, 'standKnights');
   sign(153, 11, TY_SAY.rigging);
@@ -103,17 +104,18 @@ export function buildTourney({ painter, T, TS }) {
   const R2 = RIDES[1];
   ground(176, 264, G); horse(R2, G); sign(178, G - 1, TY_SAY.lists);
   hurdle(184, G);
-  shelf(180, 186, 26); coins([182, 25]);
+  shelf(180, 189, 26); coins([182, 25]); foe('crossbow', 187, 25, 'benchBow');
   ground(190, 205, G - 2); ring(194, G - 2); target(203, G - 2);                     /* THE HIGH LIST: up two rows */
   foe('tyarcher', 200, G - 3, 'listArchers', { x0: 191, x1: 205 });
   shelf(196, 201, 25); coins([198, 24]);
   ground(212, 216, G + 2); air(212, 216, G, G + 1);                                  /* THE WATER JUMP (a dry ditch in the greybox: the art lane fills it) */
   hurdle(222, G);
-  lane(224, 236, G, null, 'listLancerA', { rail: false, face: -1 });                  /* a rider the other way */
+  lane(224, 236, G, [229, 231], 'listLancerA', { face: -1 });
+  shelf(206, 211, 26); coins([208, 25]);                  /* a rider the other way */
   ground(238, 248, G + 2); ring(242, G + 2); target(247, G + 2);                     /* THE SUNKEN LIST: down two rows, a ring and a target, out again */
   shelf(238, 243, 28); coins([240, 27]);
   foe('tyarcher', 244, G + 1, 'listArchers2', { x0: 238, x1: 250 });
-  lane(251, 261, G, null, 'listLancerB', { rail: false, face: -1 });
+  lane(251, 261, G, [255, 257], 'listLancerB', { face: -1 });
   hurdle(262, G);
   groom(R2, G); sign(264, G - 1, TY_SAY.groom);
 
@@ -127,6 +129,7 @@ export function buildTourney({ painter, T, TS }) {
   shelf(283, 288, 19); ent('silver', 284, 18); props.push({ kind: 'nest', x0: 283, x1: 288, top: 19 });   /* THE CROW'S NEST on the pole (secret two) */
   zipLines.push({ x0: 283 * TS, y0: 18 * TS + 6, x1: 270 * TS, y1: 25 * TS, bunting: true, speed: 180, id: 'rigB', posts: [[283 * TS, 18 * TS + 6, 19 * TS], [270 * TS, 25 * TS, 26 * TS]] });   /* down off the nest onto the first tent */
   coins([270, 25], [287, 23], [292, 26]);
+  air(291, 292, G, G + 2); air(281, 292, G + 1, G + 2); coins([282, G + 2], [283, G + 2], [284, G + 2], [285, G + 2]); props.push({ kind: 'cellar', x0: 281, x1: 292, top: G + 1 });   /* THE ARMOURER'S CELLAR: a hatch by the high pavilion, a crawl west under it, his purse at the end (a pocket) */
   foe('tyarcher', 292, G - 1, 'pavilionArcher', { x0: 287, x1: 298 });
   sign(294, G - 1, TY_SAY.pavilions);
   ent('check', 296, G - 1);                                                         /* SHRINE TWO: the pavilions */
