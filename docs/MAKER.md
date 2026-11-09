@@ -58,9 +58,18 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   goblin never engages in a plain wood, so it is out. Foes 138.
 - `tools/maker-mechanisms.mjs` (in the suite).
 
+## Done (2026-11-09, step 4: THE SCREEN + LEVEL SETTINGS - Daniel: "it's not clear how to access items")
+- `src/maker-ui.js`: always-on GROUP TABS (ground, slopes & water, enemies, water enemies, items, mechanisms, hazards,
+  tools) + a two-row ICON STRIP with < > pages, the hovered piece's name, a BUTTON BAR (play, undo, save, load, new,
+  settings, help, slot) and a HELP card shown on the first visit. Every old key still works.
+- SETTINGS: BACKGROUND (all 53 of the game's places), MUSIC (all 135 tracks; it plays while you choose), TIME OF DAY
+  (day / dusk / night / cave), WEATHER (clear + 10 kinds), name, width. `doc.music / time / weather` ride with the
+  terrain through save, load and undo; `MUI.applySettings` lays them over the background's own in `edLevelObj`.
+- `tools/maker-settings.mjs` (in the suite): every background, time and weather plays; the music plays; save/load.
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
-2. **Bosses**: a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
+2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
    the minis with their trigger. Test each with a sweep like maker-sweep.
 3. (mechanisms: done above. Later: plates that drop cages, timed doors, a lever that shuts as well as opens.)
 4. Then the maker feel from the standalone try: mouse-first palette bar, share links (`#L=`), a help card, a

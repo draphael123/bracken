@@ -282,7 +282,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
-import * as MKP from './maker-palette.js';   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
+import * as MKP from './maker-palette.js'; import * as MUI from './maker-ui.js';   /* (claude/maker) THE MAKER's screen: tabs, icon strip, buttons, SETTINGS, HELP */   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
 import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -37182,7 +37182,7 @@ function edBlank(W = 120, H = 28) {
 }
 function edLevelObj(doc, copy) {
   const th = edThemeList()[doc.theme] || edThemeList()[0];
-  return { W: doc.W, H: doc.H,
+  return MUI.applySettings({ W: doc.W, H: doc.H,
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
     ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: { x: doc.start.x, y: doc.start.y },
@@ -37191,7 +37191,7 @@ function edLevelObj(doc, copy) {
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
     night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
     duskStart: th.duskStart === undefined ? -1 : th.duskStart, duskLen: th.duskLen || 1,
-    custom: true, strays: 0 };
+    custom: true, strays: 0 }, doc, TS);   /* (claude/maker) the level's own music, time of day and weather over the background's */
 }
 const edIndex = () => LEVELS.findIndex(l => l.id === 'custom');
 
@@ -37218,7 +37218,7 @@ function edRespawn() {
 }
 
 function edEnter() {
-  MKP.setNames(BEASTS);   /* (claude/maker) the palette speaks the bestiary's names */
+  MKP.setNames(BEASTS); MUI.firstVisit();   /* (claude/maker) the HELP card, once */   /* (claude/maker) the palette speaks the bestiary's names */
   edThemeList();
   if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
   edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
@@ -37250,7 +37250,7 @@ function edSave(i) {
 }
 function edLoad(i) {
   try { const raw = localStorage.getItem(ED_KEY(i)); if (!raw) return null; const d = JSON.parse(raw);
-    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 }, crumble: d.crumble || [], water: d.water || [] }; }
+    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 }, crumble: d.crumble || [], water: d.water || [], music: d.music || null, time: d.time || null, weather: d.weather || null }; }
   catch (err) { return null; }
 }
 function edResize(dw) {
@@ -37286,6 +37286,7 @@ function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v) ret
 
 // ---- input ----
 function edKey(k, ev) {
+  if (MUI.panelOpen()) { if (k === 'escape' || k === 'enter') { if (MUI.closePanel() === 'settings') music.stop(); } return true; }   /* (claude/maker) */
   const shift = ev && ev.shiftKey, ctrl = ev && (ev.ctrlKey || ev.metaKey);
   if (ctrl && k === 'z') { edPop(); return true; }
   if (k === 'tab') { edPal = !edPal; SFX.ui(); return true; }
@@ -37314,6 +37315,7 @@ function edMouse(mx, my, btn, down, moved) {
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
   edCur.x = Math.floor((mx + cx) / TS); edCur.y = Math.floor((my + cy) / TS);
   if (edPal) { if (down) edPalClick(mx, my); return; }
+  { const u = MUI.uiMouse(edUiCtx(), mx, my, down); if (u) { edUiAct(u); return; } }   /* (claude/maker) the bars and panels take their own clicks */
   if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRectBrush(ED_TILES[edBrush().i])) { MKP.rectStart(edCur); return; }   /* (claude/maker) water: drag a box */
   if (MKP.rectActive()) return;
   if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; }
@@ -37336,6 +37338,27 @@ function edPalClick(mx, my) {   /* (claude/maker) src/maker-palette.js knows the
 
 // ---- drawing ----
 function edSprFor(t) { return SPR[t] || null; }
+function edUiCtx() { return { g, text, textW, fitText, SPR, drawSet, VW, VH, time, cat: edCat, sel: edSel[edCat], tools: ED_TOOLS, slot: edSlot, msg: edMsg, msgT: edMsgT, doc: edDoc,
+  themes: edThemeList(), noGate: !!L && !L.ents.some(e => e.t === 'gate') }; }
+/* (claude/maker) what a click on the maker's screen asks for */
+function edUiAct(u) {
+  if (u.pick) { edCat = u.pick.cat; edSel[edCat] = u.pick.i; SFX.ui(); return; }
+  const a = u.act; if (!a) return;
+  if (a === 'play') edPlay();
+  else if (a === 'undo') edPop();
+  else if (a === 'save') edSave(edSlot);
+  else if (a === 'load') edKey('l');
+  else if (a === 'new') edKey('n');
+  else if (a === 'slot') edKey('f');
+  else if (a === 'name') { const nm = prompt('Name this level', edDoc.name); if (nm) { edDoc.name = nm.toUpperCase().slice(0, 22); edSay('called ' + edDoc.name); } }
+  else if (a === 'width+' || a === 'width-') edResize(a === 'width+' ? 10 : -10);
+  else if (a === 'theme+' || a === 'theme-') { edPush(); const n = edThemeList().length; edDoc.theme = (edDoc.theme + (a === 'theme+' ? 1 : -1) + n) % n; edMount(true); if (!edDoc.music) music.play(edThemeList()[edDoc.theme].music); }
+  else if (a === 'remount') edMount(true);
+  else if (a === 'music') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
+  else if (a === 'closeSettings') music.stop();
+  else if (a === 'openSettings') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
+  if (a !== 'play') SFX.ui();
+}
 function drawEditor() {
   if (!edDoc || !L || !L.custom) { state = 'title'; return; } // the editor is entered through the menu; never draw it half-built
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
@@ -37364,20 +37387,7 @@ function drawEditor() {
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
   MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
-  // ---- chrome ----
-  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, 0, VW, 11);
-  text(edDoc.name, 4, 2, UI.title, 'left', 6);
-  text(edThemeList()[edDoc.theme].name, 4 + edDoc.name.length * 6 + 14, 2, UI.dim, 'left', 6);
-  { const foes = L.ents.filter(e => ED_FOES.includes(e.t)).length, coins = L.ents.filter(e => e.t === 'coin').length;
-    const hasGate = L.ents.some(e => e.t === 'gate');
-    text(edDoc.W + 'x' + edDoc.H + '   ' + foes + ' FOES   ' + coins + ' COIN   SLOT ' + (edSlot + 1), VW - 4, 2, UI.dim, 'right', 6);
-    if (!hasGate) text('NO GATE: NO WAY OUT', VW / 2, 2, '#ff6b6b', 'center', 6); }
-  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, VH - 26, VW, 26);
-  { const b = edBrush(); text(ED_CATS[edCat] + '  >  ' + b.name, 4, VH - 23, UI.sel, 'left', 6);
-    text(edCur.x + ',' + edCur.y, VW - 4, VH - 23, UI.dim, 'right', 6); }
-  if (edMsgT > 0) text(edMsg, 4, VH - 14, UI.title, 'left', 6);
-  else { text('LMB paint   RMB erase   WHEEL item   SHIFT+WHEEL group   TAB palette   ARROWS pan (hold C to fly)', 4, VH - 15, UI.dim, 'left', 6);
-    text('X start  T theme  R name  -/= width  P play  S/L save/load  N new  F slot  G grid  CTRL+Z undo  ESC out', 4, VH - 8, UI.dim, 'left', 6); }
+  MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
 function edPalCtx() { return { g, text, drawSet, SPR, UI, TYPE, VW, VH, cats: ED_CATS, cat: edCat, items: edItems(edCat), sel: edSel[edCat],

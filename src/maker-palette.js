@@ -133,8 +133,10 @@ export function turnPage(cat, d, n, VW) { const pages = Math.max(1, Math.ceil(n 
 const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })) });
-export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : []; }
+// (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), music: doc.music || null, time: doc.time || null, weather: doc.weather || null });
+export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
+  doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
