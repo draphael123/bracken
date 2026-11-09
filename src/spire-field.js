@@ -34,8 +34,9 @@ export const SPIRES = [
   { id: 'moon',  dx0: 39, dx1: 46, top: -8,  fallAt: 0, buttress: { dx: 39, box: [26, 38, -24, -9] } },
   { id: 'crown', dx0: 49, dx1: 56, top: -10, fallAt: 0, buttress: { dx: 49, box: [36, 48, -26, -11] } },
 ];
-/* MASONRY LEDGES between them (one-way): [dx0, dx1, dy] */
-export const LEDGES = [[16, 17, -4], [29, 33, -9], [36, 37, -6], [58, 62, -12]];
+/* MASONRY LEDGES between them (one-way): [dx0, dx1, dy]. Two are CORBELS on a spire's face (the bell's west, the moon's west: joined to it, tools/solid-islands.mjs),
+   one hangs over the well spire (its post) */
+export const LEDGES = [[17, 18, -4], [29, 33, -9], [37, 38, -6]];
 /* THE TIDES (plan 3.2): his health marks, rows a tide, the tell's lead, how long a tide takes to rise, the ebb while he is open (rows) */
 export const TIDE = { at: [0.85, 0.7, 0.6], rows: 4, lead: 1.6, riseT: 2.5, ebb: 1, ebbV: 16, drainV: 260, dmg: 21, hold: 1.2 };
 /* THE TOPPLE (plan 3.2): its tell, and how long a hero standing on it may hold it before the sea has him anyway */
@@ -251,7 +252,7 @@ function fadeStep(L, F, R, P, seats, dt, c) {
     seats.forEach((p, i) => { if (!p || p.dead || p.carpet) return; if (p.vy > FADE.fallV) p.vy = FADE.fallV;
       if (Fd.st !== 'fall') return;
       const rug = R.rugs.get(i) || (R.rugs.set(i, { x: p.x, y: catchY + FADE.rugFrom }), R.rugs.get(i)); rug.x = p.x; rug.y -= FADE.rugV * dt;
-      if (p.y >= rug.y - 2 || p.y >= catchY || Fd.t >= FADE.failsafe) { const x = Math.max(b.x0, Math.min(b.x1, p.x)), y = Math.max(b.y0 + 8, Math.min(b.y1 - 4, p.y));
+      if (p.y >= rug.y - 2 || p.y >= catchY || Fd.t >= FADE.failsafe) { const x = Math.max(b.x0, Math.min(b.x1, p.x)), y = Math.max(b.y0 + 8, Math.min(F.p2.floor - 42, p.y));   /* (over his hall's witchfire: src/sanctum.js fireTop is floor - 26) */
         if (!L.arena.carpet) Object.assign(L.arena, F.p2Arena);   /* the first seat caught: the box is the carpet's (same x, so the lock stays) */
         c.mount(p, x, y); R.rugs.delete(i); if (p === P) c.say(SPIRE_LINES.caught); } });
     if (Fd.st === 'fall' && live(seats).every(p => p.carpet)) { Fd.st = 'done'; R.phase = 'p2'; R.drained = true; }
