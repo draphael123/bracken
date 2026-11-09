@@ -30520,7 +30520,7 @@ GQH = makeGQueenHands({ get L() { return L; }, TS, T, sfx: SFX, P: () => P, enem
   damage: (x, d, o) => damagePlayer(x, d, o), parries: () => RP.stats.parries, hurt: (e, d, x) => hurtEnemy(e, d, x, false), solid: (tx, ty) => isSolid(tx, ty), overlap: (a, b) => overlap(a, b), hurtBox: () => duckBox(P),
   endFight: () => { bossActive = false; camLock = null; setView('normal'); if (L.arena) { setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); } },
   shutWest: () => { const A = L.arena; if (A) setWallAt(A.wallL, true, A.floor); }, layEscape: () => gqEscapeLay(), tiles: (row, x0, x1, how) => gqTiles(row, x0, x1, how), spawnEnt: e => spawnEnt(e),
-  setCheckpoint: (x, y) => { checkpoint = { x, y }; }, flaskMax: () => SV.flaskMax(PROG), music: n => music.play(n), hint: m => hintSay('mechanic', 6, m),
+  setCheckpoint: (x, y) => { checkpoint = { x, y }; }, flaskMax: () => SV.flaskMax(PROG), music: n => music.play(n), lift: n => music.lift && music.lift(n), hint: m => hintSay('mechanic', 6, m),
   enterRoof: () => { Object.assign(L.arena, L.arenaRoof); bossStart(); }, wave: w => waves.push(w), ducking: () => !!P.ducking,
   /* (claude/gq2) 1-4 SEATS: her hits test every hero on his feet (asPlayer: P, PROG and the keys are his for the call), the portal step and the flee's heal take the whole party, her portals aim at the hero she means */
   eachHero: fn => { for (const pp of players) asPlayer(pp, () => { if (upright(pp)) fn(P); }); }, allHeroes: fn => { for (const pp of players) asPlayer(pp, () => fn(P)); }, target: () => (coop() && boss ? nearestHero(boss) : P),

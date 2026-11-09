@@ -40,8 +40,13 @@ export function makeGQueenHands(ctx) {
   /* STAGE ACROSS DEATH (as King Gorm's persist): once her P1 bar has emptied, P1 is never fought again. persist = { stage: 'escape' | 'roof' } until a new level load. */
   let persist = null, hallSnap = null;
   H.persist = () => persist;
-  H.load = () => { S = null; persist = null; const A = L() && L().arena; hallSnap = A && A.boss === 'gqueen' ? { ...A } : null; };
+  H.load = () => { musicLift(0); S = null; persist = null; const A = L() && L().arena; hallSnap = A && A.boss === 'gqueen' ? { ...A } : null; };
   const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map(), mech: { cd: 0, lure: null, queued: 0, waves: new Set(), wave: null, crank: 0, crankAt: -9, kept: 0, joined: 0, rings: 0, pins: 0, winchObj: {}, bellObj: {} } });
+  /* (claude/gqmusic, Daniel 11-08) THE TOWER TOP'S MUSIC: lifted (x1.06, the told stinger) when the roof stage begins, a second step (x1.10) when her crown first circles her (the final stretch); always let go (lift false) on her death, a death, a retry, the arena left, or a level load */
+  let mLvl = 0;
+  const musicLift = n => { if (n === mLvl) return; mLvl = n; if (ctx.lift) ctx.lift(n); };
+  const roofMus = n => { if (S && S.roof) S.roof.mus = Math.max(S.roof.mus || 0, n); musicLift(S && S.roof ? S.roof.mus : n); };   /* the level wanted is kept on the roof state: a co-op party all down lets the track go, the revive lifts it again */
+  H.musicLevel = () => mLvl;
   /* her hall's arena as it was built (a portal step turns L.arena into the tower top's; a death turns it back) */
   function restoreHall() {
     const A = L().arena; if (!A || !hallSnap) return;
@@ -49,6 +54,7 @@ export function makeGQueenHands(ctx) {
     Object.assign(A, hallSnap);
   }
   H.reset = () => {
+    musicLift(0);   /* (claude/gqmusic) a death / retry / load: the tower top's lifted track is let go (the next track starts at x1 anyway) */
     if (!H.on()) { S = null; return; }
     S = fresh(); restoreHall();
     const e = ctx.boss();
@@ -223,7 +229,7 @@ export function makeGQueenHands(ctx) {
     const R0 = S.roof, P0 = ctx.P(), RA = L().arena, d = P0.x - e.x, ad = Math.abs(d), tt = now();
     R0.lashCd -= dt; R0.ambushCd -= dt; R0.geyserCd -= dt; R0.leapCd = (R0.leapCd ?? 3) - dt;
     switch (e.mode) {
-      case 'wake': if (e.modeT <= 0) { e.mode = 'roofStand'; e.modeT = 0.6; ctx.number(e.x, e.y - 70, 'THE TOWER TOP', '#ffd36b'); } return 0;
+      case 'wake': if (e.modeT <= 0) { e.mode = 'roofStand'; e.modeT = 0.6; roofMus(1); ctx.number(e.x, e.y - 70, 'THE TOWER TOP', '#ffd36b'); } return 0;
       case 'roofStand': case 'stand': {
         e.mode = 'roofStand'; e.face = sign(d) || e.face;
         const want = ad > 56 ? e.face * 62 : 0;
@@ -258,7 +264,7 @@ export function makeGQueenHands(ctx) {
       case 'ambushOut': e.alpha = 1; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'geyserTell': e.face = sign(R0.geysers.length ? R0.geysers[0].x - e.x : d) || e.face; if (e.modeT <= 0) { e.mode = 'geyser'; e.modeT = G.roof.geyserN * G.roof.geyserGap + 0.5; ctx.shake(5); sfx('forgeHammer'); } return 0;
       case 'geyser': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
-      case 'stormTell': e.face = sign(d) || e.face; if (e.modeT <= 0) { R0.storm = { ang: 0, hitAt: 0 }; e.mode = 'rec'; e.modeT = 0.4; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); } return 0;
+      case 'stormTell': e.face = sign(d) || e.face; if (e.modeT <= 0) { R0.storm = { ang: 0, hitAt: 0 }; roofMus(2); e.mode = 'rec'; e.modeT = 0.4; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); } return 0;
       case 'hallLeapTell': if (e.modeT <= 0) { const T0 = 0.75; e.vx = (e.tx - e.x) / T0; e.vy = -500 * T0; e.mode = 'hallLeap'; e.modeT = T0 + 0.8; e.airT = 0; sfx('leap'); ctx.dust(e.x, e.y, 10); } return 0;
       case 'hallLeap': e.airT += dt;
         if ((e.onGround && e.airT > 0.2) || e.modeT <= 0) { e.vx = 0; e.mode = 'quake'; e.modeT = 0.45; sfx('forgeHammer'); sfx('heavy'); ctx.shake(9); ctx.zoom(1.08, 0.25); ctx.dust(e.x, e.y, 18);
@@ -605,6 +611,9 @@ export function makeGQueenHands(ctx) {
   /* ---------------- PER FRAME ---------------- */
   H.update = dt => {
     if (!S) return;
+    { const e0 = q(), R1 = S.roof; let up = false; seats(p => { if (!p.dead) up = true; });
+      if (mLvl && (!e0 || e0.hp <= 0 || e0.stage !== 'roof' || !ctx.bossActive() || !up)) musicLift(0);   /* (claude/gqmusic) she is dead, the fight is over, or every hero is down */
+      else if (!mLvl && R1 && R1.mus && e0 && e0.stage === 'roof' && ctx.bossActive() && up) musicLift(R1.mus); }
     if (S.esc && S.esc.on) escapeStep(dt);
     if (S.rocks.length) rockStep(dt);
     if (!ctx.bossActive() || !q()) { S.crown = null; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }

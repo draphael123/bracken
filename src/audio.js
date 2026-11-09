@@ -753,8 +753,8 @@ export const music = {
   get on() { return musicOn; },
   get track() { return currentTrack; },
   get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
-  lift(on) { const k = on ? 1.06 : 1; if (k === liftRate) return; liftRate = k; if (!ac) return; for (const s of musicSrcs) { try { if (s.playbackRate) s.playbackRate.setTargetAtTime(k, ac.currentTime, 0.4); } catch {} }
-    if (on && musicGain && musicOn) { noise(1.2, 0.14, 900, 0.7, 0, musicGain); [110, 164.8, 220].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.9, 0.05, i * 0.06, musicGain)); } },   /* (claude/gorm3) KING GORM's ENRAGE: the track lifts (x1.06) under a told stinger (a low swell up a fifth) */
+  lift(on) { const k = on === 2 ? 1.10 : on ? 1.06 : 1; if (k === liftRate) return; const up = k > liftRate; liftRate = k; if (!ac) return; for (const s of musicSrcs) { try { if (s.playbackRate) s.playbackRate.setTargetAtTime(k, ac.currentTime, 0.4); } catch {} }
+    if (up && musicGain && musicOn) { if (k > 1.07) { noise(1.0, 0.16, 1500, 0.8, 0, musicGain); [146.8, 220, 329.6].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.7, 0.055, i * 0.05, musicGain)); } else { noise(1.2, 0.14, 900, 0.7, 0, musicGain); [110, 164.8, 220].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.9, 0.05, i * 0.06, musicGain)); } } },   /* (claude/gorm3) KING GORM's ENRAGE: the track lifts (x1.06) under a told stinger (a low swell up a fifth). (claude/gqmusic) lift(2) = a second, tenser step (x1.10) under a higher, tighter stinger; lift(true) / lift(1) / lift(false) are as they were */
   storm(on) { const c = on ? 200 : 0; if (c === stormCents) return; stormCents = c; if (!ac) return; for (const s of musicSrcs) { try { if (s.detune) s.detune.setTargetAtTime(c, ac.currentTime, 0.5); } catch {} } },
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
