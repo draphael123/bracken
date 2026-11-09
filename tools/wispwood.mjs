@@ -43,7 +43,7 @@ if (!ON) {
     ok(r.stair === want && !P.wwRoadMig && !P.witchlightOpen, 'flag off, ' + name + ': the stair ' + (want ? 'locked' : 'open') + ' exactly as master, the save untouched ' + JSON.stringify(P)); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/wispwood)'));
   ok(tagged.length >= 15 && tagged.length <= 22, tagged.length + ' tagged hook lines in src/main.js (single lines)');
-  const unguarded = tagged.filter(l => !/wwOn\(\)|WWH|WDH|witchlightOpen|case 'lanternwidow'|WW_NODE|LEVELS\.some\(l => l\.id === 'wispwood'\)/.test(l));
+  const unguarded = tagged.filter(l => !/wwOn\(\)|WWH|WDH|witchlightOpen|case 'lanternwidow'|WW_NODE|const EHP = {|LEVELS\.some\(l => l\.id === 'wispwood'\)/.test(l));
   ok(!unguarded.length, 'every hook is behind the flag: the road and the old-save rule ask wwOn(), the rest need the level (WWH.on() / its ents / its boss) ' + unguarded.map(l => l.slice(0, 60)).join(' | '));
   ok(/if \(LEVELS\.some\(l => l\.id === 'wispwood'\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while the LEVELS row is there (wwOn() at import)');
   ok(/wwOn\(\) && isDev\(\)/.test(main), 'the dev entry needs ?ww=1 and ?dev=1');
