@@ -9,6 +9,7 @@
 
 import { T } from './level.js';
 import { SLOPE } from './slopes.js';
+import { newRing, horseAt, RING } from './wicker-carousel.js';   /* (claude/maker) the Wicker Queen's horses */
 
 export const TILES = [
   ['ERASE', T.AIR], ['GROUND', T.SOLID],
@@ -304,7 +305,7 @@ export function drawLinks(g, doc, cx, cy, t) {
 // place were that one (src/main.js MAT_SET), so every skin's own top, edge and fill pieces are used as they are.
 export function engineMat(doc) {
   const out = {}; let any = false;
-  if (doc.style) for (let i = 0; i < doc.grid.length; i++) { const v = doc.grid[i]; if (v === T.SOLID || (v >= 20 && v <= 25)) { out[i] = doc.style; any = true; } }   /* slopes too: they are cut from the style's own ground */   /* (claude/maker) the level's STYLE */
+  if (doc.style) for (let i = 0; i < doc.grid.length; i++) { const v = doc.grid[i]; if (v === T.SOLID || v === T.ONEWAY || (v >= 20 && v <= 25)) { out[i] = doc.style; any = true; } }   /* ledges too: a castle's ledges are stone */   /* slopes too: they are cut from the style's own ground */   /* (claude/maker) the level's STYLE */
   for (const [k, m] of Object.entries(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.SOLID) { out[y * doc.W + x] = m; any = true; } }
   return any ? out : null;
 }
@@ -602,8 +603,12 @@ export const BOSS_CANDIDATES = () => Object.keys(ARENA);
 // alone (ram, huntmaster), cannot be finished by blows alone (abbot, gargoyle, shrieksisters), or never fight (captain,
 // wickerqueen). The full table: docs/MAKER-BOSSES.md, and `node tools/maker-bosses.mjs --report` re-runs it.
 // Re-sweep with mkBossDown (a maker boss's fall always opens the placed goal): chief and owl joined.
+// (claude/maker, five more 2026-11-09) duneworm: the level borrows the caravan's rules for him (his storm, the sun in his hollow; the rest of
+// the level is shade) - no quicksand, overhang or great-shade winch. shrieksisters, kraken, admiral, gargoyle bring their own room
+// (src/maker-stages.js: the Sisters' crag, the Kraken's reach over a shallower sea, the Lashings and their two deck guns, the Gargoyle's spikes,
+// slabs and rune); what each room lacks against its home is written over its builder there.
 export const BOSSES = ['oldtusker', 'chief', 'owl', 'ram', 'huntmaster', 'bzchief', 'grubbag', 'tombking', 'reefmaw', 'strawking', 'wickerqueen',
-  'djinn', 'cisternqueen', 'matriarch', 'colossus', 'hawkmistress', 'paladinboss', 'fogknight', 'hourglassking', 'greatdrill', 'lanterneater', 'puppeteer', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
+  'captain', 'archmage', 'duneworm', 'shrieksisters', 'kraken', 'admiral', 'gargoyle', 'djinn', 'cisternqueen', 'matriarch', 'colossus', 'hawkmistress', 'paladinboss', 'fogknight', 'hourglassking', 'greatdrill', 'lanterneater', 'puppeteer', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
   'harbormaster', 'closedhelm', 'prince', 'burieddead', 'pyromancer', 'bloodknight', 'roc', 'bogtroll', 'hornetqueen', 'batteringbeast'];
 FOES.push(...BOSSES);   // placed like foes (cat 1); the BOSSES tab and tools/maker-sweep.mjs keep them apart
 export const isBoss = t => BOSSES.includes(t) || !!ARENA[t] && BOSS_TRIAL.has(t);
@@ -929,9 +934,32 @@ const ARENA_EXTRA = {
       slots: [[X(1019), X(1023)], [X(1030), X(1034)]], alcoves: [X(1012), X(1021), X(1032), X(1041)], king: X(1032) } }; },
 };
 /* and what a few read from the LEVEL (src/main.js edLevelObj merges it): the Scarecrow King's moon, the Wicker Queen's green */
-export function bossLevelExtra(doc) {
-  const a = arenaFor(doc); if (!a) return {}; const A0 = a.x0 / TS, F = a.floor / TS;
-  if (a.boss === 'strawking') return { fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, dusk: [30, 150] } };
-  if (a.boss === 'wickerqueen') return { green: { maypole: A0 + 22, bonfire: A0 + 22, floor: F }, carousels: [] };
-  return {};
+export function bossLevelExtra(doc) { return bossExtras(doc).rest; }
+/* (claude/maker) THE REST OF A BOSS'S SETUP, as its own level lays it: the tide the Reefmaw and the Tide Herald fight in, the Chieftain's two
+   war drums, the Coffin King's plate traps (block, darts), the Wicker Queen's carousel. { rest: level fields, pools, moversExtra, ents }.
+   (Grubbag's hook rails and conveyor are tied to the kitchen's own column map and are not rebuilt: his fight runs without them.) */
+export function bossExtras(doc) {
+  const out = { rest: {}, pools: [], moversExtra: [], ents: [] }, a = arenaFor(doc); if (!a || a.boss === undefined) return out;
+  const A0 = Math.round(a.x0 / TS), A1 = Math.round(a.x1 / TS) - 1, F = Math.round(a.floor / TS), k = a.boss;
+  if (k === 'archmage') {   /* THE ARCHMAGE'S LIBRARY, as far as his fight reads it: the dais he stands on, the floor he floods, the stacks, the weight, the cage - and the acid that rises (L.mage, one magePool) */
+    out.rest.mage = { shelves: [], locks: [], hung: [], dais: [A0 + 29, A0 + 37], flood: [A0 + 8, A0 + 29], stacks: [A0 + 11, A0 + 16, A0 + 21, A0 + 26], weight: A0 + 13, cage: [[A0 + 30, 2], [A0 + 38, 2]], outside: 64, skins: [], hedges: [], chains: [] };
+    out.pools.push({ x0: (A0 + 8) * TS, x1: (A0 + 29) * TS, y: F * TS, base: F * TS, bottom: F * TS, dry: true, depth: 0, arenaTide: true, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true, magePool: true }); }
+  if (k === 'strawking') out.rest.fields = { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, dusk: [30, 150] };
+  if (k === 'reefmaw' || k === 'herald') out.pools.push({ x0: A0 * TS, x1: (A1 + 1) * TS, y: F * TS + 6, base: F * TS, swim: true, shallow: true, depth: 0, bottom: F * TS, arenaTide: true });
+  if (k === 'bzchief') { out.rest.warcairn = true; out.rest.wcDrums = [6, 37].map((c, i) => ({ id: 'arena' + i, x: Math.min(A1 - 1, A0 + c), f: F - 1, gates: [], slabs: [], cornices: [], arena: true }));
+    for (const d of out.rest.wcDrums) out.ents.push({ t: 'wcdrum', x: d.x, y: F - 1, id: d.id }); }
+  if (k === 'tombking' && a.tk) { const S = a.tk, [pw, pm, pe] = S.plates, [sw, se] = S.slots; out.rest.sealedpyramid = true;
+    out.rest.traps = [
+      { id: 'tkBlockW', kind: 'block', plates: [[pw[0], pw[1], F]], zone: [sw[0], sw[1], S.roof, F - 1], slot: [sw[0], sw[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' },
+      { id: 'tkBlockE', kind: 'block', plates: [[pe[0], pe[1], F]], zone: [se[0], se[1], S.roof, F - 1], slot: [se[0], se[1], S.roof - 2, S.roof - 1], land: F - 1, reset: 6.0, arena: true, tk: true, section: 'boss' },
+      { id: 'tkDartsW', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [S.x0, pm[0] - 1, F - 2, F - 1], wall: S.westDoor.col, dir: 1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' },
+      { id: 'tkDartsE', kind: 'darts', plates: [[pm[0], pm[1], F]], zone: [pm[1] + 1, S.x1, F - 2, F - 1], wall: S.eastDoor.col, dir: -1, rows: [F - 2, F - 1], reset: 6.0, arena: true, tk: true, section: 'boss' }];
+    out.ents.push({ t: 'tplate', x: pw[0], y: F - 1, trap: 'tkBlockW' }, { t: 'tblock', x: sw[0], y: S.roof - 1, trap: 'tkBlockW' }, { t: 'tplate', x: pe[0], y: F - 1, trap: 'tkBlockE' }, { t: 'tblock', x: se[0], y: S.roof - 1, trap: 'tkBlockE' },
+      { t: 'tplate', x: pm[0], y: F - 1, trap: 'tkDartsW' }, { t: 'dartwall', x: S.westDoor.col, y: F - 1, trap: 'tkDartsW' }, { t: 'dartwall', x: S.eastDoor.col, y: F - 1, trap: 'tkDartsE' }); }
+  if (k === 'duneworm') {   /* THE DUNE WORM reads the caravan's state (his storm, the sun his ledges shade you from): the level borrows THE SUNKEN CARAVAN's rules
+       (src/main.js keeps a made level's own ground: L.custom). The sun burns in his hollow only, as at home; the rest of the level is shade */
+    out.rest.caravan = true; out.rest.shade = [[0, a.x0, 0, doc.H * TS], [a.x1, doc.W * TS, 0, doc.H * TS]]; }
+  if (k === 'wickerqueen') { out.rest.green = { x0: A0 - 1, x1: A1 + 1, maypole: A0 + 21, bonfire: A0 + 24, floor: F, carousel: true }; out.rest.carousels = [];
+    const ring = newRing(a); for (let i = 0; i < RING.horses; i++) { const h = horseAt(ring, i); out.moversExtra.push({ kind: 'carhorse', i, x: h.x - RING.w / 2, y: h.y, w: RING.w, h: RING.h, broken: !h.front }); } }
+  return out;
 }

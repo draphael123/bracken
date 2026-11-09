@@ -1,5 +1,28 @@
 # THE MAKER: which bosses work in a made-by-hand level
 
+**Update 2026-11-09 (latest): 49 of 53 work.** Each passes `tools/maker-bosses.mjs`, which also checks that each boss's setup is really there in play.
+- **Captain:** his yards and lines are a room he brings.
+- **Archmage:** gets his library fields and the rising acid.
+- **Dune Worm:** fights under the caravan's rules, with the sun only in his hollow.
+- **Shriek Sisters, Kraken, Admiral, Gate Gargoyle:** each brings a hand-built room. They need rows below the floor you click (the Kraken 11, the Admiral 10, the Gargoyle 9), and the editor says so if there isn't room.
+- **Setups added to bosses already in the palette:** the Reefmaw's and Tide Herald's tide, the Chieftain's drums, the Coffin King's traps, the Wicker Queen's carousel, and every room boss's machinery (ladders, gongs, braziers, the Fog Knight's lock, the Lantern-Eater's raft).
+
+Still lacking compared with their home levels:
+- Grubbag's hooks and conveyor.
+- The Dune Worm's quicksand and shade winch.
+- The Kraken's full-depth sea.
+- Dressing (masts, towers).
+
+These need a hand-played pass: the Lantern-Eater (her fight is keyed, so the test can't play it), the Dune Worm's sun, and the Gargoyle's sunk room.
+
+**Left out (4), whole set-pieces:**
+- **Bullfrog King:** the marsh is rewritten into pads and lanes.
+- **Winchmaster:** needs the Ore Road's cableway.
+- **False Abbot:** needs his whole belfry house; also, `claude/abbot` is held.
+- **Undead Archmage:** a falling-tower chase, then a carpet ride.
+
+---
+
 **Update 2026-11-09 (later): 42 of 53 now work.** A research pass found the real cause for each of the 30 that failed. 19 more were fixed and each passes `tools/maker-bosses.mjs`:
 - **8 get the arena record their level gives them** (`ARENA_EXTRA` / `bossLevelExtra` in src/maker-palette.js): Ram Lord, Goblin Huntmaster, Berserker Chieftain, Grubbag, Coffin King, Reefmaw, Scarecrow King, Wicker Queen. The Ram Lord was never broken: the palette placed the battering-ram prop instead of the boss.
 - **11 bring their own room**, stamped into the level by their own level's builder (src/maker-stages.js): Djinn, Cistern Queen, Old Plume, Glass Colossus, Hawk-Mistress, Paladin, Fog Knight, Hourglass King, Great Drill, Lantern-Eater, Puppeteer.

@@ -1443,14 +1443,14 @@ function resolveTiles() {
     if (L.lpKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LP3T.lpTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/lamplit3) THE LAMPLIT STREET's own footing: every one-way is a cobbled lip, an iron balcony, an awning, a lamp crossbar or a gantry - never a plank - and a tar net is drawn as one */
     if (L.welltown && t === T.SOLID) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE WELL TOWN's solids (the street, the houses, the cisterns) are its own kit, ahead of the caravan's sand skin; slopes stay the sand's */
     if (L.ksar && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = KST.ksarTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BANDIT KSAR's own ground (claude/ksar art pass, src/redraw/ksar_tiles.js): mud-brick, ashlar, bedrock, flagstones, the breaches' stakes, the beams */
-    if (L.sealedpyramid && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
+    if (L.sealedpyramid && !L.custom && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
     if (L.buriedcity && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT)) { const ts = BCT.bcTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BURIED CITY's own ground (claude/bc2art, src/redraw/buried_city_tiles.js): the sand roof, each district's masonry, every footing kind, the stakes, the light on each tile */
     if ((t === T.SOLID || t === T.ONEWAY || t === T.NET) && H2A.on()) { const ts = H2A.tile(t, x, y, tileAt, T); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE HURRICANE DECK 2's own rigging, spars, houses and bar (claude/hurricane2art, src/hurricane2-art.js) */
     if (L.towpath && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET)) { const ts = TPT.towpathTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE TOWPATH's tile kit (claude/towpath2art, src/redraw/towpath_tiles.js): wet moonlit stone, turf banks, black-green lock walls, iron, brick, the old irons */
     if (L.litchurch && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = CHT.churchTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE LIT CHURCH's own ground (claude/churchart, src/redraw/church_tiles.js): cut stone, chequered flags, marble, the crypt's bone-niched stone, turf, the pews and corbels */
     if (L.glasssea && (t === T.SOLID || isSlope(t))) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE GLASS SEA's own ground (claude/glasssea art pass, src/redraw/glasssea_tiles.js): fused glass, slick diagonals; the first columns stay sand */
     if (L.minecart && (t === T.SOLID || t === T.RAIL || t === T.ONEWAY || t === T.SPIKE || isSlope(t))) { const ts = MCT.mineTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE DEEP RAILS' tile kit (claude/minecartart, src/redraw/minecart_tiles.js): the rail bed, shored rock, ragged roofs, ore-veined mass, the trestle deck */
-    if ((L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
+    if (((L.caravan && !L.custom) || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
     const shore = PSET === 'shore' && SHORE, reefT = PSET === 'reef' && REEF, shipT = ((PSET === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = PSET === 'city' && CITY;
     const villT = PSET === 'village' && VILL;
@@ -1517,7 +1517,7 @@ function resolveTiles() {
       const desertKit = desertLedgeAt(x, y);   /* the desert's own ledges win over the generic castle masonry (crownT): a ruin is not a keep */
       const zoneLedge = (L.ledgeZones || []).find(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);   /* A PLACE'S OWN LEDGE (L.ledgeZones: [x0, x1, y0, y1, set]) - the Burial Caverns' crypt is stone, its mine-staging elsewhere */
       const named = zoneLedge && LEDGE_SETS[zoneLedge[4]] ? LEDGE_SETS[zoneLedge[4]] : curId()==='waymeet' ? LEDGE_SETS.awning : desertKit ? desertKit : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
-      const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
+      const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (PSET === 'shore' ? SHORE : PSET === 'reef' ? REEF : PSET === 'city' ? CITY : PSET === 'village' ? VILL : PSET === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
       /* ONE IN THREE, OF HOWEVER MANY THERE ARE (2026-09-25). LEDGE_SETS.masonry has ONE picture, and ledge[(rnd() * 3) | 0] handed back undefined for two
@@ -24750,7 +24750,7 @@ function mkStyleSet(m) {
   return ({ cobble: VILL, shore: SHORE, reef: REEF, city: CITY, masonry: CROWN })[m] || null;
 }
 function cvTile(x, y, t) {
-  if (!L.caravan) {   /* A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
+  if (!L.caravan || L.custom) {   /* (claude/maker: a made level that borrows the caravan for the Dune Worm keeps its own ground) A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
     if (!isSlope(t)) return false;
     const fk = L.fairKit ? FTL.slopeSkins(L, x, y) : null;   /* (claude/fairfix5) the fair's slopes wear its own ground */
     const ms = L.custom && L.mat ? L.mat[y * LW + x] : null, msSet = ms ? mkStyleSet(ms) : null;   /* (claude/maker) a slope in a STYLE is cut from that style's ground */
@@ -34779,7 +34779,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null }); else if (L.duelPit) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.duelPit.floor * TS, cheer: DUELO && DUELO.on() && DUELO.st.m.phase !== 'fight' ? 0.7 : 0, gate: null });   /* (claude/pvpduel) the duel pit wears the arena set: the crowd cheers between rounds */   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
-  if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
+  if (L.sealedpyramid && !L.custom) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
   if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and resin lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (curId() === 'wood' || curId() === 'marsh') HNB.drawNeighbourPine(g, cx, cy, VW, VH, curId(), bgDY(cy), time);   /* (claude/hornetsnest2) the great pine and its paper nest on the horizon: past the Lumber Trail's clearing (the road climbs on to it), behind MARSH WOOD's start (you came down it) */
   if (L.buriedcity) BCB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE BURIED CITY (claude/buriedcity2): UNDER THE SAND ROOF - the back wall, the roof's underside and THE HOURGLASS TOWER over the desert sky (the dunes keep theirs), whatever the parallax setting (src/redraw/buried_city_backdrop.js) */
@@ -34800,7 +34800,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest && !L.arenaYard && !L.duelPit) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
+  else if (SET.parallax !== 'off' && !L.colosseum && !(L.sealedpyramid && !L.custom) && !L.hornetsNest && !L.arenaYard && !L.duelPit) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
   /* THE FLOTILLA'S HARBOUR is laid for where her camera lives (a deck twenty rows down a forty-row level), not for the bottom of the
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
@@ -36394,7 +36394,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.welltown && WTB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE WELL TOWN's rooms: the cisterns' cut stone, a house's plaster, the dovecote's niches */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
-  if (L.caravan && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */
+  if (L.caravan && !L.custom && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */
   if (L.keepLook && KLK.paintKeepRoom(g, st, sx, sy, w, h, tx0, ty0, time, L)) return;   /* and THE UNDERWATER KEEP, section by section */
   if (L.burialLook && paintBurialRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and THE BURIAL CAVERNS, one backdrop a section: barrow, crypt, bone stair, procession (src/burial-looks.js; 'ossuary' is painted below) */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
@@ -37299,17 +37299,17 @@ function edBlank(W = 120, H = 28) {
   return { W, H, grid, ents: [{ t: 'gate', x: W - 6, y: 19 }], theme: 0, name: 'A NEW WOOD', start: { x: 3, y: 19 }, crumble: [], water: [] };
 }
 function edLevelObj(doc, copy) {
-  const th = edThemeList()[doc.theme] || edThemeList()[0];
+  const th = edThemeList()[doc.theme] || edThemeList()[0], userPools = MKP.enginePools(doc), stx = MKS.stageLevelExtra(doc, userPools), bx = MKP.bossExtras(doc);   /* (claude/maker) a boss room's own machinery */
   return MUI.applySettings({ W: doc.W, H: doc.H,
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
-    ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
+    ents: copy ? [...MKP.engineEnts(doc), ...bx.ents] : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: doc.start ? { x: doc.start.x, y: doc.start.y } : { x: 2, y: 2 },
-    pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),
+    pools: [...userPools, ...stx.pools, ...bx.pools], crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),
     crateLoot: MKP.engineLoot(doc), swCells: MKP.engineSwitch(doc), mkGoal: doc.goal || null,   /* (claude/maker) the level's GOAL rule */
       /* (claude/maker) what crates hold; the RED / BLUE blocks */
-    ...MKP.bossLevelExtra(doc),   /* (claude/maker) what a few bosses read from the level */
+    ...MKP.bossLevelExtra(doc), ...stx.rest,   /* (claude/maker) what a few bosses read from the level */
     ...(MKP.arenaFor(doc) ? { arena: MKP.arenaFor(doc), gateAfterBoss: true, mkBossLocks: MKP.bossLocks(doc.ents.find(e => MKP.isBoss(e.t))) } : {}), mkStart: doc.start ? { x: doc.start.x, y: doc.start.y } : null,   /* (claude/maker) a boss gets its arena; the goal opens when it falls */   /* (claude/maker) THE MAKER's water and crumbling ledges */
-    falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
+    falls: [], moversExtra: [...stx.moversExtra, ...bx.moversExtra], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
     night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
     duskStart: th.duskStart === undefined ? -1 : th.duskStart, duskLen: th.duskLen || 1,

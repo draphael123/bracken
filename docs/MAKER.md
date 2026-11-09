@@ -251,6 +251,21 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   water trap, now fixed). Also: the SAVE PROTECTED banner no longer shows over a maker run.
 - New checks: maker-share, maker-fuzz (suite).
 
+## Done (2026-11-09, EVENING OUT THE PIECES - Daniel: "can we fix the uneven pieces")
+- STYLE reaches the ledges: engineMat marks ONEWAY cells too, and the ledge code reads the cell's own set (PSET) instead of the
+  level's palette set (the same thing in every campaign level). Castle ledges are stone, ship ledges are rails. Ladders (rope)
+  and doors (iron gate) are drawn the same in every style and fit all of them.
+- ROOM BOSSES GET THEIR MACHINERY (`MKS.stageLevelExtra`): ladders hung as NET, the Hawk-Mistress's gongs, racks and shafts,
+  the Paladin's braziers and fires, the Fog Knight's cut (water, lock, bridge, lamps, rigged platforms), the Lantern-Eater's
+  raft and canal, the Puppeteer's batten, the Glass Colossus's holds.
+- RECORD BOSSES GET THEIR SETUP (`MKP.bossExtras`): the tide for the Reefmaw and the Tide Herald (who had been fighting dry),
+  the Chieftain's two war drums (`warcairn`), the Coffin King's plate traps (`sealedpyramid`; its art, backdrop and parallax
+  guarded `!L.custom` so a maker level keeps its own look), the Wicker Queen's carousel (horses and ring). Grubbag's hooks
+  and conveyor are NOT rebuilt (tied to the kitchen's own column map).
+- CAPTAIN (his yards and lines as a room he brings, `stageCaptain`) and ARCHMAGE (his library fields and rising acid): 44.
+- maker-bosses now also asserts each boss's setup is really there in play (PARTS), and holds KEYED bosses (the Lantern-Eater:
+  her real fight needs HIGH blows on the lure from the raft) to waking and a clean page; they need a hand-played pass.
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.
