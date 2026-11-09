@@ -5118,7 +5118,7 @@ const INLAND_NODES = [{ id: 'waymeet', kind: 'level', level: LEVELS.findIndex(l 
    the return leg painted at full road weight on top of the outbound one, so the required town read as a dead end.
    Waymeet does not move. The road now enters, runs through it, and climbs away in a new direction; THE HEXED FIELDS
    moves so the road leaving Waymeet does not have to double back across its own entrance to reach it. */
-const WW_NODE = [140, 62];   /* (claude/wispwood) WISPWOOD's map node (the dead wood on the hill between the barrows and the stair) */
+const WW_NODE = [142, 74];   /* (claude/wispwood) WISPWOOD's map node (the dead wood on the hill between the barrows and the stair) */
 const INLAND_PATH = [[140,176], [25,153], [41,153], [41,122], [119,142], [130,115], [93,86], [124,83], [159,43], [208,64], [260,34]];   /* (claude/towpath fix, review M6: the towpath a road vertex a hop east of Waymeet; canal, theatre and fair re-spaced so every plate is clear) */
 if (LEVELS.some(l => l.id === 'wispwood')) { INLAND_NODES.splice(INLAND_NODES.findIndex(n => n.id === 'witchlight'), 0, { id: 'wispwood', kind: 'level', level: LEVELS.findIndex(l => l.id === 'wispwood'), x: WW_NODE[0], y: WW_NODE[1], plate: 'left', name: 'WISPWOOD' }); INLAND_PATH.splice(INLAND_PATH.findIndex(p => p[0] === 159 && p[1] === 43), 0, WW_NODE); }   /* (claude/wispwood) WISPWOOD: on the road between THE BURIAL CAVERNS and THE WITCHLIGHT STAIR, only while WISPWOOD_SHIPS / ?ww=1 - the LEVELS row is there only then */
 /* THE FIFTH SHEET, EMPTY (map-redesign §4.1/§8 step 2). DESERT_NODES is [] on purpose - none of the desert's eight
