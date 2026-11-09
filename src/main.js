@@ -7489,7 +7489,7 @@ function partySave() {
 }
 function partyRestore() { try { partyRestore0(); } finally { partyBooted = true; } }
 function partyRestore0() {
-  if (q.has('labReload') || q.get('level') || q.get('boss') || q.get('noparty') || coopWant) return;
+  if (q.has('labReload') || q.get('level') || q.get('boss') || q.get('noparty') || (q.get('pen') && isDev()) || coopWant) return;   /* (claude/beastsbones: the dev pen is a level jump too) */
   try {
     const raw = sessionStorage.getItem(PARTY_KEY); if (!raw) return;
     const d = JSON.parse(raw); if (!d || d.slot !== slot || !Array.isArray(d.seats)) return;
