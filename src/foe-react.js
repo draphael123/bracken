@@ -88,9 +88,9 @@ export const REACT = {
 
 /* THE ROLES (squads and the rules above). A COVER kind holds a guard of its own (a shield, a haft, a plate): it is never 'mashed', it
    guards by facing you. A RANGED kind keeps its distance. Everything else is melee and may flank. */
-export const COVER = new Set(['shield', 'tideguard', 'soldier', 'watch', 'merrowbrute', 'heavy', 'swornsword', 'bellguard', 'pike', 'turtle', 'crab', 'brute']);
+export const COVER = new Set(['shield', 'tideguard', 'soldier', 'watch', 'merrowbrute', 'heavy', 'swornsword', 'bellguard', 'pike', 'turtle', 'crab', 'brute', 'skelsoldier']);   /* (claude/beastsbones) the skeleton soldier holds a shield of his own */
 export const RANGED = new Set(['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder',
-  'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'gobpriest', 'marine', 'merrowspear', 'boarder', 'sapper', 'haunt', 'weaver', 'horn', 'lanternshade']);
+  'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'gobpriest', 'marine', 'merrowspear', 'boarder', 'sapper', 'haunt', 'weaver', 'horn', 'lanternshade', 'skelarcher', 'skelmage']);   /* (claude/beastsbones) the skeleton archer and mage hang back */
 export const roleOf = e => e.sqRole || (COVER.has(e.t) ? 'front' : RANGED.has(e.t) ? 'back' : 'flank');   /* (claude/foepass) a squad member's ROLE once its squad was balanced (src/foe-pursuit.js assignRoles) */
 /* the windups a FEINT fits: a blade or a haft drawn back in the hands (a bite, a spit, a grab or a spell does not feint) */
 export const FEINT = new Set(['soldier|slashTell', 'cutlass|slashTell', 'sailor|hookTell', 'tideguard|thrustTell', 'bonecorsair|cutTell', 'farmhand|swingTell', 'miner|swingTell',
@@ -108,8 +108,9 @@ export const ROSTER = {
   3: { front: ['tideguard', 'watch', 'bellguard', 'merrowbrute'], flank: ['cutlass', 'sailor', 'boarder', 'bonecorsair', 'drownedknight', 'crab', 'wight'], back: ['scout', 'netter', 'marine', 'merrowspear', 'lookout', 'seawitch'],
        heavy: ['merrowbrute', 'drownedknight', 'holdfast', 'tidemarauder'], support: ['bosun', 'merrowcaller', 'lanternshade', 'snuffer'], water: ['eel', 'angler', 'urchin', 'puffer', 'lamprey', 'siren', 'manta', 'jelly'],
        note: 'the sea: fights in the tide and the swim; water foes hold the water, boarders the decks' },
-  4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer'],
+  4: { front: ['swornsword', 'hedgeknight', 'armour', 'heavy', 'skelsoldier'], flank: ['zombie', 'husk', 'runner', 'hound', 'bonegob', 'farmhand', 'mummer', 'hobbyhorse', 'broom'], back: ['bonearcher', 'crossbow', 'apprentice', 'haunt', 'drunk', 'archer', 'skelarcher', 'skelmage'],
        heavy: ['hedgeknight', 'armour', 'barrowrider', 'brute'], support: ['bannerbearer', 'gobpriest', 'barker', 'snuffer'], note: 'the old kingdom: knights, the risen dead and the fair folk - a banner or a priest to kill first' },
+  6: { front: [], flank: ['snowrunner'], back: [], heavy: ['greymane', 'bruin'], support: [], note: 'the frozen reach (claude/beastsbones, flags off): the wolf pack circles, Greymane leads it, Bruin holds the den' },
   5: { front: ['shield', 'construct'], flank: ['cutthroat', 'scorpion', 'waterthief', 'ambusher', 'raptor'], back: ['slinger', 'archer', 'gobmage'], heavy: ['scorpion', 'sandworm', 'mummy'], support: ['sapper', 'vulture'],   /* (claude/lategameb: the act's second front kind is the Buried City's construct, the third heavy the Sealed Pyramid's mummy - kinds the game already spawns; a ksar plate-bearer and a brass-scorpion variant are a content lane's) */
        note: 'the desert: feinting cutthroats, slingers on the ledges, every fight in the sun or the flood' },
 };

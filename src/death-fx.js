@@ -13,11 +13,11 @@ const R = s => { let a = s >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t
 
 /* MATERIAL, by foe type (anything unlisted is 'cloth': a puff of dust and a scrap, which is what a goblin goes out as) */
 export const MATERIAL_OF = {
-  bone: ['skeleton', 'bonecorsair', 'bonegob', 'bonearcher', 'skeletonguard', 'gildedguard', 'burieddead', 'lich'],
+  bone: ['skeleton', 'bonecorsair', 'bonegob', 'bonearcher', 'skeletonguard', 'gildedguard', 'burieddead', 'lich', 'skelsoldier', 'skelarcher', 'skelmage'],   /* (claude/beastsbones) THE SKELETON SET collapses in bone */
   rot: ['zombie', 'husk', 'mummy', 'drowned', 'apprentice'],
   spirit: ['fogwraith', 'wight', 'haunt', 'boo', 'ghostfarmer', 'ghostwife', 'ghostchild', 'shadow', 'emberwisp', 'nighthunter'],
   armour: ['hedgeknight', 'soldier', 'armour', 'tideguard', 'closedhelm', 'heavy', 'swornsword', 'marine', 'jackalguard', 'sentry', 'pike', 'lancer'],
-  fur: ['bat', 'hound', 'dog', 'fox', 'greathound', 'badger', 'boar', 'oldtusker', 'hare', 'squirrel', 'goat', 'ram', 'troll'],
+  fur: ['bat', 'hound', 'dog', 'fox', 'greathound', 'badger', 'boar', 'oldtusker', 'hare', 'squirrel', 'goat', 'ram', 'troll', 'snowrunner', 'greymane', 'bruin'],   /* (claude/beastsbones) the wolves and the bear */
   feather: ['galeharpy', 'shrieker', 'crow', 'harpy', 'petrel', 'roc', 'vulture', 'raptor', 'owl', 'kite', 'fledgling'],
   chitin: ['wasp', 'weaver', 'drone', 'crab', 'scorpion', 'scarab', 'grub', 'queen'],
   slime: ['sporeling', 'spitcap', 'lurker', 'jelly', 'slime', 'hopper', 'hopper_yellow', 'hopper_blue', 'puffer', 'urchin'],
