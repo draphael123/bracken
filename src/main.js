@@ -2210,7 +2210,7 @@ const soundMusic = () => DS.DEMO ? MUSIC_NAMES.filter(hasTrackFile) : MUSIC_NAME
 // the existing one inside Settings. Back ('pause') has to land wherever it was opened - the title screen itself for
 // the new entry, the Settings list (as it always has) for the old one - so this remembers which door it came in.
 let soundFrom = 'menu';
-let wnScroll = 0, wnLimit = 0; WN.loadUpdates();   /* WHAT'S NEW: the first row shown, and the last first-row (set by the drawing) */
+let wnScroll = 0, wnLimit = 0, wnTab = 0, wnFilter = '', wnPad = 0; WN.loadUpdates();   /* WHAT'S NEW: the first row shown, and the last first-row (set by the drawing) */
 let creditsPage = 0, demoCreditsBack = false;   /* the title's CREDITS: which page (src/credits.js) */
 let stop = 0, shake = 0, kick = 0, camX = 0, camY = 0, flash = 0, killFlash = 0, introSeen = false, earned = 0;
 /* THE HERO'S FEET, DOWN THE SCREEN (look-and-feel review, 2026-09-26): on flat ground the follow camera used to hold them at
@@ -2705,7 +2705,8 @@ function* loadLevelG(i) {
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = []; lostBanners = [];
   flaskFinds = F2.findsIn(LEVELS[i] && LEVELS[i].id, PROG).map(f => ({ ...f, px: f.x * TS + 8, py: (f.y + 1) * TS - 6, got: false }));   /* (claude/flasks2) the hidden flask finds of this wood (src/flasks2.js FINDS) */
-  for (const e of L.ents) {
+  const dice0 = Math.random; Math.random = loadDice(LEVELS[i].id, 'pickups');   /* (claude/wnseed) the pickups' phases draw from the load's own stream, never the seeded one */
+  try { for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
     if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text, mute: !!e.mute }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
@@ -2713,7 +2714,7 @@ function* loadLevelG(i) {
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
     if (e.t === 'gate') { gate = { x: px, y: py }; EG.prime(LEVELS[i].id); }   /* (bake this region's landmark now, at load, never on a frame) */
-  }
+  } } finally { Math.random = dice0; }
   for (let i2 = 0; i2 < LW * LH; i2++) if (grid0[i2] === T.CRATE) total++;
   total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
   yield 'deep';
@@ -2750,7 +2751,12 @@ function applyLevelRims() {
     RIMMED[id] = out; }
   for (const [t, set] of Object.entries(RIMMED[id])) { SPR_PLAIN[t] = SPR_PLAIN[t] || SPR[t]; SPR[t] = set; }
 }
-function spawnEntities() {
+/* (claude/wnseed, release142 rec) LEVEL LOAD DOES NOT CONSUME THE SEEDED STREAM. Loading and spawning a level draw Math.random for phases and timers; a test that pinned Math.random
+   before the load had every seeded fight shift whenever a level gained or lost an entity (puppeteer salt, combat-part2 seed, small-adds salt). The load now draws from its own
+   deterministic stream (a hash of the level id), so the pinned stream is untouched by it. */
+const loadDice = (id, part) => { let h = 2166136261 >>> 0; const k = String(id) + '|load|' + part; for (let q = 0; q < k.length; q++) { h ^= k.charCodeAt(q); h = Math.imul(h, 16777619) >>> 0; } return mulberry(h); };
+function spawnEntities() { const dice0 = Math.random; Math.random = loadDice(curId() || levelIndex, 'spawn'); try { spawnEntitiesRaw(); } finally { Math.random = dice0; } }
+function spawnEntitiesRaw() {
   if (PUPH) PUPH.clear();   /* THE PUPPETEER's show is made again with him (his spawn case) */
   if (LEH) LEH.clear();   /* THE LANTERN-EATER's show is made again with it (its spawn case) */
   if (GPH) GPH.clear(); if (GLH) GLH.clear(); if (GGH) GGH.clear(); if (CQH) CQH.clear(); if (COH) COH.clear(); if (SRH) SRH.clear(); if (HMH) HMH.clear(); if (FKH) FKH.clear(); if (CHH) CHH.clear(); if (ADH) ADH.clear(); if (FL2H) FL2H.clear(); if (F3H) F3H.clear(); if (PMK) PMK.clear(); if (PBH) PBH.clear(); if (BZH) BZH.clear(); if (DCH) DCH.clear(); if (GDH) GDH.clear(); if (DJH) DJH.clear(); if (GCH) GCH.clear(); if (MTH) MTH.clear(); if (HNH) HNH.clear(); if (HGK) HGK.clear(); if (SMH) SMH.clear(); if (TKH) TKH.clear(); if (OTH) OTH.clear(); if (GBH) GBH.clear(); if (BBH) BBH.clear(); if (SSH) SSH.clear(); if (HQH) { HQH.restore(); HQH.clear(); } if (BTH) BTH.clear(); if (SNR) SNR.reset(); if (HPD) HPD.reset();   /* THE GANG LEADER's and THE CISTERN QUEEN's fights are made again with them (their spawn cases) */
@@ -7291,6 +7297,7 @@ function padRawTick(gps) {
   padRaw = { a: rose(0) };
   if (state === 'rebind' && rebindS.listening && rebindS.prof > 0) { for (let i = 0; i < 17; i++) if (rose(i)) { if (CTL.rebindCapture(rebindS, SET.binds, 'pad', i)) { applyBinds(); saveSettings(); SFX.ui(); used = true; } break; } }
   else if (state === 'rebind') { if (rose(4)) rebindTab = -1; if (rose(5)) rebindTab = 1; }
+  else if (state === 'whatsnew') { if (rose(4)) wnPad = -1; if (rose(5)) wnPad = 1; }   /* (claude/wnseed) LB / RB: the level filter on the LEVELS & BOSSES tab */
   else if (state === 'menu' && menuKind === 'settings') { if (rose(4)) { settingsTab = stepTab(settingsTab, -1); menuI = 0; menuBarY = null; SFX.ui(); } if (rose(5)) { settingsTab = stepTab(settingsTab, 1); menuI = 0; menuBarY = null; SFX.ui(); } }
   if (state !== 'play' && state !== 'talk') { if (rose(12)) upPress = true; if (rose(13)) downPress = true; if (rose(14)) leftPress = true; if (rose(15)) rightPress = true; }
   padRawPrev = cur; return used;
@@ -33164,7 +33171,7 @@ function update(dt) {
         else if (k === 'CONTROLS') { controlsFrom = 'title'; state = 'controls'; }
         else if (k === 'CREDITS') { creditsPage = 0; state = 'credits'; }
         else if (k === 'UNLOCKS') { UNLOCK_OPEN('title'); }   /* (claude/unlocks) */
-        else if (k === "WHAT'S NEW") { wnScroll = 0; WN.markSeen(); state = 'whatsnew'; }
+        else if (k === "WHAT'S NEW") { wnScroll = 0; wnTab = 0; wnFilter = ''; WN.markSeen(); state = 'whatsnew'; }
       }
       }
     }
@@ -33213,9 +33220,12 @@ function update(dt) {
   if (state === 'herocard') { if (confirmPress) yardEnter(false); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
   if (state === 'bossselect') { updateBossSelect(); return; }
-  if (state === 'whatsnew') { const step = 5;
-    if (upPress || leftPress) { wnScroll = Math.max(0, wnScroll - 1); SFX.ui(); } if (downPress || rightPress) { wnScroll = Math.min(wnLimit, wnScroll + 1); SFX.ui(); }
-    if (confirmPress) { if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + step); SFX.ui(); } }
+  if (state === 'whatsnew') { const step = 5, pad = wnPad; wnPad = 0;
+    if (upPress) { wnScroll = Math.max(0, wnScroll - 1); SFX.ui(); } if (downPress) { wnScroll = Math.min(wnLimit, wnScroll + 1); SFX.ui(); }
+    if (leftPress) wnSetTab(0); if (rightPress) wnSetTab(1);   /* (claude/wnseed) LEFT/RIGHT change tab: UPDATES | LEVELS & BOSSES */
+    const df = pad || (mapPress || talkPress ? 1 : talentsPress ? -1 : 0);
+    if (wnTab && df) wnStepFilter(df);   /* the level filter: LB/RB, the map/talk key and the talents key (as Settings' tabs) */
+    if (confirmPress) { if (wnTab) wnStepFilter(1); else if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + step); SFX.ui(); } }
     if (pausePress || atkPress) { state = 'title'; SFX.menuClose(); }
     return; }
   if (state === 'credits') { const n = creditPages(MUSIC_CREDITS).length;
@@ -36646,18 +36656,40 @@ function fxPages(colW, rows) {
   return pages;
 }
 /* THE CREDITS (title menu): page 1 the CC-BY music in full, then every outside composer, two columns a page. Pure layout in src/credits.js. */
+/* WHAT'S NEW, 2 TABS (claude/wnseed, Daniel 11-03 18:42): UPDATES (every deploy, newest first) and LEVELS & BOSSES (each level's change history with dates, only for levels the player has UNLOCKED, filterable by level).
+   Keyboard: LEFT/RIGHT tab, UP/DOWN scroll, Z (or the map/talk key) next level filter, the talents key the one before. Pad: d-pad the same, LB/RB the filter. Touch: tap a tab, tap the LEVEL chip for the next filter, tap the list to page, tap BACK. */
+const wnHist = () => WN.levelHistory(id => { const k = LEVELS.findIndex(l => l.id === id); return k >= 0 && !levelLocked(LEVELS[k]); }, id => LEVELS.findIndex(l => l.id === id));
+const wnName = id => { const l = LEVELS.find(q => q.id === id); return l ? l.name : String(id).toUpperCase(); };
+const WN_TABS = ["UPDATES", "LEVELS & BOSSES"];
+function wnStepFilter(dir) { const ids = WN.filterIds(wnHist()), k = Math.max(0, ids.indexOf(wnFilter)); wnFilter = ids[(k + dir + ids.length) % ids.length]; wnScroll = 0; SFX.ui(); }
+function wnSetTab(t) { if (wnTab === t) return; wnTab = t; wnScroll = 0; wnFilter = ''; SFX.ui(); }
 function drawWhatsNew() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
   const x = 24, y = 6, w = VW - 48, h = VH - 12; panel(x, y, w, h, UI.border, 'parchment');
   text("WHAT'S NEW", VW / 2, y + 6, UI.title, 'center', TYPE.head);
-  const rs = WN.rows((s, mw) => wrap(s, mw, 6), w - 24), top = y + 22, RH = 8, vis = Math.max(3, Math.floor((h - 22 - 24) / RH));
-  wnLimit = Math.max(0, rs.length - vis); wnScroll = Math.min(wnScroll, wnLimit);
-  if (!rs.length) text('nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
-  let yy = top;
-  for (let i = wnScroll; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i]; if (r.cont && i === wnScroll) continue; if (r.more && yy + RH * 2 > y + h - 22) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
+  const hist = wnTab ? wnHist() : null; if (hist && wnFilter && !hist.some(q => q.id === wnFilter)) wnFilter = '';
+  const top = y + (wnTab ? 42 : 31), bot = y + h - 22, RH = 8, vis = Math.max(3, Math.floor((bot + 2 - top) / RH));
+  TCH.hit(x, top, w, bot - top, () => { if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + 5); SFX.ui(); } });   /* a tap on the list pages down, and closes at the end (as a tap always did) */
+  { const ws = WN_TABS.map(t => textW(t, 6) + 10), gap = 6, tot = ws[0] + ws[1] + gap; let sx = Math.round(x + (w - tot) / 2);
+    WN_TABS.forEach((t, k) => { TCH.hit(sx, y + 16, ws[k], 12, () => wnSetTab(k)); const on = k === wnTab;
+      g.fillStyle = on ? 'rgba(255,211,107,0.22)' : 'rgba(255,255,255,0.06)'; g.fillRect(sx, y + 17, ws[k], 10);
+      if (on) { g.fillStyle = '#ffd36b'; g.fillRect(sx, y + 27, ws[k], 1); }
+      text(t, sx + ws[k] / 2, y + 19, on ? UI.title : UI.dim, 'center', 6); sx += ws[k] + gap; }); }
+  if (hist) { const lab = wnFilter ? wnName(wnFilter) : 'ALL', cw = Math.min(w - 8, textW('< ' + lab + ' >', 6) + 12);
+    TCH.hit(VW / 2 - cw / 2, y + 29, cw, 11, () => wnStepFilter(1));
+    g.fillStyle = 'rgba(143,209,96,0.18)'; g.fillRect(Math.round(VW / 2 - cw / 2), y + 30, cw, 9);
+    text('< ' + lab + ' >', VW / 2, y + 31, UI.text, 'center', 6); }
+  const rs = hist ? WN.levelRows((s, mw) => wrap(s, mw, 6), w - 24, hist, wnFilter, wnName) : WN.rows((s, mw) => wrap(s, mw, 6), w - 24);
+  /* (claude/wnseedproof) THE LAST ROW MUST BE REACHABLE: the layout below spends 2px on every date gap and drops a wrapped line that will not fit whole, so 'rows - vis' ran short and the end of the list (a 3-line Platforming row) could never scroll into view. The limit is the first scroll from which the whole tail fits. */
+  const wnEnd = s0 => { let yy = top, i = s0, lead = true; for (; i < rs.length && yy + RH <= bot; i++) { const r = rs[i]; if (r.cont && lead) continue; lead = false; if (r.more && yy + RH * 2 > bot) break; if (r.kind === 'head' && r.gap && i > s0 && yy + RH * 2 <= bot) yy += 2; yy += RH; } return i; };
+  wnLimit = 0; while (wnLimit < rs.length - 1 && wnEnd(wnLimit) < rs.length) wnLimit++; wnScroll = Math.min(wnScroll, wnLimit);
+  if (!rs.length) text(hist ? 'no level news yet' : 'nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
+  let yy = top, lead = true;   /* (claude/wnseedproof) skip EVERY leading continuation line: a 3-line row cut at its second line used to show its third alone */
+  for (let i = wnScroll; i < rs.length && yy + RH <= bot; i++) { const r = rs[i]; if (r.cont && lead) continue; lead = false; if (r.more && yy + RH * 2 > bot) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= bot) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
   if (wnScroll > 0) text('^', x + w - 10, top - 8, UI.dim, 'right', 6);   /* (redclean 11-02) in the gap under the title, not over the first row's last word (textfit whatsnew scroll 99) */
   if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 21, UI.dim, 'right', 6);   /* (integ111) was y+h-30, inside the last text row: it collided with the Paladin line once the list grew; now in the gap above the footer */
-  text(wnScroll < wnLimit ? 'UP/DOWN scroll  Z more  ESC back' : 'UP/DOWN scroll  Z or ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
+  TCH.hit(x + w - 44, y + h - 16, 40, 11, () => { state = 'title'; SFX.menuClose(); }); text('BACK', x + w - 10, y + h - 14, UI.sel, 'right', 6);
+  text(hist ? 'Z level  L/R tab  ESC back' : 'L/R tab  Z more  ESC back', x + 12, y + h - 14, UI.dim, 'left', 6);
 }
 function drawCredits() {
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
@@ -37950,7 +37982,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
-  get wnScroll() { return wnScroll; }, set wnScroll(v) { wnScroll = v; }, WN,
+  get wnScroll() { return wnScroll; }, set wnScroll(v) { wnScroll = v; }, get wnTab() { return wnTab; }, set wnTab(v) { wnTab = v; }, get wnFilter() { return wnFilter; }, set wnFilter(v) { wnFilter = v; }, wnHist, WN,
   get creditsPage() { return creditsPage; }, set creditsPage(v) { creditsPage = v; }, creditPageCount: () => creditPages(MUSIC_CREDITS).length,
   get soundCat() { return soundCat; }, set soundCat(v) { soundCat = v; }, get soundI() { return soundI; }, set soundI(v) { soundI = v; }, musicUnlocked,
   /* EFFECTS' page starts (drawSoundTest's own fxPages, see there): a full-width row for a too-wide id makes pages an

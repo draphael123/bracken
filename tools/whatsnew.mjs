@@ -9,15 +9,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { openPage, ROOT } from './cdp.mjs';
+import { problems, levelIdList } from './wn-add.mjs';
 
 const data = JSON.parse(readFileSync(join(ROOT, 'docs/updates.json'), 'utf8'));
+const lineText = l => (typeof l === 'string' ? l : l.s);   /* a line is a string or { s, lv:[level ids] } (claude/wnseed) */
 const selftestRed = process.argv.includes('--selftest-red');
 assert.ok(Array.isArray(data) && data.length >= 5, 'updates.json is a list with the backfilled deploys');
 for (const e of data) {
   assert.match(e.date, /^\d{4}-\d{2}-\d{2}$/, 'a date: ' + JSON.stringify(e));
   assert.ok(Number.isInteger(e.batch), 'a batch number: ' + e.date);
   assert.ok(e.lines.length >= 3 && e.lines.length <= 6, e.date + ' b' + e.batch + ' has 3-6 lines, has ' + e.lines.length);
-  for (const l of e.lines) assert.ok(l.length <= 90 && !/claude\/|branch|\.js|\.mjs/i.test(l), 'a short player line: ' + l);
+  assert.deepEqual(problems(e, await levelIdList()), [], 'batch ' + e.batch + ': short player lines, real level ids, and tagged lines from batch 143 on');
 }
 for (let i = 1; i < data.length; i++) assert.ok(data[i - 1].date > data[i].date || (data[i - 1].date === data[i].date && data[i - 1].batch > data[i].batch), 'newest first at ' + i);
 console.log('ok  data           ' + data.length + ' deploys, newest ' + data[0].date + ' (batch ' + data[0].batch + '), 3-6 player lines each');
@@ -46,7 +48,7 @@ try {
   assert.ok(r.some(x => x.s === newest), 'the newest date heads the list: ' + r.map(x => x.s).join(' / '));
   // Join wrapped text rows before comparing: the panel may split a player line across two draws.
   const drawn = r.map(x => x.s).join(' ').replace(/\s+/g, ' ').toLowerCase();
-  for (const line of data[0].lines) assert.ok(drawn.includes(line.toLowerCase()), 'newest player line is drawn: ' + line);
+  for (const line of data[0].lines.map(lineText)) assert.ok(drawn.includes(line.toLowerCase()), 'newest player line is drawn: ' + line);
   const { VW, VH } = await pg.evalp('BK.view');
   for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'inside the panel: ' + x.s + ' ' + JSON.stringify(x));
   /* scrolling: DOWN moves, and it never goes past the end */
@@ -65,6 +67,16 @@ try {
   for (let i = 0; i < 20; i++) for (const type of ['keyDown', 'keyUp']) { await pg.send('Input.dispatchKeyEvent', { type, key: 'ArrowDown', code: 'ArrowDown', windowsVirtualKeyCode: 40 }); await pg.evalp('BK.step(2)'); }
   assert.equal(await pg.evalp('BK.wnScroll'), end, 'scrolling never goes past the end');
   for (const x of r) assert.ok(x.y0 + x.h <= VH - 6, 'still inside after scrolling: ' + x.s);
+  /* THE 2ND TAB, LEVELS & BOSSES (claude/wnseed): RIGHT opens it, only unlocked levels are listed, the filter cycles, every row fits, LEFT comes back */
+  const KEY = async (key, code, vk) => { for (const type of ['keyDown', 'keyUp']) { await pg.send('Input.dispatchKeyEvent', { type, key, code, windowsVirtualKeyCode: vk }); await pg.evalp('BK.step(2)'); } };
+  await pg.evalp('BK.wnScroll = 0'); await KEY('ArrowRight', 'ArrowRight', 39);
+  assert.equal(await pg.evalp('BK.wnTab'), 1, 'RIGHT opens the LEVELS & BOSSES tab');
+  const hist = await pg.evalp('BK.wnHist().map(h => ({ id: h.id, n: h.entries.length }))'), tagged = new Set(data.flatMap(e => e.lines.flatMap(l => (typeof l === 'object' ? l.lv : []))));
+  assert.ok(hist.some(h => h.id === 'wood'), 'the first level is listed'); assert.ok(hist.length < tagged.size, 'levels the player has not unlocked are hidden (' + hist.length + ' of ' + tagged.size + ' tagged)');
+  r = await pg.evalp(REC); for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'tab 2 inside the panel: ' + x.s + ' ' + JSON.stringify(x));
+  for (let k = 0; k <= hist.length; k++) { await KEY('z', 'KeyZ', 90); r = await pg.evalp(REC); for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'filter ' + k + ' inside the panel: ' + x.s); }
+  assert.equal(await pg.evalp("BK.wnFilter"), '', 'the filter wraps back to ALL'); await KEY('ArrowLeft', 'ArrowLeft', 37);
+  assert.equal(await pg.evalp('BK.wnTab'), 0, 'LEFT goes back to UPDATES');
   for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
   await pg.evalp('BK.step(5)');
   assert.equal(await pg.evalp('BK.state'), 'title', 'ESC goes back to the title');
