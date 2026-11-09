@@ -61,7 +61,7 @@ export function towerLay(R, { T, TS }) {
   const Ar = R.arena, hallPortal = { x: 748, y: 19 };   /* on the hall floor in front of the dais steps */
   R.gqEscape = { tiers: [], supports: [], hallPortals: [], slates: null, throwers: [], tower: TW, start: { x: 790, y: F[0] - 1 }, check: { x: TW.FOLLOW.shrine[0], y: TW.FOLLOW.shrine[1] }, portal: hallPortal,
     route: [[hallPortal.x, 19], [784, 80], [784, 68], [803, 56], [784, 44], [803, 32], [792, 20], [TW.FOLLOW.shrine[0], 19]] };
-  (R.masonry = R.masonry || []).push([s0 - 1, s1 + 1, 22, F[0]]); (R.interiors = R.interiors || []).push([s0, s1, 22, F[0] - 1, 'hcguard']);
+  (R.masonry = R.masonry || []).push([s0 - 1, s1 + 1, 22, F[0]]); (R.interiors = R.interiors || []).push([s0, s1, 22, F[0] - 1, 'gq3shaft']);
   (R.calm = R.calm || []).push([s0 - 2, s1 + 2, 22, 82], [D.x0, D.x1, 0, 19]);
   ent('sign', hallPortal.x - 3, 19, { text: 'SHE HAS GONE THROUGH HER PORTAL AND THE TOWER IS ON FIRE. FOLLOW HER UP.' });
   ent('sign', 786, 80, { text: 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });

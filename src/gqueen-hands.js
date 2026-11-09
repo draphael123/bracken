@@ -4,7 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
-import * as GA from './redraw/gqueen_art.js'; import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
+import * as GA from './redraw/gqueen_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the GQ3 art: royal portal, geode, tower, roof, stair */ import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.0, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
@@ -562,7 +562,55 @@ export function makeGQueenHands(ctx) {
     }
     S.geodeBits = S.geodeBits.filter(b => !b.dead);
   }
-  function geodeDraw(g, cx, cy, t) {   // GREYBOX (GQ3ART draws the geode x3 rot, the shatter, the floor mark)
+  /* (claude/gq3art) THE GQ3 ART. Each call in art3(): any throw falls back to the greybox below for the rest of the session (and says so once). */
+  let art3Off = false;
+  const art3 = fn => { if (art3Off) return false; try { fn(); return true; } catch (err) { art3Off = true; console.warn('gq3 art off (greybox):', err && err.message); return false; } };
+  function geodeArt(g, cx, cy, t) {
+    const Ge = S.geode, e = q();
+    if (Ge && (Ge.state === 'tell' || Ge.state === 'fly')) GQ3A.drawGeodeMark(g, Ge.tx - cx, Ge.fy - cy, !!Ge.locked, t);
+    if (Ge && Ge.state === 'tell' && e) GQ3A.drawGeodeTell(g, e.x + e.face * 6 - cx, e.y - 76 - cy, t, Math.min(1, Ge.t / G.geode.tell));
+    if (Ge && (Ge.state === 'fly' || Ge.state === 'back')) GQ3A.drawGeode(g, Ge.x - cx, Ge.y - cy, t, { spin: Ge.spin || 0, home: Ge.state === 'back', vx: Ge.state === 'back' ? (e ? e.x - Ge.x : 1) : (Ge.tx - Ge.x0), vy: Ge.state === 'back' ? 0 : -2 });
+    let shown = false;
+    for (const b of S.geodeBits) { GQ3A.drawGeodeBit(g, b.x - cx, b.fy - cy, b.dir, t); const run = Math.abs(b.x - b.x0); if (!shown && run < 16) { shown = true; GQ3A.drawGeodeShatter(g, b.x0 - cx, b.fy - cy, run / 16); } }
+  }
+  function towerArt(g, cx, cy, t) {
+    const E = L().gqEscape, esc = S.esc; if (!E || !esc || !esc.on) return; const Tw = E.tower, F = Tw.FLOORS;
+    const stepK = esc.step ? Math.min(1, (t - esc.step.t0) / G.esc.step) : 0;
+    GQ3A.drawRoyalPortal(g, E.portal.x * TS + 8 - cx, E.portal.y * TS - 8 - cy, t, { state: 'idle', tint: esc.step ? 'white' : 'royal', s: 1 + 0.12 * stepK });
+    if (!esc.inTower && !esc.step) return;
+    const x0 = Tw.SHAFT[0] * TS - cx, x1 = (Tw.SHAFT[1] + 1) * TS - cx;
+    for (let k = 1; k <= 4; k++) { const [a, b] = Tw.GAPS[k - 1]; GQ3A.drawStairwell(g, a * TS - cx, (b + 1) * TS - cx, F[k] * TS - cy); }
+    esc.fl.forEach((f, k) => { const st = f.burning ? 'burn' : f.smokeAt ? 'smoke' : null; if (!st) return; const fy = F[k] * TS - cy;
+      if (k >= 1) { const [a, b] = Tw.GAPS[k - 1]; GQ3A.drawTimberFloor(g, x0, a * TS - cx, fy, st, t, k); GQ3A.drawTimberFloor(g, (b + 1) * TS - cx, x1, fy, st, t, k + 4); }
+      else GQ3A.drawTimberFloor(g, x0, x1, fy, st, t, k); });
+    for (const b of esc.beams) { const bx = b.x - cx, fy = F[b.k] * TS - cy; if (b.state === 'tell') GQ3A.drawBeamTell(g, bx, fy, t); else GQ3A.drawBeamFall(g, bx, fy, Math.max(0, (b.at - t) / 0.3), t); }
+    const qq = esc.q; if (qq.entry) GQ3A.drawShortcut(g, qq.entry.x - cx, qq.entry.y - 20 - cy, t);
+    if (qq.flash && t < qq.flash.until) GQ3A.drawRoyalPortal(g, qq.flash.x - cx, qq.flash.y - 24 - cy, t, { state: 'snap', k: Math.max(0, (qq.flash.until - t) / 0.5), tint: 'white' });
+    if (esc.vol) { const k = Math.min(1, 1 - (esc.vol.at - t) / G.esc.cue); GQ3A.drawRoyalPortal(g, esc.vol.px - cx, esc.vol.py - 6 - cy, t, { state: k < 0.35 ? 'open' : 'idle', k: k / 0.35, tint: k > 0.7 ? 'white' : 'royal', s: 0.7 }); }
+  }
+  /* the tower top's STATIC dressing (parapet walks, stone steps, the bell cupola, the hatch) and the bays / rings, in the order they stack */
+  function deckArt(g, cx, cy, t, VW0) {
+    const A0 = L().arenaRoof, Tw = A0 && A0.tower; if (!Tw || cx + VW0 < Tw.DECK.x0 * TS - 20 || cx > (Tw.DECK.x1 + 2) * TS) return;
+    const P = Tw.PARAPETS, C = Tw.CUPOLA, fy = Tw.DECK.floor * TS - cy;
+    GQ3A.drawParapetWalk(g, P.w[0], P.w[1], P.row, cx, cy, t); GQ3A.drawParapetWalk(g, P.e[0], P.e[1], P.row, cx, cy, t);
+    GQ3A.drawStoneStep(g, P.stepW[0], P.stepW[1], P.stepRow, cx, cy); GQ3A.drawStoneStep(g, P.stepE[0], P.stepE[1], P.stepRow, cx, cy);
+    GQ3A.drawCupola(g, C.x0, C.x1, C.solid[0], C.frame[0], C.frame[1], C.frame[2], cx, cy, t);
+    GQ3A.drawTowerHatch(g, Tw.HATCH.cols[0] * TS - cx, fy, t);
+    const R0 = S.roof; Tw.BAYS.forEach((sp, i) => GQ3A.drawBay(g, sp[0] * TS - cx, (sp[1] + 1) * TS - cx, fy, R0 && R0.bays[i] ? R0.bays[i].state : 'idle', t, i));
+  }
+  function roofArt(g, cx, cy, t) {
+    const R0 = S.roof; if (!R0) return;
+    const cr = S.crown && S.crown.state === 'ringwait' ? S.crown : null, rf = R0.reinf, bl = R0.blink, ps = R0.pstorm;
+    for (const r of rings()) { const p = ringPos(r); let col = '#5a3a8a', k = 0.35;
+      if (bl && bl.ring === r.id) { col = '#fff6c8'; k = 0.5 + 0.5 * Math.min(1, 1 - (bl.at - now()) / G.p2.blinkGlow); }
+      else if (cr && cr.ring === r.id) { col = '#ffd36b'; k = 0.5 + 0.5 * Math.min(1, 1 - (cr.at - now()) / G.p2.crownGlow); }
+      else if (rf && rf.ring.id === r.id) { col = '#8fd160'; k = 0.5 + 0.5 * Math.min(1, 1 - (rf.at - now()) / G.p2.addGlow); }
+      else if (ps && ps.lit && ps.lit.id === r.id && now() < ps.lit.until) { col = '#fff6c8'; k = 1; }
+      GQ3A.drawRing(g, p.x - cx, p.y - 17 - cy, t, k, col); }
+    const e = q(); if (e && (e.mode === 'stumble' || e.mode === 'stormOpen')) GA.drawStunStars(g, e.x - cx, e.y - 64 - cy, t);
+  }
+  function geodeDraw(g, cx, cy, t) {   // GREYBOX (the art is geodeArt above)
+    if (art3(() => geodeArt(g, cx, cy, t))) return;
     const Ge = S.geode, e = q();
     if (Ge && (Ge.state === 'tell' || Ge.state === 'fly')) {   // the red ring on the floor where it will land
       const k = 0.5 + 0.5 * Math.sin(t * 16), lx = Math.round(Ge.tx - cx), ly = Math.round(Ge.fy - cy) - 1; g.globalAlpha = Ge.locked ? 0.9 : 0.5 + 0.2 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(lx, ly, 14, 3, 0, 0, 6.3); g.stroke(); if (Ge.locked) { g.beginPath(); g.ellipse(lx, ly, 8, 2, 0, 0, 6.3); g.stroke(); } g.globalAlpha = 1; }
@@ -838,6 +886,7 @@ export function makeGQueenHands(ctx) {
   /* (gq3 GREYBOX) THE BURNING TOWER's picture: her portal in the hall, the smoking and burning floors, the beams' shadows and their fall, her hop's portals, the volley's portal. GQ3ART draws the stone shaft, the timber floors
      (smoke / burning / charred), the falling beam x2 + its impact, the stairs, the hatch and the slit-window backdrop. */
   function towerDraw(g, cx, cy, t) {
+    if (art3(() => towerArt(g, cx, cy, t))) return;
     const E = L().gqEscape, esc = S.esc; if (!E || !esc || !esc.on) return; const Tw = E.tower, F = Tw.FLOORS;
     portalDraw(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, esc.step ? 1 + Math.min(1, (t - esc.step.t0) / G.esc.step) : 0.5 + 0.5 * Math.sin(t * 3), esc.step ? '#fff6c8' : '#b28cff');
     if (!esc.inTower && !esc.step) return;
@@ -896,6 +945,7 @@ export function makeGQueenHands(ctx) {
 
   /* (gq3 GREYBOX) THE TOWER TOP's kit: the five portal rings (dim; white = the blink's exit, gold = the crown's, green = reinforcements, lit in order in the storm), the burning bays, the stumble's stars. GQ3ART draws the royal ring set, the bays x3 burn states, the parapets, the cupola. */
   function roofDraw(g, cx, cy, t) {
+    if (art3(() => roofArt(g, cx, cy, t))) return;
     const R0 = S.roof; if (!R0) return; const A0 = L().arena;
     const cr = S.crown && S.crown.state === 'ringwait' ? S.crown : null, rf = R0.reinf, bl = R0.blink, ps = R0.pstorm;
     for (const r of rings()) { const p = ringPos(r); let col = '#5a3a8a', k = 0.35;
@@ -913,8 +963,10 @@ export function makeGQueenHands(ctx) {
   let artOff = false;
   function artWorld(g, cx, cy, t) {
     const E = L().gqEscape, A = L().arena, esc = S.esc, VW0 = (g.canvas && g.canvas.width) || 320;
-    try { towerDraw(g, cx, cy, t); } catch (err) { /* nothing */ }   /* (gq3) greybox until GQ3ART */
-    if (S.fleeP && !(S.fleeP.done && (t - S.fleeP.done > 0.6 || (S.esc && S.esc.on)))) GA.drawPortal(g, S.fleeP.x - cx, S.fleeP.y - cy, t, 0.8, '#b28cff');
+    if (!art3(() => { GQ3A.drawStairSet(g, cx, cy, t, VW0); deckArt(g, cx, cy, t, VW0); })) { /* the greybox stands */ }
+    try { towerDraw(g, cx, cy, t); } catch (err) { /* nothing */ }
+    if (S.fleeP && !(S.fleeP.done && (t - S.fleeP.done > 0.6 || (S.esc && S.esc.on)))) { const fk = Math.min(1, (t - (S.fleeP.t0 || 0)) / 0.45); if (!art3(() => GQ3A.drawRoyalPortal(g, S.fleeP.x - cx, S.fleeP.y - 10 - cy, t, fk < 1 ? { state: 'open', k: fk } : { state: 'idle' }))) GA.drawPortal(g, S.fleeP.x - cx, S.fleeP.y - cy, t, 0.8, '#b28cff'); }
+    if (S.fled && S.fled.open > 0) { const F0 = S.fled, ee = q(), sn = ee && ee.mode === 'fledSnap'; if (!art3(() => GQ3A.drawRoyalPortal(g, F0.px - cx, F0.py - 6 - cy, t, sn ? { state: 'snap', k: F0.open, tint: 'royal' } : F0.open < 1 ? { state: 'open', k: F0.open, tint: 'royal' } : { state: 'idle', tint: 'royal' }))) GA.drawPortal(g, F0.px - cx, F0.py - cy, t, F0.open * 1.4, '#ffd36b'); }
     const c = S.crown;
     if (c) GA.drawCrown(g, c.x - cx, c.y - cy - 3, t, { ang: c.state === 'floor' ? 0.4 : c.spin || 0, home: !!c.home });
     for (const p of S.portals) {

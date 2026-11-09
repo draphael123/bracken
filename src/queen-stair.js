@@ -84,7 +84,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
   ent('torch', 706, 11); ent('torch', 714, 11); coins([708, 10], [712, 10]);
 
   // ---- the section's look: stone tower, an interior store, no garrison sprinkling, snow ----
-  R.masonry.push([661, 703, 0, 19]); R.interiors.push([685, 703, 2, 19, 'hchall']); R.calm.push([652, 715, 0, 19]);
+  R.masonry.push([661, 703, 0, 19]); R.interiors.push([685, 703, 2, 19, 'gq3store']); R.calm.push([652, 715, 0, 19]);
   R.hcQueenStair = true;
   return R;
 }

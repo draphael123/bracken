@@ -201,7 +201,7 @@ export function drawRoofFront(g, A, TS, cx, cy, t, VW) {
   for (const bx of [x0, x1]) {   // the two battlements (cols 612 and 660, rows 17-19): merlons on their tops, a fire-lit face turned to the deck, a sooty cap
     for (const mx of [0, 8]) { R(g, bx + mx, fy - 54, 8, 6, S.e); R(g, bx + mx, fy - 54, 8, 1, S.g); R(g, bx + mx + 7, fy - 54, 1, 6, S.b); }
     R(g, bx, fy - 48, 16, 1, '#08060a'); g.globalAlpha = 0.22 + 0.06 * wave(t, 5, bx); R(g, bx + (bx === x0 ? 8 : 0), fy - 47, 8, 47, '#ff6b2c'); g.globalAlpha = 1; for (let s = 0; s < 3; s++) R(g, bx + 2 + s * 5, fy - 46, 1, 8 + s * 6, '#0e0c12'); }
-  for (const sc of (A.stack || []).slice(0, 1)) { const sx = ri(sc * TS - cx); if (sx < -40 || sx > VW + 40) continue;   // the chimney stack: a stone cap with a draw-hole, soot streaks, a smoulder
+  for (const sc of (A.tower ? [] : (A.stack || [])).slice(0, 1)) { const sx = ri(sc * TS - cx); if (sx < -40 || sx > VW + 40) continue;   // the chimney stack: a stone cap with a draw-hole, soot streaks, a smoulder
     R(g, sx - 3, fy - 52, 38, 5, S.d); R(g, sx - 3, fy - 52, 38, 1, S.g); R(g, sx, fy - 47, 32, 2, S.dk); R(g, sx + 8, fy - 58, 16, 6, S.c); R(g, sx + 8, fy - 58, 16, 1, S.f); R(g, sx + 11, fy - 56, 10, 2, '#08060a');
     for (let i = 0; i < 4; i++) R(g, sx + 4 + i * 8, fy - 45, 1, 14 + i * 5, '#0e0c12'); for (let i = 0; i < 3; i++) { const ph = (t * 0.5 + i * 0.33) % 1; g.globalAlpha = 0.5 * (1 - ph); R(g, ri(sx + 14 + Math.sin(t + i) * 4), ri(fy - 60 - ph * 40), ri(6 + ph * 10), ri(4 + ph * 6), '#1a1218'); } g.globalAlpha = 1; }
   for (const gx of (A.geyserCracks || [])) { const X = ri(gx - cx); R(g, X - 5, fy, 10, 1, '#1a0c10'); }
