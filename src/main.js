@@ -29213,8 +29213,9 @@ function windKeys(o, e) {
 }
 /* the white frame that opens a wind-up, and the glint on the weapon hand: a hard-pixel four-point star (white for a ! , red-cored for a !!) that
    catches at the start and again on a held beat. */
+const NEWFOE_POSED = new Set([...BST.BEAST_IDS, ...BNS.BONE_IDS]);   /* (claude/foesart) the frost beasts and the skeleton set have a drawn windup pose: the white opening flash (a whole white silhouette; in a harness that draws once per still the first draw after sim-only frames always lands in its 0.04 s) hid it, so they show the pose under the amber rim and the glint instead */
 function drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot) {
-  if (!e.alive || e.harmless || !SET.flashes || !sprSet.white || WIND_STILL.has(e.t)) return;
+  if (!e.alive || e.harmless || !SET.flashes || !sprSet.white || WIND_STILL.has(e.t) || NEWFOE_POSED.has(e.t)) return;
   if (time - (e._twAt === undefined ? -9 : e._twAt) < 0.04) drawSet(sprSet, null, frame, dx0, dy0, ps.face, true, pSX, pSY, 1, pRot);
 }
 function drawTellGlint(e, x, y, bigF, ps) {

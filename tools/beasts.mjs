@@ -105,6 +105,13 @@ ok(B.SNOWRUNNER.snapTell === 0.40 && B.SNOWRUNNER.leapTell === 0.55 && B.GREYMAN
   ok(dazed && s.open >= 0 && (s.mode === 'dazed' || s.mode === 'stand'), 'a wall in the lane: he is DAZED ' + B.BRUIN.dazed + ' s, open');
   const s2 = B.newBeast('bruin', 0, 0, 1); s2.cd = 0; const modes = new Set(); run(s2, world([hero(150)], { rand: () => 0.1 }), 4, (v, st) => modes.add(st.mode)); ok(modes.has('skid') && !modes.has('dazed'), 'in the open he skids ' + B.BRUIN.skid + ' s and is not dazed'); }
 
+/* ---- FACING AT RELEASE (foestills note 2: the pounce / charge release looked turned away): the beast faces the hero it is about to hit on the frame the tell ends, and keeps that facing through the blow ---- */
+for (const [kind, tell, blow, d] of [['greymane', 'pounceTell', 'pounce', 130], ['bruin', 'chargeTell', 'charge', 170], ['snowrunner', 'leapTell', 'leap', 80]]) for (const side of [1, -1]) {
+  const s = B.newBeast(kind, 0, 0, -side); s.cd = 0; let atRelease = null, last = null; const h = hero(side * d);
+  run(s, world([h], { rand: () => 0.1 }), 4, null, st => { if (st.mode === blow && atRelease === null) atRelease = st.face; if (st.mode === blow) last = st.face; });
+  ok(atRelease === side && last === side, kind + ' ' + tell + ' released at a hero on its ' + (side > 0 ? 'right' : 'left') + ' faces it (' + atRelease + ') and keeps it through the ' + blow + ' (' + last + ')');
+}
+
 /* ---- the frames ---- */
 { const { install } = await import('./node-canvas.mjs'); install();
   const A = await import('../src/redraw/beasts_art.js');
