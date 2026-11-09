@@ -282,6 +282,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
+import * as MKP from './maker-palette.js';   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
 import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -37162,18 +37163,10 @@ function edThemeList() {
   return edThemes;
 }
 
-const ED_TILES = [['ERASE', T.AIR], ['STONE', T.SOLID], ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
-  ['PLANK', T.PLANK], ['ROPE', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
-  ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB],
-  ['REEDS', T.REED], ['PALISADE', T.PALISADE]];
-const ED_FOES = ['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
-  'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat',
-  'troll', 'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'watch'];
-const ED_THINGS = ['coin', 'silver', 'check', 'gate', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
-  'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
+const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;   /* (claude/maker) the lists live in src/maker-palette.js */
 const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER'];
 const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
-const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES : c === 2 ? ED_THINGS : ED_TOOLS;
+const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES.map(MKP.nameOf) : c === 2 ? ED_THINGS.map(t => t.toUpperCase()) : ED_TOOLS;
 const edBrush = () => ({ cat: edCat, i: edSel[edCat], name: edItems(edCat)[edSel[edCat]] });
 
 function edSay(m) { edMsg = m; edMsgT = 2.4; }
@@ -37221,6 +37214,7 @@ function edRespawn() {
 }
 
 function edEnter() {
+  MKP.setNames(BEASTS);   /* (claude/maker) the palette speaks the bestiary's names */
   edThemeList();
   if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
   edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
@@ -37298,8 +37292,9 @@ function edKey(k, ev) {
   if (k >= '1' && k <= '9') { const n = +k - 1; if (n < edItems(edCat).length) { edSel[edCat] = n; SFX.ui(); } return true; }
   if (k === 'q') { edCat = (edCat + ED_CATS.length - 1) % ED_CATS.length; SFX.ui(); return true; }
   if (k === 'e') { edCat = (edCat + 1) % ED_CATS.length; SFX.ui(); return true; }
-  if (k === '[') { edSel[edCat] = (edSel[edCat] + edItems(edCat).length - 1) % edItems(edCat).length; SFX.ui(); return true; }
-  if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; SFX.ui(); return true; }
+  if (k === 'pageup' || k === 'pagedown') { MKP.turnPage(edCat, k === 'pagedown' ? 1 : -1, edItems(edCat).length, VW); SFX.ui(); return true; }   /* (claude/maker) */
+  if (k === '[') { edSel[edCat] = (edSel[edCat] + edItems(edCat).length - 1) % edItems(edCat).length; MKP.showSelected(edCat, edSel[edCat], VW); SFX.ui(); return true; }
+  if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; MKP.showSelected(edCat, edSel[edCat], VW); SFX.ui(); return true; }
   if (k === 's') { edSave(shift ? 1 : edSlot); return true; }
   if (k === 'l') { const d = edLoad(edSlot); if (d) { edPush(); edDoc = d; edMount(true); edSay('loaded slot ' + (edSlot + 1)); } else edSay('slot ' + (edSlot + 1) + ' is empty'); return true; }
   if (k === 'n') { edPush(); edDoc = edBlank(); edMount(true); edSay('a new wood'); return true; }
@@ -37327,13 +37322,9 @@ function edMouse(mx, my, btn, down, moved) {
     edPlace(edCur.x, edCur.y, edPaint === 2);
   }
 }
-function edPalClick(mx, my) {
-  const bw = 96, bh = 11, x0 = 8, y0 = 26;
-  for (let c = 0; c < ED_CATS.length; c++) { const tx = x0 + c * 54; if (mx >= tx && mx < tx + 52 && my >= 12 && my < 23) { edCat = c; SFX.ui(); return; } }
-  const items = edItems(edCat);
-  for (let i = 0; i < items.length; i++) { const col = Math.floor(i / 12), row = i % 12; const bx = x0 + col * (bw + 4), by = y0 + row * bh;
-    if (mx >= bx && mx < bx + bw && my >= by && my < by + bh) { edSel[edCat] = i; SFX.ui(); edPal = false; return; } }
-  if (my > y0 + 12 * bh) edPal = false;
+function edPalClick(mx, my) {   /* (claude/maker) src/maker-palette.js knows the paged layout */
+  const r = MKP.paletteClick(edPalCtx(), mx, my); if (!r) return;
+  if (r.cat !== undefined) { edCat = r.cat; SFX.ui(); } else if (r.pick !== undefined) { edSel[edCat] = r.pick; SFX.ui(); edPal = false; } else if (r.close) edPal = false; else if (r.page) SFX.ui();
 }
 
 // ---- drawing ----
@@ -37381,24 +37372,9 @@ function drawEditor() {
     text('X start  T theme  R name  -/= width  P play  S/L save/load  N new  F slot  G grid  CTRL+Z undo  ESC out', 4, VH - 8, UI.dim, 'left', 6); }
   if (edPal) drawEdPalette();
 }
-function drawEdPalette() {
-  g.fillStyle = 'rgba(10,8,16,0.94)'; g.fillRect(0, 0, VW, VH);
-  text('THE PALETTE', VW / 2, 3, UI.title, 'center', TYPE.head);
-  const bw = 96, bh = 11, x0 = 8, y0 = 26;
-  ED_CATS.forEach((c, i) => { const tx = x0 + i * 54, sel = i === edCat;
-    g.fillStyle = sel ? 'rgba(60,90,60,0.9)' : 'rgba(40,36,50,0.8)'; g.fillRect(tx, 12, 52, 11);
-    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(tx + 0.5, 12.5, 51, 10); }
-    text(c, tx + 26, 15, sel ? UI.sel : UI.dim, 'center', 6); });
-  const items = edItems(edCat);
-  items.forEach((it, i) => { const col = Math.floor(i / 12), row = i % 12, bx = x0 + col * (bw + 4), by = y0 + row * bh, sel = i === edSel[edCat];
-    if (bx + bw > VW) return;
-    g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(30,26,40,0.7)'; g.fillRect(bx, by, bw, bh - 1);
-    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 2); }
-    const sp = edCat === 1 ? SPR[ED_FOES[i]] : edCat === 2 ? SPR[ED_THINGS[i]] : null;
-    if (sp) { g.globalAlpha = 0.9; drawSet(sp, null, 0, bx + 9, by + bh - 2, 1, false, 0.55, 0.55); g.globalAlpha = 1; }
-    text(it, bx + 18, by + 2, sel ? UI.title : UI.text, 'left', 6); });
-  text('CLICK one  ESC close', VW / 2, VH - 10, UI.dim, 'center', 6);
-}
+function edPalCtx() { return { g, text, drawSet, SPR, UI, TYPE, VW, VH, cats: ED_CATS, cat: edCat, items: edItems(edCat), sel: edSel[edCat],
+  ids: edCat === 1 ? ED_FOES : edCat === 2 ? ED_THINGS : null }; }
+function drawEdPalette() { MKP.drawPalette(edPalCtx()); }   /* (claude/maker) paged: src/maker-palette.js */
 
 function render() {
   TCH.beginFrame(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
@@ -38138,6 +38114,9 @@ window.BK.secrets = () => ({ journal: SC.journal(PROG), totals: SC.journalTotals
 window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.banners = () => ({ owned: Object.keys(LOST_BANNERS).filter(id => (PROG.lostBanners || {})[id]), live: lostBanners.map(b => ({ id: b.id, x: b.x, y: b.y, got: b.got })), all: bannersOwned() >= Object.keys(LOST_BANNERS).length, pickup: id => { const b = lostBanners.find(q => q.id === id); if (b && !b.got) takeLostBanner(b); return !!b; } }); window.BK.mapGhost = () => ({ shown: ghostPathT, done: !!PROG.fieldPathDrawn }); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapPortraits = () => MAP_PORT_BOX; window.BK.mapBlurbs = () => LEVELS.filter(lv => !lv.hidden || lv.secret).map(lv => ({ id: lv.id, text: MAP_BLURB[lv.id] || lv.sub || '', w: textW(MAP_BLURB[lv.id] || lv.sub || '', 6), max: panelSize({ kind: 'level' }).w - 16 }));   /* tools/map-scale.mjs: the width of every blurb in the card's own face, and what the line holds */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)), secret: NODES.map(n => !!nodeSecret(n)), ghost: NODES.map(n => !!n.ghost) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
 partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
+if (q.get('maker')) edEnter();
+/* (claude/maker) the maker's test handle: tools/maker-sweep.mjs builds one-foe woods through it */
+window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
 rafQueued = true; requestAnimationFrame(frame);
