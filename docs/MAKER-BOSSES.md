@@ -1,6 +1,6 @@
 # THE MAKER: which bosses work in a made-by-hand level
 
-**Update 2026-11-09 (latest): 49 of 53 work.** Each passes `tools/maker-bosses.mjs`, which also checks that each boss's setup is really there in play.
+**Update 2026-11-09 (latest): 48 of 53 work.** (After merging master: the Goblin Queen was reworked into a hall-and-tower set-piece (GQ3), so she is out until her rooms are built.) Each passes `tools/maker-bosses.mjs`, which also checks that each boss's setup is really there in play.
 - **Captain:** his yards and lines are a room he brings.
 - **Archmage:** gets his library fields and the rising acid.
 - **Dune Worm:** fights under the caravan's rules, with the sun only in his hollow.

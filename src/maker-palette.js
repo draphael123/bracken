@@ -607,8 +607,10 @@ export const BOSS_CANDIDATES = () => Object.keys(ARENA);
 // the level is shade) - no quicksand, overhang or great-shade winch. shrieksisters, kraken, admiral, gargoyle bring their own room
 // (src/maker-stages.js: the Sisters' crag, the Kraken's reach over a shallower sea, the Lashings and their two deck guns, the Gargoyle's spikes,
 // slabs and rune); what each room lacks against its home is written over its builder there.
+/* (2026-11-09, after merging master) THE GOBLIN QUEEN is out: master's GQ3 rework made her a set-piece (her hall's bell, grate and barracks
+   gate; the flight up the burning hall; phase two on the tower top - src/gqueen-hands.js). She takes harm only stunned. Back when her rooms are built. */
 export const BOSSES = ['oldtusker', 'chief', 'owl', 'ram', 'huntmaster', 'bzchief', 'grubbag', 'tombking', 'reefmaw', 'strawking', 'wickerqueen',
-  'captain', 'archmage', 'duneworm', 'shrieksisters', 'kraken', 'admiral', 'gargoyle', 'djinn', 'cisternqueen', 'matriarch', 'colossus', 'hawkmistress', 'paladinboss', 'fogknight', 'hourglassking', 'greatdrill', 'lanterneater', 'puppeteer', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
+  'captain', 'archmage', 'duneworm', 'shrieksisters', 'kraken', 'admiral', 'gargoyle', 'djinn', 'cisternqueen', 'matriarch', 'colossus', 'hawkmistress', 'paladinboss', 'fogknight', 'hourglassking', 'greatdrill', 'lanterneater', 'puppeteer', 'mother', 'king', 'windcaller', 'lance', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
   'harbormaster', 'closedhelm', 'prince', 'burieddead', 'pyromancer', 'bloodknight', 'roc', 'bogtroll', 'hornetqueen', 'batteringbeast'];
 FOES.push(...BOSSES);   // placed like foes (cat 1); the BOSSES tab and tools/maker-sweep.mjs keep them apart
 export const isBoss = t => BOSSES.includes(t) || !!ARENA[t] && BOSS_TRIAL.has(t);
