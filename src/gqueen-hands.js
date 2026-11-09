@@ -18,7 +18,7 @@ GQ3.esc = { fire: 3, fireEvery: 0.8, push: 150, fan: 4.5, cue: 0.5, collapse: 0.
 /* (claude/gq2mech) HIGHCROWN'S MECHANICS IN HER HALL (Daniel 11-06): (1) THE BELL IS YOURS - ring it (a blow on the bell) and she STORMS to the sound; under the grate when it drops she is PINNED ~4 s (a bigger
    window, x1.35 a blow); the bell has a cooldown. (2) THE BARRACKS GATE (her west door) rises at 66 / 33 % of her hall bar: crank the winch (3 blows, each inside 2 s of the last, any seat) before the horn
    runs out and the gate drops on her guards; fail and they join her. Hall only. Numbers are starting values for the tune lane. */
-GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.15, contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
+GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.12, contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
