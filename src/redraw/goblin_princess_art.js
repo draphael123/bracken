@@ -373,7 +373,7 @@ export function gpFrame(e) {
     case 'stompTell': return GPF.stompTell; case 'stomp': return GPF.stomp;
     case 'preen': return GPF.preen + (Math.floor(a * 3) & 1);
     case 'pinned': return GPF.pinned; case 'stunned': return GPF.stunned; case 'stagger': return GPF.stagger;
-    case 'bolt': return GPF.bolt + (A & 1); case 'escape': return GPF.escape; case 'hide': case 'ducked': return GPF.hide; case 'perch': return GPF.perch;
+    case 'bolt': return GPF.bolt + (A & 1); case 'escape': return GPF.escape; case 'dying': { const t = e.dyT || 0; return t < 0.3 ? GPF.stagger : t < 1.2 ? (Math.floor(t * 8) & 1 ? GPF.bell : GPF.defeat) : GPF.defeat; }   /* (gq3 GREYBOX) reel, kneel-ringing, collapse: GQ3ART draws them */ case 'hide': case 'ducked': return GPF.hide; case 'perch': return GPF.perch;
     case 'walk': case 'recover': return moving ? GPF.run + (A & 3) : (Math.floor(a * 2) & 1 ? 1 : 0);
     default: return moving ? GPF.run + (A & 3) : 0;
   }
