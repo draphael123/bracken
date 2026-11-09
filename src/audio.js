@@ -1339,6 +1339,8 @@ Object.assign(SFX, {
   garFlop() { noise(0.06, 0.2, 900, 0.5); tone('sine', 220, 120, 0.06, 0.08); },
   hareSqueak() { tone('sine', 1800, 2600, 0.06, 0.08); tone('sine', 2400, 1900, 0.07, 0.06, 0.07); },
   wightMoan() { tone('sawtooth', 90, 70, 0.9, 0.12); tone('sine', 140, 95, 0.9, 0.1, 0.05); noise(0.9, 0.08, 600, 0.3); },
+  geodeGrind() { noise(0.9, 0.2, 380, 0.5); tone('sawtooth', 70, 48, 0.9, 0.16); tone('square', 140, 90, 0.8, 0.05, 0.1); tone('sine', 520, 780, 0.5, 0.04, 0.5); },   /* (gq3 item 5) the Queen's geode grinding out of her portal: stone on stone, a glassy rise */
+  portalOpen() { tone('sine', 300, 700, 0.35, 0.08); tone('sine', 450, 900, 0.3, 0.05, 0.1); noise(0.3, 0.06, 1800, 0.4); },   /* (gq3) a portal opening (it was a silent call) */
   callerChant() { tone('sawtooth', 220, 262, 0.35, 0.12); tone('sawtooth', 330, 392, 0.35, 0.08, 0.3); noise(0.7, 0.14, 500, 0.4); tone('sine', 880, 1320, 0.5, 0.05, 0.1); },
   callerBlast() { noise(0.6, 0.5, 300, 0.4); tone('sawtooth', 160, 40, 0.5, 0.25); tone('sine', 1200, 300, 0.4, 0.1); },
   forgeHammer() { file('slam', 0.6, 0.8) || tone('sine', 90, 40, 0.25, 0.4); tone('square', 1900, 1200, 0.08, 0.12, 0.02); noise(0.12, 0.3, 3000, 1.1, 0.02); },

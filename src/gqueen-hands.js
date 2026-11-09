@@ -12,6 +12,9 @@ export const GQ3 = {
 };
 GQ3.hp2 = 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
 GQ3.flee = { tell: 1.6 };
+/* (gq3 item 5) THE GEODE LOB, P1's new attack: the hall's reflecting rock, mother's version. Tell 1.0 s ('!': sceptre up, a small portal over her head, a geode grinds out; a red ring marks the landing and tracks you 0.6 s, then locks), lob 0.9 s (apex 70 px).
+   STRIKE IT BACK (any blow, shot or parry) -> 300 px/s home -> SENT BACK: stunned 2.0 s, 3% (shares stunGuard). Else 18 and it SHATTERS into 2 low shards running the floor 40 px each way (8, jump). cd 9 s (7 below half), range > 90 px, never under a wave or a lure. */
+GQ3.geode = { tell: 1.0, track: 0.6, throw: 0.3, air: 0.9, apex: 70, cd: 9, cd2: 7, minDist: 90, dmg: 18, r: 8, home: 300, stun: 2.0, stunHp: 0.03, clankHp: 0.01, shardDmg: 8, shardRun: 40, shardV: 130 };
 GQ3.fled = { kneel: 0.8, slam: 1.0, back: 0.8, hold: 0.25 };   /* (gq3 item 1) P2's bar empties: she KNEELS (beaten, crown clutched), slams her sceptre, a ROYAL PORTAL opens behind her, she backs into it and it snaps shut - she ESCAPES, no corpse (PROG.gqFled) */
 GQ3.roof = { crownCd: 6, portalCd: 8, lashTell: 0.7, lashReach: 120, lashDmg: 18, lashCd: 2.4, ambushTell: 0.8, ambushCd: 9, ambushDmg: 15, geyserTell: 0.9, geyserN: 5, geyserGap: 0.25, geyserStep: 20, geyserDmg: 16, geyserCd: 7,
   leapCd: 5, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.66, 0.33], hatch: 0.8 };
@@ -42,7 +45,7 @@ export function makeGQueenHands(ctx) {
   let persist = null, hallSnap = null;
   H.persist = () => persist;
   H.load = () => { musicLift(0); S = null; persist = null; const A = L() && L().arena; hallSnap = A && A.boss === 'gqueen' ? { ...A } : null; };
-  const fresh = () => ({ crown: null, rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map(), mech: { cd: 0, lure: null, queued: 0, waves: new Set(), wave: null, crank: 0, crankAt: -9, kept: 0, joined: 0, rings: 0, pins: 0, winchObj: {}, bellObj: {} } });
+  const fresh = () => ({ crown: null, geode: null, geodeBits: [], rocks: [], portals: [], cast: null, stunUntil: 0, stunGuardUntil: 0, stuns: 0, said: new Set(), rid: 0, esc: null, coll: new Map(), slate: new Map(), mech: { cd: 0, lure: null, queued: 0, waves: new Set(), wave: null, crank: 0, crankAt: -9, kept: 0, joined: 0, rings: 0, pins: 0, winchObj: {}, bellObj: {} } });
   /* (claude/gqmusic, Daniel 11-08) THE TOWER TOP'S MUSIC: lifted (x1.06, the told stinger) when the roof stage begins, a second step (x1.10) when her crown first circles her (the final stretch); always let go (lift false) on her death, a death, a retry, the arena left, or a level load */
   let mLvl = 0;
   const musicLift = n => { if (n === mLvl) return; mLvl = n; if (ctx.lift) ctx.lift(n); };
@@ -102,7 +105,7 @@ export function makeGQueenHands(ctx) {
     if (!S || !e || e.t !== 'gqueen' || (e.stage && e.stage !== 'hall')) return false;
     const P0 = ctx.P();
     e.maxHp2 = G.hp2; e.maxHp = G.hp2; e.hp = G.hp2; e.stage = 'flee'; e.phase = 3; e.mode = 'fleeTell'; e.modeT = G.flee.tell; e.vx = 0; e.crownOut = false; e.alive = true; e.dying = 0; e.open = 0; e.stagger = 0;
-    S.crown = null; S.rocks = []; S.portals = []; S.cast = null;
+    S.crown = null; S.rocks = []; S.portals = []; S.cast = null; S.geode = null; S.geodeBits = [];
     persist = { stage: 'escape' };
     ctx.endFight(); ctx.shutWest(); ctx.layEscape();
     everyone(P1 => { if (P1 && !P1.dead) fullHeal(P1); });   /* (claude/gq2) the WHOLE PARTY is fully healed (each seat out of his own save: asPlayer swaps PROG for flaskMax) */
@@ -115,7 +118,7 @@ export function makeGQueenHands(ctx) {
   /* ---------------- (gq3 item 1) THE QUEEN ESCAPES ---------------- */
   function fledBegin(e) {
     e.hp = 1; e.stage = 'fled'; e.mode = 'fledKneel'; e.modeT = G.fled.kneel; e.vx = 0; e.vy = 0; e.crownOut = false; e.open = 0; e.alpha = 1; e.alive = true;
-    S.crown = null; S.rocks = []; S.portals = []; S.cast = null; if (S.roof) { S.roof.storm = null; S.roof.geysers = []; S.roof.hatch = null; }
+    S.crown = null; S.rocks = []; S.portals = []; S.cast = null; S.geode = null; S.geodeBits = []; if (S.roof) { S.roof.storm = null; S.roof.geysers = []; S.roof.hatch = null; }
     S.fled = { t0: now(), px: e.x - (e.face || 1) * 44, py: e.y - 18, open: 0, snap: 0 };
     for (const q2 of ctx.enemies()) if (q2.alive && q2 !== e && !q2.mini && q2.hp > 0 && Math.abs(q2.x - e.x) < 700) { q2.alive = false; ctx.burst(q2.x, q2.y - 8, 8, ['#5a2a7a', '#e0b040', '#b28cff'], 60, 0.5); }   /* her roof guards burst away */
     ctx.number(e.x, e.y - e.h - 30, 'SHE FALLS TO HER KNEES', '#ffd36b'); sfx('bellow'); ctx.shake(6); ctx.zoom(1.1, 0.5);
@@ -338,7 +341,7 @@ export function makeGQueenHands(ctx) {
       }
     });
   }
-  H.test = H.test || {}; H.test.roof = () => S && S.roof;
+  H.test = H.test || {}; H.test.roof = () => S && S.roof; H.test.geode = () => S && S.geode; H.test.geodeBits = () => (S ? S.geodeBits : []);
   H.test.begin = () => { const e = q(); if (e && S) roofBegin(e); };
   /* the hall portals' (and the escape's) fan of shards: three, +-14 deg, at the spot given, yellow and blockable; a parry only clanks here (nobody to send it back to) */
   function fan(px, py, tx, ty, esc) {
@@ -389,6 +392,67 @@ export function makeGQueenHands(ctx) {
         } else if (h.res === 'blocked') { c.state = 'floor'; c.vx = 0; c.y = Math.min(c.y + 10, (L().arena ? L().arena.floor : c.y) - 3); c.t = 0; sfx('clank'); ctx.dust(c.x, c.y, 6); ctx.number(c.x, c.y - 14, GQ_SAY.clank, '#c9c9d6'); }
       }
     });
+  }
+  /* ---------------- (gq3 item 5) THE GEODE LOB ---------------- */
+  function geodeBegin(e) {
+    const P0 = target(), A = L().arena, gc = G.geode;
+    e.mode = 'geodeTell'; e.modeT = gc.tell; e.vx = 0; e.crownOut = false; e.face = sign(P0.x - e.x) || e.face;
+    S.geode = { state: 'tell', t: 0, tx: P0.x, locked: false, id: 'g' + (++S.rid), fy: A.floor, hit: new Set(), key: {} };
+    ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('geodeGrind');
+  }
+  function geodeTellStep(e, dt) {
+    const Ge = S.geode, P0 = target(), gc = G.geode; e.vx = 0; if (!Ge) { e.mode = 'rec'; e.modeT = 0.5; return 0; }
+    Ge.t += dt; e.face = sign(Ge.tx - e.x) || e.face;
+    if (!Ge.locked) { Ge.tx = P0.x; if (Ge.t >= gc.track) { Ge.locked = true; Ge.tx = Math.max(L().arena.x0 + 12, Math.min(L().arena.x1 - 12, P0.x)); } }
+    if (Math.random() < dt * 30) ctx.part({ x: e.x + e.face * 6 + (Math.random() - 0.5) * 12, y: e.y - 70 - Math.random() * 8, vx: 0, vy: -20, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#b28cff' : '#e8dcff', size: 2, grav: 0, glow: true });
+    if (e.modeT <= 0) {   // the release: a lob from over her head to the locked spot
+      Ge.state = 'fly'; Ge.t = 0; Ge.x0 = e.x + e.face * 6; Ge.y0 = e.y - 62; Ge.x = Ge.x0; Ge.y = Ge.y0; Ge.spin = 0;
+      e.mode = 'geodeThrow'; e.modeT = gc.throw; sfx('throwWhoosh');
+    }
+    return 0;
+  }
+  function geodeShatter(Ge, x, why) {
+    const gc = G.geode; S.geode = null; ctx.burst(x, Ge.fy - 6, 14, ['#b28cff', '#e8dcff', '#8a8a9c'], 90, 0.6); sfx('golemShatter'); ctx.shake(4); ctx.dust(x, Ge.fy, 6);
+    for (const dir of [-1, 1]) S.geodeBits.push({ x, x0: x, dir, id: 'b' + (++S.rid), fy: Ge.fy, hit: new Set(), dead: false });
+    if (why) ctx.number(x, Ge.fy - 22, why, '#c9c9d6');
+  }
+  function geodeStep(dt) {
+    const Ge = S.geode, e = q(), gc = G.geode; if (!Ge || Ge.state === 'tell') { if (Ge && (!e || e.mode !== 'geodeTell')) S.geode = null; return; }   /* a tell cut short (a stun, a flee): nothing is thrown */
+    if (!e) { S.geode = null; return; }
+    Ge.t += dt; Ge.spin = (Ge.spin || 0) + dt * 9;
+    if (Ge.state === 'back') {   // flies home: the SENT BACK stun
+      const dx = e.x - Ge.x, dy = (e.y - 40) - Ge.y, dd = Math.hypot(dx, dy) || 1, sp = gc.home * dt;
+      if (dd <= sp + 12) { S.geode = null; if (stun(e, gc.stun, gc.stunHp, 'SENT BACK')) { /* stunned: the rock is spent */ } else { e.hp -= Math.round(e.maxHp * gc.clankHp); e.flash = 0.25; ctx.number(e.x, e.y - 60, GQ_SAY.clank, '#c9c9d6'); sfx('clank'); if (e.hp <= 0) ctx.hurt(e, 1, e.x); } return; }
+      Ge.x += dx / dd * sp; Ge.y += dy / dd * sp; return;
+    }
+    const k = Math.min(1, Ge.t / gc.air); Ge.x = Ge.x0 + (Ge.tx - Ge.x0) * k; Ge.y = Ge.y0 + (Ge.fy - 6 - Ge.y0) * k - 4 * gc.apex * k * (1 - k);
+    const box = { l: Ge.x - gc.r, r: Ge.x + gc.r, t: Ge.y - gc.r, b: Ge.y + gc.r };
+    const sendBack = how => { Ge.state = 'back'; Ge.t = 0; ctx.ring(Ge.x, Ge.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(Ge.x, Ge.y - 14, how === 'parry' ? 'PARRIED: SENT BACK' : 'STRUCK BACK', '#8fd160'); };
+    // any blow or shot that meets it in the air
+    seats(P1 => { if (Ge.state !== 'fly' || P1.dead) return; if (hit(P1, box, Ge.key)) sendBack('blow'); });
+    if (Ge.state === 'fly') for (const pp of ctx.players ? ctx.players() : []) for (const ar of pp.rgArrows || []) { if (Ge.state !== 'fly' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - Ge.x) < gc.r + 10 && Math.abs(ar.y - Ge.y) < gc.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack('blow'); } }
+    if (Ge.state === 'fly' && k >= 1) {   // it lands: 18 (a parry sends it back from the floor), else it shatters
+      let parried = false, hurtAny = false;
+      seats(P1 => { if (parried || P1.dead || Math.abs(P1.x - Ge.tx) > 20 || P1.y < Ge.fy - 34) return; const r = gqHit(Ge.tx, gc.dmg, e, 'HER GEODE'); hurtAny = true; if (r.parried) parried = true; });
+      if (parried) { Ge.y = Ge.fy - 8; sendBack('parry'); } else geodeShatter(Ge, Ge.tx, hurtAny ? '' : 'IT SHATTERS');
+    }
+  }
+  function bitsStep(dt) {   // the two low shards running the floor 40 px each way: jump them (8)
+    const gc = G.geode, e = q();
+    for (const b of S.geodeBits) {
+      if (b.dead) continue; b.x += b.dir * gc.shardV * dt;
+      if (Math.abs(b.x - b.x0) >= gc.shardRun || ctx.solid(Math.floor((b.x + b.dir * 4) / TS), Math.floor((b.fy - 4) / TS))) { b.dead = true; continue; }
+      seats(P1 => { if (b.hit.has(P1) || P1.dead || Math.abs(P1.x - b.x) > 7 || P1.y < b.fy - 7) return; b.hit.add(P1); gqHit(b.x, gc.shardDmg, e, 'A GEODE SHARD'); });
+    }
+    S.geodeBits = S.geodeBits.filter(b => !b.dead);
+  }
+  function geodeDraw(g, cx, cy, t) {   // GREYBOX (GQ3ART draws the geode x3 rot, the shatter, the floor mark)
+    const Ge = S.geode, e = q();
+    if (Ge && (Ge.state === 'tell' || Ge.state === 'fly')) {   // the red ring on the floor where it will land
+      const k = 0.5 + 0.5 * Math.sin(t * 16), lx = Math.round(Ge.tx - cx), ly = Math.round(Ge.fy - cy) - 1; g.globalAlpha = Ge.locked ? 0.9 : 0.5 + 0.2 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(lx, ly, 14, 3, 0, 0, 6.3); g.stroke(); if (Ge.locked) { g.beginPath(); g.ellipse(lx, ly, 8, 2, 0, 0, 6.3); g.stroke(); } g.globalAlpha = 1; }
+    if (Ge && Ge.state === 'tell' && e) { portalDraw(g, e.x + e.face * 6 - cx, e.y - 72 - cy, t, Math.min(1, Ge.t / 0.5), '#b28cff'); const gx = Math.round(e.x + e.face * 6 - cx), gy = Math.round(e.y - 66 - cy + 6 * (1 - Math.min(1, Ge.t / G.geode.tell))); g.fillStyle = '#7a4aa8'; g.fillRect(gx - 3, gy - 3, 6, 6); g.fillStyle = '#e8dcff'; g.fillRect(gx - 1, gy - 1, 2, 2); }
+    if (Ge && (Ge.state === 'fly' || Ge.state === 'back')) { const x = Math.round(Ge.x - cx), y = Math.round(Ge.y - cy); g.save(); g.translate(x, y); g.rotate(Ge.spin || 0); g.fillStyle = Ge.state === 'back' ? '#c8f08a' : '#7a4aa8'; g.fillRect(-5, -5, 10, 10); g.fillStyle = '#b28cff'; g.fillRect(-3, -3, 6, 6); g.fillStyle = '#e8dcff'; g.fillRect(-1, -4, 2, 3); g.restore(); }
+    for (const b of S.geodeBits) { const x = Math.round(b.x - cx), y = Math.round(b.fy - cy); g.fillStyle = '#b28cff'; g.fillRect(x - 3, y - 5, 6, 5); g.fillStyle = '#e8dcff'; g.fillRect(x - 1, y - 5, 2, 2); }
   }
   /* ---------------- THE PORTAL CAST (rock shards) ---------------- */
   /* tell 1.0 s (the sceptre up), then 2 portals (3 in P1b) open at fixed hall-wall anchors at least 90 px from you; each glows 0.9 s with three faint fan lines, and they fire 0.35 s apart: a fan
@@ -482,6 +546,8 @@ export function makeGQueenHands(ctx) {
         else if (e.modeT <= 0) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.5; }
         return 0;
       case 'crownFetch': return fetchStep(e);
+      case 'geodeTell': return geodeTellStep(e, dt);
+      case 'geodeThrow': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'lure': return lureStep(e, dt);
       case 'portalTell':
         e.face = sign(P0.x - e.x) || e.face;
@@ -509,9 +575,10 @@ export function makeGQueenHands(ctx) {
     if ((e.portalCd ?? 6) <= 0 && ad > 40) {
       e.portalCd = p2 ? G.portal.cd2 : G.portal.cd; e.mode = 'portalTell'; e.modeT = G.portal.tell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); return true;
     }
+    if ((e.geodeCd ?? 5) <= 0 && ad > G.geode.minDist && !S.geode && !S.mech.wave && !S.mech.lure && inHall(e)) { e.geodeCd = p2 ? G.geode.cd2 : G.geode.cd; geodeBegin(e); return true; }
     return false;
   };
-  H.tick = (e, dt) => { if (!S) return; e.crownCd = (e.crownCd ?? 3) - dt; e.portalCd = (e.portalCd ?? 6) - dt; };
+  H.tick = (e, dt) => { if (!S) return; e.crownCd = (e.crownCd ?? 3) - dt; e.portalCd = (e.portalCd ?? 6) - dt; e.geodeCd = (e.geodeCd ?? 5) - dt; };
 
   /* ---------------- (claude/gq2mech) THE BELL LURE and THE BARRACKS GATE (her hall only) ---------------- */
   const GM = G.mech;
@@ -630,7 +697,7 @@ export function makeGQueenHands(ctx) {
     return null;
   };
   H.mech = () => (S ? S.mech : null);
-  Object.assign(H.test = H.test || {}, { ringBell: () => { const e = q(), b = bellProp(); if (e && b && S) ringIt(e, b); } });
+  Object.assign(H.test = H.test || {}, { geodeBegin: () => { const e = q(); if (e && S) geodeBegin(e); }, ringBell: () => { const e = q(), b = bellProp(); if (e && b && S) ringIt(e, b); } });
 
   /* ---------------- PER FRAME ---------------- */
   H.update = dt => {
@@ -640,8 +707,8 @@ export function makeGQueenHands(ctx) {
       else if (!mLvl && R1 && R1.mus && e0 && e0.stage === 'roof' && ctx.bossActive() && up) musicLift(R1.mus); }
     if (S.esc && S.esc.on) escapeStep(dt);
     if (S.rocks.length) rockStep(dt);
-    if (!ctx.bossActive() || !q()) { S.crown = null; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }
-    crownStep(dt); portalStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt);
+    if (!ctx.bossActive() || !q()) { S.crown = null; S.geode = null; S.geodeBits = []; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }
+    crownStep(dt); portalStep(dt); geodeStep(dt); bitsStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt);
   };
 
   /* ---------------- DRAW ---------------- */
@@ -742,7 +809,7 @@ export function makeGQueenHands(ctx) {
   const greyWorld = H.drawWorld;
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
-    try { mechDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
+    try { mechDraw(g, cx, cy, t); geodeDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
     if (artOff) return greyWorld(g, cx, cy, t);
     try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
   };
@@ -753,6 +820,7 @@ export function makeGQueenHands(ctx) {
     const out = [];
     if (S.crown && S.crown.state !== 'floor') out.push({ id: S.crown.id, x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
     for (const r of S.rocks) if (!r.dead) out.push({ id: r.id, x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home });
+    if (S.geode && (S.geode.state === 'fly' || S.geode.state === 'back')) out.push({ id: S.geode.id, x: S.geode.x, y: S.geode.y, vx: S.geode.state === 'back' ? 0 : (S.geode.tx - S.geode.x0) / G.geode.air, vy: 0, kind: 'geode', home: S.geode.state === 'back' });
     const st = S.roof && S.roof.storm; if (st && st.x !== undefined) { const w = Math.PI * 2 / G.roof.orbitTurn; out.push({ id: 's' + Math.floor(st.ang / (Math.PI * 2)), x: st.x, y: st.y, vx: -Math.sin(st.ang) * G.roof.orbitR * w, vy: Math.cos(st.ang) * G.roof.orbitR * 0.55 * w, kind: 'storm', home: false }); }
     return out;
   };
