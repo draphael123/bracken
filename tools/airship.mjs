@@ -143,7 +143,7 @@ ok(['strike', 'slam', 'roar', 'tail', 'brood'].every(m => TW.TW_POSES[m + 'Tell'
 ok(/THE ROAD CONTINUES - FROSTFALL PASS/.test(readFileSync('src/airship-hands.js', 'utf8')), "the ending card: 'THE ROAD CONTINUES - FROSTFALL PASS (coming soon)'");
 /* ---- 9. THE WIRING (text checks: main.js / level.js) ---- */
 { const M = readFileSync('src/main.js', 'utf8'), Lj = readFileSync('src/level.js', 'utf8');
-  for (const k of ["makeAirshipHands(", "case 'wyrmling'", "case 'thunderwyrm': { const a = ASH", "ASH.take(e, dmg)", "ASH.bossUpdate(e, dt)", "ASH.drawFoe(", "ASH.draw(g, cx, cy, time)", "ASH.update(dt)", "ASH.drawHud(g, P)", "ASH.barName(boss)", "if (ASH) ASH.clear();", "ASH.end(e)", "MEDALS.airship"]) ok(M.includes(k), 'main.js: ' + k);
+  for (const k of ["makeAirshipHands(", "case 'wyrmling'", "case 'thunderwyrm': { const a = ASH", "ASH.take(e, dmg", "ASH.bossUpdate(e, dt)", "ASH.drawFoe(", "ASH.draw(g, cx, cy, time)", "ASH.update(dt)", "ASH.drawHud(g, P)", "ASH.barName(boss)", "if (ASH) ASH.clear();", "ASH.end(e)", "MEDALS.airship"]) ok(M.includes(k), 'main.js: ' + k);
   ok(/if \(asOn\(\)\) LEVELS\.push\(\{ id: 'airship'/.test(Lj) && Lj.indexOf("id: 'airship'") < Lj.indexOf('applyInserts(LEVELS);'), 'level.js: the flagged row, before applyInserts'); }
 
 /* ---- 10. THE TOY DUEL (--duel): the pure fight vs a scripted bot. A GUESS for the tune lane, not a band. ----
