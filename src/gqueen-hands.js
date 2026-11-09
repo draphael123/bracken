@@ -546,7 +546,7 @@ export function makeGQueenHands(ctx) {
     const sendBack = how => { Ge.state = 'back'; Ge.t = 0; ctx.ring(Ge.x, Ge.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(Ge.x, Ge.y - 14, how === 'parry' ? 'PARRIED: SENT BACK' : 'SENT BACK', '#8fd160'); };
     // any blow or shot that meets it in the air
     seats(P1 => { if (Ge.state !== 'fly' || P1.dead) return; if (hit(P1, box, Ge.key)) sendBack('blow'); });
-    if (Ge.state === 'fly') for (const pp of ctx.players ? ctx.players() : []) for (const ar of pp.rgArrows || []) { if (Ge.state !== 'fly' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - Ge.x) < gc.r + 10 && Math.abs(ar.y - Ge.y) < gc.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack('blow'); } }
+    if (Ge.state === 'fly') for (const pp of (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || []) for (const ar of pp.rgArrows || []) { if (Ge.state !== 'fly' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - Ge.x) < gc.r + 10 && Math.abs(ar.y - Ge.y) < gc.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack('blow'); } }
     if (Ge.state === 'fly' && k >= 1) {   // it lands: 18 (a parry sends it back from the floor), else it shatters
       let parried = false, hurtAny = false;
       seats(P1 => { if (parried || P1.dead || Math.abs(P1.x - Ge.tx) > 20 || P1.y < Ge.fy - 34) return; const r = gqHit(Ge.tx, gc.dmg, e, 'HER GEODE'); hurtAny = true; if (r.parried) parried = true; });
