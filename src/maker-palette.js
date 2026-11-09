@@ -142,9 +142,10 @@ const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
 // (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, sw: { ...(doc.sw || {}) }, loot: { ...(doc.loot || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null });
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, sw: { ...(doc.sw || {}) }, loot: { ...(doc.loot || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null, goal: doc.goal || null, players: doc.players || null, cleared: doc.cleared || null });
 export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
-  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.sw = t && t.sw ? { ...t.sw } : {}; doc.loot = t && t.loot ? { ...t.loot } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
+  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.sw = t && t.sw ? { ...t.sw } : {}; doc.loot = t && t.loot ? { ...t.loot } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null;
+  doc.goal = (t && t.goal) || null; doc.players = (t && t.players) || null; doc.cleared = (t && t.cleared) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
@@ -558,9 +559,10 @@ export const BOSS_CANDIDATES = () => Object.keys(ARENA);
 // finished, and their fall opens the goal. Left out, and why: their own level's machinery is read on spawn (djinn, fogknight,
 // matriarch, colossus, hawkmistress, greatdrill, paladinboss, hourglassking, cisternqueen, lanterneater, admiral, bzchief,
 // archmage, undeadmage, reefmaw, kraken, winchmaster, duneworm, puppeteer, strawking, tombking, grubbag, frog), never spawn
-// alone (ram, huntmaster), cannot be finished by blows alone (abbot, gargoyle, shrieksisters), or never engage (owl, captain,
-// wickerqueen); chief's fall does not open the gate (the stockade's own escape gate).
-export const BOSSES = ['oldtusker', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
+// alone (ram, huntmaster), cannot be finished by blows alone (abbot, gargoyle, shrieksisters), or never fight (captain,
+// wickerqueen). The full table: docs/MAKER-BOSSES.md, and `node tools/maker-bosses.mjs --report` re-runs it.
+// Re-sweep with mkBossDown (a maker boss's fall always opens the placed goal): chief and owl joined.
+export const BOSSES = ['oldtusker', 'chief', 'owl', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
   'harbormaster', 'closedhelm', 'prince', 'burieddead', 'pyromancer', 'bloodknight', 'roc', 'bogtroll', 'hornetqueen', 'batteringbeast'];
 FOES.push(...BOSSES);   // placed like foes (cat 1); the BOSSES tab and tools/maker-sweep.mjs keep them apart
 export const isBoss = t => BOSSES.includes(t) || !!ARENA[t] && BOSS_TRIAL.has(t);
@@ -690,3 +692,22 @@ export function drawSel(g, cx, cy, cur, t) {
     g.globalAlpha = 1; g.strokeStyle = '#8fd1ff'; g.setLineDash([4, 3]); g.strokeRect(cur.x * TS - cx + 0.5, cur.y * TS - cy + 0.5, clip.w * TS - 1, clip.h * TS - 1); g.restore();
   }
 }
+
+/* (claude/maker) THE CLEAR CHECK (Mario Maker's upload rule): a level can be SHARED only once it was beaten from START to the goal,
+   and only as it stood then. docSig is a fingerprint of everything that plays (tiles, pieces, terrain, settings - not the name and
+   not the clear itself); any edit changes it, so a cleared level that is changed must be beaten again. */
+export function docSig(d) {
+  const t = terrainOf(d); delete t.cleared; delete t.music;
+  const str = d.W + 'x' + d.H + '|' + d.theme + '|' + d.start.x + ',' + d.start.y + '|' + JSON.stringify(d.ents) + '|' + JSON.stringify(t);
+  let h = 2166136261; for (let i = 0; i < d.grid.length; i++) h = Math.imul(h ^ d.grid[i], 16777619) >>> 0;
+  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0;
+  return h.toString(36) + '.' + d.grid.length.toString(36);
+}
+export const isCleared = d => !!d.cleared && d.cleared === docSig(d);
+
+/* (claude/maker) LEVEL GOALS: what has to be done before the goal gate lets you through (or what fails the run). */
+export const GOALS = [null, 'foes', 'coins', 'nohit', 't30', 't60', 't90', 't120', 't180', 't300'];
+export const goalSecs = g => g && g[0] === 't' ? +g.slice(1) : 0;
+export const goalName = g => !g ? 'JUST REACH THE GOAL' : g === 'foes' ? 'DEFEAT EVERY ENEMY' : g === 'coins' ? 'COLLECT EVERY COIN' : g === 'nohit' ? 'DO NOT GET HIT' : 'BEAT THE CLOCK: ' + goalSecs(g) + ' SECONDS';
+export const PLAYERS = [null, 'ally', 'p2'];
+export const playersName = k => !k ? 'SOLO' : k === 'ally' ? 'WITH AN AI ALLY' : 'TWO PLAYERS (one keyboard / pads)';

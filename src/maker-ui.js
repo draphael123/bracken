@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -181,8 +181,9 @@ export function drawChrome(c) {
   g.fillStyle = 'rgba(12,10,18,0.9)'; g.fillRect(0, VH - BOT, VW, BOT);
   UI.btns = []; let bx = 4;
   for (const b of BUTTONS) { const w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx, y: VH - BOT + 2, w, h: BOT - 4, b }, hov = UI.hover && UI.hover.kind === 'btn' && UI.hover.b === b;
-    g.fillStyle = b.startsWith('PLAY') ? (hov ? '#5a9a3a' : '#3f7a2c') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
-    text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
+    const clr = b === 'SHARE' && isCleared(c.doc);   /* (claude/maker) THE CLEAR CHECK: SHARE lights up once the level has been beaten as it stands */
+    g.fillStyle = b.startsWith('PLAY') ? (hov ? '#5a9a3a' : '#3f7a2c') : clr ? (hov ? '#3a8a9a' : '#2c6a7a') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
+    text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : clr ? '#bff0ff' : b === 'SHARE' ? '#7a6f8a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
@@ -206,6 +207,8 @@ function settingRows(c) {
     { key: 'music', label: 'MUSIC', value: prettyTrack(d.music), hint: 'it plays while you choose' },
     { key: 'time', label: 'TIME OF DAY', value: d.time ? TIME_NAMES[d.time] : "THE BACKGROUND'S OWN" },
     { key: 'weather', label: 'WEATHER', value: d.weather ? d.weather.toUpperCase() : "THE BACKGROUND'S OWN" },
+    { key: 'goal', label: 'GOAL', value: goalName(d.goal), hint: 'what must be done before the goal gate lets you through' },
+    { key: 'players', label: 'PLAYERS', value: playersName(d.players), hint: 'who plays the test runs' },
     { key: 'hero', label: 'TEST AS', value: d.hero ? ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) : 'YOUR OWN HERO' },
     { key: 'width', label: 'WIDTH', value: d.W + ' TILES' },
     { key: 'height', label: 'HEIGHT', value: d.H + ' TILES (rows go on at the top)' },
@@ -213,7 +216,7 @@ function settingRows(c) {
   ];
 }
 function drawSettings(c) {
-  const { g, text } = c, w = 380, h = 196, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
+  const { g, text } = c, w = 380, h = 232, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
   text('< > TO CHANGE.  THE MUSIC PLAYS WHILE YOU CHOOSE.', x + w / 2, y + 17, '#8a7fa0', 'center', 6);
   UI.rows = [];
   settingRows(c).forEach((r, k) => { const ry = y + 30 + k * 18;
@@ -233,8 +236,8 @@ const HELP = [
   ['DOORS', 'paint DOOR tiles; a LEVER or PLATE opens the nearest (TOOLS > LINK picks one)'],
   ['START / GOAL', 'TOOLS > START sets where the knight begins; every level needs a GOAL GATE (ITEMS)'],
   ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
-  ['SETTINGS', 'background, music, time of day, weather, the hero you test as, name and width'],
-  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link to the level; OPEN takes one'],
+  ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS (AI ally / player 2), the hero you test as, name and size'],
+  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link once you have BEATEN the level with PLAY; OPEN takes one'],
   ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
@@ -267,6 +270,8 @@ export function uiMouse(c, mx, my, down) {
     const d = c.doc;
     if (r.key === 'time') { d.time = TIMES[(TIMES.indexOf(d.time ?? null) + r.d + TIMES.length) % TIMES.length]; return { consumed: true, act: 'remount' }; }
     if (r.key === 'weather') { d.weather = WEATHERS[(WEATHERS.indexOf(d.weather ?? null) + r.d + WEATHERS.length) % WEATHERS.length]; return { consumed: true, act: 'remount' }; }
+    if (r.key === 'goal') { d.goal = GOALS[(GOALS.indexOf(d.goal ?? null) + r.d + GOALS.length) % GOALS.length]; return { consumed: true }; }   /* (claude/maker) */
+    if (r.key === 'players') { d.players = PLAYERS[(PLAYERS.indexOf(d.players ?? null) + r.d + PLAYERS.length) % PLAYERS.length]; return { consumed: true }; }
     if (r.key === 'hero') { const L = [null, ...c.heroes.map(h => h.id)]; d.hero = L[(L.indexOf(d.hero ?? null) + r.d + L.length) % L.length]; return { consumed: true }; }
     if (r.key === 'music') { const L = [null, ...MUSIC_NAMES]; d.music = L[(L.indexOf(d.music ?? null) + r.d + L.length) % L.length]; return { consumed: true, act: 'music' }; }
     return { consumed: true };

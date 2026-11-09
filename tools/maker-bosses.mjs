@@ -7,12 +7,13 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { portFor } from './ports.mjs';
 
-const only = (process.argv[2] || '').split(',').filter(Boolean);
+const REPORT = process.argv.includes('--report');   /* --report: every boss with a home arena, sorted into what stops it (no assert) */
+const only = REPORT ? [] : (process.argv[2] || '').split(',').filter(Boolean);
 const pg = await openPage({ port: portFor(6), audio: false, seed: 6 });
 try {
   const res = await pg.evalp(`(async () => {
     const P = await import('/src/maker-palette.js'); MKR.enter(); (await import('/src/maker-ui.js')).closePanel();
-    const list = ${JSON.stringify(only)}.length ? ${JSON.stringify(only)} : P.BOSSES, out = [];
+    const list = ${REPORT} ? P.BOSS_CANDIDATES() : ${JSON.stringify(only)}.length ? ${JSON.stringify(only)} : P.BOSSES, out = [];
     for (const t of list) {
       { let s = [...t].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261); Math.random = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
       P.trialBoss(t, true); const d = MKR.blank(100, 28); d.ents = [{ t: 'gate', x: 95, y: 19 }, { t, x: 62, y: 19 }]; d.start = { x: 5, y: 19 }; MKR.doc = d; const r = { t };
@@ -26,10 +27,16 @@ try {
         r.finished = !b.alive; for (let i = 0; i < 10 && !BK.L.gateOpen; i++) BK.step(60); r.gate = !!BK.L.gateOpen;
         r.ok = r.arena && r.woke && r.inWorld && (r.moved >= 4 || r.hurt) && r.finished && r.gate;
       } catch (e) { r.err = String(e && e.message || e).slice(0, 140); r.ok = false; }
+      r.name = P.nameOf(t); r.inPalette = P.BOSSES.includes(t);
       try { MKR.resume(); } catch (e) {} P.trialBoss(t, false); BK.god = false; out.push(r);
     }
     return out;
   })()`, 900000);
+  if (REPORT) {
+    const why = r => r.ok ? 'BEATABLE' : /of null \(reading .x.\)/.test(r.err || '') ? 'NEVER SPAWNS ALONE' : r.err ? 'NEEDS ITS OWN ARENA' : !r.woke ? 'NEVER WAKES' : !r.inWorld ? 'LEAVES THE WORLD' : !(r.moved >= 4 || r.hurt) ? 'NEVER FIGHTS' : !r.finished ? 'CANNOT BE FINISHED BY BLOWS' : 'GOAL STAYS SHUT';
+    for (const r of res) console.log(JSON.stringify({ t: r.t, name: r.name, verdict: why(r), inPalette: r.inPalette, err: r.err || undefined }));
+    pg.close(); process.exit(0);
+  }
   const bad = res.filter(r => !r.ok);
   for (const r of bad) console.log('  FAIL', JSON.stringify(r));
   assert.equal(bad.length, 0, bad.length + ' palette boss(es) do not work in a made-by-hand arena: ' + bad.map(r => r.t).join(' '));

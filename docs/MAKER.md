@@ -122,7 +122,7 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - `tools/maker-extras.mjs` (in the suite).
 
 ## Done (2026-11-09, BOSSES)
-- A BOSSES tab: 21 bosses that work in a made-by-hand arena (the list and every left-out boss, with the reason, are in
+- A BOSSES tab: 21 bosses (23 after the re-sweep below) that work in a made-by-hand arena (the list and every left-out boss, with the reason, are in
   `src/maker-palette.js` BOSSES). Placing one builds its ARENA round it (`MKP.arenaFor`: walls, trigger line, its home
   arena's music, tint and width - gathered from the levels in `edThemeList`); one boss a level; the goal gate opens when
   it falls (`gateAfterBoss`). The editor shows the arena, the trigger and a BOSS label where it waits.
@@ -141,6 +141,20 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   crate contents, crumble, whole pools and pieces).
 - Not done: stacking foes on foes and wings/giant modifiers (the engine has no general form for them).
 - `tools/maker-build.mjs` (in the suite), including: every elite form the palette offers spawns as one.
+
+## Done (2026-11-09, CLEAR CHECK + GOALS + CO-OP - Daniel picked 1, 2 and 4 of the Mario Maker gap list)
+- BOSS RE-SWEEP (Daniel: "see which bosses would be beatable"): `mkBossDown` makes a maker boss's fall always open the placed
+  goal and cancel its home level's aftermath (the Chieftain's burning hall and Stockade escape). 23 of 53 are now in the
+  palette (chief and owl joined). The table and the reasons are in `docs/MAKER-BOSSES.md`; re-run it with
+  `node tools/maker-bosses.mjs --report`.
+- THE CLEAR CHECK: a test run from START that reaches the goal stamps `doc.cleared = MKP.docSig(doc)`, a fingerprint of
+  everything that plays. SHARE only works while it matches, and the button lights up when it does. Any edit un-clears; undo
+  re-clears. A PLAY HERE run never clears. The win card's confirm goes back to the editor, not the map.
+- SETTINGS > GOAL: reach the goal / DEFEAT EVERY ENEMY / COLLECT EVERY COIN (both hold the gate shut, showing "NOT YET: n
+  LEFT") / DO NOT GET HIT / BEAT THE CLOCK 30-300 s (both restart the run). A HUD line shows how it is going.
+- SETTINGS > PLAYERS: solo / an AI ally / a second player, for test runs. The campaign's own party is put back after.
+- Save slots now load every extra through `MKP.setTerrain`, so a new setting can't be dropped by a stale field list again.
+- `tools/maker-goals.mjs` (in the suite).
 
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.

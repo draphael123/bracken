@@ -2706,7 +2706,7 @@ function* loadLevelG(i) {
   flaskFinds = F2.findsIn(LEVELS[i] && LEVELS[i].id, PROG).map(f => ({ ...f, px: f.x * TS + 8, py: (f.y + 1) * TS - 6, got: false }));   /* (claude/flasks2) the hidden flask finds of this wood (src/flasks2.js FINDS) */
   for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
-    if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
+    if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6, placed: true }); total++; }   /* (claude/maker: placed - the COLLECT EVERY COIN goal counts these) */
     if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text, mute: !!e.mute }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6, ...(e.offer ? { y0: py - 6, hung: !marks.has('offer:' + e.x + ',' + e.y), y: marks.has('offer:' + e.x + ',' + e.y) ? py - 6 : py - 6 - e.offer * TS, key: 'offer:' + e.x + ',' + e.y } : {}) });   /* (claude/monastery2) THE MONKS' OFFERING: a silver hung in its basket over a belfry, let down when its bell is struck */
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
@@ -2772,6 +2772,8 @@ function spawnEntities() {
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
   if (L.custom && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); crumbleInit(L); }   /* (claude/maker) THE MAKER's crumbling ledges stand again on every attempt */
   if (L.custom && L.swCells && L.swOn) mkFlipSwitch(false);   /* (claude/maker) and the switch blocks go back to RED */
+  if (L.custom && L.arena && L.arena.maker) { L.mkBossDone = false; L.gateOpen = false; }
+  if (L.custom) { L.mkHp = null; L.mkFailT = 0; L.mkGateT = 0; }   /* (claude/maker) the GOAL rule starts again */   /* (claude/maker) the boss stands again, and its goal is shut */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) { P.candle = 0; P.snuffed = false; } for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; bossBeat = null; actCard = null; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   miniIntroT = 0;   /* the previous level's mini name card cannot follow a level load */
   if((L.harborSections||L.reverseTower)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
@@ -4934,6 +4936,7 @@ function danceAfterBoss() {
 }
 function winLevel() { return asHost(winLevel0); }   /* (claude/coopprogress) a seat who reaches the gate last ends it from his pass: the win is still the save's */
 function winLevel0() {
+  if (edTesting && !edRunHere) { edDoc.cleared = MKP.docSig(edDoc); edJustCleared = true; }   /* (claude/maker) THE CLEAR CHECK: beaten from START, so it can be SHARED */
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
   PROG.done = PROG.done || {};
@@ -12097,7 +12100,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
-  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else { winLevel(); trnBegin(); } }   /* (claude/demotransitions) a GATE-END level (Hornet's Nest, Fen Road, Rootway) starts its walk-out when the party walks into the gate */   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
+  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate() && mkGoalLets()) { escape = null; if (bossSelectFight) bossSelectQuit(); else { winLevel(); trnBegin(); } }   /* (claude/demotransitions) a GATE-END level (Hornet's Nest, Fen Road, Rootway) starts its walk-out when the party walks into the gate */   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 100 * TS) music.preload(L.arena.music || 'boss');   /* (claude/marsh3) 100 tiles out, not 40: six seconds of walking was less than a 1.4 MB boss track takes on a slow line (tools/music-priority.mjs) */
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
@@ -16110,6 +16113,37 @@ const bcRetile = (x, y) => { if (!L || !L.buriedcity || !tileSpr) return; for (l
 /* (claude/underleaf4art) THE POTION MASTER's ground, RE-PICKED: a vine bridge/ladder that grows and a hedge that burns away are cells the hands wrote after the level was baked - without this their sprite was null (an invisible bridge you stand on). Re-pick the cell and its eight neighbours from UNDERLEAF's own kit (src/redraw/underleaf3_tiles.js). */
 const ul3Retile = (x, y) => { if (!L || !L.ul3 || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET || t === T.PORT) tileSpr[i] = UL3T.ul3Tile(t, xx, yy, tileAt, T, L) || tileSpr[i]; } };
 /* (claude/maker) THE SWITCH BLOCKS: RED solid while the switch is off, BLUE while it is on; `hit` flips, a reset puts them back */
+/* (claude/maker) A BOSS FALLS IN A MADE-BY-HAND ARENA: whatever its home level does next (the Chieftain's hall burns and the way
+   out moves to the Stockade's own gate at column 344) is not this level's - the walls open, the goal is the one that was
+   placed, and it opens. Reset on every attempt (spawnEntities). */
+/* (claude/maker) LEVEL GOALS (Daniel: like Mario Maker's clear conditions). DEFEAT EVERY ENEMY and COLLECT EVERY COIN hold the
+   goal gate shut until they are done; DO NOT GET HIT and BEAT THE CLOCK fail the run, which starts again from the top. */
+const mkFoesLeft = () => enemies.filter(e => e.alive && !e.harmless).length + (boss && boss.alive ? 1 : 0);
+const mkCoins = () => { const a = acorns.filter(q => q.placed); return [a.filter(q => q.got).length, a.length]; };
+function mkGoalLeft() { const k = L && L.custom && L.mkGoal; if (k === 'foes') { const n = mkFoesLeft(); return n ? n + (n === 1 ? ' ENEMY' : ' ENEMIES') + ' LEFT' : ''; }
+  if (k === 'coins') { const [a, b] = mkCoins(); return a < b ? (b - a) + (b - a === 1 ? ' COIN' : ' COINS') + ' LEFT' : ''; } return ''; }
+function mkGoalLets() { const left = mkGoalLeft(); if (!left) return true;
+  if (!(L.mkGateT > time)) { L.mkGateT = time + 1.5; number(P.x, P.y - 34, 'NOT YET: ' + left, '#ffd36b'); SFX.buzz(); } return false; }
+function mkGoalTick(dt) {
+  if (L.mkFailT) { L.mkFailT -= dt; if (L.mkFailT <= 0) { L.mkFailT = 0; loadLevel(levelIndex); startGame(); bannerT = 0; transT = 0; } return; }   /* the run starts again, as a test run does */
+  const k = L.mkGoal, hp = players.reduce((s, q) => s + Math.max(0, q.hp || 0), 0);
+  if (k === 'nohit') { if (L.mkHp !== null && hp < L.mkHp) mkGoalFail('HIT! THE RUN STARTS AGAIN'); else L.mkHp = hp; }
+  const secs = MKP.goalSecs(k); if (secs && levelTime > secs) mkGoalFail('TIME UP!');
+}
+function mkGoalFail(why) { if (L.mkFailT) return; L.mkFailT = 1.4; number(P.x, P.y - 40, why, '#ff6b6b'); SFX.buzz(); shakeCam(3); }
+function mkGoalHud() { const k = L.mkGoal; let s0 = '';
+  if (k === 'foes') { const n = mkFoesLeft(); s0 = n ? 'DEFEAT EVERY ENEMY: ' + n + ' LEFT' : 'EVERY ENEMY DOWN: TO THE GOAL!'; }
+  else if (k === 'coins') { const [a, b] = mkCoins(); s0 = a < b ? 'COINS ' + a + ' / ' + b : 'EVERY COIN: TO THE GOAL!'; }
+  else if (k === 'nohit') s0 = 'DO NOT GET HIT';
+  else { const t = Math.max(0, MKP.goalSecs(k) - levelTime); s0 = 'TIME ' + Math.ceil(t); }
+  const warn = L.mkFailT || (MKP.goalSecs(k) && MKP.goalSecs(k) - levelTime < 10);
+  text(s0, VW / 2, 22, warn ? '#ff6b6b' : '#ffd36b', 'center', 8); }
+function mkBossDown() {
+  L.mkBossDone = true; escape = null; bossActive = false; camLock = null;
+  if (L.arena.wallL !== undefined) setWall(L.arena.wallL, false); if (L.arena.wallR !== undefined) setWall(L.arena.wallR, false);
+  const ge = (L.ents || []).find(e => e.t === 'gate'); if (ge) gate = { x: ge.x * TS + 8, y: (ge.y + 1) * TS };
+  L.gateOpen = true; if (gate) number(gate.x, gate.y - 40, 'THE WAY IS OPEN', '#8fd160');
+}
 function mkFlipSwitch(hit) { if (!L || !L.swCells) return; L.swOn = hit ? !L.swOn : false;
   for (const [x, y, kind] of L.swCells) { const solid = (kind === 'red') !== L.swOn; cellSet(x, y, solid ? T.CRYST : T.AIR); }
   resolveTiles(); if (hit) { SFX.stone(); number(P.x, P.y - 34, L.swOn ? 'BLUE!' : 'RED!', L.swOn ? '#6fb0ff' : '#ff6b6b'); } }
@@ -25225,7 +25259,9 @@ function drawBurningTown(cx, cy) {
 }
 function updateVillage(dt) {
   updateUnburied(dt); updateCaravan(dt); updateFair(dt);
-  if (L.custom && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);   /* (claude/maker) THE MAKER's crumbling ledges count, fall and come back */
+  if (L.custom && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);
+  if (L.custom && L.arena && L.arena.maker && boss && !boss.alive && !L.mkBossDone && state === 'play') mkBossDown();   /* (claude/maker) */
+  if (L.custom && (L.mkGoal || L.mkFailT) && state === 'play') mkGoalTick(dt);   /* (claude/maker) THE MAKER's crumbling ledges count, fall and come back */
   if (CANAL) CNH.canalUpdate(CANAL, CNX, dt);   /* THE FOG CANAL (src/canal-hands.js) */
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
@@ -33371,7 +33407,8 @@ function update(dt) {
   }
   if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
   if (state === 'win' && trnChoice) { trnChoiceUpdate(dt); return; }   /* (claude/transchoice) */
-  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
+  if (state === 'win') { if (edTesting && (confirmPress || pausePress)) { edResume(); return; }   /* (claude/maker) a test run's win goes back to the editor, not the map */
+    if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
     if (confirmPress || (nextK >= 0 && pausePress)) { if (DS.demoEndsHere(LEVELS[levelIndex].id) && !bossSelectFight && !rushOn()) { demoEndOpen(); } else if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* (claude/demoend) THE DEMO'S END CARD (src/demo-end.js, a DOM board) holds until a button is taken */
   if (state === 'demoend') { updateParticles(dt); return; }
@@ -37193,6 +37230,7 @@ function desiredView() { if (state === 'editor') return 'zoom';
 let edDoc = null;              // { W, H, grid, ents, theme, name, start }
 let edCam = { x: 0, y: 0 }, edCur = { x: 0, y: 0 }, edCat = 0, edSel = [1, 0, 0, 0];
 let edUndo = [], edShowGrid = true, edMsg = '', edMsgT = 0, edPal = false, edTesting = false;
+let edRunHere = false, edJustCleared = false, edCoopWas;   /* (claude/maker) this run began at PLAY HERE; it just cleared the level; the party to put back */
 let edPaint = 0, edPainted = null, edSlot = 0, edThemes = null;
 const ED_KEY = i => 'bracken.level.' + i, ED_SLOTS = 3;
 
@@ -37230,7 +37268,8 @@ function edLevelObj(doc, copy) {
     ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: { x: doc.start.x, y: doc.start.y },
     pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),
-    crateLoot: MKP.engineLoot(doc), swCells: MKP.engineSwitch(doc),   /* (claude/maker) what crates hold; the RED / BLUE blocks */
+    crateLoot: MKP.engineLoot(doc), swCells: MKP.engineSwitch(doc), mkGoal: doc.goal || null,   /* (claude/maker) the level's GOAL rule */
+      /* (claude/maker) what crates hold; the RED / BLUE blocks */
     ...(MKP.arenaFor(doc) ? { arena: MKP.arenaFor(doc), gateAfterBoss: true } : {}),   /* (claude/maker) a boss gets its arena; the goal opens when it falls */   /* (claude/maker) THE MAKER's water and crumbling ledges */
     falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
@@ -37275,7 +37314,11 @@ function edEnter() {
    the view is where the knight got to. */
 function edPlay(here) {
   if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GOAL GATE down first (ITEMS)'); SFX.buzz(); return; }
-  edPush(); edTesting = true; edPlayed = true; MKJ.whoosh();
+  edPush(); edTesting = true; edPlayed = true; MKJ.whoosh(); edRunHere = !!here; edJustCleared = false;
+  /* (claude/maker) PLAYERS: the test run's party is the level's (an AI ally or a second player), never the campaign's; put back on return */
+  if (edCoopWas === undefined) edCoopWas = coopWant;
+  { const me = edDoc.hero || hero(), mate = (HEROES.find(x => x.id !== me) || {}).id;
+    coopWant = edDoc.players && mate ? { hero: mate, ally: edDoc.players === 'ally', seats: [{ hero: mate, ally: edDoc.players === 'ally' }] } : null; }
   /* (claude/maker) TEST AS another hero: switched in memory, saving held off for the run (as the boss jump does), put back on return */
   if (edDoc.hero && edDoc.hero !== hero() && HEROES.some(x => x.id === edDoc.hero)) { edHeroWas = hero(); edSaveWas = saveBlocked; saveBlocked = true; window.BK.setHero(edDoc.hero); window.BK.reset({ fresh: true }); }
   CUSTOM.build = () => { const o = edLevelObj(edDoc, true); if (here) o.START = { x: here.x, y: here.y }; return o; };
@@ -37287,9 +37330,10 @@ function edPlayHere(tx) {   /* the first standing place in that column, from the
   if (!c) { edSay('nowhere to stand in that column'); SFX.buzz(); return; } edPlay(c);
 }
 function edResume() { const px = P.x, py = P.y; edTesting = false;
+  if (coop()) coopEnd(); if (edCoopWas !== undefined) { coopWant = edCoopWas; edCoopWas = undefined; }   /* (claude/maker) the campaign's party back */
   if (edHeroWas) { window.BK.setHero(edHeroWas); window.BK.reset({ fresh: true }); saveBlocked = edSaveWas; edHeroWas = null; }   /* (claude/maker) your own hero back */ state = 'editor'; edMount(false); music.stop(); if (edDoc.music !== 'none') music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);
   setView('zoom');   /* the editor's size first: centred with the play view's width, the knight sat at the left edge */
-  edCam.x = px - VW / 2; edCam.y = py - VH * 0.6; edClampCam(); transT = 0; transPrev = 'editor'; MKJ.whoosh(true); edSay('back in the editor'); }
+  edCam.x = px - VW / 2; edCam.y = py - VH * 0.6; edClampCam(); transT = 0; transPrev = 'editor'; MKJ.whoosh(true); edSay(edJustCleared ? 'CLEARED! SHARE IS READY' : 'back in the editor'); if (edJustCleared) MKJ.place('piece'); edJustCleared = false; }
 
 // ---- undo ----
 function edPush() { edUndo.push({ g: new Uint8Array(edDoc.grid), W: edDoc.W, H: edDoc.H, name: edDoc.name, theme: edDoc.theme, e: JSON.stringify(edDoc.ents), s: { x: edDoc.start.x, y: edDoc.start.y }, w: MKP.terrainOf(edDoc) });   /* (claude/maker) W/H too: undoing WIDER or NEW restored the old grid into the new width and scrambled the level */ if (edUndo.length > 40) edUndo.shift(); }
@@ -37309,7 +37353,7 @@ function edSave(i) {
 }
 function edLoad(i) {
   try { const raw = localStorage.getItem(ED_KEY(i)); if (!raw) return null; const d = JSON.parse(raw);
-    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 }, crumble: d.crumble || [], water: d.water || [], mat: d.mat || {}, sw: d.sw || {}, loot: d.loot || {}, hero: d.hero || null, music: d.music || null, time: d.time || null, weather: d.weather || null }; }
+    const o = { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 } }; MKP.setTerrain(o, d); return o; }   /* (claude/maker) every extra through setTerrain: a field list here kept going stale */
   catch (err) { return null; }
 }
 function edResize(dw) {
@@ -37480,6 +37524,7 @@ function edUiAct(u) {
   else if (a === 'pieceStep') { edPush(); if (MKP.stepRow(edDoc, u.piece, u.row, u.d)) edMount(false); else edRespawn(); }
   else if (a === 'pieceText') { const t = prompt('What does the sign say?', u.piece.text || ''); if (t !== null) { edPush(); u.piece.text = t.toUpperCase().slice(0, 80); edRespawn(); } }
   else if (a === 'pieceRemove') { edPush(); const i = edDoc.ents.indexOf(u.piece); if (i >= 0) edDoc.ents.splice(i, 1); edRespawn(); edSay('removed'); }
+  else if (a === 'share' && !MKP.isCleared(edDoc)) { edSay(edDoc.cleared ? 'CHANGED SINCE YOU BEAT IT: PLAY IT TO THE GOAL AGAIN, THEN SHARE' : 'BEAT IT FIRST: PLAY FROM THE START TO THE GOAL, THEN SHARE'); SFX.buzz(); }   /* (claude/maker) THE CLEAR CHECK */
   else if (a === 'share') { MKP.shareLink(edDoc).then(url => { history.replaceState(null, '', url); const done = () => edSay('LINK COPIED: ANYONE WHO OPENS IT GETS THIS LEVEL');
       if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url)); else prompt('Copy this link:', url); }).catch(() => edSay('could not make a link')); }
   else if (a === 'open') { const s0 = prompt('Paste a level link (or its code):'); if (s0) MKP.fromShareCode(s0).then(d => { edPush(); edDoc = d; edMount(true); edSay('opened ' + d.name); }).catch(() => edSay('that link did not open')); }
@@ -37565,6 +37610,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
+  if (L && L.custom && L.mkGoal && state === 'play') mkGoalHud();   /* (claude/maker) */
   if (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     drawBkEdge();   /* (claude/bkblood) THE RALLY's red edge pulse (the Blood Knight with debt; off in reduce motion) */
