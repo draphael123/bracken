@@ -4371,6 +4371,8 @@ export function bakeGoblinQueen() {
     frame({ arm: [34, 25, 38, 30], arm2: [22, 26, 30, 32], rod: [40, 50, 44, 16], head: 'shout', crown: 'hand', lean: -5, flare: 1, feet: [[24, 58], [30, 58]] }),   /* 38 BACK INTO THE PORTAL a: shuffling backward, the crown clutched, eyes on you */
     frame({ arm: [34, 25, 38, 30], arm2: [22, 26, 30, 32], rod: [40, 50, 44, 16], head: 'shout', crown: 'hand', lean: -6, dy: -1, flare: 1, feet: [[21, 58], [34, 58]] }),   /* 39 BACK INTO THE PORTAL b: the other foot */
     frame({ arm: [34, 26, 46, 40], arm2: [22, 26, 12, 40], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: 3, dy: 1, flare: 6, feet: [[16, 58], [40, 58]] }),   /* 40 INTRO RAGE: both fists clenched low, the whole bulk thrown forward, roaring (MY DAUGHTER) */
+    frame({ arm: [34, 28, 46, 40], arm2: [22, 28, 14, 38], rod: [36, 36, 38, 58], head: 'shout', glow: 1, dy: 4, lean: -2, flare: 4, feet: [[22, 56], [34, 56]] }),   /* 41 TOWER HOP a (claude/gq3tune): crouched at the lip of her portal, the sceptre planted, both fists coiled, a violet spark in the sceptre-head */
+    frame({ arm: [34, 20, 44, -2], arm2: [22, 22, 10, 6], rod: [46, 2, 50, -14], head: 'shout', glow: 2, dy: -5, lean: 4, flare: 8, feet: [[26, 46], [32, 48]] }),   /* 42 TOWER HOP b: sprung up into the portal, legs tucked, one fist and the blazing sceptre reaching up, the gown blown out below her */
   ];
   return pack(F, CX, 70, 68, 50);
 }

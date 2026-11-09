@@ -14,7 +14,7 @@ const big = (list, o, s = 2) => { const sh = sheet(list, o), c = newCanvas(sh.wi
 /* 1. the Queen */
 const Q = CH.bakeGoblinQueen(), sigs = Q.R.map(sig);
 Q.R.forEach((c, i) => { n++; if (c.width !== Q.R[0].width || c.height !== Q.R[0].height) bad.push('queen ' + i + ': size'); if (sigs[i].k < 3000) bad.push('queen ' + i + ': barely drawn (' + sigs[i].k + ')'); });
-if (Q.R.length !== 41) bad.push('queen: ' + Q.R.length + ' frames (41 expected: 0-27 + the GQ3 poses 28-40, claude/gq3art)');
+if (Q.R.length !== 43) bad.push('queen: ' + Q.R.length + ' frames (43 expected: 0-27 + the GQ3 poses 28-42)');
 for (let i = 17; i < Q.R.length; i++) for (let j = 0; j < i; j++) if (sigs[i] && sigs[j] && sigs[i].h === sigs[j].h) bad.push('queen ' + i + ' draws the same as ' + j);
 for (const [a, b, what] of [[17, 18, 'crown toss'], [21, 22, 'lash high'], [23, 24, 'lash low']]) if (sigs[a].h === sigs[b].h) bad.push(what + ': windup == release (B16)');
 Q.white.R.forEach((c, i) => { if (sig(c).k !== sigs[i].k) bad.push('queen ' + i + ': flash silhouette differs'); });

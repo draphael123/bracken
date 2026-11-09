@@ -1,6 +1,6 @@
 // tools/gq3art-sheet.mjs - THE GQ3 ART (claude/gq3art), rendered and linted in Node. NO browser.
 //   node tools/gq3art-sheet.mjs [out-prefix]  -> <prefix>.png (the contact sheet) and <prefix>-parts.png (the unscaled parts)
-// Lint: the Queen's 13 new frames (28-40) all drawn, one size, all different from every other frame, flash silhouette = sprite; the Princess's new frames (33-37, 39) likewise and the sheet
+// Lint: the Queen's 13 new frames (28-42) all drawn, one size, all different from every other frame, flash silhouette = sprite; the Princess's new frames (33-37, 39) likewise and the sheet
 // ends hurt, body (main.js C3_DEAD / lastFrame rely on that); every part paints pixels; the royal portal has its 3 + 4 + 2 frames and they all differ; the tint set differs.
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
 install();
@@ -16,7 +16,7 @@ const cell = (w, h, bg, fn, name) => { const c = newCanvas(w, h), g = c.getConte
 
 /* 1. the Queen's new poses */
 const Q = CH.bakeGoblinQueen(), qs = Q.R.map(sig);
-if (Q.R.length !== 41) bad.push('queen: ' + Q.R.length + ' frames (41 expected: 0-27 + 28-40)');
+if (Q.R.length !== 43) bad.push('queen: ' + Q.R.length + ' frames (43 expected: 0-27 + 28-40)');
 Q.R.forEach((c, i) => { if (c.width !== Q.R[0].width || c.height !== Q.R[0].height) bad.push('queen ' + i + ': size'); if (qs[i].k < 3000) bad.push('queen ' + i + ': barely drawn'); });
 for (let i = 28; i < Q.R.length; i++) for (let j = 0; j < i; j++) if (qs[i].h === qs[j].h) bad.push('queen ' + i + ' draws the same as ' + j);
 Q.white.R.forEach((c, i) => { if (sig(c).k !== qs[i].k) bad.push('queen ' + i + ': flash silhouette differs'); });

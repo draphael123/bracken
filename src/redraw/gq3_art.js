@@ -151,12 +151,12 @@ export function drawTimberFloor(g, x0, x1, fy, state, t, seed = 0) {
   x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
   if (state === 'burn') {
     R(g, x0, fy, x1 - x0, 6, '#1a1210'); for (let x = x0; x < x1; x += 14) { R(g, x, fy, 1, 6, '#08060a'); R(g, x + 3 + ((x * 7) % 5), fy + 1, 3, 2, '#7a2a1a'); }
-    alpha(g, 0.6 + 0.3 * wave(t, 9)); R(g, x0, fy + 1, x1 - x0, 1, '#ff6b2c'); R(g, x0, fy + 4, x1 - x0, 1, '#c9462a'); alpha(g, 0.2); R(g, x0, fy - 20, x1 - x0, 20, '#ff6b2c'); alpha(g, 1);
+    alpha(g, 0.6 + 0.3 * wave(t, 9)); R(g, x0, fy + 1, x1 - x0, 1, '#ff6b2c'); R(g, x0, fy + 4, x1 - x0, 1, '#c9462a'); /* (claude/gq3tune) fire that hurts must LIGHT the room: banded firelight up the shaft, over the walls and the floor above, a hot white core along the boards */ for (let b = 0; b < 6; b++) { alpha(g, (0.2 - b * 0.03) * (0.85 + 0.15 * wave(t, 7, b))); R(g, x0 - 10 - b * 2, fy - 20 - b * 14, x1 - x0 + 20 + b * 4, 14, b < 2 ? '#ff8a3c' : '#ff6b2c'); } alpha(g, 0.35); R(g, x0 - 24, fy + 6, x1 - x0 + 48, 16, '#ff6b2c'); alpha(g, 0.7); R(g, x0, fy, x1 - x0, 2, '#ffd36b'); alpha(g, 1);
     for (let x = x0 + 2; x < x1 - 3; x += 7) { const h = 7 + 8 * wave(t, 8.3, x * 0.37 + seed) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + seed, 6); }
     for (let x = x0 + 5; x < x1 - 6; x += 22) { const l = 5 + ((x * 5) % 6), ph = (t * 0.9 + x * 0.07) % 1; R(g, x, fy + 6, 3, l, '#2a1a14'); px(g, x + 1, fy + 6 + l, '#ff9a5c'); alpha(g, 1 - ph); R(g, x + 1, fy + 7 + l + ri(ph * 12), 1, 2, '#ffd36b'); alpha(g, 1); }   // the joist ends hanging charred, dripping embers
     for (let i = 0; i < 8; i++) { const ph = (t * 0.7 + i * 0.131) % 1; alpha(g, 1 - ph); R(g, ri(x0 + ((i * 97 + 41 + seed * 13) % Math.max(1, x1 - x0)) + Math.sin(t * 2 + i) * 4), ri(fy - 8 - ph * 60), 1, 1, i & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1);
   } else {
-    alpha(g, 0.45); R(g, x0, fy, x1 - x0, 3, '#0a0808'); for (let x = x0 + 4; x < x1; x += 11) R(g, x, fy + 1, 5, 1, '#3a1810'); alpha(g, 0.4 + 0.3 * wave(t, 5, seed)); R(g, x0, fy + 2, x1 - x0, 1, '#c9462a'); alpha(g, 1);   // soot on the boards, a red seam opening along them
+    alpha(g, 0.45); R(g, x0, fy, x1 - x0, 3, '#0a0808'); for (let x = x0 + 4; x < x1; x += 11) R(g, x, fy + 1, 5, 1, '#3a1810'); alpha(g, 0.55 + 0.35 * wave(t, 5, seed)); R(g, x0, fy + 2, x1 - x0, 1, '#ff6b2c'); alpha(g, 0.25 + 0.15 * wave(t, 5, seed)); R(g, x0 - 4, fy - 10, x1 - x0 + 8, 12, '#c9462a'); alpha(g, 1);   /* the seam glows: this floor is about to catch */   // soot on the boards, a red seam opening along them
     for (let x = x0 + 3; x < x1 - 4; x += 12) { const ph = (t * 0.8 + x * 0.13) % 1; alpha(g, 0.55 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 3 - ri(ph * 28), 5 + ri(ph * 5), 4 + ri(ph * 3), ph < 0.3 ? '#4a4a58' : '#6a6a78'); } alpha(g, 1);   // smoke, rolling up
   }
 }

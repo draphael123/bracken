@@ -226,7 +226,7 @@ export function makeGQueenHands(ctx) {
     // ---- HER: seen a storey ahead; she hops up by portal every ~8 s (her entry portal stays open 1.5 s: step in = a SHORTCUT) ----
     const e = q(), qq = esc.q;
     if (e) {
-      e.hidden = false; e.x = qq.x; e.y = F[qq.k] * TS; e.face = -1; e.mode = 'gone'; e.vx = 0; e.vy = 0;
+      e.hidden = false; e.x = qq.x; e.y = F[qq.k] * TS; e.face = -1; e.mode = (qq.flash && t < qq.flash.until) ? 'towerHop' : (qq.hopAt - t < 0.7 ? 'towerCrouch' : 'towerWatch'); e.vx = 0; e.vy = 0;
       if (t >= qq.hopAt && qq.k < 4 && qq.k <= top) {
         const nx = Tw.SHAFT[0] + 6 + Math.floor(Math.random() * 14), ex = { x: nx * TS + 8, y: F[qq.k + 1] * TS };
         qq.entry = { x: qq.x, y: F[qq.k] * TS, until: t + G.tower.hopOpen, exit: ex }; qq.flash = { x: ex.x, y: ex.y, until: t + 0.5 };
@@ -1020,7 +1020,7 @@ export function makeGQueenHands(ctx) {
     S.esc.step = null; toRoof(); return e.stage === 'roof';
   };
   /* (claude/hcfix) tools/hcfix-fights-sheet.mjs: start each told move the way her own chooser does (the mark, the sound, the set-up), for the stills */
-  Object.assign(H.test = H.test || {}, { start: k => { const e = q(); if (!e || !S) return false; if (k !== 'crown' && k !== 'portal' && !S.roof) roofBegin(e); if (k === 'lash') startLash(e); else if (k === 'ambush') startAmbush(e); else if (k === 'geyser') startGeyser(e); else if (k === 'leap') startLeap(e); else if (k === 'crown') roofCrown(e); else if (k === 'portal') roofPortal(e); else return false; return e.mode; } });
+  Object.assign(H.test = H.test || {}, { start: k => { const e = q(); if (!e || !S) return false; if (k !== 'crown' && k !== 'portal' && !S.roof) roofBegin(e); if (k === 'lash') startLash(e); else if (k === 'ambush') startAmbush(e); else if (k === 'geyser') startGeyser(e); else if (k === 'leap') startLeap(e); else if (k === 'crown') roofCrown(e); else if (k === 'portal') roofPortal(e); else if (k === 'blink') startBlink(e); else if (k === 'storm') { e.mode = 'stormTell'; e.modeT = 0.5; } else if (k === 'bays') { for (let i = 0; i < S.roof.bays.length; i++) lightBay(S.roof, i, now()); } else return false; return e.mode; } });
   Object.assign(H.test = H.test || {}, { toss:() => { const e = q(); if (e && S) { e.mode = 'crownTossTell'; e.modeT = 0.01; } }, stun: (d, p) => stun(q(), d, p || 0) });
   return H;
 }
