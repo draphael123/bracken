@@ -138,13 +138,20 @@ function frame(o) {
 /* (claude/frogking2, 11-07) 22 BELLY-UP - THE BREAK: the sac burst, he has flopped over onto his back: the pale belly to the sky, the crown knocked off under his head,
    his legs kicking in the air, the burst sac hanging off his throat in rags and stars wheeling over him. Built from his flat pose turned over (so it is his own body,
    his own warts and mantle), the limbs and the rags drawn on in his palette. */
-function bellyUp() {
+function bellyUp(swollen) {
   const base = frame({ legs: 'splay', arms: 'none', sx: 1.08, sy: 0.78, eyes: 'shut', mouth: true, crookedCrown: true });
   const d = base.getContext('2d').getImageData(0, 0, W, H).data; let top = H, x0 = W, x1 = 0;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3]) { top = Math.min(top, y); x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
   const [bc, bg] = canvas(W, H), flip = bg.createImageData(W, H);
   for (let y = top; y <= GY; y++) flip.data.set(d.subarray(y * W * 4, (y + 1) * W * 4), (top + GY - y) * W * 4);   /* turned over: his back on the ground, the belly up */
   bg.putImageData(flip, 0, 0);
+  if (swollen) { /* (claude/frogart) THE FLY'S BELLY-UP: the same flop, but the belly is a taut round ball of fly, skin stretched pale and shiny, the shapes of the flies showing through it */
+    const mx = Math.round((x0 + x1) / 2) + 1, by = top + 4;
+    blob(bg, mx, by, 19, 10, C.B, '#fbfbe0', C.Bs); ellipse(bg, mx - 5, by - 5, 6, 2, '#ffffff'); ellipse(bg, mx - 6, by - 5, 2.5, 1, '#ffffff');
+    line(bg, mx - 14, by + 3, mx + 15, by + 3, C.Bs);
+    for (const [dx, dy] of [[-8, -1], [-2, 2], [5, 0], [10, 3], [-12, 2], [1, -3]]) { px(bg, mx + dx, by + dy, '#8a8c58'); px(bg, mx + dx + 1, by + dy, '#6a6c40'); px(bg, mx + dx, by + dy - 1, '#cfd29a'); }   /* flies under the skin */
+    for (const [dx, dy, ex, ey] of [[7, -5, 11, -2], [-15, 0, -17, 3]]) line(bg, mx + dx, by + dy, mx + ex, by + ey, '#c8cc92');   /* stretch lines */
+  }
   /* the legs kicking up (behind the body, so their roots tuck under the belly) */
   const [lc, lg] = canvas(W, H), up = top;
   limb(lg, x0 + 22, up + 4, x0 + 19, up - 5, 3, C.DD); limb(lg, x0 + 19, up - 5, x0 + 25, up - 11, 2, C.DD); toes(lg, x0 + 24, up - 12, 1, C.DD);   /* the far hind leg */
@@ -154,7 +161,10 @@ function bellyUp() {
   const [oc, og] = canvas(W, H); og.drawImage(outline(lc, OUT), 0, 0); og.drawImage(bc, 0, 0);
   /* the burst sac: rags of it off his throat, venting the last of its glow; stars wheeling over him */
   const [fc, fg] = canvas(W, H), tx = x1 - 14, ty = up + 2;
-  for (const [ax, ay, bx, by, cx2, cy2] of [[tx - 5, ty + 1, tx - 9, ty - 4, tx - 3, ty - 1], [tx, ty, tx + 1, ty - 6, tx + 3, ty], [tx + 4, ty + 1, tx + 9, ty - 3, tx + 6, ty + 2]]) { fillPoly(fg, [[ax, ay], [bx, by], [cx2, cy2]], C.B); line(fg, ax, ay, bx, by, C.Bs); }
+  if (!swollen) for (const [ax, ay, bx, by, cx2, cy2] of [[tx - 5, ty + 1, tx - 9, ty - 4, tx - 3, ty - 1], [tx, ty, tx + 1, ty - 6, tx + 3, ty], [tx + 4, ty + 1, tx + 9, ty - 3, tx + 6, ty + 2]]) { fillPoly(fg, [[ax, ay], [bx, by], [cx2, cy2]], C.B); line(fg, ax, ay, bx, by, C.Bs); }
+  if (swollen) { /* a last burp: a green wisp off his lips, three flies staggering out of it */
+    for (const [qx, qy, r, c] of [[x1 + 2, GY - 9, 3, '#b8e070'], [x1 + 5, GY - 13, 2.4, '#8fd160'], [x1 + 3, GY - 17, 1.8, '#d8ff98']]) { circle(fg, qx, qy, r, c); px(fg, qx - 1, qy - 1, '#eaffc0'); }
+    FLY(fg, x1 - 1, GY - 22, 0); FLY(fg, x1 + 6, GY - 20, 1); FLY(fg, x1 - 6, GY - 26, 1); }
   for (const [qx, qy] of [[tx - 7, ty - 8], [tx + 2, ty - 10], [tx + 8, ty - 7], [tx - 2, ty - 13]]) { px(fg, qx, qy, '#fff1a0'); px(fg, qx, qy - 1, '#ffffff'); }
   const star = (x, y, c) => { px(fg, x, y, '#ffffff'); for (const [sx2, sy2] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) px(fg, x + sx2, y + sy2, c); };
   star(x0 + 26, up - 12, '#ffd36b'); star(x0 + 34, up - 16, '#fff1a0'); star(x0 + 18, up - 18, '#ffd36b');
@@ -211,6 +221,25 @@ export function bakeFrog() {
     frame({ legs: 'crouch', arms: 'down', mouth: true, sac: true, sx: 1.08, sy: 0.88, tilt: -2, eyes: 'wide', fx: (g, X, Y) => { for (let r = 0; r < 3; r++) { arc(g, X(56), Y(30), 4 + r * 4, -1.0, 1.0, r & 1 ? '#ffd36b' : '#fff1a0'); arc(g, X(56), Y(30), 4.6 + r * 4, -0.85, 0.85, r & 1 ? '#e0b040' : '#ffffff'); } } }),
   ];
   frames.push(bellyUp());   /* 22 BELLY-UP: THE BREAK */
+  /* (claude/frogart, 11-08 BOSSLIFT FROG: BITE HIS OWN FLY) 23-26, only ever shown with BOSSLIFT_FROG_SHIPS on (src/frog-king.js FROG_LIFT_FRAMES, main.js frogFrame) */
+  const bulge = (g, X, Y, k) => { /* the swollen belly: a pale taut ball bulging down in front of him, the flies dark under its skin; k = how far it has swelled */
+    blob(g, X(37), Y(35 + k * 0.4), 14 + k * 3, 9 + k * 2.4, '#d8e6a0', '#f4fbd0', '#a8b870'); ellipse(g, X(33), Y(30.5 + k * 0.4), 5 + k, 1.6, '#ffffff');
+    for (const [dx, dy] of [[-7, 0], [-1, 3], [6, 1], [10, 4], [-3, -2]].slice(0, 3 + k * 2)) { px(g, X(37 + dx), Y(36 + dy), '#6a6c40'); px(g, X(37 + dx) + 1, Y(36 + dy), '#8a8c58'); px(g, X(37 + dx), Y(36 + dy) - 1, '#f4fbd0'); } };
+  frames.push(   /* 23 THE GULP: the tongue is back in, the head thrown up, the eyes squeezed shut, both cheeks still full and a lump of fly going down the throat; a wing and a leg still sticking out of the lip */
+    frame({ legs: 'sit', arms: 'plant', sac: true, cheeks: true, tilt: 5, lift: 1, sy: 1.04, eyes: 'shut', fx: (g, X, Y) => {
+      blob(g, X(44), Y(39), 5, 4, '#d8e6a0', '#f4fbd0', '#a8b870'); px(g, X(43), Y(38.5), '#6a6c40'); px(g, X(44), Y(38.5), '#6a6c40');   /* the lump going down */
+      for (const [dx, dy] of [[0, 0], [1, 1]]) px(g, X(54) + dx, Y(28) + dy, '#cfe8ff'); px(g, X(56), Y(28.5), '#1a1a14'); px(g, X(57), Y(29), '#1a1a14');   /* wing and leg off the lip */
+      line(g, X(36), Y(27), X(33), Y(24), '#bfe6f5'); line(g, X(37), Y(24), X(35), Y(20), '#bfe6f5'); px(g, X(41), Y(19), '#ffffff'); } }));   /* gulp lines off the head */
+  frames.push(   /* 24 THE BLOAT (1): the belly swells like a bladder, the eyes starting out of his head, a few flies leaking from the corner of the mouth */
+    frame({ legs: 'sit', arms: 'plant', mouth: true, tilt: 2, sx: 1.06, sy: 1.0, eyes: 'wide', fx: (g, X, Y) => { bulge(g, X, Y, 0);
+      for (const [fx, fy, k] of [[56, 24, 0], [60, 28, 1], [58, 20, 1]]) FLY(g, X(fx), Y(fy), k);
+      drops(g, [[X(34), Y(14)], [X(38), Y(11)]]); } }));
+  frames.push(   /* 25 THE BLOAT (2): the same, swelled past all sense - a great pale ball, skin shining, stretch marks, the legs spread to take the weight, the eyes bulging, flies pouring out of a straining mouth, shiver lines either side */
+    frame({ legs: 'crouch', arms: 'plant', mouth: true, tilt: 3, sx: 1.12, sy: 0.96, eyes: 'wide', fx: (g, X, Y) => { bulge(g, X, Y, 1);
+      for (const [fx, fy, k] of [[56, 22, 0], [60, 26, 1], [58, 17, 1], [62, 21, 0], [53, 15, 1], [61, 31, 0]]) FLY(g, X(fx), Y(fy), k);
+      for (const [x, y0] of [[3, 24], [6, 34], [60, 40]]) { line(g, x, y0, x - 2, y0 + 3, '#fff1a0'); line(g, x + 3, y0 - 2, x + 2, y0 + 1, '#fff1a0'); }
+      drops(g, [[X(35), Y(12)], [X(40), Y(9)], [X(31), Y(16)]]); } }));
+  frames.push(bellyUp(true));   /* 26 BELLY-UP (the fly's): swollen belly to the sky, a burp of green off his lips, flies reeling out */
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   /* (claude/frogking3) HIS POND STIRS: the same frames flushed - the green skin goes a dark, hot red-brown (green-dominant pixels only: the belly, tongue, eyes, crown keep their colours) */
   const flush = c => { const [c2, g2] = canvas(c.width, c.height); g2.drawImage(c, 0, 0); const d = g2.getImageData(0, 0, c.width, c.height), a = d.data;

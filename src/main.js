@@ -11916,7 +11916,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   { const ex = SV.examAt(L, P.x, TS); if (ex && ex !== P.examIn && !P.dead) { hintSay('mechanic', 3.5, SV.LINES.exam); number(P.x, P.y - 36, 'THE SPIKES KILL HERE', '#ff6b6b'); } P.examIn = ex; }   /* NEVER AN UNTOLD DEATH: an exam says so as you walk in (and again after a death) */   /* the last dry footing, for the water above */
 
   const hb = attackBox();
-  if (FKC && FLIFT_ON() && boss && boss.t === 'frog' && (hb || P.block || P.warding) && FKC.bat(hb, P) === 'bat') { SFX.squelch(); hitstop(0.04); }   /* (claude/froglift) SWAT THE FLIES AT HIM: a blade, a shield or a deflect on the cloud bats it at his mouth */
+  if (FKC && FLIFT_ON() && boss && boss.t === 'frog' && (hb || P.block || P.warding) && FKC.bat(hb, P) === 'bat') { SFX.squelch(); if (SFX.thwap) SFX.thwap(); hitstop(0.04); }   /* (claude/froglift) SWAT THE FLIES AT HIM: a blade, a shield or a deflect on the cloud bats it at his mouth */
   if (hb) {
     for (const e of enemies) {
       if (!e.alive || P.hitSet.has(e) || e.gone > 0) continue;
@@ -13711,7 +13711,7 @@ function updateQueen(e, dt) {
 // ---------- boss: the Bullfrog King ----------
 const FROG_FRAME = { tongueTell: 7, tongue: 8, snap: 8, flopTell: 9, flopRest: 10, swarmTell: 11, swarm: 12, rippleTell: 13, ripple: 14, poundTell: 15, pound: 16, snapTell: 17, spitTell: 18, spit: 19, croak2: 13, bellowTell: 20, bellow: 21, bellyUp: 22 };   /* (claude/frogking2 11-07) THE BELLOW: the glowing sac (20), the croak let go (21), BELLY-UP (22) */
 Object.assign(FROG_FRAME, FROG_LIFT_FRAMES);   /* (claude/froglift) the new modes' greybox poses; they only occur with the flag on */
-const frogFrame = e => FROG_FRAME[e.mode] ?? (e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : (e.mode === 'flop') ? (e.vy < 0 ? 9 : 10) : (e.mode === 'croak' || e.mode === 'croak2' || e.mode === 'croak3') ? 1 : (e.mode === 'inhale' || e.mode === 'inhaleTell') ? 2 : 0);
+const frogFrame = e => (FLIFT_ON() && e.mode === 'bloat' ? (e.modeT < 0.2 ? 25 : 24) : FLIFT_ON() && e.mode === 'bellyUp' ? 26 : null) ?? FROG_FRAME[e.mode] ?? (e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : (e.mode === 'flop') ? (e.vy < 0 ? 9 : 10) : (e.mode === 'croak' || e.mode === 'croak2' || e.mode === 'croak3') ? 1 : (e.mode === 'inhale' || e.mode === 'inhaleTell') ? 2 : 0);
 /* (claude/frogking2 11-07, Daniel: "the tongue doesn't look connected to him") HIS LIPS this frame, from the pose he is drawn in (src/redraw/frogking.js mouth table) */
 function frogMouth(e) { const m = (SPR.frog && SPR.frog.mouth && SPR.frog.mouth[frogFrame(e)]) || [26, -14], f = e.face || 1; return { x: e.x + f * m[0], y: e.y + m[1] }; }   /* (claude/frogking2) the spit's own windup + release (18, 19); HIS POND STIRS croaks on the swelling throat (13) */   /* (claude/marsh2) src/redraw/frogking.js: each new move's own windup + release (B16) */
 /* (claude/frogking2) THE BULLFROG KING: THE PAD CHASE. src/frog-king.js holds his numbers (FK, imported as FROGK), his court's state (the flies, the reshuffle -

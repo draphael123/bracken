@@ -1254,6 +1254,9 @@ Object.assign(SFX, {
   bark() { noise(0.05, 0.3, 700, 1.2); tone('sawtooth', 420, 160, 0.09, 0.16); tone('sawtooth', 380, 140, 0.08, 0.12, 0.11); },
   yelp() { tone('sawtooth', 700, 1400, 0.12, 0.14); noise(0.08, 0.15, 1800, 1.2, 0.04); },
   squelch() { noise(0.16, 0.28, 500, 0.5); tone('sine', 220, 50, 0.2, 0.18); },
+  thwap() { noise(0.07, 0.34, 1800, 0.6); tone('triangle', 520, 140, 0.09, 0.22); },   /* (claude/frogart) SWAT: a flat wet slap on the cloud */
+  gulp() { tone('sine', 260, 90, 0.16, 0.26); tone('sine', 200, 70, 0.16, 0.22, 0.14); noise(0.1, 0.12, 400, 0.7, 0.05); },   /* (claude/frogart) the cloud going down in two swallows */
+  burp() { tone('sawtooth', 90, 55, 0.4, 0.26); tone('square', 62, 48, 0.35, 0.12, 0.05); tone('sine', 330, 180, 0.12, 0.1, 0.3); },   /* (claude/frogart) the belly-up burp-croak */
   puff() { noise(0.3, 0.3, 900, 0.4); tone('triangle', 320, 70, 0.22, 0.12); },
   /* DEEP RAILS 3 (claude/dr3art): the Great Drill's spin-up whine, its lunge, the chain's rattle, the dynamite's fuse, a stomp on the Foreman's iron lid, the switch's latch and the bridge swinging down.
      Synth first; REC (below) lays the clips already on disk over them (clang, r_charge, r_chain, r_hiss, r_latch, r_creak - no new files) */

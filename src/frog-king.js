@@ -79,7 +79,7 @@ const LIFT_URL = typeof globalThis !== 'undefined' && !!globalThis.location && /
 export const frogLiftOn = () => BOSSLIFT_FROG_SHIPS || LIFT_URL || !!(typeof globalThis !== 'undefined' && globalThis.__BOSSLIFT);
 /* the new modes' greybox poses (src/redraw/frogking.js frames; the art lane draws GULP, BLOAT x2 and the swollen belly-up): eyes on the flies (17), the tongue out (8),
    cheeks stuffed (11), the swollen throat (20) */
-export const FROG_LIFT_FRAMES = { flyEye: 17, flySnap: 8, gulp: 11, bloat: 20 };
+export const FROG_LIFT_FRAMES = { flyEye: 17, flySnap: 8, gulp: 23, bloat: 24 };   /* (claude/frogart) gulp 23, bloat 24/25 (main.js frogFrame flips at modeT 0.2), the fly's swollen belly-up 26 */
 export const FROG_LIFT_MODES = new Set(Object.keys(FROG_LIFT_FRAMES));
 /* where a batted cloud draws his tongue at once (anything else: it hovers at his lips until he is free; a crouch or a leap makes it miss) */
 const SNAP_FROM = new Set(['idle', 'swarm', 'land', 'tongueTell', 'spitTell', 'snapTell']);
@@ -145,10 +145,10 @@ export function makeFrogCourt(ctx) {
   }
   /* the cloud is in his mouth: GULP (from the swat's snap, or the old route - led onto his head as his tongue came) */
   S.bite = (e, how, fx) => { S.swarm = null; S.n.selfBites++; S.n.flyBites = (S.n.flyBites || 0) + 1; S.n.lastBite = how; e.mode = 'gulp'; e.modeT = FK.fly.gulp; e.openHp0 = undefined; e.actN = (e.actN || 0) + 1;
-    say(e.x, e.y - (e.h || 30) - 14, 'HE BITES HIS OWN FLY', '#8fd160'); if (fx) { fx.sfx('tongue'); fx.sfx('croak'); fx.shake(3); fx.burst(e.x + (e.face || 1) * 12, e.y - 18, 10, ['#ff7a9a', '#1a1a14', '#8fd160'], 70, 0.4); } };
+    say(e.x, e.y - (e.h || 30) - 14, 'HE BITES HIS OWN FLY', '#8fd160'); if (fx) { fx.sfx('tongue'); fx.sfx('croak'); fx.sfx('gulp'); fx.shake(3); fx.burst(e.x + (e.face || 1) * 12, e.y - 18, 10, ['#ff7a9a', '#1a1a14', '#8fd160'], 70, 0.4); } };
   /* BELLY-UP from the fly: x FK.bellow.mul for FK.fly.belly[ph] s; the leaves beside his pad rise firm; in phase 2 his pad tips him to its edge over a lane */
   S.bellyUp = (e, ph, fx) => { e.mode = 'bellyUp'; e.modeT = FK.fly.belly[ph]; e.openHp0 = e.hp; e.hideSaid = 0; e.actN = (e.actN || 0) + 1; S.n.flyBellies = (S.n.flyBellies || 0) + 1;
-    say(e.x, e.y - (e.h || 30) - 26, 'BELLY-UP: CUT HIM', '#ffd36b'); if (fx) { fx.sfx('heavy'); fx.sfx('splash'); fx.shake(6); fx.hitstop(0.12); }
+    say(e.x, e.y - (e.h || 30) - 26, 'BELLY-UP: CUT HIM', '#ffd36b'); if (fx) { fx.sfx('heavy'); fx.sfx('splash'); fx.sfx('burp'); fx.shake(6); fx.hitstop(0.12); }
     const n = S.liftLeaves(e.st, FK.fly.belly[ph] + FK.fly.lift); if (n) say(e.x, e.y - (e.h || 30) - 38, 'THE POND LIFTS THE LEAVES', '#bfe6f5');
     const A = ctx.arena(); if (ph && FK.fly.tip && A && A.royal && A.royal[e.st] && A.lanes) { const r = A.royal[e.st], p = P(); let side = Math.sign(p.x - e.x) || 1;
       if (side > 0 && !A.lanes[e.st + 1]) side = -1; if (side < 0 && !A.lanes[e.st]) side = 1; e.tipX = side > 0 ? r.x1 : r.x0; e.x = e.tipX; S.n.tips = (S.n.tips || 0) + 1; say(e.x, e.y - (e.h || 30) - 50, 'HIS PAD TIPS', '#bfe6f5'); } };
@@ -185,9 +185,19 @@ export function makeFrogCourt(ctx) {
   S.throwOff = () => {};   /* (the croak ripple's throw is retired with his shallow pond) */
   S.show = () => ({ swarm: S.swarm ? { x: S.swarm.x, y: S.swarm.y, t: S.swarm.t, batted: !!S.swarm.home, scatter: S.swarm.scatter > 0 } : null, ripples: [], fling: false, reel: !!S.reel, n: S.n, sinkK: S.sinkK });
   S.draw = (g, cx, cy, time) => { if (S.swarm) M2A.swarm(g, S.swarm, cx, cy, time, FK.swarm.orbit); if (frogLiftOn()) liftDraw(g, cx, cy, time); };
-  /* (claude/froglift) GREYBOX until the art lane: the batted cloud's green streak, a green rim on the risen leaves */
-  function liftDraw(g, cx, cy, time) { const sw = S.swarm; if (sw && sw.home && sw.trail) { g.fillStyle = '#8fd160'; sw.trail.forEach((q, i) => { g.globalAlpha = 0.25 + i * 0.1; g.fillRect(Math.round(q.x - cx) - 1, Math.round(q.y - cy) - 1, 2, 2); }); g.globalAlpha = 1; }
-    for (const m of pads()) if (m.liftT > 0) { g.fillStyle = (Math.floor(time * 6) % 2) ? '#8fd160' : '#c9e3a0'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy) - 1, m.w, 1); } }
+  /* (claude/frogart, BOSSLIFT FROG) the batted cloud's comet, the risen leaves, the pad's tip: code-drawn pixels in the court's palette (flag on only) */
+  function liftDraw(g, cx, cy, time) { const sw = S.swarm, R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
+    if (sw && sw.home && sw.trail) { const n = sw.trail.length;   /* THE SWAT: a green comet - a fat pale-green streak tapering back, dark flies riding it, wing-flecks beside */
+      sw.trail.forEach((q, i) => { const k = (i + 1) / n, x = q.x - cx, y = q.y - cy, r = 1 + Math.round(k * 2); g.globalAlpha = 0.18 + k * 0.5; R(x - r, y - r, r * 2, r * 2, i & 1 ? '#8fd160' : '#b8e070'); g.globalAlpha = 0.3 + k * 0.6; R(x - 1, y - 1, 2, 2, '#d8ff98');
+        if (i % 2 === 0) { g.globalAlpha = 0.4 + k * 0.5; R(x + ((i * 5) % 7) - 3, y + ((i * 3) % 5) - 2, 2, 1, '#1a1a14'); R(x + ((i * 5) % 7) - 2, y + ((i * 3) % 5) - 3, 1, 1, '#cfe8ff'); } }); g.globalAlpha = 1; }
+    for (const m of pads()) if (m.liftT > 0) { const x0 = Math.round(m.x - cx), y0 = Math.round(m.y - cy), w = Math.round(m.w), fade = m.liftT < 0.4 && Math.floor(time * 14) % 2;   /* THE POND LIFTS THE LEAVES: a bright rim, a dark lip under it, rings spreading on the water, bubbles rising off the edges */
+      if (fade) continue; R(x0, y0 - 1, w, 1, (Math.floor(time * 6) % 2) ? '#8fd160' : '#c9e3a0'); R(x0 + 1, y0, w - 2, 1, '#3a6a2a'); R(x0 + 2, y0 - 2, 1, 1, '#eaffc0'); R(x0 + w - 4, y0 - 2, 1, 1, '#eaffc0');
+      const ph = (time * 1.6 + m.x * 0.013) % 1, rx = Math.round(ph * 7); g.globalAlpha = 0.7 * (1 - ph); R(x0 - 2 - rx, y0 + 3, 3 + rx, 1, '#dff4ff'); R(x0 + w - 1, y0 + 3, 3 + rx, 1, '#dff4ff'); R(x0 + 3 - rx, y0 + 6, w - 6 + 2 * rx, 1, '#7fc4e0'); g.globalAlpha = 1;
+      for (const [ex, o] of [[x0 + 1, 0], [x0 + w - 2, 0.5]]) { const bp = (time * 1.1 + o) % 1; g.globalAlpha = 1 - bp; R(ex, y0 - 2 - bp * 9, 1, 1, '#dff4ff'); g.globalAlpha = 1; } }
+    const e = ctx.boss ? ctx.boss() : null;   /* P2: HIS PAD TIPS - spray off the edge it tilts toward, a dark wet slope under his belly */
+    if (e && e.mode === 'bellyUp' && e.tipX !== undefined) { const A = ctx.arena(), r = A && A.royal && A.royal[e.st]; if (r) { const d = e.tipX >= (r.x0 + r.x1) / 2 ? 1 : -1, ex = Math.round(e.tipX - cx), ey = Math.round(e.y - cy);
+        for (let i = 0; i < 4; i++) { const k = (time * 2.4 + i * 0.25) % 1; g.globalAlpha = 1 - k; R(ex + d * (2 + k * 9), ey - 2 - Math.sin(k * 3.14) * 8, 1, 1, i & 1 ? '#dff4ff' : '#7fc4e0'); } g.globalAlpha = 1;
+        R(ex - 6 * d - (d < 0 ? 0 : 6), ey - 1, 6, 1, '#3a6a2a'); R(ex - 3 * d - (d < 0 ? 0 : 6), ey, 6, 1, '#284a1e'); } } }
   return S;
 }
 
