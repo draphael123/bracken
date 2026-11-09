@@ -22080,6 +22080,10 @@
       {
         "name": "transport-native-intentional-disagreement",
         "mode": "mismatch"
+      },
+      {
+        "name": "transport-native-full-images-auto-batch",
+        "mode": "exact-batch"
       }
     ],
     "unknown-0": [
