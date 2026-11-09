@@ -17,38 +17,53 @@ export const TILES = [
   ['PLANK', T.PLANK], ['ROPE LADDER', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
   ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB], ['CRYSTAL', T.CRYST],
   ['REEDS', T.REED], ['PALISADE', T.PALISADE],
+  // TERRAIN BRUSHES (string ids: not tiles, see tilePaint / the rectangle brushes below)
+  ['CRUMBLE LEDGE', 'crumble'], ['WATER (drag)', 'water'], ['SHALLOWS (drag)', 'shallows'], ['POISON (drag)', 'poison'],
 ];
 
 // Every foe kind the game's spawner knows (src/main.js spawnEnt, the cases that push an enemy and are not a boss) that
 // spawns, survives and FIGHTS alone in a plain made-by-hand wood. tools/maker-sweep.mjs re-tests every one of them.
 // LEFT OUT, and why (2026-11-09 sweep, re-run with tools/maker-sweep.mjs):
-//  - need WATER the maker cannot pour yet: urchin angler puffer jelly lamprey gar
+//  - WATER kinds live in WATER_FOES (they spawn only inside a pool); still out: gar (does not spawn), grindylow (never wakes), gill (barely stirs
+//    and never attacks, in water or out; it has no bestiary entry either)
 //  - need their level's machinery: imp turret (a workshop's shot list), gravewarden (his grave arena), marionette (the theatre)
 //  - are another kind's skin (spawn as that kind): squirrel (thief), bonearcher (archer)
 //  - MINIS asleep until their arena wakes them (the BOSSES group's job): homunculus ploughman lampreeve gangleader deacon
 //    barrowrider magechase sexton hedgewarden greathound familiar courtier attendant scalder seawitch stormshaman
 //  - wait on a trigger a plain wood does not have: lookout siren grindylow tippler horn holdfast crossbow corpse clinger
 //    sweep spitcap dummy, weaver (hangs from a ceiling: on open ground it never comes down)
+//  - spider (even with the old editor's drop: 100 it hangs and never comes for you), siren (sings, never strikes, in water or out)
 export const FOES = [
   'sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'hopper', 'sapper', 'brute', 'cutlass', 'boarder',
   'marine', 'bosun', 'topiary', 'armour', 'piece', 'broom', 'mimic', 'tome', 'scarecrow', 'rook', 'farmhand',
   'pumpkin', 'marshlight', 'haunt', 'boo', 'feeler', 'grapnel', 'powdermonkey', 'watch', 'sailor', 'netter',
   'merrowspear', 'merrowcaller', 'merrowbrute', 'whelp', 'oathblade', 'drownedknight', 'manta', 'petrel',
   'turtle', 'heronfoe', 'crab', 'scout', 'tideguard', 'soldier', 'javelin', 'heavy', 'hound', 'wickling',
-  'scorpion', 'sandgob', 'cutthroat', 'slinger', 'stagehand', 'mummer', 'leech', 'honeyhornet', 'swarm',
+  'scorpion', 'sandgob', 'cutthroat', 'slinger', 'stagehand', 'mummer', 'honeyhornet', 'swarm',
   'stiltwalker', 'construct', 'hawkscout', 'orderpaladin', 'deadpriest', 'fogwraith', 'skitter', 'waterthief',
   'raptor', 'kiterider', 'trophyhunter', 'willowisp', 'hobbyhorse', 'wickerman', 'stringjack', 'hornsman',
   'barker', 'ambusher', 'vulture', 'folk', 'thief', 'pike', 'miner', 'sheargob', 'gaffer', 'grub', 'rockgoblin',
   'kite', 'crow', 'bale', 'badger', 'hare', 'wight', 'prise', 'swornsword', 'hedgeknight', 'runner', 'acolyte',
   'lancer', 'drunk', 'bannerbearer', 'zombie', 'husk', 'apprentice', 'lanternshade', 'bellguard', 'propman',
-  'spider', 'shardling', 'fledgling', 'gobpriest', 'gobmage', 'sentry', 'bellman', 'assassin', 'berserker',
+  'shardling', 'fledgling', 'gobpriest', 'gobmage', 'sentry', 'bellman', 'assassin', 'berserker',
   'drummer', 'butcher', 'hearthgob', 'temperer', 'burngob', 'emberwisp', 'bonegob', 'cutter', 'snuffer',
   'sailer', 'harpy', 'galeharpy', 'shrieker', 'goat', 'royalboar', 'sporeling', 'lurker', 'drone',
-  'shaman', 'gill'
+  'shaman'
 ];
+// THE WATER CAST: placed in a pool (WATER brush), they swim; outside one they do not spawn. Swept inside a pool.
+export const WATER_FOES = ['urchin', 'angler', 'puffer', 'jelly', 'lamprey', 'eel', 'leech'];
+FOES.push(...WATER_FOES);
 
-export const THINGS = ['coin', 'silver', 'check', 'gate', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
+export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
   'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
+// a THING's palette id -> the entity it places (most are themselves; the two moving platforms are one engine kind)
+const ENT_FOR = {
+  mover: { t: 'mover', len: 2, range: 4, speed: 34 },                       // side to side, four tiles each way
+  'mover:up': { t: 'mover', len: 2, vert: true, rise: 4, period: 3.2 },     // a lift: up four tiles and back
+};
+export const entFor = (id, x, y) => ({ ...(ENT_FOR[id] || { t: id }), x, y });
+const THING_NAMES = { mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE' };
+export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
 
 // names: the bestiary's, where it has one (main.js BEASTS), else the id in capitals
 let NAMES = {};
@@ -101,3 +116,80 @@ export function paletteClick(c, mx, my) {
   return null;
 }
 export function turnPage(cat, d, n, VW) { const pages = Math.max(1, Math.ceil(n / perPage(VW))); page[cat] = ((pageOf(cat) + d) % pages + pages) % pages; }
+
+// ================= TERRAIN: crumbling ledges and water =================
+// They are not tiles in the engine, so the document carries them beside the grid and edLevelObj turns them into what the
+// game reads: doc.crumble = ['x,y', ...] (the cells of crumbling ledge), doc.water = [{ kind, x0, x1, y0, y1 }] in tiles.
+const TS = 16;
+const isStr = v => typeof v === 'string';
+export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })) });
+export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : []; }
+
+// paint one cell with a TILES entry: returns the tile id to put in the grid
+export function tilePaint(doc, tx, ty, entry) {
+  const key = tx + ',' + ty, cr = doc.crumble || (doc.crumble = []);
+  const i = cr.indexOf(key); if (i >= 0) cr.splice(i, 1);
+  if (entry[1] === 'crumble') { cr.push(key); return T.ONEWAY; }
+  return isStr(entry[1]) ? T.AIR : entry[1];
+}
+// right-click: a crumble mark goes with its tile; a click inside water takes the whole pool away. True if water went.
+export function terrainErase(doc, tx, ty) {
+  const cr = doc.crumble || [], i = cr.indexOf(tx + ',' + ty); if (i >= 0) cr.splice(i, 1);
+  const w = doc.water || [], j = w.findIndex(r => tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1);
+  if (j >= 0) { w.splice(j, 1); return true; }
+  return false;
+}
+export function clipTerrain(doc) {
+  doc.crumble = (doc.crumble || []).filter(k => +k.split(',')[0] < doc.W - 1);
+  doc.water = (doc.water || []).filter(r => r.x0 < doc.W - 1).map(r => ({ ...r, x1: Math.min(r.x1, doc.W - 2) }));
+}
+
+// ---- the rectangle brush (water): press at one corner, release at the other ----
+let rect = null;
+export function rectStart(cur) { rect = { ax: cur.x, ay: cur.y }; }
+export const rectActive = () => !!rect;
+export function rectEnd(doc, cur, entry) {
+  if (!rect) return null; const r = rect; rect = null;
+  const x0 = Math.max(1, Math.min(r.ax, cur.x)), x1 = Math.min(doc.W - 2, Math.max(r.ax, cur.x));
+  let y0 = Math.max(0, Math.min(r.ay, cur.y)), y1 = Math.min(doc.H - 1, Math.max(r.ay, cur.y));
+  if (entry[1] === 'shallows') y1 = y0;   // shallows are one row deep: you wade, you never swim
+  if (x1 < x0) return null;
+  const w = { kind: entry[1], x0, x1, y0, y1 };
+  doc.water = (doc.water || []).filter(o => o.x1 < x0 || o.x0 > x1 || o.y1 < y0 || o.y0 > y1);   // a new pool replaces what it covers
+  doc.water.push(w);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) doc.grid[y * doc.W + x] = 0;   // water is air you can be in
+  doc.crumble = (doc.crumble || []).filter(k => { const [x, y] = k.split(',').map(Number); return x < x0 || x > x1 || y < y0 || y > y1; });
+  return w;
+}
+
+// ---- what the game reads ----
+export function enginePools(doc) {
+  return (doc.water || []).map(r => {
+    const x0 = r.x0 * TS, x1 = (r.x1 + 1) * TS, top = r.y0 * TS, bottom = (r.y1 + 1) * TS;
+    if (r.kind === 'shallows') return { x0, x1, y: top + 4, shallow: true, depth: 12 };
+    if (r.kind === 'poison') return { x0, x1, y: top + 4, depth: bottom - top - 4, bottom, harm: true, poison: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212' };
+    return { x0, x1, y: top, swim: true, bottom, depth: bottom - top, clear: true, wash: 0.34, grad: false };
+  });
+}
+export function engineCrumbles(doc) {
+  const set = new Set(doc.crumble || []), rows = {}, out = [];
+  for (const k of set) { const [x, y] = k.split(',').map(Number); (rows[y] || (rows[y] = [])).push(x); }
+  for (const y in rows) { const xs = rows[y].sort((a, b) => a - b); let a = xs[0], b = xs[0];
+    for (let i = 1; i <= xs.length; i++) { if (i < xs.length && xs[i] === b + 1) { b = xs[i]; continue; } out.push({ x0: a, x1: b, row: +y, rows: 1, count: 1.6 }); a = b = xs[i]; } }
+  return out;
+}
+
+// ---- the editor's overlay: water outlines, cracks on crumbling ledges, the rectangle being dragged ----
+export function drawTerrainOverlay(g, doc, cx, cy, cur, entry, t) {
+  for (const r of doc.water || []) {
+    g.strokeStyle = r.kind === 'poison' ? '#a6e04a' : r.kind === 'shallows' ? '#bfe8ff' : '#6fc3ff'; g.lineWidth = 1;
+    g.strokeRect(r.x0 * TS - cx + 0.5, r.y0 * TS - cy + 0.5, (r.x1 - r.x0 + 1) * TS - 1, (r.y1 - r.y0 + 1) * TS - 1);
+  }
+  g.fillStyle = '#ffb36b';
+  for (const k of doc.crumble || []) { const [x, y] = k.split(',').map(Number), px = x * TS - cx, py = y * TS - cy;
+    g.fillRect(px + 3, py + 1, 1, 3); g.fillRect(px + 4, py + 3, 1, 2); g.fillRect(px + 10, py + 1, 1, 2); g.fillRect(px + 11, py + 2, 1, 3); }
+  if (rect && entry) { const x0 = Math.min(rect.ax, cur.x), x1 = Math.max(rect.ax, cur.x), y0 = Math.min(rect.ay, cur.y), y1 = entry[1] === 'shallows' ? y0 : Math.max(rect.ay, cur.y);
+    g.globalAlpha = 0.35 + 0.1 * Math.sin(t * 6); g.fillStyle = entry[1] === 'poison' ? '#5c8a24' : '#3f8fd0';
+    g.fillRect(x0 * TS - cx, y0 * TS - cy, (x1 - x0 + 1) * TS, (y1 - y0 + 1) * TS); g.globalAlpha = 1; }
+}

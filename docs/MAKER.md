@@ -26,9 +26,24 @@ links and help card are worth porting.)
 - **Foes 30 → 135**: every spawner kind that works alone. The left-out list (water creatures, minis asleep until
   their arena, kinds waiting on a trigger) is at the top of `FOES` in `src/maker-palette.js`, with reasons.
 
+## Done (2026-11-09, step 2: TERRAIN)
+- **WATER / SHALLOWS / POISON**: rectangle brushes (press at one corner, release at the other). The document carries
+  `doc.water = [{kind, x0, x1, y0, y1}]` (tiles); `MKP.enginePools` turns it into `L.pools` (swim / shallow / harm).
+  The box is dug out of the ground. Right-click inside water removes the pool.
+- **CRUMBLE LEDGE**: a tile brush; `doc.crumble = ['x,y']` -> `L.crumbles` runs (src/tower-collapse.js rule). The
+  generic crumble update only ran in the tower/fair/caravan levels; main.js now runs it (and stands it again on every
+  attempt) when `L.custom`.
+- **MOVING PLATFORM / LIFT**: THINGS (`mover`, `mover:up` -> one `mover` entity with two settings, `MKP.entFor`).
+- Save / load / undo carry the terrain (`MKP.terrainOf` / `setTerrain`).
+- **The water cast** (`WATER_FOES`, placed in a pool): urchin, angler, puffer, jelly, lamprey, eel, bog leech.
+- Foes now **139**. The sweep got honest: it tracks the FARTHEST a foe ever got (a patroller that walks out and back
+  ends where it began), requires 4 px, places exactly what the editor places (`MKP.entFor`), and puts water kinds in a
+  pool. That dropped spider, siren, gill (they never engage) - reasons in `src/maker-palette.js`.
+- `tools/maker-terrain.mjs` (in the suite): swim, crumble drops and stands again, platform carries, lift rises,
+  save -> load keeps it.
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
-1. **Terrain brushes**: WATER (pools are rects on `L.pools`, not tiles — a rectangle brush), crumbling bridges
-   (`crumbleInit`), moving platforms (`mover` ents need a path tool). Then the water foes come back.
+1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses**: a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
    the minis with their trigger. Test each with a sweep like maker-sweep.
 3. **Mechanisms**: lever → door, key → lock gate, pressure plate, push block, crusher, rockfall — needs a LINK tool
