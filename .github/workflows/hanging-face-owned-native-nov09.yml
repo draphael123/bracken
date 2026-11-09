@@ -1,0 +1,100 @@
+name: HangingFace owned-input native and original Node proof
+on:
+  push:
+    branches: [codex/load-perf]
+    paths:
+      - tools/hanging-face-owned-native-nov09/**
+      - .github/workflows/hanging-face-owned-native-nov09.yml
+permissions: {contents: read}
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: {fixture: [canvas-retirement-selftest, skins, dressing]}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with: {ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81, path: sprite-publication-safety-game, fetch-depth: 0}
+      - uses: actions/checkout@v4
+        with: {ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81, path: sprite-publication-original-tools}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Original exact Node fixture and unchanged1536MBprofile
+        run: node tools/hanging-face-owned-native-nov09/node-${{ matrix.fixture }}.mjs
+        env:
+          PRIVATE_HERO_GAME: sprite-publication-safety-game
+          PRIVATE_HERO_ORIGINAL_TOOLS: sprite-publication-original-tools
+          PRIVATE_HERO_SAFETY_SCOPE: publicApi
+          PRIVATE_HERO_SAFETY_OUT: ${{ runner.temp }}/hanging-face-node-${{ matrix.fixture }}-nov09
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hanging-face-node-${{ matrix.fixture }}-nov09
+          path: ${{ runner.temp }}/hanging-face-node-${{ matrix.fixture }}-nov09/
+          if-no-files-found: error
+  preflight:
+    needs: node
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      matrix: {case: [default-roots]}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81, path: span-game, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Exact original factory before candidate return native control
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/hanging-face-owned-native-nov09/component.mjs
+        env:
+          HANGING_FACE_CASE: ${{ matrix.case }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/hanging-face-native-${{ matrix.case }}-nov09
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/hanging-face-profile-${{ matrix.case }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hanging-face-native-${{ matrix.case }}-nov09
+          path: |
+            ${{ runner.temp }}/hanging-face-native-${{ matrix.case }}-nov09/
+            ${{ runner.temp }}/hanging-face-profile-${{ matrix.case }}.jsonl
+          if-no-files-found: error
+  native:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        case: [default-crown, default-lantern, default-rook, default-mill, default-market, default-rope, default-hollow, gpu, active-scope, plain, level-copy, zone-copy, proxy-level, proxy-zone, mutate-W, mutate-floor, replace-palette, replace-array, mutate-color, own-map, own-constructor, getter-W, coerce-W, ceil-style, ceil-rect, throw-ceil, context-underlay, synthetic-context-event, foreign-map, foreign-iterator, foreign-species, held-retirement, ctor-proxy-Document, ctor-proxy-HTMLCanvasElement, ctor-proxy-CanvasRenderingContext2D, ctor-bound-Document, ctor-bound-HTMLCanvasElement, ctor-bound-CanvasRenderingContext2D]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81, path: span-game, fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24.11.1'}
+      - name: Exact original factory before candidate return native control
+        run: node --import ./tools/private-hero-profile-guard-preload-nov01.mjs tools/hanging-face-owned-native-nov09/component.mjs
+        env:
+          HANGING_FACE_CASE: ${{ matrix.case }}
+          FIXED_ART_GAME: span-game
+          FIXED_ART_LOADER_OUT: ${{ runner.temp }}/hanging-face-native-${{ matrix.case }}-nov09
+          BRACKEN_GUARD_GAME: span-game
+          BRACKEN_GUARD_PROFILE: tools/browser-profile.mjs
+          BRACKEN_GUARD_PROFILE_SHA256: 9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184
+          BRACKEN_GUARD_READBACK: ${{ runner.temp }}/hanging-face-profile-${{ matrix.case }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hanging-face-native-${{ matrix.case }}-nov09
+          path: |
+            ${{ runner.temp }}/hanging-face-native-${{ matrix.case }}-nov09/
+            ${{ runner.temp }}/hanging-face-profile-${{ matrix.case }}.jsonl
+          if-no-files-found: error
