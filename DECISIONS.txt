@@ -1,3 +1,4 @@
 11-05 laptop decisions for the desktop (newest last; these override DESKTOP-LANES-1105.md):
 - 11-05 Queen's Lance 4650 HP stays; mini bosses 70-80%, main 60-70% with flasks.
 - 11-05 Desktop owns tonight: GQ2, UNDERCROWN3, MON3+ABBOT, HEART LEVEL proofs, HARPY tune, then WATER KIT.
+- 11-09 15:12 Desktop host TUE 11-10 (DESKTOP-LANES-1110.md): browser proofs/stills (FT5, Frog, DK, GT, beasts), Tourney + Wispwood walks, joint tune n=6 (FT5, Frog, DK, Conductor) on -d branches. No merges, deploys, gates or full suite. Laptop keeps 155/156 release, UC3, High Lines.
