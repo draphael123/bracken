@@ -44,7 +44,7 @@ if (!ON) {
   ok(tagged.length >= 15 && tagged.length <= 22, tagged.length + ' tagged hook lines in src/main.js (single lines)');
   const unguarded = tagged.filter(l => !/gtOn\(\)|GTH|CDH|fieldsOpen|case 'conductor'/.test(l));
   ok(!unguarded.length, 'every hook is behind the flag: the road and the old-save rule ask gtOn(), the rest need the level (GTH.on() / its ents / its boss) ' + unguarded.map(l => l.slice(0, 60)).join(' | '));
-  ok(/if \(gtOn\(\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while gtOn()');
+  ok(/if \(LEVELS\.some\(l => l\.id === 'ghosttrain'\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while the LEVELS row is there (gtOn() at import)');
   ok(/gtOn\(\) && isDev\(\)/.test(main), 'the dev entry needs ?gt=1 and ?dev=1');
   /* THE OTHER HALF, in its own process (the flag is read on import) */
   const child = spawnSync(process.execPath, ['--import', './tools/gt-on.mjs', fileURLToPath(import.meta.url), '--on'], { cwd: fileURLToPath(new URL('..', import.meta.url)), encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });

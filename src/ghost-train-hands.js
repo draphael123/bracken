@@ -136,7 +136,7 @@ export function makeGhostTrainHands(ctx) {
     if (e.mode === 'grasp') { if (e.modeT <= 0) { e.mode = 'drift'; e.modeT = GHOST.cd; } return; }
     if (!tgt) return;
     const dx = tgt.x - e.x, dy = (tgt.y) - e.y; e.face = Math.sign(dx) || e.face || 1;
-    if (Math.abs(dx) < GHOST.reach && Math.abs(dy) < 16 && e.modeT <= 0) { e.mode = 'graspTell'; e.modeT = GHOST.graspTell; snd('graspTell'); ctx.number && ctx.number(e.x, e.y - 22, '!', '#ffd36b'); return; }
+    if (Math.abs(dx) < GHOST.reach && Math.abs(dy) < 16 && e.modeT <= 0) { e.mode = 'graspTell'; e.modeT = GHOST.graspTell; snd('graspTell'); return; }   /* its yellow ! is src/marks.js's row (main.js draws it over the windup) */
     const d = Math.hypot(dx, dy) || 1, v = GHOST.speed * (e.stoker ? 0.85 : 1); e.x += dx / d * v * dt; e.y += dy / d * v * dt; };
   /* ---------------- WHAT A TOOL READS ---------------- */
   H.read = () => S && { t: +S.t.toFixed(2), tun: S.tun ? { kind: S.tun.kind, t: +S.tun.t.toFixed(2), tell: S.tun.tell, told: told(), span: tunSpan() } : null, gust: S.gust > 0, cut: [...S.cut], fired: [...S.fired], lastJunction: S.lastJunction || null,

@@ -105,7 +105,7 @@ export function buildGhostTrain({ painter, T, TS }) {
   coins([82, 15], [84, ROOF - 1], [90, ROOF - 1]);
   ent('gtbridge', 66, ROOF - 1, {});
   zones.push({ id: 'coachBridges', x0: 36, x1: 95, ev: { kind: 'bridge', len: 44, tell: 1.4 }, every: 6.5, phase: 2 });
-  sign(91, ROOF - 1, GT_SAY.points); junction('P1', 92, ROOF - 1, 96, { kind: 'tunnel', len: 2000, tell: 1.8 }, { kind: 'gust', dur: 6, tell: 1.2 });
+  sign(91, ROOF - 1, GT_SAY.points2); junction('P1', 92, ROOF - 1, 96, { kind: 'tunnel', len: 2000, tell: 1.8 }, { kind: 'gust', dur: 6, tell: 1.2 });
 
   // ================= 3. THE DINING CAR (96-119): TWIST =================
   const c5 = car('dining', 96, 117, { name: 'THE DINING CAR' }); gap(c4, c5);
@@ -182,6 +182,7 @@ export function buildGhostTrain({ painter, T, TS }) {
       { kind: 'gtbrake', opens: 'THE CONDUCTOR thrown and open', hud: 'EMERGENCY BRAKE!' },
     ],
     duskStart: -1, duskLen: 1, music: 'chase', night: true, glowNight: true,
+    hullZones: cars.map(c => [c.x0, c.x1, c.kind === 'coal' ? 4 : c.kind === 'engine' ? 6 : CLER - 1, FLOOR + 2]).concat([[23, 28, 4, WELL + 1]]),   /* THE CARS ARE THE FRAMES (tools/solid-islands.mjs): every board of the train rides on its car's drawn body and bogies; the cornices on the ride's facade */
     interiors: cars.filter(c => c.closed).map(c => [c.body[0] + 1, c.x1 - 1, ROOF + 1, FLOOR - 1, 'carriage']),
     palette: { sky: [[14, 16, 34], [52, 48, 86]], far: 'fields', mid: 'fields', near: 'fields', dress: 'none', ledges: 'beam', haze: 'rgba(150,170,230,0.10)',
       dirt: '#3a3440', dirtL: '#5a5266', dirtD: '#221e2a', grass: '#4a4258', grassL: '#6a6080', grassD: '#2a2436' },

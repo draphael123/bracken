@@ -951,3 +951,4 @@ export function markOf(e) {
   return '';
 }
 export const marksMissed = () => [...MISSED];
+Object.assign(MARK, { 'gtghost|graspTell': '!' }); Object.assign(ANSWER, { 'gtghost|graspTell': 'block' }); Object.assign(HEIGHT, { 'gtghost|graspTell': 'low' });   /* (claude/ghosttrain) A GHOST PASSENGER's grasp: a yellow ! (the shield turns it), hand-high and low enough that a duck does not slip it */
