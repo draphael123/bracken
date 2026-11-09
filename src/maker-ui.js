@@ -49,7 +49,10 @@ const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: 
 
 // ---------------- state ----------------
 const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], find: '', bScroll: 0, bCells: [], bHover: null, eBox: false, eWhat: 'all', eChips: [], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
-export function mouseUp() { UI.mapDrag = false; }
+export function mouseUp() { UI.mapDrag = false; UI.sHold = null; }
+export const scrollHold = () => UI.sHold || null;
+export function holdScroll(dx, dy) { UI.sHold = { dx, dy }; }   /* (tools/maker-newlevel.mjs) */   /* (claude/maker) a held scroll button */
+export function showGroup(name) { const gi = GROUPS.findIndex(g => g.name === name); if (gi >= 0) UI.group = gi; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
 export function used(cat, i) { const k = RECENT.findIndex(r => r.cat === cat && r.i === i); if (k >= 0) RECENT.splice(k, 1); RECENT.unshift({ cat, i }); if (RECENT.length > 8) RECENT.length = 8; }
@@ -235,18 +238,24 @@ export function drawChrome(c) {
     text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : clr ? '#bff0ff' : b === 'SHARE' ? '#7a6f8a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
-  { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
+  { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'WHEEL: SIDEWAYS  SHIFT+WHEEL: UP/DOWN  OR THE ARROWS AT THE RIGHT'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
   if (!UI.panel && UI.guide < 0) {   /* (claude/maker) THE CHECKLIST, bottom left of the level: what this level still needs, and the next step */
-    const d = c.doc, hasGoal = d.ents.some(e => e.t === 'gate'), own = ownHero(d), beat = isCleared(d), ready = hasGoal && (own || beat);
-    const items = [['START', true], ['GOAL', hasGoal], [own ? 'OWN HERO' : 'BEATEN', own || beat]];
-    const next = !hasGoal ? 'NEXT: PUT A GOAL GATE DOWN (START/GOAL TAB)' : !ready ? 'NEXT: PLAY IT FROM THE START TO THE GOAL' : 'READY TO SHARE';
+    const d = c.doc, hasGoal = d.ents.some(e => e.t === 'gate'), own = ownHero(d), beat = isCleared(d), ready = !!d.start && hasGoal && (own || beat);
+    const hasStart = !!d.start, items = [['START', hasStart], ['GOAL', hasGoal], [own ? 'OWN HERO' : 'BEATEN', own || beat]];
+    const next = !hasStart ? 'NEXT: PLACE THE START' : !hasGoal ? 'NEXT: PLACE THE GOAL GATE (START/GOAL)' : !ready ? 'NEXT: PLAY IT FROM THE START TO THE GOAL' : 'READY TO SHARE';
     const ws = items.map(([lab]) => Math.ceil(c.textW(lab, 6)) + 8), tw = ws.reduce((a2, b2) => a2 + b2 + 3, 0) + Math.ceil(c.textW(next, 6)) + 14, y = VH - BOT - 15;
     g.fillStyle = 'rgba(12,10,18,0.85)'; g.fillRect(4, y, tw, 13); let x = 7;
     items.forEach(([lab, ok], k) => { g.fillStyle = ok ? '#3f6a3a' : '#5a2a2a'; g.fillRect(x, y + 2, ws[k], 9); text(lab, x + ws[k] / 2, y + 3, ok ? '#d8f09a' : '#ffb0a0', 'center', 6); x += ws[k] + 3; });
     text(next, x + 4, y + 3, ready ? '#8fd160' : '#ffd36b', 'left', 6); }
   /* (claude/maker) A NEW, EMPTY LEVEL says where to begin */
-  if (!UI.panel && c.doc.ents.every(e => e.t === 'gate')) { const s1 = 'PICK A PIECE UP TOP, CLICK IN THE LEVEL TO PLACE IT, THEN PRESS PLAY'; const w = Math.ceil(c.textW(s1, 6)) + 16, x = Math.round((VW - w) / 2), y = TOP + 30;
+  if (!UI.panel && (!c.doc.start || c.doc.ents.every(e => e.t === 'gate'))) { const s1 = !c.doc.start ? 'START HERE: CLICK WHERE THE KNIGHT BEGINS (YOU ARE HOLDING THE START)' : 'BUILD OUT FROM THE START: PICK A PIECE UP TOP, CLICK TO PLACE IT.  ERASE IS THE RED X (GROUND TAB) OR RIGHT-CLICK'; const w = Math.ceil(c.textW(s1, 6)) + 16, x = Math.round((VW - w) / 2), y = TOP + 30;
     g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x, y, w, 14); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, 13); text(s1, VW / 2, y + 4, '#ffd36b', 'center', 6); }
+  { UI.sBtns = []; const bx0 = VW - 46, by0 = TOP + 6;   /* (claude/maker) SCROLL: hold one to move the view */
+    for (const [dx, dy, ox, oy, glyph] of [[0, -1, 15, 0, 'U'], [-1, 0, 0, 15, 'L'], [1, 0, 30, 15, 'R'], [0, 1, 15, 30, 'D']]) {
+      const r = { x: bx0 + ox, y: by0 + oy, w: 14, h: 14, dx, dy }, on = UI.sHold && UI.sHold.dx === dx && UI.sHold.dy === dy;
+      g.fillStyle = on ? 'rgba(255,211,107,0.85)' : 'rgba(30,26,40,0.75)'; g.fillRect(r.x, r.y, r.w, r.h); g.fillStyle = on ? '#1b1626' : '#ffd36b';
+      const cx0 = r.x + 7, cy0 = r.y + 7; g.beginPath(); if (glyph === 'U') { g.moveTo(cx0, cy0 - 4); g.lineTo(cx0 + 4, cy0 + 3); g.lineTo(cx0 - 4, cy0 + 3); } else if (glyph === 'D') { g.moveTo(cx0, cy0 + 4); g.lineTo(cx0 + 4, cy0 - 3); g.lineTo(cx0 - 4, cy0 - 3); } else if (glyph === 'L') { g.moveTo(cx0 - 4, cy0); g.lineTo(cx0 + 3, cy0 - 4); g.lineTo(cx0 + 3, cy0 + 4); } else { g.moveTo(cx0 + 4, cy0); g.lineTo(cx0 - 3, cy0 - 4); g.lineTo(cx0 - 3, cy0 + 4); } g.closePath(); g.fill();
+      UI.sBtns.push(r); } }
   if (UI.guide >= 0) drawGuide(c);
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
   if (UI.panel === 'browse') drawBrowse(c); else if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
@@ -346,6 +355,7 @@ export function uiMouse(c, mx, my, down) {
     const m = UI.map, fx = Math.max(0, Math.min(1, (mx - m.x) / m.w)), fy = Math.max(0, Math.min(1, (my - m.y) / m.h));
     return { consumed: true, cam: { x: fx * c.LWp - VW / 2, y: fy * c.LHp - (VH - TOP - BOT) / 2 - TOP } };
   }
+  { const sb = (UI.sBtns || []).find(q => inR(q, mx, my)); if (sb) { if (down) UI.sHold = { dx: sb.dx, dy: sb.dy }; return { consumed: true }; } }   /* held until the button comes up */
   { const ch = UI.eChips.find(q => inR(q, mx, my)); if (ch) { if (down) { if (ch.k === 'box') UI.eBox = ch.v; else UI.eWhat = ch.v; } return { consumed: true, act: down ? 'eraseMode' : null }; } }
   if (my >= TOP && my < VH - BOT) return null;   // the level
   const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)) || (UI.recentCells || []).find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
@@ -391,7 +401,7 @@ function bakeMinimap(d) {
   for (let y = 0; y < d.H; y++) for (let x = 0; x < d.W; x++) { const v = d.grid[y * d.W + x]; if (!v) continue;
     const m = d.mat && d.mat[x + ',' + y]; g.fillStyle = m ? MATCOL[m] : v >= 20 && v <= 25 ? '#7a5230' : MMCOL[v] || '#888'; g.fillRect(x, y, 1, 1); }
   for (const e of d.ents) { g.fillStyle = e.t === 'gate' ? '#ffd36b' : e.t === 'coin' || e.t === 'silver' ? '#ffe680' : FOES.includes(e.t) ? '#ff5a5a' : '#e8dcc0'; g.fillRect(e.x, e.y, 1, 1); }
-  g.fillStyle = '#8fd160'; g.fillRect(d.start.x, d.start.y, 1, 1);
+  if (d.start) { g.fillStyle = '#8fd160'; g.fillRect(d.start.x, d.start.y, 1, 1); }
   return c;
 }
 function drawMinimap(c) {

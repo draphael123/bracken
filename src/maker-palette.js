@@ -393,7 +393,7 @@ function unrle(str, n) { const gr = new Uint8Array(n); let at = 0; for (const pa
 export const docToJSON = d => ({ v: 1, name: d.name, W: d.W, H: d.H, theme: d.theme, start: d.start, ents: d.ents, grid: rle(d.grid), ...terrainOf(d) });
 export function docFromJSON(o) {
   if (!o || !o.W || !o.H || typeof o.grid !== 'string') throw new Error('not a level');
-  const d = { W: o.W, H: o.H, grid: unrle(o.grid, o.W * o.H), ents: o.ents || [], theme: o.theme || 0, name: o.name || 'A SHARED WOOD', start: o.start || { x: 3, y: 19 } };
+  const d = { W: o.W, H: o.H, grid: unrle(o.grid, o.W * o.H), ents: o.ents || [], theme: o.theme || 0, name: o.name || 'A SHARED WOOD', start: o.start === undefined ? { x: 3, y: 19 } : o.start };
   setTerrain(d, o); return d;
 }
 const b64u = bytes => { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
@@ -661,7 +661,7 @@ export function resizeHeight(doc, dh) {
   const W = doc.W, g2 = new Uint8Array(W * H2);
   for (let y = 0; y < doc.H; y++) { const y2 = y + dh; if (y2 < 0 || y2 >= H2) continue; for (let x = 0; x < W; x++) g2[y2 * W + x] = doc.grid[y * W + x]; }
   const mv = o => { const n = {}; for (const [k, v] of Object.entries(o || {})) { const [x, y] = k.split(',').map(Number); if (y + dh >= 0) n[x + ',' + (y + dh)] = v; } return n; };
-  doc.grid = g2; doc.H = H2; doc.ents = doc.ents.filter(e => e.y + dh >= 0).map(e => ({ ...e, y: e.y + dh })); doc.start = { x: doc.start.x, y: Math.max(0, doc.start.y + dh) };
+  doc.grid = g2; doc.H = H2; doc.ents = doc.ents.filter(e => e.y + dh >= 0).map(e => ({ ...e, y: e.y + dh })); doc.start = doc.start ? { x: doc.start.x, y: Math.max(0, doc.start.y + dh) } : null;
   doc.crumble = (doc.crumble || []).map(k => { const [x, y] = k.split(',').map(Number); return x + ',' + (y + dh); }).filter(k => +k.split(',')[1] >= 0);
   doc.water = (doc.water || []).map(r => ({ ...r, y0: r.y0 + dh, y1: r.y1 + dh })).filter(r => r.y0 >= 0);
   doc.mat = mv(doc.mat); doc.sw = mv(doc.sw); doc.loot = mv(doc.loot); doc._lm = [];
@@ -735,7 +735,7 @@ export function drawSel(g, cx, cy, cur, t) {
    not the clear itself); any edit changes it, so a cleared level that is changed must be beaten again. */
 export function docSig(d) {
   const t = terrainOf(d); delete t.cleared; delete t.music;
-  const str = d.W + 'x' + d.H + '|' + d.theme + '|' + d.start.x + ',' + d.start.y + '|' + JSON.stringify(d.ents) + '|' + JSON.stringify(t);
+  const str = d.W + 'x' + d.H + '|' + d.theme + '|' + (d.start ? d.start.x + ',' + d.start.y : '-') + '|' + JSON.stringify(d.ents) + '|' + JSON.stringify(t);
   let h = 2166136261; for (let i = 0; i < d.grid.length; i++) h = Math.imul(h ^ d.grid[i], 16777619) >>> 0;
   for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0;
   return h.toString(36) + '.' + d.grid.length.toString(36);

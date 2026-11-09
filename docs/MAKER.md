@@ -215,6 +215,20 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - `tools/maker-hero.mjs` (in the suite).
 - Later (Daniel agreed): SETS OF LEVELS played in order, one hero for the set.
 
+## Done (2026-11-09, EMPTY NEW LEVEL + START + SCROLL + SLOPE SHADING - Daniel: "there's already terrain, which doesn't make sense")
+- NEW (and a first visit with no save) is EMPTY: no ground, no goal, no START (`doc.start = null`), with the START tool in
+  hand and the START/GOAL tab open. MKR.blank keeps the old floor so the checks are unchanged. The old 8-deep floor made
+  a one-cell erase look broken: it took the top tile and the one below looked the same.
+- START: `edSetStart` refuses a cell inside the ground; with nothing to stand on within 6 rows below, it lays three
+  tiles of ground under itself. PLAY says where to find START until there is one. The checklist starts with START.
+  Null-start guards are in edLevelObj, edPush, the loaders, docSig, resizeHeight, the minimap and the start-gate draw.
+- SCROLL: four held arrow buttons at the top right of the level (`MUI.scrollHold`), and the bottom bar says how the
+  wheel scrolls.
+- SLOPES (Daniel: "looks like regular blocks with the slope overriding it"): in maker levels a slope cell no longer gets
+  the ground's ambient shadow inside it, and the depth shading counts slopes as ground. The campaign's look is
+  unchanged (L.custom only).
+- `tools/maker-newlevel.mjs` (in the suite).
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.
