@@ -16,11 +16,11 @@ export const BEASTS_SHIPS = false;
 export const BEAST_SAY = { yelp: 'YELPS', winded: 'WINDED', pinned: 'PINNED', dazed: 'DAZED', hesitate: 'EARS DOWN', braced: 'BRACED', freed: 'FREED' };
 
 export const SNOW = { w: 18, h: 10, hp: 18, run: 130, orbitMin: 60, orbitMax: 110, sight: 340, sightY: 90, flipMin: 0.8, flipMax: 1.6,
-  snapTell: 0.40, snapRange: 70, snapReach: 40, snap: 0.12, snapSpeed: 330, snapDmg: 6, runOut: 0.7, yelp: 1.0,
+  snapTell: 0.40, snapRange: 62, snapReach: 40, snap: 0.12, snapSpeed: 330, snapDmg: 6, runOut: 0.7, yelp: 1.0,
   leapTell: 0.55, leapMin: 70, leapMax: 100, leapT: 0.4, leapOver: 40, leapDmg: 8, leapG: 900, skid: 0.5, hitRecover: 0.5, cd: 1.5, chill: 0.15, hesitate: 1.2 };
 export const GREY = { w: 26, h: 15, hp: 70, walk: 40, trot: 70, sight: 380, sightY: 100, biteRange: 70, biteTell: 0.65, biteReach: 60, bite: 0.15, biteSpeed: 400, biteDmg: 12, biteRecover: 0.8, biteStagger: 1.2, biteBlockPush: 20,
   pounceMin: 90, pounceMax: 140, pounceTell: 0.85, pounceT: 0.6, pounceG: 900, pounceR: 24, pounceDmg: 14, pin: 0.6, winded: 1.0, pounceRecover: 0.7, cd: 2.2, poiseBar: 0.22, poiseDecay: 8, hold: 0.9 };
-export const BRUIN = { w: 28, h: 16, hStand: 22, hp: 120, walk: 30, sight: 360, sightY: 100, mauls: 64, maulTell: 0.9, maulReach: 40, maul: 0.2, maulDmg: 14, maulRecover: 0.9, maulStagger: 1.5,
+export const BRUIN = { w: 28, h: 16, hStand: 22, hp: 120, walk: 30, sight: 360, sightY: 100, mauls: 52, maulTell: 0.9, maulReach: 40, maul: 0.2, maulDmg: 14, maulRecover: 0.9, maulStagger: 1.5,
   chargeMin: 90, chargeMax: 220, chargeTell: 0.8, chargeSpeed: 210, chargeRun: 200, chargeDmg: 16, chargeDown: 0.9, dazed: 1.2, skid: 0.6, cd: 2.4, poise: 40 };
 
 const rnd = s => { s.seed = (s.seed * 1664525 + 1013904223) >>> 0; return s.seed / 4294967296; };
@@ -53,16 +53,24 @@ export function snowStep(s, w, dt) {
       s.orbitT -= dt; if (s.orbitT <= 0) { s.orbitDir = -s.orbitDir; s.orbitT = C.flipMin + rnd(s) * (C.flipMax - C.flipMin); s.orbitR = C.orbitMin + 10 + rnd(s) * (C.orbitMax - C.orbitMin - 20); }
       if (s.hesitate > 0) { s.mode = 'stand'; s.ears = true; break; }   /* the leader is down: ears down, told */
       s.ears = false;
-      if (s.cd <= 0 && w.canAttack !== false && !w.hold) {
-        if (d <= C.snapRange && (s.last !== 'snap' || d < C.leapMin)) { s.last = 'snap'; s.mode = 'snapTell'; s.t = C.snapTell; evs.push({ t: 'snapTell', dur: C.snapTell }); break; }
-        if (d >= C.leapMin && d <= C.leapMax) { s.last = 'leap'; s.mode = 'leapTell'; s.t = C.leapTell; evs.push({ t: 'leapTell', dur: C.leapTell }); break; }
-      }
-      /* circle: close to the orbit radius, then run along it, both sides of you (the pack's pincer) */
       let dir = 0;
-      if (d > s.orbitR + 14) dir = side; else if (d < s.orbitR - 14) dir = -side; else dir = s.orbitDir * side * 0.6;   /* tangential: hold the ring, drift to one side then the other */
+      if (s.cd <= 0 && w.canAttack !== false && !w.hold) {
+        /* its turn: it picks its blow (the two take turns), closes or backs off to that blow's range - a few strides, never a straight rush from afar - and winds up told */
+        if (!s.intent) s.intent = s.last === 'snap' ? 'leap' : s.last === 'leap' ? 'snap' : (d >= C.leapMin ? 'leap' : 'snap');
+        if (s.intent === 'snap') {
+          if (d <= C.snapRange) { s.intent = ''; s.last = 'snap'; s.mode = 'snapTell'; s.t = C.snapTell; evs.push({ t: 'snapTell', dur: C.snapTell }); break; }
+          dir = side;
+        } else {
+          if (d >= C.leapMin && d <= C.leapMax) { s.intent = ''; s.last = 'leap'; s.mode = 'leapTell'; s.t = C.leapTell; evs.push({ t: 'leapTell', dur: C.leapTell }); break; }
+          dir = d < C.leapMin ? -side : side;
+        }
+      } else {
+        /* circle: close to the orbit radius, then run along it, both sides of you (the pack's pincer) */
+        if (d > s.orbitR + 14) dir = side; else if (d < s.orbitR - 14) dir = -side; else dir = s.orbitDir * side * 0.6;   /* tangential: hold the ring, drift to one side then the other */
+      }
       if (dir && canGo(w, s, Math.sign(dir))) { s.vx = Math.sign(dir) * C.run * (Math.abs(dir) < 1 ? 0.6 : 1); s.mode = 'walk'; } else s.mode = 'stand';
       break; }
-    case 'snapTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'snap'; s.t = C.snap; s.hit = false; s.vx = s.face * C.snapSpeed; evs.push({ t: 'snap', dmg: C.snapDmg, box: frontBox(s, C.snapReach, C.h) }); } break;
+    case 'snapTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'snap'; s.t = C.snap; s.hit = false; s.vx = s.face * C.snapSpeed; evs.push({ t: 'snap', dmg: C.snapDmg, box: frontBox(s, C.snapReach + C.w / 2, C.h) }); } break;
     case 'snap': s.vx = s.face * C.snapSpeed; s.t -= dt; if (s.t <= 0 || !canGo(w, s, s.face)) { s.mode = 'recover'; s.t = C.runOut; s.run = true; s.cd = C.cd; s.vx = 0; } break;
     case 'recover':   /* after a snap it RUNS OUT to orbit range: hit and run; after a landed leap it just shakes itself */
       if (s.run && tgt) { const d = Math.abs(tgt.x - s.x); s.face = sgn(tgt.x, s.x) || s.face; if (d < s.orbitR + 10 && canGo(w, s, -s.face)) s.vx = -s.face * C.run; else s.t = Math.min(s.t, 0.1); }
@@ -70,9 +78,9 @@ export function snowStep(s, w, dt) {
       break;
     case 'leapTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) {
       const tx = tgt ? tgt.x + s.face * C.leapOver : s.x + s.face * 80, vx = Math.max(140, Math.min(340, Math.abs(tx - s.x) / C.leapT)) * s.face;
-      s.mode = 'leap'; s.t = 0; s.hit = false; s.tried = false; s.vx = vx; s.vy = -0.5 * C.leapG * C.leapT; s.air = true; evs.push({ t: 'leap', dmg: C.leapDmg, vx, vy: s.vy }); }
+      s.mode = 'leap'; s.t = 0; s.hit = false; s.tried = false; s.vx = s.lvx = vx; s.vy = -0.5 * C.leapG * C.leapT; s.air = true; evs.push({ t: 'leap', dmg: C.leapDmg, vx, vy: s.vy }); }
       break;
-    case 'leap': s.vx = s.vx; s.t += dt; break;   /* the host keeps the launch velocity and calls beastLanded() on touchdown */
+    case 'leap': s.vx = s.lvx; s.t += dt; break;   /* the host keeps the launch velocity and calls beastLanded() on touchdown */
     case 'skid': s.t -= dt; s.open = true; s.vx = s.face * Math.max(0, 80 * (s.t / C.skid)); if (s.t <= 0) { s.mode = 'stand'; s.open = false; s.cd = Math.max(s.cd, 0.5); } break;   /* a missed leap: skids, OPEN */
     case 'stunned': s.t -= dt; s.open = true; if (s.t <= 0) { s.mode = 'stand'; s.open = false; s.cd = Math.max(s.cd, 0.6); } break;   /* a parried snap: yelps, flung, open */
     default: s.mode = 'stand';
@@ -96,11 +104,11 @@ export function greyStep(s, w, dt) {
       }
       if (d > C.biteRange - 10 && canGo(w, s, s.face)) { s.vx = s.face * (d > 180 ? C.trot : C.walk); s.mode = 'walk'; } else s.mode = 'stand';
       break; }
-    case 'biteTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'bite'; s.t = C.bite; s.hit = false; s.vx = s.face * C.biteSpeed; evs.push({ t: 'bite', dmg: C.biteDmg, box: frontBox(s, C.biteReach, C.h, 6), push: C.biteBlockPush }); } break;
+    case 'biteTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'bite'; s.t = C.bite; s.hit = false; s.vx = s.face * C.biteSpeed; evs.push({ t: 'bite', dmg: C.biteDmg, box: frontBox(s, C.biteReach + C.w / 2, C.h, 6), push: C.biteBlockPush }); } break;
     case 'bite': s.vx = s.face * C.biteSpeed; s.t -= dt; if (s.t <= 0 || !canGo(w, s, s.face)) { s.mode = 'recover'; s.t = C.biteRecover; s.cd = C.cd; s.vx = 0; } break;
     case 'pounceTell': s.t -= dt; if (s.t <= 0) { const T = C.pounceT, vx = (s.landX - s.x) / T;
-      s.mode = 'pounce'; s.t = 0; s.hit = false; s.vx = vx; s.vy = -0.5 * C.pounceG * T; s.air = true; evs.push({ t: 'pounce', dmg: C.pounceDmg, vx, vy: s.vy, ring: { x: s.landX, r: C.pounceR } }); } break;
-    case 'pounce': s.t += dt; break;
+      s.mode = 'pounce'; s.t = 0; s.hit = false; s.vx = s.lvx = vx; s.vy = -0.5 * C.pounceG * T; s.air = true; evs.push({ t: 'pounce', dmg: C.pounceDmg, vx, vy: s.vy, ring: { x: s.landX, r: C.pounceR } }); } break;
+    case 'pounce': s.vx = s.lvx; s.t += dt; break;
     case 'pin': s.t -= dt; if (s.t <= 0) { s.mode = 'recover'; s.t = C.pounceRecover; s.cd = C.cd; } break;
     case 'winded': s.t -= dt; s.open = true; if (s.t <= 0) { s.mode = 'stand'; s.open = false; s.cd = Math.max(s.cd, 0.8); } break;   /* a missed pounce: lands WINDED, gold stars */
     case 'stunned': s.t -= dt; s.open = true; if (s.t <= 0) { s.mode = 'stand'; s.open = false; s.cd = Math.max(s.cd, 0.8); } break;   /* a parried bite */
@@ -125,7 +133,7 @@ export function bruinStep(s, w, dt) {
       }
       if (d > C.mauls - 14 && canGo(w, s, s.face)) { s.vx = s.face * C.walk; s.mode = 'walk'; } else s.mode = 'stand';
       break; }
-    case 'maulTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'maul'; s.t = C.maul; s.hit = false; evs.push({ t: 'maul', dmg: C.maulDmg, box: frontBox(s, C.maulReach, C.hStand, 6) }); } break;
+    case 'maulTell': if (tgt) s.face = sgn(tgt.x, s.x) || s.face; s.t -= dt; if (s.t <= 0) { s.mode = 'maul'; s.t = C.maul; s.hit = false; evs.push({ t: 'maul', dmg: C.maulDmg, box: frontBox(s, C.maulReach + C.w / 2, C.hStand, 6) }); } break;
     case 'maul': s.t -= dt; if (s.t <= 0) { s.mode = 'recover'; s.t = C.maulRecover; s.cd = C.cd; } break;
     case 'chargeTell': s.t -= dt; if (s.t <= 0) { s.mode = 'charge'; s.t = 0; s.hit = false; s.tried = false; s.runDist = 0; evs.push({ t: 'charge', dmg: C.chargeDmg }); } break;
     case 'charge': {
@@ -164,7 +172,7 @@ export function airHit(s, heroes) {
 export function chargeHit(s, heroes) {
   if (s.hit || s.tried || s.mode !== 'charge') return null; const C = BRUIN;
   for (const h of heroes || []) { if (h.alive === false) continue; const hx = h.w ? h.w / 2 : 5;
-    const front = s.x + s.face * C.w / 2; if (Math.abs(h.x - front) <= hx + 8 && Math.abs((h.y || 0) - s.y) < 22) { s.tried = true; return h; } }
+    const front = s.x + s.face * C.w / 2; if (Math.abs(h.x - front) <= hx + 8 && Math.abs((h.y || 0) - s.y) < 30) { s.tried = true; return h; } }   /* a hop does not clear him: he is TOO TALL TO JUMP (the roll is the answer; the tune lane measures the real jump apex against this 30) */
   return null;
 }
 

@@ -53,6 +53,8 @@ export function makeBeastsHands(ctx) {
     } else {
       if (s.vx) ctx.move(e, s.vx * dt, 0, false);
       g();
+      if ((s.mode === 'snap' || s.mode === 'bite') && !s.hit) { const sn = s.mode === 'snap', C = sn ? K.SNOW : K.GREY, fx = e.x + s.face * (C.w / 2 + 8), bx = [Math.min(e.x, fx) - 2, Math.max(e.x, fx) + 2, e.y - C.h, e.y];   /* the dart's front, wherever the body has got to */
+        melee(e, s, { box: bx, dmg: sn ? C.snapDmg : C.biteDmg, push: sn ? 0 : C.biteBlockPush }, sn ? C.chill : 0); }
       if (s.mode === 'charge' && !s.hit) { const h = K.chargeHit(s, hs); if (h) { const pp = ctx.players()[h.id]; const res = ctx.hit(pp, e.x - s.face * 6, K.BRUIN.chargeDmg, e, NAME[e.t], { unblockable: true }); s.hit = !!res.landed; if (res.landed) { H.n.hits++; ctx.down(pp, K.BRUIN.chargeDown, s.face); } } }
     }
     s.x = e.x; s.y = e.y; e.face = s.face || e.face; e.mode = s.mode; e.open = !!s.open; e.vx = (e.x - x0) / Math.max(dt, 1e-4); e.anim = (e.anim || 0) + dt;
@@ -61,18 +63,18 @@ export function makeBeastsHands(ctx) {
   function handle(e, s, evs) {
     for (const v of evs) {
       if (v.t === 'snapTell') { ctx.mark(e, '!', '#ffd36b'); ctx.sfx('snapTell'); }
-      else if (v.t === 'snap') { H.n.snaps++; ctx.sfx('snap'); melee(e, s, v, K.SNOW.chill); }
+      else if (v.t === 'snap') { H.n.snaps++; ctx.sfx('snap'); }   /* the bite itself is checked every frame of the dart (below): the body is going somewhere */
       else if (v.t === 'leapTell') { ctx.mark(e, '!!', '#ff6b6b'); ctx.sfx('leapTell'); ctx.burst(e.x + s.face * 8, e.y - 9, 4, ['#e8f6ff', '#cfe0ee'], 25, 0.4, -20); }
       else if (v.t === 'leap') { H.n.leaps++; e.air = true; ctx.sfx('leap'); }
       else if (v.t === 'skid') { ctx.burst(e.x - s.face * 4, e.y - 1, 6, ['#e8f6ff', '#9aa8b8'], 40, 0.4); ctx.sfx('skid'); ctx.number(e.x, e.y - e.h - 8, K.BEAST_SAY.dazed, '#ffd36b'); }
       else if (v.t === 'biteTell') { ctx.mark(e, '!', '#ffd36b'); ctx.sfx('biteTell'); }
-      else if (v.t === 'bite') { H.n.bites++; ctx.sfx('bite'); melee(e, s, v, 0); }
+      else if (v.t === 'bite') { H.n.bites++; ctx.sfx('bite'); }
       else if (v.t === 'pounceTell') { ctx.mark(e, '!!', '#ff6b6b'); ctx.sfx('pounceTell'); }
       else if (v.t === 'pounce') { H.n.pounces++; e.air = true; ctx.sfx('pounce'); }
       else if (v.t === 'pounceHit') {
         ctx.sfx('thump'); ctx.shake(3); ctx.burst(s.landX, e.y - 2, 12, ['#e8f6ff', '#9aa8b8', '#cfe0ee'], 70, 0.5);
         for (const id of v.heroes) { const pp = ctx.players()[id]; if (!pp) continue; const res = ctx.hit(pp, s.landX, v.dmg, e, NAME[e.t], { unblockable: true });
-          if (res.landed) { H.n.hits++; H.n.pins++; H.pins.push({ pp, e, t: v.pin }); ctx.number(pp.x, pp.y - 24, K.BEAST_SAY.pinned, '#ff6b6b'); if (once('pinTold')) ctx.callout('PINNED: MASH TO THROW HIM OFF - OR HAVE A FRIEND HIT HIM'); } } }
+          if (res.landed) { H.n.hits++; H.n.pins++; H.pins.push({ pp, e, t: v.pin, dur: v.pin, age: 0 }); ctx.number(pp.x, pp.y - 24, K.BEAST_SAY.pinned, '#ff6b6b'); if (once('pinTold')) ctx.callout('PINNED: MASH TO THROW HIM OFF - OR HAVE A FRIEND HIT HIM'); } } }
       else if (v.t === 'winded') { H.n.winded++; ctx.sfx('winded'); ctx.number(e.x, e.y - e.h - 8, K.BEAST_SAY.winded, '#ffd36b'); if (once('windedTold')) ctx.callout('A MISSED POUNCE LEAVES HIM WINDED: STRIKE NOW'); }
       else if (v.t === 'maulTell') { ctx.mark(e, '!', '#ffd36b'); ctx.sfx('roar'); ctx.burst(e.x + s.face * 12, e.y - 26, 5, ['#ffffff', '#e8f0f8'], 25, 0.5, -15); }
       else if (v.t === 'maul') { H.n.mauls++; ctx.sfx('maul'); melee(e, s, v, 0); }
@@ -98,11 +100,11 @@ export function makeBeastsHands(ctx) {
     if (greyWas > 0 && grey === 0) for (const q of live) if (q.t === 'snowrunner') { K.beastHesitate(init(q)); H.n.hesitates++; ctx.number(q.x, q.y - q.h - 8, K.BEAST_SAY.hesitate, '#9aa8b8'); }
     greyWas = grey;
     H.pins = H.pins.filter(p => {
-      const s = p.e.st; let free = !p.e.alive || !s || s.mode !== 'pin' || p.pp.dead; p.t -= dt;
+      const s = p.e.st; let free = !p.e.alive || !s || s.mode !== 'pin' || p.pp.dead; p.t -= dt; p.age += dt;
       if (!free && ctx.mashed(p.pp)) p.t -= 0.18;
       if (!free) for (const q of upright()) if (q !== p.pp) { const sb = ctx.strikeBox(q); if (sb && sb.l < p.e.x + 13 && sb.r > p.e.x - 13 && sb.t < p.e.y && sb.b > p.e.y - 15) { free = true; break; } }
       if (p.t <= 0) free = true;
-      if (free) { ctx.unpin(p.pp); if (s && s.mode === 'pin') { s.mode = 'recover'; s.t = K.GREY.pounceRecover; s.cd = K.GREY.cd; p.e.mode = s.mode; } if (p.e.alive && p.t > 0) { H.n.frees++; ctx.number(p.pp.x, p.pp.y - 24, K.BEAST_SAY.freed, '#8fd160'); } return false; }
+      if (free) { ctx.unpin(p.pp); if (s && s.mode === 'pin') { s.mode = 'recover'; s.t = K.GREY.pounceRecover; s.cd = K.GREY.cd; p.e.mode = s.mode; } if (p.e.alive && p.age < p.dur - 0.05) { H.n.frees++; ctx.number(p.pp.x, p.pp.y - 24, K.BEAST_SAY.freed, '#8fd160'); } return false; }
       ctx.pin(p.pp, 0.1); return true; });
   };
 

@@ -20,7 +20,7 @@ export const BONES_SHIPS = false;
 export const BONE_SAY = { ward: 'WARDED', broke: 'GUARD BROKEN', open: 'OPEN', popped: 'POPPED', behind: 'FROM BEHIND', blink: 'BACKSTEP' };
 
 export const BONE_SOLDIER = { w: 10, h: 20, hp: 44, walk: 32, sight: 330, sightY: 110, ward: 0.4, wardBreak: 1.5, turn: 0.6,
-  thrustReach: 30, thrustRange: 40, thrustTell: 0.5, thrust: 0.14, thrustDmg: 10, thrustRecover: 0.7, parryOpen: 1.2,
+  thrustReach: 30, thrustRange: 38, thrustTell: 0.5, thrust: 0.14, thrustDmg: 10, thrustRecover: 0.7, parryOpen: 1.2,
   rushMin: 50, rushMax: 110, rushTell: 0.7, rushDist: 80, rushSpeed: 230, rushDmg: 8, rushRecover: 0.6, rushShove: 60, cd: 1.6 };
 export const BONE_ARCHER = { w: 10, h: 20, hp: 22, walk: 28, sight: 380, sightY: 130, keepMin: 100, keepMax: 200, backOff: 70,
   aimTell: 0.8, aimDmg: 9, arrowSpeed: 360, aimRecover: 0.6, glint: 0.8,
@@ -54,13 +54,16 @@ export function soldierStep(s, w, dt) {
       if (want !== s.face) { s.turnT -= dt; if (s.turnT <= 0) { s.face = want; s.turnT = 0; } } else s.turnT = C.turn;   /* he turns in C.turn s: a hero that jumped over him is behind him that long */
       if (s.turnT > 0 && want !== s.face) { s.mode = 'stand'; break; }
       if (s.cd <= 0 && w.canAttack !== false) {
-        if (d <= C.thrustRange && Math.abs((near.y || 0) - s.y) < 40) { s.mode = 'thrustTell'; s.t = C.thrustTell; s.vx = 0; evs.push({ t: 'thrustTell', dur: C.thrustTell }); break; }
-        if (d >= C.rushMin && d <= C.rushMax && (w.canStep ? w.canStep(s.x, s.face) : true)) { s.mode = 'rushTell'; s.t = C.rushTell; evs.push({ t: 'rushTell', dur: C.rushTell }); break; }
+        const canThrust = d <= C.thrustRange && Math.abs((near.y || 0) - s.y) < 40, canRush = d >= C.rushMin && d <= C.rushMax && (w.canStep ? w.canStep(s.x, s.face) : true), wantRush = s.last !== 'rush';   /* thrust and rush take turns */
+        if (canThrust && !(canRush && wantRush)) { s.last = 'thrust'; s.mode = 'thrustTell'; s.t = C.thrustTell; s.vx = 0; evs.push({ t: 'thrustTell', dur: C.thrustTell }); break; }
+        if (canRush) { s.last = 'rush'; s.mode = 'rushTell'; s.t = C.rushTell; evs.push({ t: 'rushTell', dur: C.rushTell }); break; }
       }
+      /* between blows he holds at the rush's range instead of walking up onto your sword */
+      if (s.cd > 0.2 && d >= C.rushMin && d <= C.rushMax) { s.mode = 'stand'; break; }
       if (d > C.thrustRange - 6 && (!w.canStep || w.canStep(s.x, s.face))) { s.vx = s.face * C.walk; s.mode = 'walk'; } else s.mode = 'stand';
       break; }
     case 'thrustTell':
-      s.t -= dt; if (s.t <= 0) { s.mode = 'thrust'; s.t = C.thrust; s.hit = false; evs.push({ t: 'thrust', dmg: C.thrustDmg, box: frontBox(s, C.thrustReach, C.h - 4, 4) }); }
+      s.t -= dt; if (s.t <= 0) { s.mode = 'thrust'; s.t = C.thrust; s.hit = false; evs.push({ t: 'thrust', dmg: C.thrustDmg, box: frontBox(s, C.thrustReach + C.w / 2, C.h - 4, 4) }); }
       break;
     case 'thrust': s.t -= dt; if (s.t <= 0) { s.mode = 'recover'; s.t = C.thrustRecover; s.cd = C.cd; } break;
     case 'rushTell': s.t -= dt; if (s.t <= 0) { s.mode = 'rush'; s.t = C.rushDist / C.rushSpeed; s.hit = false; s.run = 0; evs.push({ t: 'rush', dmg: C.rushDmg }); } break;

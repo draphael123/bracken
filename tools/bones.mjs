@@ -39,8 +39,7 @@ console.log('node: the soldier');
   const tt = ev.find(([, v]) => v.t === 'thrustTell'), th = ev.find(([, v]) => v.t === 'thrust');
   ok(tt && th && near(th[0] - tt[0], C.thrustTell, 0.05) && th[1].dmg === C.thrustDmg, 'the thrust is told ' + C.thrustTell + ' s first (' + (th && (th[0] - tt[0]).toFixed(2)) + ' s), ' + C.thrustDmg + ' damage over the rim');
   ok(th && th[1].box[1] - th[1].box[0] >= C.thrustReach, 'the thrust reaches ' + C.thrustReach + ' px');
-  s = B.newSkelSoldier(0, 0, 1); ev = run(s, W([hero(36)]), 0.2);   /* struck in the tell: a shield does not flinch - a light blow does not cancel it */
-  run(s, W([hero(36)]), 0.2); ok(s.mode === 'thrustTell' || ev.length >= 0, 'in his thrust windup (' + s.mode + ')');
+  s = B.newSkelSoldier(0, 0, 1); s.cd = 0; run(s, W([hero(36)]), 0.2);   /* struck in the tell: a shield does not flinch - a light blow does not cancel it */ ok(s.mode === 'thrustTell', 'in his thrust windup (' + s.mode + ')');
   const r1 = B.soldierTake(s, { fromX: 30 }); ok(r1.k === C.ward && r1.why === 'front' && B.soldierStruck(s, r1.why) === null && s.mode === 'thrustTell', 'a light cut into his front: x' + C.ward + ' (WARDED), never immune, and it does not cancel his thrust');
   const r2 = B.soldierTake(s, { fromX: 30, heavy: true }); ok(r2.why === 'heavy' && r2.k === 1 && s.guard >= C.wardBreak - 1e-6, 'a HEAVY blow into his front: whole, and the shield is knocked aside ' + C.wardBreak + ' s');
   B.soldierStruck(s, 'heavy'); ok(s.mode === 'stunned' && s.open, 'and it breaks his thrust (he is open: ' + s.mode + ')');
@@ -63,7 +62,7 @@ console.log('node: the soldier');
 console.log('node: the archer');
 { const C = B.BONE_ARCHER;
   let s = B.newSkelArcher(0, 0, 1), ev = run(s, W([hero(150, 0)]), 8);
-  const at = ev.find(([, v]) => v.t === 'aimTell'), a = ev.find(([, v]) => v.t === 'aim'), vt = ev.find(([, v]) => v.t === 'volleyTell'), vols = ev.filter(([, v]) => v.t === 'volley');
+  const at = ev.find(([, v]) => v.t === 'aimTell'), a = ev.find(([, v]) => v.t === 'aim'), vt = ev.find(([, v]) => v.t === 'volleyTell'), vols0 = ev.filter(([, v]) => v.t === 'volley'), vols = vols0.slice(0, 3);
   ok(at && a && near(a[0] - at[0], C.aimTell, 0.05) && a[1].dmg === C.aimDmg, 'the aimed shot is told ' + C.aimTell + ' s (a draw and a glint line), ' + C.aimDmg + ' damage');
   ok(a && near(Math.hypot(a[1].vx, a[1].vy), C.arrowSpeed, 1) && a[1].vx > 0, 'a fast flat arrow (' + C.arrowSpeed + ' px/s) at where you stood at the full draw');
   ok(vt && vt[1].spots.length === 3 && new Set(vt[1].spots).size === 3, 'the volley tells THREE landing marks (' + (vt && vt[1].spots.join(', ')) + ')');
@@ -72,10 +71,11 @@ console.log('node: the archer');
   const p0 = B.lobAt({ x: 0, y: -20, toX: 100, floorY: 0, flight: 0.75 }, 0.75); ok(near(p0.x, 100, 1e-6) && near(p0.y, 0, 1e-6), 'a lobbed arrow lands on its mark');
   s = B.newSkelArcher(0, 0, 1); run(s, W([hero(60)]), 1); ok(s.x < 0, 'he backs off a hero who closes (x=' + s.x.toFixed(1) + ')');
   s = B.newSkelArcher(0, 0, 1); run(s, W([hero(60)], { canStep: () => false }), 1); ok(near(s.x, 0, 1e-6), 'and never off a ledge');
-  s = B.newSkelArcher(0, 0, 1); run(s, W([hero(150)]), 4.2, v => 0); const m0 = s.mode;
+  const shots = ev.filter(([, v]) => v.t === 'aim' || v.t === 'volley').map(([t]) => t).filter((t, i, a) => i === 0 || t - a[i - 1] > 0.3);
+  ok(shots.length >= 3 && shots.every((t, i) => i === 0 || t - shots[i - 1] >= C.cd - 0.05), 'he shoots on a cooldown: ' + shots.length + ' shots in 8 s, never closer than ' + C.cd + ' s apart');
   s = B.newSkelArcher(0, 0, 1); s.mode = 'aimTell'; s.t = 0.4; ok(B.bonesStruck(s) === 'cancel' && s.mode === 'stunned', 'a blow in the draw cancels the shot (small family)');
   s = B.newSkelArcher(0, 0, 1); s.mode = 'volleyTell'; s.t = 0.5; ok(B.bonesStruck(s) === 'cancel', 'a blow in the volley\'s tell cancels it');
-  ok(m0 !== undefined && true, 'he keeps shooting on a cooldown (' + C.cd + ' s)'); }
+  s = B.newSkelArcher(0, 0, 1); run(s, W([hero(300)]), 1); ok(s.x > 0, 'and walks up to ' + C.keepMax + ' px of a hero who is further off'); }
 
 console.log('node: the mage');
 { const C = B.BONE_MAGE;
@@ -105,7 +105,8 @@ console.log('node: the mage');
     s = B.newSkelMage(0, 0, 1); ev = run(s, W([hero(20)], { wallBetween: () => true }), 1); ok(!ev.some(([, v]) => v.t === 'blink'), 'never through a wall');
     s = B.newSkelMage(100, 0, -1); const evs2 = run(s, W([hero(120)]), 5), n = evs2.filter(([, v]) => v.t === 'blink').length; ok(n <= 2, 'on a ' + C.stepCd + ' s cooldown (' + n + ' blinks in 5 s with a hero who stays close)'); }
   /* a hero out of reach: he keeps his distance */
-  s = B.newSkelMage(0, 0, 1); run(s, W([hero(60)]), 1); ok(s.x < 0 || s.mode !== 'stand' || true, 'keeps ' + C.keepMin + '-' + C.keepMax + ' px'); }
+  s = B.newSkelMage(0, 0, 1); s.cd = 9; s.stepCdT = 9; run(s, W([hero(100)]), 1); ok(s.x < 0, 'keeps ' + C.keepMin + '-' + C.keepMax + ' px: backs off a hero at 100 (x=' + s.x.toFixed(1) + ')');
+  s = B.newSkelMage(0, 0, 1); s.cd = 9; run(s, W([hero(300)]), 1); ok(s.x > 0, 'and closes on one at 300'); }
 
 console.log('node: the tables');
 { const main = rd('src/main.js'), audio = rd('src/audio.js');
@@ -138,7 +139,51 @@ console.log('node: the flag and the placements');
   ok(on.length === mage.ents.length && onT.length === tower.ents.length && swaps(mage.ents, on) === 3 && swaps(tower.ents, onT) === 4, 'flag forced on: same length and order, 3 swaps in the Folly and 4 in the Tower (soldier, archer, mage / soldier, archer, soldier, mage)');
   ok(on.filter(e => e.t === 'skelmage').length === 1 && onT.filter(e => e.t === 'skelmage').length === 1, 'one mage a room');
   ok(on.filter(e => e.t === 'skelarcher').length <= 2 && onT.filter(e => e.t === 'skelarcher').length <= 2, 'archers 1-2 a room');
-  const bad2 = [{ level: 'mage', at: [1, 1], from: 'zombie', to: 'skelmage' }]; ok(!placementProblems('mage', mage.ents.slice(0, 0)).length === false, 'a row with no target fails the check (' + placementProblems('mage', []).length + ' problems on an empty level)'); void bad2; }
+  ok(placementProblems('mage', []).length === 3 && placementProblems('fallingtower', mage.ents).length === 4, 'a row whose target is missing is reported (an empty Folly: 3 problems; the Folly ents handed to the Tower: 4)'); }
+
+console.log('node: the hands (a mock game: flat floor, recorded calls)');
+{ const { mockGame } = await import('./beasts-mock.mjs'), { makeBonesHands } = await import('../src/bones-hands.js');
+  const mkE = (g, t, x, extra = {}) => g.add({ t, x, y: 0, w: 10, h: 20, hp: B.BONES_HP[t], face: -1, ...extra });
+  const secs = (g, H, s, keep = true) => { for (let i = 0; i < Math.round(s * 60); i++) { g.frame(H); if (keep) g.players.forEach(p => { if (p.hp < 30) p.hp = 100; }); } };
+  /* the soldier: a thrust over the rim (blockable), a rush (unblockable); a parry opens him; the ward in the hands */
+  { const g = mockGame([{ x: 36 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelsoldier', 0); e.st = B.newSkelSoldier(0, 0, 1); e.st.cd = 0; secs(g, H, 3);
+    ok(g.marks.some(m => m[0] === 'skelsoldier' && m[1] === '!') && g.hits.some(h => h.d === B.BONE_SOLDIER.thrustDmg && !h.o.unblockable && h.name === 'SKELETON SOLDIER'), 'the thrust is a yellow ! and lands blockable'); }
+  { const g = mockGame([{ x: 80 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelsoldier', 0); e.st = B.newSkelSoldier(0, 0, 1); e.st.cd = 0; secs(g, H, 3);
+    ok(g.marks.some(m => m[0] === 'skelsoldier' && m[1] === '!!') && g.hits.some(h => h.d === B.BONE_SOLDIER.rushDmg && h.o.unblockable), 'the shield rush is a red !! and lands unblockable'); }
+  { const g = mockGame([{ x: 36 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelsoldier', 0); e.st = B.newSkelSoldier(0, 0, 1); e.st.cd = 0; g.parryNext = true; let opened = false;
+    for (let i = 0; i < 200 && !opened; i++) { g.frame(H); if (H.read().parries > 0) opened = true; } ok(opened && e.st.mode === 'stunned' && e.st.open && e.mode === 'stunned', 'a parried thrust throws the shield arm wide: he is open (' + e.mode + ')'); }
+  { const g = mockGame([{ x: 100 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelsoldier', 0); e.st = B.newSkelSoldier(0, 0, 1);
+    const front = H.take(e, 10, { fromX: 30 }), heavy = H.take(e, 10, { fromX: 30, heavy: true }), after = H.take(e, 10, { fromX: 30 });
+    ok(near(front, 4, 1e-9) && g.calls['clank'] === 1 && g.numbers.includes('WARDED'), 'into his front: x0.4, a clank, WARDED over him (' + front + ')');
+    ok(heavy === 10 && after === 10 && g.numbers.includes('GUARD BROKEN'), 'a heavy blow breaks the guard (' + heavy + '), and the next lands whole (' + after + ')');
+    const e2 = mkE(g, 'skelsoldier', 300); e2.st = B.newSkelSoldier(300, 0, 1); ok(H.take(e2, 10, { fromX: 270 }) === 10 && H.take(e2, 10, { fromX: 330, plunge: true }) === 10, 'from behind, or a plunge: whole');
+    ok(e.stagger === 0, 'and a shield never flinches (stagger held at 0 in the hands)'); }
+  /* the archer: an aimed arrow (blockable, flat), a volley (three lobs on the marks, unblockable) */
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelarcher', 0); e.st = B.newSkelArcher(0, 0, 1); e.st.cd = 0; e.st.last = 'volley'; let arrowsSeen = 0; for (let i = 0; i < 60 * 3; i++) { g.frame(H); g.players[0].hp = 100; arrowsSeen = Math.max(arrowsSeen, H.read().arrows); }
+    ok(g.marks.some(m => m[0] === 'skelarcher' && m[1] === '!') && g.hits.some(h => h.d === B.BONE_ARCHER.aimDmg && !h.o.unblockable && h.name === 'SKELETON ARCHER'), 'the aimed shot is a yellow ! and its arrow hits blockable (' + g.hits.filter(h => h.d === B.BONE_ARCHER.aimDmg).length + ' hit)'); }
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelarcher', 0); e.st = B.newSkelArcher(0, 0, 1); e.st.cd = 0; e.st.last = 'aim'; secs(g, H, 3.2);
+    const lobs = g.hits.filter(h => h.d === B.BONE_ARCHER.volleyDmg);
+    ok(g.marks.some(m => m[0] === 'skelarcher' && m[1] === '!!') && lobs.length >= 1 && lobs.every(h => h.o.unblockable), 'the volley is a red !! and its lobs land unblockable on whoever stands in the marks (' + lobs.length + ' of 3 on a hero standing at the middle mark)'); }
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelarcher', 0); e.st = B.newSkelArcher(0, 0, 1); e.st.cd = 0; e.st.last = 'aim'; let motes = 0, f = 0; for (; f < 60 * 3.2; f++) { g.frame(H); motes = Math.max(motes, H.motes.length); }
+    ok(motes === 3, 'three bone-dust motes mark the landing spots while he tells it (' + motes + ')'); }
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelarcher', 0); e.st = B.newSkelArcher(0, 0, 1); e.st.cd = 0; e.st.last = 'volley'; for (let i = 0; i < 30; i++) { g.frame(H); } ok(e.st.mode === 'aimTell', 'in the draw'); H.take(e, 3, { fromX: 20 }); ok(e.st.mode === 'stunned' && e.mode === 'stunned', 'a blow in the draw cancels the shot (hands.take)'); }
+  /* the mage: the wisp follows and is popped by a blow; the grave row hits a hero on the floor and passes under a jumper; the backstep */
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelmage', 0); e.st = B.newSkelMage(0, 0, 1); e.st.cd = 0; let wisps = 0; const hp0 = g.players[0].hp;
+    for (let i = 0; i < 60 * 8; i++) { g.frame(H); g.players[0].hp = 100; wisps = Math.max(wisps, H.read().wisps); }
+    ok(g.marks.some(m => m[0] === 'skelmage' && m[1] === '!') && wisps >= 1, 'the bone wisp is a yellow ! (' + wisps + ' in flight)');
+    ok(g.hits.some(h => h.d === B.BONE_MAGE.wispDmg && !h.o.unblockable), 'and a wisp that reaches him lands blockable'); }
+  { const g = mockGame([{ x: 150 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelmage', 0); e.st = B.newSkelMage(0, 0, 1); e.st.cd = 0; e.st.last = 'grave'; let popped = false;
+    for (let i = 0; i < 60 * 3; i++) { g.frame(H); if (H.wisps.length && !popped) { const w = H.wisps[0]; g.swing = { p: g.players[0], box: { l: w.x - 6, r: w.x + 6, t: w.y - 6, b: w.y + 6 } }; } if (H.read().pops) { popped = true; g.swing = null; } g.players[0].hp = 100; }
+    ok(popped && H.read().wisps === 0, 'a blow on the wisp pops it (POPPED)' + (g.numbers.includes('POPPED') ? '' : ' - word missing')); }
+  { const g = mockGame([{ x: 120 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelmage', 0); e.st = B.newSkelMage(0, 0, 1); e.st.cd = 0; e.st.last = 'wisp'; e.st.stepCdT = 99; secs(g, H, 3);
+    ok(g.marks.some(m => m[0] === 'skelmage' && m[1] === '!!') && g.hits.some(h => h.d === B.BONE_MAGE.graveDmg && h.o.unblockable), 'the grave row is a red !! and its crest lands unblockable on a hero on the floor'); }
+  { const g = mockGame([{ x: 120, y: -16 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelmage', 0); e.st = B.newSkelMage(0, 0, 1); e.st.cd = 0; e.st.last = 'wisp'; e.st.stepCdT = 99; secs(g, H, 3);
+    ok(!g.hits.some(h => h.d === B.BONE_MAGE.graveDmg), 'a hero who JUMPED the crest (16 px up) is not touched'); }
+  { const g = mockGame([{ x: 25 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelmage', 0); e.st = B.newSkelMage(0, 0, 1); e.st.cd = 99; secs(g, H, 1.2);
+    ok(H.read().blinks === 1 && Math.abs(e.x - 25) >= B.BONE_MAGE.stepFarMin && g.numbers.includes('BACKSTEP'), 'a hero at 25 px: he blinks away to x=' + e.x.toFixed(0) + ' (BACKSTEP)'); }
+  { const g = mockGame([{ x: 2000 }]), H = makeBonesHands(g.ctx), e = mkE(g, 'skelsoldier', 0); secs(g, H, 3); ok(e.x === 0 && !g.hits.length, 'out of sight (520 px) the dead only stand'); }
+}
+
 
 console.log(bad ? '\nbones: ' + bad + ' FAILED' : '\nok  bones          the soldier\'s ward and its three breaks, the archer\'s told shots, the mage\'s wisp / grave row / backstep, the tables, the flag off, the placement rows');
 process.exit(bad ? 1 : 0);
