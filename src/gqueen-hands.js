@@ -10,14 +10,21 @@ export const GQ3 = {
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.0, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
   portal: { cd: 8, cd2: 6, tell: 1.0, n: 2, n2: 3, glow: 0.9, gap: 0.35, fan: 3, spread: 14, v: 210, dmg: 10, minDist: 90, home: 320, stun: 2.2, stunHp: 0.03, clankHp: 0.01, rows: [12, 13, 14, 15, 16], r: 4 },
 };
-GQ3.hp2 = 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
+GQ3.hp2 = 1400;   /* (gq3 item 6: 1750 -> 1400 with the P2 resist 0.5x; the tune lane owns it) */
+void 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
 GQ3.flee = { tell: 1.6 };
 /* (gq3 item 5) THE GEODE LOB, P1's new attack: the hall's reflecting rock, mother's version. Tell 1.0 s ('!': sceptre up, a small portal over her head, a geode grinds out; a red ring marks the landing and tracks you 0.6 s, then locks), lob 0.9 s (apex 70 px).
    STRIKE IT BACK (any blow, shot or parry) -> 300 px/s home -> SENT BACK: stunned 2.0 s, 3% (shares stunGuard). Else 18 and it SHATTERS into 2 low shards running the floor 40 px each way (8, jump). cd 9 s (7 below half), range > 90 px, never under a wave or a lure. */
 GQ3.geode = { tell: 1.0, track: 0.6, throw: 0.3, air: 0.9, apex: 70, cd: 9, cd2: 7, minDist: 90, dmg: 18, r: 8, home: 300, stun: 2.0, stunHp: 0.03, clankHp: 0.01, shardDmg: 8, shardRun: 40, shardV: 130 };
 GQ3.fled = { kneel: 0.8, slam: 1.0, back: 0.8, hold: 0.25 };   /* (gq3 item 1) P2's bar empties: she KNEELS (beaten, crown clutched), slams her sceptre, a ROYAL PORTAL opens behind her, she backs into it and it snaps shut - she ESCAPES, no corpse (PROG.gqFled) */
 GQ3.roof = { crownCd: 6, portalCd: 8, lashTell: 0.7, lashReach: 120, lashDmg: 18, lashCd: 2.4, ambushTell: 0.8, ambushCd: 9, ambushDmg: 15, geyserTell: 0.9, geyserN: 5, geyserGap: 0.25, geyserStep: 20, geyserDmg: 16, geyserCd: 7,
-  leapCd: 5, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.66, 0.33], hatch: 0.8 };
+  leapCd: 7, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.8, 0.55, 0.3], hatch: 0.8 };
+/* (gq3 items 6 + 7) THE TOWER TOP, REBUILT: she resists 0.5x outside openings (never below 0.4). BLINK: into one ring, out of another (the exit glows WHITE 0.8 s + a chime); she steps out STUMBLING 1.2 s = THE OPENING (x1.5, 8% of the bar at most).
+   CROWN THROUGH A PORTAL: into a ring, out of another (the exit glows GOLD 0.6 s), chest height at 260 px/s toward you: PARRY it and she is STUNNED 3.0 s (x1.25). REINFORCEMENTS at 80 / 55 / 30%: a GREEN ring 1.0 s + a horn,
+   two goblins drop (+1 at 3-4 seats), never more than two alive. BURNING BAYS: one bay of the deck every 9 s (A, C, B, D): smoke 1.5 s, burn 6 s (3 hp / 0.8 s + a push up, spare). DESPERATION under 25%: a PORTAL STORM every 12 s: the five rings
+   light in order (0.6 s each) and each fans three shards at 165 px/s, two bays burn; she stumbles out of the cupola ring: OPEN 2.0 s (x1.5). */
+GQ3.p2 = { resist: 0.5, blinkCd: 5, blinkTell: 0.5, blinkGone: 0.8, blinkGlow: 0.8, stumble: 1.2, stumbleMul: 1.5, stumbleCap: 0.08, crownGlow: 0.6, crownV: 260, crownReach: 440, crownMinDx: 100,
+  addGlow: 1.0, addMax: 2, bayEvery: 9, baySmoke: 1.5, bayBurn: 6, bayOrder: [0, 2, 1, 3], desperate: 0.25, stormEvery: 12, stormStep: 0.6, stormTell: 0.8, stormOpen: 2.0, stormMul: 1.5, stormBays: 2 };
 /* (gq3 items 4 + 6) THE ESCAPE is THE BURNING TOWER now: her flee portal in the hall takes you to the foot of the tower. fire / fireEvery / push: a burning floor (spare, never kills). The PHOTO'S ATTACK (item 4): ONE portal per volley,
    hers, above you, three shards at shardV 165 px/s (was two fans at 210), glow 0.9 s (cue), every fan = 6.0 s, 4 dmg. */
 GQ3.esc = { fire: 3, fireEvery: 0.8, push: 150, fan: 6.0, cue: 0.9, step: 0.5, shardDmg: 4, shardV: 165, shards: 3 };
@@ -160,7 +167,7 @@ export function makeGQueenHands(ctx) {
     const tt = now();
     S.esc = { on: true, tower: true, inTower: false, fireOn: false, checked: !!checked, step: null, musicSet: false, graceUntil: tt + (checked ? 0 : G.flee.tell),
       volT: G.esc.fan, vol: null, beams: [], beamT: G.tower.beamFirst, fl: [0, 1, 2, 3].map(() => ({ lastOn: tt, smokeAt: 0, burning: false, tick: new Map() })),
-      q: { k: G.tower.start, x: 796, hopAt: tt + G.tower.hopEvery, entry: null, flash: null } };
+      q: { k: G.tower.start, x: 796 * TS + 8, hopAt: tt + G.tower.hopEvery, entry: null, flash: null } };
     for (const t0 of E.throwers || []) ctx.spawnEnt({ t: t0.t, x: t0.x, y: t0.y, face: -1 });
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
@@ -244,7 +251,7 @@ export function makeGQueenHands(ctx) {
       ctx.hint('THE TOWER TOP. SHE WAITS ON THE ROOF.');
     }
     const beginX = (Tw.FOLLOW.begin) * TS + 8;
-    if (esc.checked && here.some(p => p.y < 20 * TS && p.x > beginX && p.x < Tw.DECK.x1 * TS)) { esc.on = false; toRoof(); }
+    if (esc.checked && here.some(p => p.y <= 20 * TS && p.x > beginX && p.x < Tw.DECK.x1 * TS)) { esc.on = false; toRoof(); }
   }
   /* her portal in the hall: the whole party is set down at the foot of the tower, and that is the checkpoint from now on */
   function towerEnter(E) {
@@ -253,7 +260,7 @@ export function makeGQueenHands(ctx) {
     ctx.setCheckpoint(E.start.x * TS + 8, (E.start.y + 1) * TS);
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7); sfx('portalOpen');
     ctx.number(P0.x, P0.y - 40, 'THE BURNING TOWER', '#ff9a5c'); ctx.hint('THE FLOORS BEHIND YOU CATCH. CLIMB. MIND THE BEAMS.');
-    esc.q.hopAt = now() + G.tower.hopEvery; esc.q.k = G.tower.start; esc.q.x = 796; esc.volT = G.esc.fan;
+    esc.q.hopAt = now() + G.tower.hopEvery; esc.q.k = G.tower.start; esc.q.x = 796 * TS + 8; esc.volT = G.esc.fan;
   }
   /* the portal step: the WHOLE PARTY is set down at the tower top's portal exit (seat n a step aside, as a respawn), her arena becomes the tower top's, and phase two begins (bossStart: the name card, the walls, the music) */
   function toRoof() {
@@ -266,7 +273,12 @@ export function makeGQueenHands(ctx) {
     roofBegin(e);
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
   }
-  function roofBegin(e) { S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, stormAt: null, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null }; }
+  function roofBegin(e) { S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
+    bays: [0, 1, 2, 3].map(() => ({ state: 'idle', at: 0, until: 0 })), bayT: G.p2.bayEvery, bayNext: 0, bayN: 0 }; }
+  const rings = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.RINGS : []; };
+  const bays = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.BAYS : []; };
+  const ringPos = r => ({ x: r.x * TS + 8, y: (r.y + 1) * TS });   // feet
+  const lightBay = (R0, i, tt) => { const b = R0.bays[i]; if (b && b.state === 'idle') { b.state = 'smoke'; b.at = tt + G.p2.baySmoke; b.until = b.at + G.p2.bayBurn; const sp = bays()[i]; if (sp) { ctx.number(((sp[0] + sp[1]) / 2) * TS, L().arena.floor - 34, 'THE ROOF CATCHES', '#ff9a5c'); sfx('crumble'); } } };
   /* ---------------- PHASE TWO: THE TOWER TOP ---------------- */
   /* A sealed rooftop island. Full damage the whole phase (gqOpen: stage 'roof'); a stun adds the riposte window. Three attacks of her own - a BANNER LASH (high: duck / low: jump, alternating), a PORTAL AMBUSH
      (she steps out behind you into a sweep; yellow, a parry pays a riposte) and a RUBBLE GEYSER (a line of marked tiles toward you, jump it) - her quake stomp, the CROWN TOSS (parried: stunned 3.0 s), the portal
@@ -295,6 +307,21 @@ export function makeGQueenHands(ctx) {
     e.tx = Math.max(RA.x0 + 40, Math.min(RA.x1 - 40, P0.x + (Math.random() < 0.5 ? -1 : 1) * 70)); e.mode = 'hallLeapTell'; e.modeT = 0.6; e.face = sign(e.tx - e.x);
     ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); sfx('charge');
   }
+  /* BLINK: she steps into a ring (a burst where she stood), the EXIT ring - one near you but not under you - glows white 0.8 s with a chime, she steps out stumbling: the opening */
+  function startBlink(e) {
+    const R0 = S.roof; R0.blinkCd = G.p2.blinkCd; e.mode = 'blinkTell'; e.modeT = G.p2.blinkTell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('portalOpen');
+    ctx.burst(e.x, e.y - 24, 10, ['#b28cff', '#e8dcff'], 60, 0.4);
+  }
+  function pickExit(P0, minDx, noCupola) {
+    const rs = rings().map(r => ({ r, p: ringPos(r) })).filter(o => Math.abs(o.p.x - P0.x) >= minDx && !(noCupola && o.r.id === 'cu'));   /* (the crown flies at chest height: it cannot come out of the cupola's stone) */
+    if (!rs.length) return rings()[0] ? { r: rings()[0], p: ringPos(rings()[0]) } : null;
+    rs.sort((a, b) => Math.abs(a.p.x - P0.x) - Math.abs(b.p.x - P0.x)); return rs[Math.floor(Math.random() * Math.min(2, rs.length))];
+  }
+  function blinkGo(e) {
+    const R0 = S.roof, P0 = ctx.P(), ex = pickExit(P0, 60); if (!ex) { e.mode = 'rec'; e.modeT = 0.5; return; }
+    ctx.burst(e.x, e.y - 24, 14, ['#3a2a4a', '#7a4aa0', '#c9a0ff'], 80, 0.5); e.hidden = true; e.vx = 0; e.mode = 'blinkGone'; e.modeT = G.p2.blinkGone + 5;
+    R0.blink = { ring: ex.r.id, x: ex.p.x, y: ex.p.y, at: now() + G.p2.blinkGlow, kind: 'blink' }; sfx('portalOpen');
+  }
   H.roofStep = (e, dt) => {
     if (!S) return undefined;
     if (!S.roof) roofBegin(e);
@@ -306,12 +333,11 @@ export function makeGQueenHands(ctx) {
         e.mode = 'roofStand'; e.face = sign(d) || e.face;
         const want = ad > 56 ? e.face * 62 : 0;
         if (e.modeT <= 0 && !P0.dead) {
-          const hpk = e.hp / e.maxHp, stormUp = hpk < G.roof.stormBelow && !R0.storm && tt >= (R0.stormAt ?? 0);
-          if (stormUp) { e.mode = 'stormTell'; e.modeT = 0.8; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); }
-          else if (R0.ambushCd <= 0 && R0.last !== 'ambush' && ad > 60) { R0.last = 'ambush'; startAmbush(e); }
+          const hpk = e.hp / e.maxHp, stormUp = hpk < G.p2.desperate && !R0.pstorm && tt >= (R0.stormAt ?? 0);
+          if (stormUp) { e.mode = 'stormTell'; e.modeT = G.p2.stormTell; R0.stormAt = tt + G.p2.stormEvery; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); roofMus(2); }
+          else if (R0.blinkCd <= 0 && R0.last !== 'blink' && ad > 50) { R0.last = 'blink'; startBlink(e); }
           else if (R0.geyserCd <= 0 && ad < 280) { R0.last = 'geyser'; startGeyser(e); }
-          else if ((e.crownCd ?? 3) <= 0 && ad > 60 && !R0.storm) { R0.last = 'crown'; roofCrown(e); }
-          else if (hpk < G.roof.portalBelow && (e.portalCd ?? 6) <= 0 && ad > 40) { R0.last = 'portal'; roofPortal(e); }
+          else if ((e.crownCd ?? 3) <= 0 && ad > 60) { R0.last = 'crown'; roofCrown(e); }
           else if (R0.lashCd <= 0 && ad < G.roof.lashReach) { R0.last = 'lash'; startLash(e); }
           else if (R0.leapCd <= 0 && ad > 70) { R0.last = 'leap'; startLeap(e); }
         }
@@ -336,7 +362,15 @@ export function makeGQueenHands(ctx) {
       case 'ambushOut': e.alpha = 1; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'geyserTell': e.face = sign(R0.geysers.length ? R0.geysers[0].x - e.x : d) || e.face; if (e.modeT <= 0) { e.mode = 'geyser'; e.modeT = G.roof.geyserN * G.roof.geyserGap + 0.5; ctx.shake(5); sfx('forgeHammer'); } return 0;
       case 'geyser': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
-      case 'stormTell': e.face = sign(d) || e.face; if (e.modeT <= 0) { R0.storm = { ang: 0, hitAt: 0 }; roofMus(2); e.mode = 'rec'; e.modeT = 0.4; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); } return 0;
+      case 'stormTell': e.face = sign(d) || e.face;   /* DESPERATION: the portal storm */
+        if (e.modeT <= 0) { R0.pstorm = { i: 0, at: tt + 0.3, shard: [] }; e.mode = 'stormFire'; e.modeT = 99; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); ctx.shake(5);
+          const idle = R0.bays.map((b, i) => i).filter(i => R0.bays[i].state === 'idle'); for (let k = 0; k < G.p2.stormBays && idle.length; k++) lightBay(R0, idle.splice(Math.floor(Math.random() * idle.length), 1)[0], tt); }
+        return 0;
+      case 'stormFire': return 0;   // roofUpdate runs the five rings; it ends in stormOpen
+      case 'stormOpen': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; ctx.shake(3); sfx('bellow'); } return 0;
+      case 'blinkTell': e.face = sign(d) || e.face; if (e.modeT <= 0) { blinkGo(e); } return 0;
+      case 'blinkGone': e.vx = 0; return 0;   // roofUpdate: the exit ring glows, then she steps out
+      case 'stumble': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'hallLeapTell': if (e.modeT <= 0) { const T0 = 0.75; e.vx = (e.tx - e.x) / T0; e.vy = -500 * T0; e.mode = 'hallLeap'; e.modeT = T0 + 0.8; e.airT = 0; sfx('leap'); ctx.dust(e.x, e.y, 10); } return 0;
       case 'hallLeap': e.airT += dt;
         if ((e.onGround && e.airT > 0.2) || e.modeT <= 0) { e.vx = 0; e.mode = 'quake'; e.modeT = 0.45; sfx('forgeHammer'); sfx('heavy'); ctx.shake(9); ctx.zoom(1.08, 0.25); ctx.dust(e.x, e.y, 18);
@@ -358,17 +392,46 @@ export function makeGQueenHands(ctx) {
       if (g.done && tt < g.until) seats(P1 => { const hs = g.hits || (g.hits = new Set()); if (!hs.has(P1) && !P1.dead && Math.abs(P1.x - g.x) < 11 && P1.y > RA.floor - 10) { hs.add(P1); g.hit = true; gqRed(g.x, G.roof.geyserDmg, 'THE RUBBLE GEYSER', { up: true }); } });   /* (claude/gq2) once a hero, every seat */
     }
     R0.geysers = R0.geysers.filter(g => tt < g.at + 0.6);
-    stormStep(dt);
-    /* the guards: up a hatch (it bangs open for 0.8 s first), a soldier and a javelin, the hatch farther from you */
+    // ---- the blink's exit: glowing white 0.8 s, then she steps out STUMBLING (the opening) ----
+    if (R0.blink && tt >= R0.blink.at) {
+      const b = R0.blink; R0.blink = null; e.hidden = false; e.x = b.x; e.y = b.y - 1; e.vx = 0; e.vy = 0; e.face = sign(P0.x - e.x) || e.face; e.gqOpenTaken = 0;
+      e.mode = 'stumble'; e.modeT = G.p2.stumble; ctx.burst(b.x, b.y - 22, 16, ['#fff6c8', '#e8dcff', '#b28cff'], 90, 0.5); ctx.ring(b.x, b.y - 20, 22, '#fff6c8', 0.35); sfx('callerBlast'); ctx.number(b.x, b.y - 46, 'SHE STEPS OUT', '#8fd160');
+    }
+    // ---- REINFORCEMENTS at 80 / 55 / 30%: a green ring and a horn, two goblins drop (never more than two alive) ----
     for (const k of G.roof.addAt) {
       if (e.hp <= e.maxHp * k && !R0.adds.has(k)) {
-        R0.adds.add(k); const hs = RA.hatches || [616, 656], far = Math.abs(P0.x - hs[0] * TS) > Math.abs(P0.x - hs[1] * TS) ? hs[0] : hs[1];
-        R0.hatch = { x: far, at: tt + G.roof.hatch }; ctx.number(far * TS + 8, RA.floor - 20, '!', '#ffd36b'); sfx('crack'); ctx.shake(4);
+        R0.adds.add(k); const rs = rings(), r = rs[Math.floor(Math.random() * rs.length)]; if (!r) continue;
+        R0.reinf = { ring: r, at: tt + G.p2.addGlow }; const p = ringPos(r); ctx.number(p.x, p.y - 40, '!', '#8fd160'); sfx('portalOpen'); sfx('callerBlast'); ctx.shake(3);
       }
     }
-    if (R0.hatch && tt >= R0.hatch.at) {
-      const hx = R0.hatch.x, dir = hx < (RA.x0 + RA.x1) / 2 / TS ? 1 : -1; R0.hatch = null;
-      ctx.spawnEnt({ t: 'soldier', x: hx, y: 19, face: dir }); ctx.spawnEnt({ t: 'javelin', x: hx + dir * 2, y: 19, face: dir }); ctx.burst(hx * TS + 8, RA.floor - 6, 12, ['#5a5a68', '#8a5a32'], 70, 0.5); sfx('gateDrop');
+    if (R0.reinf && tt >= R0.reinf.at) {
+      const r = R0.reinf.ring; R0.reinf = null; const alive = ctx.enemies().filter(q2 => q2.alive && q2 !== e && !q2.mini && (q2.t === 'soldier' || q2.t === 'javelin') && Math.abs(q2.x - e.x) < 900).length;
+      if (alive < G.p2.addMax) {
+        const kinds = ['soldier', 'javelin']; let seats0 = 0; seats(() => seats0++); if (seats0 >= 3) kinds.push('soldier');
+        kinds.slice(0, Math.max(0, G.p2.addMax - alive) + (seats0 >= 3 ? 1 : 0)).forEach((t0, i) => ctx.spawnEnt({ t: t0, x: r.x + (i ? 1 : -1), y: r.y, face: Math.sign(P0.x - (r.x * TS)) || 1 }));
+        const p = ringPos(r); ctx.burst(p.x, p.y - 14, 14, ['#8fd160', '#e8ffd0', '#5a8a3a'], 80, 0.5); sfx('gateDrop'); ctx.number(p.x, p.y - 44, 'REINFORCEMENTS', '#8fd160');
+      }
+    }
+    // ---- THE BURNING BAYS: one every 9 s (A, C, B, D): smoke 1.5 s, burn 6 s (3 hp / 0.8 s and a push up: spare, never kills) ----
+    R0.bayT -= dt;
+    if (R0.bayT <= 0) { R0.bayT = G.p2.bayEvery; lightBay(R0, G.p2.bayOrder[R0.bayNext % 4], tt); R0.bayNext++; }
+    R0.bays.forEach((b, i) => {
+      if (b.state === 'smoke' && tt >= b.at) { b.state = 'burn'; sfx('crack'); }
+      else if (b.state === 'burn' && tt >= b.until) { b.state = 'idle'; return; }
+      if (b.state !== 'burn') return; const sp = bays()[i]; if (!sp) return;
+      seats(P1 => { if (!P1.dead && P1.ground && P1.y >= RA.floor - 3 && P1.x >= sp[0] * TS && P1.x <= (sp[1] + 1) * TS) {
+        P1.gqFireT = (P1.gqFireT ?? 0.4) - dt; if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; gqRed(P1.x, G.esc.fire, 'THE BURNING ROOF', { spare: true, noKnock: true }); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, RA.floor - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); } } });
+    });
+    // ---- DESPERATION: the portal storm - the five rings light in order and each fans three shards; she stumbles out of the cupola ring ----
+    const ps = R0.pstorm;
+    if (ps) {
+      const rs = rings();
+      if (ps.i < rs.length && tt >= ps.at) { const r = rs[ps.i], p = ringPos(r), tg = target(); ps.lit = { id: r.id, until: tt + 0.35 }; fan(p.x, p.y - 14, tg.x, tg.y - 8, true); ps.i++; ps.at = tt + G.p2.stormStep; sfx('portalOpen'); }
+      else if (ps.i >= rs.length && tt >= ps.at) {
+        R0.pstorm = null; const cu = rs.find(r => r.id === 'cu') || rs[rs.length - 1], cp = ringPos(cu);
+        e.x = cp.x; e.y = cp.y - 1; e.vx = 0; e.vy = 0; e.hidden = false; e.mode = 'stormOpen'; e.modeT = G.p2.stormOpen; e.gqOpenTaken = 0;
+        ctx.burst(cp.x, cp.y - 22, 18, ['#fff6c8', '#e8dcff', '#b28cff'], 100, 0.6); ctx.ring(cp.x, cp.y - 20, 26, '#fff6c8', 0.4); sfx('callerBlast'); ctx.number(cp.x, cp.y - 48, 'SHE STUMBLES OUT: STRIKE', '#8fd160');
+      }
     }
   }
   /* THE CROWN STORM (under 30%): her crown circles her (r 40, a turn in 1.2 s), touch 12. PARRY it once: it breaks into her - STUNNED 4.0 s + 6% - and the storm ends; it re-forms after 12 s. */
@@ -386,7 +449,7 @@ export function makeGQueenHands(ctx) {
       }
     });
   }
-  H.test = H.test || {}; H.test.roof = () => S && S.roof; H.test.geode = () => S && S.geode; H.test.geodeBits = () => (S ? S.geodeBits : []);
+  H.test = H.test || {}; H.test.roof = () => S && S.roof; H.test.geode = () => S && S.geode; H.test.esc = () => S && S.esc; H.test.crown = () => S && S.crown; H.test.geodeBits = () => (S ? S.geodeBits : []);
   H.test.begin = () => { const e = q(); if (e && S) roofBegin(e); };
   /* the hall portals' (and the escape's) fan of shards: three, +-14 deg, at the spot given, yellow and blockable; a parry only clanks here (nobody to send it back to) */
   function fan(px, py, tx, ty, esc) {
@@ -401,6 +464,11 @@ export function makeGQueenHands(ctx) {
   function launchCrown(e, P0) {
     const c = G.crown, dir = sign(P0.x - e.x);
     e.face = dir; e.crownOut = true;
+    if (e.stage === 'roof') {   /* (gq3 item 6) CROWN THROUGH A PORTAL: into a ring, out of another - the exit glows GOLD 0.6 s, then chest height toward you at 260 px/s (parry it: STUNNED) */
+      const ex = pickExit(P0, G.p2.crownMinDx, true), p = ex ? ex.p : { x: e.x + dir * 24, y: e.y }, d2 = sign(P0.x - p.x);
+      S.crown = { x: p.x, y: P0.y - c.dy, x0: p.x, vx: d2 * G.p2.crownV, dir: d2, state: 'ringwait', ring: ex ? ex.r.id : null, at: now() + G.p2.crownGlow, t: 0, hit: false, pass: 1, home: false, portal: true, id: 'c' + (++S.rid) };
+      sfx('throwWhoosh'); sfx('portalOpen'); ctx.burst(e.x + dir * 12, e.y - 54, 8, ['#ffd36b', '#fff6c8'], 50, 0.3); return;
+    }
     S.crown = { x: e.x + dir * 24, y: P0.y - c.dy, x0: e.x + dir * 24, vx: dir * c.out, dir, state: 'out', t: 0, hit: false, pass: 1, home: false, id: 'c' + (++S.rid) };
     sfx('throwWhoosh');
   }
@@ -409,10 +477,12 @@ export function makeGQueenHands(ctx) {
     if (!c) return;
     if (!e) { S.crown = null; return; }
     c.t += dt; c.spin = (c.spin || 0) + dt * 14;
+    if (c.state === 'ringwait') { c.y = ctx.P().y - G.crown.dy; if (now() >= c.at) { c.state = 'out'; c.t = 0; c.x0 = c.x; c.dir = sign(ctx.P().x - c.x) || c.dir; c.vx = c.dir * G.p2.crownV; sfx('callerBlast'); ctx.ring(c.x, c.y, 16, '#ffd36b', 0.3); } return; }
     if (Math.random() < dt * 30) ctx.part({ x: c.x, y: c.y, vx: 0, vy: 0, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0, glow: true });
     if (c.state === 'out') {
       c.x += c.vx * dt;
-      if (Math.abs(c.x - c.x0) >= cc.reach || ctx.solid(Math.floor((c.x + c.dir * 6) / TS), Math.floor(c.y / TS))) { c.state = 'hang'; c.t = 0; c.vx = 0; }
+      if (c.portal) { if (Math.abs(c.x - c.x0) >= G.p2.crownReach || ctx.solid(Math.floor((c.x + c.dir * 6) / TS), Math.floor(c.y / TS))) { S.crown = null; e.crownOut = false; ctx.ring(c.x, c.y, 14, '#c9c9d6', 0.25); sfx('clank'); return; }   /* a portal crown does not come back: it is spent where it ends */ }
+      else if (Math.abs(c.x - c.x0) >= cc.reach || ctx.solid(Math.floor((c.x + c.dir * 6) / TS), Math.floor(c.y / TS))) { c.state = 'hang'; c.t = 0; c.vx = 0; }
     } else if (c.state === 'hang') {
       if (c.t >= cc.hang) { c.state = 'back'; c.vx = -c.dir * cc.back; c.hit = false; c.pass = 2; sfx('throwWhoosh'); }
     } else if (c.state === 'back') {
@@ -823,6 +893,21 @@ export function makeGQueenHands(ctx) {
     if (e && e.mode === 'crownTossTell') { const k = 0.5 + 0.5 * Math.sin(t * 30); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(e.x - cx + e.face * 6) - 1, Math.round(e.y - 60 - cy), 3, 3); g.globalAlpha = 1; }
   };
 
+  /* (gq3 GREYBOX) THE TOWER TOP's kit: the five portal rings (dim; white = the blink's exit, gold = the crown's, green = reinforcements, lit in order in the storm), the burning bays, the stumble's stars. GQ3ART draws the royal ring set, the bays x3 burn states, the parapets, the cupola. */
+  function roofDraw(g, cx, cy, t) {
+    const R0 = S.roof; if (!R0) return; const A0 = L().arena;
+    const cr = S.crown && S.crown.state === 'ringwait' ? S.crown : null, rf = R0.reinf, bl = R0.blink, ps = R0.pstorm;
+    for (const r of rings()) { const p = ringPos(r); let col = '#5a3a8a', k = 0.35;
+      if (bl && bl.ring === r.id) { col = '#fff6c8'; k = 0.5 + 0.5 * Math.min(1, 1 - (bl.at - now()) / G.p2.blinkGlow); }
+      else if (cr && cr.ring === r.id) { col = '#ffd36b'; k = 0.5 + 0.5 * Math.min(1, 1 - (cr.at - now()) / G.p2.crownGlow); }
+      else if (rf && rf.ring.id === r.id) { col = '#8fd160'; k = 0.5 + 0.5 * Math.min(1, 1 - (rf.at - now()) / G.p2.addGlow); }
+      else if (ps && ps.lit && ps.lit.id === r.id && now() < ps.lit.until) { col = '#fff6c8'; k = 1; }
+      portalDraw(g, p.x - cx, p.y - 14 - cy, t, k, col); }
+    R0.bays.forEach((b, i) => { const sp = bays()[i]; if (!sp || b.state === 'idle') return; const x0 = Math.round(sp[0] * TS - cx), x1 = Math.round((sp[1] + 1) * TS - cx), fy = Math.round(A0.floor - cy);
+      if (b.state === 'burn') { g.globalAlpha = 0.85; for (let x = x0; x < x1; x += 8) { const h0 = 5 + 6 * (0.5 + 0.5 * Math.sin(t * 9 + x * 0.37 + i)); g.fillStyle = '#ff6b2c'; g.fillRect(x, fy - h0, 5, h0); g.fillStyle = '#ffd36b'; g.fillRect(x + 1, fy - h0 * 0.55, 3, h0 * 0.55); } g.globalAlpha = 1; }
+      else { g.globalAlpha = 0.5; for (let x = x0; x < x1; x += 12) { const ph = (t * 0.9 + x * 0.17) % 1; g.fillStyle = '#6a6a78'; g.fillRect(x + Math.round(Math.sin(t + x) * 3), fy - 4 - Math.round(ph * 24), 6, 5); } g.globalAlpha = 1; } });
+    const e = q(); if (e && (e.mode === 'stumble' || e.mode === 'stormOpen')) for (let k = 0; k < 3; k++) { const a = t * 5 + k * 2.09; g.fillStyle = '#8fd160'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 16), Math.round(e.y - 64 - cy + Math.sin(a) * 4), 2, 2); }
+  }
   /* (claude/gq2art) THE ART: the same world, drawn by src/redraw/gqueen_art.js. Any throw falls back to the greybox above for the rest of the session (and says so once). */
   let artOff = false;
   function artWorld(g, cx, cy, t) {
@@ -853,7 +938,7 @@ export function makeGQueenHands(ctx) {
   const greyWorld = H.drawWorld;
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
-    try { mechDraw(g, cx, cy, t); geodeDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
+    try { mechDraw(g, cx, cy, t); geodeDraw(g, cx, cy, t); roofDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
     if (artOff) return greyWorld(g, cx, cy, t);
     try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
   };
@@ -862,7 +947,7 @@ export function makeGQueenHands(ctx) {
   H.shots = () => {
     if (!S) return [];
     const out = [];
-    if (S.crown && S.crown.state !== 'floor') out.push({ id: S.crown.id, x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
+    if (S.crown && S.crown.state !== 'floor' && S.crown.state !== 'ringwait') out.push({ id: S.crown.id, x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
     for (const r of S.rocks) if (!r.dead) out.push({ id: r.id, x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home });
     if (S.geode && (S.geode.state === 'fly' || S.geode.state === 'back')) out.push({ id: S.geode.id, x: S.geode.x, y: S.geode.y, vx: S.geode.state === 'back' ? 0 : (S.geode.tx - S.geode.x0) / G.geode.air, vy: 0, kind: 'geode', home: S.geode.state === 'back' });
     const st = S.roof && S.roof.storm; if (st && st.x !== undefined) { const w = Math.PI * 2 / G.roof.orbitTurn; out.push({ id: 's' + Math.floor(st.ang / (Math.PI * 2)), x: st.x, y: st.y, vx: -Math.sin(st.ang) * G.roof.orbitR * w, vy: Math.cos(st.ang) * G.roof.orbitR * 0.55 * w, kind: 'storm', home: false }); }

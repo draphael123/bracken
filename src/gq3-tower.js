@@ -58,8 +58,8 @@ export function towerLay(R, { T, TS }) {
   // ---- the arena (phase two) ----
   Object.assign(A, { x0: D.x0 * TS, x1: D.x1 * TS, floor: D.floor * TS, wallL: D.x0 - 1, wallR: D.x1 + 1, exit: { x: TW.FOLLOW.begin, y: 19 }, hatches: [], stack: [C.x0, C.x1], poles: [790, 822], tower: TW, noWall: true });
   // ---- the escape table (the burning-hall climb is retired: no rafters, no roof slates, no hall portals) ----
-  const Ar = R.arena, hallPortal = { x: Math.round(Ar.x1 / TS) - 6, y: 19 };
-  R.gqEscape = { tiers: [], supports: [], hallPortals: [], slates: null, throwers: [], tower: TW, start: { x: 784, y: F[0] - 1 }, check: { x: TW.FOLLOW.shrine[0], y: TW.FOLLOW.shrine[1] }, portal: hallPortal,
+  const Ar = R.arena, hallPortal = { x: 748, y: 19 };   /* on the hall floor in front of the dais steps */
+  R.gqEscape = { tiers: [], supports: [], hallPortals: [], slates: null, throwers: [], tower: TW, start: { x: 790, y: F[0] - 1 }, check: { x: TW.FOLLOW.shrine[0], y: TW.FOLLOW.shrine[1] }, portal: hallPortal,
     route: [[hallPortal.x, 19], [784, 80], [784, 68], [803, 56], [784, 44], [803, 32], [792, 20], [TW.FOLLOW.shrine[0], 19]] };
   (R.masonry = R.masonry || []).push([s0 - 1, s1 + 1, 22, F[0]]); (R.interiors = R.interiors || []).push([s0, s1, 22, F[0] - 1, 'hcguard']);
   (R.calm = R.calm || []).push([s0 - 2, s1 + 2, 22, 82], [D.x0, D.x1, 0, 19]);
