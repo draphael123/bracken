@@ -804,7 +804,9 @@ function gqEscapeBot(BK, P, k) {
   const E = BK.L && BK.L.gqEscape; if (!E || !E.tower) return null;
   const Tw = E.tower, rd = BK.gqHands() ? BK.gqHands().read() : null, inT = !!(rd && rd.esc && rd.esc.inTower);
   if (!inT) { const px = E.portal.x * 16 + 8; k.left = k.right = false; return { goal: px, strike: false }; }
-  let s = -1; if (P.y < 22 * 16) s = 5; else for (let i = 0; i < Tw.FLOORS.length; i++) if (P.y > (Tw.FLOORS[i] - 12) * 16 && P.y <= Tw.FLOORS[i] * 16 + 2) { s = i; break; }
+  /* (gq3fix) ON A LADDER: keep holding UP to the top (the game stands him over the top itself). The old storey bounds flipped at a ladder's top, dropped UP and left him hanging on the rung for up to 90 s (the lab's stall). */
+  for (const [c, top, bot] of [...Tw.LADDERS, [Tw.HATCH.ladder[0], Tw.HATCH.ladder[1], Tw.HATCH.ladder[2]]]) if ((P.climb || !P.ground) && Math.abs(P.x - (c * 16 + 8)) < 9 && P.y > top * 16 - 6 && P.y <= (bot + 1) * 16) { k.left = k.right = false; k.up = true; return { goal: c * 16 + 8, strike: false }; }
+  const py = P.y; let s = -1; if (py <= 20 * 16 + 2) s = 5; else for (let i = 0; i < Tw.FLOORS.length; i++) if (py > (i === 4 ? 20 * 16 + 2 : (Tw.FLOORS[i] - 12) * 16) && py <= Tw.FLOORS[i] * 16 + 2) { s = i; break; }
   let goal = P.x, up = false;
   if (s >= 0 && s < 4) { goal = Tw.LADDERS[s][0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
   else if (s === 4) { goal = Tw.HATCH.ladder[0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
@@ -3068,7 +3070,7 @@ async function runbossLab(BK, opts) {
          tall, so a hop does reach her, and the same is true of the other eight on this list: a jump apex is well under 24 px of
          hang time before it is falling again, so "boss.y>P.y+24" was reading the bot's OWN HOP as a step it had climbed. It asks
          for the ground now, for every boss here, not only her (Daniel, "apply the same fix to the other eight", 2026-09-25). */
-      if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
+      if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&!(boss.t==='gqueen'&&BK.gqStage&&BK.gqStage()==='escape')&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
       if(boss.t==='windcaller'&&BK.callerWind&&boss.y>P.y+24&&P.ground&&(k.left||k.right)&&boss.mode!=='fallen'){const W=BK.callerWind();if(W&&(W.on||W.tell>=0.15)){k.left=k.right=false;k.down=true;}}   /* (claude/windcaller4: but HE IS DOWN - no thorns now, drop to him whatever the wind) */ /* (claude/windcaller3) OFF A LEDGE IN THE STILL: a hero who steps off in the gust is carried over the thorns - and stood waiting on it he BRACES, or the gust walks him off its end */
       const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT&&!gateDuty||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}
