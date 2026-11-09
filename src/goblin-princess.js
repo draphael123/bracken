@@ -19,7 +19,7 @@ import * as BW from './bell-winch.js';
 import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
-  hp: 1080, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
+  hp: 1000, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
   resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0, shotUp: 0.85,
   gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
   lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 31, reach: 30, stagger: 1.0 },

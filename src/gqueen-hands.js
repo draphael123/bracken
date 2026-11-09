@@ -10,12 +10,12 @@ export const GQ3 = {
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.0, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
   portal: { cd: 8, cd2: 6, tell: 1.0, n: 2, n2: 3, glow: 0.9, gap: 0.35, fan: 3, spread: 14, v: 210, dmg: 10, minDist: 90, home: 320, stun: 2.2, stunHp: 0.03, clankHp: 0.01, rows: [12, 13, 14, 15, 16], r: 4 },
 };
-GQ3.hp2 = 1400;   /* (gq3 item 6: 1750 -> 1400 with the P2 resist 0.5x; the tune lane owns it) */
+GQ3.hp2 = 1150;   /* (gq3 item 6: 1750 -> 1400 with the P2 resist 0.5x; the tune lane owns it) */
 void 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
 GQ3.flee = { tell: 1.6 };
 /* (gq3 item 5) THE GEODE LOB, P1's new attack: the hall's reflecting rock, mother's version. Tell 1.0 s ('!': sceptre up, a small portal over her head, a geode grinds out; a red ring marks the landing and tracks you 0.6 s, then locks), lob 0.9 s (apex 70 px).
    STRIKE IT BACK (any blow, shot or parry) -> 300 px/s home -> SENT BACK: stunned 2.0 s, 3% (shares stunGuard). Else 18 and it SHATTERS into 2 low shards running the floor 40 px each way (8, jump). cd 9 s (7 below half), range > 90 px, never under a wave or a lure. */
-GQ3.geode = { tell: 1.0, track: 0.6, throw: 0.3, air: 0.9, apex: 70, cd: 9, cd2: 7, minDist: 90, dmg: 18, r: 8, home: 300, stun: 2.0, stunHp: 0.03, clankHp: 0.01, shardDmg: 8, shardRun: 40, shardV: 130 };
+GQ3.geode = { tell: 1.0, track: 0.6, throw: 0.3, air: 0.9, apex: 70, cd: 11, cd2: 9, minDist: 90, dmg: 18, r: 8, home: 300, stun: 2.0, stunHp: 0.03, clankHp: 0.01, shardDmg: 8, shardRun: 40, shardV: 130 };
 GQ3.fled = { kneel: 0.8, slam: 1.0, back: 0.8, hold: 0.25 };   /* (gq3 item 1) P2's bar empties: she KNEELS (beaten, crown clutched), slams her sceptre, a ROYAL PORTAL opens behind her, she backs into it and it snaps shut - she ESCAPES, no corpse (PROG.gqFled) */
 GQ3.roof = { crownCd: 6, portalCd: 8, lashTell: 0.7, lashReach: 120, lashDmg: 18, lashCd: 2.4, ambushTell: 0.8, ambushCd: 9, ambushDmg: 15, geyserTell: 0.9, geyserN: 5, geyserGap: 0.25, geyserStep: 20, geyserDmg: 16, geyserCd: 7,
   leapCd: 7, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.8, 0.55, 0.3], hatch: 0.8 };
