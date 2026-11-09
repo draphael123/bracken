@@ -32,7 +32,7 @@ GQ3.tower = { catch: 2.0, smoke: 1.0, beamEvery: [6, 8], beamFirst: 5, beamTell:
 /* (claude/gq2mech) HIGHCROWN'S MECHANICS IN HER HALL (Daniel 11-06): (1) THE BELL IS YOURS - ring it (a blow on the bell) and she STORMS to the sound; under the grate when it drops she is PINNED ~3.5 s (a bigger
    window, x1.1 a blow, at most 15% of her bar a pin); the bell has a cooldown. (2) THE BARRACKS GATE (her west door) rises at 66 / 33 % of her hall bar: crank the winch (3 blows, each inside 2 s of the last, any seat) before the horn
    runs out and the gate drops on her guards; fail and they join her. Hall only. Numbers are starting values for the tune lane. */
-GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.15,   /* (claude/hcqueen: pin 4.0 x1.35 uncapped -> 3.5 s x1.1, a pin's blows at most 15% of her bar (main.js gqPinCap). The tally put 50-80% of her hall bar in the lured pin, a pyro 1000+ a pin. Band 75% -> 70% n=108) */ contact: 14, contactR: 26, grateHold: 3.5, queue: 1.5,
+GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.15,   /* (claude/hcqueen: pin 4.0 x1.35 uncapped -> 3.5 s x1.1, a pin's blows at most 15% of her bar (main.js gqPinCap). The tally put 50-80% of her hall bar in the lured pin, a pyro 1000+ a pin. Band 75% -> 70% n=108) */ contact: 14, contactR: 26, wind: 0.6, grateHold: 3.5, queue: 1.5,
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
@@ -760,15 +760,21 @@ export function makeGQueenHands(ctx) {
   }
   function lureBegin(e, b) {
     const M = S.mech, gx = b.gate * TS + 8;
-    M.queued = 0; M.lure = { x: gx, state: 'run', wait: 0, hit: new Set() };
-    e.mode = 'lure'; e.modeT = GM.lureMax; e.crownOut = false; e.face = sign(gx - e.x) || e.face;
+    M.queued = 0; M.lure = { x: gx, state: 'wind', wind: GM.wind, wait: 0, hit: new Set() };   /* (gq3fix) a told WIND-UP before the charge: she plants and gathers (her slam-tell pose, dust, the bell glow) - the run's contact blow is never a surprise */
+    e.mode = 'lure'; e.modeT = GM.lureMax + GM.wind; e.crownOut = false; e.face = sign(gx - e.x) || e.face;
     ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); ctx.number(e.x, e.y - 70, 'SHE HEARS IT', '#ff6b6b'); sfx('bellow'); sfx('callerChant');
   }
   /* the storm: a blockable charge at the sound (a parry on it stuns her, as on every told blow), then 0.9 s under the grate while its column glows, then the grate drops */
   function lureStep(e, dt) {
     const M = S.mech, Lu = M.lure, b = bellProp();
     if (!Lu || !b) { e.mode = 'rec'; e.modeT = 0.5; M.lure = null; return 0; }
-    const dx = Lu.x - e.x; e.face = sign(dx) || e.face;
+    const dx = Lu.x - e.x; e.face = sign(dx) || e.face; e.luWind = Lu.state === 'wind' ? 1 : 0;
+    if (Lu.state === 'wind') {
+      Lu.wind -= dt; e.vx = 0; b.tellUntil = now() + 0.12; b.tellK = Math.max(0, 1 - Lu.wind / GM.wind) * 0.6;
+      if (Math.random() < dt * 40) ctx.dust(e.x - e.face * 14, e.y, 1);
+      if (Lu.wind <= 0) Lu.state = 'run';
+      return 0;
+    }
     if (Lu.state === 'run') {
       if (Math.abs(dx) < 8 || e.modeT <= 0) { Lu.state = 'wait'; Lu.wait = GM.tell; e.vx = 0; }
       else {

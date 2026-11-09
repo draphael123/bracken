@@ -85,7 +85,8 @@ console.log('== BELL: a miss, a parry on the charge, a blockable charge');
   const v = make(); v.e.x = gx + 160; v.heroes[0].x = v.e.x - 60; ring(v); v.step(2); v.st.parryNext = true; let stunned = false;
   for (let i = 0; i < 60 * 2; i++) { v.heroes[0].x = v.e.x - 10; v.step(1); if (v.e.mode === 'stunned') { stunned = true; break; } }
   ok(stunned && v.st.grate.length === 0, 'a PARRY on her charge stuns her (the crown/shard skill opening, same verb); the lure is off, no grate');
-  const u = make(); u.e.x = gx + 100; ring(u); u.step(2); u.heroes[0].x = u.e.x - 8; u.step(2);
+  const u = make(); u.e.x = gx + 100; ring(u); u.step(2); u.heroes[0].x = u.e.x - 8; u.step(Math.round(60 * GM.wind) - 12);
+  ok(u.e.luWind === 1 && u.st.dmg.length === 0 && u.e.vx === 0, '(gq3fix) the charge is TOLD: a ' + GM.wind + ' s wind-up first (planted, her gather pose, no contact blow in it)'); u.step(24);
   ok(u.st.dmg.some(d => d.d === GM.contact && !d.o.unblockable), 'the charge is a BLOCKABLE hit (yellow), not a red one'); }
 console.log('== BELL: standing under the grate you rang');
 { const w = make(); const gx = w.bell.gate * 16 + 8; w.e.x = gx + 40; w.heroes[0].x = gx + 2; w.heroes[0].y = w.A.floor - 20; ring(w); w.step(2);
