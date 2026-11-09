@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -14,24 +14,32 @@ const MECH = ['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:ir
 const HAZ = ['crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit'];
 /* THE STARTER CAST: fifteen you can read at a glance (Mario Maker shows a few, not all); the rest are one tab over */
 const STARTER = ['sprig', 'shield', 'archer', 'brute', 'hound', 'wasp', 'spit', 'hopper', 'sapper', 'harpy', 'zombie', 'wight', 'goat', 'rockgoblin', 'shaman'];
+/* (claude/maker) THE TABS GROUP PIECES BY WHAT THEY DO (Daniel: "Mario Maker groups pieces together"): one GROUND that wears the
+   level's STYLE, ledges you stand on, blocks, hazards. A group lists {cat, i} items, so tiles and pieces share a tab. The old
+   per-material ground pieces and the six slope tiles stay in TILES (old levels and the checks use them) but are not shown:
+   the STYLE swatches and the one SLOPE piece replace them. */
+const tl = ids => ids.map(id => ({ cat: 0, i: TILES.findIndex(t => t[1] === id) })).filter(q => q.i >= 0);
+const th = ids => ids.map(id => ({ cat: 2, i: THINGS.indexOf(id) })).filter(q => q.i >= 0);
+const fo = ts => ts.map(t => ({ cat: 1, i: FOES.indexOf(t) })).filter(q => q.i >= 0);
 export const GROUPS = [
-  { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && (v.startsWith('mat:') || v.startsWith('sw:')))) },
-  { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:') && !v.startsWith('sw:'))) },
-  { name: 'ENEMIES', cat: 1, idx: STARTER.map(t => FOES.indexOf(t)).filter(i => i >= 0) },
-  { name: 'MORE ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t) && !STARTER.includes(t) && !BOSSES.includes(t)).map(([, i]) => i) },
-  { name: 'BOSSES', cat: 1, idx: BOSSES.map(t => FOES.indexOf(t)) },
-  { name: 'WATER ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => WATER_FOES.includes(t)).map(([, i]) => i) },
-  { name: 'ITEMS', cat: 2, idx: THINGS.map((t, i) => [t, i]).filter(([t]) => !MECH.includes(t) && !HAZ.includes(t)).map(([, i]) => i) },
-  { name: 'MECHANISMS', cat: 2, idx: thingIdx(MECH) },
-  { name: 'HAZARDS', cat: 2, idx: thingIdx(HAZ) },
-  { name: 'TOOLS', cat: 3, idx: null },   // filled from the editor's own tool list
+  { name: 'GROUND', style: true, items: tl([T.AIR, T.SOLID, 'ramp', 'hill', 'water', 'shallows', 'poison']) },
+  { name: 'LEDGES', items: [...tl([T.ONEWAY, 'crumble', T.PLANK, T.SHELF, T.RAIL, T.REED, T.CRYST, T.NET, T.CLIMB]), ...th(['mover', 'mover:up'])] },
+  { name: 'BLOCKS', items: [...tl([T.CRATE, T.SOFT, T.ICE, T.PALISADE, 'sw:red', 'sw:blue', T.BOUNCER]), ...th(['pushblock'])] },
+  { name: 'ENEMIES', items: fo(STARTER) },
+  { name: 'MORE ENEMIES', items: fo(FOES.filter(t => !WATER_FOES.includes(t) && !STARTER.includes(t) && !BOSSES.includes(t))) },
+  { name: 'BOSSES', items: fo(BOSSES) },
+  { name: 'WATER ENEMIES', items: fo(WATER_FOES) },
+  { name: 'ITEMS', items: th(THINGS.filter(t => !MECH.includes(t) && !HAZ.includes(t))) },
+  { name: 'MECHANISMS', items: [...th(MECH.filter(t => t !== 'pushblock' && t !== 'mover' && t !== 'mover:up')), ...tl([T.PORT])] },
+  { name: 'HAZARDS', items: [...tl([T.SPIKE, T.WEB]), ...th(HAZ)] },
+  { name: 'TOOLS', cat: 3, items: null },   // filled from the editor's own tool list
 ];
 const TOOL_NAMES = { SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
 const TOOL_SHOWN = ['SELECT', 'START', 'LINK', 'EDIT'];
 const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
@@ -62,7 +70,8 @@ const prettyTrack = k => k ? String(k).replace(/^mus/, '').replace(/([a-z])([A-Z
 function tileIcon(g, id, x, y) {   // 16x16 at (x, y)
   const R = (c, a, b, w, h) => { g.fillStyle = c; g.fillRect(x + a, y + b, w, h); };
   if (id === T.AIR) { g.strokeStyle = '#ff7a6a'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 3, y + 3); g.lineTo(x + 13, y + 13); g.moveTo(x + 13, y + 3); g.lineTo(x + 3, y + 13); g.stroke(); return; }
-  if (id === T.SOLID) { R('#7a5230', 0, 3, 16, 13); R('#5aa33e', 0, 0, 16, 4); R('#8fd160', 0, 0, 16, 1); R('#ffffff', 12, 9, 2, 2); return; }
+  if (id === T.SOLID) { const C = ICON_STYLE && STYLE_COL[ICON_STYLE]; if (C) { R(C[0], 0, 3, 16, 13); R(C[1], 0, 0, 16, 4); return; } R('#7a5230', 0, 3, 16, 13); R('#5aa33e', 0, 0, 16, 4); R('#8fd160', 0, 0, 16, 1); R('#ffffff', 12, 9, 2, 2); return; }
+  if (id === 'ramp') { g.fillStyle = '#7a5230'; g.beginPath(); g.moveTo(x + 1, y + 15); g.lineTo(x + 15, y + 2); g.lineTo(x + 15, y + 15); g.closePath(); g.fill(); g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 1, y + 15); g.lineTo(x + 15, y + 2); g.stroke(); return; }
   if (id === 'sw:red') { R('#c83a3a', 1, 1, 14, 14); R('#ff7a7a', 1, 1, 14, 2); R('#801a1a', 1, 13, 14, 2); return; }
   if (id === 'sw:blue') { g.strokeStyle = '#6fb0ff'; g.lineWidth = 1; g.setLineDash([2, 2]); g.strokeRect(x + 1.5, y + 1.5, 13, 13); g.setLineDash([]); return; }
   if (typeof id === 'string' && id.startsWith('mat:')) { const m = id.slice(4);
@@ -124,6 +133,18 @@ function fitSprite(g, c, sp, x, y) {
   const k = Math.min(1, 16 / Math.max(f.width, f.height)), w = f.width * k, h = f.height * k;
   g.drawImage(f, Math.round(x + 8 - w / 2), Math.round(y + 16 - h), Math.round(w), Math.round(h));
 }
+let ICON_STYLE = null;   /* the level's style: the GROUND icon wears it */
+const STYLE_W = STYLES.length * 15 + 8;
+function drawStyles(c) {   /* STYLE: one swatch per style; the level's is ringed. Returns the width it took. */
+  const { g, text } = c, x0 = 20, y = TAB_H + 2;
+  text('STYLE', x0 + STYLE_W / 2 - 4, y, '#8a7fa0', 'center', 6);
+  STYLES.forEach((k, n) => { const x = x0 + n * 15, r = { x, y: y + 9, w: 14, h: 14, k }, on = (c.doc.style || null) === k, hov = UI.hover && UI.hover.kind === 'style' && UI.hover.k === k;
+    if (k) { const C = STYLE_COL[k]; g.fillStyle = C[0]; g.fillRect(x + 1, r.y + 1, 12, 12); g.fillStyle = C[1]; g.fillRect(x + 1, r.y + 1, 12, 4); }
+    else { g.fillStyle = '#3a3150'; g.fillRect(x + 1, r.y + 1, 12, 12); text('BG', x + 7, r.y + 4, '#c8bcd8', 'center', 6); }
+    if (on || hov) { g.strokeStyle = on ? '#ffd36b' : '#c8bcd8'; g.lineWidth = 1; g.strokeRect(x + 0.5, r.y + 0.5, 13, 13); }
+    UI.swatches.push(r); });
+  return STYLE_W;
+}
 function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
@@ -131,7 +152,7 @@ function itemIcon(g, c, cat, i, x, y) {
   else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
-function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => i) : gr.idx; }
+function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => ({ cat: 3, i })) : gr.items; }
 
 // ---------------- layout ----------------
 const TAB_H = 12, CELL = 30, ROWS = 1, NAME_H = 12, ICON_K = 1.5, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
@@ -152,11 +173,13 @@ export function drawChrome(c) {
   { const bad = c.noGate || c.problems, s0 = c.noGate ? 'NO GOAL GATE YET (ITEMS)' : c.problems ? c.problems + (c.problems > 1 ? ' PIECES' : ' PIECE') + " WON'T WORK (RED)" : c.doc.name, room = VW - 6 - tx;
     if (room > 30) text(c.fitText(s0, room, 6), VW - 4, 3, bad ? '#ff6b6b' : '#ffd36b', 'right', 6); }
   // ---- top: the icon strip ----
-  const idx = groupIdx(c, UI.group), cols = Math.floor((VW - 40) / CELL), per = cols * ROWS, pages = Math.max(1, Math.ceil(idx.length / per));
+  ICON_STYLE = c.doc.style || null; UI.swatches = [];
+  const sw0 = GROUPS[UI.group].style ? drawStyles(c) : 0;   /* (claude/maker) THE STYLE swatches */
+  const idx = groupIdx(c, UI.group), cols = Math.floor((VW - 40 - sw0) / CELL), per = cols * ROWS, pages = Math.max(1, Math.ceil(idx.length / per));
   UI.page[UI.group] = Math.min(UI.page[UI.group], pages - 1); const p = UI.page[UI.group];
   UI.cells = []; UI.arrows = [];
   for (let k = 0; k < per; k++) { const n = p * per + k; if (n >= idx.length) break;
-    const i = idx[n], col = k % cols, row = Math.floor(k / cols), x = 20 + col * CELL, y = TAB_H + row * CELL, cat = GROUPS[UI.group].cat;
+    const { cat, i } = idx[n], col = k % cols, row = Math.floor(k / cols), x = 20 + sw0 + col * CELL, y = TAB_H + row * CELL;
     const sel = cat === c.cat && i === c.sel, hov = UI.hover && UI.hover.kind === 'cell' && UI.hover.cat === cat && UI.hover.i === i;
     g.fillStyle = sel ? '#3f6a3a' : hov ? 'rgba(90,80,120,0.9)' : 'rgba(30,26,40,0.9)'; g.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
     if (sel) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 1.5, y + 1.5, CELL - 3, CELL - 3); }
@@ -191,7 +214,7 @@ export function drawChrome(c) {
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
   if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
 }
-const groupOf = c => GROUPS.findIndex((gr, gi) => gr.cat === c.cat && groupIdx(c, gi).includes(c.sel));
+const groupOf = c => GROUPS.findIndex((gr, gi) => groupIdx(c, gi).some(q => q.cat === c.cat && q.i === c.sel));
 
 // ---------------- the panels ----------------
 function panelBox(c, w, h, title) {
@@ -232,7 +255,8 @@ const HELP = [
   ['PICK A PIECE', 'click a group tab along the top, then a piece in the strip (< > for more)'],
   ['PAINT', 'left-click or drag in the level.  ERASE: right-click or drag'],
   ['MOVE A PIECE', 'drag it.  SHIFT+CLICK it to set it up (how far, which way, what it says)'],
-  ['WATER / HILLS', 'WATER: drag a box.  HILL: paint the top of the ground, the ramps make themselves'],
+  ['GROUND & STYLE', 'the STYLE swatches (GROUND tab) reskin all the ground: wood, castle, city...  SHIFT+paint keeps a cell in its style'],
+  ['SLOPES / WATER', 'SLOPE: drag from the low end to the high end (wide = gentle).  WATER: drag a box.  HILL: paint tops, ramps make themselves'],
   ['DOORS', 'paint DOOR tiles; a LEVER or PLATE opens the nearest (TOOLS > LINK picks one)'],
   ['START / GOAL', 'TOOLS > START sets where the knight begins; every level needs a GOAL GATE (ITEMS)'],
   ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
@@ -241,7 +265,7 @@ const HELP = [
   ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
-  const { g, text } = c, w = 560, h = 214, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
+  const { g, text } = c, w = 560, h = 226, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
   HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(c.fitText(b, w - 116, 6), x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
   UI.rows = []; const by = y + h - 34, btn = (bx, w2, label, key, col) => { const r = { x: bx, y: by, w: w2, h: 13, key }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + w2 / 2, r.y + 3, '#ffffff', 'center', 6); UI.rows.push(r); };
   btn(x + 12, 120, 'START THE GUIDE', 'guide', '#3f6a8a');
@@ -288,7 +312,8 @@ export function uiMouse(c, mx, my, down) {
   if (cell) UI.hover = { kind: 'cell', cat: cell.cat, i: cell.i }; else if (btn) UI.hover = { kind: 'btn', b: btn.b };
   if (!down) return { consumed: true };
   if (tab) { UI.group = tab.gi; return { consumed: true, act: 'ui' }; }
-  if (arr) { const idx = groupIdx(c, UI.group), per = Math.floor((VW - 40) / CELL) * ROWS, pages = Math.max(1, Math.ceil(idx.length / per)); UI.page[UI.group] = (UI.page[UI.group] + arr.d + pages) % pages; return { consumed: true, act: 'ui' }; }
+  { const s0 = (UI.swatches || []).find(q => inR(q, mx, my)); if (s0) { UI.hover = { kind: 'style', k: s0.k }; if (down) return { consumed: true, act: 'style', style: s0.k }; return { consumed: true }; } }
+  if (arr) { const idx = groupIdx(c, UI.group), per = Math.floor((VW - 40 - (GROUPS[UI.group].style ? STYLE_W : 0)) * 1 / CELL) * ROWS, pages = Math.max(1, Math.ceil(idx.length / per)); UI.page[UI.group] = (UI.page[UI.group] + arr.d + pages) % pages; return { consumed: true, act: 'ui' }; }
   if (cell) return { consumed: true, pick: { cat: cell.cat, i: cell.i } };
   if (btn && btn.b === 'MAP') { UI.mapOn = !UI.mapOn; return { consumed: true, act: 'ui' }; }
   if (btn) { if (btn.b === 'SETTINGS') { UI.panel = 'settings'; return { consumed: true, act: 'openSettings' }; } if (btn.b === 'HELP') { UI.panel = 'help'; return { consumed: true }; }

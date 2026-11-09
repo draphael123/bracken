@@ -156,6 +156,22 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - Save slots now load every extra through `MKP.setTerrain`, so a new setting can't be dropped by a stale field list again.
 - `tools/maker-goals.mjs` (in the suite).
 
+## Done (2026-11-09, A CLEARER PALETTE - Daniel: "Mario Maker groups pieces together; a generic tile that follows the asset type")
+- LEVEL STYLE: swatches at the left of the GROUND tab (the background's own, grass, village cobble, castle, city, shore, reef,
+  ship). Plain GROUND wears `doc.style` (`MKP.engineMat` marks every solid cell), so one click reskins the whole level.
+  SHIFT+painting GROUND stamps the current style on the cell (`doc.mat`), and that cell keeps it when the style changes.
+- One SLOPE piece (`'ramp'`): press at the low end and release at the high end. A drag at least 1.5x as wide as it is tall
+  makes a gentle slope, otherwise a steep one; ground fills in under it and under its top. A click alone makes one ramp
+  facing the ground beside it. There is a live preview while dragging (`MKP.rampCells` / `rampEnd`).
+- Tabs grouped by role: GROUND (with STYLE) / LEDGES (stand-on, jump-through, ladders, moving platforms) / BLOCKS / ENEMIES ... / ITEMS /
+  MECHANISMS (+DOOR) / HAZARDS (+SPIKES, WEB) / TOOLS. A group is a list of {cat, i}, so tiles and pieces share a tab.
+  The old material grounds and the six slope tiles stay in TILES for old levels, but are not shown.
+- Plainer names: JUMP-THROUGH LEDGE, BREAKABLE ROCK, WOODEN WALL, CRYSTAL LEDGE, with corrected one-line descriptions
+  (crystal, reeds, plank, shelf and rail are all jump-through).
+- Not styled yet: slopes are drawn by the engine's sand/grass slope kit, and ledges, ladders and doors keep one look.
+  Making them follow the style needs per-place art in resolveTiles.
+- `tools/maker-style.mjs` (in the suite).
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.

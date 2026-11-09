@@ -11,20 +11,21 @@ import { T } from './level.js';
 import { SLOPE } from './slopes.js';
 
 export const TILES = [
-  ['ERASE', T.AIR], ["GROUND (THE BACKGROUND'S OWN)", T.SOLID],
+  ['ERASE', T.AIR], ['GROUND', T.SOLID],
   // GROUND MATERIALS (Daniel 2026-11-09: "why do we only have one tile texture"): solid ground drawn in another place's
   // own skin, so one level can mix them. doc.mat marks the cell; resolveTiles reads L.mat (made-by-hand woods only).
   ['GRASS GROUND', 'mat:grass'], ['COBBLE', 'mat:cobble'], ['SHORE ROCK', 'mat:shore'], ['REEF ROCK', 'mat:reef'],
   ['CITY STONE', 'mat:city'], ['CASTLE STONE', 'mat:masonry'], ['SHIP DECK', 'mat:deck'],
-  ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
+  ['JUMP-THROUGH LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
   ['SLOPE UP', SLOPE.R1], ['SLOPE DOWN', SLOPE.L1],
   ['GENTLE UP 1', SLOPE.R2A], ['GENTLE UP 2', SLOPE.R2B], ['GENTLE DOWN 1', SLOPE.L2B], ['GENTLE DOWN 2', SLOPE.L2A],
   ['PLANK', T.PLANK], ['ROPE LADDER', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
-  ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB], ['CRYSTAL', T.CRYST],
-  ['REEDS', T.REED], ['PALISADE', T.PALISADE],
+  ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['BREAKABLE ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB], ['CRYSTAL LEDGE', T.CRYST],
+  ['REEDS', T.REED], ['WOODEN WALL', T.PALISADE],
   // TERRAIN BRUSHES (string ids: not tiles, see tilePaint / the rectangle brushes below)
   ['RED BLOCK (solid until switched)', 'sw:red'], ['BLUE BLOCK (solid once switched)', 'sw:blue'],
   ['HILL (ramps itself)', 'hill'], ['CRUMBLE LEDGE', 'crumble'], ['WATER (drag)', 'water'], ['SHALLOWS (drag)', 'shallows'], ['POISON (drag)', 'poison'],
+  ['SLOPE (drag to shape)', 'ramp'],   /* (claude/maker) one piece for all six slope tiles: the drag sets the way and the steepness */
 ];
 
 // Every foe kind the game's spawner knows (src/main.js spawnEnt, the cases that push an enemy and are not a boss) that
@@ -142,10 +143,10 @@ const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
 // (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, sw: { ...(doc.sw || {}) }, loot: { ...(doc.loot || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null, goal: doc.goal || null, players: doc.players || null, cleared: doc.cleared || null });
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, sw: { ...(doc.sw || {}) }, loot: { ...(doc.loot || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null, style: doc.style || null, goal: doc.goal || null, players: doc.players || null, cleared: doc.cleared || null });
 export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
   doc.mat = t && t.mat ? { ...t.mat } : {}; doc.sw = t && t.sw ? { ...t.sw } : {}; doc.loot = t && t.loot ? { ...t.loot } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null;
-  doc.goal = (t && t.goal) || null; doc.players = (t && t.players) || null; doc.cleared = (t && t.cleared) || null; }
+  doc.style = (t && t.style) || null; doc.goal = (t && t.goal) || null; doc.players = (t && t.players) || null; doc.cleared = (t && t.cleared) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
@@ -275,6 +276,7 @@ export function drawLinks(g, doc, cx, cy, t) {
 // place were that one (src/main.js MAT_SET), so every skin's own top, edge and fill pieces are used as they are.
 export function engineMat(doc) {
   const out = {}; let any = false;
+  if (doc.style) for (let i = 0; i < doc.grid.length; i++) if (doc.grid[i] === T.SOLID) { out[i] = doc.style; any = true; }   /* (claude/maker) the level's STYLE */
   for (const [k, m] of Object.entries(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.SOLID) { out[y * doc.W + x] = m; any = true; } }
   return any ? out : null;
 }
@@ -416,10 +418,11 @@ export function drawHandles(g, doc, cx, cy, t) {
 // One plain line and a few tags, so you know a piece before you place it. Foes: the bestiary's first sentence, tags read
 // from its words; everything else: written here.
 const LINE = {
-  0: 'Empty air: paints a gap.', 1: "Solid ground in this background's own look.", 2: 'A ledge: jump up through it, stand on top.', 3: 'Spikes: they hurt.',
-  4: 'A crate: solid, and breakable.', 8: 'A plank to stand on.', 9: 'A rope ladder: climb it.', 10: 'A spring: it throws you high.', 11: 'A shelf to stand on.',
-  12: 'A door: a lever or pressure plate opens it.', 13: 'A rock face: a wall.', 14: 'A rail.', 15: 'Soft rock: a heavy blow breaks it.', 16: 'Ice: slippery.',
-  17: 'A web: it slows you.', 18: 'Crystal: solid.', 5: 'Reeds: you walk through them.', 7: 'A palisade: a wooden wall.',
+  0: 'Empty air: paints a gap.', 1: "Solid ground in the level's STYLE (the swatches at the left). SHIFT+paint keeps a cell in this style when the style changes.",
+  ramp: 'Press where the slope starts, release where it ends: steep or gentle, up or down, from your drag. A click alone makes one ramp.', 2: 'A ledge: jump up through it, stand on top.', 3: 'Spikes: they hurt.',
+  4: 'A crate: solid, and breakable.', 8: 'A plank: stand on it, jump up through it.', 9: 'A rope ladder: climb it.', 10: 'A spring: it throws you high.', 11: 'A shelf: stand on it, jump up through it.',
+  12: 'A door: a lever or pressure plate opens it.', 13: 'A rock face: a wall you can cling to and kick up.', 14: 'A thin rail: stand on it, jump up through it.', 15: 'Breakable rock: a heavy blow breaks it.', 16: 'Ice: slippery.',
+  17: 'A web: it slows you.', 18: 'A crystal ledge: stand on it, jump up through it.', 5: 'Reeds: stand on them, jump up through them.', 7: 'A wooden wall.',
   20: 'A steep slope up.', 21: 'A steep slope down.', 22: 'A gentle slope up (first half).', 23: 'A gentle slope up (second half).', 24: 'A gentle slope down (second half).', 25: 'A gentle slope down (first half).',
   hill: 'Paint the top of the ground: it fills down, and every one-tile step becomes a ramp.', crumble: 'Holds a moment after you land, then falls. Comes back on a retry.', water: 'Water to swim in. Drag a box.', shallows: 'Wading water, one row deep. Drag a box.', poison: 'Poisoned water: it hurts. Drag a box.',
   coin: 'A coin.', silver: 'A silver coin: the rare one.', check: 'A checkpoint: you come back here when you fall.', gate: 'The goal. Every level needs one.',
@@ -511,7 +514,7 @@ export function guideDoc() { const d = base(70); box(d, 22, 27, 20, 27, T.AIR); 
 export const GUIDE = [
   { say: 'FILL THE GAP: pick GROUND (top left), then click-drag across the hole', done: d => [22, 23, 24, 25, 26, 27].every(x => isSolidId(d.grid[20 * d.W + x])) },
   { say: 'ADD AN ENEMY: open ENEMIES, click the GOBLIN, then click on the ground', done: d => d.ents.some(e => FOES.includes(e.t)) },
-  { say: 'MAKE A HILL: SLOPES & WATER > HILL, then paint a few tops above the floor', done: d => d.grid.some(v => v >= 20 && v <= 25) },
+  { say: 'MAKE A SLOPE: GROUND > SLOPE, then drag from the floor up and across', done: d => d.grid.some(v => v >= 20 && v <= 25) },
   { say: 'PUT THE GOAL GATE near the far end: ITEMS > GOAL GATE', done: d => d.ents.some(e => e.t === 'gate') },
   { say: 'PRESS PLAY and reach the gate. ESC comes back here', done: (d, c) => c.played },
   { say: 'THAT IS A LEVEL! SHARE sends it to a friend. Try the examples in HELP next', done: () => false, last: true },
@@ -711,3 +714,54 @@ export const goalSecs = g => g && g[0] === 't' ? +g.slice(1) : 0;
 export const goalName = g => !g ? 'JUST REACH THE GOAL' : g === 'foes' ? 'DEFEAT EVERY ENEMY' : g === 'coins' ? 'COLLECT EVERY COIN' : g === 'nohit' ? 'DO NOT GET HIT' : 'BEAT THE CLOCK: ' + goalSecs(g) + ' SECONDS';
 export const PLAYERS = [null, 'ally', 'p2'];
 export const playersName = k => !k ? 'SOLO' : k === 'ally' ? 'WITH AN AI ALLY' : 'TWO PLAYERS (one keyboard / pads)';
+
+/* (claude/maker) THE LEVEL'S STYLE (Daniel: "a generic tile for wood / castle / etc, selectable based on what asset type you select",
+   Mario Maker's theme). null = the background's own ground. Plain GROUND wears the style, so changing it reskins the whole level;
+   a cell stamped with SHIFT keeps the style it was painted in (doc.mat), so styles can still be mixed. */
+export const STYLES = [null, 'grass', 'cobble', 'masonry', 'city', 'shore', 'reef', 'deck'];
+export const STYLE_NAME = { grass: 'GRASS', cobble: 'VILLAGE COBBLE', masonry: 'CASTLE', city: 'CITY', shore: 'SHORE', reef: 'REEF', deck: 'SHIP' };
+export const styleName = k => k ? STYLE_NAME[k] || k.toUpperCase() : "THE BACKGROUND'S OWN";
+export const STYLE_COL = { grass: ['#7a5230', '#5aa33e'], cobble: ['#7d7a74', '#9a968c'], shore: ['#b49a72', '#d8c49a'], reef: ['#3f7a78', '#6fb0a0'], city: ['#4a4a58', '#6a6a7a'], masonry: ['#8b8378', '#b3aca0'], deck: ['#8a5a32', '#a8743f'] };
+
+/* (claude/maker) THE SLOPE PIECE: press at one end, release at the other. The LOW end is the lower cell; the slope climbs toward the
+   other one, a cell a row (steep) or two cells a row (gentle, when the drag is at least half again as wide as it is tall), and the
+   ground fills in under it and under the top, so the ramp always stands on something. A click alone: one steep ramp, facing the
+   ground beside it. */
+let ramp = null;
+export const isRampBrush = entry => !!entry && entry[1] === 'ramp';
+export function rampStart(cur) { ramp = { ax: cur.x, ay: cur.y }; }
+export const rampActive = () => !!ramp;
+const groundBelow = (doc, x, y) => { let yy = y; while (yy < doc.H && !(isSolidId(doc.grid[yy * doc.W + x]) && !(doc.grid[yy * doc.W + x] >= 20 && doc.grid[yy * doc.W + x] <= 25))) yy++; return yy; };
+export function rampCells(doc, a, b) {
+  const out = [], W = doc.W, ok = x => x >= 1 && x <= W - 2;
+  const put = (x, y, v) => { if (!ok(x) || y < 0 || y >= doc.H) return; out.push([x, y, v]); for (let yy = y + 1, end = groundBelow(doc, x, y + 1); yy < end && yy < doc.H; yy++) out.push([x, yy, T.SOLID]); };
+  const h = Math.abs(a.y - b.y), dx = Math.abs(a.x - b.x);
+  if (!h || !dx) { const solid = (x, y) => isSolidId(doc.grid[y * W + x]); put(a.x, a.y, !solid(a.x + 1, a.y) && solid(a.x - 1, a.y) ? SLOPE.L1 : SLOPE.R1); return out; }
+  const low = a.y > b.y ? a : b, high = low === a ? b : a, dir = Math.sign(high.x - low.x), gentle = dx >= h * 1.5;
+  for (let k = 0; k < h; k++) {
+    const y = low.y - k;
+    if (!gentle) put(low.x + dir * k, y, dir > 0 ? SLOPE.R1 : SLOPE.L1);
+    else if (dir > 0) { put(low.x + 2 * k, y, SLOPE.R2A); put(low.x + 2 * k + 1, y, SLOPE.R2B); }
+    else { put(low.x - 2 * k, y, SLOPE.L2A); put(low.x - 2 * k - 1, y, SLOPE.L2B); }
+  }
+  const topX = low.x + dir * (gentle ? 2 * h : h), topY = low.y - h + 1;   /* the ground the slope arrives on */
+  if (ok(topX)) for (let yy = topY, end = groundBelow(doc, topX, topY); yy < end && yy < doc.H; yy++) out.push([topX, yy, T.SOLID]);
+  return out;
+}
+export function rampEnd(doc, cur) {
+  if (!ramp) return null; const a = { x: ramp.ax, y: ramp.ay }; ramp = null;
+  const cells = rampCells(doc, a, cur), changed = [];
+  for (const [x, y, v] of cells) { const i = y * doc.W + x, key = x + ',' + y; if (doc.grid[i] === v) continue; doc.grid[i] = v; changed.push([x, y]);
+    if (doc.mat) delete doc.mat[key]; if (doc.sw) delete doc.sw[key]; if (doc.loot) delete doc.loot[key]; if (doc.crumble) { const j = doc.crumble.indexOf(key); if (j >= 0) doc.crumble.splice(j, 1); } }
+  return changed;
+}
+export function drawRampPreview(g, doc, cx, cy, cur, time) {
+  if (!ramp) return; const cells = rampCells(doc, { x: ramp.ax, y: ramp.ay }, cur);
+  g.globalAlpha = 0.45 + 0.15 * Math.sin(time * 8);
+  for (const [x, y, v] of cells) { const px = x * TS - cx, py = y * TS - cy; g.fillStyle = v === T.SOLID ? '#8fd160' : '#ffd36b';
+    if (v === T.SOLID) g.fillRect(px, py, TS, TS);
+    else { g.beginPath(); const rise = v === SLOPE.R1 || v === SLOPE.R2A || v === SLOPE.R2B, half = v === SLOPE.R2A || v === SLOPE.L2A ? 1 : v === SLOPE.R2B || v === SLOPE.L2B ? 2 : 0;
+      const yl = half === 0 ? (rise ? TS : 0) : rise ? (half === 1 ? TS : TS / 2) : (half === 1 ? TS / 2 : 0), yr = half === 0 ? (rise ? 0 : TS) : rise ? (half === 1 ? TS / 2 : 0) : (half === 1 ? TS : TS / 2);
+      g.moveTo(px, py + yl); g.lineTo(px + TS, py + yr); g.lineTo(px + TS, py + TS); g.lineTo(px, py + TS); g.closePath(); g.fill(); } }
+  g.globalAlpha = 1;
+}

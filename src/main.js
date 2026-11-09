@@ -7185,6 +7185,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); if (edPanFrom) { edCam.x = edPanFrom.cx - (x - edPanFrom.x); edCam.y = edPanFrom.cy - (y - edPanFrom.y); edClampCam(); return; } edMouse(x, y, ev.button, false, true); });
   addEventListener('mouseup', () => edMouseUpAll());
   function edMouseUpAll() { edPanFrom = null; MUI.mouseUp(); MKP.selEnd(); if (state === 'editor' && edGrab) edDrop();   /* (claude/maker) the mouse button or the last finger came up */
+    if (state === 'editor' && MKP.rampActive()) { edPush(); const ch = MKP.rampEnd(edDoc, edCur); if (ch && ch.length) { for (const [x, y] of ch) { const k = edEntAt(x, y); if (k >= 0 && MKP.isSolidId(edDoc.grid[y * LW + x])) L.ents.splice(k, 1); } edMount(false); MKJ.place('tile'); MKJ.popAt(edCur.x, edCur.y); edSay('slope'); } else edUndo.pop(); }   /* (claude/maker) */
     if (state === 'editor' && MKP.rectActive()) { const en = ED_TILES[edBrush().i]; edPush(); if (MKP.rectEnd(edDoc, edCur, en)) { edMount(false); edSay(en[0].replace(' (drag)', '') + ' poured'); } else edUndo.pop(); }   /* (claude/maker) */
     if (state === 'editor') { edPaint = 0; edPainted = null; } }
   /* (claude/maker) TOUCH IN THE MAKER: one finger is the left button (pick, paint, drag a piece, press a button), two fingers
@@ -37378,8 +37379,8 @@ function edPlace(tx, ty, erase) {
   if (b.cat === 0 && ED_TILES[b.i][1] === 'hill') {   /* (claude/maker) SMART HILLS: fill down and ramp the one-tile steps around it */
     const ch = MKP.hillPaint(edDoc, tx, ty); if (!ch.length) return;
     for (const [x, y] of ch) { const i = y * LW + x; grid0[i] = L.grid[i]; tileSpr[i] = null; const k = edEntAt(x, y); if (k >= 0 && MKP.isSolidId(L.grid[i])) L.ents.splice(k, 1); }
-    SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; MKJ.place('tile'); MKJ.popAt(tx, ty); return; }
-  if (b.cat === 0) { const had = (L.crumbles || []).length; const v = MKP.tilePaint(edDoc, tx, ty, ED_TILES[b.i]); if (L.grid[ty * LW + tx] !== v || ED_TILES[b.i][1] !== v) { MKJ.place('tile'); MKJ.popAt(tx, ty); } if (MKP.isSolidId(v)) { const k = edEntAt(tx, ty); if (k >= 0) { L.ents.splice(k, 1); edRespawn(); edSay('covered over: the piece there is gone'); } } edSetTile(tx, ty, v); L.crumbles = MKP.engineCrumbles(edDoc); if (had !== L.crumbles.length || ED_TILES[b.i][1] === 'crumble') edRespawn(); return; }   /* (claude/maker) terrain brushes */
+    L.mat = MKP.engineMat(edDoc); SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; MKJ.place('tile'); MKJ.popAt(tx, ty); return; }
+  if (b.cat === 0) { const had = (L.crumbles || []).length; const en0 = ED_TILES[b.i], en = en0[1] === T.SOLID && edShift && edDoc.style ? [en0[0], 'mat:' + edDoc.style] : en0; const v = MKP.tilePaint(edDoc, tx, ty, en);   /* (claude/maker) SHIFT: this cell keeps the style */ if (L.grid[ty * LW + tx] !== v || ED_TILES[b.i][1] !== v) { MKJ.place('tile'); MKJ.popAt(tx, ty); } if (MKP.isSolidId(v)) { const k = edEntAt(tx, ty); if (k >= 0) { L.ents.splice(k, 1); edRespawn(); edSay('covered over: the piece there is gone'); } } edSetTile(tx, ty, v); L.crumbles = MKP.engineCrumbles(edDoc); if (had !== L.crumbles.length || ED_TILES[b.i][1] === 'crumble') edRespawn(); return; }   /* (claude/maker) terrain brushes */
   const t = b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i];
   { const why = MKP.placeProblem(edDoc, t, tx, ty); if (why && why.loot) { (edDoc.loot || (edDoc.loot = {}))[tx + ',' + ty] = t; edSay(why.say); MKJ.place('piece'); MKJ.popAt(tx, ty); return; }   /* (claude/maker) INTO the crate */
     if (why && why.refuse) { edSay(why.say); MKJ.refuse(); return; } if (why) edSay(why.say); }   /* (claude/maker) not inside the ground; a water kind told it needs water */
@@ -37395,7 +37396,7 @@ function edPlace(tx, ty, erase) {
   if (t === 'firepit') { e.period = 3.2; e.on = 1.4; }
   L.ents.push(e); if (MKP.afterPlace(edDoc, e)) edMount(false); else edRespawn();   /* (claude/maker) a locked gate builds its bars */
 }
-function edSetTile(tx, ty, v) { const i = ty * LW + tx; L.mat = MKP.engineMat(edDoc); if (L.grid[i] === v && !L.mat) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; }   /* (claude/maker) redrawn ONCE a frame (edFlush), not once a tile: a drag across a 600-wide wood cost 11 ms a tile; slopes drawn in the editor too; a material repaint of the same tile redraws; the landmarks (the big oak, the beehives) come back to their kept spots - resolveTiles empties decor and only a level load put them back */
+function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v && !L.mat && !edDoc.style) return; L.grid[i] = v; L.mat = MKP.engineMat(edDoc); grid0[i] = v; tileSpr[i] = null; SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; }   /* (claude/maker) redrawn ONCE a frame (edFlush), not once a tile: a drag across a 600-wide wood cost 11 ms a tile; slopes drawn in the editor too; a material repaint of the same tile redraws; the landmarks (the big oak, the beehives) come back to their kept spots - resolveTiles empties decor and only a level load put them back */
 
 // ---- input ----
 function edKey(k, ev) {
@@ -37440,7 +37441,10 @@ function edMouse(mx, my, btn, down, moved) {
   edHoverEnt = edGrab ? null : edDoc.ents.slice().reverse().find(q => q.x === edCur.x && q.y === edCur.y) || null;   /* (claude/maker) the hover card's piece */
   if (MKP.isPasting()) { if (down && btn === 0) { edPush(); MKP.pasteAt(edDoc, edCur); edMount(false); MKJ.place('piece'); edSay('pasted'); } else if (down) { MKP.selClear(); edSay('paste cancelled'); } return; }   /* (claude/maker) the copy follows the mouse until a click lays it down */
   if (MKP.selDragging()) { if (moved) MKP.selMove(edCur); return; }
-  if (down && btn === 0 && edShift) { edEditAt(edCur.x, edCur.y); return; }   /* (claude/maker) SHIFT+CLICK a piece: its settings */
+  const edGroundBrush = edBrush().cat === 0 && ED_TILES[edBrush().i][1] === T.SOLID;
+  if (down && btn === 0 && edShift && !edGroundBrush) { edEditAt(edCur.x, edCur.y); return; }
+  if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRampBrush(ED_TILES[edBrush().i])) { MKP.rampStart(edCur); return; }   /* (claude/maker) the SLOPE: drag low end to high end */
+  if (MKP.rampActive()) return;   /* (claude/maker) SHIFT+CLICK a piece: its settings */
   if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRectBrush(ED_TILES[edBrush().i])) { MKP.rectStart(edCur); return; }   /* (claude/maker) water: drag a box */
   if (MKP.rectActive()) return;
   /* (claude/maker) GRAB AND MOVE: a left press on a platform's handle drags its reach; on a placed piece it picks the piece up
@@ -37516,6 +37520,7 @@ function edUiAct(u) {
   else if (a === 'height+' || a === 'height-') { edPush(); const dh = a === 'height+' ? 4 : -4; if (MKP.resizeHeight(edDoc, dh)) { edMount(false); edCam.y += dh * TS; edClampCam(); edSay('height ' + edDoc.H); } else { edUndo.pop(); edSay('that is as ' + (dh > 0 ? 'tall' : 'short') + ' as it goes'); } }
   else if (a === 'theme+' || a === 'theme-') { edPush(); const n = edThemeList().length; edDoc.theme = (edDoc.theme + (a === 'theme+' ? 1 : -1) + n) % n; edMount(true); if (!edDoc.music) music.play(edThemeList()[edDoc.theme].music); }
   else if (a === 'remount') edMount(true);
+  else if (a === 'style') { if ((edDoc.style || null) !== u.style) { edPush(); edDoc.style = u.style; edMount(false); MKJ.place('tile'); } edSay('STYLE: ' + MKP.styleName(u.style)); }   /* (claude/maker) the level's ground wears it */
   else if (a === 'music') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
   else if (a === 'closeSettings') music.duck(true);
   else if (a === 'openSettings') { music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(false); }
@@ -37558,7 +37563,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
