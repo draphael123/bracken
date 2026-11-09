@@ -1,0 +1,18 @@
+{
+  "time": "2026-11-09T00:15:02.841Z",
+  "status": "Independent new transport byte protocol qualified only; browser transport/native/Game remain unqualified.",
+  "controller": "363815372ad959bd6bec0c84760cbc55521b42f1",
+  "run": 42538360334,
+  "passed": 45,
+  "expected": 45,
+  "protocolSha256": "9dd0a8b4d5166b6c3004a7bc93b67e8ac51e17ca029b9ed12e2032868c64fc11",
+  "storeSha256": "310cafb6a37ea1423545b561aec8fe8720b78dd0e0c531e179036f02959c28b1",
+  "rawReceipt": "work\\streamed-core-trace-cloud-36381537\\streamed-trace-protocol-nov08\\receipt.json",
+  "rawReceiptSha256": "e766365643144a73b0371d73d2582fe31902c73d2db54d5be75811a92ed77d41",
+  "rawBytePositions": 6588753,
+  "browserTransportQualified": false,
+  "sourceNativeQualified": false,
+  "GameQualification": false,
+  "sourceAdopted": false,
+  "overallWorkComplete": false
+}
