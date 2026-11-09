@@ -24,7 +24,7 @@ const at = (x, y) => L.grid[y * L.W + x];
 const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---- 1. THE CUTS ---- */
-assert.equal(L.W, 609 + 56 + 100, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609, the Goblin Queen 3 adds the tower top (56, claude/gqueen3), and HIGHCROWN 3 inserts the battlements and the bell tower (100, claude/highcrown3)');
+assert.equal(L.W, 609 + 56 + 100 + 64 + 12, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609, the Goblin Queen 3 adds the tower top (56, claude/gqueen3), and HIGHCROWN 3 inserts the battlements and the bell tower (100, claude/highcrown3)');
 assert(L.START.x >= 6 && L.START.x <= 10 && L.START.y === 63, 'the level does not start inside the gatehouse passage: ' + JSON.stringify(L.START));
 for (const t of ['hotplate', 'anvil', 'hammer', 'boiler', 'cart', 'cascade']) assert(!L.ents.some(e => e.t === t), 'a ' + t + ' is still in Highcrown: the armoury and the road were cut');
 assert(!L.ents.some(e => e.t === 'sign' && /ARMOURY|FURNACE LINE|OLD SIEGE LINES|THIS ROAD/.test(e.text || '')), 'a sign of the cut armoury or road is still standing');

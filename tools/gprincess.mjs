@@ -23,7 +23,7 @@ const TS = 16;
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
 
 console.log('== LAYOUT');
-ok(W === 765, 'Highcrown is 765 columns (609 + the tower top 56 + 100 for the battlements and the bell tower): ' + W);
+ok(W === 841, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
 ok(L.ents.some(e => e.t === 'sign' && /CAPTAINS HALL/.test(e.text || '')), 'the Captains Hall is kept (Daniel 11-06 22:34: do NOT cut it)');
 ok(L.ents.some(e => e.t === 'sign' && /BAKEHOUSE YARD/.test(e.text || '')) && L.pools.some(p => p.fire), 'the bakehouse yard is kept (its sign and its fire)');
 const M = L.mini; ok(!!M && M.boss === 'gprincess' && M.name === 'THE GOBLIN PRINCESS', 'L.mini is THE GOBLIN PRINCESS');
@@ -35,9 +35,9 @@ let col = true; for (let y = M.grate.gy0; y <= M.grate.gy1; y++) if (at(M.grate.
 let door = true; for (let y = HC3.EXIT_ROWS[0]; y <= HC3.EXIT_ROWS[1]; y++) if (at(M.gate, y) !== T.PORT) door = false; ok(door, 'the inner stair door (the mini\'s gate, col ' + M.gate + ') is shut until she has gone');
 let spikes = 0; for (let x = HC3.AT; x <= HC3.BT[1]; x++) for (let y = 0; y < 40; y++) if (at(x, y) === T.SPIKE) spikes++; ok(spikes === 0, 'no spikes on the battlements or in her tower (no death falls, HCPLAN Q9)');
 let pitOut = false; for (let y = HC3.S + 1; y <= HC3.S + 6; y++) if (at(HC3.GAP[1], y) === T.NET) pitOut = true; ok(pitOut && at(HC3.GAP[0] + 2, HC3.S + 7) === T.SOLID, 'the broken stretch drops six rows onto a lower walk, with a ladder back up (time, not a life)');
-const holes = L.ents.filter(e => e.t === 'murderhole'); ok(holes.length === 6, 'six murder holes (' + holes.map(h => h.x + ',' + h.y).join(' ') + ')');
+const holes = L.ents.filter(e => e.t === 'murderhole'); ok(holes.length === 7, 'seven murder holes - the seventh is the Queen Stair gallery (' + holes.map(h => h.x + ',' + h.y).join(' ') + ')');
 for (const h of holes) { let solidAbove = at(h.x, h.y - 1) === T.SOLID || at(h.x, h.y - 1) === T.ONEWAY; ok(solidAbove && at(h.x, h.y) === T.AIR, 'murder hole #' + h.n + ' at ' + h.x + ',' + h.y + ' is a slot under stone (or boards) with air below'); }
-const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 8, 'eight shrines, as before (' + checks.join(' ') + '): the banquet\'s moved to its east door; the hall balcony\'s stays (tools/checkpoint-gaps: <= 200 route tiles)');
+const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 10, 'ten shrines (gq3: the Queen Stair door 650, the tower top deck 795 - the banquet 524 and her door 717 move) (' + checks.join(' ') + '): the banquet\'s moved to its east door; the hall balcony\'s stays (tools/checkpoint-gaps: <= 200 route tiles)');
 ok(checks.includes(HC3.BANQ_SHRINE[0]) && !checks.includes(478), 'the banquet shrine is at its EAST door (after the rehearsal), not before it');
 ok(!checks.some(x => x > HC3.BANQ_SHRINE[0] && x < M.x1 / TS), 'no shrine on the battlements walk itself (the chase + her fight is one checkpoint)');
 const qShrine = checks.find(x => x > M.x1 / TS); ok(qShrine && qShrine < L.arena.x0 / TS, 'the Queen\'s shrine is past the Princess\'s tower and before her hall (' + qShrine + ')');

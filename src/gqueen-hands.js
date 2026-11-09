@@ -543,7 +543,7 @@ export function makeGQueenHands(ctx) {
     }
     const k = Math.min(1, Ge.t / gc.air); Ge.x = Ge.x0 + (Ge.tx - Ge.x0) * k; Ge.y = Ge.y0 + (Ge.fy - 6 - Ge.y0) * k - 4 * gc.apex * k * (1 - k);
     const box = { l: Ge.x - gc.r, r: Ge.x + gc.r, t: Ge.y - gc.r, b: Ge.y + gc.r };
-    const sendBack = how => { Ge.state = 'back'; Ge.t = 0; ctx.ring(Ge.x, Ge.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(Ge.x, Ge.y - 14, how === 'parry' ? 'PARRIED: SENT BACK' : 'STRUCK BACK', '#8fd160'); };
+    const sendBack = how => { Ge.state = 'back'; Ge.t = 0; ctx.ring(Ge.x, Ge.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(Ge.x, Ge.y - 14, how === 'parry' ? 'PARRIED: SENT BACK' : 'SENT BACK', '#8fd160'); };
     // any blow or shot that meets it in the air
     seats(P1 => { if (Ge.state !== 'fly' || P1.dead) return; if (hit(P1, box, Ge.key)) sendBack('blow'); });
     if (Ge.state === 'fly') for (const pp of ctx.players ? ctx.players() : []) for (const ar of pp.rgArrows || []) { if (Ge.state !== 'fly' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - Ge.x) < gc.r + 10 && Math.abs(ar.y - Ge.y) < gc.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack('blow'); } }
