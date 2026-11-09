@@ -22,7 +22,7 @@ export function makeGhostTrainHands(ctx) {
   const say = (x, y, t, col) => ctx.number && ctx.number(x, y, t, col || '#ffd36b');
   H.on = () => !!(L() && L().ghostTrain);
   H.show = () => S;
-  const fresh = () => ({ t: 0, cells: new Map(), cut: new Set(), fired: new Set(), zoneT: {}, tun: null, gust: 0, gustTell: 0, events: [], embers: [], sparkT: {}, recede: [], pend: [], told: {}, n: { bridges: 0, tunnels: 0, gusts: 0, hits: 0, snuffed: 0, lit: 0, out: 0, cuts: 0, points: 0, caught: 0, woke: 0, embers: 0 } });
+  const fresh = () => ({ t: 0, cells: new Map(), cut: new Set(), fired: new Set(), zoneT: {}, tun: null, gust: 0, gustTell: 0, events: [], embers: [], sparkT: {}, recede: [], pend: [], queue: [], told: {}, n: { bridges: 0, tunnels: 0, gusts: 0, hits: 0, snuffed: 0, lit: 0, out: 0, cuts: 0, points: 0, caught: 0, woke: 0, embers: 0 } });
   /* ---------------- THE TILES this level changes (a cut car, a gangway, a punched hole): every original kept, every one put back on a reset ---------------- */
   H.setCell = (x, y, t) => { if (!S) S = fresh(); const L0 = L(); if (x < 0 || y < 0 || x >= L0.W || y >= L0.H) return; const k = y * L0.W + x; if (!S.cells.has(k)) S.cells.set(k, L0.grid[k]); ctx.cellSet(x, y, t); };
   H.restoreCell = (x, y) => { const L0 = L(), k = y * L0.W + x; if (S && S.cells.has(k)) { ctx.cellSet(x, y, S.cells.get(k)); S.cells.delete(k); } };
@@ -43,12 +43,15 @@ export function makeGhostTrainHands(ctx) {
   const lead = () => heroes().reduce((m, p) => Math.max(m, p.x), -1e9);
   /* ---------------- THE MOTION ---------------- */
   const front = () => L().W * TS;
-  const tunSpan = () => { const T0 = S.tun; if (!T0 || T0.t < 0) return null; const m = front() - GT.speed * T0.t; return [m, m + T0.len]; };
+  /* A BRIDGE OR A TUNNEL is met by the train at its front and passes down it at the train's speed: its mouth reaches the lead hero `tell` s after it is called (the told beat is the hero's,
+     not the engine's), then sweeps on back over the rest of the train. The span it covers is [mouth, mouth + len] */
+  const tunSpan = () => { const T0 = S.tun; if (!T0) return null; const m = T0.m0 - GT.speed * T0.t; return [m, m + T0.len]; };
+  const told = () => !!S.tun && S.tun.t < S.tun.tell;
   H.tunSpan = () => (S ? tunSpan() : null);
   function fire(ev, src) {
     if (!ev || ev.kind === 'open') return;
     const x = lead();
-    if (ev.kind === 'bridge' || ev.kind === 'tunnel') { if (S.tun) return; S.tun = { kind: ev.kind, t: -(ev.tell || 1.4), len: ev.len, key: ev.kind + (++S.n[ev.kind === 'bridge' ? 'bridges' : 'tunnels']), last: new Map(), snuffed: false, src };
+    if (ev.kind === 'bridge' || ev.kind === 'tunnel') { if (S.tun) { if (String(src || '').startsWith('j')) S.queue.push([ev, src]); return; }   /* a junction's tunnel waits for the one in hand to pass (a zone's bridge is simply skipped) */ S.tun = { kind: ev.kind, t: 0, tell: ev.tell || 1.4, m0: Math.min(front(), x + GT.speed * (ev.tell || 1.4) + 8), len: ev.len, key: ev.kind + (++S.n[ev.kind === 'bridge' ? 'bridges' : 'tunnels']), last: new Map(), snuffed: false, src };
       say(x, (GT.ROOF - 3) * TS, ev.kind === 'bridge' ? GT_SAY.low : GT_SAY.tunnel, '#ff9a5c'); snd(ev.kind === 'bridge' ? 'low' : 'tunnel'); if (!S.told.duck) { S.told.duck = 1; ctx.hint && ctx.hint(GT_SAY.duck); } return; }
     if (ev.kind === 'gust') { S.gustTell = ev.tell || 1.2; S.gustDur = ev.dur || 3; S.n.gusts++; say(x, (GT.ROOF - 3) * TS, GT_SAY.gust, '#bfe6f5'); snd('gust'); }
   }
@@ -60,8 +63,8 @@ export function makeGhostTrainHands(ctx) {
     if (S.gustTell > 0) { S.gustTell -= dt; if (S.gustTell <= 0) S.gust = S.gustDur; } else if (S.gust > 0) S.gust -= dt;
     const T0 = S.tun;
     if (T0) { T0.t += dt; const sp = tunSpan();
-      if (sp && T0.kind === 'tunnel' && !T0.snuffed) { T0.snuffed = true; let n = 0; for (const lp of G.lamps) if (lp.on && lp.draught && !(S.cut.has(lp.car))) { lp.on = false; n++; } S.n.snuffed += n; if (n) say(lx, (GT.ROOF + 2) * TS, GT_SAY.snuffed, '#bfe6f5'); }
-      if (sp && sp[1] < 0) S.tun = null;
+      if (sp && T0.kind === 'tunnel') { let n = 0; for (const lp of G.lamps) if (lp.on && lp.draught && !S.cut.has(lp.car) && lp.x >= sp[0] && lp.x <= sp[1]) { lp.on = false; n++; } S.n.snuffed += n; if (n && !T0.snuffed) { T0.snuffed = true; say(lx, (GT.ROOF + 2) * TS, GT_SAY.snuffed, '#bfe6f5'); } }   /* a tunnel puts each draughty lamp out as it reaches it */
+      if (sp && sp[1] < 0) { S.tun = null; if (S.queue.length) fire(...S.queue.shift()); }
       else if (sp) for (const p of heroes()) { if (!H.exposed(p) || p.ducking || !(ctx.upright ? ctx.upright(p) : true) || p.x < sp[0] || p.x > sp[1]) continue;
         const last = T0.last.get(p); if (last !== undefined && T0.t - last < MOTION.again) continue; T0.last.set(p, T0.t); S.n.hits++;
         ctx.asPlayer(p, () => ctx.damage(p.x + 20, T0.kind === 'bridge' ? MOTION.bridgeDmg : MOTION.tunnelDmg, { name: T0.kind === 'bridge' ? 'THE LOW BRIDGE' : 'THE TUNNEL', unblockable: true, low: false })); p.vx = -140; p.vy = Math.min(p.vy || 0, -60); } }
@@ -136,7 +139,7 @@ export function makeGhostTrainHands(ctx) {
     if (Math.abs(dx) < GHOST.reach && Math.abs(dy) < 16 && e.modeT <= 0) { e.mode = 'graspTell'; e.modeT = GHOST.graspTell; snd('graspTell'); ctx.number && ctx.number(e.x, e.y - 22, '!', '#ffd36b'); return; }
     const d = Math.hypot(dx, dy) || 1, v = GHOST.speed * (e.stoker ? 0.85 : 1); e.x += dx / d * v * dt; e.y += dy / d * v * dt; };
   /* ---------------- WHAT A TOOL READS ---------------- */
-  H.read = () => S && { t: +S.t.toFixed(2), tun: S.tun ? { kind: S.tun.kind, t: +S.tun.t.toFixed(2), span: tunSpan() } : null, gust: S.gust > 0, cut: [...S.cut], fired: [...S.fired], lastJunction: S.lastJunction || null,
+  H.read = () => S && { t: +S.t.toFixed(2), tun: S.tun ? { kind: S.tun.kind, t: +S.tun.t.toFixed(2), tell: S.tun.tell, told: told(), span: tunSpan() } : null, gust: S.gust > 0, cut: [...S.cut], fired: [...S.fired], lastJunction: S.lastJunction || null,
     lamps: gt().lamps.map(lp => ({ id: lp.id, on: lp.on, flick: lp.flick })), points: gt().points.map(p => ({ id: p.id, set: p.set })), embers: S.embers.length, n: { ...S.n } };
   /* ================= THE GREYBOX DRAWING ================= */
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
@@ -147,7 +150,7 @@ export function makeGhostTrainHands(ctx) {
     for (let k = 0, off = ((time * sp) % 24); k < VW / 24 + 2; k++) rect(g, R(k * 24 - off), groundY + 3, 12, 3, '#3a3040');          /* the sleepers, flying back */
     for (let k = 0, off = ((time * sp * 0.45) % 140); k < VW / 140 + 2; k++) { const px = R(k * 140 - off); rect(g, px, groundY - 70, 3, 70, '#2a2436'); rect(g, px - 8, groundY - 66, 19, 2, '#2a2436'); }   /* telegraph poles */
     for (let k = 0, off = ((time * sp * 0.2) % 60); k < VW / 60 + 2; k++) rect(g, R(k * 60 - off), groundY - 14, 2, 14, '#28222e');    /* the fields' fences, far */
-    const tsn = tunSpan(); if (tsn && S.tun.kind === 'tunnel') { const a = Math.max(0, x(tsn[0])), b = Math.min(VW, x(tsn[1])); if (b > a) { rect(g, a, 0, b - a, VH, 'rgba(6,6,12,0.86)'); rect(g, a, y((GT.ROOF - 2) * TS), b - a, 6, '#3a3444'); } }
+    const tsn = tunSpan(); if (tsn && S.tun.kind === 'tunnel' && !told()) { const a = Math.max(0, x(tsn[0])), b = Math.min(VW, x(tsn[1])); if (b > a) { rect(g, a, 0, b - a, VH, 'rgba(6,6,12,0.86)'); rect(g, a, y((GT.ROOF - 2) * TS), b - a, 6, '#3a3444'); } }
     for (const r of S.recede) { const dx = -r.t * r.t * 90; rect(g, x(r.x0 + dx), y(GT.ROOF * TS), r.x1 - r.x0, (GT.FLOOR - GT.ROOF + 2) * TS, 'rgba(60,56,80,' + (1 - r.t / MOTION.recede).toFixed(2) + ')'); }
     /* the wheels under every car still on the train */
     for (const c of G.cars) { if (S.cut.has(c.i)) continue; for (const wx of [c.x0 + 2, c.x0 + 4, c.x1 - 4, c.x1 - 2]) { const cxp = x(wx * TS + 8), cyp = y((GT.FLOOR + 3) * TS) - 6; g.fillStyle = '#4a4458'; g.beginPath(); g.arc(cxp, cyp, 6, 0, Math.PI * 2); g.fill(); rect(g, cxp - 6 + ((time * 30) % 12 < 6 ? 0 : 6), cyp - 1, 6, 2, '#8a849a'); } } };
@@ -161,8 +164,8 @@ export function makeGhostTrainHands(ctx) {
       if (on) { g.fillStyle = 'rgba(255,220,140,0.10)'; g.beginPath(); g.arc(lx, ly, lp.r * 0.6, 0, Math.PI * 2); g.fill(); } }
     for (const cp of G.couplings) { if (cp.cut || S.cut.has(cp.ahead)) continue; rect(g, x(cp.pinX) - 2, y(cp.pinY) - 8, 4, 10, cp.arena ? '#6a6480' : '#c8a040'); rect(g, x(cp.g0 * TS), y(GT.FLOOR * TS) + 2, (cp.g1 - cp.g0 + 1) * TS, 3, '#5a5266'); }
     for (const p of G.points) { const px = x(p.x), py = y(p.y); rect(g, px - 4, py - 3, 8, 3, '#5a5266'); const lean = p.set === 'branch' ? 5 : -5; g.strokeStyle = '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(px, py - 3); g.lineTo(px + lean, py - 16); g.stroke(); rect(g, px + lean - 2, py - 19, 4, 4, p.set === 'branch' ? '#8fd160' : '#ff6b6b'); }
-    const T0 = S.tun; if (T0 && T0.t < 0) { const k = 1 + T0.t / 1.8; rect(g, VW - 10, 0, 10, VH, 'rgba(255,90,60,' + (0.15 + 0.35 * Math.max(0, k)).toFixed(2) + ')'); }
-    if (T0 && T0.t >= 0 && T0.kind === 'bridge') { const sp = tunSpan(); if (sp) { rect(g, x(sp[0]), y((GT.ROOF - 2) * TS) + 4, Math.max(4, sp[1] - sp[0]), 10, '#4a4458'); } }
+    const T0 = S.tun; if (T0 && told()) { const k = T0.t / T0.tell; rect(g, VW - 10, 0, 10, VH, 'rgba(255,90,60,' + (0.15 + 0.35 * Math.max(0, k)).toFixed(2) + ')'); }
+    if (T0 && T0.kind === 'bridge') { const sp = tunSpan(); if (sp) { rect(g, x(sp[0]), y((GT.ROOF - 2) * TS) + 4, Math.max(4, sp[1] - sp[0]), 10, '#4a4458'); } }
     for (const m of S.embers) { const mx = x(m.x), my = y(m.y); if (!m.hot) { const k = 1 - Math.max(0, m.t - 0.3) / m.tell; rect(g, mx - 6, my - 1, 12, 2, 'rgba(255,90,60,' + (0.3 + 0.5 * k).toFixed(2) + ')'); rect(g, mx - 1, my - 40 + 34 * k, 2, 3, '#ffd36b'); } else { rect(g, mx - 4, my - 6, 8, 6, '#ff9a3c'); } } };
   /* A GHOST PASSENGER (greybox): a pale hooded shape, its eyes shut asleep, open and red awake, its hands out on the grasp's windup */
   H.drawGhost = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), bob = Math.sin(time * 3 + e.hx) * 1.5, asleep = H.asleep(e);

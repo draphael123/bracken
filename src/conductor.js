@@ -61,7 +61,7 @@ const setMode = (e, m, t) => { e.mode = m; e.modeT = t; e.modeT0 = t; };
 /* A BLOW ON HIM: [damage, word]. Open x2 (capped per opening), x0.45 otherwise; P1 cannot pass 50% */
 export function takeBlow(e, S, dmg) {
   let d, word = null;
-  if (cdOpen(e)) { const cap = CD.openCap * e.maxHp; d = Math.min(dmg * CD.openMul, Math.max(dmg * CD.resist, cap - S.openDealt)); S.openDealt += d; S.n.openHits++; }
+  if (cdOpen(e)) { const cap = CD.openCap * e.maxHp, room = cap - S.openDealt; d = dmg * CD.openMul <= room ? dmg * CD.openMul : Math.max(dmg * CD.resist, room); S.openDealt = Math.min(cap, S.openDealt + d); S.n.openHits++; }   /* past the cap a blow lands as through his coat */
   else { d = dmg * CD.resist; word = 'COAT'; S.n.coatHits++; }
   if (S.ph === 1 && e.hp - d < e.maxHp * CD.floorP1) { d = Math.max(0, e.hp - e.maxHp * CD.floorP1); if (!S.told.holds) { S.told.holds = 1; word = 'HOLDS'; } }
   return [Math.round(d * 100) / 100, word];

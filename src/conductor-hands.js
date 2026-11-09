@@ -74,7 +74,7 @@ export function makeConductorHands(ctx) {
           if (row !== GT.ROOF && row !== GT.FLOOR) continue; if (S.G.brakes.some(b => Math.abs(Math.floor(b.x / TS) - tx) <= 0)) continue;
           const t = L.grid[row * L.W + tx]; if (t === ctx.T.SOLID || t === ctx.T.ONEWAY) out.push({ x: tx, y: row }); }
         return out; },
-      boards: (cells, mend) => { for (const c of cells) { if (mend) G.restoreCell(c.x, c.y); else G.setCell(c.x, c.y, ctx.T.AIR); } },
+      boards: (cells, mend) => { for (const c of cells) { if (mend) { if (G.carAt(c.x * TS + 8)) G.restoreCell(c.x, c.y); } else G.setCell(c.x, c.y, ctx.T.AIR); } },   /* a board on a van already left on the line is not put back */
       lurch: px => { for (const pp of ctx.players()) { if (pp.dead) continue; if (ctx.moveBody) ctx.moveBody(pp, px, 0); else pp.x += px; pp.vy = Math.min(pp.vy || 0, -70); } ctx.shake && ctx.shake(8); },
       gangway: (c, solid) => G && G.gangway(c.g0, c.g1, solid),
       leave: (c, next) => { if (G) G.leaveCar(c.behind); ctx.lockX0 && ctx.lockX0(next.x0); },
@@ -82,7 +82,7 @@ export function makeConductorHands(ctx) {
     };
   }
   H.update = (e, dt) => { if (!S || !e.alive || !A()) return;
-    if (e.mode === 'wake' && !S.woke) { S.woke = true; ctx.number(e.x, e.y - CD.markH - 16, CD_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx || {}); }
+    if (e.mode === 'wake' && !S.woke) { S.woke = true; ctx.number(e.x, e.y - CD.markH - 16, CD_SAY.wake, '#ffd36b'); world(e).sound('roar'); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.hint && ctx.hint(CD_SAY.rule); }
     const pr = S.press; CDM.step(e, S, dt, heroes(), world(e)); if (pr < 1 && S.press >= 1) ctx.number(e.x, e.y - CD.markH - 20, CD_SAY.ready, '#8fd160');
     e.phase = S.ph; e.open = CDM.cdOpen(e) ? Math.max(0, e.modeT) : 0; };
@@ -95,7 +95,7 @@ export function makeConductorHands(ctx) {
     if (word === 'HOLDS') ctx.number(e.x, e.y - CD.markH, CD_SAY.holds, '#bfe6f5');
     return d; };
   H.barName = e => CD_SAY.name + (CDM.cdOpen(e) ? '  ' + CDM.OPEN_NAME[e.mode] : S && S.fused ? '  THE FIREBOX' : '');
-  H.end = () => { if (S) { for (const h of S.holes) if (h.st === 'open') for (const c of h.cells) GTH() && GTH().restoreCell(c.x, c.y); S.holes = []; S.blasts = []; S.embers = []; S.tunnel = null; S.unc = null; S.won = true; } };
+  H.end = () => { if (S) { for (const h of S.holes) if (h.st === 'open') for (const c of h.cells) if (GTH() && GTH().carAt(c.x * TS + 8)) GTH().restoreCell(c.x, c.y); S.holes = []; S.blasts = []; S.embers = []; S.tunnel = null; S.unc = null; S.won = true; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, press: +S.press.toFixed(2), gone: [...S.gone], x0: S.x0, fused: S.fused, holes: S.holes.length, tunnel: CDM.tunnelSpan(S), n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
   /* ================= THE GREYBOX DRAWING ================= */
   H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.walk, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy) - (p.float ? 10 + Math.sin(time * 4) * 2 : 0);
