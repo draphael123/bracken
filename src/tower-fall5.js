@@ -106,11 +106,13 @@ export function buildTowerFall5({ painter, T }) {
     ent('sign', X + 22, B - 1, { text: 'CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND GOES. STEP OFF IT IN TIME.' });
     ent('sign', X + 30, B - 13, { text: 'DARK CHUNKS GO QUICKLY: JUMP ACROSS THEM, DO NOT STAND.' });
     ent('sign', X + 26, B - 25, { text: 'A CRACKED PILLAR HOLDS THE LAST CASE UP. STRIKE IT.' });
+    deco('brokenPillar', X + 18, B - 1);                                    /* (the stair's mid tier stands on a broken pillar: tools/solid-islands.mjs - the art lane draws the shelving) */
     deco('lectern', X + 12, B - 1); deco('bookpile', X + 28, B - 1); deco('desk', X + 34, B - 1); deco('candelabra', X + 20, B - 1);
     /* the skeleton set's first spot (BONES_SHIPS, plan sec 7): the library floor teaches the shield */
     foe('zombie', X + 32, B - 1); bones.soldier1 = { x: X + 32, y: B - 1, from: 'zombie', at: 'the library floor' };
     for (const [t, x, y] of [['apprentice', X + 22, B - 10], ['armour', X + 30, B - 13], ['apprentice', X + 28, B - 25], ['tome', X + 40, B - 8]]) foe(t, x, y);
     coins([X + 44, B - 19], [X + 45, B - 19], [X + 46, B - 19]);
+    ent('silver', X, B - 23);                                               /* SECRET 1: on top of the west stack - a drop off the top tier's west end */
   }
   // ---- 2. THE READING ROOM: the Folly's gravity, ONE flip (stand on the glyph, fall up, walk the ceiling, fall back down onto the gallery). ----
   //      FT4's room as it was (it is at the same columns): LOAD-BEARING - without the flip the gallery and everything over it is out of reach.
@@ -150,6 +152,7 @@ export function buildTowerFall5({ painter, T }) {
     /* THE DOME COMES IN (kept): stand on the high landing and two ribs of the dome fall - told 1.0 s - and lie as ledges (a second stair up) */
     pieces.push({ id: 'dome', kind: 'lay', act: 2, zone: [X + 35, X + 43, B - 16, B - 13], tell: 1.0, say: FT5_LINES.dome, shake: 5, slick: true,
       lay: [[X + 39, X + 42, B - 16], [X + 31, X + 34, B - 19]] });
+    ledge(X + 45, 2, B - 16); ent('silver', X + 45, B - 17);                  /* SECRET 2: a pocket off the high landing, against the east wall */
     ent('sign', X + 2, B - 1, { text: 'THE OBSERVATORY. HIS POISON IS COMING UP THE SHAFT: KEEP CLIMBING.' });
     deco('telescope', X + 4, B - 1); deco('starChart', X + 20, f.top + 1, { hang: true }); deco('orreryBase', X + 30, B - 3);
     /* the skeleton set's third spot: the observatory landing */
@@ -200,7 +203,7 @@ export function buildTowerFall5({ painter, T }) {
     supports.push({ t: 'ftsupport', id: 'lab-bridge', kind: 'bridge', col: east[0] + 1, row: east[2] - 1, h: 3, spans: [[west[0] + west[1], east[0] - 1, east[2]]], say: 'THE PILLAR FALLS ACROSS: A BRIDGE' });
     ent('sign', east[0] + 3, east[2] - 1, { text: 'A CRACKED PILLAR. STRIKE IT AND IT FALLS ACROSS THE GAP.' });
     foe('apprentice', west[0] + 2, west[2] - 1, { face: 1 });
-    tier(f, X + 3, 8, B - 21);
+    tier(f, X + 3, 8, B - 21); deco('brokenPillar', X + 6, B - 1);         /* (its tier stands on a broken pillar off the lab's floor) */
     const top = tier(f, X + 11, 8, B - 24);
     /* THE ELITE HUSK (kill-first: it spits into your landing) on the tier over the chunks */
     foe('husk', X + 43, B - 16, { elite: true, face: -1 });
@@ -250,6 +253,9 @@ export function buildTowerFall5({ painter, T }) {
     tier(f, X + 25, 8, B - 3);
     for (const [k, dx] of [[0, 34], [1, 37], [2, 40]]) { ledge(X + dx, 2, B - 6); crumble(X + dx, 2, B - 6, 'snap', { chain: 'treasury', seq: k }); }
     tier(f, X + 41, 6, B - 9);
+    ledge(X + 44, 3, B - 12); ent('silver', X + 45, B - 13);                 /* SECRET 3: a pocket over the chunks' far tier, off the way west */
+    /* A SLAB (optional): the west floor of the vault tears loose under you and slides down the lean over the gold */
+    moversExtra.push({ kind: 'ft5slab', ft5: 'slab', sx: (X + 2) * TS, sy: (B - 6) * TS, x: (X + 2) * TS, y: (B - 6) * TS, w: 32, h: 8, dir: 1, st: 'wait', t: 0 });
     const brace = tier(f, X + 32, 8, B - 12);
     breathers.push({ id: 'treasury', box: [brace[0], brace[0] + brace[1] - 1, brace[2] - 2, brace[2] - 1], hold: 6, say: FT5_LINES.breathe });
     braced.push({ id: 'treasury-ledge', act: 3, box: [brace[0], brace[0] + brace[1] - 1, brace[2] - 3, brace[2] - 1] });
@@ -294,6 +300,10 @@ export function buildTowerFall5({ painter, T }) {
     /* SNAP chunks over the wall's hollow: run, don't stop - each one under weight starts the next 0.4 s later */
     for (const [cx0, id] of [[164, 'run1'], [182, 'run2']]) { rect(cx0, cx0 + 5, fl + 1, fl + 2, T.AIR);
       for (let k = 0; k < 3; k++) crumble(cx0 + 2 * k, 2, fl, 'snap', { chain: id, seq: k }); run.chains.push([cx0, cx0 + 5]); }
+    /* THE HIGH ROAD: the wall's broken parapet over the run, off the buttress tops - a second height, past the first SNAP chain (slower: a hop up and down) */
+    for (const [x0, len] of [[151, 8], [161, 8], [171, 6], [196, 8]]) { ledge(x0, len, fl - 5); run.high = (run.high || []).concat([[x0, len, fl - 5]]); coins([x0 + (len >> 1), fl - 6]); }
+    /* ONE SLAB HOP: a loose slab of the wall lies over the last window - weight on it and it tears free (told 0.8 s) and slides east and down: hop off it */
+    moversExtra.push({ kind: 'ft5slab', ft5: 'slab', sx: 194 * TS, sy: fl * TS, x: 194 * TS, y: fl * TS, w: 48, h: 8, dir: 1, st: 'wait', t: 0 });
     ent('sign', RUN.x0 + 1, fl - 1, { text: 'THE TOWER IS LYING DOWN. RUN ITS WALL - THE WINDOWS ARE PITS.' });
     for (let x = 145; x <= 200; x += 11) coins([x, fl - 3]);
     /* THE CROWN: the fallen tower's crown resting on the first spire - checkpoint 4 (the boss retry spot), and you arrive in the arena running */
