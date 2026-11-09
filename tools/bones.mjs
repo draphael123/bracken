@@ -120,7 +120,7 @@ console.log('node: the tables');
   ok(/BNS\.BONES_SHIPS \? \[/.test(main) && /t: 'skelsoldier'/.test(main) && /t: 'skelarcher'/.test(main) && /t: 'skelmage'/.test(main), 'three bestiary cards, shown only while BONES_SHIPS');
   ok(/SPR\.skelsoldier = BNA\.bakeSkeletonSoldier\(\)/.test(main) && /HAS_HURT\.add\(k\)/.test(main), 'sprites bake and carry a death frame (HAS_HURT)');
   const BA = await import('../src/redraw/bones_art.js');
-  for (const [k, fn, n] of [['skelsoldier', BA.bakeSkeletonSoldier, 13], ['skelarcher', BA.bakeSkeletonArcher, 12], ['skelmage', BA.bakeSkeletonMage, 14]]) { const sp = fn(); ok(sp.R.length === n && sp.L.length === n && sp.white.R.length === n && sp.w === 10 && sp.h === 20, k + ' sprite: ' + sp.R.length + ' frames, hit box ' + sp.w + 'x' + sp.h + ' (palette-block placeholder)'); }
+  for (const [k, fn, n] of [['skelsoldier', BA.bakeSkeletonSoldier, 13], ['skelarcher', BA.bakeSkeletonArcher, 12], ['skelmage', BA.bakeSkeletonMage, 14]]) { const sp = fn(); ok(sp.R.length === n && sp.L.length === n && sp.white.R.length === n && sp.w === 10 && sp.h === 20, k + ' sprite: ' + sp.R.length + ' frames, hit box ' + sp.w + 'x' + sp.h + ' (real art)'); }
   const { boneFrame } = await import('../src/bones-hands.js');
   const frames = { skelsoldier: [['thrustTell', 6], ['thrust', 7], ['rushTell', 8], ['rush', 9], ['stunned', 10]], skelarcher: [['aimTell', 6], ['aim', 7], ['volleyTell', 8], ['volley', 9]], skelmage: [['wispTell', 6], ['wisp', 7], ['graveTell', 8], ['grave', 9], ['backstepTell', 10]] };
   for (const [k, rows] of Object.entries(frames)) ok(rows.every(([m, f]) => boneFrame({ t: k, mode: m, anim: 0, vx: 0, st: { mode: m } }) === f), k + ': every tell and blow has its own pose'); }

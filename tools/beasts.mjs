@@ -139,11 +139,12 @@ console.log('node: the tables');
   ok(/BSS\.BEASTS_SHIPS \? \[/.test(main) && /t: 'snowrunner'/.test(main) && /t: 'greymane'/.test(main) && /t: 'bruin'/.test(main), 'three bestiary cards, shown only while BEASTS_SHIPS');
   ok(/'small'|small:/.test(main) && /kinds: \['sprig', 'hornsman', 'snowrunner'/.test(main) && /'merrowbrute', 'bruin'\]\);/.test(main), 'poise: the runner is small, Bruin the heavy bar');
   const SA = await import('../src/redraw/beasts_art.js');
-  for (const [k, fn, n, w, h] of [['snowrunner', SA.bakeSnowrunner, 13, 18, 10], ['greymane', SA.bakeGreymane, 14, 26, 15], ['bruin', SA.bakeBruin, 16, 28, 16]]) { const sp = fn(); ok(sp.R.length === n && sp.L.length === n && sp.w === w && sp.h === h, k + ' sprite: ' + sp.R.length + ' frames, hit box ' + sp.w + 'x' + sp.h + ' (palette-block placeholder)'); }
+  for (const [k, fn, n, w, h] of [['snowrunner', SA.bakeSnowrunner, 13, 18, 10], ['greymane', SA.bakeGreymane, 14, 26, 15], ['bruin', SA.bakeBruin, 16, 28, 16]]) { const sp = fn(); ok(sp.R.length === n && sp.L.length === n && sp.w === w && sp.h === h, k + ' sprite: ' + sp.R.length + ' frames, hit box ' + sp.w + 'x' + sp.h + ' (real art)'); }
   const { beastFrame } = await import('../src/beasts-hands.js');
   const fr = { snowrunner: [['snapTell', 6], ['snap', 7], ['leapTell', 8], ['leap', 9], ['skid', 10]], greymane: [['biteTell', 6], ['bite', 7], ['pounceTell', 8], ['pounce', 9], ['pin', 10], ['winded', 11]], bruin: [['maul', 8], ['chargeTell', 9], ['dazed', 13]] };
   for (const [k, rows] of Object.entries(fr)) ok(rows.every(([m, f]) => beastFrame({ t: k, mode: m, anim: 0, vx: 0, st: { mode: m, t: 0 } }) === f), k + ': every tell and blow has its own pose');
-  ok(beastFrame({ t: 'bruin', mode: 'maulTell', anim: 0, vx: 0, st: { mode: 'maulTell', t: 0.8 } }) === 6 && beastFrame({ t: 'bruin', mode: 'maulTell', anim: 0, vx: 0, st: { mode: 'maulTell', t: 0.3 } }) === 7, 'Bruin stands (6), then roars (7)'); }
+  ok(beastFrame({ t: 'bruin', mode: 'maulTell', anim: 0, vx: 0, st: { mode: 'maulTell', t: 0.8 } }) === 6 && beastFrame({ t: 'bruin', mode: 'maulTell', anim: 0, vx: 0, st: { mode: 'maulTell', t: 0.3 } }) === 7, 'Bruin stands (6), then roars (7)');
+  { const A = await import('../src/redraw/beasts_art.js'); const f = A.bakeBruinFrost(); ok(f.R.length === 16, 'the frost recolour of the bruin (cnSkin frost) bakes too'); } }
 
 console.log('node: the flag, the pen');
 { ok(K.BEASTS_SHIPS === false, 'BEASTS_SHIPS is false: nothing is live');
