@@ -1,6 +1,6 @@
 # DKLIFT (claude/dklift, 11-08) - DEATH KNIGHT "TOPPLE THE STANDARD", code only, flag OFF
 Brief: scratch/brief-bosslift-1108.md 2 (Daniel approved). Plan: scratch/lane-reports/bosslift-plan.md (DK section, all 8 recs accepted).
-Branch: claude/dklift off master 85d152eb8. Tip: see the last commit on the branch (pushed). Worktree: bracken-lanes/bracken-dklift
+Branch: claude/dklift off master 85d152eb8. Tip: e30582577 (pushed; this report rides in it). Worktree: bracken-lanes/bracken-dklift
 
 ## Flag
 - `BOSSLIFT_DK_SHIPS = false` in src/unburied-foes.js. Switch to see it: `?bosslift` in the URL, or `globalThis.__BOSSLIFT = true` (the same switch as the Frog lift; PVP_SHIPS pattern). `bkLiftOn()` is read live.
