@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -12,10 +12,13 @@ const tileIdx = pred => TILES.map((t, i) => [t, i]).filter(([t]) => pred(t[1])).
 const thingIdx = ids => ids.map(id => THINGS.indexOf(id)).filter(i => i >= 0);
 const MECH = ['lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone', 'pushblock', 'mover', 'mover:up'];
 const HAZ = ['crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit'];
+/* THE STARTER CAST: fifteen you can read at a glance (Mario Maker shows a few, not all); the rest are one tab over */
+const STARTER = ['sprig', 'shield', 'archer', 'brute', 'hound', 'wasp', 'spit', 'hopper', 'sapper', 'harpy', 'zombie', 'wight', 'goat', 'rockgoblin', 'shaman'];
 export const GROUPS = [
   { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && v.startsWith('mat:'))) },
   { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:'))) },
-  { name: 'ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t)).map(([, i]) => i) },
+  { name: 'ENEMIES', cat: 1, idx: STARTER.map(t => FOES.indexOf(t)).filter(i => i >= 0) },
+  { name: 'MORE ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t) && !STARTER.includes(t)).map(([, i]) => i) },
   { name: 'WATER ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => WATER_FOES.includes(t)).map(([, i]) => i) },
   { name: 'ITEMS', cat: 2, idx: THINGS.map((t, i) => [t, i]).filter(([t]) => !MECH.includes(t) && !HAZ.includes(t)).map(([, i]) => i) },
   { name: 'MECHANISMS', cat: 2, idx: thingIdx(MECH) },
@@ -23,11 +26,15 @@ export const GROUPS = [
   { name: 'TOOLS', cat: 3, idx: null },   // filled from the editor's own tool list
 ];
 const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
-const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];   // THEME / WIDER / NARROWER live in SETTINGS now
+const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];
+const TAG_COL = { FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
+// THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
+const RECENT = []; export const recent = () => RECENT;
+export function used(cat, i) { const k = RECENT.findIndex(r => r.cat === cat && r.i === i); if (k >= 0) RECENT.splice(k, 1); RECENT.unshift({ cat, i }); if (RECENT.length > 8) RECENT.length = 8; }
 export const mapRect = () => UI.map;   /* where the MAP was last drawn (tools/maker-editing.mjs clicks it) */
 export const panelOpen = () => !!UI.panel;
 const HELP_KEY = 'bracken.maker.helpSeen';
@@ -122,9 +129,9 @@ const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOE
 function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => i) : gr.idx; }
 
 // ---------------- layout ----------------
-const TAB_H = 12, CELL = 22, ROWS = 2, NAME_H = 10, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
+const TAB_H = 12, CELL = 30, ROWS = 1, NAME_H = 12, ICON_K = 1.5, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
 export const BARS = { top: TOP, bottom: BOT };
-const BUTTONS = ['PLAY', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SHARE', 'OPEN', 'SETTINGS', 'MAP', 'HELP'];
+const BUTTONS = ['PLAY', 'PLAY HERE', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SHARE', 'OPEN', 'SETTINGS', 'MAP', 'HELP'];
 const inR = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 
 // c: { g, text, SPR, drawSet, VW, VH, time, cat, sel (the selected index in that cat), tools, slot, msg, msgT, doc, themes, tracks }
@@ -148,21 +155,29 @@ export function drawChrome(c) {
     const sel = cat === c.cat && i === c.sel, hov = UI.hover && UI.hover.kind === 'cell' && UI.hover.cat === cat && UI.hover.i === i;
     g.fillStyle = sel ? '#3f6a3a' : hov ? 'rgba(90,80,120,0.9)' : 'rgba(30,26,40,0.9)'; g.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
     if (sel) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 1.5, y + 1.5, CELL - 3, CELL - 3); }
-    g.save(); g.beginPath(); g.rect(x + 2, y + 2, CELL - 4, CELL - 4); g.clip(); try { itemIcon(g, c, cat, i, x + 3, y + 3); } catch (e) {} g.restore();
+    g.save(); g.beginPath(); g.rect(x + 2, y + 2, CELL - 4, CELL - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(x + 3, y + 3); g.scale(ICON_K, ICON_K); try { itemIcon(g, c, cat, i, 0, 0); } catch (e) {} g.restore();
     UI.cells.push({ x, y, w: CELL, h: CELL, cat, i }); }
   if (pages > 1) { for (const [d, ax] of [[-1, 2], [1, VW - 18]]) { const r = { x: ax, y: TAB_H + 4, w: 16, h: ROWS * CELL - 8, d };
       g.fillStyle = 'rgba(60,52,80,0.9)'; g.fillRect(r.x, r.y, r.w, r.h); text(d < 0 ? '<' : '>', r.x + 8, r.y + r.h / 2 - 3, '#ffd36b', 'center', 6); UI.arrows.push(r); }
     text((p + 1) + '/' + pages, VW - 10, TAB_H + ROWS * CELL + 1, '#8a7fa0', 'center', 6); }
-  // ---- the name line: what you point at, else what you hold ----
-  const h = UI.hover && UI.hover.kind === 'cell' ? UI.hover : null;
-  const line = h ? itemName(c, h.cat, h.i) + '   (click to pick it up)' : 'HOLDING: ' + itemName(c, c.cat, c.sel) + '   -   LEFT-CLICK PAINTS, RIGHT-CLICK ERASES';
-  text(c.fitText(line, VW - 50, 6), 20, TAB_H + ROWS * CELL + 1, h ? '#ffffff' : '#d8f09a', 'left', 6);
+  // ---- the line under the strip: what you point at (else what you hold), what it does, its tags; the RECENT row at the right ----
+  const h = UI.hover && UI.hover.kind === 'cell' ? UI.hover : null, show = h || { cat: c.cat, i: c.sel };
+  const dsc = describe(show.cat, show.cat === 0 ? TILES[show.i][1] : show.cat === 1 ? FOES[show.i] : show.cat === 2 ? THINGS[show.i] : c.tools[show.i]);
+  const ly = TAB_H + ROWS * CELL + 2, recentW = 8 * 14 + 50;
+  let lx = 6; const head = (h ? '' : 'HOLDING ') + (show.cat === 3 ? itemName(c, 3, show.i) : dsc.name);
+  text(head, lx, ly, h ? '#ffffff' : '#d8f09a', 'left', 6); lx += Math.ceil(c.textW(head, 6)) + 8;
+  for (const t of dsc.tags) { const w = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, ly - 1, w, 9); text(t, lx + w / 2, ly, '#1b1626', 'center', 6); lx += w + 3; }
+  if (dsc.line) text(c.fitText(dsc.line, VW - recentW - lx - 6, 6), lx + 4, ly, '#c8bcd8', 'left', 6);
+  UI.recentCells = []; { const R = RECENT; let rx = VW - 4 - R.length * 14; if (R.length) text('RECENT', rx - 4, ly, '#8a7fa0', 'right', 6);
+    for (const r of R) { const cell = { x: rx, y: ly - 3, w: 13, h: 13, cat: r.cat, i: r.i }; g.fillStyle = r.cat === c.cat && r.i === c.sel ? '#3f6a3a' : 'rgba(30,26,40,0.9)'; g.fillRect(cell.x, cell.y, 13, 13);
+      g.save(); g.beginPath(); g.rect(cell.x, cell.y, 13, 13); g.clip(); g.translate(cell.x + 1, cell.y + 1); g.scale(0.7, 0.7); try { itemIcon(g, c, r.cat, r.i, 0, 0); } catch (e) {} g.restore(); UI.recentCells.push(cell); rx += 14; } }
+  if (c.hoverEnt) drawEntCard(c, c.hoverEnt);
   // ---- bottom: the buttons ----
   g.fillStyle = 'rgba(12,10,18,0.9)'; g.fillRect(0, VH - BOT, VW, BOT);
   UI.btns = []; let bx = 4;
   for (const b of BUTTONS) { const w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx, y: VH - BOT + 2, w, h: BOT - 4, b }, hov = UI.hover && UI.hover.kind === 'btn' && UI.hover.b === b;
-    g.fillStyle = b === 'PLAY' ? (hov ? '#5a9a3a' : '#3f7a2c') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
-    text(b, r.x + w / 2, r.y + 3, b === 'PLAY' ? '#d8f09a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
+    g.fillStyle = b.startsWith('PLAY') ? (hov ? '#5a9a3a' : '#3f7a2c') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
+    text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
@@ -249,7 +264,7 @@ export function uiMouse(c, mx, my, down) {
     return { consumed: true, cam: { x: fx * c.LWp - VW / 2, y: fy * c.LHp - (VH - TOP - BOT) / 2 - TOP } };
   }
   if (my >= TOP && my < VH - BOT) return null;   // the level
-  const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
+  const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)) || (UI.recentCells || []).find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
   if (cell) UI.hover = { kind: 'cell', cat: cell.cat, i: cell.i }; else if (btn) UI.hover = { kind: 'btn', b: btn.b };
   if (!down) return { consumed: true };
   if (tab) { UI.group = tab.gi; return { consumed: true, act: 'ui' }; }
@@ -304,4 +319,14 @@ function drawMinimap(c) {
   const vx = x + (c.cam.x / 16) * k, vy = y + ((c.cam.y + TOP) / 16) * k, vw = (VW / 16) * k, vh = ((VH - TOP - BOT) / 16) * k;
   g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.strokeRect(Math.round(vx) + 0.5, Math.round(vy) + 0.5, Math.round(vw), Math.round(vh));
   UI.map = { x, y, w, h };
+}
+
+// ---------------- the card for a placed piece under the mouse ----------------
+function drawEntCard(c, e) {
+  const { g, text, VW, VH } = c, d = describeEnt(e), w = 250, lines = [d.line], h = 30;
+  const x = Math.max(4, Math.min(VW - w - 4, c.mouse.x + 12)), y = Math.max(TOP + 4, Math.min(VH - BOT - h - 4, c.mouse.y - h - 8));
+  g.fillStyle = 'rgba(12,10,18,0.92)'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  let lx = x + 6; text(d.name, lx, y + 4, '#ffd36b', 'left', 6); lx += Math.ceil(c.textW(d.name, 6)) + 6;
+  for (const t of d.tags) { const tw = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, y + 3, tw, 9); text(t, lx + tw / 2, y + 4, '#1b1626', 'center', 6); lx += tw + 3; }
+  text(c.fitText(lines[0] || '', w - 12, 6), x + 6, y + 17, '#e8dcc0', 'left', 6);
 }

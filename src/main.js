@@ -282,7 +282,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
-import * as MKP from './maker-palette.js'; import * as MUI from './maker-ui.js';   /* (claude/maker) THE MAKER's screen: tabs, icon strip, buttons, SETTINGS, HELP */   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
+import * as MKP from './maker-palette.js'; import * as MUI from './maker-ui.js'; import * as MKJ from './maker-juice.js';   /* (claude/maker) THE MAKER's screen: tabs, icon strip, buttons, SETTINGS, HELP */   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
 import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -7179,7 +7179,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
     edShift = ev.shiftKey;
     edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); if (edPanFrom) { edCam.x = edPanFrom.cx - (x - edPanFrom.x); edCam.y = edPanFrom.cy - (y - edPanFrom.y); edClampCam(); return; } edMouse(x, y, ev.button, false, true); });
-  addEventListener('mouseup', () => { edPanFrom = null; MUI.mouseUp();   /* (claude/maker) */
+  addEventListener('mouseup', () => { edPanFrom = null; MUI.mouseUp(); if (state === 'editor' && edGrab) edDrop();   /* (claude/maker) */
     if (state === 'editor' && MKP.rectActive()) { const en = ED_TILES[edBrush().i]; edPush(); if (MKP.rectEnd(edDoc, edCur, en)) { edMount(false); edSay(en[0].replace(' (drag)', '') + ' poured'); } else edUndo.pop(); }   /* (claude/maker) */
     if (state === 'editor') { edPaint = 0; edPainted = null; } });
   disp.addEventListener('wheel', ev => { if (state !== 'editor') return;   /* (claude/maker) THE WHEEL SCROLLS THE LEVEL (sideways; SHIFT: up and down). Picking pieces is the icon strip's job now */
@@ -33204,6 +33204,7 @@ function update(dt) {
     if (keys.left) edCam.x -= sp; if (keys.right) edCam.x += sp;
     if (keys.up) edCam.y -= sp; if (keys.down) edCam.y += sp;
     edClampCam();   /* (claude/maker) with room to see past the palette bar and the button bar */
+    for (const e of enemies) if (e.alive) e.anim = (e.anim || 0) + dt;   /* (claude/maker) the cast idles in place: a living editor */
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
   if (state === 'title') { if (attractTickIdle(dt)) return; ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (PBOARD.shown()) { leftPress = rightPress = confirmPress = pausePress = upPress = downPress = atkPress = jumpPress = dodgePress = throwPress = anyPress = false; }   /* (claude/titlemenu2) the party board over the title (PLAY WITH AI) has the keys and the pad: the title takes no press, and none is left waiting for when the board closes */
@@ -37229,7 +37230,7 @@ function edRespawn() {
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
     if (e.t === 'gate') gate = { x: px, y: py }; }
   spawnEntities();
-  for (const e of enemies) { e.stagger = 1e9; e.anim = 0; } // frozen while you work
+  for (const e of enemies) { e.stagger = 1e9; e.anim = ((e.x * 7 + e.y * 3) % 30) / 10; }   /* (off the game's dice: a varied start from where it stands) */ // held in place while you work (they breathe: the editor's update turns e.anim)
 }
 
 function edEnter() {
@@ -37237,23 +37238,33 @@ function edEnter() {
   edThemeList();
   if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
   edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
-  edMount(true); music.stop(); setView('zoom');
+  edMount(true); music.stop(); setView('zoom'); music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);   /* (claude/maker) the level's music, quietly, while you build */
   edCam.x = Math.max(0, edDoc.start.x * TS - VW / 2); edCam.y = Math.max(0, LH * TS - VH);
 }
-function edPlay() {
-  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GATE down first (THINGS)'); SFX.buzz(); return; }
-  edPush(); edTesting = true;
-  CUSTOM.build = () => edLevelObj(edDoc, true);
+/* (claude/maker) PLAY IS INSTANT AND COMES BACK TO WHERE YOU WERE (Daniel: make it feel like Mario Maker). No name banner and no
+   iris on a test run; `here` (a cell) starts the knight there instead of at START - PLAY HERE / SHIFT+P. Back in the editor
+   the view is where the knight got to. */
+function edPlay(here) {
+  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GOAL GATE down first (ITEMS)'); SFX.buzz(); return; }
+  edPush(); edTesting = true; MKJ.whoosh();
+  CUSTOM.build = () => { const o = edLevelObj(edDoc, true); if (here) o.START = { x: here.x, y: here.y }; return o; };
   const i = edIndex(); LEVELS[i].name = edDoc.name; LEVELS[i].sub = 'made by hand';
-  loadLevel(i); startGame(); edSay('');
+  loadLevel(i); startGame(); bannerT = 0; transT = 0; transPrev = state; edSay('');
 }
-function edResume() { edTesting = false; state = 'editor'; edMount(true); music.stop(); edSay('back in the editor'); }
+function edPlayHere(tx) {   /* the first standing place in that column, from the top of the view down */
+  const c = MKP.standIn(edDoc, Math.max(1, Math.min(edDoc.W - 2, tx)), Math.max(0, Math.floor((edCam.y + MUI.BARS.top) / TS)));
+  if (!c) { edSay('nowhere to stand in that column'); SFX.buzz(); return; } edPlay(c);
+}
+function edResume() { const px = P.x, py = P.y; edTesting = false; state = 'editor'; edMount(false); music.stop(); if (edDoc.music !== 'none') music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);
+  setView('zoom');   /* the editor's size first: centred with the play view's width, the knight sat at the left edge */
+  edCam.x = px - VW / 2; edCam.y = py - VH * 0.6; edClampCam(); transT = 0; transPrev = 'editor'; MKJ.whoosh(true); edSay('back in the editor'); }
 
 // ---- undo ----
 function edPush() { edUndo.push({ g: new Uint8Array(edDoc.grid), W: edDoc.W, H: edDoc.H, name: edDoc.name, theme: edDoc.theme, e: JSON.stringify(edDoc.ents), s: { x: edDoc.start.x, y: edDoc.start.y }, w: MKP.terrainOf(edDoc) });   /* (claude/maker) W/H too: undoing WIDER or NEW restored the old grid into the new width and scrambled the level */ if (edUndo.length > 40) edUndo.shift(); }
 function edPop() {
   const u = edUndo.pop(); if (!u) { edSay('nothing to undo'); return; }
   const rebake = u.theme !== undefined && u.theme !== edDoc.theme;
+  MKJ.undo();
   edDoc.grid = u.g; if (u.W) { edDoc.W = u.W; edDoc.H = u.H; edDoc.name = u.name; edDoc.theme = u.theme; } edDoc.ents = JSON.parse(u.e); edDoc.start = u.s; MKP.setTerrain(edDoc, u.w); edMount(rebake); edSay('undone'); SFX.ui();
 }
 
@@ -37285,12 +37296,14 @@ function edPlace(tx, ty, erase) {
   const b = edBrush(), key = tx + ':' + ty;
   if (edPainted && edPainted.has(key)) return; edPainted && edPainted.add(key);
   if (b.cat === 3) return;
-  if (erase) { const i = edEntAt(tx, ty); if (i >= 0) { L.ents.splice(i, 1); edRespawn(); return; } if (MKP.terrainErase(edDoc, tx, ty)) { edMount(false); return; } edSetTile(tx, ty, T.AIR); return; }
-  if (b.cat === 0) { const had = (L.crumbles || []).length; const v = MKP.tilePaint(edDoc, tx, ty, ED_TILES[b.i]); if (MKP.isSolidId(v)) { const k = edEntAt(tx, ty); if (k >= 0) { L.ents.splice(k, 1); edRespawn(); edSay('covered over: the piece there is gone'); } } edSetTile(tx, ty, v); L.crumbles = MKP.engineCrumbles(edDoc); if (had !== L.crumbles.length || ED_TILES[b.i][1] === 'crumble') edRespawn(); return; }   /* (claude/maker) terrain brushes */
+  if (erase) { const was = L.grid[ty * LW + tx], i = edEntAt(tx, ty); if (i >= 0 || was || MKP.inPool(edDoc, tx, ty)) { MKJ.erase(); MKJ.poofAt(tx, ty); }   /* (claude/maker) the juice */
+    if (i >= 0) { L.ents.splice(i, 1); edRespawn(); return; } if (MKP.terrainErase(edDoc, tx, ty)) { edMount(false); return; } edSetTile(tx, ty, T.AIR); return; }
+  if (b.cat === 0) { const had = (L.crumbles || []).length; const v = MKP.tilePaint(edDoc, tx, ty, ED_TILES[b.i]); if (L.grid[ty * LW + tx] !== v || ED_TILES[b.i][1] !== v) { MKJ.place('tile'); MKJ.popAt(tx, ty); } if (MKP.isSolidId(v)) { const k = edEntAt(tx, ty); if (k >= 0) { L.ents.splice(k, 1); edRespawn(); edSay('covered over: the piece there is gone'); } } edSetTile(tx, ty, v); L.crumbles = MKP.engineCrumbles(edDoc); if (had !== L.crumbles.length || ED_TILES[b.i][1] === 'crumble') edRespawn(); return; }   /* (claude/maker) terrain brushes */
   const t = b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i];
-  { const why = MKP.placeProblem(edDoc, t, tx, ty); if (why && why.refuse) { edSay(why.say); SFX.buzz(); return; } if (why) edSay(why.say); }   /* (claude/maker) not inside the ground; a water kind told it needs water */
+  { const why = MKP.placeProblem(edDoc, t, tx, ty); if (why && why.refuse) { edSay(why.say); MKJ.refuse(); return; } if (why) edSay(why.say); }   /* (claude/maker) not inside the ground; a water kind told it needs water */
   const old = edEntAt(tx, ty); if (old >= 0) L.ents.splice(old, 1);
   const e = b.cat === 2 ? MKP.entFor(t, tx, ty) : { t, x: tx, y: ty };   /* (claude/maker) a moving platform is one kind with two settings */
+  MKJ.place('piece'); MKJ.popAt(tx, ty); MUI.used(b.cat, b.i);   /* (claude/maker) the juice, and the RECENT row */
   if (t === 'sign') e.text = 'A SIGN. WRITE ON IT LATER.';
   if (t === 'npc') e.kind = 'squire';
   if (t === 'vent') { e.period = 4; e.on = 2.4; e.h = 100; }
@@ -37306,9 +37319,10 @@ function edKey(k, ev) {
   if (MUI.panelOpen()) { if (k === 'escape' || k === 'enter') { if (MUI.closePanel() === 'settings') music.stop(); } return true; }   /* (claude/maker) */
   const shift = ev && ev.shiftKey, ctrl = ev && (ev.ctrlKey || ev.metaKey);
   if (ctrl && k === 'z') { edPop(); return true; }
-  if (k === 'tab') { edPal = !edPal; SFX.ui(); return true; }
+  if (k === 'tab') return true;   /* (claude/maker) the old full-screen palette is retired: the icon strip is the one way to pick */
   if (k === 'g') { edShowGrid = !edShowGrid; return true; }
   if (k === 'r') { const nm = prompt('Name this wood', edDoc.name); if (nm) { edDoc.name = nm.toUpperCase().slice(0, 22); edSay('called ' + edDoc.name); } return true; }
+  if (k === 'p' && shift) { edPlayHere(edCur.x); return true; }   /* (claude/maker) from under the mouse */
   if (k === 'p' || k === 'enter') { edPlay(); return true; }
   if (k === 'escape') { if (edPal) { edPal = false; return true; } state = 'title'; music.play(menuTrack()); return true; }
   if (k >= '1' && k <= '9') { const n = +k - 1; if (n < edItems(edCat).length) { edSel[edCat] = n; SFX.ui(); } return true; }
@@ -37333,10 +37347,20 @@ function edMouse(mx, my, btn, down, moved) {
   const [cx, cy] = edCamXY();
   edCur.x = Math.floor((mx + cx) / TS); edCur.y = Math.floor((my + cy) / TS);
   if (edPal) { if (down) edPalClick(mx, my); return; }
-  { const u = MUI.uiMouse(edUiCtx(), mx, my, down); if (u) { edUiAct(u); return; } }   /* (claude/maker) the bars and panels take their own clicks */
+  edMouseXY = { x: mx, y: my };
+  { const u = MUI.uiMouse(edUiCtx(), mx, my, down); if (u) { edHoverEnt = null; edUiAct(u); return; } }   /* (claude/maker) the bars and panels take their own clicks */
+  edHoverEnt = edGrab ? null : edDoc.ents.slice().reverse().find(q => q.x === edCur.x && q.y === edCur.y) || null;   /* (claude/maker) the hover card's piece */
   if (down && btn === 0 && edShift) { edEditAt(edCur.x, edCur.y); return; }   /* (claude/maker) SHIFT+CLICK a piece: its settings */
   if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRectBrush(ED_TILES[edBrush().i])) { MKP.rectStart(edCur); return; }   /* (claude/maker) water: drag a box */
   if (MKP.rectActive()) return;
+  /* (claude/maker) GRAB AND MOVE: a left press on a platform's handle drags its reach; on a placed piece it picks the piece up
+     (Mario Maker's own gesture). Tools (START / LINK / EDIT) still act on a click. */
+  if (edGrab && moved) { edDragTo(edCur); return; }
+  if (down && btn === 0 && edBrush().cat !== 3) {
+    const h = MKP.handleAt(edDoc, edCur); if (h) { edPush(); edGrab = { h, moved: false }; MKJ.pick(); return; }
+    const e = edDoc.ents.slice().reverse().find(q => q.x === edCur.x && q.y === edCur.y);
+    if (e && MKP.movable(e)) { edPush(); edGrab = { e, moved: false, x0: e.x, y0: e.y }; MKJ.pick(); return; }
+  }
   if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; }
   if (edPaint && (down || moved)) {
     const b = edBrush();
@@ -37363,17 +37387,29 @@ function edCamLim() { return { x0: -TS * 2, x1: Math.max(-TS * 2, LW * TS - VW +
 function edClampCam() { const m = edCamLim(); edCam.x = Math.max(m.x0, Math.min(m.x1, edCam.x)); edCam.y = Math.max(m.y0, Math.min(m.y1, edCam.y)); }
 function edCamXY() { edClampCam(); return [Math.round(edCam.x), Math.round(edCam.y)]; }
 /* (claude/maker) ONE REDRAW A FRAME: painting marks the level dirty; the frame redraws the tiles and puts the landmarks back once */
-let edDirty = false, edPanFrom = null, edShift = false;
+let edDirty = false, edPanFrom = null, edShift = false, edLastDraw = 0, edGrab = null, edHoverEnt = null, edMouseXY = { x: 0, y: 0 };
+function edDragTo(c) {
+  if (edGrab.h) { const before = (edGrab.h.e.range || 0) + (edGrab.h.e.rise || 0); MKP.dragHandle(edGrab.h, c); if ((edGrab.h.e.range || 0) + (edGrab.h.e.rise || 0) !== before) { edGrab.moved = true; edGrab.h = MKP.handleOf(edGrab.h.e); MKJ.place('tile'); edRespawn(); } return; }
+  const e = edGrab.e; if ((e.x === c.x && e.y === c.y) || !MKP.canMoveTo(edDoc, e, c.x, c.y)) return;
+  e.x = c.x; e.y = c.y; edGrab.moved = true; edRespawn();
+}
+function edDrop() {
+  const gr = edGrab; edGrab = null; if (!gr) return;
+  if (!gr.moved) { edUndo.pop(); return; }   /* a click that moved nothing leaves no undo step */
+  const e = gr.e || gr.h.e; MKJ.place('piece'); MKJ.popAt(e.x, e.y); edSay(gr.h ? (e.vert ? 'rises ' + e.rise + ' tiles' : 'travels ' + e.range + ' tiles') : 'moved');
+}
+const edFrameDt = () => { const n = performance.now(), d = edLastDraw ? Math.min(0.1, (n - edLastDraw) / 1000) : 0; edLastDraw = n; return d; };
 function edEditAt(tx, ty) { const e = edDoc.ents.slice().reverse().find(q => q.x === tx && q.y === ty); if (e) { MUI.openPiece(e); SFX.ui(); } else edSay('click on a placed piece to change it'); }
 function edFlush() { if (!edDirty || !L) return; edDirty = false; resolveTiles(); placeLandmarks(); }
 function edUiCtx() { return { g, text, textW, fitText, SPR, drawSet, VW, VH, time, cat: edCat, sel: edSel[edCat], tools: ED_TOOLS, slot: edSlot, msg: edMsg, msgT: edMsgT, doc: edDoc,
-  themes: edThemeList(), noGate: !!L && !L.ents.some(e => e.t === 'gate'), problems: MKP.problems(edDoc).length, cam: { x: edCam.x, y: edCam.y }, LWp: LW * TS, LHp: LH * TS }; }
+  themes: edThemeList(), noGate: !!L && !L.ents.some(e => e.t === 'gate'), problems: MKP.problems(edDoc).length, cam: { x: edCam.x, y: edCam.y }, hoverEnt: edHoverEnt && edDoc.ents.includes(edHoverEnt) ? edHoverEnt : null, mouse: edMouseXY, LWp: LW * TS, LHp: LH * TS }; }
 /* (claude/maker) what a click on the maker's screen asks for */
 function edUiAct(u) {
-  if (u.pick) { edCat = u.pick.cat; edSel[edCat] = u.pick.i; SFX.ui(); return; }
+  if (u.pick) { edCat = u.pick.cat; edSel[edCat] = u.pick.i; MKJ.pick(); if (u.pick.cat === 0) MUI.used(0, u.pick.i); return; }
   if (u.cam) { edCam.x = u.cam.x; edCam.y = u.cam.y; edClampCam(); return; }   /* the minimap */
   const a = u.act; if (!a) return;
   if (a === 'play') edPlay();
+  else if (a === 'play here') edPlayHere(Math.floor((edCam.x + VW / 2) / TS));
   else if (a === 'undo') edPop();
   else if (a === 'save') edSave(edSlot);
   else if (a === 'load') edKey('l');
@@ -37384,8 +37420,8 @@ function edUiAct(u) {
   else if (a === 'theme+' || a === 'theme-') { edPush(); const n = edThemeList().length; edDoc.theme = (edDoc.theme + (a === 'theme+' ? 1 : -1) + n) % n; edMount(true); if (!edDoc.music) music.play(edThemeList()[edDoc.theme].music); }
   else if (a === 'remount') edMount(true);
   else if (a === 'music') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
-  else if (a === 'closeSettings') music.stop();
-  else if (a === 'openSettings') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
+  else if (a === 'closeSettings') music.duck(true);
+  else if (a === 'openSettings') { music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(false); }
   else if (a === 'pieceStep') { edPush(); if (MKP.stepRow(edDoc, u.piece, u.row, u.d)) edMount(false); else edRespawn(); }
   else if (a === 'pieceText') { const t = prompt('What does the sign say?', u.piece.text || ''); if (t !== null) { edPush(); u.piece.text = t.toUpperCase().slice(0, 80); edRespawn(); } }
   else if (a === 'pieceRemove') { edPush(); const i = edDoc.ents.indexOf(u.piece); if (i >= 0) edDoc.ents.splice(i, 1); edRespawn(); edSay('removed'); }
@@ -37422,7 +37458,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
@@ -38171,7 +38207,7 @@ if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campa
 if (q.get('maker')) edEnter();
 if (q.get('maker') && /#L=/.test(location.hash)) MKP.fromShareCode(location.hash).then(d => { edDoc = d; edMount(true); edSay('A SHARED LEVEL: ' + d.name + ' - PRESS PLAY'); }).catch(() => edSay('that share link did not open'));   /* (claude/maker) a shared level opens in the maker */
 /* (claude/maker) the maker's test handle: tools/maker-sweep.mjs builds one-foe woods through it */
-window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), place: (tx, ty, erase) => { edPush(); edPainted = null; edPlace(tx, ty, !!erase); edFlush(); }, spr: (tx, ty) => tileSpr[ty * LW + tx], get decor() { return decor; }, toScreen: (bx, by) => { const r = disp.getBoundingClientRect(); return [r.left + (bx * S + offX) / DPR, r.top + (by * S + offY) / DPR]; }, get cam() { return { x: edCam.x, y: edCam.y }; }, get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
+window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), place: (tx, ty, erase) => { edPush(); edPainted = null; edPlace(tx, ty, !!erase); edFlush(); }, spr: (tx, ty) => tileSpr[ty * LW + tx], get decor() { return decor; }, get undoDepth() { return edUndo.length; }, get viewW() { return VW; }, playAt: c => edPlay(c), toScreen: (bx, by) => { const r = disp.getBoundingClientRect(); return [r.left + (bx * S + offX) / DPR, r.top + (by * S + offY) / DPR]; }, get cam() { return { x: edCam.x, y: edCam.y }; }, get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
 rafQueued = true; requestAnimationFrame(frame);

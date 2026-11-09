@@ -81,8 +81,9 @@ const THING_NAMES = { mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHEC
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
 
 // names: the bestiary's, where it has one (main.js BEASTS), else the id in capitals
-let NAMES = {};
-export function setNames(beasts) { NAMES = {}; for (const b of beasts || []) if (b && b.t && b.name) NAMES[b.t] = b.name.replace(/^THE /, ''); }
+let NAMES = {}, DESCS = {};
+export function setNames(beasts) { NAMES = {}; DESCS = {};
+  for (const b of beasts || []) if (b && b.t && b.name) { NAMES[b.t] = b.name.replace(/^THE /, ''); if (b.desc) DESCS[b.t] = b.desc; } }
 export const nameOf = t => NAMES[t] || String(t).toUpperCase();
 
 // ---------------- the palette screen, paged ----------------
@@ -308,7 +309,7 @@ export function drawProblems(g, doc, cx, cy, t, text) {
 // What you can change on a placed piece. Each row: { key, label, values: [...], show: v => text } or { key, label, text: true }.
 // The values are the engine's own fields (spawnEnt reads them), so nothing here needs a hook in the game.
 const tiles = n => (n === 1 ? '1 TILE' : n + ' TILES'), secs = v => v + ' S';
-const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === 1 ? 'RIGHT' : 'LEFT'), def: -1 };
+const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === -1 ? 'LEFT' : 'RIGHT'), def: 1 };   /* spawnEnt: e.face || 1, so unset means RIGHT */
 export function pieceRows(e) {
   if (FOES.includes(e.t)) return [FACE];
   if (e.t === 'mover' && e.vert) return [
@@ -370,3 +371,101 @@ export async function fromShareCode(code) {
   return docFromJSON(JSON.parse(new TextDecoder().decode(await pipe(unb64u(c), new DecompressionStream('deflate-raw')))));
 }
 export async function shareLink(d) { return location.origin + location.pathname + '?maker=1#L=' + await shareCode(d); }
+
+// the first place a knight can stand in a column (air with something solid or a ledge under it), from row `from` down
+export function standIn(doc, x, from = 0) {
+  for (let y = Math.max(1, from); y < doc.H - 1; y++) { const here = doc.grid[y * doc.W + x], under = doc.grid[(y + 1) * doc.W + x];
+    if (!isSolidId(here) && here !== T.ONEWAY && (isSolidId(under) || under === T.ONEWAY)) return { x, y }; }
+  return null;
+}
+
+export const inPool = (doc, x, y) => (doc.water || []).some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
+
+// ================= GRAB AND MOVE (claude/maker feel batch) =================
+// A moving platform's track has a HANDLE at its far end (a lift's at its top): drag it to set how far / how high.
+export function handleOf(e) {
+  if (e.t !== 'mover') return null;
+  return e.vert ? { x: e.x, y: e.y - (e.rise || 0), e, kind: 'rise' } : { x: e.x + (e.len || 2) + (e.range || 0) - 1, y: e.y, e, kind: 'range' };
+}
+export function handleAt(doc, c) { for (const e of doc.ents) { const h = handleOf(e); if (h && h.x === c.x && h.y === c.y && (h.e.range || h.e.rise)) return h; } return null; }
+export function dragHandle(h, c) {
+  if (h.kind === 'range') h.e.range = Math.max(1, Math.min(30, c.x - h.e.x - (h.e.len || 2) + 1));
+  else h.e.rise = Math.max(1, Math.min(20, h.e.y - c.y));
+}
+// moving a placed piece: where it may go (not into the ground, not onto another piece; a locked gate stays with its bars)
+export const movable = e => e.t !== 'lockgate';
+export function canMoveTo(doc, e, x, y) {
+  if (x < 1 || y < 0 || x >= doc.W - 1 || y >= doc.H) return false;
+  if (doc.ents.some(q => q !== e && q.x === x && q.y === y)) return false;
+  const why = placeProblem(doc, e.t, x, y); return !(why && why.refuse);
+}
+export function drawHandles(g, doc, cx, cy, t) {
+  for (const e of doc.ents) { const h = handleOf(e); if (!h) continue; const x = h.x * TS - cx, y = h.y * TS - cy, a = 0.75 + 0.25 * Math.sin(t * 5);
+    g.globalAlpha = a; g.fillStyle = '#ffd36b'; g.fillRect(x + 4, y + 4, 8, 8); g.fillStyle = '#1b1626'; g.globalAlpha = 1;
+    if (h.kind === 'range') { g.fillRect(x + 6, y + 7, 4, 2); g.fillRect(x + 9, y + 6, 1, 4); } else { g.fillRect(x + 7, y + 6, 2, 4); g.fillRect(x + 6, y + 6, 4, 1); } }
+}
+
+// ================= WHAT A PIECE DOES (claude/maker feel batch: hover cards) =================
+// One plain line and a few tags, so you know a piece before you place it. Foes: the bestiary's first sentence, tags read
+// from its words; everything else: written here.
+const LINE = {
+  0: 'Empty air: paints a gap.', 1: "Solid ground in this background's own look.", 2: 'A ledge: jump up through it, stand on top.', 3: 'Spikes: they hurt.',
+  4: 'A crate: solid, and breakable.', 8: 'A plank to stand on.', 9: 'A rope ladder: climb it.', 10: 'A spring: it throws you high.', 11: 'A shelf to stand on.',
+  12: 'A door: a lever or pressure plate opens it.', 13: 'A rock face: a wall.', 14: 'A rail.', 15: 'Soft rock: a heavy blow breaks it.', 16: 'Ice: slippery.',
+  17: 'A web: it slows you.', 18: 'Crystal: solid.', 5: 'Reeds: you walk through them.', 7: 'A palisade: a wooden wall.',
+  20: 'A steep slope up.', 21: 'A steep slope down.', 22: 'A gentle slope up (first half).', 23: 'A gentle slope up (second half).', 24: 'A gentle slope down (second half).', 25: 'A gentle slope down (first half).',
+  crumble: 'Holds a moment after you land, then falls. Comes back on a retry.', water: 'Water to swim in. Drag a box.', shallows: 'Wading water, one row deep. Drag a box.', poison: 'Poisoned water: it hurts. Drag a box.',
+  coin: 'A coin.', silver: 'A silver coin: the rare one.', check: 'A checkpoint: you come back here when you fall.', gate: 'The goal. Every level needs one.',
+  mover: 'A platform that slides side to side. Drag its gold handle to set how far.', 'mover:up': 'A lift that rises and sinks. Drag its gold handle to set how high.',
+  lever: 'Hit it with your sword: it opens its door.', plate: 'Stand on it (or push a block onto it): it opens its door.',
+  key: 'Pick it up to open the gate of the same metal.', lockgate: 'A locked gate: the key of its metal opens it.', pushblock: 'A block you can push, onto a plate or into a gap.',
+  crusher: 'Drops from above on a beat. Do not be under it.', firevent: 'Spits fire on a beat. Jump it.', roller: 'Rolls along the floor. Jump it.',
+  rockfall: 'Rocks fall here on a beat.', vent: 'A blast of air on a beat: it lifts you.', firepit: 'A fire pit that flares on a beat.',
+  sign: 'A sign with your words on it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
+  lantern: 'A lantern: light.', npc: 'A villager.',
+};
+const MAT_LINE = { grass: 'Grass on earth, whatever the background.', cobble: "A village's cobbles.", shore: 'Shore rock.', reef: 'Reef rock.', city: 'City stone.', masonry: 'Castle stone.', deck: "A ship's deck." };
+/* THE STARTER CAST's tags are written by hand: the bestiary's words talk about YOUR shield and blocking so much that reading
+   tags out of them called the archer a shield-bearer (2026-11-09). The rest are read from the first sentence only. */
+const HAND_TAGS = { sprig: ['WALKS'], shield: ['WALKS', 'SHIELD'], archer: ['SHOOTS'], brute: ['HEAVY'], hound: ['FAST'], wasp: ['FLIES'], spit: ['SHOOTS'],
+  hopper: ['LEAPS'], sapper: ['BOMBS'], harpy: ['FLIES'], zombie: ['RISES'], wight: ['RISES'], goat: ['CHARGES'], rockgoblin: ['THROWS'], shaman: ['SUMMONS'] };
+function tagsFrom(t, d) {
+  if (HAND_TAGS[t]) return HAND_TAGS[t];
+  const w = firstSentence(d).toLowerCase().replace(/your shield/g, ''), out = [];
+  if (WATER_FOES.includes(t)) out.push('WATER');
+  if (/\b(fl(y|ies|ying)|wings?|swoops?|hovers?|dives?|drifts?)\b/.test(w)) out.push('FLIES');
+  if (/\b(shoots?|arrows?|bolts?|throws?|spits?|casts?|hurls?|lobs?|looses?|fires?)\b/.test(w)) out.push('SHOOTS');
+  if (/\b(shield|blocks)\b/.test(w)) out.push('SHIELD');
+  if (/\b(heavy|plate|maul|armou?r)\b/.test(w)) out.push('HEAVY');
+  if (/\b(rises?|rising) (from|out of|up out of|up from)\b/.test(w)) out.push('RISES');
+  if (!out.length) out.push('FIGHTS');
+  return out.slice(0, 3);
+}
+const firstSentence = d => { const m = String(d || '').match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(d || '')).trim(); };
+export function describe(cat, id) {
+  if (cat === 1) { const d = DESCS[id]; return { name: nameOf(id), line: d ? firstSentence(d) : 'Fights you.', tags: tagsFrom(id, d) }; }
+  if (cat === 0) { const k = typeof id === 'string' && id.startsWith('mat:') ? null : id; return { name: (TILES.find(t => t[1] === id) || [String(id)])[0], line: k === null ? MAT_LINE[id.slice(4)] : LINE[k] || '', tags: [] }; }
+  if (cat === 2) { const k = String(id).split(':')[0], metal = String(id).split(':')[1]; let line = LINE[id] || LINE[k] || '';
+    if (metal) line = line.replace('the same metal', metal).replace('its metal', 'the ' + metal + ' one'); return { name: thingName(id), line, tags: [] }; }
+  return { name: String(id), line: '', tags: [] };
+}
+// a placed piece's description (its kind decides)
+export function describeEnt(e) {
+  if (FOES.includes(e.t)) return describe(1, e.t);
+  const id = e.t === 'mover' ? (e.vert ? 'mover:up' : 'mover') : e.t === 'key' ? 'key:' + (e.kind || 'brass') : e.t === 'lockgate' ? 'lockgate:' + (e.needs || 'brass') : e.t;
+  return describe(2, id);
+}
+// ---- REACH: where a hazard bites, which way a foe faces (faint, always on; the hovered piece's is strong) ----
+export function drawReach(g, doc, cx, cy, hover) {
+  const solidAt = (x, y) => y >= doc.H || isSolidId(doc.grid[y * doc.W + x]);
+  for (const e of doc.ents) {
+    const strong = e === hover, x = e.x * TS - cx, y = e.y * TS - cy; g.globalAlpha = strong ? 0.45 : 0.16;
+    if (e.t === 'crusher') { g.fillStyle = '#ff4a4a'; g.fillRect(x - 8, y - 6 * TS, TS * 2, 7 * TS); }
+    else if (e.t === 'firevent' || e.t === 'firepit') { g.fillStyle = '#ff8a3a'; g.fillRect(x + 3, y - 3 * TS, 10, 4 * TS); }
+    else if (e.t === 'vent') { g.fillStyle = '#bfe8ff'; g.fillRect(x + 2, y + TS - (e.h || 112), 12, e.h || 112); }
+    else if (e.t === 'rockfall') { let yy = e.y + 1; while (yy < doc.H && !solidAt(e.x, yy)) yy++; g.fillStyle = '#8b8378'; g.fillRect(x + 4, y, 8, (yy - e.y) * TS); }
+    else if (FOES.includes(e.t)) { g.globalAlpha = strong ? 0.9 : 0.45; g.fillStyle = '#ffd36b'; const f = e.face === -1 ? -1 : 1, ax = x + 8 + f * 9, ay = y + 13;
+      g.beginPath(); g.moveTo(ax + f * 4, ay); g.lineTo(ax - f * 1, ay - 3); g.lineTo(ax - f * 1, ay + 3); g.fill(); }
+    g.globalAlpha = 1;
+  }
+}

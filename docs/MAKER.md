@@ -95,6 +95,21 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   link loads the level into the maker. OPEN takes a pasted link or code.
 - `tools/maker-pieces.mjs` (in the suite).
 
+## Done (2026-11-09, THE FEEL BATCH - Daniel: "more like Mario Maker: simple, satisfying, clear what each piece does")
+- PLAY is instant (no name banner, no iris); back in the editor the view is centred on the knight; PLAY HERE (button: the
+  middle of the view; SHIFT+P: under the mouse) starts the knight there (`MKP.standIn`).
+- GRAB AND MOVE: left-press a placed piece and drag it (never into the ground; a click that moves nothing leaves no undo
+  step); a platform's / lift's gold HANDLE at the end of its track drags its reach.
+- WHAT A PIECE DOES: the line under the strip shows the pointed-at (or held) piece's name, tags and one plain line
+  (`MKP.describe`: foes from the bestiary's first sentence; the 15 starter foes have hand-written tags; tiles/things
+  written in LINE); a card next to the mouse for a placed piece; REACH overlays (crusher drop, fire jets, vents, rockfall
+  lines, foe facing arrows; strong for the hovered piece).
+- READABLE: one row of 1.5x icons; ENEMIES is a 15-strong STARTER cast, MORE ENEMIES the rest; a RECENT row (last 8);
+  the old Tab palette is retired.
+- JUICE (`src/maker-juice.js`): placing pops and a drag climbs a pentatonic scale, erasing puffs dust, picking clicks,
+  undo rewinds, play whooshes in and out; enemies idle-animate in the editor; the level's music plays ducked.
+- `tools/maker-feel.mjs` (in the suite) - including: every palette piece must have a description line.
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
