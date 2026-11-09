@@ -111,11 +111,12 @@ const fakeWorld = (L0, heroes, o = {}) => { let cur = null; const log = []; cons
 const groundY = (L0, x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor((y - 2) / TS)); ty < L0.H; ty++) { const t = L0.grid[ty * L0.W + tx]; if (t === T.SOLID || t === T.ONEWAY) return ty * TS; } return L0.H * TS; };
 const hero = (x, y, o = {}) => ({ x, y, hp: 400, maxHp: 400, vx: 0, vy: 0, face: 1, ground: true, ducking: false, ...o });
 const NOKEY = {}, RIGHT = { right: true }, LEFT = { left: true };
+const stepX = (p, dx) => { const tx = Math.floor((p.x + dx + Math.sign(dx) * 5) / TS), ty = Math.floor((p.y - 4) / TS); if (L.grid[ty * L.W + tx] === T.SOLID) return; p.x += dx; };   /* (the fake mover: a wall at the feet stops him, it does not lift him onto it) */
 { const P = hero(50 * TS, TY.G * TS), heroes = [P], F = fakeWorld(L, heroes), G = makeTourneyHands(F); G.reset();
-  const ride = (s, keys = NOKEY, atk = false, dt = 1 / 60) => { for (let t = 0; t < s; t += dt) { G.couch(P, atk && G.mounted(P)); G.drive(P, dt, keys); P.x += P.vx * dt; P.y = groundY(L, P.x, P.y); G.update(dt); for (const e of F.ens) if (e.alive && e.t === 'tyarcher') G.archer(e, dt); } };
+  const ride = (s, keys = NOKEY, atk = false, dt = 1 / 60) => { for (let t = 0; t < s; t += dt) { G.couch(P, atk && G.mounted(P)); G.drive(P, dt, keys); stepX(P, P.vx * dt); P.y = groundY(L, P.x, P.y); G.update(dt); for (const e of F.ens) if (e.alive && e.t === 'tyarcher') G.archer(e, dt); } };
   // THE HORSE: the minecart's pace model
   ride(1.2); ok(G.mounted(P) && Math.abs(G.pace(P) - MC.cruise) < 1 && P.face === 1, 'THE HORSE: in THE PRACTICE LISTS he is mounted; nothing held = a TROT at the cart\'s cruise (' + G.pace(P).toFixed(0) + ' px/s), facing down the lists');
-  P.x = 50 * TS; ride(1.0, RIGHT); const gal = G.pace(P); P.x = 50 * TS; ride(2.0, LEFT); const walk = G.pace(P);
+  P.x = 45 * TS; ride(1.0, RIGHT); const gal = G.pace(P); P.x = 45 * TS; ride(2.0, LEFT); const walk = G.pace(P);
   ok(Math.abs(gal - MC.boost) < 1 && Math.abs(walk - MC.crawl) < 1, 'RIGHT = a GALLOP (' + gal.toFixed(0) + '), LEFT = rein to a WALK (' + walk.toFixed(0) + ') - never a stop, never back (src/minecart.js cartSpeed: the shared vehicle code)');
   // a hurdle ridden into
   P.x = 62 * TS; P.y = TY.G * TS; P.hp = 400; ride(1.2); ok(P.took && P.took.some(t => t[0] === 'THE HURDLE') && P.x < 64 * TS, 'A HURDLE not jumped: the horse BALKS (told), a bump (' + HORSE.bumpDmg + ') and a bounce back');
@@ -126,7 +127,7 @@ const NOKEY = {}, RIGHT = { right: true }, LEFT = { left: true };
   // a RING and a TARGET at a gallop, couched
   const r0 = L.ty.rings[0]; P.x = r0.x - 120; P.tyHorse.v = MC.boost; ride(0.3, RIGHT, true); ride(0.5, RIGHT, true);
   ok(G.read().rings.includes(r0.id) && F.coinsGiven > 0, 'A RING taken on the couched lance at the gallop (coins)');
-  ride(0.1); ride(LANCE.tired); const r1 = L.ty.rings[1]; P.x = r1.x - 120; P.tyHorse.v = MC.crawl; ride(0.3, LEFT, true); ride(0.6, LEFT, true);
+  ride(0.1); ride(LANCE.tired); G.reset(); const r1 = L.ty.rings[1]; P.x = r1.x - 60; ride(0.05); P.tyHorse.v = MC.crawl; ride(0.3, LEFT, true); ride(0.9, LEFT, true);
   ok(!G.read().rings.includes(r1.id), 'at a walk the lance takes nothing (' + MC.crawl + ' < ' + LANCE.pace + ' px/s): you have to be moving');
   // THE QUINTAIN: on foot (the gate meadow): upright = hit and flung; ducked = it passes over; braced = carried, no hurt
   const q0 = L.ty.quints[0];
@@ -134,9 +135,9 @@ const NOKEY = {}, RIGHT = { right: true }, LEFT = { left: true };
     G.strike({ l: q0.x - 12, r: q0.x - 2, t: q0.y - 26, b: q0.y - 14 }, p); for (let t = 0; t < QUINT.tell + QUINT.sweep + 0.05; t += 1 / 60) G.update(1 / 60);
     const flung = p.vy < -300, hurt = (p.took || []).some(t => t[0] === 'THE QUINTAIN');
     ok(name === 'upright' ? hurt && flung : name === 'ducked' ? !hurt && !flung : !hurt && flung, 'THE QUINTAIN, struck: its arm comes round told (' + QUINT.tell + ' s) - ' + name + ': ' + (hurt ? 'hit ' : 'not hit ') + (flung ? '+ CARRIED up (vy ' + p.vy + ')' : '(it passes over)')); }
-  { const q1 = L.ty.quints.find(q => q.mounted), p = hero(q1.x - 80, q1.y); heroes.length = 0; heroes.push(p); G.reset(); P.tyHorse = null;
+  { const q1 = L.ty.quints.find(q => q.mounted), p = hero(q1.x - 110, q1.y); heroes.length = 0; heroes.push(p); G.reset(); P.tyHorse = null;
     const step = (s, atk) => { for (let t = 0; t < s; t += 1 / 60) { G.couch(p, atk); G.drive(p, 1 / 60, RIGHT); p.x += p.vx / 60; G.update(1 / 60); } };
-    step(0.4, false); p.tyHorse.v = MC.boost; step(0.25, true); step(0.9, true);
+    p.x = q1.x - 110; step(0.02, false); p.tyHorse.v = MC.boost; step(1.2, true);
     ok(G.read().n.spins >= 1 && !(p.took || []).some(t => t[0] === 'THE QUINTAIN'), 'a quintain at the GALLOP, couched: it spins and you are past before the arm comes round'); }
   // a LANCER and a HORSE ARCHER unhorsed by the couched lance
   { const p = hero(105 * TS, TY.G * TS); heroes.length = 0; heroes.push(p); G.reset(); F.ens.length = 0; F.unhorsed = 0;
@@ -164,14 +165,14 @@ const { TC } = TCM;
 { const e = { hp: 1000, maxHp: 1000, mode: 'pass', modeT: 1, face: -1, x: 100 }, S = TCM.newFight(TCM.geom(L, TS));
   const [d0] = TCM.takeBlow(e, S, 40, 50); e.mode = 'lanceless'; e.modeT = 2; const [d1] = TCM.takeBlow(e, S, 40, 50);
   ok(Math.abs(d0 - 40 * TC.resist) < 0.01 && TC.resist >= 0.4 && d1 === 80, 'B15: x' + TC.resist + ' outside an opening (>= 0.4: never untouchable), x2 LANCELESS (' + d0 + ' / ' + d1 + ')');
-  for (let i = 0; i < 20; i++) TCM.takeBlow(e, S, 40, 50); ok(S.openDealt <= TC.openCap * e.maxHp + 1e-6, 'one opening is capped at ' + TC.openCap * 100 + '% of him (' + S.openDealt.toFixed(0) + ')');
+  for (let i = 0; i < 20; i++) TCM.takeBlow(e, S, 40, 50); ok(S.openDealt <= TC.openCap * e.maxHp + 1e-6, 'one opening is capped at ' + Math.round(TC.openCap * 100) + '% of him (' + S.openDealt.toFixed(0) + ')');
   e.mode = 'wheel'; e.hp = 510; const [d2] = TCM.takeBlow(e, S, 40, 50); ok(d2 <= 10.01, 'P1 cannot pass 50% (the floor holds; the next clean pass unhorses him)');
   S.ph = 2; e.mode = 'walk'; e.hp = 900; e.face = 1; const [dF] = TCM.takeBlow(e, S, 40, e.x + 30), [dB] = TCM.takeBlow(e, S, 40, e.x - 30);
   ok(Math.abs(dF - 40 * TC.resist) < 0.01 && dB === 40 * TC.behind, 'ON FOOT: his shield takes a blow from the front (x' + TC.resist + '); from behind him, x' + TC.behind);
   const tells = Object.keys(POSE).filter(k => /Tell$/.test(k)); ok(tells.length >= 5 && tells.every(k => POSE[k.replace(/Tell$/, '')] && JSON.stringify(POSE[k]) !== JSON.stringify(POSE[k.replace(/Tell$/, '')])) && POSE.passDown && JSON.stringify(POSE.pass) !== JSON.stringify(POSE.passDown), 'B16: every move has a windup pose and a different release pose (the lance\'s drop too): ' + tells.join(', ')); }
 
 // ---- THE CHAMPION: END TO END (a bot on a horse with a 30 sword; his real moves; the real horse) ----
-function fight({ seed = 1, couch = true, stopSquire = true, every = 0.42, hp = 640 } = {}) {
+function fight({ seed = 1, couch = true, stopSquire = true, every = 0.42, hp = 640, sloppy = 0 } = {}) {   /* sloppy: the share of his tells the bot misreads (no guard, no step, a couch held far too early) */
   const L0 = lv.build(), A = L0.arena; let rnd = seed; const rand = () => ((rnd = (rnd * 16807) % 2147483647) / 2147483647);
   const P = hero((A.x0 / TS + 4) * TS, A.floor, { hp, maxHp: hp }), heroes = [P];   /* 640: the bot's health with its flasks drunk (it never drinks: one pool) */
   let boss = null, CPH = null; const ens = [];
@@ -181,25 +182,25 @@ function fight({ seed = 1, couch = true, stopSquire = true, every = 0.42, hp = 6
   const ctx = { ...F, get L() { return L0; }, get boss() { return boss; }, bossActive: true, EHP: { tychampion: TC.hp }, ty: () => G, hero: () => P,
     spawn: (t, x, y) => { const r = { t, x: x * TS + 8, y: (y + 1) * TS, hp: 90, alive: true, rivalT: 0 }; ens.push(r); return r; } };
   CPH = makeChampionHands(ctx); const sp = L0.ents.find(e => e.t === 'tychampion'); boss = CPH.spawnBoss({ x: sp.x * TS + 8, y: (sp.y + 1) * TS, vx: 0, vy: 0, face: -1, alive: true });
-  const S = CPH.show(), modes = []; let last = null, t = 0, swingT = 0, phase2At = null, squireHits = 0;
+  const S = CPH.show(), modes = []; let react = true, lead = 0.5, last = null, t = 0, swingT = 0, phase2At = null, squireHits = 0;
   const dt = 1 / 60, swing = 30;
   while (t < 400 && boss.alive && !P.dead) {
     t += dt; CPH.update(boss, dt); G.update(dt);
-    if (boss.mode !== last) { modes.push(boss.mode); last = boss.mode; }
+    if (boss.mode !== last) { modes.push(boss.mode); last = boss.mode; react = rand() >= sloppy; lead = 0.42 + rand() * 0.2 + (rand() < sloppy ? 1.6 : 0); }
     if (S.ph === 2 && phase2At === null) phase2At = t;
     /* THE BOT */
     const dx = boss.x - P.x, ad = Math.abs(dx); let keys = NOKEY, atk = false; P.block = false; P.ducking = false;
     const mounted = G.mounted(P);
     if (mounted) {
-      if (boss.mode === 'pass' || boss.mode === 'wheel') { keys = dx > 0 ? RIGHT : LEFT; const closing = Math.abs(G.pace(P)) + TC.joust.speed; atk = couch && ad < closing * (0.42 + rand() * 0.2) && ad > 4; }   /* ride at him; couch when he is ~0.4-0.6 s off */
+      if (boss.mode === 'pass' || boss.mode === 'wheel') { keys = dx > 0 ? RIGHT : LEFT; const closing = Math.abs(G.pace(P)) + TC.joust.speed; atk = couch && ad < closing * lead && ad > 4; }   /* ride at him; couch when he is ~0.4-0.6 s off */
       else if (boss.mode === 'lanceless' || boss.mode === 'arm') { if (stopSquire && S.squire && S.squire.st === 'run' && Math.abs(S.squire.x - P.x) < 140) { const sx = S.squire.x - P.x; keys = Math.abs(sx) > 20 ? (sx > 0 ? RIGHT : LEFT) : NOKEY; if (Math.abs(sx) < 24) { P.face = Math.sign(sx) || 1; swingT -= dt; if (swingT <= 0) { swingT = every; CPH.strike({ l: P.x - 30, r: P.x + 30, t: S.G.floorY - 30, b: S.G.floorY }); squireHits++; } } }
         else { keys = ad > 26 ? (dx > 0 ? RIGHT : LEFT) : NOKEY; if (ad < 34) { swingT -= dt; if (swingT <= 0) { swingT = every; F.asPlayer(P, () => F.hurt(boss, swing, P.x)); } } } }
       else keys = dx > 0 ? LEFT : RIGHT;   /* (he fetches a lance himself: keep your distance) */
     } else {   /* ON FOOT: close, swing, guard his flail, step out of the overhead, get behind him when he is mired */
       const ens0 = ens.filter(r => r.alive);
       if (ens0.length) { const r = ens0[0]; r.rivalT += dt; if (r.rivalT > 5) r.alive = false; }   /* a rival knight: the bot is busy with him ~5 s */
-      if (boss.mode === 'flailTell' || boss.mode === 'rushTell') P.block = true;
-      else if (boss.mode === 'overTell') { P.x += -Math.sign(dx || 1) * 140 * dt; }
+      if ((boss.mode === 'flailTell' || boss.mode === 'rushTell') && react) P.block = true;
+      else if (boss.mode === 'overTell' && react) { P.x += -Math.sign(dx || 1) * 140 * dt; }
       else if (ad > 26) P.x += Math.sign(dx) * 100 * dt;
       if (!P.block && boss.mode !== 'overTell' && ad < 36) { swingT -= dt; if (swingT <= 0) { swingT = every; const fromX = boss.mode === 'mired' ? boss.x - (boss.face || 1) * 20 : P.x; F.asPlayer(P, () => F.hurt(boss, swing, fromX)); } }
     }
@@ -218,7 +219,7 @@ function fight({ seed = 1, couch = true, stopSquire = true, every = 0.42, hp = 6
   ok(!f2.won || f2.t > f1.t * 1.5, 'WITHOUT THE COUCH there is no joust to win: ' + (f2.won ? 'won in ' + f2.t + ' s' : 'lost (' + f2.n.hits + ' of his hits, ' + f2.n.clean + ' clean)') + ' - timing on horseback is the key, not a parry');
   const f3 = fight({ stopSquire: false });
   ok(f3.won && f3.n.squireStops === 0, 'leaving the squire alone still wins (' + f3.t + ' s), only slower than stopping him (' + f1.t + ' s) - his openings are shorter');
-  console.log('  info THE CHAMPION by seed (a bot, NOT the 60-70% tune): ' + [1, 2, 3, 4, 5, 6].map(s => { const r = fight({ seed: s }); return (r.won ? 'W' : 'L') + ' ' + r.t + 's ' + r.hp + 'hp'; }).join(' | ')); }
+  for (const sl of [0, 0.3, 0.5]) console.log('  info THE CHAMPION, a bot misreading ' + sl * 100 + '% of his tells, 6 seeds (NOT the 60-70% tune): ' + [1, 2, 3, 4, 5, 6].map(s => { const r = fight({ seed: s * 7919, sloppy: sl }); return (r.won ? 'W' : 'L') + ' ' + r.t + 's ' + r.hp + 'hp'; }).join(' | ')); }
 
 console.log(bad ? '\nTHE TOURNEY (flag on): ' + bad + ' FAIL(S)' : '\nTHE TOURNEY (flag on): all ok');
 process.exit(bad ? 1 : 0);

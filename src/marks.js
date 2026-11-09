@@ -951,4 +951,4 @@ export function markOf(e) {
   return '';
 }
 export const marksMissed = () => [...MISSED];
-Object.assign(MARK, { 'tyarcher|drawTell': '!', 'tyarcher|footTell': '!' }); Object.assign(ANSWER, { 'tyarcher|drawTell': 'block', 'tyarcher|footTell': 'block' }); Object.assign(HEIGHT, { 'tyarcher|drawTell': 'low', 'tyarcher|footTell': 'low' });   /* (claude/tourney) THE HORSE ARCHER's draw: a yellow ! (the shield turns the arrow); aimed at you, so a duck does not slip it *
+Object.assign(MARK, { 'tyarcher|drawTell': '!', 'tyarcher|footTell': '!' }); Object.assign(ANSWER, { 'tyarcher|drawTell': 'block', 'tyarcher|footTell': 'block' }); Object.assign(HEIGHT, { 'tyarcher|drawTell': 'low', 'tyarcher|footTell': 'low' });   /* (claude/tourney) THE HORSE ARCHER's draw: a yellow ! (the shield turns the arrow); aimed at you, so a duck does not slip it */

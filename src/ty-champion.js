@@ -23,7 +23,7 @@
 export const TC = {
   hp: 2800, w: 26, h: 34, footW: 14, footH: 30, markH: 50,
   resist: 0.45, behind: 1, openMul: 2, openCap: 0.14, floorP1: 0.5,
-  joust: { speed: 240, drop: 170, feint: 92, feintFrom: 2, cross: 22, minPace: 110, dmg: 22, glance: 11, knock: 220, end: 44, wheel: 0.8, wake: 1.4 },
+  joust: { speed: 240, drop: 170, feint: 92, feintFrom: 2, cross: 22, minPace: 110, dmg: 22, glance: 11, knock: 220, end: 44, wheel: 0.8, wake: 1.4, behind: 0.6 },
   swipe: { tell: 0.55, act: 0.2, reach: 44, dmg: 16, cd: 2.0 },
   open: { max: 9, slow: 600 },
   squire: { speed: 150, delay: 0.5, again: 2.5, arm: 0.6, w: 8, h: 14 },
@@ -96,6 +96,7 @@ function stepP1(e, S, dt, heroes, tgt, W) {
     case 'pass': { e.vx += (e.face * TC.joust.speed - e.vx) * Math.min(1, dt * 4); e.x = clampX(S, e.x + e.vx * dt);
       /* the lance drops at its distance from the nearest hero ahead (a feint: late) */
       const ahead = heroes.filter(h => h.alive && Math.sign(h.x - e.x) === e.face).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
+      if (!ahead && e.modeT < 8 - TC.joust.behind) { e.lanceDown = false; setMode(e, 'wheel', TC.joust.wheel); return; }   /* nobody ahead of his lance (you ride at his back, or alongside): he wheels to meet you - shadowing him never stalls the joust */
       if (!e.lanceDown && ahead && Math.abs(ahead.x - e.x) <= (e.feint ? TC.joust.feint : TC.joust.drop)) { e.lanceDown = true; W.sound(e.feint ? 'feint' : 'drop'); W.mark && W.mark('!!', e); W.say && W.say(e.feint ? 'feint' : 'lance', e.x, e.y); }
       /* THE CROSSING: once per hero per pass */
       for (const h of heroes) { if (!h.alive || S.crossed.has(h.id)) continue; const dx = h.x - e.x;
