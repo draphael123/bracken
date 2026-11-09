@@ -12,7 +12,7 @@ const only = (process.argv[2] || '').split(',').filter(Boolean);
 const pg = await openPage({ port: portFor(7), audio: false, seed: 20261109 });
 try {
   const res = await pg.evalp(`(async () => {
-    const P = await import('/src/maker-palette.js'); const list = ${JSON.stringify(only)}.length ? ${JSON.stringify(only)} : P.FOES;
+    const P = await import('/src/maker-palette.js'); const list = ${JSON.stringify(only)}.length ? ${JSON.stringify(only)} : P.FOES.filter(t => !P.BOSSES.includes(t));   /* bosses have their own sweep (tools/maker-bosses.mjs) */
     const E = () => (typeof BK.enemies === 'function' ? BK.enemies() : BK.enemies), out = [];
     for (const t of list) {
       /* PIN THE DICE PER KIND: a foe's rolls (when to dive, which way to turn) come from a stream seeded by its own name, so its

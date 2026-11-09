@@ -37190,9 +37190,12 @@ const ED_KEY = i => 'bracken.level.' + i, ED_SLOTS = 3;
 // the nine woods, borrowed for their look. Built once, the first time the editor opens.
 function edThemeList() {
   if (edThemes) return edThemes;
+  const arenas = {};   /* (claude/maker) each boss's home arena: its music, tint and width, for THE MAKER's bosses */
   edThemes = LEVELS.filter(l => !l.hidden).map(l => { const b = l.build();
+    if (b.arena && b.arena.boss && !arenas[b.arena.boss]) arenas[b.arena.boss] = { music: b.arena.music, tint: b.arena.tint, tintA: b.arena.tintA, fx: b.arena.fx, w: (b.arena.x1 - b.arena.x0) / TS, level: l.name };
     return { name: l.name, palette: b.palette, weather: b.weather, ambient: b.ambient, music: b.music,
       night: b.night, glowNight: b.glowNight, nightA: b.nightA, dark: b.dark, duskStart: b.duskStart, duskLen: b.duskLen }; });
+  MKP.setArenaInfo(arenas);
   return edThemes;
 }
 
@@ -37217,7 +37220,8 @@ function edLevelObj(doc, copy) {
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
     ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: { x: doc.start.x, y: doc.start.y },
-    pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),   /* (claude/maker) THE MAKER's water and crumbling ledges */
+    pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),
+    ...(MKP.arenaFor(doc) ? { arena: MKP.arenaFor(doc), gateAfterBoss: true } : {}),   /* (claude/maker) a boss gets its arena; the goal opens when it falls */   /* (claude/maker) THE MAKER's water and crumbling ledges */
     falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
     night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
@@ -37325,6 +37329,7 @@ function edPlace(tx, ty, erase) {
   const t = b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i];
   { const why = MKP.placeProblem(edDoc, t, tx, ty); if (why && why.refuse) { edSay(why.say); MKJ.refuse(); return; } if (why) edSay(why.say); }   /* (claude/maker) not inside the ground; a water kind told it needs water */
   const old = edEntAt(tx, ty); if (old >= 0) L.ents.splice(old, 1);
+  if (MKP.isBoss(t)) for (let k = L.ents.length - 1; k >= 0; k--) if (MKP.isBoss(L.ents[k].t)) L.ents.splice(k, 1);   /* (claude/maker) one boss a level */
   const e = b.cat === 2 ? MKP.entFor(t, tx, ty) : { t, x: tx, y: ty };   /* (claude/maker) a moving platform is one kind with two settings */
   MKJ.place('piece'); MKJ.popAt(tx, ty); MUI.used(b.cat, b.i);   /* (claude/maker) the juice, and the RECENT row */
   if (t === 'sign') e.text = 'A SIGN. WRITE ON IT LATER.';
@@ -37488,7 +37493,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }

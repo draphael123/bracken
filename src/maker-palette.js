@@ -443,7 +443,7 @@ function tagsFrom(t, d) {
 }
 const firstSentence = d => { const m = String(d || '').match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(d || '')).trim(); };
 export function describe(cat, id) {
-  if (cat === 1) { const d = DESCS[id]; return { name: nameOf(id), line: d ? firstSentence(d) : 'Fights you.', tags: tagsFrom(id, d) }; }
+  if (cat === 1) { const d = DESCS[id]; return { name: nameOf(id), line: d ? firstSentence(d) : (BOSSES.includes(id) ? 'A boss: it gets its own arena, and the goal opens when it falls.' : 'Fights you.'), tags: BOSSES.includes(id) ? ['BOSS'] : tagsFrom(id, d) }; }
   if (cat === 0) { const k = typeof id === 'string' && id.startsWith('mat:') ? null : id; return { name: (TILES.find(t => t[1] === id) || [String(id)])[0], line: k === null ? MAT_LINE[id.slice(4)] : LINE[k] || '', tags: [] }; }
   if (cat === 2) { const k = String(id).split(':')[0], metal = String(id).split(':')[1]; let line = LINE[id] || LINE[k] || '';
     if (metal) line = line.replace('the same metal', metal).replace('its metal', 'the ' + metal + ' one'); return { name: thingName(id), line, tags: [] }; }
@@ -538,3 +538,42 @@ export const EXAMPLES = [
       { t: 'check', x: 36, y: 12 }, entFor('rockfall', 62, 12), ...[[12, 14], [14, 12], [26, 11], [30, 11], [48, 7], [50, 7]].map(([x, y]) => ({ t: 'coin', x, y }))];   /* above the hill's ramps, not in them */
     d.ents[3].rise = 6; for (const e of d.ents) afterPlace(d, e);   /* the lift: up to the masonry */ d.start = { x: 3, y: 19 }; return d; } },
 ];
+
+// ================= BOSSES (claude/maker) =================
+// A boss stands in its own ARENA: placing one builds an arena round it (walls that close behind you when you cross the
+// trigger line, the boss's own music and tint, sized like its home arena), and the level's GOAL GATE opens when it falls.
+// One boss a level. BOSSES is filled by the boss sweep (tools/maker-bosses.mjs) - only the ones that work in a plain arena.
+let ARENA = {};
+export function setArenaInfo(map) { ARENA = map || {}; }
+export const BOSS_CANDIDATES = () => Object.keys(ARENA);
+// THE SWEEP'S VERDICT (2026-11-09, all 53 bosses with a home arena, in a plain made-by-hand arena): these wake, fight, can be
+// finished, and their fall opens the goal. Left out, and why: their own level's machinery is read on spawn (djinn, fogknight,
+// matriarch, colossus, hawkmistress, greatdrill, paladinboss, hourglassking, cisternqueen, lanterneater, admiral, bzchief,
+// archmage, undeadmage, reefmaw, kraken, winchmaster, duneworm, puppeteer, strawking, tombking, grubbag, frog), never spawn
+// alone (ram, huntmaster), cannot be finished by blows alone (abbot, gargoyle, shrieksisters), or never engage (owl, captain,
+// wickerqueen); chief's fall does not open the gate (the stockade's own escape gate).
+export const BOSSES = ['oldtusker', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
+  'harbormaster', 'closedhelm', 'prince', 'burieddead', 'pyromancer', 'bloodknight', 'roc', 'bogtroll', 'hornetqueen', 'batteringbeast'];
+FOES.push(...BOSSES);   // placed like foes (cat 1); the BOSSES tab and tools/maker-sweep.mjs keep them apart
+export const isBoss = t => BOSSES.includes(t) || !!ARENA[t] && BOSS_TRIAL.has(t);
+const BOSS_TRIAL = new Set();   /* the sweep may try a candidate that is not in BOSSES yet */
+export function trialBoss(t, on) { if (on) BOSS_TRIAL.add(t); else BOSS_TRIAL.delete(t); }
+export function arenaFor(doc) {
+  const e = doc.ents.find(q => isBoss(q.t)); if (!e) return null;
+  const info = ARENA[e.t] || {}, w = Math.max(24, Math.min(48, Math.round(info.w || 36)));
+  const x0 = Math.max(3, Math.min(doc.W - w - 4, e.x - Math.round(w * 0.65))), x1 = x0 + w;
+  return { x0: x0 * TS, x1: x1 * TS, floor: (e.y + 1) * TS, trigger: (x0 + 3) * TS, wallL: x0 - 1, wallR: x1 + 1, boss: e.t,
+    music: info.music, tint: info.tint || '#c9463d', tintA: info.tintA || 0.1, fx: info.fx, maker: true };
+}
+export function drawArena(g, doc, cx, cy, t, SPR, text) {
+  const a = arenaFor(doc); if (!a) return;
+  /* the boss itself, as a ghost and a name: many sleep out of sight (under the water, in the ground) until their fight */
+  { const e = doc.ents.find(q => isBoss(q.t)), sp = SPR && SPR[e.t]; let f = sp && (sp.R || sp); if (f && !f.width) { f = Array.isArray(f) ? f[0] : Object.values(f)[0]; if (Array.isArray(f)) f = f[0]; }
+    const bx = e.x * TS + 8 - cx, by = (e.y + 1) * TS - cy; if (f && f.width) { g.globalAlpha = 0.45; g.drawImage(f, Math.round(bx - f.width / 2), Math.round(by - f.height)); g.globalAlpha = 1; }
+    if (text) text('BOSS: ' + nameOf(e.t), bx, by - (f && f.height ? f.height : 24) - 10, '#ff6b6b', 'center', 6); }
+  const x0 = a.x0 - cx, x1 = a.x1 - cx, fy = a.floor - cy, top = fy - 12 * TS;
+  g.save(); g.globalAlpha = 0.12; g.fillStyle = a.tint; g.fillRect(x0, top, x1 - x0, fy - top); g.globalAlpha = 0.8;
+  g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.setLineDash([]); g.beginPath(); g.moveTo(a.wallL * TS + 8 - cx, top); g.lineTo(a.wallL * TS + 8 - cx, fy); g.moveTo(a.wallR * TS + 8 - cx, top); g.lineTo(a.wallR * TS + 8 - cx, fy); g.stroke();
+  g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([3, 3]); g.lineDashOffset = -t * 10; g.beginPath(); g.moveTo(a.trigger - cx, top); g.lineTo(a.trigger - cx, fy); g.stroke();
+  g.restore();
+}

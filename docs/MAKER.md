@@ -121,9 +121,18 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - TOUCH: one finger = the left button, two = pan, long press = a piece's settings; the ERASE brush takes pieces too.
 - `tools/maker-extras.mjs` (in the suite).
 
+## Done (2026-11-09, BOSSES)
+- A BOSSES tab: 21 bosses that work in a made-by-hand arena (the list and every left-out boss, with the reason, are in
+  `src/maker-palette.js` BOSSES). Placing one builds its ARENA round it (`MKP.arenaFor`: walls, trigger line, its home
+  arena's music, tint and width - gathered from the levels in `edThemeList`); one boss a level; the goal gate opens when
+  it falls (`gateAfterBoss`). The editor shows the arena, the trigger and a BOSS label where it waits.
+- `tools/maker-bosses.mjs` (in the suite): each wakes, fights, falls to a blow and opens the goal (dice pinned per boss).
+- Left out (32): most read their own level's machinery on spawn (the djinn, fog knight, colossus ...). To add one, give
+  the maker that machinery, then add it to BOSSES and the sweep proves it.
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
-2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
+2. (bosses: 21 done above; the other 32 need their machinery): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
    the minis with their trigger. Test each with a sweep like maker-sweep.
 3. (mechanisms: done above. Later: plates that drop cages, timed doors, a lever that shuts as well as opens.)
 4. Then the maker feel from the standalone try: mouse-first palette bar, share links (`#L=`), a help card, a

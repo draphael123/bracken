@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -18,7 +18,8 @@ export const GROUPS = [
   { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && v.startsWith('mat:'))) },
   { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:'))) },
   { name: 'ENEMIES', cat: 1, idx: STARTER.map(t => FOES.indexOf(t)).filter(i => i >= 0) },
-  { name: 'MORE ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t) && !STARTER.includes(t)).map(([, i]) => i) },
+  { name: 'MORE ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t) && !STARTER.includes(t) && !BOSSES.includes(t)).map(([, i]) => i) },
+  { name: 'BOSSES', cat: 1, idx: BOSSES.map(t => FOES.indexOf(t)) },
   { name: 'WATER ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => WATER_FOES.includes(t)).map(([, i]) => i) },
   { name: 'ITEMS', cat: 2, idx: THINGS.map((t, i) => [t, i]).filter(([t]) => !MECH.includes(t) && !HAZ.includes(t)).map(([, i]) => i) },
   { name: 'MECHANISMS', cat: 2, idx: thingIdx(MECH) },
@@ -27,10 +28,10 @@ export const GROUPS = [
 ];
 const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
 const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];
-const TAG_COL = { FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
+const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
