@@ -252,7 +252,7 @@ export function drawChrome(c) {
   /* (claude/maker) A NEW, EMPTY LEVEL says where to begin */
   if (!UI.panel && (!c.doc.start || c.doc.ents.every(e => e.t === 'gate'))) { const s1 = !c.doc.start ? 'START HERE: CLICK WHERE THE KNIGHT BEGINS (YOU ARE HOLDING THE START)' : 'BUILD OUT FROM THE START: PICK A PIECE UP TOP, CLICK TO PLACE IT.  ERASE IS THE RED X (GROUND TAB) OR RIGHT-CLICK'; const w = Math.ceil(c.textW(s1, 6)) + 16, x = Math.round((VW - w) / 2), y = TOP + 30;
     g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x, y, w, 14); g.strokeStyle = '#ffd36b'; g.strokeRect(x + 0.5, y + 0.5, w - 1, 13); text(s1, VW / 2, y + 4, '#ffd36b', 'center', 6); }
-  { UI.sBtns = []; const bx0 = VW - 46, by0 = TOP + 6;   /* (claude/maker) SCROLL: hold one to move the view */
+  UI.sBtns = []; if (!UI.panel) { const bx0 = VW - 46, by0 = TOP + 6;   /* (claude/maker) SCROLL: hold one to move the view */
     for (const [dx, dy, ox, oy, glyph] of [[0, -1, 15, 0, 'U'], [-1, 0, 0, 15, 'L'], [1, 0, 30, 15, 'R'], [0, 1, 15, 30, 'D']]) {
       const r = { x: bx0 + ox, y: by0 + oy, w: 14, h: 14, dx, dy }, on = UI.sHold && UI.sHold.dx === dx && UI.sHold.dy === dy;
       g.fillStyle = on ? 'rgba(255,211,107,0.85)' : 'rgba(30,26,40,0.75)'; g.fillRect(r.x, r.y, r.w, r.h); g.fillStyle = on ? '#1b1626' : '#ffd36b';
@@ -280,7 +280,7 @@ function settingRows(c) {
     { key: 'weather', label: 'WEATHER', value: d.weather ? d.weather.toUpperCase() : "THE BACKGROUND'S OWN" },
     { key: 'goal', label: 'GOAL', value: goalName(d.goal), hint: 'what must be done before the goal gate lets you through' },
     { key: 'players', label: 'PLAYERS', value: playersName(d.players), hint: 'who plays the test runs' },
-    { key: 'hero', label: 'HERO', value: !d.hero || d.hero === 'own' ? 'YOUR OWN (from your save, upgrades and all)' : ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) + ' (starter kit: the same for everyone)' },
+    { key: 'hero', label: 'HERO', value: !d.hero || d.hero === 'own' ? 'YOUR OWN (FROM YOUR SAVE)' : ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) + ' (STARTER KIT, SAME FOR ALL)' },
     { key: 'width', label: 'WIDTH', value: d.W + ' TILES' },
     { key: 'height', label: 'HEIGHT', value: d.H + ' TILES (rows go on at the top)' },
     { key: 'name', label: 'NAME', value: d.name, click: true },
@@ -299,22 +299,24 @@ function drawSettings(c) {
   });
   const done = { x: x + w / 2 - 30, y: y + h - 18, w: 60, h: 13, key: 'done' }; g.fillStyle = '#3f7a2c'; g.fillRect(done.x, done.y, done.w, done.h); text('DONE', done.x + 30, done.y + 3, '#d8f09a', 'center', 6); UI.rows.push(done);
 }
-const HELP = [
-  ['PICK A PIECE', 'click a group tab along the top, then a piece in the strip (< > for more)'],
-  ['PAINT', 'left-click or drag in the level.  ERASE: right-click or drag'],
-  ['MOVE A PIECE', 'drag it.  SHIFT+CLICK it to set it up (how far, which way, what it says)'],
-  ['GROUND & STYLE', 'the STYLE swatches (GROUND tab) reskin all the ground: wood, castle, city...  SHIFT+paint keeps a cell in its style'],
-  ['SLOPES / WATER', 'SLOPE: drag from the low end to the high end (wide = gentle).  WATER: drag a box.  HILL: paint tops, ramps make themselves'],
-  ['DOORS', 'paint DOOR tiles; a LEVER or PLATE opens the nearest (TOOLS > LINK picks one)'],
-  ['START / GOAL', 'the START/GOAL tab: START sets where the knight begins; every level needs a GOAL GATE'],
-  ['FIND', 'FIND (or click a tab twice) shows every piece with its name; type to search: GOB, FLIES, WATER...'],
-  ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
-  ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS, the HERO (your own, or a set hero on a starter kit), name and size'],
-  ['MY LEVELS / SHARE', 'every level saves itself; MY LEVELS opens, copies or deletes them.  SHARE copies a link (a set-hero level must be BEATEN first)'],
-  ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
+const HELP = [   /* (claude/maker) short enough to fit its column: each line is one thing */
+  ['PICK A PIECE', 'a tab along the top, then a piece.  FIND (or a tab clicked twice) shows them all'],
+  ['PAINT / ERASE', 'click or drag.  ERASE: right-click, or the red X (ONE CELL or BOX, and what)'],
+  ['UNDO / REDO', 'CTRL+Z undoes, CTRL+Y redoes'],
+  ['MOVE / SET UP', 'drag a piece to move it.  SHIFT+CLICK it to set it up (a gear shows it has settings)'],
+  ['GROUND & STYLE', 'STYLE swatches (GROUND tab) dress the ground.  SHIFT+paint: a cell keeps its style'],
+  ['SLOPES / WATER', 'SLOPE: drag low end to high end (wide = gentle).  WATER: drag a box'],
+  ['START / GOAL', 'START/GOAL tab: the START, the GOAL GATE, checkpoints, WARP DOORS (two pair up)'],
+  ['LINKS', 'TOOLS > LINK: a lever or plate to its door, a boss to the goal, a warp to a warp'],
+  ['TRACKS', 'TOOLS > TRACK: click a moving platform, then each point, then the platform again'],
+  ['PLAY', 'PLAY (or P).  PLAY HERE starts where you look.  ESC comes back'],
+  ['SETTINGS', 'background, music, time, weather, GOAL, PLAYERS, HERO, size, name'],
+  ['SAVING', 'levels save themselves.  MY LEVELS: open, copy, delete; SETS play in order'],
+  ['SHARING', 'SHARE copies a link (a set-hero level must be BEATEN first).  OPEN takes one'],
+  ['MOVING AROUND', 'wheel: sideways, SHIFT+wheel: up/down, the arrows at the right, or the MAP'],
 ];
 function drawHelp(c) {
-  const { g, text } = c, w = 560, h = 238, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
+  const { g, text } = c, w = 560, h = 250, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
   HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(c.fitText(b, w - 116, 6), x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
   UI.rows = []; const by = y + h - 34, btn = (bx, w2, label, key, col) => { const r = { x: bx, y: by, w: w2, h: 13, key }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + w2 / 2, r.y + 3, '#ffffff', 'center', 6); UI.rows.push(r); };
   btn(x + 12, 120, 'START THE GUIDE', 'guide', '#3f6a8a');

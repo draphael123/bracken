@@ -229,6 +229,28 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   unchanged (L.custom only).
 - `tools/maker-newlevel.mjs` (in the suite).
 
+## Done (2026-11-09, THE BIG BATCH - Daniel: "all of these beyond getting into the real game, then test for a while")
+- REDO (button, CTRL+Y / CTRL+SHIFT+Z); a new edit clears it.
+- MY LEVELS (src/maker-library.js): every level autosaves about 2 s after a change (a fingerprint compared every 2 s) and on tab
+  close. The panel opens / copies / deletes levels. The old three slots are imported once (the S / L / F keys still use the
+  slots). `edReplace` keeps what you were making before anything replaces it, so a link or NEW never loses work.
+- LINK PLAY: `?maker=1#L=` plays the level straight away. ESC or a win shows a card (PLAY AGAIN / EDIT A COPY / MAKE YOUR OWN),
+  never the editor. A shared level becomes yours only if you edit it (autosave is held during link play).
+- SETS OF LEVELS: MY LEVELS > SETS: name, one hero for every level, order (up / down / remove), PLAY, SHARE as one `#S=` link.
+  The run plays level after level (NEXT LEVEL / PLAY AGAIN / LEAVE THE SET); levels without a START or goal are skipped.
+- WARP DOORS (START/GOAL tab): two placed in a row pair themselves; TOOLS > LINK pairs any two; UP or TALK in one comes out
+  of the other (the whole party). A colour setting; a lone door is marked NO PAIR.
+- TRACKS: TOOLS > TRACK, click a moving platform, then each point, then the platform again. The platform runs a smooth
+  Catmull-Rom curve by distance, back and forth or LOOP (settings: AT THE END / SPEED / WIDTH). Dragging the platform moves
+  its track with it.
+- ENEMY GROUPS hand-sorted (src/maker-heads.js: 138 foes in 7 groups) for ALL ENEMIES and FIND.
+- BOSSES: 23 -> 42 (docs/MAKER-BOSSES.md).
+- TESTING: tools/maker-fuzz.mjs (random editor actions, checking the level stays valid; it found the START left outside a
+  narrowed level, now fixed, and widening now continues the edge instead of a fixed row-20 floor). tools/maker-walk.mjs (not in
+  the suite: the play bot walks every example, given a hand at levers and push blocks; it found THE MILL's posts were a
+  water trap, now fixed). Also: the SAVE PROTECTED banner no longer shows over a maker run.
+- New checks: maker-share, maker-fuzz (suite).
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.

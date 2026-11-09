@@ -1,5 +1,19 @@
 # THE MAKER: which bosses work in a made-by-hand level
 
+**Update 2026-11-09 (later): 42 of 53 now work.** A research pass found the real cause for each of the 30 that failed. 19 more were fixed and each passes `tools/maker-bosses.mjs`:
+- **8 get the arena record their level gives them** (`ARENA_EXTRA` / `bossLevelExtra` in src/maker-palette.js): Ram Lord, Goblin Huntmaster, Berserker Chieftain, Grubbag, Coffin King, Reefmaw, Scarecrow King, Wicker Queen. The Ram Lord was never broken: the palette placed the battering-ram prop instead of the boss.
+- **11 bring their own room**, stamped into the level by their own level's builder (src/maker-stages.js): Djinn, Cistern Queen, Old Plume, Glass Colossus, Hawk-Mistress, Paladin, Fog Knight, Hourglass King, Great Drill, Lantern-Eater, Puppeteer.
+
+What these 19 fights still lack, compared with their own levels: the Chieftain's drums; Grubbag's coal trench, hooks and conveyor; the Coffin King's plate traps; the Reefmaw's tide; the Wicker Queen's carousel; and the stage rooms' extra machinery (ladders, pools, lamps). Each fight runs and ends without them.
+
+Still out (11):
+- **Not proven to finish:** Dune Worm, Shriek Sisters, Kraken, Admiral, Gate Gargoyle.
+- **Need medium work:** Captain, Archmage.
+- **Whole set-pieces** (not worth it in a plain level): Bullfrog King, Winchmaster, False Abbot, Undead Archmage.
+
+---
+
+
 Swept 2026-11-09 on `claude/maker`. Re-run with `node tools/maker-bosses.mjs --report`.
 
 ## How each boss was tested

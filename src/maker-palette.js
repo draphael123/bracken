@@ -243,7 +243,8 @@ export function linkedCol(doc, e) {
 // the entities the GAME gets: copies, with each lever's / plate's door filled in
 export function engineEnts(doc) {
   return doc.ents.map(e => {
-    const o = { ...e }; if (!LINKERS.has(e.t)) return o;
+    const o = { ...e }; if (o.t === 'ram') o.t = 'ramlord';   /* (claude/maker) the palette's RAM LORD: the game's 'ram' is the battering-ram prop, the boss spawns as 'ramlord' */
+    if (!LINKERS.has(e.t)) return o;
     const col = linkedCol(doc, e); if (col === null) return o;
     if (e.t === 'lever') o.openColumn = [col, 0, doc.H - 1], o.say = o.say || 'A DOOR OPENS'; else o.gate = col;
     return o;
@@ -437,7 +438,7 @@ export function dragHandle(h, c) {
   else h.e.rise = Math.max(1, Math.min(20, h.e.y - c.y));
 }
 // moving a placed piece: where it may go (not into the ground, not onto another piece; a locked gate stays with its bars)
-export const movable = e => e.t !== 'lockgate';
+export const movable = e => e.t !== 'lockgate' && !e.arenaRec;   /* a boss in its own room stays with the room (erase it and place it again) */
 export function canMoveTo(doc, e, x, y) {
   if (x < 1 || y < 0 || x >= doc.W - 1 || y >= doc.H) return false;
   if (doc.ents.some(q => q !== e && q.x === x && q.y === y)) return false;
@@ -568,12 +569,12 @@ export const EXAMPLES = [
     for (const e of d.ents) afterPlace(d, e); return d; } },
   { name: 'THE MILL', make() { const d = base(110); d.name = 'THE MILL'; d.theme = 21;
     box(d, 14, 40, 20, 25, T.AIR); d.water = [{ kind: 'water', x0: 14, x1: 40, y0: 21, y1: 25 }];
-    for (const x of [18, 24, 30, 36]) { put(d, x, 19, T.SOLID); put(d, x + 1, 19, T.SOLID); for (let y = 20; y <= 25; y++) { put(d, x, y, T.SOLID); put(d, x + 1, y, T.SOLID); } }
+    for (const x of [17, 22, 27, 32, 37]) for (let y = 20; y <= 25; y++) { put(d, x, y, T.SOLID); put(d, x + 1, y, T.SOLID); }   /* stepping posts level with the bank, three-tile gaps; one step up out of the water, so a fall is never a trap (maker-walk found the old ones were) */
     for (let x = 14; x <= 40; x++) { d.mat[x + ',26'] = 'deck'; }
     box(d, 50, 50, 14, 19, T.PORT); box(d, 62, 62, 14, 19, T.PORT); box(d, 74, 74, 14, 19, T.PORT);
     for (let x = 44; x <= 90; x++) d.mat[x + ',20'] = 'cobble';
-    d.ents = [{ t: 'gate', x: 104, y: 19 }, { t: 'puffer', x: 22, y: 23 }, { t: 'eel', x: 33, y: 24 }, entFor('lever', 46, 19), entFor('plate', 58, 19), entFor('pushblock', 55, 19),
-      entFor('lever', 70, 19), { t: 'sprig', x: 66, y: 19 }, { t: 'hound', x: 84, y: 19, face: -1 }, { t: 'check', x: 44, y: 19 }, ...[20, 26, 32, 38].map(x => ({ t: 'coin', x, y: 17 }))];
+    d.ents = [{ t: 'gate', x: 104, y: 19 }, { t: 'puffer', x: 20, y: 23 }, { t: 'eel', x: 30, y: 24 }, entFor('lever', 46, 19), entFor('plate', 58, 19), entFor('pushblock', 55, 19),
+      entFor('lever', 70, 19), { t: 'sprig', x: 66, y: 19 }, { t: 'hound', x: 84, y: 19, face: -1 }, { t: 'check', x: 44, y: 19 }, ...[20, 25, 30, 35].map(x => ({ t: 'coin', x, y: 17 }))];
     d.ents[3].link = 50; d.ents[4].link = 62; d.ents[6].link = 74;
     for (const e of d.ents) afterPlace(d, e); return d; } },
   { name: 'THE CLIMB', make() { const d = base(90); d.name = 'THE CLIMB'; d.time = 'dusk'; d.weather = 'leaves';
@@ -601,7 +602,8 @@ export const BOSS_CANDIDATES = () => Object.keys(ARENA);
 // alone (ram, huntmaster), cannot be finished by blows alone (abbot, gargoyle, shrieksisters), or never fight (captain,
 // wickerqueen). The full table: docs/MAKER-BOSSES.md, and `node tools/maker-bosses.mjs --report` re-runs it.
 // Re-sweep with mkBossDown (a maker boss's fall always opens the placed goal): chief and owl joined.
-export const BOSSES = ['oldtusker', 'chief', 'owl', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
+export const BOSSES = ['oldtusker', 'chief', 'owl', 'ram', 'huntmaster', 'bzchief', 'grubbag', 'tombking', 'reefmaw', 'strawking', 'wickerqueen',
+  'djinn', 'cisternqueen', 'matriarch', 'colossus', 'hawkmistress', 'paladinboss', 'fogknight', 'hourglassking', 'greatdrill', 'lanterneater', 'puppeteer', 'mother', 'king', 'windcaller', 'lance', 'gqueen', 'herald', 'tollmaster', 'grandmother', 'bellcrab', 'drownedking',
   'harbormaster', 'closedhelm', 'prince', 'burieddead', 'pyromancer', 'bloodknight', 'roc', 'bogtroll', 'hornetqueen', 'batteringbeast'];
 FOES.push(...BOSSES);   // placed like foes (cat 1); the BOSSES tab and tools/maker-sweep.mjs keep them apart
 export const isBoss = t => BOSSES.includes(t) || !!ARENA[t] && BOSS_TRIAL.has(t);
@@ -609,10 +611,12 @@ const BOSS_TRIAL = new Set();   /* the sweep may try a candidate that is not in 
 export function trialBoss(t, on) { if (on) BOSS_TRIAL.add(t); else BOSS_TRIAL.delete(t); }
 export function arenaFor(doc) {
   const e = doc.ents.find(q => isBoss(q.t)); if (!e) return null;
+  if (e.arenaRec) return { ...e.arenaRec, boss: e.t, maker: true };   /* (claude/maker) a boss that brought its own room (src/maker-stages.js) */
   const info = ARENA[e.t] || {}, w = Math.max(24, Math.min(48, Math.round(info.w || 36)));
   const x0 = Math.max(3, Math.min(doc.W - w - 4, e.x - Math.round(w * 0.65))), x1 = x0 + w;
-  return { x0: x0 * TS, x1: x1 * TS, floor: (e.y + 1) * TS, trigger: (x0 + 3) * TS, wallL: x0 - 1, wallR: x1 + 1, boss: e.t,
+  const base = { x0: x0 * TS, x1: x1 * TS, floor: (e.y + 1) * TS, trigger: (x0 + 3) * TS, wallL: x0 - 1, wallR: x1 + 1, boss: e.t,
     music: info.music, tint: info.tint || '#c9463d', tintA: info.tintA || 0.1, fx: info.fx, maker: true };
+  const ex = ARENA_EXTRA[e.t]; return ex ? { ...base, ...ex(x0, x1 - 1, e.y + 1) } : base;
 }
 export function drawArena(g, doc, cx, cy, t, SPR, text) {
   const a = arenaFor(doc); if (!a) return;
@@ -905,4 +909,29 @@ export function drawTracks(g, doc, cx, cy, t) {
     const pts = e.track.map(([x, y]) => [x * TS + (e.len || 2) * TS / 2 - cx, y * TS + 4 - cy]), d = trackCurve(pts, !!e.loop && e.track.length > 2);
     g.save(); g.strokeStyle = e === trackSrc ? '#ffffff' : '#6fd0c0'; g.lineWidth = 2; g.setLineDash([3, 3]); g.lineDashOffset = -t * 10; g.beginPath(); d.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); g.setLineDash([]);
     g.fillStyle = e === trackSrc ? '#ffffff' : '#6fd0c0'; for (const [x, y] of pts) g.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4); g.restore(); }
+}
+
+/* (claude/maker, the boss research 2026-11-09) WHAT A BOSS READS FROM ITS ARENA: each of these crashed or never woke in a plain made-by-hand
+   arena because it reads a record its own level builds. Laid out here from the arena's columns (A0, A1) and floor row (F), from the
+   home level's own numbers. What is NOT built (and so missing from the fight): the Chieftain's drums, Grubbag's coal trench, hook rails
+   and conveyor, the Tomb King's plate traps, the Reefmaw's tide, the Wicker Queen's carousel - each fight runs and ends without them. */
+const ARENA_EXTRA = {
+  huntmaster: (A0, A1, F) => ({ huntmaster: true, perches: [[A0 + 4, A0 + 10, F - 4], [A1 - 10, A1 - 4, F - 4]] }),
+  bzchief: (A0, A1, F) => ({ bzc: { sx: A0, R: F } }),
+  reefmaw: (A0, A1, F) => ({ holes: [4, 14, 26, 36].map(d => Math.min(A1 - 1, A0 + d) * TS) }),
+  strawking: (A0, A1, F) => ({ poles: [A0 + 5, A0 + 16, Math.min(A1 - 2, A0 + 37)] }),
+  grubbag: (A0, A1, F) => ({ chair: A1 - 7, table: [A1 - 18, A1 - 15], oven: A0 + 2, bellows: A0 + 5, belt: [A0 + 7, A1 - 16, F - 2], plats: [[A0 + 8, A0 + 10, F - 4], [A0 + 11, A0 + 13, F - 6]], cauldron: [A1 - 17, Math.max(2, F - 11)] }),
+  tombking: (A0, A1, F) => { const dx = A0 - 1007, dy = F - 24, X = c => c + dx, Y = r => r + dy;   /* the Sealed Pyramid's BOSS_SLOT, moved to this arena */
+    return { tk: { x0: A0, x1: X(1046), floor: F, roof: Y(4), westDoor: { col: A0 - 1, y0: Y(18), y1: Y(23) }, eastDoor: { col: X(1047), y0: Y(18), y1: Y(23) }, gate: X(1049), check: X(1003),
+      ledges: [{ x0: X(1009), x1: X(1014), y: Y(21) }, { x0: X(1039), x1: X(1044), y: Y(21) }],
+      switches: [{ x: X(1008), y: Y(18), sweep: [X(1007), X(1022)], anchor: X(1016) }, { x: X(1045), y: Y(18), sweep: [X(1031), X(1046)], anchor: X(1037) }],
+      plates: [[X(1017), X(1018)], [X(1026), X(1027)], [X(1035), X(1036)]], plateTraps: [['tkBlockW'], ['tkDartsW', 'tkDartsE'], ['tkBlockE']], plateReach: [[[X(1019), X(1023)]], [[X(1007), X(1025)], [X(1028), X(1046)]], [[X(1030), X(1034)]]],
+      slots: [[X(1019), X(1023)], [X(1030), X(1034)]], alcoves: [X(1012), X(1021), X(1032), X(1041)], king: X(1032) } }; },
+};
+/* and what a few read from the LEVEL (src/main.js edLevelObj merges it): the Scarecrow King's moon, the Wicker Queen's green */
+export function bossLevelExtra(doc) {
+  const a = arenaFor(doc); if (!a) return {}; const A0 = a.x0 / TS, F = a.floor / TS;
+  if (a.boss === 'strawking') return { fields: { moon: { lit: 7, warn: 2.8, dark: 3.4, first: 9 }, dusk: [30, 150] } };
+  if (a.boss === 'wickerqueen') return { green: { maypole: A0 + 22, bonfire: A0 + 22, floor: F }, carousels: [] };
+  return {};
 }
