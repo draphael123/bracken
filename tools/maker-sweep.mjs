@@ -9,12 +9,15 @@ import { openPage } from './cdp.mjs';
 import { portFor } from './ports.mjs';
 
 const only = (process.argv[2] || '').split(',').filter(Boolean);
-const pg = await openPage({ port: portFor(7), audio: false });
+const pg = await openPage({ port: portFor(7), audio: false, seed: 20261109 });
 try {
   const res = await pg.evalp(`(async () => {
     const P = await import('/src/maker-palette.js'); const list = ${JSON.stringify(only)}.length ? ${JSON.stringify(only)} : P.FOES;
     const E = () => (typeof BK.enemies === 'function' ? BK.enemies() : BK.enemies), out = [];
     for (const t of list) {
+      /* PIN THE DICE PER KIND: a foe's rolls (when to dive, which way to turn) come from a stream seeded by its own name, so its
+         result is the same every run and the same alone or in the full list (the gale harpy passed one run and failed the next) */
+      { let s = [...t].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261); Math.random = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
       const wet = P.WATER_FOES.includes(t), d = MKR.blank(60, 28);   /* a water kind is swept in a pool (rows 14-25), the rest on dry ground */
       if (wet) { for (let x = 15; x <= 45; x++) for (let y = 14; y <= 25; y++) d.grid[y * 60 + x] = 0; d.water = [{ kind: 'water', x0: 15, x1: 45, y0: 14, y1: 25 }]; }
       const fy = wet ? 22 : 19; d.ents = [{ t: 'gate', x: 55, y: 19 }, P.entFor(t, 30, fy)];   /* exactly what the editor would place (its defaults: a spider's drop) */ d.start = { x: 5, y: 19 }; MKR.doc = d;

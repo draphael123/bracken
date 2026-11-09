@@ -42,11 +42,20 @@ links and help card are worth porting.)
 - `tools/maker-terrain.mjs` (in the suite): swim, crumble drops and stands again, platform carries, lift rises,
   save -> load keeps it.
 
+## Done (2026-11-09, step 3: MECHANISMS - Daniel chose these before bosses)
+- THINGS: LEVER, PRESSURE PLATE, BRASS / IRON / BONE KEY and GATE, PUSH BLOCK, CRUSHER, FIRE JET, ROLLING PUFFBALL.
+- A lever (hit it) / plate (stand on it or push a block onto it) opens a column of DOOR tiles: the one the **LINK** tool
+  (TOOLS) points it at, else the **nearest**. `MKP.engineEnts` fills `openColumn` / `gate` on the copies the game plays;
+  the editor draws every link (amber = nearest, gold = LINKed, white = being linked, red ! = no door).
+- A LOCKED GATE builds its own bars (4 DOOR tiles up) when placed (`MKP.afterPlace`).
+- The sweep pins the dice per foe kind (seeded from the name): results no longer change run to run. Seeded, the bone
+  goblin never engages in a plain wood, so it is out. Foes 138.
+- `tools/maker-mechanisms.mjs` (in the suite).
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses**: a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and
    the minis with their trigger. Test each with a sweep like maker-sweep.
-3. **Mechanisms**: lever → door, key → lock gate, pressure plate, push block, crusher, rockfall — needs a LINK tool
-   (click a lever, then the door it opens).
+3. (mechanisms: done above. Later: plates that drop cages, timed doors, a lever that shuts as well as opens.)
 4. Then the maker feel from the standalone try: mouse-first palette bar, share links (`#L=`), a help card, a
    title-menu row "THE MAKER" when Daniel says it ships.

@@ -37167,7 +37167,7 @@ function edThemeList() {
 }
 
 const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;   /* (claude/maker) the lists live in src/maker-palette.js */
-const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER'];
+const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER', 'LINK'];   /* (claude/maker) LINK: a lever or a plate, then the door it opens */
 const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
 const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES.map(MKP.nameOf) : c === 2 ? ED_THINGS.map(MKP.thingName) : ED_TOOLS;
 const edBrush = () => ({ cat: edCat, i: edSel[edCat], name: edItems(edCat)[edSel[edCat]] });
@@ -37184,7 +37184,7 @@ function edLevelObj(doc, copy) {
   const th = edThemeList()[doc.theme] || edThemeList()[0];
   return { W: doc.W, H: doc.H,
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
-    ents: copy ? doc.ents.map(e => Object.assign({}, e)) : doc.ents,
+    ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: { x: doc.start.x, y: doc.start.y },
     pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc),   /* (claude/maker) THE MAKER's water and crumbling ledges */
     falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
@@ -37280,7 +37280,7 @@ function edPlace(tx, ty, erase) {
   if (t === 'rockfall') e.every = 2.6;
   if (t === 'spider') e.drop = 100;
   if (t === 'firepit') { e.period = 3.2; e.on = 1.4; }
-  L.ents.push(e); edRespawn();
+  L.ents.push(e); if (MKP.afterPlace(edDoc, e)) edMount(false); else edRespawn();   /* (claude/maker) a locked gate builds its bars */
 }
 function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; resolveTiles(); }
 
@@ -37320,6 +37320,7 @@ function edMouse(mx, my, btn, down, moved) {
   if (edPaint && (down || moved)) {
     const b = edBrush();
     if (b.cat === 3 && down) { // the tools act once, where you clicked
+      if (b.name === 'LINK') { MKP.linkClick(edDoc, edCur, edSay); SFX.ui(); return; }   /* (claude/maker) */
       if (b.i === 0) { edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); }
       else if (b.i === 1) { edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); }
       else if (b.i === 2) edResize(10); else edResize(-10);
@@ -37362,7 +37363,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   // ---- chrome ----
   g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, 0, VW, 11);
   text(edDoc.name, 4, 2, UI.title, 'left', 6);

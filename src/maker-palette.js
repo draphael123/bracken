@@ -33,6 +33,7 @@ export const TILES = [
 //  - wait on a trigger a plain wood does not have: lookout siren grindylow tippler horn holdfast crossbow corpse clinger
 //    sweep spitcap dummy, weaver (hangs from a ceiling: on open ground it never comes down)
 //  - spider (even with the old editor's drop: 100 it hangs and never comes for you), siren (sings, never strikes, in water or out)
+//  - bonegob (seeded sweep: never comes, never throws its skull in a plain wood - likely waits to be raised)
 export const FOES = [
   'sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'hopper', 'sapper', 'brute', 'cutlass', 'boarder',
   'marine', 'bosun', 'topiary', 'armour', 'piece', 'broom', 'mimic', 'tome', 'scarecrow', 'rook', 'farmhand',
@@ -46,7 +47,7 @@ export const FOES = [
   'kite', 'crow', 'bale', 'badger', 'hare', 'wight', 'prise', 'swornsword', 'hedgeknight', 'runner', 'acolyte',
   'lancer', 'drunk', 'bannerbearer', 'zombie', 'husk', 'apprentice', 'lanternshade', 'bellguard', 'propman',
   'shardling', 'fledgling', 'gobpriest', 'gobmage', 'sentry', 'bellman', 'assassin', 'berserker',
-  'drummer', 'butcher', 'hearthgob', 'temperer', 'burngob', 'emberwisp', 'bonegob', 'cutter', 'snuffer',
+  'drummer', 'butcher', 'hearthgob', 'temperer', 'burngob', 'emberwisp', 'cutter', 'snuffer',
   'sailer', 'harpy', 'galeharpy', 'shrieker', 'goat', 'royalboar', 'sporeling', 'lurker', 'drone',
   'shaman'
 ];
@@ -54,15 +55,24 @@ export const FOES = [
 export const WATER_FOES = ['urchin', 'angler', 'puffer', 'jelly', 'lamprey', 'eel', 'leech'];
 FOES.push(...WATER_FOES);
 
-export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
-  'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
+export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up',
+  // MECHANISMS (claude/maker step 3): a lever or a plate opens a column of DOOR tiles (the nearest, or the one LINK points at);
+  // a key opens the gate of its own metal; the rest are traps and weights
+  'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone',
+  'pushblock', 'crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit',
+  'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball', 'lantern', 'npc'];
 // a THING's palette id -> the entity it places (most are themselves; the two moving platforms are one engine kind)
 const ENT_FOR = {
   mover: { t: 'mover', len: 2, range: 4, speed: 34 },                       // side to side, four tiles each way
   'mover:up': { t: 'mover', len: 2, vert: true, rise: 4, period: 3.2 },     // a lift: up four tiles and back
+  'key:brass': { t: 'key', kind: 'brass' }, 'key:iron': { t: 'key', kind: 'iron' }, 'key:bone': { t: 'key', kind: 'bone' },
+  'lockgate:brass': { t: 'lockgate', needs: 'brass', h: 4 }, 'lockgate:iron': { t: 'lockgate', needs: 'iron', h: 4 }, 'lockgate:bone': { t: 'lockgate', needs: 'bone', h: 4 },
+  crusher: { t: 'crusher', every: 3 }, firevent: { t: 'firevent', every: 2.8 }, roller: { t: 'roller', face: -1, speed: 55 },
 };
 export const entFor = (id, x, y) => ({ ...(ENT_FOR[id] || { t: id }), x, y });
-const THING_NAMES = { mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE' };
+const THING_NAMES = { mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
+  'key:brass': 'BRASS KEY', 'key:iron': 'IRON KEY', 'key:bone': 'BONE KEY', 'lockgate:brass': 'BRASS GATE', 'lockgate:iron': 'IRON GATE',
+  'lockgate:bone': 'BONE GATE', pushblock: 'PUSH BLOCK', firevent: 'FIRE JET', roller: 'ROLLING PUFFBALL' };
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
 
 // names: the bestiary's, where it has one (main.js BEASTS), else the id in capitals
@@ -192,4 +202,52 @@ export function drawTerrainOverlay(g, doc, cx, cy, cur, entry, t) {
   if (rect && entry) { const x0 = Math.min(rect.ax, cur.x), x1 = Math.max(rect.ax, cur.x), y0 = Math.min(rect.ay, cur.y), y1 = entry[1] === 'shallows' ? y0 : Math.max(rect.ay, cur.y);
     g.globalAlpha = 0.35 + 0.1 * Math.sin(t * 6); g.fillStyle = entry[1] === 'poison' ? '#5c8a24' : '#3f8fd0';
     g.fillRect(x0 * TS - cx, y0 * TS - cy, (x1 - x0 + 1) * TS, (y1 - y0 + 1) * TS); g.globalAlpha = 1; }
+}
+
+// ================= MECHANISMS: what a lever or a plate opens =================
+// A lever (hit it) opens its DOOR column through the engine's openColumn; a plate (stand on it, or push a block onto it)
+// through openGateCol(gate). Which column: e.link if the LINK tool set one, else the nearest column holding DOOR tiles.
+const PORT = T.PORT, LINKERS = new Set(['lever', 'plate']);
+const doorCols = doc => { const out = []; for (let x = 0; x < doc.W; x++) for (let y = 0; y < doc.H; y++) if (doc.grid[y * doc.W + x] === PORT) { out.push(x); break; } return out; };
+export function linkedCol(doc, e) {
+  if (e.link !== undefined && doorCols(doc).includes(e.link)) return e.link;
+  let best = null; for (const x of doorCols(doc)) if (best === null || Math.abs(x - e.x) < Math.abs(best - e.x) || (Math.abs(x - e.x) === Math.abs(best - e.x) && x > e.x)) best = x;
+  return best;
+}
+// the entities the GAME gets: copies, with each lever's / plate's door filled in
+export function engineEnts(doc) {
+  return doc.ents.map(e => {
+    const o = { ...e }; if (!LINKERS.has(e.t)) return o;
+    const col = linkedCol(doc, e); if (col === null) return o;
+    if (e.t === 'lever') o.openColumn = [col, 0, doc.H - 1], o.say = o.say || 'A DOOR OPENS'; else o.gate = col;
+    return o;
+  });
+}
+// after placing a thing: a locked gate builds its own bars (h DOOR tiles up from where you put it). True if the grid changed.
+export function afterPlace(doc, e) {
+  if (e.t !== 'lockgate') return false;
+  for (let k = 0; k < (e.h || 4); k++) { const y = e.y - k; if (y >= 0) doc.grid[y * doc.W + e.x] = PORT; }
+  return true;
+}
+// THE LINK TOOL: click a lever or plate, then a DOOR tile
+let linkSrc = null;
+export function linkClick(doc, cur, say) {
+  const e = doc.ents.find(q => q.x === cur.x && q.y === cur.y && LINKERS.has(q.t));
+  if (e) { linkSrc = e; say((e.t === 'lever' ? 'LEVER' : 'PLATE') + ': NOW CLICK THE DOOR IT OPENS'); return; }
+  if (linkSrc && doc.grid[cur.y * doc.W + cur.x] === PORT) { linkSrc.link = cur.x; say('LINKED'); linkSrc = null; return; }
+  say(linkSrc ? 'THAT IS NOT A DOOR TILE: CLICK A DOOR' : 'CLICK A LEVER OR A PRESSURE PLATE FIRST');
+}
+// the editor shows every link: a line from the lever / plate to the door column it opens
+export function drawLinks(g, doc, cx, cy, t) {
+  for (const e of doc.ents) { if (!LINKERS.has(e.t)) continue;
+    const col = linkedCol(doc, e), x0 = e.x * TS + 8 - cx, y0 = e.y * TS + 8 - cy;
+    if (col === null) { g.fillStyle = '#ff6b6b'; g.fillRect(x0 - 1, y0 - 14, 3, 7); g.fillRect(x0 - 1, y0 - 5, 3, 2); continue; }   /* "!": no door to open */
+    let ys = []; for (let y = 0; y < doc.H; y++) if (doc.grid[y * doc.W + col] === PORT) ys.push(y);
+    const x1 = col * TS + 8 - cx, y1 = (ys[0] + ys[ys.length - 1] + 1) / 2 * TS - cy;
+    const col0 = e === linkSrc ? '#ffffff' : e.link !== undefined ? '#ffd36b' : '#e8b84a';   /* white: being linked; bright: set by LINK; amber: the nearest door */
+    g.save(); g.strokeStyle = col0; g.lineWidth = 2; g.setLineDash([4, 3]); g.lineDashOffset = -t * 12;
+    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.setLineDash([]); g.lineWidth = 1;
+    g.strokeRect(col * TS - cx + 0.5, ys[0] * TS - cy + 0.5, TS - 1, ys.length * TS - 1);
+    g.fillStyle = col0; g.fillRect(Math.round(x0) - 2, Math.round(y0) - 2, 4, 4); g.fillRect(Math.round(x1) - 2, Math.round(y1) - 2, 4, 4); g.restore();
+  }
 }
