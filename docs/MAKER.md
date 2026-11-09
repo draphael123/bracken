@@ -130,6 +130,22 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - Left out (32): most read their own level's machinery on spawn (the djinn, fog knight, colossus ...). To add one, give
   the maker that machinery, then add it to BOSSES and the sweep proves it.
 
+## Done (2026-11-09, THE BUILDING BATCH)
+- ELITE: SHIFT+CLICK a foe with an elite form (27 of them) > ELITE: bigger and tougher (main.js ELITE / eliteMake).
+- CRATE CONTENTS: drop a coin, a HEART or a foe onto a CRATE: it comes out when the crate breaks (`doc.loot` ->
+  `L.crateLoot`, read in breakCrate). The editor shows what each crate holds.
+- HEART (`mend`) placeable (ITEMS). SWITCH (MECHANISMS): a lever with `mkSwitch` - every hit swaps RED blocks (solid at the
+  start) and BLUE blocks (`doc.sw` -> `L.swCells`, `mkFlipSwitch`); a retry puts them back; empty ones show dashed.
+- SETTINGS > HEIGHT: rows go on (or off) at the TOP, everything keeps its place (`MKP.resizeHeight`, 20-80).
+- TOOLS > SELECT: drag a box; CTRL+C / CTRL+X / DELETE; CTRL+V then a click stamps it (tiles, materials, switch blocks,
+  crate contents, crumble, whole pools and pieces).
+- Not done: stacking foes on foes and wings/giant modifiers (the engine has no general form for them).
+- `tools/maker-build.mjs` (in the suite), including: every elite form the palette offers spawns as one.
+
+## Daniel's calls (2026-11-09)
+- TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
+- BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. (bosses: 21 done above; the other 32 need their machinery): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and

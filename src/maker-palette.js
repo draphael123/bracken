@@ -23,6 +23,7 @@ export const TILES = [
   ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB], ['CRYSTAL', T.CRYST],
   ['REEDS', T.REED], ['PALISADE', T.PALISADE],
   // TERRAIN BRUSHES (string ids: not tiles, see tilePaint / the rectangle brushes below)
+  ['RED BLOCK (solid until switched)', 'sw:red'], ['BLUE BLOCK (solid once switched)', 'sw:blue'],
   ['HILL (ramps itself)', 'hill'], ['CRUMBLE LEDGE', 'crumble'], ['WATER (drag)', 'water'], ['SHALLOWS (drag)', 'shallows'], ['POISON (drag)', 'poison'],
 ];
 
@@ -63,7 +64,7 @@ FOES.push(...WATER_FOES);
 export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up',
   // MECHANISMS (claude/maker step 3): a lever or a plate opens a column of DOOR tiles (the nearest, or the one LINK points at);
   // a key opens the gate of its own metal; the rest are traps and weights
-  'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone',
+  'mend', 'switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone',
   'pushblock', 'crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit',
   'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball', 'lantern', 'npc'];
 // a THING's palette id -> the entity it places (most are themselves; the two moving platforms are one engine kind)
@@ -72,10 +73,11 @@ const ENT_FOR = {
   'mover:up': { t: 'mover', len: 2, vert: true, rise: 4, period: 3.2 },     // a lift: up four tiles and back
   'key:brass': { t: 'key', kind: 'brass' }, 'key:iron': { t: 'key', kind: 'iron' }, 'key:bone': { t: 'key', kind: 'bone' },
   'lockgate:brass': { t: 'lockgate', needs: 'brass', h: 4 }, 'lockgate:iron': { t: 'lockgate', needs: 'iron', h: 4 }, 'lockgate:bone': { t: 'lockgate', needs: 'bone', h: 4 },
+  switch: { t: 'lever', mkSwitch: true },   // a lever that flips RED and BLUE blocks every time it is hit
   crusher: { t: 'crusher', every: 3 }, firevent: { t: 'firevent', every: 2.8 }, roller: { t: 'roller', face: -1, speed: 55 },
 };
 export const entFor = (id, x, y) => ({ ...(ENT_FOR[id] || { t: id }), x, y });
-const THING_NAMES = { mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
+const THING_NAMES = { mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
   'key:brass': 'BRASS KEY', 'key:iron': 'IRON KEY', 'key:bone': 'BONE KEY', 'lockgate:brass': 'BRASS GATE', 'lockgate:iron': 'IRON GATE',
   'lockgate:bone': 'BONE GATE', pushblock: 'PUSH BLOCK', firevent: 'FIRE JET', roller: 'ROLLING PUFFBALL' };
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
@@ -140,15 +142,17 @@ const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
 // (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null });
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, sw: { ...(doc.sw || {}) }, loot: { ...(doc.loot || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null });
 export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
-  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
+  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.sw = t && t.sw ? { ...t.sw } : {}; doc.loot = t && t.loot ? { ...t.loot } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
   const key = tx + ',' + ty, cr = doc.crumble || (doc.crumble = []), mat = doc.mat || (doc.mat = {});
   const i = cr.indexOf(key); if (i >= 0) cr.splice(i, 1);
   delete mat[key];
+  const sw = doc.sw || (doc.sw = {}); delete sw[key]; if (doc.loot) delete doc.loot[key];
+  if (isStr(entry[1]) && entry[1].startsWith('sw:')) { sw[key] = entry[1].slice(3); return entry[1] === 'sw:red' ? T.CRYST : T.AIR; }
   if (isStr(entry[1]) && entry[1].startsWith('mat:')) { mat[key] = entry[1].slice(4); return T.SOLID; }
   if (entry[1] === 'crumble') { cr.push(key); return T.ONEWAY; }
   return isStr(entry[1]) ? T.AIR : entry[1];
@@ -156,7 +160,7 @@ export function tilePaint(doc, tx, ty, entry) {
 // right-click: a crumble mark goes with its tile; a click inside water takes the whole pool away. True if water went.
 export function terrainErase(doc, tx, ty) {
   const cr = doc.crumble || [], i = cr.indexOf(tx + ',' + ty); if (i >= 0) cr.splice(i, 1);
-  if (doc.mat) delete doc.mat[tx + ',' + ty];
+  if (doc.mat) delete doc.mat[tx + ',' + ty]; if (doc.sw) delete doc.sw[tx + ',' + ty]; if (doc.loot) delete doc.loot[tx + ',' + ty];
   const w = doc.water || [], j = w.findIndex(r => tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1);
   if (j >= 0) { w.splice(j, 1); return true; }
   return false;
@@ -284,6 +288,7 @@ const kindOf = id => (id.includes(':') ? id.split(':')[0] : id);
 const TILE_SITTERS = new Set(['lockgate']);   // a locked gate stands on its own bars
 export function placeProblem(doc, id, x, y) {
   const t = kindOf(id), cell = doc.grid[y * doc.W + x];
+  if (cell === T.CRATE && canLoot(t)) return { loot: true, say: 'IN THE CRATE: ' + (FOES.includes(t) ? nameOf(t) : thingName(t)) };   /* items and foes go INTO a crate */
   if (isSolidId(cell) && !TILE_SITTERS.has(t)) return { refuse: true, say: "THAT'S INSIDE THE GROUND: PUT IT ON TOP" };
   if (WATER_FOES.includes(t) && !inWater(doc, x, y)) return { say: nameOf(t) + ' ONLY APPEARS IN WATER: DRAG WATER AROUND IT' };
   return null;
@@ -309,9 +314,10 @@ export function drawProblems(g, doc, cx, cy, t, text) {
 // What you can change on a placed piece. Each row: { key, label, values: [...], show: v => text } or { key, label, text: true }.
 // The values are the engine's own fields (spawnEnt reads them), so nothing here needs a hook in the game.
 const tiles = n => (n === 1 ? '1 TILE' : n + ' TILES'), secs = v => v + ' S';
+const ELITE_ROW = { key: 'elite', label: 'ELITE', values: [false, true], show: v => (v ? 'YES: BIG AND TOUGH' : 'NO'), def: false };
 const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === -1 ? 'LEFT' : 'RIGHT'), def: 1 };   /* spawnEnt: e.face || 1, so unset means RIGHT */
 export function pieceRows(e) {
-  if (FOES.includes(e.t)) return [FACE];
+  if (FOES.includes(e.t)) return ELITE_KINDS.has(e.t) && !BOSSES.includes(e.t) ? [FACE, ELITE_ROW] : [FACE];
   if (e.t === 'mover' && e.vert) return [
     { key: 'rise', label: 'HOW HIGH', values: [1, 2, 3, 4, 5, 6, 8, 10], show: tiles, def: 4 },
     { key: 'period', label: 'ONE TRIP TAKES', values: [2, 2.5, 3.2, 4, 5, 6], show: secs, def: 3.2 },
@@ -421,6 +427,7 @@ const LINE = {
   key: 'Pick it up to open the gate of the same metal.', lockgate: 'A locked gate: the key of its metal opens it.', pushblock: 'A block you can push, onto a plate or into a gap.',
   crusher: 'Drops from above on a beat. Do not be under it.', firevent: 'Spits fire on a beat. Jump it.', roller: 'Rolls along the floor. Jump it.',
   rockfall: 'Rocks fall here on a beat.', vent: 'A blast of air on a beat: it lifts you.', firepit: 'A fire pit that flares on a beat.',
+  mend: 'A heart: it heals you.', switch: 'Hit it: every RED block and every BLUE block swap.', 'sw:red': 'Solid until a SWITCH is hit, then gone (and back again).', 'sw:blue': 'Empty until a SWITCH is hit, then solid (and gone again).',
   sign: 'A sign with your words on it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
   lantern: 'A lantern: light.', npc: 'A villager.',
 };
@@ -444,7 +451,8 @@ function tagsFrom(t, d) {
 const firstSentence = d => { const m = String(d || '').match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(d || '')).trim(); };
 export function describe(cat, id) {
   if (cat === 1) { const d = DESCS[id]; return { name: nameOf(id), line: d ? firstSentence(d) : (BOSSES.includes(id) ? 'A boss: it gets its own arena, and the goal opens when it falls.' : 'Fights you.'), tags: BOSSES.includes(id) ? ['BOSS'] : tagsFrom(id, d) }; }
-  if (cat === 0) { const k = typeof id === 'string' && id.startsWith('mat:') ? null : id; return { name: (TILES.find(t => t[1] === id) || [String(id)])[0], line: k === null ? MAT_LINE[id.slice(4)] : LINE[k] || '', tags: [] }; }
+  if (cat === 0) { const k = typeof id === 'string' && id.startsWith('mat:') ? null : id;
+    if (typeof id === 'string' && id.startsWith('sw:')) return { name: (TILES.find(t => t[1] === id) || [id])[0], line: LINE[id], tags: [] }; return { name: (TILES.find(t => t[1] === id) || [String(id)])[0], line: k === null ? MAT_LINE[id.slice(4)] : LINE[k] || '', tags: [] }; }
   if (cat === 2) { const k = String(id).split(':')[0], metal = String(id).split(':')[1]; let line = LINE[id] || LINE[k] || '';
     if (metal) line = line.replace('the same metal', metal).replace('its metal', 'the ' + metal + ' one'); return { name: thingName(id), line, tags: [] }; }
   return { name: String(id), line: '', tags: [] };
@@ -576,4 +584,109 @@ export function drawArena(g, doc, cx, cy, t, SPR, text) {
   g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.setLineDash([]); g.beginPath(); g.moveTo(a.wallL * TS + 8 - cx, top); g.lineTo(a.wallL * TS + 8 - cx, fy); g.moveTo(a.wallR * TS + 8 - cx, top); g.lineTo(a.wallR * TS + 8 - cx, fy); g.stroke();
   g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.setLineDash([3, 3]); g.lineDashOffset = -t * 10; g.beginPath(); g.moveTo(a.trigger - cx, top); g.lineTo(a.trigger - cx, fy); g.stroke();
   g.restore();
+}
+
+// ================= COMBINING PIECES (claude/maker building batch) =================
+// ELITE: a foe the game has an elite form for can be made one (bigger, tougher: main.js ELITE / eliteMake).
+let ELITE_KINDS = new Set();
+export function setEliteKinds(list) { ELITE_KINDS = new Set(list || []); }
+export const hasElite = t => ELITE_KINDS.has(t);
+// CRATE CONTENTS: drop a coin, a heart or a foe onto a CRATE and that is what comes out when it breaks (doc.loot['x,y']).
+export const canLoot = t => t === 'coin' || t === 'mend' || (FOES.includes(t) && !BOSSES.includes(t) && !WATER_FOES.includes(t));
+export function engineLoot(doc) {
+  const out = {}; let any = false;
+  for (const [k, v] of Object.entries(doc.loot || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.CRATE) { out[k] = v; any = true; } }
+  return any ? out : null;
+}
+export function drawLoot(g, doc, cx, cy, SPR) {
+  for (const [k, v] of Object.entries(doc.loot || {})) {
+    const [x, y] = k.split(',').map(Number), px = x * TS - cx, py = y * TS - cy;
+    g.fillStyle = 'rgba(12,10,18,0.75)'; g.fillRect(px + 3, py + 3, 10, 10);
+    if (v === 'coin') { g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(px + 8, py + 8, 3, 0, 7); g.fill(); }
+    else if (v === 'mend') { g.fillStyle = '#ff5a6a'; g.fillRect(px + 5, py + 6, 6, 4); g.fillRect(px + 6, py + 10, 4, 1); g.fillRect(px + 7, py + 11, 2, 1); }
+    else {
+      let f = SPR && SPR[v] && (SPR[v].R || SPR[v]); if (f && !f.width) { f = Array.isArray(f) ? f[0] : Object.values(f)[0]; if (Array.isArray(f)) f = f[0]; }
+      if (f && f.width) { const kk = Math.min(1, 9 / Math.max(f.width, f.height)); g.drawImage(f, px + 8 - f.width * kk / 2, py + 12 - f.height * kk, f.width * kk, f.height * kk); }
+      else { g.fillStyle = '#ff6b6b'; g.fillRect(px + 6, py + 6, 4, 4); }
+    }
+  }
+}
+// SWITCH BLOCKS: RED solid at the start, BLUE empty; a SWITCH (mkSwitch lever) swaps them all, every hit.
+export function engineSwitch(doc) { const out = []; for (const [k, v] of Object.entries(doc.sw || {})) { const [x, y] = k.split(',').map(Number); out.push([x, y, v]); } return out.length ? out : null; }
+export function drawSwitchBlocks(g, cells, cx, cy, flipped) {
+  for (const [x, y, kind] of cells) {
+    const solid = (kind === 'red') !== !!flipped, px = x * TS - cx, py = y * TS - cy;
+    g.save();
+    if (solid) { g.globalAlpha = 0.45; g.fillStyle = kind === 'red' ? '#ff3a3a' : '#3a7aff'; g.fillRect(px, py, TS, TS); }
+    else { g.strokeStyle = kind === 'red' ? '#ff6b6b' : '#6fb0ff'; g.globalAlpha = 0.8; g.lineWidth = 1; g.setLineDash([2, 2]); g.strokeRect(px + 1.5, py + 1.5, TS - 3, TS - 3); }
+    g.restore();
+  }
+}
+
+// ================= TALLER LEVELS =================
+// Rows are added (or taken) at the TOP, so the ground and everything on it keep their place under the knight.
+export function resizeHeight(doc, dh) {
+  const H2 = Math.max(20, Math.min(80, doc.H + dh)); dh = H2 - doc.H; if (!dh) return false;
+  const W = doc.W, g2 = new Uint8Array(W * H2);
+  for (let y = 0; y < doc.H; y++) { const y2 = y + dh; if (y2 < 0 || y2 >= H2) continue; for (let x = 0; x < W; x++) g2[y2 * W + x] = doc.grid[y * W + x]; }
+  const mv = o => { const n = {}; for (const [k, v] of Object.entries(o || {})) { const [x, y] = k.split(',').map(Number); if (y + dh >= 0) n[x + ',' + (y + dh)] = v; } return n; };
+  doc.grid = g2; doc.H = H2; doc.ents = doc.ents.filter(e => e.y + dh >= 0).map(e => ({ ...e, y: e.y + dh })); doc.start = { x: doc.start.x, y: Math.max(0, doc.start.y + dh) };
+  doc.crumble = (doc.crumble || []).map(k => { const [x, y] = k.split(',').map(Number); return x + ',' + (y + dh); }).filter(k => +k.split(',')[1] >= 0);
+  doc.water = (doc.water || []).map(r => ({ ...r, y0: r.y0 + dh, y1: r.y1 + dh })).filter(r => r.y0 >= 0);
+  doc.mat = mv(doc.mat); doc.sw = mv(doc.sw); doc.loot = mv(doc.loot); doc._lm = [];
+  return true;
+}
+
+// ================= SELECT, COPY, CUT, PASTE =================
+// TOOLS > SELECT: drag a box. Then CTRL+C copies, CTRL+X cuts, DELETE clears; CTRL+V picks the copy up to stamp with a click.
+let sel = null, selDrag = null, clip = null, pasting = false;
+export const selection = () => sel, selDragging = () => !!selDrag, isPasting = () => pasting, clipboard = () => clip;
+export function selStart(c) { selDrag = { ax: c.x, ay: c.y }; sel = { x0: c.x, y0: c.y, x1: c.x, y1: c.y }; }
+export function selMove(c) { if (!selDrag) return; sel = { x0: Math.min(selDrag.ax, c.x), y0: Math.min(selDrag.ay, c.y), x1: Math.max(selDrag.ax, c.x), y1: Math.max(selDrag.ay, c.y) }; }
+export function selEnd() { selDrag = null; }
+export function selClear() { sel = null; selDrag = null; pasting = false; }
+const inSel = (x, y, s) => x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1;
+export function copySel(doc) {
+  if (!sel) return false;
+  const s = sel, w = s.x1 - s.x0 + 1, h = s.y1 - s.y0 + 1, tiles = new Uint8Array(w * h);
+  const rel = o => { const n = {}; for (const [k, v] of Object.entries(o || {})) { const [x, y] = k.split(',').map(Number); if (inSel(x, y, s)) n[(x - s.x0) + ',' + (y - s.y0)] = v; } return n; };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) tiles[y * w + x] = doc.grid[(s.y0 + y) * doc.W + s.x0 + x];
+  clip = { w, h, tiles, mat: rel(doc.mat), sw: rel(doc.sw), loot: rel(doc.loot),
+    crumble: (doc.crumble || []).filter(k => { const [x, y] = k.split(',').map(Number); return inSel(x, y, s); }).map(k => { const [x, y] = k.split(',').map(Number); return (x - s.x0) + ',' + (y - s.y0); }),
+    water: (doc.water || []).filter(r => r.x0 >= s.x0 && r.x1 <= s.x1 && r.y0 >= s.y0 && r.y1 <= s.y1).map(r => ({ ...r, x0: r.x0 - s.x0, x1: r.x1 - s.x0, y0: r.y0 - s.y0, y1: r.y1 - s.y0 })),
+    ents: doc.ents.filter(e => inSel(e.x, e.y, s) && e.t !== 'gate' && !isBoss(e.t)).map(e => ({ ...e, x: e.x - s.x0, y: e.y - s.y0 })) };
+  return true;
+}
+export function clearSel(doc) {
+  if (!sel) return false; const s = sel;
+  for (let y = s.y0; y <= s.y1; y++) for (let x = s.x0; x <= s.x1; x++) { doc.grid[y * doc.W + x] = T.AIR; const k = x + ',' + y; if (doc.mat) delete doc.mat[k]; if (doc.sw) delete doc.sw[k]; if (doc.loot) delete doc.loot[k]; }
+  doc.crumble = (doc.crumble || []).filter(k => { const [x, y] = k.split(',').map(Number); return !inSel(x, y, s); });
+  doc.water = (doc.water || []).filter(r => !(r.x0 >= s.x0 && r.x1 <= s.x1 && r.y0 >= s.y0 && r.y1 <= s.y1));
+  doc.ents = doc.ents.filter(e => !inSel(e.x, e.y, s));
+  return true;
+}
+export function startPaste() { if (!clip) return false; pasting = true; return true; }
+export function pasteAt(doc, c) {
+  if (!clip) return false;
+  const ox = c.x, oy = c.y, ok = (x, y) => x >= 1 && y >= 0 && x < doc.W - 1 && y < doc.H;
+  for (let y = 0; y < clip.h; y++) for (let x = 0; x < clip.w; x++) {
+    const X = ox + x, Y = oy + y; if (!ok(X, Y)) continue; doc.grid[Y * doc.W + X] = clip.tiles[y * clip.w + x];
+    const k = X + ',' + Y; for (const f of ['mat', 'sw', 'loot']) { if (doc[f]) delete doc[f][k]; const v = clip[f][x + ',' + y]; if (v !== undefined) (doc[f] || (doc[f] = {}))[k] = v; }
+  }
+  doc.ents = doc.ents.filter(e => !(e.x >= ox && e.x < ox + clip.w && e.y >= oy && e.y < oy + clip.h));
+  for (const e of clip.ents) if (ok(ox + e.x, oy + e.y)) doc.ents.push({ ...e, x: ox + e.x, y: oy + e.y });
+  doc.crumble = doc.crumble || [];
+  for (const k of clip.crumble) { const [x, y] = k.split(',').map(Number); if (ok(ox + x, oy + y)) doc.crumble.push((ox + x) + ',' + (oy + y)); }
+  doc.water = doc.water || [];
+  for (const r of clip.water) if (ok(ox + r.x1, oy + r.y1)) doc.water.push({ ...r, x0: ox + r.x0, x1: ox + r.x1, y0: oy + r.y0, y1: oy + r.y1 });
+  pasting = false; sel = { x0: ox, y0: oy, x1: Math.min(doc.W - 2, ox + clip.w - 1), y1: Math.min(doc.H - 1, oy + clip.h - 1) };
+  return true;
+}
+export function drawSel(g, cx, cy, cur, t) {
+  if (sel) { g.save(); g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.setLineDash([4, 3]); g.lineDashOffset = -t * 12; g.strokeRect(sel.x0 * TS - cx + 0.5, sel.y0 * TS - cy + 0.5, (sel.x1 - sel.x0 + 1) * TS - 1, (sel.y1 - sel.y0 + 1) * TS - 1); g.restore(); }
+  if (pasting && clip) {
+    g.save(); g.globalAlpha = 0.35; g.fillStyle = '#8fd1ff';
+    for (let y = 0; y < clip.h; y++) for (let x = 0; x < clip.w; x++) if (clip.tiles[y * clip.w + x]) g.fillRect((cur.x + x) * TS - cx, (cur.y + y) * TS - cy, TS, TS);
+    g.globalAlpha = 1; g.strokeStyle = '#8fd1ff'; g.setLineDash([4, 3]); g.strokeRect(cur.x * TS - cx + 0.5, cur.y * TS - cy + 0.5, clip.w * TS - 1, clip.h * TS - 1); g.restore();
+  }
 }

@@ -10,13 +10,13 @@ import { MUSIC_NAMES } from './audio.js';
 const isSlopeId = v => typeof v === 'number' && v >= 20 && v <= 25;
 const tileIdx = pred => TILES.map((t, i) => [t, i]).filter(([t]) => pred(t[1])).map(([, i]) => i);
 const thingIdx = ids => ids.map(id => THINGS.indexOf(id)).filter(i => i >= 0);
-const MECH = ['lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone', 'pushblock', 'mover', 'mover:up'];
+const MECH = ['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone', 'pushblock', 'mover', 'mover:up'];
 const HAZ = ['crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit'];
 /* THE STARTER CAST: fifteen you can read at a glance (Mario Maker shows a few, not all); the rest are one tab over */
 const STARTER = ['sprig', 'shield', 'archer', 'brute', 'hound', 'wasp', 'spit', 'hopper', 'sapper', 'harpy', 'zombie', 'wight', 'goat', 'rockgoblin', 'shaman'];
 export const GROUPS = [
-  { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && v.startsWith('mat:'))) },
-  { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:'))) },
+  { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && (v.startsWith('mat:') || v.startsWith('sw:')))) },
+  { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:') && !v.startsWith('sw:'))) },
   { name: 'ENEMIES', cat: 1, idx: STARTER.map(t => FOES.indexOf(t)).filter(i => i >= 0) },
   { name: 'MORE ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t) && !STARTER.includes(t) && !BOSSES.includes(t)).map(([, i]) => i) },
   { name: 'BOSSES', cat: 1, idx: BOSSES.map(t => FOES.indexOf(t)) },
@@ -26,8 +26,8 @@ export const GROUPS = [
   { name: 'HAZARDS', cat: 2, idx: thingIdx(HAZ) },
   { name: 'TOOLS', cat: 3, idx: null },   // filled from the editor's own tool list
 ];
-const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
-const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];
+const TOOL_NAMES = { SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
+const TOOL_SHOWN = ['SELECT', 'START', 'LINK', 'EDIT'];
 const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
@@ -63,6 +63,8 @@ function tileIcon(g, id, x, y) {   // 16x16 at (x, y)
   const R = (c, a, b, w, h) => { g.fillStyle = c; g.fillRect(x + a, y + b, w, h); };
   if (id === T.AIR) { g.strokeStyle = '#ff7a6a'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 3, y + 3); g.lineTo(x + 13, y + 13); g.moveTo(x + 13, y + 3); g.lineTo(x + 3, y + 13); g.stroke(); return; }
   if (id === T.SOLID) { R('#7a5230', 0, 3, 16, 13); R('#5aa33e', 0, 0, 16, 4); R('#8fd160', 0, 0, 16, 1); R('#ffffff', 12, 9, 2, 2); return; }
+  if (id === 'sw:red') { R('#c83a3a', 1, 1, 14, 14); R('#ff7a7a', 1, 1, 14, 2); R('#801a1a', 1, 13, 14, 2); return; }
+  if (id === 'sw:blue') { g.strokeStyle = '#6fb0ff'; g.lineWidth = 1; g.setLineDash([2, 2]); g.strokeRect(x + 1.5, y + 1.5, 13, 13); g.setLineDash([]); return; }
   if (typeof id === 'string' && id.startsWith('mat:')) { const m = id.slice(4);
     const P = { grass: ['#7a5230', '#5aa33e'], cobble: ['#7d7a74', '#9a968c'], shore: ['#b49a72', '#d8c49a'], reef: ['#3f7a78', '#6fb0a0'], city: ['#4a4a58', '#6a6a7a'], masonry: ['#8b8378', '#b3aca0'], deck: ['#8a5a32', '#a8743f'] }[m] || ['#888', '#aaa'];
     R(P[0], 0, 0, 16, 16); R(P[1], 0, 0, 16, 3);
@@ -96,6 +98,8 @@ function thingIcon(g, id, x, y, t, c) {   // 16x16; prefers the game's own sprit
   if (id === 'coin' || id === 'silver') { g.fillStyle = id === 'coin' ? '#ffd34a' : '#d8e0e8'; g.beginPath(); g.arc(x + 8, y + 8, 5, 0, 7); g.fill(); return; }
   if (id === 'check') { R('#8b8378', 6, 4, 4, 12); R('#ffd36b', 5, 1, 6, 4); return; }
   if (id === 'gate') { R('#8b8378', 1, 2, 3, 14); R('#8b8378', 12, 2, 3, 14); R('#b3aca0', 1, 1, 14, 3); return; }
+  if (id === 'switch') { R('#5f5a52', 3, 12, 10, 4); g.strokeStyle = '#d8d0c0'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 8, y + 13); g.lineTo(x + 5, y + 3); g.stroke(); R('#ff5a5a', 2, 1, 4, 4); R('#5a8aff', 10, 1, 4, 4); return; }
+  if (id === 'mend') { R('#ff5a6a', 3, 4, 4, 4); R('#ff5a6a', 9, 4, 4, 4); R('#ff5a6a', 3, 7, 10, 3); R('#ff5a6a', 5, 10, 6, 2); R('#ff5a6a', 7, 12, 2, 1); return; }
   if (id === 'lever') { R('#5f5a52', 3, 12, 10, 4); g.strokeStyle = '#a8743f'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 8, y + 13); g.lineTo(x + 12, y + 3); g.stroke(); R('#c9463d', 11, 1, 3, 3); return; }
   if (id === 'plate') { R('#8b8378', 1, 12, 14, 3); R('#b3aca0', 1, 12, 14, 1); return; }
   if (id.startsWith('key:')) { g.fillStyle = mc; g.beginPath(); g.arc(x + 5, y + 6, 3.5, 0, 7); g.fill(); R(mc, 7, 5, 8, 2); R(mc, 12, 7, 2, 3); return; }
@@ -124,7 +128,7 @@ function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
   else if (cat === 2) thingIcon(g, THINGS[i], x, y, c.time, c);
-  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
+  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
 function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => i) : gr.idx; }
@@ -204,11 +208,12 @@ function settingRows(c) {
     { key: 'weather', label: 'WEATHER', value: d.weather ? d.weather.toUpperCase() : "THE BACKGROUND'S OWN" },
     { key: 'hero', label: 'TEST AS', value: d.hero ? ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) : 'YOUR OWN HERO' },
     { key: 'width', label: 'WIDTH', value: d.W + ' TILES' },
+    { key: 'height', label: 'HEIGHT', value: d.H + ' TILES (rows go on at the top)' },
     { key: 'name', label: 'NAME', value: d.name, click: true },
   ];
 }
 function drawSettings(c) {
-  const { g, text } = c, w = 380, h = 178, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
+  const { g, text } = c, w = 380, h = 196, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
   text('< > TO CHANGE.  THE MUSIC PLAYS WHILE YOU CHOOSE.', x + w / 2, y + 17, '#8a7fa0', 'center', 6);
   UI.rows = [];
   settingRows(c).forEach((r, k) => { const ry = y + 30 + k * 18;
@@ -257,6 +262,7 @@ export function uiMouse(c, mx, my, down) {
     if (r.key === 'guide') { UI.panel = null; UI.guide = 0; return { consumed: true, act: 'guide' }; }
     if (String(r.key).startsWith('example:')) { UI.panel = null; UI.guide = -1; return { consumed: true, act: 'example', n: +r.key.split(':')[1] }; }
     if (r.key === 'width') return { consumed: true, act: r.d > 0 ? 'width+' : 'width-' };
+    if (r.key === 'height') return { consumed: true, act: r.d > 0 ? 'height+' : 'height-' };
     if (r.key === 'theme') return { consumed: true, act: r.d > 0 ? 'theme+' : 'theme-' };
     const d = c.doc;
     if (r.key === 'time') { d.time = TIMES[(TIMES.indexOf(d.time ?? null) + r.d + TIMES.length) % TIMES.length]; return { consumed: true, act: 'remount' }; }
