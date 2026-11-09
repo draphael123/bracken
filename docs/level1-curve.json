@@ -178,17 +178,44 @@
   "lostPct": 170
  },
  "crown": {
-  "hash": "9c42eb2a437a",
+  "hash": "25ecf6a140a3",
   "hero": "knight",
   "steps": 30000,
-  "runs": 3,
-  "hits": 33,
-  "deaths": 3,
-  "kills": 44,
-  "lifts": 167,
+  "runs": 6,
+  "hits": 85,
+  "deaths": 9,
+  "kills": 83,
+  "lifts": 382,
   "walked": 100,
   "bare": true,
-  "lostPct": 267
+  "seed": 1,
+  "lostPct": 323,
+  "lostRuns": [
+   334,
+   334,
+   371,
+   321,
+   305,
+   272
+  ],
+  "lostSd": 33.1,
+  "lostSe": 13.5,
+  "deathsRuns": [
+   2,
+   2,
+   2,
+   1,
+   1,
+   1
+  ],
+  "hitsRuns": [
+   14,
+   14,
+   16,
+   14,
+   15,
+   12
+  ]
  },
  "longwater": {
   "hash": "04defa7dcf82",

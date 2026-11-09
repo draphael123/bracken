@@ -19,6 +19,7 @@ try {
   assert.ok(files.includes('index.html') && !files.some(f => f.startsWith('src/')), 'index.html at the root, no src/ folder shipped');
   assert.ok(files.length < 1000, files.length + ' files (itch allows 1000)'); assert.ok(report.bytes < 500 * 1048576, 'well under 500 MB: ' + report.mb + ' MB');
   assert.deepEqual(adblockHits(files), [], 'no ad-block word in a shipped path');
+  assert.ok(files.includes('assets/ui/title-mark.png'), 'the title mark (Daniel logo) ships in the demo build: assets/ui/title-mark.png');
   const page = readFileSync(join(site, 'index.html'), 'utf8'); const pre = [...page.matchAll(/rel="modulepreload" href="([^"]+)"/g)].map(m => m[1]); assert.ok(pre.length > 5 && pre.every(h => /^\.\/(main|c-[A-Z0-9]+)\.js$/.test(h)), 'modulepreload lists only the bundle (main.js + its chunks), never src/ (claude/onboard1)'); assert.ok(!/serviceWorker|manifest\.webmanifest/.test(page) && /\.\/main\.js/.test(page) && /\.\/loading-screen\.js/.test(page), 'the page loads the bundle only');
   /* (claude/fastload) FAST FIRST START: the slice guard ran (every music name the slice reaches is shipped), the page carries its script sizes for the loading bar and they are true, and the boot payload (scripts + title track) is within budget; music loads on demand, never at boot */
   assert.ok(report.guard && report.guard.sliceMusic > 20 && report.guard.literalsChecked >= 4, 'the slice guard ran (music the slice reaches is shipped): ' + JSON.stringify(report.guard));

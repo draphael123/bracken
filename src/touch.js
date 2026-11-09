@@ -116,7 +116,7 @@ export function createTouch(env) {
     return { t: v[0] * DPR, r: (v[1] || 0) * DPR, b: (v[2] || 0) * DPR, l: (v[3] || 0) * DPR };
   }
   function layout() {
-    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, gm.S | 0, gm.offX | 0, size(), left(), layVer, hasStance() ? 'rg' : '', preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
+    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, Math.round(gm.S * 100), gm.offX | 0, size(), left(), layVer, hasStance() ? 'rg' : '', preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
     if (lay && key === layKey) return lay; layKey = key;
     const { DPR } = env.geom(), s = Math.min(W, H) * 0.145 * size(), m = Math.max(10 * DPR, 0) , L = left(), sg = L ? -1 : 1;
     const pivX = L ? ins.l + m + s : W - ins.r - m - s, pivY = H - ins.b - m - 0.78 * s;

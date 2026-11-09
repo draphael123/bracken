@@ -753,8 +753,8 @@ export const music = {
   get on() { return musicOn; },
   get track() { return currentTrack; },
   get want() { return wantTrack; },   /* the track asked for last (null: stopped) - what is meant to be playing, loaded or not, sound on or not */
-  lift(on) { const k = on ? 1.06 : 1; if (k === liftRate) return; liftRate = k; if (!ac) return; for (const s of musicSrcs) { try { if (s.playbackRate) s.playbackRate.setTargetAtTime(k, ac.currentTime, 0.4); } catch {} }
-    if (on && musicGain && musicOn) { noise(1.2, 0.14, 900, 0.7, 0, musicGain); [110, 164.8, 220].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.9, 0.05, i * 0.06, musicGain)); } },   /* (claude/gorm3) KING GORM's ENRAGE: the track lifts (x1.06) under a told stinger (a low swell up a fifth) */
+  lift(on) { const k = on === 2 ? 1.10 : on ? 1.06 : 1; if (k === liftRate) return; const up = k > liftRate; liftRate = k; if (!ac) return; for (const s of musicSrcs) { try { if (s.playbackRate) s.playbackRate.setTargetAtTime(k, ac.currentTime, 0.4); } catch {} }
+    if (up && musicGain && musicOn) { if (k > 1.07) { noise(1.0, 0.16, 1500, 0.8, 0, musicGain); [146.8, 220, 329.6].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.7, 0.055, i * 0.05, musicGain)); } else { noise(1.2, 0.14, 900, 0.7, 0, musicGain); [110, 164.8, 220].forEach((f, i) => tone('sawtooth', f, f * 1.5, 0.9, 0.05, i * 0.06, musicGain)); } } },   /* (claude/gorm3) KING GORM's ENRAGE: the track lifts (x1.06) under a told stinger (a low swell up a fifth). (claude/gqmusic) lift(2) = a second, tenser step (x1.10) under a higher, tighter stinger; lift(true) / lift(1) / lift(false) are as they were */
   storm(on) { const c = on ? 200 : 0; if (c === stormCents) return; stormCents = c; if (!ac) return; for (const s of musicSrcs) { try { if (s.detune) s.detune.setTargetAtTime(c, ac.currentTime, 0.5); } catch {} } },
   muffle(on) { if (!!on === muffled) return; muffled = !!on; applyMusicFilter(); },
   lowHealth(on) { if (!!on === lowHp) return; lowHp = !!on; applyMusicFilter(); },
@@ -1726,6 +1726,7 @@ const DIE = {
   shardling() { noise(0.3, 0.3, 3600, 0.7); [2637, 2093, 1568, 1175].forEach((f, i) => bell(f, 0.35, 0.05, i * 0.05)); tone('sawtooth', 160, 60, 0.25, 0.1); },
   fledgling() { tone('sawtooth', 1400, 500, 0.18, 0.1); noise(0.2, 0.16, 2600, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3600, 1, 0.1 + i * 0.05); /* a cheep cut short, and down */ },
   gobpriest() { gob(1.05) || tone('sawtooth', 300, 90, 0.4, 0.16); pad('sawtooth', 247, 150, 0.6, 0.04, 0.05, 800); tone('sine', 2093, 1200, 0.5, 0.05, 0.15); SFX.clatter(); /* the chant goes out of its nose, and the bell and the censer hit the flags */ },
+  gobgeo() { gob(0.85) || tone('square', 420, 90, 0.3, 0.16); noise(0.12, 0.12, 900, 1.2, 0.1); SFX.thud(); /* (batch155, voices-check) the court earth-mage: a low goblin cry, and his slate drops */ },
   gobmage() { gob(1.15) || tone('square', 560, 120, 0.3, 0.16); for (let i = 0; i < 5; i++) noise(0.04, 0.1, 4800, 1.4, 0.1 + i * 0.05); tone('sine', 900, 200, 0.4, 0.05, 0.1); SFX.thud(); /* the pages go everywhere, and the book lands */ },
   sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
@@ -1919,6 +1920,7 @@ const HURT = {
   shardling() { bell(2637, 0.2, 0.05); noise(0.05, 0.12, 5000, 0.8); },
   fledgling() { tone('square', 1600, 1100, 0.08, 0.08); },
   gobpriest() { gobH(1.05) || tone('square', 480, 300, 0.08, 0.13); bell(2093, 0.12, 0.025, 0.02); /* and the bell on its belt */ },
+  gobgeo() { gobH(0.85) || tone('square', 440, 300, 0.08, 0.13); noise(0.05, 0.08, 1200, 1.2, 0.02); /* a slate chips */ },
   gobmage() { gobH(1.15) || tone('square', 620, 380, 0.08, 0.13); noise(0.05, 0.08, 5000, 1.5, 0.02); /* and a page tears */ },
   sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },
@@ -2018,7 +2020,7 @@ Object.assign(CAST, {
   chapelknight: { kit: 'm4', rate: 0.9, mat: 'plate', human: true }, templar: { kit: 'm4', rate: 0.85, mat: 'plate', human: true }, chapelbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, fogknight: { kit: 'm4', rate: 0.7, lp: 1200, mat: 'plate', human: true, boss: true },
   hawkscout: { kit: 'm6', rate: 1, mat: 'cloth', human: true }, gonglookout: { kit: 'm6', rate: 1.2, mat: 'cloth', human: true }, ksarblade: { kit: 'm2', rate: 1.05, mat: 'cloth', human: true }, falconer: { kit: 'm3', rate: 1, mat: 'cloth', human: true }, ksarplate: { kit: 'm4', rate: 1, mat: 'plate', human: true },
   whipapprentice: { kit: 'm6', rate: 1.25, mat: 'cloth', human: true }, shieldsentry: { kit: 'm5', rate: 0.9, mat: 'plate', human: true }, smokethrower: { kit: 'm2', rate: 0.95, mat: 'cloth', human: true }, wallslinger: { kit: 'm6', rate: 1, mat: 'cloth', human: true },
-  gangleader: { kit: 'm1', rate: 0.85, mat: 'mail', human: true, boss: true }, stagehand: { kit: 'm6', rate: 0.9, mat: 'cloth', human: true }, lampsnuffer: { kit: 'ev', rate: 0.9, mat: 'cloth', human: true },
+  gangleader: { kit: 'm1', rate: 0.85, mat: 'mail', human: true, boss: true }, gprincess: { kit: 'gobbig', rate: 1.5, lp: 3200, mat: 'cloth', boss: true }, stagehand: { kit: 'm6', rate: 0.9, mat: 'cloth', human: true }, lampsnuffer: { kit: 'ev', rate: 0.9, mat: 'cloth', human: true },
   strongman: { kit: 'm5', rate: 0.8, mat: 'cloth', human: true }, bandit: { kit: 'm2', rate: 0.95, mat: 'cloth', human: true }, flyman: { kit: 'm6', rate: 1, mat: 'cloth', human: true }, prompter: { kit: 'm3', rate: 1.15, mat: 'cloth', human: true }, powderboy: { kit: 'm6', rate: 1.3, mat: 'cloth', human: true },
   navvy: { kit: 'm5', rate: 0.95, mat: 'cloth', human: true }, timberman: { kit: 'm5', rate: 0.8, mat: 'cloth', human: true }, minewarden: { kit: 'm4', rate: 0.95, mat: 'mail', human: true }, bargeman: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, riverrat: { kit: 'm6', rate: 1.15, mat: 'cloth', human: true },
   deckforeman: { kit: 'm1', rate: 0.9, mat: 'cloth', human: true }, watchman: { kit: 'm5', rate: 1, mat: 'mail', human: true }, lamplighter: { kit: 'm3', rate: 0.95, mat: 'cloth', human: true },

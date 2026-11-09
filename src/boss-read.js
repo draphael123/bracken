@@ -69,6 +69,7 @@ export const TURN_WORD = {
   archmage: e => e.mode === 'ward' ? 'THE RUNES HOLD' : e.mode === 'blink' || e.mode === 'change' || e.mode === 'wake' ? TURN.NOT_THERE : e.stage === 2 ? 'REACH HIM' : TURN.WARDED,   // the runes take it; in a room he has written, the way through the room is the opening
   gargoyle: e => (e.wardT > 0 ? TURN.WARDED : 'DROP HIM ON THE SPIKES'),   // (claude/witchfix, Daniel 10-08) stone until he lies on the spikes - the word names the verb; WARDED just after
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
+  gprincess: e => e.hiding ? 'BEHIND HER GUARD' : 'RING THE BELL',   // (claude/highcrown3) x0.5 outside her openings: the tower bell pins her; a guard she hides behind takes the rest (x0.4)
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   bogtroll: e => (e.ward > 0 ? TURN.WARDED : 'PEAT HIDE'),   // (claude/fenroad) his peat hide takes most of a blow (B15: x0.4); stuck in a rotten section he takes it double
   hornetqueen: e => (e.ward > 0 ? TURN.WARDED : e.cloak > 0 ? 'CLOAKED' : 'HARD SHELL'),   // (claude/hornetsnest) her shell turns half a cut (B15 x0.5), her swarm cloak more (x0.4); a plunge from above lands whole; her openings x1.5-x2

@@ -38,7 +38,7 @@ ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[
 /* THE OLD SAVES: the gate rule over a fake PROG (the levelLocked clause and the migration, lifted out of main.js) */
 { const mig = /if \(!PROG\.kitchenRoadMig\) \{[^\n]*\}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
   ok(mig && lock && /lv\.id === 'crown' && PROG\.crownOpen/.test(lock[0]), 'the migration and the gate clause are in src/main.js');
-  if (mig && lock) { const run = PROG => { new Function('PROG', mig[0])(PROG); const q = { get: () => null }; const locked = l2 => new Function('lv', 'PROG', 'q', 'return !!' + lock[0])(l2, PROG, q);
+  if (mig && lock) { const run = PROG => { new Function('PROG', mig[0])(PROG); const q = { get: () => null }; const locked = l2 => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(l2, PROG, q, () => false);
       return { crown: locked(crown), kg: locked(lv) }; };
     const past = run({ ucRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true }, crown: { cleared: true } }), atUc = run({ ucRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true } });
     const fresh = run({ ucRoadMig: 1, kitchenRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true } }), done = run({ ucRoadMig: 1, kitchenRoadMig: 1, undercrown: { cleared: true }, kitchengate: { cleared: true } });

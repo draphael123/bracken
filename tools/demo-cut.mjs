@@ -69,7 +69,7 @@ const PINNED = [
   [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[to\]\)/, 'trnBegin: no walk-out to a locked wood (unless the row is the demoEnd teaser, claude/gormburn)'],
   [/^DS\.DEMO\) \{ TRN = null/, 'trnFinish: the demo mountain teaser ends on the END CARD (claude/gormburn)'],
   [/^DS\.DEMO \? bossTable\(\)\.filter/, 'boss select: the slice only'],
-  [/^DS\.DEMO \? \[\] : \['THE (EDITOR|MAKER)'\]/, 'title: no editor (claude/maker: the row is THE MAKER now; the demo still has none)'],
+  [/^DS\.DEMO \? \[\] : \['THE (EDITOR|MAKER)( \(TEST\))?'\]/, 'title: no editor (claude/maker: the row is THE MAKER (TEST), in EXTRAS; the demo still has none)'],
   [/^DS\.DEMO\) DSV\.tag\(PROG, LEVELS\)/, 'progDefaults: tag a demo save'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) \? -1 : partyNextLevel\(\)/, 'win card: no party-next past Gorm'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) && !bossSelectFight/, 'win card: the end card'],
@@ -146,14 +146,14 @@ console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption a
     let opaque = 0; const cols = new Set(); for (let i = 0; i < a.px.length; i += 4) { if (a.px[i + 3] === 255) opaque++; cols.add(a.px[i] << 16 | a.px[i + 1] << 8 | a.px[i + 2]); }
     assert.equal(opaque, TZ.W * TZ.H, sc.id + ' paints every pixel'); assert.ok(cols.size >= 8 && cols.size <= 400, sc.id + ' is a real picture, not a flat fill (' + cols.size + ' colours)'); }
   assert.throws(() => TZ.bake('nope'), /no such teaser scene/);
-  assert.equal(CFG.FOLLOW_URL, '', 'no itch page yet: FOLLOW_URL ships blank (Daniel fills it)'); assert.equal(DE.followUrlOk(), false, 'blank URL: no live follow button');
+  assert.equal(CFG.FOLLOW_URL, 'https://draphael123.itch.io/thornroad', 'the itch page (Daniel 11-08)'); assert.equal(DE.followUrlOk(), true, 'set URL: live follow button');
   for (const bad of ['', 'http://x.io/a', 'javascript:alert(1)', 'https://', 'https://a b', 'itch.io/x']) assert.equal(DE.followUrlOk(bad), false, 'refused: "' + bad + '"');
   assert.equal(DE.followUrlOk('https://someone.itch.io/thornroad'), true);
   const src = readFileSync(new URL('../src/demo-end.js', import.meta.url), 'utf8');
   assert.ok(src.includes('b.disabled = true') && src.includes('CFG.SOON_BTN') && src.includes("window.open(u, '_blank', 'noopener,noreferrer')"), 'blank: a shut COMING SOON button; set: opens noopener');
   assert.ok(src.includes('KEEP YOUR PROGRESS') && src.includes('H.keep()') && src.includes('H.feedback()') && src.includes('H.credits()'), 'KEEP YOUR PROGRESS / GIVE FEEDBACK / CREDITS are still wired');
   assert.ok(!/<img|\.png|\.jpg|fetch\(/.test(readFileSync(new URL('../src/demo-teaser.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')), 'the vignettes ship as code: no image file, no fetch');
-  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button shut + blank-safe until FOLLOW_URL is an https address'); }
+  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button live (FOLLOW_URL = the itch page), refuses non-https'); }
 /* ---- NAMES ---- */
 const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'src/demo-teaser.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;
