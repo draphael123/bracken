@@ -67,6 +67,16 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   terrain through save, load and undo; `MUI.applySettings` lays them over the background's own in `edLevelObj`.
 - `tools/maker-settings.mjs` (in the suite): every background, time and weather plays; the music plays; save/load.
 
+## Done (2026-11-09, step 5: Daniel's three bugs)
+- "The terrain moves oddly when I place things": resolveTiles threw ONE dice stream left to right, so an edit changed every
+  roll after it and the dressing to the right reshuffled; and resolveTiles empties decor, but only a level load called
+  placeLandmarks, so the big oak / beehives vanished on the first click. Now (made-by-hand woods only) each tile is seeded
+  by its cell, landmarks keep their spot in `L.lmKeep` (shared editor <-> play) and come back after every paint.
+- "Slopes don't load": `SLOPES_ON` was only set in loadLevel, so the editor never drew slopes. edMount/edSetTile set it.
+- "Only one tile texture": GROUND MATERIALS - grass, cobble, shore rock, reef rock, city stone, castle stone, ship deck.
+  `doc.mat` -> `L.mat`; resolveTiles reads the cell's material as the place whose skin it wears (`MAT_SET`).
+- `tools/maker-paint.mjs` (in the suite). skins + ground-depth still green (real levels draw as before).
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and

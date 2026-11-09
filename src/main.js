@@ -1411,13 +1411,19 @@ function resolveTiles() {
     : inZones(L.masonry, x, y) ? LEDGE_SETS.ruinLedge
     : inZones(L.rockZones, x, y) ? LEDGE_SETS.rockShelf
     : LEDGE_SETS.sandLip;
-  const rnd = mulberry(7);
+  let rnd = mulberry(7);   /* (claude/maker) a made-by-hand wood re-seeds per tile below */
   const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
   /* A FLOOR'S OWN GROUND (L.groundZones: THE HANGING VILLAGE's seven floors and its hollow, by tile row) wins over the level's redress */
   const zoneG = L.groundZones ? (y => { const z = L.groundZones.find(q => y >= q.y0 && y <= q.y1); return z ? HV.hvGround(z.look) : null; }) : () => null;   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
+    /* (claude/maker) IN A MADE-BY-HAND WOOD EACH TILE THROWS ITS OWN DICE. One stream read left to right meant painting one tile
+       changed how many rolls came before every tile after it, so all the dressing (trees, fences, tufts) to its right reshuffled
+       on every click (Daniel: "the terrain moves oddly when I try placing things"). Seeded by the cell, an edit only moves its own. */
+    if (L.custom) rnd = mulberry(((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0);
+    /* (claude/maker) GROUND MATERIALS: a cell painted COBBLE / SHORE ROCK / ... is drawn as if the place were that one (MAT_SET) */
+    const MATS = L.mat ? L.mat[y * LW + x] : undefined, PSET = MATS ? MAT_SET[MATS] : (L.palette && L.palette.set);
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.fenroad && L.sagCells && t !== T.SOLID && (L.sagSetI || (L.sagSetI = new Set(L.sagCells.map(([sx, sy]) => sy * LW + sx)))).has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/fenroad) a bowed section's / crew gap's boards are drawn by src/fen-road-hands.js */
     if (L.fenroad && (t === T.SOLID || t === T.PLANK || t === T.ONEWAY)) { const ts = FRA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/fenroadart) THE FEN ROAD's kit: sound boards, stilt decks, driven piles, lashed log cribs, the peat cutting (src/redraw/fen_road_art.js) */
@@ -1442,12 +1448,12 @@ function resolveTiles() {
     if (L.minecart && (t === T.SOLID || t === T.RAIL || t === T.ONEWAY || t === T.SPIKE || isSlope(t))) { const ts = MCT.mineTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE DEEP RAILS' tile kit (claude/minecartart, src/redraw/minecart_tiles.js): the rail bed, shored rock, ragged roofs, ore-veined mass, the trestle deck */
     if ((L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
-    const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
-    const villT = L.palette && L.palette.set === 'village' && VILL;
+    const shore = PSET === 'shore' && SHORE, reefT = PSET === 'reef' && REEF, shipT = ((PSET === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = PSET === 'city' && CITY;
+    const villT = PSET === 'village' && VILL;
     /* LAID STONE. A level can mark the rectangles the masons built (L.masonry, in tiles): rock in them is drawn as coursed
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
-    const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk || L.masonryKit === 'limestone' ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* STORMHOLD's walls are the town's own limestone, not the Queen's granite next door (F6) */   /* the monks laid warm limestone; the Queen laid granite */
+    const crownT = MATS === 'masonry' ? CROWN : MATS ? null : CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk || L.masonryKit === 'limestone' ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* STORMHOLD's walls are the town's own limestone, not the Queen's granite next door (F6) */   /* the monks laid warm limestone; the Queen laid granite */
     const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
@@ -29030,7 +29036,12 @@ function placeLandmarks() {
   const roof = (x, y) => (L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0);
   const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = !roof(x, y); for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
   const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
-  const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
+  /* (claude/maker) A MADE-BY-HAND WOOD'S LANDMARKS STAY PUT: each keeps its spot (L.lmKeep, shared by the editor and play) while
+     that spot is still open flat ground. Picked afresh, they jumped every time an edit changed the list of flats (the big oak
+     by the start vanished when a block went down at the other end). */
+  const keep = L.custom ? (L.lmKeep || (L.lmKeep = [])) : null; let slot = 0;
+  const stillFlat = f => !!f && flats.some(q => q[0] === f[0] && q[1] === f[1]) && used.every(u => Math.abs(u[0] - f[0]) > 40);
+  const put = (c, dx, dy, extra = {}) => { const k = slot++; let f; if (keep && stillFlat(keep[k])) { f = keep[k]; used.push(f); } else { f = pick(); if (keep) keep[k] = f; } if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
   const lmId = curId(), lmPut = ([n, i, dx]) => put(i < 0 ? PROP[n] : PROP[n][i], dx, 0);   /* (src/landmarks.js: the village set is Waymeet's alone; Kingswood's court has no beehives or birdhouses) */
   if (dress === 'wood') for (const e of woodLandmarks(lmId)) lmPut(e);
   if (dress === 'marsh') { put(PROP.fishTrap[0], 12, 0); put(PROP.fishTrap[1], 44, 0); put(PROP.lanternPost, 24, 0); put(PROP.birdhouse, 60, 0); }
@@ -37166,7 +37177,8 @@ function edThemeList() {
   return edThemes;
 }
 
-const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;   /* (claude/maker) the lists live in src/maker-palette.js */
+const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;
+const MAT_SET = { grass: '-', cobble: 'village', shore: 'shore', reef: 'reef', city: 'city', deck: 'ship', masonry: '-' };   /* (claude/maker) a ground material -> the place whose skin it wears (resolveTiles) */   /* (claude/maker) the lists live in src/maker-palette.js */
 const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER', 'LINK'];   /* (claude/maker) LINK: a lever or a plate, then the door it opens */
 const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
 const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES.map(MKP.nameOf) : c === 2 ? ED_THINGS.map(MKP.thingName) : ED_TOOLS;
@@ -37186,7 +37198,7 @@ function edLevelObj(doc, copy) {
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
     ents: copy ? MKP.engineEnts(doc) : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
     START: { x: doc.start.x, y: doc.start.y },
-    pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc),   /* (claude/maker) THE MAKER's water and crumbling ledges */
+    pools: MKP.enginePools(doc), crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),   /* (claude/maker) THE MAKER's water and crumbling ledges */
     falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
     night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
@@ -37200,7 +37212,7 @@ function edMount(rebake) {
   L = edLevelObj(edDoc, false); LW = L.W; LH = L.H;
   if (rebake) bakeAll(L.palette || {});
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set();
-  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); resolveTiles(); retireBakes();
+  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); SLOPES_ON = levelHasSlopes(L.grid); resolveTiles();   /* (claude/maker) the editor draws slopes: loadLevel was the only place this was set */ retireBakes();
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
   edRespawn();
 }
@@ -37250,7 +37262,7 @@ function edSave(i) {
 }
 function edLoad(i) {
   try { const raw = localStorage.getItem(ED_KEY(i)); if (!raw) return null; const d = JSON.parse(raw);
-    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 }, crumble: d.crumble || [], water: d.water || [], music: d.music || null, time: d.time || null, weather: d.weather || null }; }
+    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 }, crumble: d.crumble || [], water: d.water || [], mat: d.mat || {}, music: d.music || null, time: d.time || null, weather: d.weather || null }; }
   catch (err) { return null; }
 }
 function edResize(dw) {
@@ -37282,7 +37294,7 @@ function edPlace(tx, ty, erase) {
   if (t === 'firepit') { e.period = 3.2; e.on = 1.4; }
   L.ents.push(e); if (MKP.afterPlace(edDoc, e)) edMount(false); else edRespawn();   /* (claude/maker) a locked gate builds its bars */
 }
-function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; resolveTiles(); }
+function edSetTile(tx, ty, v) { const i = ty * LW + tx; L.mat = MKP.engineMat(edDoc); if (L.grid[i] === v && !L.mat) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; SLOPES_ON = levelHasSlopes(L.grid); resolveTiles(); placeLandmarks(); }   /* (claude/maker) slopes drawn in the editor too; a material repaint of the same tile redraws; the landmarks (the big oak, the beehives) come back to their kept spots - resolveTiles empties decor and only a level load put them back */
 
 // ---- input ----
 function edKey(k, ev) {
@@ -38134,7 +38146,7 @@ partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('maker')) edEnter();
 /* (claude/maker) the maker's test handle: tools/maker-sweep.mjs builds one-foe woods through it */
-window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
+window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), place: (tx, ty, erase) => { edPush(); edPainted = null; edPlace(tx, ty, !!erase); }, spr: (tx, ty) => tileSpr[ty * LW + tx], get decor() { return decor; }, get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
 rafQueued = true; requestAnimationFrame(frame);

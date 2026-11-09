@@ -11,7 +11,12 @@ import { T } from './level.js';
 import { SLOPE } from './slopes.js';
 
 export const TILES = [
-  ['ERASE', T.AIR], ['STONE', T.SOLID], ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
+  ['ERASE', T.AIR], ["GROUND (THE BACKGROUND'S OWN)", T.SOLID],
+  // GROUND MATERIALS (Daniel 2026-11-09: "why do we only have one tile texture"): solid ground drawn in another place's
+  // own skin, so one level can mix them. doc.mat marks the cell; resolveTiles reads L.mat (made-by-hand woods only).
+  ['GRASS GROUND', 'mat:grass'], ['COBBLE', 'mat:cobble'], ['SHORE ROCK', 'mat:shore'], ['REEF ROCK', 'mat:reef'],
+  ['CITY STONE', 'mat:city'], ['CASTLE STONE', 'mat:masonry'], ['SHIP DECK', 'mat:deck'],
+  ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
   ['SLOPE UP', SLOPE.R1], ['SLOPE DOWN', SLOPE.L1],
   ['GENTLE UP 1', SLOPE.R2A], ['GENTLE UP 2', SLOPE.R2B], ['GENTLE DOWN 1', SLOPE.L2B], ['GENTLE DOWN 2', SLOPE.L2A],
   ['PLANK', T.PLANK], ['ROPE LADDER', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
@@ -134,20 +139,23 @@ const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
 // (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), music: doc.music || null, time: doc.time || null, weather: doc.weather || null });
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null });
 export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
-  doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
+  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
-  const key = tx + ',' + ty, cr = doc.crumble || (doc.crumble = []);
+  const key = tx + ',' + ty, cr = doc.crumble || (doc.crumble = []), mat = doc.mat || (doc.mat = {});
   const i = cr.indexOf(key); if (i >= 0) cr.splice(i, 1);
+  delete mat[key];
+  if (isStr(entry[1]) && entry[1].startsWith('mat:')) { mat[key] = entry[1].slice(4); return T.SOLID; }
   if (entry[1] === 'crumble') { cr.push(key); return T.ONEWAY; }
   return isStr(entry[1]) ? T.AIR : entry[1];
 }
 // right-click: a crumble mark goes with its tile; a click inside water takes the whole pool away. True if water went.
 export function terrainErase(doc, tx, ty) {
   const cr = doc.crumble || [], i = cr.indexOf(tx + ',' + ty); if (i >= 0) cr.splice(i, 1);
+  if (doc.mat) delete doc.mat[tx + ',' + ty];
   const w = doc.water || [], j = w.findIndex(r => tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1);
   if (j >= 0) { w.splice(j, 1); return true; }
   return false;
@@ -155,6 +163,7 @@ export function terrainErase(doc, tx, ty) {
 export function clipTerrain(doc) {
   doc.crumble = (doc.crumble || []).filter(k => +k.split(',')[0] < doc.W - 1);
   doc.water = (doc.water || []).filter(r => r.x0 < doc.W - 1).map(r => ({ ...r, x1: Math.min(r.x1, doc.W - 2) }));
+  for (const k of Object.keys(doc.mat || {})) if (+k.split(',')[0] >= doc.W - 1) delete doc.mat[k];
 }
 
 // ---- the rectangle brush (water): press at one corner, release at the other ----
@@ -172,6 +181,7 @@ export function rectEnd(doc, cur, entry) {
   doc.water.push(w);
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) doc.grid[y * doc.W + x] = 0;   // water is air you can be in
   doc.crumble = (doc.crumble || []).filter(k => { const [x, y] = k.split(',').map(Number); return x < x0 || x > x1 || y < y0 || y > y1; });
+  for (const k of Object.keys(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (x >= x0 && x <= x1 && y >= y0 && y <= y1) delete doc.mat[k]; }
   return w;
 }
 
@@ -252,4 +262,13 @@ export function drawLinks(g, doc, cx, cy, t) {
     g.strokeRect(col * TS - cx + 0.5, ys[0] * TS - cy + 0.5, TS - 1, ys.length * TS - 1);
     g.fillStyle = col0; g.fillRect(Math.round(x0) - 2, Math.round(y0) - 2, 4, 4); g.fillRect(Math.round(x1) - 2, Math.round(y1) - 2, 4, 4); g.restore();
   }
+}
+
+// ================= GROUND MATERIALS: what the game reads =================
+// L.mat[index] = 'cobble' | 'shore' | ... for the cells painted in a material; resolveTiles draws that cell as if the level's
+// place were that one (src/main.js MAT_SET), so every skin's own top, edge and fill pieces are used as they are.
+export function engineMat(doc) {
+  const out = {}; let any = false;
+  for (const [k, m] of Object.entries(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.SOLID) { out[y * doc.W + x] = m; any = true; } }
+  return any ? out : null;
 }

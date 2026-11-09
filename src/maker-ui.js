@@ -13,8 +13,8 @@ const thingIdx = ids => ids.map(id => THINGS.indexOf(id)).filter(i => i >= 0);
 const MECH = ['lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone', 'pushblock', 'mover', 'mover:up'];
 const HAZ = ['crusher', 'firevent', 'roller', 'rockfall', 'vent', 'firepit'];
 export const GROUPS = [
-  { name: 'GROUND', cat: 0, idx: tileIdx(v => typeof v === 'number' && !isSlopeId(v)) },
-  { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || typeof v === 'string') },
+  { name: 'GROUND', cat: 0, idx: tileIdx(v => (typeof v === 'number' && !isSlopeId(v)) || (typeof v === 'string' && v.startsWith('mat:'))) },
+  { name: 'SLOPES & WATER', cat: 0, idx: tileIdx(v => isSlopeId(v) || (typeof v === 'string' && !v.startsWith('mat:'))) },
   { name: 'ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => !WATER_FOES.includes(t)).map(([, i]) => i) },
   { name: 'WATER ENEMIES', cat: 1, idx: FOES.map((t, i) => [t, i]).filter(([t]) => WATER_FOES.includes(t)).map(([, i]) => i) },
   { name: 'ITEMS', cat: 2, idx: THINGS.map((t, i) => [t, i]).filter(([t]) => !MECH.includes(t) && !HAZ.includes(t)).map(([, i]) => i) },
@@ -52,7 +52,14 @@ const prettyTrack = k => k ? String(k).replace(/^mus/, '').replace(/([a-z])([A-Z
 function tileIcon(g, id, x, y) {   // 16x16 at (x, y)
   const R = (c, a, b, w, h) => { g.fillStyle = c; g.fillRect(x + a, y + b, w, h); };
   if (id === T.AIR) { g.strokeStyle = '#ff7a6a'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 3, y + 3); g.lineTo(x + 13, y + 13); g.moveTo(x + 13, y + 3); g.lineTo(x + 3, y + 13); g.stroke(); return; }
-  if (id === T.SOLID) { R('#7a5230', 0, 3, 16, 13); R('#5aa33e', 0, 0, 16, 4); R('#8fd160', 0, 0, 16, 1); return; }
+  if (id === T.SOLID) { R('#7a5230', 0, 3, 16, 13); R('#5aa33e', 0, 0, 16, 4); R('#8fd160', 0, 0, 16, 1); R('#ffffff', 12, 9, 2, 2); return; }
+  if (typeof id === 'string' && id.startsWith('mat:')) { const m = id.slice(4);
+    const P = { grass: ['#7a5230', '#5aa33e'], cobble: ['#7d7a74', '#9a968c'], shore: ['#b49a72', '#d8c49a'], reef: ['#3f7a78', '#6fb0a0'], city: ['#4a4a58', '#6a6a7a'], masonry: ['#8b8378', '#b3aca0'], deck: ['#8a5a32', '#a8743f'] }[m] || ['#888', '#aaa'];
+    R(P[0], 0, 0, 16, 16); R(P[1], 0, 0, 16, 3);
+    if (m === 'cobble' || m === 'masonry' || m === 'city') { for (let k = 5; k < 16; k += 5) R('rgba(0,0,0,0.35)', 0, k, 16, 1); for (let k = 0; k < 3; k++) R('rgba(0,0,0,0.35)', 3 + k * 5 + (k % 2) * 2, 4 + k * 5, 1, 5); }
+    if (m === 'deck') for (let k = 3; k < 16; k += 4) R('#5c3a1d', 0, k, 16, 1);
+    if (m === 'reef') { R('#e8a0b0', 4, 6, 2, 2); R('#f0d080', 10, 10, 2, 2); }
+    return; }
   if (id === T.ONEWAY || id === 'crumble') { R('#8a5a32', 0, 3, 16, 4); R('#a8743f', 0, 3, 16, 1); if (id === 'crumble') { R('#ffb36b', 4, 4, 1, 3); R('#ffb36b', 10, 3, 1, 3); R('#5c3a1d', 6, 9, 2, 2); R('#5c3a1d', 11, 11, 2, 2); } return; }
   if (id === T.SPIKE) { for (let k = 0; k < 4; k++) { g.fillStyle = '#e8e0c8'; g.beginPath(); g.moveTo(x + k * 4, y + 15); g.lineTo(x + k * 4 + 2, y + 6); g.lineTo(x + k * 4 + 4, y + 15); g.fill(); } return; }
   if (id === T.CRATE) { R('#8a5a32', 1, 1, 14, 14); R('#5c3a1d', 1, 7, 14, 1); R('#5c3a1d', 7, 1, 1, 14); return; }
