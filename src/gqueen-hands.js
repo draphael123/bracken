@@ -12,6 +12,7 @@ export const GQ3 = {
 };
 GQ3.hp2 = 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
 GQ3.flee = { tell: 1.6 };
+GQ3.fled = { kneel: 0.8, slam: 1.0, back: 0.8, hold: 0.25 };   /* (gq3 item 1) P2's bar empties: she KNEELS (beaten, crown clutched), slams her sceptre, a ROYAL PORTAL opens behind her, she backs into it and it snaps shut - she ESCAPES, no corpse (PROG.gqFled) */
 GQ3.roof = { crownCd: 6, portalCd: 8, lashTell: 0.7, lashReach: 120, lashDmg: 18, lashCd: 2.4, ambushTell: 0.8, ambushCd: 9, ambushDmg: 15, geyserTell: 0.9, geyserN: 5, geyserGap: 0.25, geyserStep: 20, geyserDmg: 16, geyserCd: 7,
   leapCd: 5, orbitR: 40, orbitTurn: 1.2, orbitDmg: 12, orbitHit: 0.8, stormStun: 4.0, stormHp: 0.06, stormRegrow: 12, portalBelow: 0.6, stormBelow: 0.3, addAt: [0.66, 0.33], hatch: 0.8 };
 GQ3.esc = { fire: 3, fireEvery: 0.8, push: 150, fan: 4.5, cue: 0.5, collapse: 0.6, relay: 6, slate: 0.5, slateRelay: 5, step: 0.5, shardDmg: 4 };
@@ -97,6 +98,7 @@ export function makeGQueenHands(ctx) {
     ctx.number(P0.x, P0.y - 40, GQ_SAY.healed, '#8fd160'); sfx('heal');
   }
   H.spare = e => {
+    if (S && e && e.t === 'gqueen' && e.stage === 'roof') { fledBegin(e); return true; }   /* (gq3 item 1) the tower top's bar empties: she does not die, she ESCAPES */
     if (!S || !e || e.t !== 'gqueen' || (e.stage && e.stage !== 'hall')) return false;
     const P0 = ctx.P();
     e.maxHp2 = G.hp2; e.maxHp = G.hp2; e.hp = G.hp2; e.stage = 'flee'; e.phase = 3; e.mode = 'fleeTell'; e.modeT = G.flee.tell; e.vx = 0; e.crownOut = false; e.alive = true; e.dying = 0; e.open = 0; e.stagger = 0;
@@ -110,9 +112,31 @@ export function makeGQueenHands(ctx) {
     startEscape(false);
     return true;
   };
+  /* ---------------- (gq3 item 1) THE QUEEN ESCAPES ---------------- */
+  function fledBegin(e) {
+    e.hp = 1; e.stage = 'fled'; e.mode = 'fledKneel'; e.modeT = G.fled.kneel; e.vx = 0; e.vy = 0; e.crownOut = false; e.open = 0; e.alpha = 1; e.alive = true;
+    S.crown = null; S.rocks = []; S.portals = []; S.cast = null; if (S.roof) { S.roof.storm = null; S.roof.geysers = []; S.roof.hatch = null; }
+    S.fled = { t0: now(), px: e.x - (e.face || 1) * 44, py: e.y - 18, open: 0, snap: 0 };
+    for (const q2 of ctx.enemies()) if (q2.alive && q2 !== e && !q2.mini && q2.hp > 0 && Math.abs(q2.x - e.x) < 700) { q2.alive = false; ctx.burst(q2.x, q2.y - 8, 8, ['#5a2a7a', '#e0b040', '#b28cff'], 60, 0.5); }   /* her roof guards burst away */
+    ctx.number(e.x, e.y - e.h - 30, 'SHE FALLS TO HER KNEES', '#ffd36b'); sfx('bellow'); ctx.shake(6); ctx.zoom(1.1, 0.5);
+    musicLift(0);
+  }
+  function fledStep(e, dt) {
+    const F0 = S.fled, tt = now(), K = G.fled; e.modeT -= dt; e.anim += dt; e.vx = 0;
+    if (e.mode === 'fledKneel') { if (e.modeT <= 0) { e.mode = 'fledSlam'; e.modeT = K.slam; F0.open = 0.01; sfx('portalOpen'); sfx('forgeHammer'); ctx.shake(7); ctx.number(F0.px, F0.py - 30, 'HER SCEPTRE SLAMS: A PORTAL OPENS', '#b28cff'); } }
+    else if (e.mode === 'fledSlam') { F0.open = Math.min(1, 1 - e.modeT / K.slam); if (Math.random() < dt * 40) ctx.part({ x: F0.px + (Math.random() - 0.5) * 14, y: F0.py + (Math.random() - 0.5) * 30, vx: 0, vy: -24, life: 0.4, max: 0.4, col: '#b28cff', size: 2, grav: 0, glow: true });
+      if (e.modeT <= 0) { e.mode = 'fledBack'; e.modeT = K.back; F0.from = e.x; e.face = sign(F0.px - e.x) || e.face; } }
+    else if (e.mode === 'fledBack') { const k = Math.max(0, Math.min(1, 1 - e.modeT / K.back)); e.x = F0.from + (F0.px - F0.from) * k; e.alpha = 1 - 0.8 * k; F0.open = 1;
+      if (e.modeT <= 0) { e.mode = 'fledSnap'; e.modeT = K.hold; F0.snap = 1; e.alpha = 0; e.hidden = true; ctx.burst(F0.px, F0.py, 22, ['#b28cff', '#e8dcff', '#2a1a3a', '#e0b040'], 110, 0.7); sfx('portalOpen'); sfx('callerBlast'); ctx.ring(F0.px, F0.py, 30, '#e8dcff', 0.4); ctx.shake(8); } }
+    else if (e.mode === 'fledSnap') { F0.open = Math.max(0, e.modeT / K.hold);
+      if (e.modeT <= 0) { e.mode = 'gone'; e.stage = 'fledDone'; e.gqFled = true; e.hp = 0; e.alpha = 1; F0.open = 0; ctx.hurt(e, 1, e.x); } }   /* the ordinary death path, no body (main.js spawnCorpse skips a fled queen): alive=false, kills++, xpKill, beastSlain, the fight ends, THE QUEEN HAS FLED */
+  }
+  H.fled = () => !!(S && S.fled);
   /* her frame while she is not the hall's: the flee (a quiet tell, then through her portal), then nothing (hidden). main.js asks first; true = it ran her frame */
   H.step = (e, dt) => {
     if (!S) return false;
+    if (e.stage === 'fled') { fledStep(e, dt); return true; }
+    if (e.stage === 'fledDone') return true;
     if (e.stage === 'flee') {
       e.modeT -= dt; e.anim += dt; e.vx = 0; e.hidden = false;
       if (!S.fleeP) S.fleeP = { x: e.x + 40, y: e.y - 20, t0: now() };
@@ -674,6 +698,7 @@ export function makeGQueenHands(ctx) {
       if (e0 && e0.mode === 'ambushTell') portalDraw(g, R0.ambushX - cx, RA.floor - 14 - cy, t, 1 - e0.modeT / G.roof.ambushTell, '#c9a0ff');
       if (R0.storm && R0.storm.x !== undefined) { const x = Math.round(R0.storm.x - cx), y = Math.round(R0.storm.y - cy); g.fillStyle = '#e0b040'; g.fillRect(x - 5, y, 10, 3); g.beginPath(); g.moveTo(x - 5, y); g.lineTo(x - 5, y - 4); g.lineTo(x - 2, y - 1); g.lineTo(x, y - 5); g.lineTo(x + 2, y - 1); g.lineTo(x + 5, y - 4); g.lineTo(x + 5, y); g.fill(); }
     }
+    if (S.fled && S.fled.open > 0) portalDraw(g, S.fled.px - cx, S.fled.py - cy, t, S.fled.open * 1.4, '#ffd36b');   /* (gq3 item 1 GREYBOX) the ROYAL PORTAL: GQ3ART draws it (48 px: open x3, idle x4, snap x2) */
     const e = q();
     if (e && e.mode === 'stunned') { for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.09; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 16), Math.round(e.y - 64 - cy + Math.sin(a) * 4), 2, 2); } }
     if (e && e.mode === 'crownTossTell') { const k = 0.5 + 0.5 * Math.sin(t * 30); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(e.x - cx + e.face * 6) - 1, Math.round(e.y - 60 - cy), 3, 3); g.globalAlpha = 1; }

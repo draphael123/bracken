@@ -4453,7 +4453,7 @@ function sprinkleCoins(L) {
   return L;
 }
 // ============================================================================================
-// LEVEL 12 - THE LONG WATER. Three days after the Queen fell, the melt off Highcrown began to run salt. The goblins paid
+// LEVEL 12 - THE LONG WATER. Three days after the Queen fled, the melt off Highcrown began to run salt. The goblins paid
 // the deep a tribute for a hundred years to keep it asleep; the tribute has stopped, and the sea is coming inland to
 // collect. Down the mountain's back face on the falls, down the river on the Ferryman's raft with the Bore coming up it,
 // into SALTREACH at the river mouth, where the Tidebound are walking up the streets - and the Tide Herald is waiting in
