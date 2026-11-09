@@ -9260,7 +9260,7 @@ function greedHit(e, fromX, blow) {
       PROG.chipTold = (PROG.chipTold || 0) + 1; if (PROG.chipTold <= 2) { hintSay('reminder', 4.5, 'A CLANK OR A SCRATCH MEANS THE WRONG BLOW. GO ROUND, OR HIT HIM IN HIS OPENING.'); } } } }
   if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
-function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gqueen' && e.stage === 'fled') return;   /* (gq3 item 1) kneeling, slamming, backing into her portal: nothing lands (a finish, not a guard) */ const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
+function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gqueen' && (e.stage === 'fled' || e.stage === 'escape')) return;   /* (gq3 items 1, 6) kneeling, slamming, backing into her royal portal - or seen ahead in the burning tower: nothing lands. (gq3 item 1) kneeling, slamming, backing into her portal: nothing lands (a finish, not a guard) */ const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
   if(e.t==='magechase')return;
   if (e.t === 'shrieksister') { if (SSH) SSH.hit(e, dmg, fromX, pl); return; }   /* (claude/rookery) A SISTER takes her own blow (B15: ON THE WING 0.4, low whole, STUNNED x2 capped, WARDED 0.4) - src/shriek-sisters.js */
   if (e.t === 'shrieksisters') { if (!e.ssPass && !e.passThrough) return; e.ssPass = false; e.passThrough = false; }   /* THE ANCHOR: no blade reaches it; the last sister's fall is handed through so it dies the way every boss does */
@@ -23219,7 +23219,7 @@ function gqRegrow(pr) { const A = L.arena, G = A && A.gallery; if (!G) return;
   for (let x = pr.sx0; x <= pr.sx1; x++) parts.push({ x: x * TS + 8, y: G.row * TS + 6, vx: 0, vy: -24, life: 0.6, max: 0.6, col: '#c9b27c', size: 2, grav: 0 }); }
 /* (claude/gqueen3) THE ESCAPE'S LAYOUT, laid at the flee (and again on a retry): the hole through her hall's roof opens, and the burning rafters (L.gqEscape.tiers, src/highcrown2.js) are laid as one-ways. Everything taken goes
    in arena.taken, everything laid in arena.laid: resetCastle puts the hall back as it was. */
-function gqEscapeLay() { const A = L.arena, E = L.gqEscape; if (!A || !E || A.escLaid) return; A.escLaid = true;
+function gqEscapeLay() { const A = L.arena, E = L.gqEscape; if (!A || !E || A.escLaid) return; A.escLaid = true; if (E.tower) return;   /* (gq3 items 6 + 7) the burning-HALL climb is retired: no hole in her roof, no rafters; her flee portal stays open in the hall and takes you to the tower */
   const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []), H0 = A.hole;
   if (H0) for (let ty = H0.y0; ty <= H0.y1; ty++) for (let tx = H0.x0; tx <= H0.x1; tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.AIR) { if (!keep.has(i)) keep.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
   for (const t of E.tiers) for (let x = t.x0; x <= t.x1; x++) { const i = t.row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; grid0[i] = T.ONEWAY; tileSpr[i] = null; laid.push(i); } }

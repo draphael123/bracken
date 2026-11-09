@@ -798,15 +798,18 @@ export function parryShot(BK, h, q, force) {   /* force: the page tool (tools/gq
   P.face = Math.sign(q.x - P.x) || P.face; k.left = k.right = false;
   return parryAt(BK, h, tti);
 }
-/* the escape up her burning hall: the table's route (L.gqEscape.route, tile stand-spots), a jump whenever the next spot is higher or the tile ahead is air; the portal is the last spot */
+/* (gq3) THE BURNING TOWER, as a player climbs it: walk into her portal in the hall, then per storey walk to its stairwell's ladder (L.gqEscape.tower.LADDERS, then the hatch's) and hold UP on it; on the deck walk past the roof shrine.
+   (the hall climb's route table is retired.) */
 function gqEscapeBot(BK, P, k) {
-  const E = BK.L && BK.L.gqEscape; if (!E) return null;
-  let i = P.labGqWp || 0; const R = E.route.concat([[E.portal.x, E.portal.y]]);
-  while (i < R.length - 1 && Math.abs(P.x - (R[i][0] * 16 + 8)) < 12 && Math.abs(P.y - (R[i][1] + 1) * 16) < 16) i++;
-  P.labGqWp = i; const wx = R[i][0] * 16 + 8, wy = (R[i][1] + 1) * 16, dir = Math.sign(wx - P.x) || 1;
-  const aheadAir = BK.L.grid[Math.floor((P.y + 2) / 16) * BK.L.W + Math.floor((P.x + dir * 12) / 16)] === 0;
-  if (P.ground && !(P.labJump > 0) && (wy < P.y - 6 || aheadAir) && Math.abs(P.x - wx) < 70) { BK.press('jump'); P.labJump = 10; }
-  return { goal: wx, strike: false };
+  const E = BK.L && BK.L.gqEscape; if (!E || !E.tower) return null;
+  const Tw = E.tower, rd = BK.gqHands() ? BK.gqHands().read() : null, inT = !!(rd && rd.esc && rd.esc.inTower);
+  if (!inT) { const px = E.portal.x * 16 + 8; k.left = k.right = false; return { goal: px, strike: false }; }
+  let s = -1; if (P.y < 22 * 16) s = 5; else for (let i = 0; i < Tw.FLOORS.length; i++) if (P.y > (Tw.FLOORS[i] - 12) * 16 && P.y <= Tw.FLOORS[i] * 16 + 2) { s = i; break; }
+  let goal = P.x, up = false;
+  if (s >= 0 && s < 4) { goal = Tw.LADDERS[s][0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
+  else if (s === 4) { goal = Tw.HATCH.ladder[0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
+  else if (s === 5) goal = (Tw.FOLLOW.begin + 3) * 16;
+  k.up = up; return { goal, strike: false };
 }
 /* her P1 hall and her tower top, as a player reads them. Returns { goal, strike } to take the frame, or null (the rest of the chain: her quake's jump, the open branch, the bell, the hunt) */
 function gqueenReact(BK, boss, P, k, A, h) {

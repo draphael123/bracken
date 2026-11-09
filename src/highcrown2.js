@@ -21,6 +21,7 @@
                                out on the stair side of it. The kitchen floor is gone (the Kitchen Gate owns the kitchens now).
                             THE CHAPEL (rows 10-19, as it was), then the Captains Hall, the Banquet Hall, the Leads and HER HALL (as they were). */
 import { gobgeoLay } from './gobgeo-level.js';   /* (claude/gobgeo) */
+import { towerLay } from './gq3-tower.js';   /* (claude/gq3) THE BURNING TOWER + the 60-column tower top */
 import { queenStairLay } from './queen-stair.js';   /* (claude/gq3) THE QUEEN'S STAIR, between the Princess's tower and her terrace */
 export const HC2 = {
   START: { x: 8, y: 63 },
@@ -363,5 +364,6 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
     { x0: B.W2[0] * TS, x1: B.W2[1] * TS, y0: 8 * TS, y1: (S + 7) * TS, dir: -1, period: 5.5, on: 1.8, phase: 2, told: true }]);   /* headwind gusts, told (crosswind on the walk, stronger over the broken stretch) */
   R.hc3 = true;
   gobgeoLay(R, { T, TS });   /* (claude/gobgeo) THE GOBLIN GEOMANCER's rooms, laid on these columns (src/gobgeo-level.js) */
-  return queenStairLay(R, { T, TS, insertColumns });   /* (claude/gq3) LAST: 64 columns opened at 652 (the Queen's Stair, src/queen-stair.js); her terrace, hall, escape and tower top slide east whole */
+  queenStairLay(R, { T, TS, insertColumns });
+  return towerLay(R, { T, TS });   /* (claude/gq3) the burning tower under the tower-top deck, the deck 60 columns wide (src/gq3-tower.js) */   /* (claude/gq3) LAST: 64 columns opened at 652 (the Queen's Stair, src/queen-stair.js); her terrace, hall, escape and tower top slide east whole */
 }
