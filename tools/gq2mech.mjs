@@ -1,7 +1,7 @@
 // tools/gq2mech.mjs - THE GOBLIN QUEEN 2's HIGHCROWN MECHANICS, THE NODE HALF (claude/gq2mech). No page, no browser.
-//   BELL   a blow on the hall bell (any seat) -> she STORMS to the sound -> 0.9 s tell under the grate -> the grate drops -> PINNED 4 s (x1.35 a blow); 10 s cooldown; a parry on her charge stuns her
+//   BELL   a blow on the hall bell (any seat) -> she STORMS to the sound -> 0.9 s tell under the grate -> the grate drops -> PINNED 3.5 s (x1.1 a blow, at most GQ3.mech.pinCap of her bar a pin); 10 s cooldown; a parry on her charge stuns her
 //   WINCH  at 66 % and 33 % of her hall bar the west gate rises; 3 blows (each inside 2 s of the last, any seat) drop it and keep the guards out; fail and they join
-//   WIRING main.js: the generic bell strike steps aside, the ctx hooks, the x1.35 window, the 0.4 floor untouched, the texts
+//   WIRING main.js: the generic bell strike steps aside, the ctx hooks, the x1.1 window and its cap, the 0.4 floor untouched, the texts
 //   node tools/gq2mech.mjs
 import { readFileSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -129,6 +129,7 @@ console.log('== WIRING (main.js, level.js, gqueen-hands.js)');
   ok(/!\(pr\.bell && pr\.bossGate && GQH && GQH\.on\(\)\)/.test(m), 'the generic bell strike steps aside for her hall bell (the hands own it, every seat)');
   ok(/grate: \(hold, by\) => gqGrateDrop\(hold, by\)/.test(m) && /westGate: open => gqWestGate\(open\)/.test(m) && /attackBox: \(\) => attackBox\(\), bell: \(\) => gqBell\(\)/.test(m) && /pin: \(e, x, by, txt, secs\) => gqPinFor/.test(m), 'GQH ctx: attackBox, bell, grate, pin, westGate');
   ok(/e\.pinBy === 'lure'\) dmg = Math\.round\(dmg \* GQ3\.mech\.pinMul\)/.test(m) && GM.pinMul > 1 && GM.pinMul <= 1.35, 'pinned by the lure: x' + GM.pinMul + ' a blow (GQ3.mech.pinMul: a bigger window than her plate)');   /* (claude/hcqueen) the tune lane's number, read from the hands */
+  ok(/e\.pinBy === 'lure' && dmg > 0\) dmg = gqPinCap\(e, dmg\)/.test(m) && /function gqPinCap\(e, dmg\) \{ const cap = e\.maxHp \* GQ3\.mech\.pinCap/.test(m) && /e\.gqPinTaken = 0;/.test(m) && GM.pinCap >= 0.1 && GM.pinCap <= 0.25, 'one lured pin takes at most ' + GM.pinCap + ' of her bar (on what lands; then she heaves the grate off, never a zero)');   /* (claude/hcqueen) */
   ok(/OUTSIDE AN OPENING her plate turns a blade to 0\.4/.test(m), 'the 0.4x floor outside openings is untouched');
   ok(/RING THE HALL BELL YOURSELF: she storms to the sound/.test(m) && /crank the winch by the west door/.test(m), 'the bestiary text describes the lure and the winch');
   ok(/RING THE HALL BELL: SHE STORMS TO THE SOUND/.test(lv) && /CRANK THE WINCH BY THE DOOR/.test(lv) && /OR RING THE HALL BELL: SHE STORMS TO THE SOUND/.test(m), 'the hall signs and the first-WARDED tip say it');
