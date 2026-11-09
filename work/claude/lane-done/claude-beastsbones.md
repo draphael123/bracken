@@ -1,7 +1,7 @@
 # claude/beastsbones - THE WOLF PAIR + THE BEAR + THE SKELETON SET (code only, ALL FLAGS OFF)
 
 Lane: BEASTSBONES build lane (sonnet), 11-09, unattended. Plan built: `scratch/lane-reports/wolves-plan.md` (opus plan 11-08; Daniel approved 11-08 14:46-14:49), every open question built as its recommendation.
-Branch `claude/beastsbones` off master `85d152eb8`, worktree `C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-beastsbones`. Not merged, not deployed. Pushed.
+Branch `claude/beastsbones` (tip 06f4a54ea + the report-sha commit if any) off master `85d152eb8`, worktree `C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-beastsbones`. Not merged, not deployed. Pushed.
 Status: **PARTIAL** - code complete and node-verified; NOTHING was run in a browser (barred while the release gate owns the RAM), so every in-page behaviour below is unverified.
 
 ## What was built, per foe (numbers are BASE; the act dial multiplies them automatically - see Q2)
