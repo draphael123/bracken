@@ -1,6 +1,13 @@
 [
   {
     "date": "2026-11-08",
+    "batch": 155,
+    "lines": [
+      "New in Settings > Picture: Screen fit (Sharp/Fill) and Resolution."
+    ]
+  },
+  {
+    "date": "2026-11-08",
     "batch": 154,
     "lines": [
       "The title is alive: the heroes walk in to the fire",
