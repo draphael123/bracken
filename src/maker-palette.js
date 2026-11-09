@@ -258,13 +258,29 @@ export function afterPlace(doc, e) {
 // THE LINK TOOL: click a lever or plate, then a DOOR tile
 let linkSrc = null;
 export function linkClick(doc, cur, say) {
+  /* (claude/maker) A BOSS LOCKS THE GOAL only when it is linked to it: click the boss, then the goal gate (again to unlink) */
+  const bossE = doc.ents.find(q => q.x === cur.x && q.y === cur.y && isBoss(q.t));
+  if (bossE) { linkSrc = bossE; say(nameOf(bossE.t) + ': NOW CLICK THE GOAL GATE IT LOCKS'); return; }
+  if (linkSrc && isBoss(linkSrc.t)) { const gt = doc.ents.find(q => q.x === cur.x && q.y === cur.y && q.t === 'gate');
+    if (gt) { linkSrc.lockGoal = !bossLocks(linkSrc); say(bossLocks(linkSrc) ? 'LINKED: THE GOAL STAYS SHUT UNTIL ' + nameOf(linkSrc.t) + ' FALLS' : 'UNLINKED: THE GOAL IS OPEN FROM THE START'); linkSrc = null; return; }
+    say('CLICK THE GOAL GATE (or another boss)'); return; }
   const e = doc.ents.find(q => q.x === cur.x && q.y === cur.y && LINKERS.has(q.t));
   if (e) { linkSrc = e; say((e.t === 'lever' ? 'LEVER' : 'PLATE') + ': NOW CLICK THE DOOR IT OPENS'); return; }
   if (linkSrc && doc.grid[cur.y * doc.W + cur.x] === PORT) { linkSrc.link = cur.x; say('LINKED'); linkSrc = null; return; }
-  say(linkSrc ? 'THAT IS NOT A DOOR TILE: CLICK A DOOR' : 'CLICK A LEVER OR A PRESSURE PLATE FIRST');
+  say(linkSrc ? 'THAT IS NOT A DOOR TILE: CLICK A DOOR' : 'CLICK A LEVER, A PRESSURE PLATE OR A BOSS FIRST');
 }
 // the editor shows every link: a line from the lever / plate to the door column it opens
+/* a boss placed before links existed locked the goal: lockGoal undefined keeps that; a boss placed now starts unlinked (false) */
+export const bossLocks = e => !!e && e.lockGoal !== false;
 export function drawLinks(g, doc, cx, cy, t) {
+  const line = (x0, y0, x1, y1, col) => { g.save(); g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([4, 3]); g.lineDashOffset = -t * 12; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.restore(); };
+  /* (claude/maker) WHAT OPENS WHAT: a key to every gate of its metal; a linked boss to the goal, with a padlock on the gate */
+  const METAL = { brass: '#e8b84a', iron: '#a8b4c0', bone: '#e8e0c8' };
+  for (const k of doc.ents) { if (k.t !== 'key') continue; for (const lg of doc.ents) if (lg.t === 'lockgate' && (lg.needs || 'brass') === (k.kind || 'brass')) line(k.x * TS + 8 - cx, k.y * TS + 8 - cy, lg.x * TS + 8 - cx, lg.y * TS - cy, METAL[k.kind || 'brass'] || '#e8b84a'); }
+  const goal = doc.ents.find(q => q.t === 'gate');
+  for (const b of doc.ents) { if (!isBoss(b.t)) continue; const on = bossLocks(b);
+    if (b === linkSrc || on) { if (goal) line(b.x * TS + 8 - cx, b.y * TS - 8 - cy, goal.x * TS + 8 - cx, goal.y * TS - 8 - cy, b === linkSrc ? '#ffffff' : '#ff6b6b');
+      if (goal && on) { const x = goal.x * TS + 4 - cx, y = goal.y * TS - 30 - cy; g.fillStyle = '#1b1626'; g.fillRect(x - 1, y - 1, 10, 10); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(x + 1.5, y - 2.5, 5, 5); g.fillStyle = '#ff6b6b'; g.fillRect(x, y + 2, 8, 6); } } }
   for (const e of doc.ents) { if (!LINKERS.has(e.t)) continue;
     const col = linkedCol(doc, e), x0 = e.x * TS + 8 - cx, y0 = e.y * TS + 8 - cy;
     if (col === null) { g.fillStyle = '#ff6b6b'; g.fillRect(x0 - 1, y0 - 14, 3, 7); g.fillRect(x0 - 1, y0 - 5, 3, 2); continue; }   /* "!": no door to open */
@@ -283,7 +299,7 @@ export function drawLinks(g, doc, cx, cy, t) {
 // place were that one (src/main.js MAT_SET), so every skin's own top, edge and fill pieces are used as they are.
 export function engineMat(doc) {
   const out = {}; let any = false;
-  if (doc.style) for (let i = 0; i < doc.grid.length; i++) if (doc.grid[i] === T.SOLID) { out[i] = doc.style; any = true; }   /* (claude/maker) the level's STYLE */
+  if (doc.style) for (let i = 0; i < doc.grid.length; i++) { const v = doc.grid[i]; if (v === T.SOLID || (v >= 20 && v <= 25)) { out[i] = doc.style; any = true; } }   /* slopes too: they are cut from the style's own ground */   /* (claude/maker) the level's STYLE */
   for (const [k, m] of Object.entries(doc.mat || {})) { const [x, y] = k.split(',').map(Number); if (doc.grid[y * doc.W + x] === T.SOLID) { out[y * doc.W + x] = m; any = true; } }
   return any ? out : null;
 }
@@ -696,6 +712,14 @@ export function pasteAt(doc, c) {
   pasting = false; sel = { x0: ox, y0: oy, x1: Math.min(doc.W - 2, ox + clip.w - 1), y1: Math.min(doc.H - 1, oy + clip.h - 1) };
   return true;
 }
+export function drawSelInfo(g, doc, cx, cy, text) {
+  if (!sel || selDrag) { if (!sel) return; }
+  let n = 0; for (let y = sel.y0; y <= sel.y1; y++) for (let x = sel.x0; x <= sel.x1; x++) if (doc.grid[y * doc.W + x]) n++;
+  const ins = doc.ents.filter(e => e.x >= sel.x0 && e.x <= sel.x1 && e.y >= sel.y0 && e.y <= sel.y1);
+  g.save(); g.strokeStyle = '#8fd1ff'; g.lineWidth = 1; for (const e of ins) g.strokeRect(e.x * TS - cx + 1.5, e.y * TS - cy + 1.5, TS - 3, TS - 3); g.restore();
+  const s0 = n + (n === 1 ? ' TILE, ' : ' TILES, ') + ins.length + (ins.length === 1 ? ' PIECE' : ' PIECES') + (selDrag ? '' : '   CTRL+C COPY  CTRL+X CUT  DEL CLEAR');
+  const x = sel.x0 * TS - cx, y = sel.y0 * TS - cy - 10; g.fillStyle = 'rgba(12,10,18,0.85)'; g.fillRect(x, y - 1, Math.min(320, s0.length * 4 + 8), 9); text(s0, x + 3, y, '#8fd1ff', 'left', 6);
+}
 export function drawSel(g, cx, cy, cur, t) {
   if (sel) { g.save(); g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.setLineDash([4, 3]); g.lineDashOffset = -t * 12; g.strokeRect(sel.x0 * TS - cx + 0.5, sel.y0 * TS - cy + 0.5, (sel.x1 - sel.x0 + 1) * TS - 1, (sel.y1 - sel.y0 + 1) * TS - 1); g.restore(); }
   if (pasting && clip) {
@@ -784,3 +808,13 @@ export function drawGears(g, doc, cx, cy) {
     g.fillStyle = '#1b1626'; g.fillRect(x - 3, y - 1, 7, 7); g.fillStyle = '#ffd36b';
     g.fillRect(x - 1, y - 1, 3, 1); g.fillRect(x - 1, y + 5, 3, 1); g.fillRect(x - 3, y + 1, 1, 3); g.fillRect(x + 3, y + 1, 1, 3); g.fillRect(x - 2, y, 5, 5); g.fillStyle = '#1b1626'; g.fillRect(x, y + 2, 1, 1); }
 }
+
+/* (claude/maker) PIECES A STYLE DOES NOT HOLD (Daniel: "the grass slopes don't make sense in a castle"). Slopes are cut from the
+   style's own ground (engineMat), so they stay; what cannot be restyled and plainly belongs elsewhere is refused in that style
+   and greyed in the palette. Pieces already placed stay (changing the style asks first). */
+const STYLE_BAN = {
+  masonry: [T.REED, T.PALISADE], city: [T.REED, T.PALISADE], deck: [T.REED, T.PALISADE, T.CLIMB, T.SOFT, 'poison'],
+  reef: [T.PALISADE, T.ICE], shore: [T.ICE], cobble: [], grass: [],
+};
+export function styleBanned(style, cat, id) { if (!style || cat !== 0) return false; return (STYLE_BAN[style] || []).includes(id); }
+export const bannedIn = (doc, style) => { const L0 = STYLE_BAN[style] || []; let n = 0; for (const v of doc.grid) if (L0.includes(v)) n++; return n; };

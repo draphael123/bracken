@@ -185,6 +185,23 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
 - Tabs: FIND / GROUND / LEDGES / BLOCKS / ENEMIES / ALL ENEMIES (incl. water) / BOSSES / START/GOAL (START moved out of
   TOOLS) / PICKUPS / SWITCHES / HAZARDS / DECOR / TOOLS.
 
+## Done (2026-11-09, ERASE / WHAT-SELECTS-WHAT / STYLE LIMITS / START GATE / BOSS LINK - Daniel: "build all five")
+- ERASE: chips under the strip pick ONE CELL or BOX, and EVERYTHING / GROUND ONLY / PIECES ONLY / ENEMIES ONLY
+  (`MUI.eraseMode`, `edPlace(..., what)`, `edEraseRect`). The box shows red while you drag. Right-click is still a
+  one-cell erase of everything.
+- What selects what: a see-through ghost of the held tile under the mouse (pieces already had one). Dashed lines run from
+  each key to every gate of its metal, and a red line plus a padlock from a linked boss to the goal (levers and plates to
+  doors were already drawn). SELECT shows "n TILES, n PIECES" and outlines the pieces inside.
+- Style limits: `MKP.STYLE_BAN` refuses pieces that plainly don't belong (castle/city: reeds and wooden walls; ship: those
+  plus rock face, breakable rock and poison; reef: wooden walls and ice; shore: ice). They are greyed with a slash in the
+  strip and FIND, with a "NOT IN ... STYLE" chip. Switching to a style that bans tiles already placed asks first, and the
+  tiles stay. Slopes are cut from the style's own ground (engineMat marks slope cells; `mkStyleSet` feeds cvTile).
+- START GATE: the region's gate arch (EG.draw, silent) stands at START, in the editor and in play (`L.mkStart`, which stays
+  at START on a PLAY HERE run).
+- Boss and goal: a boss placed now gets `lockGoal: false`, so the goal is open. TOOLS > LINK the boss, then the goal gate,
+  toggles the lock (`L.mkBossLocks`: shut until it falls). A boss with no `lockGoal` (older levels) still locks.
+- `tools/maker-erase-links.mjs` (in the suite).
+
 ## Daniel's calls (2026-11-09)
 - TRACKS / curved moving platforms: THORNROAD's engine should grow them natively first; the maker uses them after.
 - BOSSES: some need their arena to be beatable at all - the maker only offers the ones the sweep proves beatable.

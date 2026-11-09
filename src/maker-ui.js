@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor, styleBanned } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -48,7 +48,7 @@ const TOOL_SHOWN = ['SELECT', 'LINK', 'EDIT'];   /* START lives on START & GOAL 
 const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], find: '', bScroll: 0, bCells: [], bHover: null, hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], find: '', bScroll: 0, bCells: [], bHover: null, eBox: false, eWhat: 'all', eChips: [], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
@@ -155,6 +155,13 @@ function drawStyles(c) {   /* STYLE: one swatch per style; the level's is ringed
   return STYLE_W;
 }
 const itemLabel = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) : cat === 2 ? paletteName(THINGS[i]) : itemName(c, 3, i);
+const idOf = (cat, i) => cat === 0 ? TILES[i][1] : cat === 1 ? FOES[i] : cat === 2 ? THINGS[i] : null;
+const banOf = (c, cat, i) => !!c.doc && styleBanned(c.doc.style, cat, idOf(cat, i));
+function banMark(g, x, y, sz) { g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 5, y + sz - 5); g.lineTo(x + sz - 5, y + 5); g.stroke(); g.lineWidth = 1; }
+/* (claude/maker) what ERASE takes (the chips under the strip), and a tile's ghost under the mouse */
+export const eraseMode = () => ({ box: UI.eBox, what: UI.eWhat });
+export function setEraseMode(box, what) { if (box !== undefined) UI.eBox = box; if (what !== undefined) UI.eWhat = what; }
+export function drawTileGhost(g, id, x, y) { try { tileIcon(g, id, x, y); } catch (e) {} }
 function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
@@ -194,7 +201,7 @@ export function drawChrome(c) {
     const sel = cat === c.cat && i === c.sel, hov = UI.hover && UI.hover.kind === 'cell' && UI.hover.cat === cat && UI.hover.i === i;
     g.fillStyle = sel ? '#3f6a3a' : hov ? 'rgba(90,80,120,0.9)' : 'rgba(30,26,40,0.9)'; g.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
     if (sel) { g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 1.5, y + 1.5, CELL - 3, CELL - 3); }
-    g.save(); g.beginPath(); g.rect(x + 2, y + 2, CELL - 4, CELL - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(x + 3, y + 3); g.scale(ICON_K, ICON_K); try { itemIcon(g, c, cat, i, 0, 0); } catch (e) {} g.restore();
+    g.save(); g.beginPath(); g.rect(x + 2, y + 2, CELL - 4, CELL - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(x + 3, y + 3); g.scale(ICON_K, ICON_K); const ban = banOf(c, cat, i); if (ban) g.globalAlpha = 0.3; try { itemIcon(g, c, cat, i, 0, 0); } catch (e) {} g.restore(); if (ban) banMark(g, x, y, CELL);
     UI.cells.push({ x, y, w: CELL, h: CELL, cat, i }); }
   if (pages > 1) { for (const [d, ax] of [[-1, 2], [1, VW - 18]]) { const r = { x: ax, y: TAB_H + 4, w: 16, h: ROWS * CELL - 8, d };
       g.fillStyle = 'rgba(60,52,80,0.9)'; g.fillRect(r.x, r.y, r.w, r.h); text(d < 0 ? '<' : '>', r.x + 8, r.y + r.h / 2 - 3, '#ffd36b', 'center', 6); UI.arrows.push(r); }
@@ -206,9 +213,15 @@ export function drawChrome(c) {
   let lx = 6; const head = (h ? '' : 'HOLDING ') + (show.cat === 3 ? itemName(c, 3, show.i) : dsc.name);
   text(head, lx, ly, h ? '#ffffff' : '#d8f09a', 'left', 6); lx += Math.ceil(c.textW(head, 6)) + 8;
   for (const t of dsc.tags) { const w = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, ly - 1, w, 9); text(t, lx + w / 2, ly, '#1b1626', 'center', 6); lx += w + 3; }
-  { const sl = show.cat === 1 || show.cat === 2 ? settingLabels(show.cat === 1 ? FOES[show.i] : THINGS[show.i]) : [];   /* (claude/maker) the piece's SETTINGS, so they are not a secret */
+  UI.eChips = [];
+  if (!h && show.cat === 0 && TILES[show.i][1] === T.AIR) {   /* (claude/maker) ERASE: one cell or a box; everything, or only one kind */
+    const chip = (label, on, k, v) => { const w = Math.ceil(c.textW(label, 6)) + 8; g.fillStyle = on ? '#8a3a3a' : '#2e2640'; g.fillRect(lx, ly - 2, w, 10); if (on) { g.strokeStyle = '#ff9a9a'; g.strokeRect(lx + 0.5, ly - 1.5, w - 1, 9); } text(label, lx + w / 2, ly, on ? '#ffffff' : '#c8bcd8', 'center', 6); UI.eChips.push({ x: lx, y: ly - 2, w, h: 10, k, v }); lx += w + 2; };
+    chip('ONE CELL', !UI.eBox, 'box', false); chip('BOX', UI.eBox, 'box', true); lx += 6;
+    for (const [v, label] of [['all', 'EVERYTHING'], ['ground', 'GROUND ONLY'], ['pieces', 'PIECES ONLY'], ['foes', 'ENEMIES ONLY']]) chip(label, UI.eWhat === v, 'what', v);
+  } else if (banOf(c, show.cat, show.i)) { const st = 'NOT IN ' + styleName(c.doc.style) + ' STYLE', w = Math.ceil(c.textW(st, 6)) + 6; g.fillStyle = '#8a3a3a'; g.fillRect(lx, ly - 1, w, 9); text(st, lx + w / 2, ly, '#ffffff', 'center', 6); lx += w + 3; }
+  else { const sl = show.cat === 1 || show.cat === 2 ? settingLabels(show.cat === 1 ? FOES[show.i] : THINGS[show.i]) : [];   /* (claude/maker) the piece's SETTINGS, so they are not a secret */
     if (sl.length) { const st = 'SETTINGS: ' + sl.join(', '), w = Math.ceil(c.textW(st, 6)) + 6; g.fillStyle = '#5a4a2a'; g.fillRect(lx, ly - 1, w, 9); text(st, lx + w / 2, ly, '#ffe9a8', 'center', 6); lx += w + 3; } }
-  if (dsc.line) text(c.fitText(dsc.line, VW - recentW - lx - 6, 6), lx + 4, ly, '#c8bcd8', 'left', 6);
+  if (dsc.line && !UI.eChips.length) text(c.fitText(dsc.line, VW - recentW - lx - 6, 6), lx + 4, ly, '#c8bcd8', 'left', 6);
   UI.recentCells = []; { const R = RECENT; let rx = VW - 4 - R.length * 14; if (R.length) text('RECENT', rx - 4, ly, '#8a7fa0', 'right', 6);
     for (const r of R) { const cell = { x: rx, y: ly - 3, w: 13, h: 13, cat: r.cat, i: r.i }; g.fillStyle = r.cat === c.cat && r.i === c.sel ? '#3f6a3a' : 'rgba(30,26,40,0.9)'; g.fillRect(cell.x, cell.y, 13, 13);
       g.save(); g.beginPath(); g.rect(cell.x, cell.y, 13, 13); g.clip(); g.translate(cell.x + 1, cell.y + 1); g.scale(0.7, 0.7); try { itemIcon(g, c, r.cat, r.i, 0, 0); } catch (e) {} g.restore(); UI.recentCells.push(cell); rx += 14; } }
@@ -322,6 +335,7 @@ export function uiMouse(c, mx, my, down) {
     const m = UI.map, fx = Math.max(0, Math.min(1, (mx - m.x) / m.w)), fy = Math.max(0, Math.min(1, (my - m.y) / m.h));
     return { consumed: true, cam: { x: fx * c.LWp - VW / 2, y: fy * c.LHp - (VH - TOP - BOT) / 2 - TOP } };
   }
+  { const ch = UI.eChips.find(q => inR(q, mx, my)); if (ch) { if (down) { if (ch.k === 'box') UI.eBox = ch.v; else UI.eWhat = ch.v; } return { consumed: true, act: down ? 'eraseMode' : null }; } }
   if (my >= TOP && my < VH - BOT) return null;   // the level
   const tab = UI.tabs.find(q => inR(q, mx, my)), cell = UI.cells.find(q => inR(q, mx, my)) || (UI.recentCells || []).find(q => inR(q, mx, my)), arr = UI.arrows.find(q => inR(q, mx, my)), btn = UI.btns.find(q => inR(q, mx, my));
   if (cell) UI.hover = { kind: 'cell', cat: cell.cat, i: cell.i }; else if (btn) UI.hover = { kind: 'btn', b: btn.b };
@@ -443,7 +457,7 @@ function drawBrowse(c) {
     if (q.head) { text(q.head, x + 10, qy + 2, '#d8f09a', 'left', 6); g.fillStyle = 'rgba(216,240,154,0.25)'; g.fillRect(x + 10 + Math.ceil(c.textW(q.head, 6)) + 6, qy + 5, w - 40 - Math.ceil(c.textW(q.head, 6)), 1); continue; }
     const cx0 = x + 10 + q.x, it = q.it, sel = it.cat === c.cat && it.i === c.sel, hov = UI.bHover && UI.bHover.cat === it.cat && UI.bHover.i === it.i;
     g.fillStyle = sel ? '#3f6a3a' : hov ? 'rgba(90,80,120,0.9)' : 'rgba(30,26,40,0.9)'; g.fillRect(cx0 + 1, qy + 1, BW - 2, BH - 2);
-    g.save(); g.beginPath(); g.rect(cx0 + 2, qy + 2, BW - 4, BH - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(cx0 + BW / 2 - 12, qy + 2); g.scale(1.5, 1.5); try { itemIcon(g, c, it.cat, it.i, 0, 0); } catch (e) {} g.restore();
+    g.save(); g.beginPath(); g.rect(cx0 + 2, qy + 2, BW - 4, BH - 4); g.clip(); g.imageSmoothingEnabled = false; g.translate(cx0 + BW / 2 - 12, qy + 2); g.scale(1.5, 1.5); const ban = banOf(c, it.cat, it.i); if (ban) g.globalAlpha = 0.3; try { itemIcon(g, c, it.cat, it.i, 0, 0); } catch (e) {} g.restore(); if (ban) banMark(g, cx0 + BW / 2 - 15, qy, 30);
     { const nm = itemLabel(c, it.cat, it.i).replace(/ \(.*\)$/, ''), col = sel ? '#d8f09a' : '#e8dcc0';   /* a long name goes on two lines */
       if (c.textW(nm, 6) <= BW - 4 || !nm.includes(' ')) text(c.fitText(nm, BW - 4, 6), cx0 + BW / 2, qy + BH - 9, col, 'center', 6);
       else { const w0 = nm.split(' '); let a = w0.shift(); while (w0.length > 1 && c.textW(a + ' ' + w0[0], 6) <= BW - 4) a += ' ' + w0.shift(); text(c.fitText(a, BW - 4, 6), cx0 + BW / 2, qy + BH - 15, col, 'center', 6); text(c.fitText(w0.join(' '), BW - 4, 6), cx0 + BW / 2, qy + BH - 8, col, 'center', 6); } }
