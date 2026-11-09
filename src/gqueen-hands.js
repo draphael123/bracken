@@ -76,7 +76,7 @@ export function makeGQueenHands(ctx) {
   };
   /* while she is gone (the flee, the escape, a retry of phase two) the ordinary arena trigger must not wake her in the hall */
   H.hold = () => { const e = q(); return !!(e && e.stage && e.stage !== 'hall'); };
-  function toEscape(e) { e.stage = 'escape'; e.phase = 3; e.mode = 'gone'; e.modeT = 0; e.hidden = true; e.alive = true; e.dying = 0; e.maxHp = e.hp = G.hp2; e.maxHp2 = G.hp2; e.vx = 0; e.vy = 0; e.crownOut = false; e.open = 0; }
+  function toEscape(e) { sealHatch(false); e.stage = 'escape'; e.phase = 3; e.mode = 'gone'; e.modeT = 0; e.hidden = true; e.alive = true; e.dying = 0; e.maxHp = e.hp = G.hp2; e.maxHp2 = G.hp2; e.vx = 0; e.vy = 0; e.crownOut = false; e.open = 0; }
 
   /* ONE DOOR for every blow of hers that can be parried: a yellow, blockable damagePlayer, and the answer is whether the shared parry counter moved.
      (Every hero's beat path - the knight's raised shield, the warden's deflect, the pyro's ward, the pirate's catch - calls RP.parried, so all nine are covered with no per-hero code.)
@@ -274,7 +274,13 @@ export function makeGQueenHands(ctx) {
     roofBegin(e);
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
   }
-  function roofBegin(e) { S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
+  /* (gq3fix) THE HATCH IS SHUT for the fight on the deck: a two-column hole in the middle of the west deck swallowed the melee bots (and any hero who mistimed a jump) into the burning shaft, with no way back into the fight. The oak trap (the old hatch art, closed) lies flush; a retry into the tower opens it again. */
+  function sealHatch(on) {
+    const Lv = L(), A0 = Lv && Lv.arenaRoof, Tw = A0 && A0.tower; if (!Tw || !Lv.grid) return; const [c0, c1] = Tw.HATCH.cols, fy = Tw.DECK.floor;
+    for (let y = fy; y <= fy + 1; y++) { Lv.grid[y * Lv.W + c0] = on ? 8 : 9; Lv.grid[y * Lv.W + c1] = on ? 8 : 0; }   /* 8 = T.PLANK, 9 = T.NET (the ladder), 0 = air */
+    S.hatchShut = !!on;
+  }
+  function roofBegin(e) { sealHatch(true); S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
     bays: [0, 1, 2, 3].map(() => ({ state: 'idle', at: 0, until: 0 })), bayT: G.p2.bayEvery, bayNext: 0, bayN: 0 }; }
   const rings = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.RINGS : []; };
   const bays = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.BAYS : []; };
@@ -598,7 +604,7 @@ export function makeGQueenHands(ctx) {
     GQ3A.drawParapetWalk(g, P.w[0], P.w[1], P.row, cx, cy, t); GQ3A.drawParapetWalk(g, P.e[0], P.e[1], P.row, cx, cy, t);
     GQ3A.drawStoneStep(g, P.stepW[0], P.stepW[1], P.stepRow, cx, cy); GQ3A.drawStoneStep(g, P.stepE[0], P.stepE[1], P.stepRow, cx, cy);
     GQ3A.drawCupola(g, C.x0, C.x1, C.solid[0], C.frame[0], C.frame[1], C.frame[2], cx, cy, t);
-    GQ3A.drawTowerHatch(g, Tw.HATCH.cols[0] * TS - cx, fy, t);
+    if (S.hatchShut) GA.drawHatch(g, Tw.HATCH.cols[0] * TS - cx + 4, fy, false, t); else GQ3A.drawTowerHatch(g, Tw.HATCH.cols[0] * TS - cx, fy, t);
     const R0 = S.roof; Tw.BAYS.forEach((sp, i) => GQ3A.drawBay(g, sp[0] * TS - cx, (sp[1] + 1) * TS - cx, fy, R0 && R0.bays[i] ? R0.bays[i].state : 'idle', t, i));
   }
   function roofArt(g, cx, cy, t) {
