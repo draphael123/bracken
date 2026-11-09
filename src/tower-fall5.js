@@ -365,7 +365,7 @@ export function buildTowerFall5({ painter, T }) {
   /* HIS HARRYING (the throw-back stun, plan sec 2): where he hovers outside the breaches in Act II-III and over the run - data for the harry wiring (owed) */
   const harry = [F[2], F[3], F[4], F[6]].map(f => ({ floor: f.name, x: f.X1 + 3, y: f.top + 8 })).concat([{ floor: 'THE FALL', x: 170, y: RUN.floor - 10 }]);
 
-  const skins = [[0, W - 1, 0, H - 1, 'fallen'], ...((field && field.skins) || [])];   /* (claude/ft5b: the sand rows over the field are dune) */
+  const skins = [[0, W - 1, 0, H - 1, 'fallen'], [BEND.gentle.x0, A.x0 - 1, RUN.floor - 2, RUN.floor + 3, 'lying'], ...((field && field.skins) || [])];   /* (claude/ft5art: the run's floor is the fallen wall's courses, stood on end) */   /* (claude/ft5b: the sand rows over the field are dune) */
   const START = { x: F[0].X0 + 2, y: F[0].bot - 1 };
   for (const s of supports) { s.x ??= s.col * TS + 8; s.y ??= (s.row + 1) * TS; }
   return {

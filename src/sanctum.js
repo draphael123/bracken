@@ -27,6 +27,7 @@
 // THE SANDY PATH is the last ten seconds of this world, and it is warm and full of sand, because the next world is. It used
 // to be dressing and nothing else; since 2026-09-24 the gold hole LEADS somewhere: THE SUNKEN CARAVAN needs 'fallingtower'
 // and is the desert sheet's first map node (map-redesign §5, reading (a) of §7.4: a needs link and a node, no fight change).
+import { openDress } from './redraw/ft5_art.js';   /* (claude/ft5art) FALLING TOWER 5: phase 2 is outdoors - no parapet, no side walls, no braziers */
 import { DESERT } from './redraw/desert.js';   /* the Caravan's own palette: the desert through the second door and in his rings */
 export const SANCTUM = {
   fire: 26,          /* how deep the witchfire lies on the floor of the hall, in px */
@@ -74,7 +75,8 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
   const x0 = Math.round(box.x0 - cx), x1 = Math.round(box.x1 - cx), w = x1 - x0;
   const top = Math.round(box.y0 - cy), flr = Math.round(A.floor - cy), ft = Math.round(fireTop(A) - cy);
   const H = g.canvas.height, VW = g.canvas.width;
-  const L0 = x0 - SANCTUM.wall, R0 = x1 + SANCTUM.wall;
+  const OPEN = !!(L && L.spireField);   /* (claude/ft5art) the spire field's second phase: open sky, the witchfire floor runs off both edges of the screen */
+  const L0 = OPEN ? -8 : x0 - SANCTUM.wall, R0 = OPEN ? VW + 8 : x1 + SANCTUM.wall;
   const vx0 = Math.max(L0, -8), vx1 = Math.min(R0, VW + 8);              /* nothing is drawn past the edges of the screen */
   const band = (x, y, ww, hh, col) => { const a = Math.max(x, -8), b = Math.min(x + ww, VW + 8); if (b > a) { g.fillStyle = col; g.fillRect(a, y, b - a, hh); } };
   /* THE TOP OF THE TOWER, OPEN TO THE NIGHT (round 3, Daniel 2026-09-27: "the top of the tower open to the night with the moon
@@ -106,15 +108,16 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
       g.fillStyle = '#c2bca4'; for (const [ox, oy, r] of [[-9, -8, 5], [6, -12, 3], [9, 5, 6], [-4, 9, 3], [-14, 4, 2], [2, -2, 2]]) { g.beginPath(); g.arc(mx + ox, my + oy, r, 0, Math.PI * 2); g.fill(); }
       g.fillStyle = 'rgba(16,13,36,0.85)'; const drift = Math.round((time * 3) % 90) - 45;
       g.fillRect(mx - 44 + drift, my + 14, 70, 3); g.fillRect(mx - 30 + drift, my + 17, 52, 2); g.fillRect(mx - 20 - drift, my - 20, 40, 2); } }
+  if (OPEN) openDress(g, cx, cy, time, ft, VW);
   /* THE FAR PARAPET: the tower's own wall along the back of the floor, merlons against the sky, the moon's light on their tops */
-  { const py = ft - 30, pv = 0.85, off = ((cx * (1 - pv)) % 28 + 28) % 28;
+  if (!OPEN) { const py = ft - 30, pv = 0.85, off = ((cx * (1 - pv)) % 28 + 28) % 28;
     band(L0, py, w + SANCTUM.wall * 2, ft - py + 12, STONE[3]);
     for (let y = py + 5; y < ft + 12; y += 7) band(L0, y, w + SANCTUM.wall * 2, 1, STONE[5]);
     for (let mx = Math.max(L0, -28) - off; mx < Math.min(R0, VW + 28); mx += 28) { if (mx + 14 < x0 || mx > x1) continue;
       g.fillStyle = STONE[3]; g.fillRect(mx, py - 9, 14, 9); g.fillStyle = STONE[4]; g.fillRect(mx, py - 9, 14, 1); g.fillStyle = STONE[5]; g.fillRect(mx + 13, py - 8, 1, 8); }
     band(L0, py, w + SANCTUM.wall * 2, 1, STONE[4]); }
   // THE SIDE WALLS: what is left of the tower's own, broken off at the top - the room still reads as held in, not cropped
-  for (const [sx, dir] of [[L0, 1], [x1, -1]]) {
+  if (!OPEN) for (const [sx, dir] of [[L0, 1], [x1, -1]]) {
     if (sx > VW + 8 || sx + SANCTUM.wall < -8) continue;
     const wt = top - 10;
     g.fillStyle = STONE[1]; g.fillRect(sx, wt, SANCTUM.wall, (flr - wt) + 8);
@@ -125,7 +128,7 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
     g.fillStyle = 'rgba(200,138,255,0.12)'; g.fillRect(inner - (dir > 0 ? 0 : 2), ft - 40, 4, 40);   /* firelight up the wall */
   }
   // THE BRAZIERS on the side walls, burning the same green: the only light in here is his
-  for (const [bx, by] of [[x0 + 6, ft - 66], [x1 - 10, ft - 66]]) {   /* (round 3: only the low pair - the high pair hung on the vault's walls) */
+  if (!OPEN) for (const [bx, by] of [[x0 + 6, ft - 66], [x1 - 10, ft - 66]]) {   /* (round 3: only the low pair - the high pair hung on the vault's walls) */
     if (by < -20 || by > H + 20 || bx < -20 || bx > VW + 20) continue;
     g.fillStyle = STONE[4]; g.fillRect(bx, by, 4, 12); g.fillRect(bx - 2, by - 3, 8, 3);
     const f = Math.sin(time * 7 + bx) * 1.5;

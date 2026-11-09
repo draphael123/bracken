@@ -20,6 +20,7 @@
    Numbers are tiles unless named px or s. Columns are off A.x0, rows off A.runFloor, so FT5_ARENA can move without retyping the field. */
 import { SPIRE_LINES } from './spire-lines.js';
 import { REALM } from './mage-realms.js';
+import { drawField } from './redraw/ft5_art.js';   /* (claude/ft5art) the spire field's paint */
 export { SPIRE_LINES, SPIRE_SAY } from './spire-lines.js';
 
 const TS = 16;
@@ -98,7 +99,7 @@ export function buildSpireField(L, A, kit) {
   return {
     level: { arena, sanctum, spireField: { ...F, p1Arena: { ...arena }, p2Arena: { y0: p2.y0, floor: p2.floor, carpet: true, inPlace: true } } },
     calm: [[0, W - 1, 0, SAND5.deep + 1]],
-    skins: [[0, W - 1, SAND5.row, SAND5.deep, 'dune']],
+    skins: [...F.spires.map(s => [s.x0, s.x1, s.top, A.y1, 'spire']), ...F.spires.filter(s => s.bridge).map(s => [s.bridge[0], s.bridge[1], s.bridge[2], s.bridge[2], 'spire']), [0, W - 1, SAND5.row, SAND5.deep, 'dune']],   /* (claude/ft5art) the spires and the bridges they lay are the Folly's slate gone violet */
   };
 }
 
@@ -280,30 +281,8 @@ export function floorDmg(L, e, dmg, say) {
   return out;
 }
 
-/* ---------------------------------------------------------------- DRAW (greybox: the art lane paints it) ---------------------------------------------------------------- */
-export function drawSpireField(g, L, cx, cy, time, e) {
+/* ---------------------------------------------------------------- DRAW (painted by claude/ft5art: src/redraw/ft5_art.js drawField) ---------------------------------------------------------------- */
+export function drawSpireField(g, L, cx, cy, time, e, drawRug) {
   const F = L && L.spireField, R = F && F.rt; if (!F || !R) return;
-  const A = F.A, W = L.W, x0 = Math.round(A.x0 * TS - cx), x1 = Math.round((A.x1 + 1) * TS - cx), H = g.canvas.height;
-  /* HIS POISON SEA: green-black, a lit surface; bubbling and flashing through a tide's tell */
-  const sy = Math.round(R.seaY - cy), tell = R.tides.some(q => q && q.st === 'tell'), bot = Math.min(H, Math.round((A.y1 + 1) * TS - cy));
-  if (sy < bot) { g.fillStyle = 'rgba(12,30,18,0.9)'; g.fillRect(x0, sy, x1 - x0, bot - sy);
-    g.fillStyle = tell && Math.floor(time * 10) % 2 ? '#c8ffd8' : '#6fe08a'; g.fillRect(x0, sy, x1 - x0, 2);
-    for (let i = 0; i < (tell ? 24 : 10); i++) { const s = Math.sin(i * 91.7) * 43758.5, r = s - Math.floor(s), bx = x0 + Math.round(r * (x1 - x0)), ph = (time * (tell ? 2.2 : 0.9) + r) % 1;
-      g.fillStyle = '#8fd160'; g.fillRect(bx, sy - Math.round(ph * 6), 2, 2); } }
-  /* A SPIRE'S TELL: its base red, a crack up it, a creak of lean */
-  F.spires.forEach((s, i) => { const q = R.spires[i]; if (q.st !== 'tell') return; const a = Math.round(s.x0 * TS - cx), b = Math.round((s.x1 + 1) * TS - cx), t = Math.round(s.top * TS - cy), lean = Math.round(Math.sin(time * 14) * 2);
-    g.fillStyle = Math.floor(time * 8) % 2 ? '#ff6b6b' : '#c9463d'; g.fillRect(a, Math.min(sy, bot) - 6, b - a, 4);
-    g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.moveTo((a + b) / 2 + lean, t); for (let y = t; y < sy; y += 8) g.lineTo((a + b) / 2 + ((y / 8) % 2 ? 3 : -3) + lean, y); g.stroke(); });
-  /* THE CRACKED BUTTRESSES, and their fall box's ghost while he hangs in it */
-  F.spires.forEach((s, i) => { const B = s.buttress, q = R.butt[i]; if (!B || !q || q.st !== 'up' || R.spires[i].st === 'gone') return;
-    const bx = Math.round(B.col * TS - cx), by = Math.round(B.top * TS - cy); g.fillStyle = '#726a8a'; g.fillRect(bx + 3, by, 10, 48); g.fillStyle = '#c0b4d0'; g.fillRect(bx + 3, by, 10, 2);
-    g.strokeStyle = '#1b1626'; g.beginPath(); g.moveTo(bx + 6, by + 6); g.lineTo(bx + 10, by + 18); g.lineTo(bx + 6, by + 30); g.lineTo(bx + 10, by + 44); g.stroke();
-    if (e && e.alive && boxHas(B.box, e.x, e.y) && crushable(e)) { g.strokeStyle = Math.floor(time * 6) % 2 ? '#ffd36b' : '#ffffff'; g.setLineDash && g.setLineDash([3, 3]);
-      g.strokeRect(Math.round(B.box[0] * TS - cx) + 0.5, Math.round(B.box[2] * TS - cy) + 0.5, (B.box[1] - B.box[0] + 1) * TS, (B.box[3] - B.box[2] + 1) * TS); g.setLineDash && g.setLineDash([]); } });
-  /* THE FADE: every platform shimmers his green, then goes */
-  if (R.fade && (R.fade.st === 'tell' || R.fade.st === 'clear')) { const k = R.fade.st === 'tell' ? Math.min(1, R.fade.t / FADE.tell) : 1;
-    g.fillStyle = 'rgba(111,224,138,' + (0.15 + 0.35 * k * (0.6 + 0.4 * Math.sin(time * 18))).toFixed(2) + ')';
-    for (let y = A.y0; y <= A.y1; y++) for (let x = A.x0; x <= A.x1; x++) { const t = L.grid[y * W + x]; if (t) g.fillRect(Math.round(x * TS - cx), Math.round(y * TS - cy), TS, TS); } }
-  /* A RUG FLIES UP under each seat still falling */
-  for (const rg of R.rugs.values()) { const x = Math.round(rg.x - cx), y = Math.round(rg.y - cy); g.fillStyle = '#7a2a2a'; g.fillRect(x - 14, y, 28, 4); g.fillStyle = '#e0b050'; g.fillRect(x - 14, y, 28, 1); g.fillRect(x - 16, y + 1, 2, 2); g.fillRect(x + 14, y + 1, 2, 2); }
+  drawField(g, L, F, R, cx, cy, time, e, drawRug);
 }

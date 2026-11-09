@@ -10,6 +10,7 @@
 //   bakeSlateLedge()    { ledge: [3], ledgeL, ledgeR } a cut slate slab for the one-way ledges (L.palette.ledges 'slate')
 //   paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time)   a room's back wall, baked once per room and then lit and moved live
 import { canvas, px, rect, fillPoly, line, mulberry } from '../px.js';
+import { horizon } from './ft5_art.js';   /* (claude/ft5art) the tipped horizon a window shows */
 import { isChaseRoom, paintChaseRoom } from './tower_chase.js';   /* (claude/fallingtower3art) the Archmage's chase rooms are inside the tower: their own walls */
 
 export const FT = { stone: '#46506a', stoneL: '#56627e', stoneLL: '#6a7896', stoneD: '#343c52', mortar: '#252b3a', crack: '#12151e', crackL: '#7a88a6',
@@ -40,12 +41,13 @@ export function bakeSlateLedge() {
 // ---------- the rooms ----------
 const cache = new Map();
 /* a hole knocked through the back wall: a jagged outline round a rough ellipse, filled with night sky and stars */
-function hole(g, r, cx, cy, rx, ry, holes) {
+function hole(g, r, cx, cy, rx, ry, holes, tip = 0) {
   const pts = []; for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2, j = 0.72 + r() * 0.42; pts.push([cx + Math.cos(a) * rx * j, cy + Math.sin(a) * ry * j]); }
   fillPoly(g, pts.map(([x, y]) => [x + 2, y + 2]), FT.stoneLL);                                  /* the broken edge, lit */
   fillPoly(g, pts, FT.sky1);
   fillPoly(g, pts.map(([x, y]) => [cx + (x - cx) * 0.8, cy + (y - cy) * 0.8 - ry * 0.2]), FT.sky0);   /* the sky deeper toward the top of the hole */
   for (let i = 0; i < rx * ry / 60; i++) { const x = cx + (r() - 0.5) * rx * 1.2, y = cy + (r() - 0.5) * ry * 1.2; if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 < 0.45) px(g, x, y, r() < 0.3 ? '#ffffff' : FT.star); }
+  if (tip) { g.save(); g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.clip(); horizon(g, cx, cy, rx, ry, tip); g.restore(); }   /* (claude/ft5art) FALLING TOWER 5: the horizon in the hole is tipped to the act's story angle */
   for (let k = 0; k < 6; k++) { const a = r() * Math.PI * 2; rect(g, cx + Math.cos(a) * rx * 0.95 - 2, cy + Math.sin(a) * ry * 0.95 - 1, 4, 3, FT.stoneD); }   /* a loose block on the lip */
   holes.push([cx - rx * 0.7, cy - ry * 0.6, rx * 1.4, ry * 1.2]);
 }
@@ -61,11 +63,11 @@ function fitter(blocked, tx0, ty0, cut) {
     const a0 = Math.floor((b.x - m) / 16) + tx0, a1 = Math.floor((b.x + b.w + m - 1) / 16) + tx0, c0 = Math.floor((b.y - m) / 16) + ty0, c1 = Math.floor((b.y + b.h + m - 1) / 16) + ty0;
     for (let ty = c0; ty <= c1; ty++) for (let tx = a0; tx <= a1; tx++) if (blocked(tx, ty)) return false; return true; };
 }
-function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
+function bakeRoom(st, w, h, tx0, ty0, blocked = null, tip = 0) {
   const [c, g] = canvas(w, h), r = mulberry(tx0 * 131 + ty0 * 17 + st.length), holes = [], chains = [], wind = [], cut = [], fits = fitter(blocked, tx0, ty0, cut);
   /* A HOLE WHERE ONE FITS: the wanted spot first, then spots round it, then anywhere in the wall, smaller each round; none that fits, no hole */
   const putHole = (cx, cy, rx, ry) => { for (let k = 0; k < 48; k++) { const s = 1 - Math.floor(k / 8) * 0.14, x = k === 0 ? cx : k < 16 ? cx + (r() - 0.5) * 200 : 20 + r() * (w - 40), y = k === 0 ? cy : k < 16 ? cy + (r() - 0.5) * 140 : 12 + r() * (h * 0.8);
-    const ax = Math.max(14, rx * s), ay = Math.max(10, ry * s), b = holeBox(x, y, ax, ay); if (b.x < 0 || b.y < 0 || b.x + b.w > w || b.y + b.h > h || !fits(b)) continue; cut.push(b); hole(g, r, x, y, ax, ay, holes); return true; } return false; };
+    const ax = Math.max(14, rx * s), ay = Math.max(10, ry * s), b = holeBox(x, y, ax, ay); if (b.x < 0 || b.y < 0 || b.x + b.w > w || b.y + b.h > h || !fits(b)) continue; cut.push(b); hole(g, r, x, y, ax, ay, holes, tip); return true; } return false; };
   /* THE ASHLAR, out of true: courses of eight, blocks of 20-34, every joint stepping with the lean */
   rect(g, 0, 0, w, h, BW.stoneD);
   for (let y = 0, row = 0; y < h; y += 8, row++) { rect(g, 0, y, w, 1, BW.mortar); let x = -((row * 13 + Math.floor(y * LEAN)) % 28);
@@ -83,7 +85,7 @@ function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
     for (let k = 0; k < 60 && !ok; k++) { if (k) { wh = Math.max(40, h * 0.5 * (1 - Math.floor(k / 6) * 0.1)); wx = Math.max(8, Math.min(w - ww - 8, w * fx + (r() - 0.5) * 260)); wy = 10 + r() * Math.max(1, h - wh - 24); }
       const b = { x: wx - 7, y: wy - 4 - wh * 0.08, w: ww + 14, h: wh * 1.16 + 12 }; if (fits(b)) { cut.push(b); ok = true; } }
     if (!ok) continue;   /* no wall clear enough for a window: none, rather than one with a ledge across it */
-    rect(g, wx - 4, wy - 4, ww + 8, wh + 8, '#2a3040'); hole(g, r, wx + ww / 2, wy + wh / 2, ww / 2, wh / 2, holes);
+    rect(g, wx - 4, wy - 4, ww + 8, wh + 8, '#2a3040'); hole(g, r, wx + ww / 2, wy + wh / 2, ww / 2, wh / 2, holes, tip);
     for (let k = 1; k < 3; k++) rect(g, wx + k * ww / 3, wy, 2, wh * (0.4 + r() * 0.5), '#2a3040'); rect(g, wx - 6, wy + wh + 2, ww + 12, 3, FT.stoneLL); }
   if (st === 'orrery') for (let k = 0; k < 3; k++) { const ocx = w * (0.3 + k * 0.25), ocy = h * 0.4, R = 40 + k * 14;
     for (let a = 0; a < Math.PI * 2; a += 0.05) { if ((a + k) % 2.1 < 0.6) continue; rect(g, ocx + Math.cos(a) * R, ocy + Math.sin(a) * R * 0.45, 2, 2, FT.brass); px(g, ocx + Math.cos(a) * R, ocy + Math.sin(a) * R * 0.45 - 1, FT.brassL); } }
@@ -111,7 +113,7 @@ function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
       if (front) { rect(g, x - 7, y, 14, 3, FT.stoneD); rect(g, x - 7, y, 14, 1, FT.stone); }   /* a tread coming round the front of the newel */
       else rect(g, x - 5, y + 1, 10, 2, BW.pierL); }   /* ...and one going round behind it, in its shadow */
     { let placed = null; for (let k = 0; k < 40 && !placed; k++) { const hx = k === 0 ? w * 0.22 : 30 + r() * (w - 60), hy = k === 0 ? 34 : 24 + r() * h * 0.3, b = holeBox(hx, hy, 34, 26);
-        if (b.x >= 0 && b.y >= 0 && b.x + b.w <= w && b.y + b.h <= h && fits(b)) { cut.push(b); hole(g, r, hx, hy, 34, 26, holes); placed = [hx, hy]; } }
+        if (b.x >= 0 && b.y >= 0 && b.x + b.w <= w && b.y + b.h <= h && fits(b)) { cut.push(b); hole(g, r, hx, hy, 34, 26, holes, tip); placed = [hx, hy]; } }
       if (placed) { const [mx, my] = placed; for (let dy = -9; dy <= 9; dy++) { const hw = Math.round(Math.sqrt(81 - dy * dy)); rect(g, mx + 6 - hw, my - 4 + dy, hw * 2, 1, dy < -3 ? '#f4f0dc' : '#e2dcc0'); }
         px(g, mx + 3, my - 6, '#c8c0a0'); px(g, mx + 9, my - 1, '#c8c0a0'); rect(g, mx + 5, my + 1, 2, 2, '#cfc8aa'); } } }   /* HIS MOON, the one over his hall */
   if (st === 'dome') { const edge = []; for (let x = 0; x <= w + 8; x += 8) edge.push([x, Math.round(h * (0.3 + 0.1 * Math.sin(x * 0.011 + 1) + (r() - 0.5) * 0.06))]);
@@ -131,9 +133,9 @@ function bakeRoom(st, w, h, tx0, ty0, blocked = null) {
 }
 /* THE CUT-OUTS OF ONE ROOM, as boxes in room pixels (holes, windows, the clock's face): what tools/tower-cutouts.mjs holds clear of the tiles */
 export const fallenCutouts = (st, w, h, tx0, ty0, blocked) => bakeRoom(st, w, h, tx0, ty0, blocked).cut;
-export function paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time = 0, blocked = null) {
+export function paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time = 0, blocked = null, tip = 0) {
   if (isChaseRoom(st, tx0, ty0, w, h)) return paintChaseRoom(g, st, sx, sy, w, h, tx0, ty0, time);   /* (claude/fallingtower3art) THE CHASE ROOMS under his stair and the core: no holes to the night */
-  const key = st + ':' + tx0 + ':' + ty0 + ':' + w + 'x' + h + (blocked ? ':fit' : ''); let R = cache.get(key); if (!R) { R = bakeRoom(st, w, h, tx0, ty0, blocked); cache.set(key, R); }
+  const key = st + ':' + tx0 + ':' + ty0 + ':' + w + 'x' + h + (blocked ? ':fit' : '') + (tip ? ':tip' + tip : ''); let R = cache.get(key); if (!R) { R = bakeRoom(st, w, h, tx0, ty0, blocked, tip); cache.set(key, R); }
   g.drawImage(R.canvas, sx, sy);
   /* THE WIND through the holes: pale streaks crossing each hole, left to right */
   for (const W of R.wind) for (let k = 0; k < 3; k++) { const t = ((time * 0.6 + W.ph + k * 0.37) % 1), x = W.x + t * W.w, y = W.y + W.h * (0.25 + k * 0.25) + Math.sin(time * 2 + k) * 2;
