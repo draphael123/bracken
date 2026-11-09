@@ -28,7 +28,12 @@
                        hoppers out of the water (3 in phase 2; max 4 up). He bellows at least every 12 s (10 in phase 2).
    His openings: DAZED x1.5 (a bitten tongue, the flies, a turned landing), WINDED x1.2 (after the flop), BELLY-UP x2 (the sac burst); one opening pays at most FK.take
    of him (the break FK.bellow.take), the rest at 1x. Outside them a hero's blade lands at 0.6x (src/boss-greed.js chipBy.frog), in the air (mid-leap) 0.4x (B15).
-   THE FLIES now SAP STAMINA while the cloud is on you. Numbers here; the machine is updateFrog in src/main.js. */
+   THE FLIES now SAP STAMINA while the cloud is on you. Numbers here; the machine is updateFrog in src/main.js.
+   (claude/froglift, BOSSLIFT 11-08, behind BOSSLIFT_FROG_SHIPS / ?bosslift) BITE HIS OWN FLY - his signature moment: the flies come round at least every FK.fly.every s
+   ("SWAT THE FLIES AT HIM"); a blade, shield or deflect on the cloud within FK.fly.reach of him BATS it at his mouth; his eyes bulge (flyEye), the tongue snaps it
+   (flySnap), he GULPs, BLOATs and rolls BELLY-UP (x2, FK.fly.belly s, at most FK.bellow.take of him) while the leaves beside his pad rise FIRM (THE POND LIFTS THE
+   LEAVES). Phase 2: a bigger cloud, spat as he lands, and belly-up tips him to his pad's edge over the lane. The BELLOW's burst is a DAZE now (the fly owns
+   belly-up). A swat too far off, or while he gathers / flies, scatters the cloud and it re-forms on you. Hooks: single tagged lines in src/main.js; tools/frog-fly.mjs. */
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
@@ -59,7 +64,25 @@ export const FK = {
   pairGap: 0.3,
   ripple: { open: 2.4 },           /* (kept for frogFlat) */
   pound: { sink: 1.5 },
+  /* (claude/froglift, BOSSLIFT 11-08: "BITE HIS OWN FLY") the signature moment, live only behind BOSSLIFT_FROG_SHIPS / ?bosslift (frogLiftOn below).
+     every[ph]: he spits the flies at least this often. reach: a swat counts only within this many px of him. home: px/s the batted cloud flies at his mouth.
+     snapTell: his eyes bulge this long before the tongue snaps at the batted cloud (snapLive: the snap itself), then GULP (gulp s), BLOAT (bloat s), BELLY-UP
+     (belly[ph] s at FK.bellow.mul, worth at most FK.bellow.take of him). lift: the leaves beside his pad stay FIRM belly + lift s. reform: a scattered cloud
+     re-forms on you after this. homeMax: a batted cloud he never snaps at scatters after this. p2drain / p2stick: phase 2's bigger cloud. sacDaze: the BELLOW's
+     burst is a DAZE now (x FK.dazed, FK.take), this long. tip: phase 2's belly-up tips his royal pad - he slides to its edge over the lane */
+  fly: { every: [11, 9], reach: 260, home: 220, snapTell: 0.35, snapLive: 0.2, gulp: 0.5, bloat: 0.4, belly: [3.0, 2.6], lift: 1.0, reform: 1.0, homeMax: 2.5, p2drain: 30, p2stick: 0.3, sacDaze: 2.4, tip: true },
 };
+
+/* (claude/froglift) THE FLAG: off, the live fight is untouched. ?bosslift in the URL (or a tool setting globalThis.__BOSSLIFT) switches it on to see the work (the PVP_SHIPS pattern) */
+export const BOSSLIFT_FROG_SHIPS = false;
+const LIFT_URL = typeof globalThis !== 'undefined' && !!globalThis.location && /[?&]bosslift(=|&|$)/.test(String(globalThis.location.search));
+export const frogLiftOn = () => BOSSLIFT_FROG_SHIPS || LIFT_URL || !!(typeof globalThis !== 'undefined' && globalThis.__BOSSLIFT);
+/* the new modes' greybox poses (src/redraw/frogking.js frames; the art lane draws GULP, BLOAT x2 and the swollen belly-up): eyes on the flies (17), the tongue out (8),
+   cheeks stuffed (11), the swollen throat (20) */
+export const FROG_LIFT_FRAMES = { flyEye: 17, flySnap: 8, gulp: 11, bloat: 20 };
+export const FROG_LIFT_MODES = new Set(Object.keys(FROG_LIFT_FRAMES));
+/* where a batted cloud draws his tongue at once (anything else: it hovers at his lips until he is free; a crouch or a leap makes it miss) */
+const SNAP_FROM = new Set(['idle', 'swarm', 'land', 'tongueTell', 'spitTell', 'snapTell']);
 
 /* the court's pads: the movers of kind 'pad' inside the arena */
 export const courtPads = (movers, A) => movers.filter(m => m.kind === 'pad' && m.x + m.w / 2 > A.x0 && m.x + m.w / 2 < A.x1);
@@ -75,32 +98,96 @@ export function makeFrogCourt(ctx) {
   S.reset = () => { S.swarm = null; S.ripples = []; S.hist = []; S.fling = null; S.reel = null; S.sinkK = 1; S.n = { selfBites: 0, flings: 0, fromAbove: 0, grabs: 0, dunks: 0, reshuffles: 0, leaps: 0, padSunk: 0 }; };
   const pads = () => { const A = ctx.arena(); return A ? courtPads(ctx.movers(), A).filter(m => m.frogLane !== undefined || A.frogChase) : []; };
   /* the flies: a cloud that trails the hero by FK.swarm.lag s (the history of where he stood) */
-  S.spitSwarm = e => { const p = P(); S.swarm = { x: e.x + e.face * 20, y: e.y - 18, t: FK.swarm.life, eaten: false, ph: 0 }; S.hist = [{ x: p.x, y: p.y - 12, t: 0 }]; };
+  S.spitSwarm = e => { const p = P(); S.swarm = { x: e.x + e.face * 20, y: e.y - 18, t: FK.swarm.life, eaten: false, ph: 0 }; S.hist = [{ x: p.x, y: p.y - 12, t: 0 }];
+    if (frogLiftOn()) { e.flyT = 0; if ((e.phase || 1) >= 2) S.swarm.t += FK.fly.p2stick; } };   /* (claude/froglift) the flies' clock restarts; phase 2's cloud sticks longer */
   S.step = (dt, e) => {
     const p = P(), now = ctx.time();
     S.hist.push({ x: p.x, y: p.y - 12, t: now }); while (S.hist.length > 2 && now - S.hist[1].t > FK.swarm.lag) S.hist.shift();
     if (S.swarm) { const sw = S.swarm, h = S.hist[0]; sw.ph += dt * 9; sw.t -= dt;
-      const k = Math.min(1, dt * 5); sw.x += (h.x - sw.x) * k; sw.y += (h.y - sw.y) * k;
+      if (sw.home && e) liftHome(sw, e, dt); else if (sw.scatter > 0) { sw.scatter -= dt; sw.x += sw.svx * dt; sw.y += sw.svy * dt; }   /* (claude/froglift) a batted cloud flies at his mouth; a scattered one drifts, then re-forms on you */
+      else { const k = Math.min(1, dt * 5); sw.x += (h.x - sw.x) * k; sw.y += (h.y - sw.y) * k; }
       if (Math.random() < dt * 6) ctx.buzz(); if (sw.t < -2.5 || !e || !e.alive) S.swarm = null; }
     /* THE RESHUFFLE: a leaf that went under comes up again in its new place, with its new kind */
     for (const m of pads()) { m.sinkK = S.sinkK; if (m.rockT > 0) m.rockT -= dt; if (m.slapT > 0) { m.slapT -= dt; m.sink = 1; }
-      if (m.shufTo && m.sink >= 0.99) { m.x = m.x0 = m.shufTo.x; m.firm = m.shufTo.firm; m.shufTo = null; } }
+      if (m.shufTo && m.sink >= 0.99) { m.x = m.x0 = m.shufTo.x; m.firm = m.shufTo.firm; m.shufTo = null; }
+      if (m.liftT > 0) { m.liftT -= dt; m.firm = true; if (m.liftT <= 0) { m.liftT = 0; m.firm = !!m.liftFirm; } } }   /* (claude/froglift) THE POND LIFTS THE LEAVES: firm while it lasts */
+    if (e && frogLiftOn()) liftStep(dt, e);
   };
+  /* ---------- (claude/froglift) BITE HIS OWN FLY: swat the cloud at him -> his tongue snaps at it -> GULP -> BLOAT -> BELLY-UP, and the pond lifts the leaves ---------- */
+  const say = (x, y, t, c) => ctx.number && ctx.number(x, y, t, c);
+  const mouth = e => ({ x: e.x + (e.face || 1) * 14, y: e.y - 18 });
+  S.scatterSwarm = (msg, why) => { const sw = S.swarm; if (!sw) return; const p = P(), d = Math.sign(sw.x - p.x) || 1;
+    sw.home = false; sw.snapped = false; sw.trail = null; sw.scatter = FK.fly.reform; sw.svx = d * 50; sw.svy = -25; sw.t = Math.max(sw.t, FK.fly.reform + 1.2);
+    S.n.scatters = (S.n.scatters || 0) + 1; S.n.lastScatter = why || 'miss'; if (msg) say(p.x, p.y - 34, msg, '#c9e3a0'); };
+  function liftHome(sw, e, dt) { sw.t = Math.max(sw.t, 1); sw.homeT = (sw.homeT || 0) + dt; const m = mouth(e), dx = m.x - sw.x, dy = m.y - sw.y, d = Math.hypot(dx, dy);
+    if (e.mode === 'crouch' || e.mode === 'leap') { S.scatterSwarm('HE IS AWAY: THE FLIES COME BACK', 'away'); return; }
+    if (sw.homeT > FK.fly.homeMax) { S.scatterSwarm('THE FLIES SCATTER', 'late'); return; }
+    if (d > 2) { const s = Math.min(d, FK.fly.home * dt); sw.x += dx / d * s; sw.y += dy / d * s; }
+    (sw.trail = sw.trail || []).push({ x: sw.x, y: sw.y }); if (sw.trail.length > 6) sw.trail.shift(); }
+  /* a blade blow (its attackBox), a raised shield or a deflect touching the cloud BATS it at him - within FK.fly.reach of him, and not while he gathers or flies */
+  S.bat = (hb, p) => { if (!frogLiftOn()) return false; const sw = S.swarm, e = ctx.boss ? ctx.boss() : null; if (!sw || !e || sw.home || sw.scatter > 0 || sw.eaten || !p || p.dead) return false;
+    let box = hb; if (!box) { if (!(p.block || p.warding)) return false; const f = p.face || 1; box = f > 0 ? { l: p.x - 4, r: p.x + 24, t: p.y - 34, b: p.y + 2 } : { l: p.x - 24, r: p.x + 4, t: p.y - 34, b: p.y + 2 }; }
+    const o = FK.swarm.orbit; if (sw.x + o < box.l || sw.x - o > box.r || sw.y + o < box.t || sw.y - o > box.b) return false;
+    S.n.swats = (S.n.swats || 0) + 1;
+    if (e.mode === 'crouch' || e.mode === 'leap') { S.scatterSwarm('HE IS AWAY: THE FLIES COME BACK', 'away'); return 'away'; }
+    if (Math.abs(sw.x - e.x) > FK.fly.reach) { S.scatterSwarm('TOO FAR: THE FLIES SCATTER', 'far'); return 'far'; }
+    sw.home = true; sw.homeT = 0; sw.snapped = false; sw.trail = []; S.n.batted = (S.n.batted || 0) + 1; say(sw.x, sw.y - 16, 'SWAT!', '#c9e3a0'); return 'bat'; };
+  function liftStep(dt, e) {
+    const sw = S.swarm, ph = (e.phase || 1) >= 2 ? 1 : 0, p = P();
+    /* the flies come round: his clock runs while no cloud is out (FK.fly.every; updateFrog's idle spits them when it is due) */
+    if (!sw && !['sleep', 'wake', 'leap', 'crouch', 'swarmTell', 'swarm'].includes(e.mode)) e.flyT = (e.flyT || 0) + dt;
+    /* phase 2: he spits the cloud as he lands from a leap, and it saps harder */
+    if (ph && e.mode === 'land' && e.landAt !== undefined && e.landAt !== S.lastLand) { S.lastLand = e.landAt; if (!S.swarm) { S.spitSwarm(e); say(p.x, p.y - 30, 'HE SPITS THE FLIES AS HE LANDS', '#c9e3a0'); } }
+    if (ph && sw && !sw.home && !(sw.scatter > 0) && !p.dead && Math.hypot(sw.x - p.x, sw.y - (p.y - 12)) < FK.swarm.onR) p.st = Math.max(0, (p.st || 0) - (FK.fly.p2drain - FK.swarm.drain) * dt);
+    /* a batted cloud draws his tongue at once (eyes bulging: flyEye) */
+    if (sw && sw.home && !sw.snapped && SNAP_FROM.has(e.mode)) { sw.snapped = true; e.mode = 'flyEye'; e.modeT = FK.fly.snapTell; e.actN = (e.actN || 0) + 1; e.snapAim = undefined; e.face = Math.sign(sw.x - e.x) || e.face; say(e.x, e.y - (e.h || 30) - 12, '!', '#ffd36b'); }
+    if (e.mode !== 'bellyUp' && e.tipX !== undefined) e.tipX = undefined;
+  }
+  /* the cloud is in his mouth: GULP (from the swat's snap, or the old route - led onto his head as his tongue came) */
+  S.bite = (e, how, fx) => { S.swarm = null; S.n.selfBites++; S.n.flyBites = (S.n.flyBites || 0) + 1; S.n.lastBite = how; e.mode = 'gulp'; e.modeT = FK.fly.gulp; e.openHp0 = undefined; e.actN = (e.actN || 0) + 1;
+    say(e.x, e.y - (e.h || 30) - 14, 'HE BITES HIS OWN FLY', '#8fd160'); if (fx) { fx.sfx('tongue'); fx.sfx('croak'); fx.shake(3); fx.burst(e.x + (e.face || 1) * 12, e.y - 18, 10, ['#ff7a9a', '#1a1a14', '#8fd160'], 70, 0.4); } };
+  /* BELLY-UP from the fly: x FK.bellow.mul for FK.fly.belly[ph] s; the leaves beside his pad rise firm; in phase 2 his pad tips him to its edge over a lane */
+  S.bellyUp = (e, ph, fx) => { e.mode = 'bellyUp'; e.modeT = FK.fly.belly[ph]; e.openHp0 = e.hp; e.hideSaid = 0; e.actN = (e.actN || 0) + 1; S.n.flyBellies = (S.n.flyBellies || 0) + 1;
+    say(e.x, e.y - (e.h || 30) - 26, 'BELLY-UP: CUT HIM', '#ffd36b'); if (fx) { fx.sfx('heavy'); fx.sfx('splash'); fx.shake(6); fx.hitstop(0.12); }
+    const n = S.liftLeaves(e.st, FK.fly.belly[ph] + FK.fly.lift); if (n) say(e.x, e.y - (e.h || 30) - 38, 'THE POND LIFTS THE LEAVES', '#bfe6f5');
+    const A = ctx.arena(); if (ph && FK.fly.tip && A && A.royal && A.royal[e.st] && A.lanes) { const r = A.royal[e.st], p = P(); let side = Math.sign(p.x - e.x) || 1;
+      if (side > 0 && !A.lanes[e.st + 1]) side = -1; if (side < 0 && !A.lanes[e.st]) side = 1; e.tipX = side > 0 ? r.x1 : r.x0; e.x = e.tipX; S.n.tips = (S.n.tips || 0) + 1; say(e.x, e.y - (e.h || 30) - 50, 'HIS PAD TIPS', '#bfe6f5'); } };
+  /* the leaves in the lanes either side of royal pad st surface FIRM for dur s (a leaf under in a reshuffle comes up at once, in its new place) */
+  S.liftLeaves = (st, dur) => { const A = ctx.arena(); if (!A || !A.lanes) return 0; const ls = [A.lanes[st], A.lanes[st + 1]].filter(Boolean); let n = 0;
+    for (const m of pads()) { const c = m.x + m.w / 2; if (!ls.some(l => c > l.x0 && c < l.x1)) continue;
+      if (m.shufTo) { m.x = m.x0 = m.shufTo.x; m.liftFirm = m.shufTo.firm; m.shufTo = null; } else if (!(m.liftT > 0)) m.liftFirm = m.firm;
+      m.firm = true; m.slapT = 0; m.liftT = dur; n++; }
+    if (n) S.n.lifts = (S.n.lifts || 0) + 1; return n; };
+  /* his new modes, run from updateFrog's switch (src/main.js, one case line): the eyes, the snap, the gulp, the bloat */
+  S.mode = (e, dt, ph, fx) => { const A = ctx.arena(); if (A) e.y = A.floor; e.vy = 0; const sw = S.swarm;
+    switch (e.mode) {
+      case 'flyEye': if (sw) e.face = Math.sign(sw.x - e.x) || e.face; if (e.modeT <= 0) { e.mode = 'flySnap'; e.modeT = FK.fly.snapLive; if (fx) fx.sfx('tongue'); } break;
+      case 'flySnap': if (e.modeT <= 0) { if (S.swarm) S.bite(e, 'swat', fx); else { e.mode = 'idle'; e.modeT = FK.gap[ph]; } } break;
+      case 'gulp': if (e.modeT <= 0) { e.mode = 'bloat'; e.modeT = FK.fly.bloat; say(e.x, e.y - (e.h || 30) - 14, 'HE BLOATS', '#e4e6ac'); if (fx) fx.sfx('squelch'); } break;
+      case 'bloat': if (e.modeT <= 0) S.bellyUp(e, ph, fx); break;
+      default: return false; }
+    return true; };
+  /* THE BELLOW's burst is a DAZE now (BOSSLIFT Q1: the fly owns belly-up) */
+  S.sacDaze = e => { e.mode = 'dazed'; e.modeT = FK.fly.sacDaze; e.openHp0 = e.hp; S.n.sacDazes = (S.n.sacDazes || 0) + 1; say(e.x, e.y - (e.h || 30) - 38, 'DAZED', '#8fd160'); };
   /* every lane leaf nobody stands on goes under (FK.leap.under s) and comes up somewhere else in its lane, firm or sinking anew */
   S.reshuffle = (ph, rng = Math.random) => { const A = ctx.arena(); if (!A || !A.lanes) return 0; let n = 0; const riders = ctx.riders ? ctx.riders() : [P().onMover], heroes = ctx.heroes ? ctx.heroes() : [P()];
     for (const lane of A.lanes) { if (heroes.some(h => !h.dead && h.x > lane.x0 - 8 && h.x < lane.x1 + 8)) continue;   /* a lane a hero is crossing keeps its leaves: a reshuffle never pulls them from under a jump */ const ls = pads().filter(m => m.x + m.w / 2 > lane.x0 && m.x + m.w / 2 < lane.x1).sort((a, b) => a.x - b.x); if (!ls.length) continue;
       const hold = new Set(); while (hold.size < Math.min(FK.firm[ph] || 1, ls.length)) hold.add((rng() * ls.length) | 0);
-      ls.forEach((m, k) => { if (riders.includes(m)) return; const slot = lane.x0 + (lane.x1 - lane.x0) * (k + 0.5) / ls.length - m.w / 2, jig = Math.round((rng() - 0.5) * 12);
+      ls.forEach((m, k) => { if (riders.includes(m)) return; if (m.liftT > 0) { m.liftT = 0; m.firm = !!m.liftFirm; }   /* (claude/froglift) a reshuffle ends the lift */
+        const slot = lane.x0 + (lane.x1 - lane.x0) * (k + 0.5) / ls.length - m.w / 2, jig = Math.round((rng() - 0.5) * 12);
         m.slapT = FK.leap.under; m.shufTo = { x: Math.max(lane.x0 + 10, Math.min(lane.x1 - 10 - m.w, Math.round(slot + jig))), firm: hold.has(k) }; n++; }); }
     S.n.reshuffles++; return n; };
   S.stir = ph => { S.sinkK = FK.sink[ph] || 1; return S.reshuffle(ph); };
   /* the flop's wave over the water: a leaf it passes rocks; under a hero standing on it, it goes under */
   S.waveOver = (w, dt) => { for (const m of pads()) { const c = m.x + m.w / 2; if (Math.abs(c - w.x) < m.w / 2 + 2) { if (!(m.rockT > 0)) m.rockT = 0.35;
-      const p = P(); if (w.flop && p.onMover === m && p.ground && !p.dead && !(m.slapT > 0)) { m.slapT = FK.flop.dunk; S.n.padSunk++; ctx.number(p.x, p.y - 26, 'THE WAVE SINKS YOUR PAD', '#bfe6f5'); ctx.splash && ctx.splash(); } } } };
+      const p = P(); if (w.flop && p.onMover === m && p.ground && !p.dead && !(m.slapT > 0) && !(m.liftT > 0)) { m.slapT = FK.flop.dunk; S.n.padSunk++; ctx.number(p.x, p.y - 26, 'THE WAVE SINKS YOUR PAD', '#bfe6f5'); ctx.splash && ctx.splash(); } } } };
   S.ripple = () => {}; S.slap = () => { for (const m of pads()) { m.slapT = FK.pound.sink; } };
   S.throwOff = () => {};   /* (the croak ripple's throw is retired with his shallow pond) */
-  S.show = () => ({ swarm: S.swarm ? { x: S.swarm.x, y: S.swarm.y, t: S.swarm.t } : null, ripples: [], fling: false, reel: !!S.reel, n: S.n, sinkK: S.sinkK });
-  S.draw = (g, cx, cy, time) => { if (S.swarm) M2A.swarm(g, S.swarm, cx, cy, time, FK.swarm.orbit); };
+  S.show = () => ({ swarm: S.swarm ? { x: S.swarm.x, y: S.swarm.y, t: S.swarm.t, batted: !!S.swarm.home, scatter: S.swarm.scatter > 0 } : null, ripples: [], fling: false, reel: !!S.reel, n: S.n, sinkK: S.sinkK });
+  S.draw = (g, cx, cy, time) => { if (S.swarm) M2A.swarm(g, S.swarm, cx, cy, time, FK.swarm.orbit); if (frogLiftOn()) liftDraw(g, cx, cy, time); };
+  /* (claude/froglift) GREYBOX until the art lane: the batted cloud's green streak, a green rim on the risen leaves */
+  function liftDraw(g, cx, cy, time) { const sw = S.swarm; if (sw && sw.home && sw.trail) { g.fillStyle = '#8fd160'; sw.trail.forEach((q, i) => { g.globalAlpha = 0.25 + i * 0.1; g.fillRect(Math.round(q.x - cx) - 1, Math.round(q.y - cy) - 1, 2, 2); }); g.globalAlpha = 1; }
+    for (const m of pads()) if (m.liftT > 0) { g.fillStyle = (Math.floor(time * 6) % 2) ? '#8fd160' : '#c9e3a0'; g.fillRect(Math.round(m.x - cx), Math.round(m.y - cy) - 1, m.w, 1); } }
   return S;
 }
 
@@ -123,7 +210,7 @@ export function frogPlan(s) {
   const royal = F.royal || [], his = royal[e.tst !== undefined && (m === 'leap' || m === 'crouch') ? e.tst : e.st] || royal[0];
   const onSt = i => i >= 0 && royal[i] && P.x >= royal[i].x0 - 4 && P.x <= royal[i].x1 + 4 && P.y <= royal[i].top + 3;
   const myFoot = () => { if (!P.ground) return null; const fs = footings(F); return fs.find(f => P.x >= f.x0 - 3 && P.x <= f.x1 + 3 && (f.solid ? P.y <= (royal[0] ? royal[0].top + 3 : 1e9) : true)) || null; };
-  const open = e.mode === 'dazed' || e.mode === 'flopRest' || e.mode === 'croak' || e.mode === 'bellyUp' || e.mode === 'bellowTell';   /* (claude/frogking2 11-07: the sac while it glows, and belly-up, are the blows to make) */
+  const lift = frogLiftOn(), open = e.mode === 'dazed' || e.mode === 'flopRest' || e.mode === 'croak' || e.mode === 'bellyUp' || e.mode === 'bellowTell' || (lift && FROG_LIFT_MODES.has(e.mode));   /* (claude/froglift: the bite's eyes, snap, gulp and bloat are his to be cut in) */   /* (claude/frogking2 11-07: the sac while it glows, and belly-up, are the blows to make) */
   out.face = toHim;
   if (F.reel) { out.why = 'reeled in'; return out; }
   /* IN THE WATER (the marsh's drain): to the nearest footing that holds - a leaf that is up or a royal pad - and out onto it */
@@ -133,6 +220,12 @@ export function frogPlan(s) {
   const lowNear = (F.waves || []).some(w => (P.x - w.x) * w.dir > -4 && (P.x - w.x) * w.dir < (P.onPad ? 34 : 30));
   if (lowNear && P.ground) { out.jump = true; out.why = 'jump the wave'; out.gx = P.x; return out; }
   const stHis = royal.indexOf(his), there = onSt(stHis) && m !== 'leap' && m !== 'crouch';
+  /* (claude/froglift) SWAT THE FLIES AT HIM: the cloud on me, him on a pad within FK.fly.reach, not gathering or in the air -> face the cloud and swing (or shield) into it.
+     PLAN.missLead: some swarms it never thinks to (it walks out of them instead) */
+  if (lift && F.swarm && !F.swarm.batted && !F.swarm.scatter && m !== 'crouch' && m !== 'leap' && Math.abs(F.swarm.x - e.x) < FK.fly.reach - 20 && Math.hypot(F.swarm.x - P.x, F.swarm.y - (P.y - 12)) < 30 && !roll('swat' + (e.actN || 0), PLAN.missLead)) {
+    const fc = Math.abs(F.swarm.x - P.x) < 4 ? toHim : (Math.sign(F.swarm.x - P.x) || toHim); out.face = fc; out.gx = P.x;
+    if (s.shield && !(P.atk >= 0)) { out.block = true; out.why = 'shield the flies at him'; return out; }
+    out.atk = P.atk < 0; out.why = 'swat the flies at him'; return out; }
   /* HIS TELLS, read a reaction late (some misread) */
   if (/Tell$|^crouch$/.test(m) && seen() && !roll(key, miss)) {
     const leading = !!F.swarm && !roll('lead' + (e.actN || 0), PLAN.missLead);

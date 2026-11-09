@@ -171,6 +171,7 @@ import * as DS from './demo-flag.js'; import * as DSV from './demo-save.js'; imp
 import * as DSL from './demo-slots.js';   /* (claude/floatfix2) a window through the terrain is backed with masonry */
 import * as HNT from './redraw/hornets_nest_tiles.js'; import * as HNB from './redraw/hornets_nest_backdrop.js'; import * as HNPR from './redraw/hornets_nest_props.js'; import * as HNHY from './redraw/hornets_nest_honey.js'; import { bakeMapNest } from './redraw/hornets_nest_map.js';   /* (claude/hornetsnestart) THE HORNET'S NEST's tile kit and backdrop */ import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as HPL from './redraw/hero_plank_poses.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
+import { frogLiftOn as FLIFT_ON, FROG_LIFT_FRAMES } from './frog-king.js';   /* (claude/froglift) BOSSLIFT FROG, flag-gated (src/frog-king.js frogLiftOn) */
 import * as M2A from './redraw/marsh2_art.js'; import * as FCA from './redraw/frog_court_art.js'; /* (claude/frogking2art) THE CROAKING COURT's art: royal pads, reeds, lanterns, the stir, the leap's splash, the tongue */ /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt, stationAt as frogStationAt, nextStation as frogNextStation } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
 import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';
@@ -11915,6 +11916,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   { const ex = SV.examAt(L, P.x, TS); if (ex && ex !== P.examIn && !P.dead) { hintSay('mechanic', 3.5, SV.LINES.exam); number(P.x, P.y - 36, 'THE SPIKES KILL HERE', '#ff6b6b'); } P.examIn = ex; }   /* NEVER AN UNTOLD DEATH: an exam says so as you walk in (and again after a death) */   /* the last dry footing, for the water above */
 
   const hb = attackBox();
+  if (FKC && FLIFT_ON() && boss && boss.t === 'frog' && (hb || P.block || P.warding) && FKC.bat(hb, P) === 'bat') { SFX.squelch(); hitstop(0.04); }   /* (claude/froglift) SWAT THE FLIES AT HIM: a blade, a shield or a deflect on the cloud bats it at his mouth */
   if (hb) {
     for (const e of enemies) {
       if (!e.alive || P.hitSet.has(e) || e.gone > 0) continue;
@@ -13708,6 +13710,7 @@ function updateQueen(e, dt) {
 
 // ---------- boss: the Bullfrog King ----------
 const FROG_FRAME = { tongueTell: 7, tongue: 8, snap: 8, flopTell: 9, flopRest: 10, swarmTell: 11, swarm: 12, rippleTell: 13, ripple: 14, poundTell: 15, pound: 16, snapTell: 17, spitTell: 18, spit: 19, croak2: 13, bellowTell: 20, bellow: 21, bellyUp: 22 };   /* (claude/frogking2 11-07) THE BELLOW: the glowing sac (20), the croak let go (21), BELLY-UP (22) */
+Object.assign(FROG_FRAME, FROG_LIFT_FRAMES);   /* (claude/froglift) the new modes' greybox poses; they only occur with the flag on */
 const frogFrame = e => FROG_FRAME[e.mode] ?? (e.mode === 'dazed' ? 6 : e.mode === 'crouch' ? 3 : (e.mode === 'leap' || e.mode === 'hop') ? (e.vy < 40 ? 4 : 5) : (e.mode === 'flop') ? (e.vy < 0 ? 9 : 10) : (e.mode === 'croak' || e.mode === 'croak2' || e.mode === 'croak3') ? 1 : (e.mode === 'inhale' || e.mode === 'inhaleTell') ? 2 : 0);
 /* (claude/frogking2 11-07, Daniel: "the tongue doesn't look connected to him") HIS LIPS this frame, from the pose he is drawn in (src/redraw/frogking.js mouth table) */
 function frogMouth(e) { const m = (SPR.frog && SPR.frog.mouth && SPR.frog.mouth[frogFrame(e)]) || [26, -14], f = e.face || 1; return { x: e.x + f * m[0], y: e.y + m[1] }; }   /* (claude/frogking2) the spit's own windup + release (18, 19); HIS POND STIRS croaks on the swelling throat (13) */   /* (claude/marsh2) src/redraw/frogking.js: each new move's own windup + release (B16) */
@@ -13752,6 +13755,7 @@ function frogReelStep(dt) { const R = P.frogReel; if (!R) return false;
   return true; }
 /* (claude/frogking3) HIS REST after a told blow: phase 2 sometimes chains the next one (FROGK.pair) - never twice running, the next tell is whole */
 function frogRest(e, ph) { if (ph > 0 && !e.paired && Math.random() < FROGK.pair[ph]) { e.paired = true; return FROGK.pairGap; } e.paired = false; return FROGK.gap[ph]; }
+const FROG_LIFT_FX = { number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), shake: n => shakeCam(n), hitstop: t => hitstop(t), sfx: k => { if (SFX[k]) SFX[k](); } };   /* (claude/froglift) BOSSLIFT FROG, flag-gated (src/frog-king.js frogLiftOn) */
 const frogP2On = () => !!(bossActive && boss && boss.t === 'frog' && boss.alive !== false && boss.phase >= 2);   /* (claude/frogking3) his track lifts a tone (music.storm) for phase 2 */
 let frogStirT = 0, frogStirAt = -99;   /* the THE POND STIRS banner's clock, and when it was croaked (the court's art ramps in from it) */
 function updateFrog(e, dt) {
@@ -13789,6 +13793,7 @@ function updateFrog(e, dt) {
         if (swarmUp && FKC.swarm.t <= 0.6) { e.mode = 'snapTell'; e.modeT = FROGK.swarm.snapTell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); e.snapAim = { x: FKC.swarm.x, y: FKC.swarm.y }; SFX.buzz(); break; }
         /* (claude/frogking2 11-07) THE BELLOW: in his pool, and at least every FROGK.bellow.every[ph] s - the break comes round */
         if ((e.bellowT || 0) >= FROGK.bellow.every[ph]) { frogBellow(e, ph); break; }
+        if (FLIFT_ON() && !swarmUp && (e.flyT || 0) >= FROGK.fly.every[ph]) { e.flyT = 0; e.mode = 'swarmTell'; e.modeT = FROGK.swarm.tell; e.actN = (e.actN || 0) + 1; e.last = 'swarm'; SFX.buzz(); break; }   /* (claude/froglift) THE FLIES COME ROUND: at least every FROGK.fly.every[ph] s */
         const far = ad > FROGK.tongue.max[ph] + 10;
         const pool = far ? ['spit', 'spit', 'flop', 'swarm', 'bellow'] : ['tongue', 'tongue', 'spit', 'flop', 'swarm', 'bellow'];
         if (swarmUp) for (let i = pool.length - 1; i >= 0; i--) if (pool[i] === 'tongue' || pool[i] === 'swarm') pool.splice(i, 1);   /* (with the flies out, the tongue waits for them) */
@@ -13810,12 +13815,13 @@ function updateFrog(e, dt) {
     case 'tongueTell': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'tongue'; e.modeT = FROGK.tongue.live; tongue = { x0: e.x + e.face * 22, y: Math.max(floor - 30, Math.min(floor + 22, P.y - 8)), dir: e.face, len: 0, max: FROGK.tongue.max[ph], active: true, grab: true, frog: true }; SFX.tongue(); } break;
     case 'tongue': { const live = FROGK.tongue.live, t = live - e.modeT; if (tongue) tongue.len = t < 0.2 ? tongue.max * (t / 0.2) : t < 0.35 ? tongue.max : tongue.max * Math.max(0, (live - t) / 0.2); if (e.modeT <= 0) { tongue = null; e.mode = 'idle'; e.modeT = frogRest(e, ph); } break; }
     /* THE FLY SWARM: cheeks full of flies (frame 11), then he spits them at you (frame 12) and they trail you */
-    case 'swarmTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 16 + (Math.random() - 0.5) * 8, y: e.y - 18, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.3, max: 0.3, col: '#1a1a14', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'swarm'; e.modeT = FROGK.swarm.spit; if (FKC) FKC.spitSwarm(e); SFX.spit(); number(P.x, P.y - 30, 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', '#c9e3a0'); } break;
+    case 'swarmTell': e.y = floor; e.vy = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + e.face * 16 + (Math.random() - 0.5) * 8, y: e.y - 18, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.3, max: 0.3, col: '#1a1a14', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'swarm'; e.modeT = FROGK.swarm.spit; if (FKC) FKC.spitSwarm(e); SFX.spit(); number(P.x, P.y - 30, FLIFT_ON() ? 'SWAT THE FLIES AT HIM' : 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', '#c9e3a0');   /* (claude/froglift) */ } break;
     case 'swarm': e.y = floor; e.vy = 0; if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.7; } break;
     /* HIS TONGUE GOES FOR THE FLIES (frame 17: his eye on them; frame 8 as it goes): led onto him, he BITES HIMSELF */
     case 'snapTell': e.y = floor; e.vy = 0; if (FKC && FKC.swarm) { e.snapAim = { x: FKC.swarm.x, y: FKC.swarm.y }; e.face = Math.sign(FKC.swarm.x - e.x) || e.face; }
       if (e.modeT <= 0) { const sw = FKC && FKC.swarm, head = { x: e.x + e.face * 14, y: e.y - 18 };
         if (sw && Math.hypot(sw.x - head.x, sw.y - head.y) < FROGK.swarm.bite || (sw && Math.abs(sw.x - e.x) < e.w / 2 + 4 && Math.abs(sw.y - (e.y - 15)) < 26)) {
+          if (FLIFT_ON()) { FKC.bite(e, 'lead', FROG_LIFT_FX); break; }   /* (claude/froglift) BOSSLIFT FROG, flag-gated (src/frog-king.js frogLiftOn) */
           FKC.swarm = null; FKC.n.selfBites++; e.mode = 'dazed'; e.modeT = FROGK.swarm.open; e.openHp0 = e.hp; number(e.x, e.y - e.h - 14, 'HE BITES HIMSELF', '#8fd160'); SFX.tongue(); SFX.croak(); shakeCam(3); burst(e.x + e.face * 12, e.y - 18, 10, ['#ff7a9a', '#1a1a14', '#8fd160'], 70, 0.4); break; }
         const aim = e.snapAim || { x: P.x, y: P.y - 12 }, dir = Math.sign(aim.x - e.x) || e.face, dist = Math.abs(aim.x - e.x);
         e.face = dir; e.mode = 'snap'; e.modeT = FROGK.swarm.snapLive; tongue = { x0: e.x + dir * 22, y: Math.max(floor - 30, Math.min(floor + 22, aim.y)), dir, len: 0, max: Math.min(FROGK.swarm.reach, dist + 16), active: true, grab: true, frog: true, snap: true }; SFX.tongue(); } break;
@@ -13848,10 +13854,12 @@ function updateFrog(e, dt) {
     /* BELLY-UP (frame 22): the BREAK - x FROGK.bellow.mul for FROGK.bellow.belly s, at most FROGK.bellow.take of him (frogShake) */
     case 'bellyUp': e.y = floor; e.vy = 0; frogShake(e); if (Math.random() < dt * 6) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - 26, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#ffd36b', size: 1, grav: 0 }); if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, 'HE ROLLS OVER', '#9aa39a'); SFX.splash(); } break;
     case 'dazed': e.y = floor; e.vy = 0; frogShake(e); if (e.modeT <= 0) { e.mode = 'idle'; e.modeT = 0.8; } break;
+    case 'flyEye': case 'flySnap': case 'gulp': case 'bloat': if (!FKC || !FKC.mode(e, dt, ph, FROG_LIFT_FX)) { e.mode = 'idle'; e.modeT = 0.5; } break;   /* (claude/froglift) BOSSLIFT FROG, flag-gated (src/frog-king.js frogLiftOn) */
     default: e.y = floor; e.vy = 0; e.mode = 'idle'; e.modeT = 0.5; break;   /* (the old court's moves - hopAway, inhale, ripple, pound, mired - are retired) */
   }
   if (e.mode !== 'leap' && e.mode !== 'flop') { e.y = Math.min(e.y, floor); e.x = Math.max(here.x0 + 14, Math.min(here.x1 - 14, e.x)); }
   e.x = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x));
+  if (e.tipX !== undefined && e.mode === 'bellyUp') e.x = e.tipX;   /* (claude/froglift) PHASE 2: HIS PAD TIPS him to its edge, over the lane */
   if (e.mode !== 'leap' && e.mode !== 'dazed' && e.mode !== 'snapTell' && e.mode !== 'snap' && e.mode !== 'tongue' && e.mode !== 'flop' && e.mode !== 'bellyUp' && e.mode !== 'bellow') e.face = Math.sign(P.x - e.x) || e.face;
   /* (claude/frogking2 11-07, Daniel: "the tongue doesn't look connected to him") THE TONGUE IS HIS, EVERY FRAME: its root at his lips in the pose he is in now (frogMouth), its
      direction his facing (locked while it is out); out of the tongue/snap it is gone */
@@ -13863,6 +13871,7 @@ function frogBellow(e, ph) { e.mode = 'bellowTell'; e.modeT = FROGK.bellow.tell[
 /* THE SAC BURSTS (FROGK.bellow.hits blows on it while it was up): he flops BELLY-UP - the break */
 function frogBurst(e) { e.mode = 'bellyUp'; e.modeT = FROGK.bellow.belly; e.openHp0 = e.hp; e.sacHits = 0; e.burstAt = time; e.burstX = e.x + (e.face || 1) * 16; e.burstY = e.y - 13; e.hideSaid = 0;
   if (FKC && FKC.n) FKC.n.bursts = (FKC.n.bursts || 0) + 1;
+  if (FLIFT_ON() && FKC) FKC.sacDaze(e);   /* (claude/froglift) BOSSLIFT Q1: the sac's burst is a DAZE (x1.5, FROGK.take); the fly owns belly-up */
   number(e.x, e.y - e.h - 26, 'THE SAC BURSTS', '#fff1a0'); SFX.puff(); SFX.squelch(); SFX.heavy(); shakeCam(6); hitstop(0.12); zoomKick(1.12, 0.3); killFlash = 0.05;
   burst(e.burstX, e.burstY, 18, ['#fff1a0', '#ffe68a', '#e4e6ac', '#ffffff'], 120, 0.6); }
 /* HIS POND STIRS (claude/frogking2, phase 2 at half): the yellow leaves sink FROGK.sink[1]x faster and fewer hold; the lanes reshuffle into it */
