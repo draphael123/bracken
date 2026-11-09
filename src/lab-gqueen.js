@@ -5,7 +5,7 @@
 //   opts.gqEscape (or the profile's gqEscape) = 'play' (default: src/lab.js gqEscapeBot walks into her portal and climbs the tower's ladders)
 //                                             | 'skip' (King Gorm's gormSkipRun precedent: the climb is measured by the level walker, the lab goes straight to the tower top)
 // A played escape that has not reached the tower top in GQ_ESC_STALL s is skipped too (a bot stuck on a rafter must not turn the row into a timeout) and the row says so (skip: 'stall').
-// Row field (bossLab rows[i].gq, tools/boss-run.mjs prints it): { stage, stuns, p1Secs, escSecs, p2Secs, skip, escHp0, escHpEnd (% of max hp), barLeft (% of the CURRENT bar) }.
+// Row field (bossLab rows[i].gq, tools/boss-run.mjs prints it): { stage, stuns, p1Secs, escSecs (= towerSecs, gq3), fled, p2Secs, skip, escHp0, escHpEnd (% of max hp), barLeft (% of the CURRENT bar) }.
 export const GQ_ESC_STALL = 90;   /* (gq3) the burning tower is a climb: 90 s before the lab skips it */
 export function gqLabState() {
   return { stage: 'hall', hallF: null, escF: null, roofF: null, stuns: 0, lastMode: '', skip: null, escHp0: null, escHpEnd: null, tl: { hp: null, cls: null, d: {}, t: {}, n: {} } };
@@ -51,6 +51,8 @@ export function gqLabRow(st, boss, f, spf) {
     stage: !boss.alive ? 'won' : st.stage, stuns: st.stuns, skip: st.skip,
     p1Secs: +((st.hallF ?? f) * spf).toFixed(1),
     escSecs: st.escF === null ? null : span(st.escF, st.roofF ?? f, spf),
+    towerSecs: st.escF === null ? null : span(st.escF, st.roofF ?? f, spf),   /* (gq3) the escape IS the burning tower: the same span under its own name */
+    fled: !!boss.gqFled,   /* (gq3) the row ended by her ESCAPE (the roof bar emptied), not a corpse */
     p2Secs: st.roofF === null ? null : span(st.roofF, f, spf),
     escHp0: st.escHp0, escHpEnd: st.escHpEnd,
     barLeft: boss.alive ? pct(boss.hp, boss.maxHp) : 0,

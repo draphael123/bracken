@@ -96,6 +96,10 @@ export function makeGobGeoHands(ctx) {
     return null;
   }
   function smashLock(k, why) { const s = st(); if (s.smashed.has(k.id)) return; s.smashed.add(k.id); s.n.seals++;
+    if (k.kind === 'weight') {   /* (gq3 item 3) a GEODE COUNTERWEIGHT: it drops, and its PIVOT SLAB swings level (a 3-col bridge) */
+      if (ctx.layCells) ctx.layCells(k.lay || []); const wx = (k.x + 0.5) * TS, wy = k.y * TS;
+      ctx.burst(wx, wy + 24, 14, ['#9a5ae0', '#d0a8ff', '#ffffff', '#5a2a9a'], 100, 0.7); ctx.shake(5); sfx('golemShatter'); sfx('thud'); s.fx.push({ k: 'weight', x: wx, y: wy, t: 0, id: k.id });
+      ctx.number(wx, wy + 40, why === 'fail' ? 'WITH HIM GONE THE WEIGHT FALLS' : 'THE WEIGHT DROPS: THE SLAB SWINGS LEVEL', '#8fd160'); return; }
     ctx.openCells(k.cells || []);
     const cx0 = (k.x + 0.5) * TS, cy0 = (k.y + 0.5) * TS;
     ctx.burst(cx0, cy0, 16, k.kind === 'crack' ? ['#3e3e4c', '#5c5c6e', '#868698', '#9a5ae0'] : ['#9a5ae0', '#d0a8ff', '#ffffff', '#5a2a9a'], 110, 0.7); ctx.shake(5); sfx('golemShatter'); sfx('crumble');
@@ -168,6 +172,11 @@ export function makeGobGeoHands(ctx) {
   /* before the foes: the seals on their gates, the old stone of a secret (until smashed) */
   H.drawWorld = (g, cx, cy, time) => { const s = st(); if (!s) return;
     for (const k of ctx.L.rocklocks || []) { const x = (k.x + 0.5) * TS - cx, y = (k.y + 0.5) * TS - cy; if (x < -60 || x > ctx.VW() + 60) continue;
+      if (k.kind === 'weight') {   /* GREYBOX (GQ3ART draws the counterweight, its chain, the pivot slab and the shaft): a geode on a chain from the ceiling; its slab hangs vertical at the pivot until the weight drops */
+        const hit = s.smashed.has(k.id), sl = (k.lay || [])[0], wx = Math.round(x), top = Math.round(k.box[2] * TS - cy), len = Math.round((k.box[3] - k.box[2] + 1) * TS * 0.6);
+        if (!hit) { g.fillStyle = '#6a6a7c'; g.fillRect(wx, Math.round(-cy), 1, top + len - 8 + Math.round(cy)); g.fillStyle = '#5a2a9a'; g.fillRect(wx - 6, top + len - 8, 12, 12); g.fillStyle = '#b28cff'; g.fillRect(wx - 4, top + len - 6, 8, 8); g.fillStyle = '#e8dcff'; g.fillRect(wx - 2, top + len - 5, 3, 3); }
+        if (sl) { const sx = Math.round(sl[0] * TS - cx), sy = Math.round(sl[2] * TS - cy); g.fillStyle = '#7a7a8c'; if (hit) g.fillRect(sx, sy, (sl[1] - sl[0] + 1) * TS, 5); else g.fillRect(sx, sy, 5, (sl[1] - sl[0] + 1) * TS); g.fillStyle = '#c9c9d6'; g.fillRect(sx, sy, hit ? (sl[1] - sl[0] + 1) * TS : 5, 1); }
+        continue; }
       if (k.kind === 'crack') { if (!s.smashed.has(k.id)) GGA.drawCrackedFace(g, k.box[0] * TS - cx, k.box[2] * TS - cy, (k.box[1] - k.box[0] + 1) * TS, (k.box[3] - k.box[2] + 1) * TS, time); }
       else GGA.drawSeal(g, x, y, time, s.smashed.has(k.id) ? 1 : 0); } };
   /* after the foes: his orbit, his stone in flight, the bursts */

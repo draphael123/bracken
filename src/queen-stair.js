@@ -16,7 +16,7 @@ export const QS = {
   STEPS: [[654, 656, 17], [657, 658, 15], [659, 660, 13]],   // [x0, x1, stand row]: solid stone flights up the gatehouse face
   L1: [661, 667, 11], PORTCULLIS: { col: 663, y0: 14, y1: 19 },
   STEP2: [668, 669, 9], L2: [670, 681, 7], ARCHER: { x0: 670, x1: 673, row: 6 }, CATWALK: { x0: 674, x1: 680, row: 6 }, LADDER1: { col: 681, net: [4, 5], grille: [6, 7] },
-  LT: [682, 684, 4], LADDER2: { col: 685, y0: 5, y1: 12 }, SPOTS: [[686, 12], [687, 10], [688, 8]],
+  LT: [682, 684, 4], LADDER2: { col: 685, y0: 5, y1: 8 }, SPOTS: [[686, 8], [687, 8], [688, 8]],
   SHAFT: [689, 700], RETURN: { col: 689, y0: 8, y1: 19 }, FLOOR: 19, SLABS: [[690, 692], [694, 696], [698, 700]], SLAB_ROW: 9, WEIGHTS: [691, 695, 699], FAR: [701, 703, 8], ALCOVE: [686, 688, 17, 19],
   GALLERY: { x0: 704, x1: 715, row: 12, ladder: 712 }, HOLE: [708, 13],
   FOES: { b1: [['soldier', 665, 11], ['javelin', 667, 11]], b2: [['shield', 675, 7], ['archer', 671, 5], ['gobgeo', 683, 4]], b3: [['gobgeo', 702, 8]], b4: [['heavy', 707, 19], ['soldier', 710, 19], ['javelin', 714, 19]] },
@@ -70,7 +70,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
     R.rocklocks.push({ id: 'qs-w' + i, kind: 'weight', x: wc, y: 5, box: [wc, wc, 5, 9], lay: [[a, b, B.SLAB_ROW]], seal: 'qs-store' });
     R.reachSpans.push([a, b, B.SLAB_ROW]);
   });
-  ent('sign', 686, 12, { text: 'HIS ROCK, SENT BACK, DROPS THE FIRST WEIGHT: A SLAB SWINGS LEVEL. THREE MAKE A BRIDGE.' });
+  ent('sign', 686, 8, { text: 'HIS ROCK, SENT BACK, DROPS THE FIRST WEIGHT: A SLAB SWINGS LEVEL. THREE MAKE A BRIDGE.' });
   ent('torch', 687, 4); ent('torch', 703, 8); coins([691, 8], [695, 8], [699, 8]);
 
   // ---- B4: the gallery over her door ----
@@ -84,7 +84,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
   ent('torch', 706, 11); ent('torch', 714, 11); coins([708, 10], [712, 10]);
 
   // ---- the section's look: stone tower, an interior store, no garrison sprinkling, snow ----
-  R.masonry.push([661, 703, 0, 19]); R.interiors.push([685, 703, 2, 19, 'hchall']); R.calm.push([661, 715, 0, 19]);
+  R.masonry.push([661, 703, 0, 19]); R.interiors.push([685, 703, 2, 19, 'hchall']); R.calm.push([652, 715, 0, 19]);
   R.hcQueenStair = true;
   return R;
 }

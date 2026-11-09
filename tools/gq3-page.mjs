@@ -47,7 +47,7 @@ try {
         let sawFly=false,sawBits=false,sawBack=false;for(let i=0;i<60*4;i++){hold();BK.sim(1);const g=H.test.geode&&H.test.geode();if(g&&g.state==='fly')sawFly=true;if(g&&g.state==='back')sawBack=true;if(H.test.geodeBits&&H.test.geodeBits().length)sawBits=true;}
         res.geode={sawFly,sawBits,sawBack,mode:e.mode};}}
     /* ---- the Queen's Stair ---- */
-    load();{const spots=[[650,19],[660,13],[666,11],[675,7],[683,4],[686,12],[688,8],[702,8],[708,11],[712,19],[717,19]];const seen=[];
+    load();{const spots=[[650,19],[660,13],[666,11],[675,7],[683,4],[686,8],[688,8],[702,8],[708,11],[712,19],[717,19]];const seen=[];
       for(const [x,y] of spots){BK.tp(x,y);run(40);seen.push([x,y,Math.round(BK.P.x/16),Math.round(BK.P.y/16)-0]);}
       res.stair.spots=seen;res.stair.foes=BK.enemies().filter(q=>q.alive&&q.x>=652*16&&q.x<=716*16).map(q=>q.t).sort().join();}
     return res;})()`, 170000);
