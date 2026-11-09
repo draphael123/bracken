@@ -1,0 +1,64 @@
+{
+  "time": "2026-11-09T11:13:57.758Z",
+  "status": "ONE bounded recovery plan for10unanswered controls only; no native assertion failure or timing rerun.",
+  "prior": {
+    "receipt": "outputs/receipts/hanging-face-owned-native-result-readback-nov09.json",
+    "sha256": "ba01d6da83d9e1dad02a2ff7f715ad4544cf000ebb704d13fbc934c8564c95ca",
+    "time": "2026-11-09T11:09:40.393Z",
+    "run": 42602735668,
+    "controller": "b3e2bcc708e774b3677fc6576f160e4a04faa06e",
+    "status": "Partial: new native/Node occurrence terminal; failures/missing/Unknown retained. No source adoption,material qualification or broader Game gate."
+  },
+  "source": {
+    "receipt": "outputs/receipts/hanging-face-owned-input-source-nov09.json",
+    "sha256": "fe59c9c33b79a8a9cc1f21818304dbb30b28e75080ee4bd626059b4c5d10bc9c",
+    "manifest": "work/hanging-face-owned-input-source-nov09/manifest.json",
+    "manifestSha256": "3992445586d2529ceed1ff58d306242775f2615888aea577b2f8cb6b2263c704",
+    "time": "2026-11-09T10:06:45.786Z",
+    "status": "Partial: distinct five-file source prepared with private weak identity tags and actual native contexts; no shim or generic ownership escape. Static source qualification only; native/Node/material proof remains unqualified."
+  },
+  "unchangedCaseAndManifestController": "b3e2bcc708e774b3677fc6576f160e4a04faa06e",
+  "unchangedCasesSha256": "d272e0b89f661399f1f9d295b49b5e11f64432d68a2f4382a0453190050c5775",
+  "unchangedManifestSha256": "e7830e8489a35754daf74ec07314727dd4ea46b55a7a9c20916fef6457f80c6c",
+  "cases": [
+    "default-roots",
+    "default-hollow",
+    "gpu",
+    "active-scope",
+    "proxy-zone",
+    "ceil-rect",
+    "ctor-proxy-Document",
+    "ctor-proxy-HTMLCanvasElement",
+    "ctor-bound-Document",
+    "ctor-bound-HTMLCanvasElement"
+  ],
+  "startupUnexecuted": [
+    "gpu",
+    "proxy-zone"
+  ],
+  "resourceUnknown": [
+    "default-roots",
+    "default-hollow",
+    "active-scope",
+    "ceil-rect",
+    "ctor-proxy-Document",
+    "ctor-proxy-HTMLCanvasElement",
+    "ctor-bound-Document",
+    "ctor-bound-HTMLCanvasElement"
+  ],
+  "sourceDiagnosis": "Original strict profile samples every3000ms;8completed cases closed all3documents with totalMb=rendererMb=0,so their native pixels/events/RNG pass but renderer observation is absent. Zero is not treated as a saving or budget pass.2other cases reached0documents because Chrome never exposed its debugging port.",
+  "narrowRecovery": "The source-specific CDP adapter exposes ONLY the existing owned run.sampleMemory method. Call that unchanged sampler at document boundaries,in addition to its unchanged3000ms timer. Its existing1536MB interruption logic and4352MB admission remain exact. No extra GC,flush,waiting,timeout/flag/quality/frame/RNG change. Native case/oracle/production/helper/profile bytes stay exact; add an explicit positive actual-renderer observation requirement.",
+  "originalProfileSha256": "9d38b09c585f0054e40125c63b2435e61e8cd6f5cc53e6011edf62178c8c2184",
+  "rendererMb": 1536,
+  "admissionMb": 4352,
+  "task3FullCheckRendererMb": 2816,
+  "maxRecoveryOccurrences": 1,
+  "noPassedCompleteCaseOrNodeFixtureReplayed": true,
+  "originalUnknownsPreserved": true,
+  "noSourceChange": true,
+  "noGenericHelperAllowlistChange": true,
+  "noOriginalAssertionWeakened": true,
+  "noRetiming": true,
+  "cloudDispatch": false,
+  "overallWorkComplete": false
+}
