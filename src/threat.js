@@ -187,6 +187,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      the snow cornices and the driven hatchets are things you work, not foes */
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
+Object.assign(THREAT, { wwspan: 0, wwcandle: 0, wwlamp: 0, wwstone: 0, wwhands: 0, wwthief: 2, lanternwidow: 6 });   /* (claude/wispwood) WISPWOOD: its pale spans, candles, lamps, waystones and hand pools are machines (the hands are the pools' own hazard); a wisp thief; its boss */
 
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.

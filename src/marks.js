@@ -951,3 +951,4 @@ export function markOf(e) {
   return '';
 }
 export const marksMissed = () => [...MISSED];
+Object.assign(MARK, { 'wwthief|swoopTell': '!' }); Object.assign(ANSWER, { 'wwthief|swoopTell': 'block' }); Object.assign(HEIGHT, { 'wwthief|swoopTell': 'high' });   /* (claude/wispwood) A WISP THIEF's swoop: a yellow ! (the shield scorches it), at head height - a duck under it works too */
