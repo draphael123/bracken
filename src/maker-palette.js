@@ -62,7 +62,7 @@ export const FOES = [
 export const WATER_FOES = ['urchin', 'angler', 'puffer', 'jelly', 'lamprey', 'eel', 'leech'];
 FOES.push(...WATER_FOES);
 
-export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up', 'arrow',
+export const THINGS = ['coin', 'silver', 'check', 'gate', 'mover', 'mover:up', 'arrow', 'warp',
   // MECHANISMS (claude/maker step 3): a lever or a plate opens a column of DOOR tiles (the nearest, or the one LINK points at);
   // a key opens the gate of its own metal; the rest are traps and weights
   'mend', 'switch', 'lever', 'plate', 'key:brass', 'lockgate:brass', 'key:iron', 'lockgate:iron', 'key:bone', 'lockgate:bone',
@@ -78,7 +78,7 @@ const ENT_FOR = {
   crusher: { t: 'crusher', every: 3 }, firevent: { t: 'firevent', every: 2.8 }, roller: { t: 'roller', face: -1, speed: 55 },
 };
 export const entFor = (id, x, y) => ({ ...(ENT_FOR[id] || { t: id }), x, y });
-const THING_NAMES = { arrow: 'ARROW SIGN', mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
+const THING_NAMES = { warp: 'WARP DOOR', arrow: 'ARROW SIGN', mend: 'HEART', switch: 'SWITCH', mover: 'MOVING PLATFORM', 'mover:up': 'LIFT', check: 'CHECKPOINT', gate: 'GOAL GATE', plate: 'PRESSURE PLATE',
   'key:brass': 'BRASS KEY', 'key:iron': 'IRON KEY', 'key:bone': 'BONE KEY', 'lockgate:brass': 'BRASS GATE', 'lockgate:iron': 'IRON GATE',
   'lockgate:bone': 'BONE GATE', pushblock: 'PUSH BLOCK', firevent: 'FIRE JET', roller: 'ROLLING PUFFBALL' };
 export const thingName = id => THING_NAMES[id] || String(id).toUpperCase();
@@ -259,6 +259,9 @@ export function afterPlace(doc, e) {
 let linkSrc = null;
 export function linkClick(doc, cur, say) {
   /* (claude/maker) A BOSS LOCKS THE GOAL only when it is linked to it: click the boss, then the goal gate (again to unlink) */
+  const wE = doc.ents.find(q => q.x === cur.x && q.y === cur.y && q.t === 'warp');   /* (claude/maker) a WARP DOOR to another */
+  if (wE && linkSrc && linkSrc.t === 'warp' && linkSrc !== wE) { pairWarps(doc, linkSrc, wE); say('WARP DOORS PAIRED'); linkSrc = null; return; }
+  if (wE) { linkSrc = wE; say('WARP DOOR: NOW CLICK THE WARP DOOR IT LEADS TO'); return; }
   const bossE = doc.ents.find(q => q.x === cur.x && q.y === cur.y && isBoss(q.t));
   if (bossE) { linkSrc = bossE; say(nameOf(bossE.t) + ': NOW CLICK THE GOAL GATE IT LOCKS'); return; }
   if (linkSrc && isBoss(linkSrc.t)) { const gt = doc.ents.find(q => q.x === cur.x && q.y === cur.y && q.t === 'gate');
@@ -277,6 +280,7 @@ export function drawLinks(g, doc, cx, cy, t) {
   /* (claude/maker) WHAT OPENS WHAT: a key to every gate of its metal; a linked boss to the goal, with a padlock on the gate */
   const METAL = { brass: '#e8b84a', iron: '#a8b4c0', bone: '#e8e0c8' };
   for (const k of doc.ents) { if (k.t !== 'key') continue; for (const lg of doc.ents) if (lg.t === 'lockgate' && (lg.needs || 'brass') === (k.kind || 'brass')) line(k.x * TS + 8 - cx, k.y * TS + 8 - cy, lg.x * TS + 8 - cx, lg.y * TS - cy, METAL[k.kind || 'brass'] || '#e8b84a'); }
+  for (const w of doc.ents) { if (w.t !== 'warp' || !w.pair || w.wid > w.pair) continue; const o = warpPartner(doc.ents, w); if (o) line(w.x * TS + 8 - cx, w.y * TS - 2 - cy, o.x * TS + 8 - cx, o.y * TS - 2 - cy, WARP_COL[w.col || 0]); }
   const goal = doc.ents.find(q => q.t === 'gate');
   for (const b of doc.ents) { if (!isBoss(b.t)) continue; const on = bossLocks(b);
     if (b === linkSrc || on) { if (goal) line(b.x * TS + 8 - cx, b.y * TS - 8 - cy, goal.x * TS + 8 - cx, goal.y * TS - 8 - cy, b === linkSrc ? '#ffffff' : '#ff6b6b');
@@ -325,6 +329,7 @@ export function problems(doc) {
     const cell = doc.grid[e.y * doc.W + e.x];
     if (isSolidId(cell) && !TILE_SITTERS.has(e.t)) out.push({ e, why: 'buried' });
     else if (WATER_FOES.includes(e.t) && !inWater(doc, e.x, e.y)) out.push({ e, why: 'needs water' });
+    else if (e.t === 'warp' && !warpPartner(doc.ents, e)) out.push({ e, why: 'no pair' });
   }
   return out;
 }
@@ -332,7 +337,7 @@ export function drawProblems(g, doc, cx, cy, t, text) {
   const ps = problems(doc), a = 0.6 + 0.4 * Math.sin(t * 8);
   for (const { e, why } of ps) { const x = e.x * TS - cx, y = e.y * TS - cy;
     g.globalAlpha = a; g.strokeStyle = '#ff4a4a'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, TS - 2, TS - 2); g.globalAlpha = 1;
-    text(why === 'buried' ? 'BURIED' : 'NO WATER', x + 8, y - 8, '#ff6b6b', 'center', 6); }
+    text(why === 'buried' ? 'BURIED' : why === 'no pair' ? 'NO PAIR' : 'NO WATER', x + 8, y - 8, '#ff6b6b', 'center', 6); }
   return ps.length;
 }
 
@@ -344,6 +349,10 @@ const ELITE_ROW = { key: 'elite', label: 'ELITE', values: [false, true], show: v
 const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === -1 ? 'LEFT' : 'RIGHT'), def: 1 };   /* spawnEnt: e.face || 1, so unset means RIGHT */
 export function pieceRows(e) {
   if (FOES.includes(e.t)) return ELITE_KINDS.has(e.t) && !BOSSES.includes(e.t) ? [FACE, ELITE_ROW] : [FACE];
+  if (e.t === 'mover' && e.track && e.track.length > 1) return [
+    { key: 'loop', label: 'AT THE END', values: [false, true], show: v => (v ? 'GOES ROUND AGAIN (LOOP)' : 'COMES BACK THE SAME WAY'), def: false },
+    { key: 'speed', label: 'SPEED', values: [20, 34, 50, 70], show: v => ({ 20: 'SLOW', 34: 'STEADY', 50: 'QUICK', 70: 'FAST' })[v], def: 34 },
+    { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
   if (e.t === 'mover' && e.vert) return [{ key: 'vert', label: 'MOVES', values: [false, true], show: v => (v ? 'UP AND DOWN' : 'SIDE TO SIDE'), def: false },
     { key: 'rise', label: 'HOW HIGH', values: [1, 2, 3, 4, 5, 6, 8, 10], show: tiles, def: 4 },
     { key: 'period', label: 'ONE TRIP TAKES', values: [2, 2.5, 3.2, 4, 5, 6], show: secs, def: 3.2 },
@@ -353,6 +362,7 @@ export function pieceRows(e) {
     { key: 'speed', label: 'SPEED', values: [20, 34, 50, 70], show: v => ({ 20: 'SLOW', 34: 'STEADY', 50: 'QUICK', 70: 'FAST' })[v], def: 34 },
     { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
   if (e.t === 'sign') return [{ key: 'text', label: 'IT SAYS', text: true }];
+  if (e.t === 'warp') return [{ key: 'col', label: 'COLOUR', values: [0, 1, 2, 3, 4, 5], show: v => WARP_NAMES[v], def: 0 }];
   if (e.t === 'arrow') return [{ key: 'dir', label: 'POINTS', values: [0, 1, 2, 3, 4, 5, 6, 7], show: v => ARROW_DIRS[v], def: 0 }];
   if (e.t === 'crusher') return [{ key: 'every', label: 'DROPS EVERY', values: [1.5, 2, 3, 4, 6], show: secs, def: 3 }];
   if (e.t === 'firevent') return [{ key: 'every', label: 'FLAMES EVERY', values: [1.5, 2, 2.8, 4, 6], show: secs, def: 2.8 }];
@@ -418,7 +428,7 @@ export const inPool = (doc, x, y) => (doc.water || []).some(r => x >= r.x0 && x 
 // ================= GRAB AND MOVE (claude/maker feel batch) =================
 // A moving platform's track has a HANDLE at its far end (a lift's at its top): drag it to set how far / how high.
 export function handleOf(e) {
-  if (e.t !== 'mover') return null;
+  if (e.t !== 'mover' || (e.track && e.track.length > 1)) return null;   /* a platform on a TRACK has no reach handle: its track is its reach */
   return e.vert ? { x: e.x, y: e.y - (e.rise || 0), e, kind: 'rise' } : { x: e.x + (e.len || 2) + (e.range || 0) - 1, y: e.y, e, kind: 'range' };
 }
 export function handleAt(doc, c) { for (const e of doc.ents) { const h = handleOf(e); if (h && h.x === c.x && h.y === c.y && (h.e.range || h.e.rise)) return h; } return null; }
@@ -457,7 +467,7 @@ const LINE = {
   crusher: 'Drops from above on a beat. Do not be under it.', firevent: 'Spits fire on a beat. Jump it.', roller: 'Rolls along the floor. Jump it.',
   rockfall: 'Rocks fall here on a beat.', vent: 'A blast of air on a beat: it lifts you.', firepit: 'A fire pit that flares on a beat.',
   mend: 'A heart: it heals you.', switch: 'Hit it: every RED block and every BLUE block swap.', 'sw:red': 'Solid until a SWITCH is hit, then gone (and back again).', 'sw:blue': 'Empty until a SWITCH is hit, then solid (and gone again).',
-  sign: 'A sign with your words on it.', arrow: 'An arrow sign: shows the way. SHIFT+CLICK it to point it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
+  warp: 'Stand in it and press UP: you come out of its partner. Two placed in a row pair themselves; TOOLS > LINK pairs any two.', sign: 'A sign with your words on it.', arrow: 'An arrow sign: shows the way. SHIFT+CLICK it to point it.', torch: 'A torch: light.', brazier: 'A brazier: light.', barrel: 'A barrel.', glow: 'A glow: light in the dark.', puffball: 'A puffball: it bursts.',
   lantern: 'A lantern: light.', npc: 'A villager.',
 };
 const MAT_LINE = { grass: 'Grass on earth, whatever the background.', cobble: "A village's cobbles.", shore: 'Shore rock.', reef: 'Reef rock.', city: 'City stone.', masonry: 'Castle stone.', deck: "A ship's deck." };
@@ -835,3 +845,64 @@ export function drawArrows(g, ents, cx, cy) { for (const e of ents || []) if (e.
    null = an older level: its own hero. */
 export const ownHero = d => !d.hero || d.hero === 'own';
 export const shareReady = d => ownHero(d) || isCleared(d);
+
+/* (claude/maker) WARP DOORS: two doors, one way in and out of each other (a cave under the level, a tower's inside). A door has its
+   own number (wid) and its partner's (pair), so it can be dragged anywhere and stay paired. */
+export const WARP_COL = ['#ffd36b', '#6fb0ff', '#ff6b6b', '#8fd160', '#d8a0e8', '#e8e0c8'], WARP_NAMES = ['GOLD', 'BLUE', 'RED', 'GREEN', 'VIOLET', 'BONE'];
+export const warpPartner = (ents, e) => e && e.pair ? ents.find(q => q.t === 'warp' && q.wid === e.pair && q !== e) || null : null;
+export function pairWarps(doc, a, b) {
+  for (const w of doc.ents) if (w.t === 'warp' && w !== a && w !== b && (w.pair === a.wid || w.pair === b.wid)) w.pair = 0;   /* their old partners are alone now */
+  b.pair = a.wid; a.pair = b.wid; b.col = a.col || 0;
+}
+/* a new door: its number; the door before it still alone gets it as a partner (place two in a row: they pair themselves) */
+export function placeWarp(doc, e) {
+  e.wid = 1 + Math.max(0, ...doc.ents.filter(q => q.t === 'warp' && q !== e).map(q => q.wid || 0));
+  const alone = doc.ents.filter(q => q.t === 'warp' && q !== e && !warpPartner(doc.ents, q)).pop();
+  if (alone) { pairWarps(doc, alone, e); return true; }
+  const used = new Set(doc.ents.filter(q => q.t === 'warp' && q !== e).map(q => q.col || 0)); e.col = [0, 1, 2, 3, 4, 5].find(k => !used.has(k)) ?? 0; return false;
+}
+export function drawWarps(g, ents, cx, cy, t, P) {
+  for (const e of ents || []) { if (e.t !== 'warp') continue; const x = Math.round(e.x * TS - cx), y = Math.round((e.y + 1) * TS - cy), col = WARP_COL[e.col || 0], ok = !!warpPartner(ents, e);
+    g.fillStyle = '#2a2236'; g.fillRect(x + 1, y - 26, 14, 26); g.fillRect(x + 3, y - 28, 10, 2);
+    g.fillStyle = '#07060c'; g.fillRect(x + 3, y - 24, 10, 24);
+    g.globalAlpha = ok ? 0.45 + 0.25 * Math.sin(t * 3 + e.x) : 0.2; g.fillStyle = col; g.fillRect(x + 4, y - 23, 8, 23); g.globalAlpha = 1;
+    g.fillStyle = col; g.fillRect(x + 1, y - 26, 2, 26); g.fillRect(x + 13, y - 26, 2, 26); g.fillRect(x + 3, y - 28, 10, 2);
+    if (P && ok && Math.abs(P.x - (e.x * TS + 8)) < 10 && Math.abs(P.y - (e.y + 1) * TS) < 14) { g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x - 8, y - 42, 32, 10); g.fillStyle = col; g.font = '6px monospace'; g.fillText('UP: GO', x - 5, y - 35); } }
+}
+
+/* (claude/maker) A SET OF LEVELS in one link (#S=): its name, its one hero, and every level, in order */
+export async function setCode(name, hero, docs) { return b64u(await pipe(new TextEncoder().encode(JSON.stringify({ v: 1, set: true, name, hero, levels: docs.map(docToJSON) })), new CompressionStream('deflate-raw'))); }
+export async function fromSetCode(code) {
+  const c = String(code).trim().replace(/^.*#S=/, ''), o = JSON.parse(new TextDecoder().decode(await pipe(unb64u(c), new DecompressionStream('deflate-raw'))));
+  if (!o || !o.set || !Array.isArray(o.levels) || !o.levels.length) throw new Error('not a set'); return { name: o.name || 'A SET', hero: o.hero || 'own', docs: o.levels.map(docFromJSON) };
+}
+export async function setLink(name, hero, docs) { return location.origin + location.pathname + '?maker=1#S=' + await setCode(name, hero, docs); }
+
+/* (claude/maker) TRACKS (Daniel: platforms on curved tracks, as Mario Maker has). A moving platform's TRACK is a list of tile points
+   starting where it stands; TOOLS > TRACK: click the platform, then click each point; click the platform again (or ENTER) to finish.
+   The game runs it along a smooth curve through the points (Catmull-Rom), by distance, back and forth or round in a loop. */
+export function trackCurve(pts, loop) {   // pts: [[x, y], ...] in any unit -> dense points along a smooth curve
+  const n = pts.length; if (n < 2) return pts.slice(); const out = [], P = i => pts[loop ? (i + n) % n : Math.max(0, Math.min(n - 1, i))];
+  const segs = loop ? n : n - 1;
+  for (let i = 0; i < segs; i++) { const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    for (let k = 0; k < 12; k++) { const t = k / 12, t2 = t * t, t3 = t2 * t;
+      out.push([0.5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+                0.5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)]); } }
+  out.push(loop ? out[0].slice() : pts[n - 1].slice()); return out;
+}
+let trackSrc = null;
+export const trackEditing = () => trackSrc;
+export function trackClick(doc, cur, say) {
+  const m = doc.ents.find(q => q.t === 'mover' && q.y === cur.y && cur.x >= q.x && cur.x < q.x + (q.len || 2));
+  if (trackSrc && m === trackSrc) { const done = trackSrc; trackSrc = null; if (done.track.length < 2) delete done.track; say(done.track ? 'TRACK DONE: ' + (done.track.length - 1) + ' POINTS (SHIFT+CLICK THE PLATFORM: LOOP, SPEED)' : 'NO TRACK: IT MOVES AS BEFORE'); return true; }
+  if (m) { trackSrc = m; m.track = [[m.x, m.y]]; say('TRACK: CLICK EACH POINT IT GOES THROUGH; CLICK THE PLATFORM AGAIN TO FINISH'); return true; }
+  if (trackSrc) { trackSrc.track.push([cur.x, cur.y]); say('POINT ' + (trackSrc.track.length - 1) + ' (CLICK THE PLATFORM TO FINISH)'); return true; }
+  say('CLICK A MOVING PLATFORM FIRST'); return false;
+}
+export function trackEnd() { if (trackSrc && trackSrc.track.length < 2) delete trackSrc.track; trackSrc = null; }
+export function drawTracks(g, doc, cx, cy, t) {
+  for (const e of doc.ents) { if (e.t !== 'mover' || !e.track || e.track.length < 2 && e !== trackSrc) continue;
+    const pts = e.track.map(([x, y]) => [x * TS + (e.len || 2) * TS / 2 - cx, y * TS + 4 - cy]), d = trackCurve(pts, !!e.loop && e.track.length > 2);
+    g.save(); g.strokeStyle = e === trackSrc ? '#ffffff' : '#6fd0c0'; g.lineWidth = 2; g.setLineDash([3, 3]); g.lineDashOffset = -t * 10; g.beginPath(); d.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke(); g.setLineDash([]);
+    g.fillStyle = e === trackSrc ? '#ffffff' : '#6fd0c0'; for (const [x, y] of pts) g.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4); g.restore(); }
+}

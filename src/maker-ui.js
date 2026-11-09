@@ -4,6 +4,7 @@
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
 import { TILES, FOES, WATER_FOES, BOSSES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES, GOALS, goalName, PLAYERS, playersName, isCleared, shareReady, ownHero, drawArrowSign, STYLES, styleName, STYLE_COL, paletteName, settingLabels, entFor, styleBanned } from './maker-palette.js';
 import { T } from './level.js';
+import { HAND_HEADS } from './maker-heads.js';
 import { MUSIC_NAMES } from './audio.js';
 
 // ---------------- the groups ----------------
@@ -19,7 +20,8 @@ const HEADS = [['WATER', 'SWIMMERS (place them in water)'], ['FLIES', 'FLYERS'],
   ['HEAVY', 'HEAVY AND SHIELDED'], ['SHIELD', 'HEAVY AND SHIELDED'], ['CHARGES', 'FAST AND CHARGING'], ['FAST', 'FAST AND CHARGING'], ['LEAPS', 'FAST AND CHARGING'],
   ['RISES', 'RISERS AND CASTERS'], ['SUMMONS', 'RISERS AND CASTERS']];
 const HEAD_ORDER = ['WALKERS AND FIGHTERS', 'FAST AND CHARGING', 'HEAVY AND SHIELDED', 'SHOOTERS AND THROWERS', 'FLYERS', 'RISERS AND CASTERS', 'SWIMMERS (place them in water)'];
-const headOf = t => { const tags = describe(1, t).tags; for (const [k, h] of HEADS) if (tags.includes(k)) return h; return 'WALKERS AND FIGHTERS'; };
+const headOf = t => { if (HAND_HEADS[t]) return HAND_HEADS[t];   /* (claude/maker) hand-sorted (src/maker-heads.js); the tag guess only for a foe added since */
+  const tags = describe(1, t).tags; for (const [k, h] of HEADS) if (tags.includes(k)) return h; return 'WALKERS AND FIGHTERS'; };
 let allMemo = null, allKey = null;   /* the bestiary (the tags) arrives after this module loads: sort again once it has */
 const allFoes = () => { const k = describe(1, 'archer').line; if (allMemo && allKey === k) return allMemo; allKey = k;
   return (allMemo = fo(FOES.filter(t => !BOSSES.includes(t)).map(t => ({ t, h: headOf(t) })).sort((a, b) => HEAD_ORDER.indexOf(a.h) - HEAD_ORDER.indexOf(b.h)).map(q => q.t))); };
@@ -36,15 +38,15 @@ export const GROUPS = [
   { name: 'ENEMIES', items: fo(STARTER) },
   { name: 'ALL ENEMIES', heads: true, get items() { return allFoes(); } },
   { name: 'BOSSES', items: fo(BOSSES) },
-  { name: 'START/GOAL', items: [{ cat: 3, i: 0 }, ...th(['gate', 'check'])] },
+  { name: 'START/GOAL', items: [{ cat: 3, i: 0 }, ...th(['gate', 'check', 'warp'])] },
   { name: 'PICKUPS', items: th(['coin', 'silver', 'mend']) },
   { name: 'SWITCHES', items: [...th(['switch', 'lever', 'plate', 'key:brass', 'lockgate:brass']), ...tl([T.PORT])] },
   { name: 'HAZARDS', items: [...tl([T.SPIKE, T.WEB]), ...th(HAZ)] },
   { name: 'DECOR', items: th(['arrow', 'sign', 'torch', 'lantern', 'brazier', 'glow', 'barrel', 'puffball', 'npc']) },
   { name: 'TOOLS', cat: 3, items: null },   // filled from the editor's own tool list
 ];
-const TOOL_NAMES = { SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
-const TOOL_SHOWN = ['SELECT', 'LINK', 'EDIT'];   /* START lives on START & GOAL */
+const TOOL_NAMES = { TRACK: 'TRACK: click a moving platform, then each point of its track; the platform again to finish', SELECT: 'SELECT a box: then CTRL+C copy, CTRL+X cut, DELETE, CTRL+V paste', START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
+const TOOL_SHOWN = ['SELECT', 'LINK', 'TRACK', 'EDIT'];   /* START lives on START & GOAL */
 const TAG_COL = { BOSS: '#ff6b6b', FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
@@ -168,8 +170,8 @@ export function drawTileGhost(g, id, x, y) { try { tileIcon(g, id, x, y); } catc
 function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
-  else if (cat === 2) { if (THINGS[i] === 'arrow') drawArrowSign(g, x + 8, y + 18, 0); else thingIcon(g, THINGS[i], x, y, c.time, c); }
-  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
+  else if (cat === 2) { if (THINGS[i] === 'warp') { g.fillStyle = '#ffd36b'; g.fillRect(x + 3, y + 1, 10, 15); g.fillStyle = '#07060c'; g.fillRect(x + 5, y + 3, 6, 13); g.fillStyle = 'rgba(255,211,107,0.5)'; g.fillRect(x + 6, y + 4, 4, 12); } else if (THINGS[i] === 'arrow') drawArrowSign(g, x + 8, y + 18, 0); else thingIcon(g, THINGS[i], x, y, c.time, c); }
+  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'TRACK' ? 'TRK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
 function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => ({ cat: 3, i })) : gr.items; }
@@ -177,7 +179,7 @@ function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.
 // ---------------- layout ----------------
 const TAB_H = 12, CELL = 30, ROWS = 1, NAME_H = 12, ICON_K = 1.5, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
 export const BARS = { top: TOP, bottom: BOT };
-const BUTTONS = ['PLAY', 'PLAY HERE', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SHARE', 'OPEN', 'SETTINGS', 'MAP', 'HELP'];
+const BUTTONS = ['PLAY', 'PLAY HERE', 'UNDO', 'REDO', 'SAVE', 'MY LEVELS', 'NEW', 'SHARE', 'OPEN', 'SETTINGS', 'MAP', 'HELP'];
 const inR = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 
 // c: { g, text, SPR, drawSet, VW, VH, time, cat, sel (the selected index in that cat), tools, slot, msg, msgT, doc, themes, tracks }
@@ -236,7 +238,7 @@ export function drawChrome(c) {
     const clr = b === 'SHARE' && shareReady(c.doc);   /* (claude/maker) THE CLEAR CHECK: SHARE lights up once the level has been beaten as it stands */
     g.fillStyle = b.startsWith('PLAY') ? (hov ? '#5a9a3a' : '#3f7a2c') : clr ? (hov ? '#3a8a9a' : '#2c6a7a') : hov ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h);
     text(b, r.x + w / 2, r.y + 3, b.startsWith('PLAY') ? '#d8f09a' : clr ? '#bff0ff' : b === 'SHARE' ? '#7a6f8a' : '#e8dcc0', 'center', 6); UI.btns.push(r); bx += w + 4; }
-  { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
+  if (false) { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };   /* (claude/maker) MY LEVELS replaced the numbered slots */
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'WHEEL: SIDEWAYS  SHIFT+WHEEL: UP/DOWN  OR THE ARROWS AT THE RIGHT'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
   if (!UI.panel && UI.guide < 0) {   /* (claude/maker) THE CHECKLIST, bottom left of the level: what this level still needs, and the next step */
@@ -258,7 +260,7 @@ export function drawChrome(c) {
       UI.sBtns.push(r); } }
   if (UI.guide >= 0) drawGuide(c);
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
-  if (UI.panel === 'browse') drawBrowse(c); else if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
+  if (UI.panel === 'linkEnd') drawLinkEnd(c); else if (UI.panel === 'lib') drawLib(c); else if (UI.panel === 'browse') drawBrowse(c); else if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
 }
 const groupOf = c => GROUPS.findIndex((gr, gi) => groupIdx(c, gi).some(q => q.cat === c.cat && q.i === c.sel));
 
@@ -308,7 +310,7 @@ const HELP = [
   ['FIND', 'FIND (or click a tab twice) shows every piece with its name; type to search: GOB, FLIES, WATER...'],
   ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
   ['SETTINGS', 'background, music, time of day, weather, the GOAL, PLAYERS, the HERO (your own, or a set hero on a starter kit), name and size'],
-  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link (a set-hero level must be BEATEN first); OPEN takes one'],
+  ['MY LEVELS / SHARE', 'every level saves itself; MY LEVELS opens, copies or deletes them.  SHARE copies a link (a set-hero level must be BEATEN first)'],
   ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
@@ -334,6 +336,10 @@ export function uiMouse(c, mx, my, down) {
     if (r.key === 'remove') { const e = UI.piece; UI.panel = null; UI.piece = null; return { consumed: true, act: 'pieceRemove', piece: e }; }
     if (r.key === 'p') return { consumed: true, act: r.text ? 'pieceText' : 'pieceStep', piece: UI.piece, row: pieceRows(UI.piece)[r.i], d: r.d };
     if (r.key === 'name') return { consumed: true, act: 'name' };
+    if (String(r.key).startsWith('link')) { UI.panel = null; return { consumed: true, act: r.key }; }
+    if (r.key === 'libViewSets') { UI.libView = 'sets'; return { consumed: true }; } if (r.key === 'libViewLevels') { UI.libView = null; return { consumed: true }; } if (r.key === 'setEdit') { UI.libView = 'set'; UI.setId = r.id; return { consumed: true }; } if (r.key === 'setBack') { UI.libView = 'sets'; return { consumed: true }; }
+    if (String(r.key).startsWith('set')) { if (r.key === 'setPlay') UI.panel = null; return { consumed: true, act: r.key, id: r.id, k: r.k, d: r.d }; }
+    if (String(r.key).startsWith('lib')) { if (r.key === 'libPage') { UI.libPage = Math.max(0, (UI.libPage || 0) + r.d); return { consumed: true }; } if (r.key !== 'libDelete') UI.panel = null; return { consumed: true, act: r.key, id: r.id }; }
     if (r.key === 'guide') { UI.panel = null; UI.guide = 0; return { consumed: true, act: 'guide' }; }
     if (String(r.key).startsWith('example:')) { UI.panel = null; UI.guide = -1; return { consumed: true, act: 'example', n: +r.key.split(':')[1] }; }
     if (r.key === 'width') return { consumed: true, act: r.d > 0 ? 'width+' : 'width-' };
@@ -366,7 +372,7 @@ export function uiMouse(c, mx, my, down) {
   if (arr) { const idx = groupIdx(c, UI.group), per = Math.floor((VW - 40 - (GROUPS[UI.group].style ? STYLE_W : 0)) * 1 / CELL) * ROWS, pages = Math.max(1, Math.ceil(idx.length / per)); UI.page[UI.group] = (UI.page[UI.group] + arr.d + pages) % pages; return { consumed: true, act: 'ui' }; }
   if (cell) return { consumed: true, pick: { cat: cell.cat, i: cell.i } };
   if (btn && btn.b === 'MAP') { UI.mapOn = !UI.mapOn; return { consumed: true, act: 'ui' }; }
-  if (btn) { if (btn.b === 'SETTINGS') { UI.panel = 'settings'; return { consumed: true, act: 'openSettings' }; } if (btn.b === 'HELP') { UI.panel = 'help'; return { consumed: true }; }
+  if (btn) { if (btn.b === 'SETTINGS') { UI.panel = 'settings'; return { consumed: true, act: 'openSettings' }; } if (btn.b === 'HELP') { UI.panel = 'help'; return { consumed: true }; } if (btn.b === 'MY LEVELS') { UI.panel = 'lib'; UI.libPage = 0; return { consumed: true }; }
     return { consumed: true, act: btn.b.toLowerCase() }; }
   return { consumed: true };
 }
@@ -505,4 +511,65 @@ function browseMouse(c, mx, my, down) {
   if (cell) { UI.panel = null; const gi = GROUPS.findIndex(gr => (gr.items || []).some(q => q.cat === cell.cat && q.i === cell.i)); if (gi >= 0) { UI.group = gi; const per = Math.floor((c.VW - 40 - (GROUPS[gi].style ? STYLE_W : 0)) / CELL) * ROWS, n = GROUPS[gi].items.findIndex(q => q.cat === cell.cat && q.i === cell.i); UI.page[gi] = Math.floor(n / Math.max(1, per)); }
     return { consumed: true, pick: { cat: cell.cat, i: cell.i } }; }
   return { consumed: true };
+}
+
+/* (claude/maker) MY LEVELS: every level kept in this browser, newest first; the one you are editing is marked */
+const ago = t => { const s = Math.max(0, (Date.now() - t) / 1000); return s < 60 ? 'JUST NOW' : s < 3600 ? Math.floor(s / 60) + ' MIN AGO' : s < 86400 ? Math.floor(s / 3600) + ' H AGO' : Math.floor(s / 86400) + ' DAYS AGO'; };
+function drawLib(c) {
+  if (UI.libView === 'sets' || UI.libView === 'set') return drawSets(c);
+  const { g, text } = c, w = 440, h = 236, { x, y } = panelBox(c, w, h, 'MY LEVELS'), L = c.lib || [], per = 10, pages = Math.max(1, Math.ceil(L.length / per));
+  UI.libPage = Math.min(UI.libPage || 0, pages - 1); UI.rows = [];
+  text('EVERY LEVEL SAVES ITSELF A MOMENT AFTER YOU CHANGE IT. ' + L.length + (L.length === 1 ? ' LEVEL' : ' LEVELS') + ' IN THIS BROWSER.', x + w / 2, y + 17, '#8a7fa0', 'center', 6);
+  const btn = (bx, by, bw, label, key, col, id) => { const r = { x: bx, y: by, w: bw, h: 11, key, id }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + bw / 2, r.y + 2, '#ffffff', 'center', 6); UI.rows.push(r); };
+  btn(x + 12, y + 28, 90, '+ NEW LEVEL', 'libNew', '#3f7a2c'); btn(x + w - 102, y + 28, 90, 'SETS OF LEVELS >', 'libViewSets', '#5a4a7a');
+  if (!L.length) text('NOTHING YET: BUILD SOMETHING AND IT APPEARS HERE', x + w / 2, y + 90, '#c8bcd8', 'center', 6);
+  L.slice(UI.libPage * per, UI.libPage * per + per).forEach((e, k) => { const ry = y + 46 + k * 16, cur = c.doc && c.doc.libId === e.id;
+    g.fillStyle = cur ? 'rgba(63,106,58,0.6)' : k % 2 ? 'rgba(46,38,64,0.6)' : 'rgba(30,26,40,0.6)'; g.fillRect(x + 8, ry - 2, w - 16, 15);
+    text(c.fitText(e.name || 'A WOOD', 150, 6), x + 14, ry + 2, cur ? '#d8f09a' : '#ffffff', 'left', 6);
+    text((cur ? 'EDITING  ' : '') + ago(e.updated), x + 176, ry + 2, cur ? '#d8f09a' : '#8a7fa0', 'left', 6);
+    btn(x + w - 140, ry, 40, 'OPEN', 'libOpen', '#3f6a8a', e.id); btn(x + w - 96, ry, 40, 'COPY', 'libCopy', '#5a4a7a', e.id); btn(x + w - 52, ry, 40, 'DELETE', 'libDelete', '#8a3a3a', e.id); });
+  if (pages > 1) { btn(x + 12, y + h - 18, 30, '<', 'libPage', '#4a3e64'); UI.rows[UI.rows.length - 1].d = -1; text((UI.libPage + 1) + '/' + pages, x + 56, y + h - 16, '#8a7fa0', 'center', 6); btn(x + 72, y + h - 18, 30, '>', 'libPage', '#4a3e64'); UI.rows[UI.rows.length - 1].d = 1; }
+  const done = { x: x + w / 2 - 30, y: y + h - 18, w: 60, h: 13, key: 'done' }; g.fillStyle = '#3f7a2c'; g.fillRect(done.x, done.y, done.w, done.h); text('DONE', done.x + 30, done.y + 3, '#d8f09a', 'center', 6); UI.rows.push(done);
+}
+export const openLib = () => { UI.panel = 'lib'; UI.libPage = 0; };
+
+/* (claude/maker) THE SHARED LEVEL'S CARD: someone who opened a link sees the level, never the editor, until they ask for a copy */
+export function openLinkEnd(name, won, set) { UI.panel = 'linkEnd'; UI.linkName = name; UI.linkWon = !!won; UI.linkSet = set || null; }
+export const linkEndOpen = () => UI.panel === 'linkEnd';
+function drawLinkEnd(c) {
+  const { g, text, VW, VH } = c; g.fillStyle = '#0c0a14'; g.fillRect(0, 0, VW, VH);
+  const w = 300, h = 120, x = Math.round((VW - w) / 2), y = Math.round((VH - h) / 2);
+  g.fillStyle = '#1b1626'; g.fillRect(x, y, w, h); g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  const S = UI.linkSet, last = S && S.i >= S.n - 1;
+  text(S ? (UI.linkWon ? (last ? 'SET CLEARED!' : 'CLEARED! LEVEL ' + (S.i + 1) + ' OF ' + S.n) : S.name + ': LEVEL ' + (S.i + 1) + ' OF ' + S.n) : UI.linkWon ? 'CLEARED!' : 'A SHARED LEVEL', x + w / 2, y + 12, UI.linkWon ? '#8fd160' : '#ffd36b', 'center', 8);
+  text(c.fitText(UI.linkName || '', w - 20, 6), x + w / 2, y + 30, '#ffffff', 'center', 6);
+  const B = S ? (UI.linkWon && !last ? [['NEXT LEVEL', 'linkNext', '#3f7a2c'], ['PLAY THIS ONE AGAIN', 'linkAgain', '#3f6a8a'], ['LEAVE THE SET', 'linkQuit', '#5a4a7a']] : UI.linkWon ? [['PLAY THE SET AGAIN', 'linkSetAgain', '#3f7a2c'], ['LEAVE THE SET', 'linkQuit', '#5a4a7a']] : [['TRY AGAIN', 'linkAgain', '#3f7a2c'], ['LEAVE THE SET', 'linkQuit', '#5a4a7a']])
+    : [['PLAY AGAIN', 'linkAgain', '#3f7a2c'], ['EDIT A COPY', 'linkEdit', '#3f6a8a'], ['MAKE YOUR OWN', 'linkNew', '#5a4a7a']];
+  UI.rows = []; B.forEach(([label, key, col], k) => {
+    const r = { x: x + 20, y: y + 50 + k * 20, w: w - 40, h: 15, key }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + r.w / 2, r.y + 4, '#ffffff', 'center', 6); UI.rows.push(r); });
+}
+
+/* (claude/maker) SETS OF LEVELS: levels played in order, with one hero for all of them; shared as one link */
+function drawSets(c) {
+  const { g, text } = c, w = 440, h = 236, { x, y } = panelBox(c, w, h, UI.libView === 'set' ? 'A SET OF LEVELS' : 'SETS OF LEVELS'), S = c.sets || [], L = c.lib || [];
+  UI.rows = []; const btn = (bx, by, bw, label, key, col, id, k, d) => { const r = { x: bx, y: by, w: bw, h: 11, key, id, k, d }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + bw / 2, r.y + 2, '#ffffff', 'center', 6); UI.rows.push(r); };
+  const heroName = hz => !hz || hz === 'own' ? "EACH PLAYER'S OWN HERO" : ((c.heroes || []).find(q => q.id === hz) || {}).name || String(hz).toUpperCase();
+  if (UI.libView === 'set') { const s = S.find(q => q.id === UI.setId); if (!s) { UI.libView = 'sets'; return; }
+    btn(x + 12, y + 18, 60, '< SETS', 'setBack', '#4a3e64'); text(c.fitText(s.name, 200, 6), x + w / 2, y + 20, '#ffffff', 'center', 6); btn(x + w - 72, y + 18, 60, 'RENAME', 'setName', '#4a3e64', s.id);
+    text('HERO FOR EVERY LEVEL:', x + 14, y + 36, '#c8bcd8', 'left', 6); btn(x + 140, y + 34, 14, '<', 'setHero', '#4a3e64', s.id, 0, -1); text(heroName(s.hero), x + 250, y + 36, '#ffd36b', 'center', 6); btn(x + 346, y + 34, 14, '>', 'setHero', '#4a3e64', s.id, 0, 1);
+    s.ids.slice(0, 9).forEach((id, k) => { const e = L.find(q => q.id === id), ry = y + 52 + k * 16; g.fillStyle = k % 2 ? 'rgba(46,38,64,0.6)' : 'rgba(30,26,40,0.6)'; g.fillRect(x + 8, ry - 2, w - 16, 15);
+      text((k + 1) + '. ' + c.fitText(e ? e.name : '?', 200, 6), x + 14, ry + 2, '#ffffff', 'left', 6);
+      btn(x + w - 140, ry, 30, 'UP', 'setUp', '#4a3e64', s.id, k); btn(x + w - 106, ry, 40, 'DOWN', 'setDown', '#4a3e64', s.id, k); btn(x + w - 62, ry, 50, 'REMOVE', 'setRemove', '#8a3a3a', s.id, k); });
+    if (!s.ids.length) text('NO LEVELS YET: ADD THE ONE YOU ARE EDITING', x + w / 2, y + 90, '#c8bcd8', 'center', 6);
+    btn(x + 12, y + h - 34, 150, '+ ADD THE LEVEL I AM EDITING', 'setAdd', '#3f7a2c', s.id);
+    btn(x + 170, y + h - 34, 60, 'PLAY IT', 'setPlay', '#3f6a8a', s.id); btn(x + 236, y + h - 34, 60, 'SHARE', 'setShare', '#2c6a7a', s.id);
+  } else {
+    btn(x + 12, y + 18, 70, '< LEVELS', 'libViewLevels', '#4a3e64'); btn(x + w - 102, y + 18, 90, '+ NEW SET', 'setNew', '#3f7a2c');
+    text('A SET IS PLAYED IN ORDER, WITH ONE HERO; SHARE IT AS ONE LINK', x + w / 2, y + 34, '#8a7fa0', 'center', 6);
+    if (!S.length) text('NO SETS YET', x + w / 2, y + 90, '#c8bcd8', 'center', 6);
+    S.slice(0, 10).forEach((s, k) => { const ry = y + 46 + k * 16; g.fillStyle = k % 2 ? 'rgba(46,38,64,0.6)' : 'rgba(30,26,40,0.6)'; g.fillRect(x + 8, ry - 2, w - 16, 15);
+      text(c.fitText(s.name, 130, 6), x + 14, ry + 2, '#ffffff', 'left', 6); text(s.ids.length + (s.ids.length === 1 ? ' LEVEL' : ' LEVELS'), x + 150, ry + 2, '#8a7fa0', 'left', 6);
+      btn(x + w - 184, ry, 40, 'PLAY', 'setPlay', '#3f7a2c', s.id); btn(x + w - 140, ry, 40, 'EDIT', 'setEdit', '#3f6a8a', s.id); btn(x + w - 96, ry, 40, 'SHARE', 'setShare', '#2c6a7a', s.id); btn(x + w - 52, ry, 40, 'DELETE', 'setDelete', '#8a3a3a', s.id); });
+  }
+  const done = { x: x + w / 2 - 30, y: y + h - 18, w: 60, h: 13, key: 'done' }; g.fillStyle = '#3f7a2c'; g.fillRect(done.x, done.y, done.w, done.h); text('DONE', done.x + 30, done.y + 3, '#d8f09a', 'center', 6); UI.rows.push(done);
 }
