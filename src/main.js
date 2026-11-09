@@ -24077,6 +24077,7 @@ function updateBarrowRiderMini(e, dt) { const A = L.mini; if (!A) return; if (e.
 function updateBloodKnightBoss(e, dt) { const A = L.arena; if (!A) return; const was = e.mode;
   UNBF.updateBloodKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor, stdX: [A.x0 + UNBF.UNB.bk.stdIn, A.x1 - UNBF.UNB.bk.stdIn] })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.heroX = P.x; e.heroY = P.y;   /* (claude/dk2b) THE CHAPEL STANDARDS stand in from the walls */
   if (e.mode === 'stuck' && was !== 'stuck') { hitstop(0.08); burst(e.x + e.face * 30, A.floor - 2, 10, ['#6a6a74', '#c0283a'], 90, 0.5); }
+  if (e.mode === 'pinned' && was !== 'pinned') { hitstop(0.12); burst(e.x, A.floor - 24, 16, ['#5a4a36', '#c0283a', '#8fd160'], 110, 0.6); }   /* (claude/dklift) THE STANDARD FALLS ON HIM: only the lift (UNBF.bkLiftOn) ever makes 'pinned' */
   if (e.mode === 'reel' && was !== 'reel') { hitstop(0.08); burst(e.x + e.wardFace * 20, A.floor - 30, 12, ['#c0283a', '#ff6b6b'], 90, 0.5); } }   /* the ward breaks */
 function updateDeathKnightBoss(e, dt) { const A = L.arena; if (!A) return;
   if (e.mode === 'novaTell' && e.modeT > UNBF.UNB.dk.tell.nova - dt) zoomKick(1.05, 0.3);   /* the room draws in with the nova */
