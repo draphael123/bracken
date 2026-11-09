@@ -303,3 +303,70 @@ export function drawProblems(g, doc, cx, cy, t, text) {
     text(why === 'buried' ? 'BURIED' : 'NO WATER', x + 8, y - 8, '#ff6b6b', 'center', 6); }
   return ps.length;
 }
+
+// ================= PIECE SETTINGS (claude/maker batch 2) =================
+// What you can change on a placed piece. Each row: { key, label, values: [...], show: v => text } or { key, label, text: true }.
+// The values are the engine's own fields (spawnEnt reads them), so nothing here needs a hook in the game.
+const tiles = n => (n === 1 ? '1 TILE' : n + ' TILES'), secs = v => v + ' S';
+const FACE = { key: 'face', label: 'FACES', values: [-1, 1], show: v => (v === 1 ? 'RIGHT' : 'LEFT'), def: -1 };
+export function pieceRows(e) {
+  if (FOES.includes(e.t)) return [FACE];
+  if (e.t === 'mover' && e.vert) return [
+    { key: 'rise', label: 'HOW HIGH', values: [1, 2, 3, 4, 5, 6, 8, 10], show: tiles, def: 4 },
+    { key: 'period', label: 'ONE TRIP TAKES', values: [2, 2.5, 3.2, 4, 5, 6], show: secs, def: 3.2 },
+    { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
+  if (e.t === 'mover') return [
+    { key: 'range', label: 'HOW FAR', values: [1, 2, 3, 4, 6, 8, 10, 12], show: tiles, def: 4 },
+    { key: 'speed', label: 'SPEED', values: [20, 34, 50, 70], show: v => ({ 20: 'SLOW', 34: 'STEADY', 50: 'QUICK', 70: 'FAST' })[v], def: 34 },
+    { key: 'len', label: 'WIDTH', values: [1, 2, 3, 4], show: tiles, def: 2 }];
+  if (e.t === 'sign') return [{ key: 'text', label: 'IT SAYS', text: true }];
+  if (e.t === 'crusher') return [{ key: 'every', label: 'DROPS EVERY', values: [1.5, 2, 3, 4, 6], show: secs, def: 3 }];
+  if (e.t === 'firevent') return [{ key: 'every', label: 'FLAMES EVERY', values: [1.5, 2, 2.8, 4, 6], show: secs, def: 2.8 }];
+  if (e.t === 'rockfall') return [{ key: 'every', label: 'A ROCK EVERY', values: [1.2, 1.8, 2.5, 3.5, 5], show: secs, def: 2.5 }];
+  if (e.t === 'firepit' || e.t === 'vent') return [{ key: 'period', label: 'ONCE EVERY', values: [2, 3, 4, 6], show: secs, def: e.t === 'vent' ? 4 : 3 },
+    { key: 'on', label: 'LASTS', values: [0.8, 1.4, 2, 3], show: secs, def: e.t === 'vent' ? 1.6 : 1.4 }];
+  if (e.t === 'roller') return [FACE, { key: 'speed', label: 'SPEED', values: [35, 55, 80], show: v => ({ 35: 'SLOW', 55: 'STEADY', 80: 'FAST' })[v], def: 55 }];
+  if (e.t === 'key') return [{ key: 'kind', label: 'METAL', values: ['brass', 'iron', 'bone'], show: v => v.toUpperCase(), def: 'brass' }];
+  if (e.t === 'lockgate') return [{ key: 'needs', label: 'OPENS WITH', values: ['brass', 'iron', 'bone'], show: v => v.toUpperCase() + ' KEY', def: 'brass' },
+    { key: 'h', label: 'HEIGHT', values: [2, 3, 4, 5, 6, 8], show: tiles, def: 4 }];
+  return [];
+}
+export const pieceName = e => FOES.includes(e.t) ? nameOf(e.t) : e.t === 'mover' ? (e.vert ? 'LIFT' : 'MOVING PLATFORM') : e.t === 'key' ? 'KEY' : e.t === 'lockgate' ? 'LOCKED GATE' : thingName(e.t);
+export const rowValue = (e, r) => (e[r.key] !== undefined ? e[r.key] : r.def);
+// step a row: returns true if the grid changed (a gate's bars grew or shrank)
+export function stepRow(doc, e, r, d) {
+  const i = r.values.indexOf(rowValue(e, r)), v = r.values[((i < 0 ? 0 : i) + d + r.values.length) % r.values.length];
+  if (e.t === 'lockgate' && r.key === 'h') {
+    const old = e.h || 4; for (let k = 0; k < old; k++) { const y = e.y - k; if (y >= 0 && doc.grid[y * doc.W + e.x] === T.PORT) doc.grid[y * doc.W + e.x] = T.AIR; }
+    e.h = v; afterPlace(doc, e); return true;
+  }
+  e[r.key] = v; return false;
+}
+// the editor shows where a moving platform will go: its whole track, faint
+export function drawPieceHints(g, doc, cx, cy) {
+  g.save(); g.setLineDash([2, 2]); g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1;
+  for (const e of doc.ents) { if (e.t !== 'mover') continue; const w = (e.len || 2) * TS, x = e.x * TS - cx, y = e.y * TS - cy;
+    if (e.vert) { const rise = (e.rise || 0) * TS; g.strokeRect(x + 0.5, y - rise + 0.5, w - 1, rise + 7); }
+    else { const rg = (e.range || 0) * TS; g.strokeRect(x + 0.5, y + 0.5, w + rg - 1, 7); } }
+  g.restore();
+}
+
+// ================= SHARE LINKS (claude/maker batch 2) =================
+// A whole level in a link: the save JSON (grid run-length coded like edSave), deflated, base64url, after #L= .
+function rle(gr) { let out = '', run = 1; for (let i = 1; i <= gr.length; i++) { if (i < gr.length && gr[i] === gr[i - 1]) { run++; continue; } out += gr[i - 1].toString(36) + (run > 1 ? run.toString(36) : '') + '.'; run = 1; } return out; }
+function unrle(str, n) { const gr = new Uint8Array(n); let at = 0; for (const part of str.split('.')) { if (!part) continue; const v = parseInt(part[0], 36), c = part.length > 1 ? parseInt(part.slice(1), 36) : 1; for (let k = 0; k < c && at < n; k++) gr[at++] = v; } return gr; }
+export const docToJSON = d => ({ v: 1, name: d.name, W: d.W, H: d.H, theme: d.theme, start: d.start, ents: d.ents, grid: rle(d.grid), ...terrainOf(d) });
+export function docFromJSON(o) {
+  if (!o || !o.W || !o.H || typeof o.grid !== 'string') throw new Error('not a level');
+  const d = { W: o.W, H: o.H, grid: unrle(o.grid, o.W * o.H), ents: o.ents || [], theme: o.theme || 0, name: o.name || 'A SHARED WOOD', start: o.start || { x: 3, y: 19 } };
+  setTerrain(d, o); return d;
+}
+const b64u = bytes => { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = str => { const b = str.replace(/-/g, '+').replace(/_/g, '/'); const bin = atob(b + '==='.slice((b.length + 3) % 4)); return Uint8Array.from(bin, c => c.charCodeAt(0)); };
+async function pipe(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
+export async function shareCode(d) { return b64u(await pipe(new TextEncoder().encode(JSON.stringify(docToJSON(d))), new CompressionStream('deflate-raw'))); }
+export async function fromShareCode(code) {
+  const c = String(code).trim().replace(/^.*#L=/, '');
+  return docFromJSON(JSON.parse(new TextDecoder().decode(await pipe(unb64u(c), new DecompressionStream('deflate-raw')))));
+}
+export async function shareLink(d) { return location.origin + location.pathname + '?maker=1#L=' + await shareCode(d); }

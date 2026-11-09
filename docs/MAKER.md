@@ -86,6 +86,15 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   bars, and a MAP (minimap, bottom right, MAP button toggles) shows the whole level; click/drag it to go there.
 - `tools/maker-editing.mjs` (in the suite).
 
+## Done (2026-11-09, BATCH 2: piece settings + share links)
+- SHIFT+CLICK a placed piece (or TOOLS > EDIT): a panel with its settings (`MKP.pieceRows`) - platform range / speed /
+  width, lift height / trip time, foe facing, sign text, trap timings, roller facing / speed, key metal, gate metal and
+  height (its bars regrow). The values are the engine's own ent fields: no game hooks. REMOVE deletes the piece.
+  The editor draws each moving platform's whole track.
+- SHARE copies `?maker=1#L=<code>` (save JSON, deflate-raw, base64url; a full test level ~600 chars); opening such a
+  link loads the level into the maker. OPEN takes a pasted link or code.
+- `tools/maker-pieces.mjs` (in the suite).
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and

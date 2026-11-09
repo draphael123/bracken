@@ -7176,6 +7176,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
   disp.addEventListener('mousemove', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { const [x, y] = toGame(ev); DUELO.rosterMouse(x, y, false); } });
   disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev);
     if (ev.button === 1) { edPanFrom = { x, y, cx: edCam.x, cy: edCam.y }; ev.preventDefault(); return; }   /* (claude/maker) the middle button drags the level along */
+    edShift = ev.shiftKey;
     edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
   disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); if (edPanFrom) { edCam.x = edPanFrom.cx - (x - edPanFrom.x); edCam.y = edPanFrom.cy - (y - edPanFrom.y); edClampCam(); return; } edMouse(x, y, ev.button, false, true); });
   addEventListener('mouseup', () => { edPanFrom = null; MUI.mouseUp();   /* (claude/maker) */
@@ -37181,7 +37182,7 @@ function edThemeList() {
 
 const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;
 const MAT_SET = { grass: '-', cobble: 'village', shore: 'shore', reef: 'reef', city: 'city', deck: 'ship', masonry: '-' };   /* (claude/maker) a ground material -> the place whose skin it wears (resolveTiles) */   /* (claude/maker) the lists live in src/maker-palette.js */
-const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER', 'LINK'];   /* (claude/maker) LINK: a lever or a plate, then the door it opens */
+const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER', 'LINK', 'EDIT'];   /* (claude/maker) LINK: a lever or a plate, then the door it opens */
 const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
 const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES.map(MKP.nameOf) : c === 2 ? ED_THINGS.map(MKP.thingName) : ED_TOOLS;
 const edBrush = () => ({ cat: edCat, i: edSel[edCat], name: edItems(edCat)[edSel[edCat]] });
@@ -37333,6 +37334,7 @@ function edMouse(mx, my, btn, down, moved) {
   edCur.x = Math.floor((mx + cx) / TS); edCur.y = Math.floor((my + cy) / TS);
   if (edPal) { if (down) edPalClick(mx, my); return; }
   { const u = MUI.uiMouse(edUiCtx(), mx, my, down); if (u) { edUiAct(u); return; } }   /* (claude/maker) the bars and panels take their own clicks */
+  if (down && btn === 0 && edShift) { edEditAt(edCur.x, edCur.y); return; }   /* (claude/maker) SHIFT+CLICK a piece: its settings */
   if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRectBrush(ED_TILES[edBrush().i])) { MKP.rectStart(edCur); return; }   /* (claude/maker) water: drag a box */
   if (MKP.rectActive()) return;
   if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; }
@@ -37340,6 +37342,7 @@ function edMouse(mx, my, btn, down, moved) {
     const b = edBrush();
     if (b.cat === 3 && down) { // the tools act once, where you clicked
       if (b.name === 'LINK') { MKP.linkClick(edDoc, edCur, edSay); SFX.ui(); return; }   /* (claude/maker) */
+      if (b.name === 'EDIT') { edEditAt(edCur.x, edCur.y); return; }
       if (b.i === 0) { edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); }
       else if (b.i === 1) { edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); }
       else if (b.i === 2) edResize(10); else edResize(-10);
@@ -37360,7 +37363,8 @@ function edCamLim() { return { x0: -TS * 2, x1: Math.max(-TS * 2, LW * TS - VW +
 function edClampCam() { const m = edCamLim(); edCam.x = Math.max(m.x0, Math.min(m.x1, edCam.x)); edCam.y = Math.max(m.y0, Math.min(m.y1, edCam.y)); }
 function edCamXY() { edClampCam(); return [Math.round(edCam.x), Math.round(edCam.y)]; }
 /* (claude/maker) ONE REDRAW A FRAME: painting marks the level dirty; the frame redraws the tiles and puts the landmarks back once */
-let edDirty = false, edPanFrom = null;
+let edDirty = false, edPanFrom = null, edShift = false;
+function edEditAt(tx, ty) { const e = edDoc.ents.slice().reverse().find(q => q.x === tx && q.y === ty); if (e) { MUI.openPiece(e); SFX.ui(); } else edSay('click on a placed piece to change it'); }
 function edFlush() { if (!edDirty || !L) return; edDirty = false; resolveTiles(); placeLandmarks(); }
 function edUiCtx() { return { g, text, textW, fitText, SPR, drawSet, VW, VH, time, cat: edCat, sel: edSel[edCat], tools: ED_TOOLS, slot: edSlot, msg: edMsg, msgT: edMsgT, doc: edDoc,
   themes: edThemeList(), noGate: !!L && !L.ents.some(e => e.t === 'gate'), problems: MKP.problems(edDoc).length, cam: { x: edCam.x, y: edCam.y }, LWp: LW * TS, LHp: LH * TS }; }
@@ -37382,6 +37386,12 @@ function edUiAct(u) {
   else if (a === 'music') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
   else if (a === 'closeSettings') music.stop();
   else if (a === 'openSettings') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
+  else if (a === 'pieceStep') { edPush(); if (MKP.stepRow(edDoc, u.piece, u.row, u.d)) edMount(false); else edRespawn(); }
+  else if (a === 'pieceText') { const t = prompt('What does the sign say?', u.piece.text || ''); if (t !== null) { edPush(); u.piece.text = t.toUpperCase().slice(0, 80); edRespawn(); } }
+  else if (a === 'pieceRemove') { edPush(); const i = edDoc.ents.indexOf(u.piece); if (i >= 0) edDoc.ents.splice(i, 1); edRespawn(); edSay('removed'); }
+  else if (a === 'share') { MKP.shareLink(edDoc).then(url => { history.replaceState(null, '', url); const done = () => edSay('LINK COPIED: ANYONE WHO OPENS IT GETS THIS LEVEL');
+      if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url)); else prompt('Copy this link:', url); }).catch(() => edSay('could not make a link')); }
+  else if (a === 'open') { const s0 = prompt('Paste a level link (or its code):'); if (s0) MKP.fromShareCode(s0).then(d => { edPush(); edDoc = d; edMount(true); edSay('opened ' + d.name); }).catch(() => edSay('that link did not open')); }
   if (a !== 'play') SFX.ui();
 }
 function drawEditor() {
@@ -37412,7 +37422,7 @@ function drawEditor() {
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
   MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
@@ -38159,6 +38169,7 @@ window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on =
 partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('maker')) edEnter();
+if (q.get('maker') && /#L=/.test(location.hash)) MKP.fromShareCode(location.hash).then(d => { edDoc = d; edMount(true); edSay('A SHARED LEVEL: ' + d.name + ' - PRESS PLAY'); }).catch(() => edSay('that share link did not open'));   /* (claude/maker) a shared level opens in the maker */
 /* (claude/maker) the maker's test handle: tools/maker-sweep.mjs builds one-foe woods through it */
 window.MKR = { blank: (W, H) => edBlank(W, H), get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), place: (tx, ty, erase) => { edPush(); edPainted = null; edPlace(tx, ty, !!erase); edFlush(); }, spr: (tx, ty) => tileSpr[ty * LW + tx], get decor() { return decor; }, toScreen: (bx, by) => { const r = disp.getBoundingClientRect(); return [r.left + (bx * S + offX) / DPR, r.top + (by * S + offY) / DPR]; }, get cam() { return { x: edCam.x, y: edCam.y }; }, get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */

@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -22,8 +22,8 @@ export const GROUPS = [
   { name: 'HAZARDS', cat: 2, idx: thingIdx(HAZ) },
   { name: 'TOOLS', cat: 3, idx: null },   // filled from the editor's own tool list
 ];
-const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)' };
-const TOOL_SHOWN = ['START', 'LINK'];   // THEME / WIDER / NARROWER live in SETTINGS now
+const TOOL_NAMES = { START: 'START (where the knight begins)', LINK: 'LINK (a lever or plate, then its door)', EDIT: 'EDIT A PIECE (or SHIFT+CLICK it)' };
+const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
 const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
@@ -116,7 +116,7 @@ function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
   else if (cat === 2) thingIcon(g, THINGS[i], x, y, c.time, c);
-  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
+  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'EDIT' ? 'SET' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
 function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => i) : gr.idx; }
@@ -124,7 +124,7 @@ function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.
 // ---------------- layout ----------------
 const TAB_H = 12, CELL = 22, ROWS = 2, NAME_H = 10, TOP = TAB_H + ROWS * CELL + NAME_H + 2, BOT = 16;
 export const BARS = { top: TOP, bottom: BOT };
-const BUTTONS = ['PLAY', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SETTINGS', 'MAP', 'HELP'];
+const BUTTONS = ['PLAY', 'UNDO', 'SAVE', 'LOAD', 'NEW', 'SHARE', 'OPEN', 'SETTINGS', 'MAP', 'HELP'];
 const inR = (r, x, y) => r && x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 
 // c: { g, text, SPR, drawSet, VW, VH, time, cat, sel (the selected index in that cat), tools, slot, msg, msgT, doc, themes, tracks }
@@ -167,7 +167,7 @@ export function drawChrome(c) {
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
-  if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c);
+  if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
 }
 const groupOf = c => GROUPS.findIndex((gr, gi) => gr.cat === c.cat && groupIdx(c, gi).includes(c.sel));
 
@@ -211,11 +211,12 @@ const HELP = [
   ['START / GOAL', 'TOOLS > START sets where the knight begins; every level needs a GOAL GATE (ITEMS)'],
   ['PLAY', 'the PLAY button (or P) plays it with the real combat; ESC comes back here'],
   ['SETTINGS', 'background, music, time of day, weather, name and width'],
-  ['SAVE / LOAD', 'three slots: SLOT picks one, SAVE and LOAD use it'],
+  ['SAVE / LOAD', 'three slots: SLOT picks one, SAVE and LOAD use it.  SHARE copies a link to the level; OPEN takes one'],
+  ['EDIT A PIECE', 'SHIFT+CLICK a placed piece (or TOOLS > EDIT): how far a platform goes, which way a foe faces, what a sign says'],
   ['MOVE AROUND', 'mouse wheel (SHIFT+wheel: up/down), drag with the middle button, arrow keys, or click the MAP'],
 ];
 function drawHelp(c) {
-  const { g, text } = c, w = 520, h = 168, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
+  const { g, text } = c, w = 560, h = 196, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
   HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(b, x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
   UI.rows = [{ x: x + w / 2 - 30, y: y + h - 18, w: 60, h: 13, key: 'done' }]; const d = UI.rows[0];
   g.fillStyle = '#3f7a2c'; g.fillRect(d.x, d.y, d.w, d.h); text('GOT IT', d.x + 30, d.y + 3, '#d8f09a', 'center', 6);
@@ -229,7 +230,9 @@ export function uiMouse(c, mx, my, down) {
   if (UI.panel) {
     if (!down) return { consumed: true };
     const r = UI.rows.find(q => inR(q, mx, my)); if (!r) return { consumed: true };
-    if (r.key === 'done') { const was = UI.panel; UI.panel = null; return { consumed: true, act: was === 'settings' ? 'closeSettings' : null }; }
+    if (r.key === 'done') { const was = UI.panel; UI.panel = null; UI.piece = null; return { consumed: true, act: was === 'settings' ? 'closeSettings' : was === 'piece' ? 'pieceDone' : null }; }
+    if (r.key === 'remove') { const e = UI.piece; UI.panel = null; UI.piece = null; return { consumed: true, act: 'pieceRemove', piece: e }; }
+    if (r.key === 'p') return { consumed: true, act: r.text ? 'pieceText' : 'pieceStep', piece: UI.piece, row: pieceRows(UI.piece)[r.i], d: r.d };
     if (r.key === 'name') return { consumed: true, act: 'name' };
     if (r.key === 'width') return { consumed: true, act: r.d > 0 ? 'width+' : 'width-' };
     if (r.key === 'theme') return { consumed: true, act: r.d > 0 ? 'theme+' : 'theme-' };
@@ -257,7 +260,25 @@ export function uiMouse(c, mx, my, down) {
     return { consumed: true, act: btn.b.toLowerCase() }; }
   return { consumed: true };
 }
-export function closePanel() { const was = UI.panel; UI.panel = null; return was; }
+export function closePanel() { const was = UI.panel; UI.panel = null; UI.piece = null; return was; }
+export function openPiece(e) { UI.panel = 'piece'; UI.piece = e; }
+export const pieceOpen = () => UI.panel === 'piece' ? UI.piece : null;
+function drawPiece(c) {
+  const e = UI.piece, rows = pieceRows(e), { g, text } = c, w = 340, h = 52 + Math.max(1, rows.length) * 18, { x, y } = panelBox(c, w, h, pieceName(e));
+  UI.rows = [];
+  if (!rows.length) text('NOTHING TO SET ON THIS ONE', x + w / 2, y + 26, '#8a7fa0', 'center', 6);
+  rows.forEach((r, k) => { const ry = y + 22 + k * 18;
+    text(r.label, x + 12, ry + 3, '#c8bcd8', 'left', 6);
+    const V = { x: x + 116, y: ry, w: w - 144, h: 12, key: 'p', i: k, d: 0, text: !!r.text };
+    const val = r.text ? (e.text || '(click to write)') : r.show(rowValue(e, r));
+    g.fillStyle = '#2e2640'; g.fillRect(V.x, V.y, V.w, V.h); text(c.fitText(String(val), V.w - 6, 6), V.x + V.w / 2, ry + 3, '#ffffff', 'center', 6);
+    if (r.text) UI.rows.push(V);
+    else for (const [d, ax] of [[-1, x + 100], [1, x + w - 26]]) { const a = { x: ax, y: ry, w: 14, h: 12, key: 'p', i: k, d }; g.fillStyle = '#4a3e64'; g.fillRect(a.x, a.y, a.w, a.h); text(d < 0 ? '<' : '>', a.x + 7, a.y + 3, '#ffd36b', 'center', 6); UI.rows.push(a); } });
+  const by = y + h - 18, del = { x: x + 12, y: by, w: 60, h: 13, key: 'remove' }, done = { x: x + w - 72, y: by, w: 60, h: 13, key: 'done' };
+  g.fillStyle = '#6a2a2a'; g.fillRect(del.x, del.y, del.w, del.h); text('REMOVE', del.x + 30, del.y + 3, '#ffd0d0', 'center', 6);
+  g.fillStyle = '#3f7a2c'; g.fillRect(done.x, done.y, done.w, done.h); text('DONE', done.x + 30, done.y + 3, '#d8f09a', 'center', 6);
+  UI.rows.push(del, done);
+}
 
 // ---------------- the minimap: the whole level, small, bottom right ----------------
 let MM = null, MMt = -1, MMdoc = null;
