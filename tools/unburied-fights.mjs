@@ -365,3 +365,4 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
   assert.notDeepEqual(a, b, 'the same shadows twice: ' + a + ' / ' + b);
   ok('the broken bridges', 'whistle, shadows, then arrows; step out, cover, or a guard overhead'); }
 console.log('ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges and the field hold');
+await import('./dk-topple.mjs');   /* (claude/dklift) THE DEATH KNIGHT's TOPPLE THE STANDARD (BOSSLIFT, flag BOSSLIFT_DK_SHIPS / ?bosslift): its own file, run here so the suite carries it */
