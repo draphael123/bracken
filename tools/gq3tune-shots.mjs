@@ -19,13 +19,13 @@ try {
     e.hp = 1; BKT.hurtEnemy(e, 50, e.x - 10, false); run(120); BK.tp(E.portal.x, E.portal.y); run(40);
     const esc = H.test.esc(); info.fl = esc.fl.length;
     /* A. the firelight: the floor under the hero is burning (forced), the one beside him smoking */
-    pin = [795 * 16 + 8, F[2] * 16 - 40]; BK.tp(795, F[2] - 1); run(2); BK.P.y = pin[1]; esc.fl[1].burning = true; esc.fl[2].smokeAt = esc.fl[2].smokeAt || 1;
-    run(30); snap('A-burning-floor-below'); pin = [795 * 16 + 8, F[2] * 16 - 8]; run(20); snap('A2-burning-floor-near'); pin = null;
+    pin = [795 * 16 + 8, F[2] * 16 - 40]; BK.tp(795, F[2] - 1); run(2); BK.P.y = pin[1]; for (let i = 0; i < 240; i++) { hold(); esc.fl[2].burning = true; esc.fl[3].burning = true; BK.step(1); }
+ snap('A-burning-floor-below'); for (let i = 0; i < 4; i++) { hold(); esc.fl[2].burning = true; BK.step(1); } pin = [795 * 16 + 8, F[2] * 16 - 8]; run(10); snap('A2-burning-floor-near'); pin = null;
     /* B. her hop: crouch, then spring */
     BK.tp(790, F[1] - 1); run(20); const qq = esc.q; const qy = F[qq.k] * 16;
-    qq.hopAt = 0; /* force a hop soon */ run(1);
-    let k = 0; const tn = BK.time ? BK.time() : 0;
-    for (let i = 0; i < 260; i++) { hold(); BK.step(1); const m = BK.boss && BK.boss.mode; if ((m === 'towerCrouch' || m === 'towerHop') && !shots['B-' + m]) snapAt('B-' + m, BK.boss.x, BK.boss.y - 30, 200, 112); if (shots['B-towerCrouch'] && shots['B-towerHop']) break; }
+    
+    let k = 0;
+    for (let i = 0; i < 900; i++) { hold(); BK.step(1); const m = BK.boss && BK.boss.mode; if (BK.boss && !BK.boss.hidden) pin = [BK.boss.x - 64, BK.boss.y - 1]; if ((m === 'towerCrouch' || m === 'towerHop') && !shots['B-' + m]) snap('B-' + m); if (shots['B-towerCrouch'] && shots['B-towerHop']) break; }
     info.hop = Object.keys(shots).filter(s => s.startsWith('B-'));
     /* C. the tower top: blink / stumble / storm / bays */
     BK.tp(E.portal.x, E.portal.y); run(60); info.skip = H.skipRoof(); run(150); BK.tp(812, 19); run(30);
