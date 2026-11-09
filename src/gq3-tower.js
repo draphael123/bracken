@@ -65,6 +65,7 @@ export function towerLay(R, { T, TS }) {
   (R.calm = R.calm || []).push([s0 - 2, s1 + 2, 22, 82], [D.x0, D.x1, 0, 19]);
   ent('sign', hallPortal.x - 3, 19, { text: 'SHE HAS GONE THROUGH HER PORTAL AND THE TOWER IS ON FIRE. FOLLOW HER UP.' });
   ent('sign', 786, 80, { text: 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });
+  R.ents = R.ents.filter(e => !(e.t === 'sign' && /THE FIRE HAS TAKEN HER HALL/.test(e.text || '')));   /* the burning-hall climb's sign goes with it */
   R.gq3Tower = true;
   return R;
 }

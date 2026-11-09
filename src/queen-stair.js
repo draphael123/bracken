@@ -56,7 +56,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
   for (const x of [670, 673, 674, 680]) sup({ x, y: B.ARCHER.row, bottom: B.ARCHER.row + 2, top: 2, kind: 'hcchain' });
   for (const [t, x, y] of B.FOES.b2) { const o = { face: -1 }; if (t === 'gobgeo') Object.assign(o, { seal: 'qs-grille', leash: 5, sight: 300 }); ent(t, x, y, o); }
   R.rocklocks.push({ id: 'qs-grille', kind: 'seal', x: La.col, y: 5, box: [La.col, La.col, 3, 7], cells: [[La.col, La.grille[0], La.grille[1], 'net']], seal: 'qs-grille' });
-  ent('sign', 672, 7, { text: 'THE GEOMANCER AT THE TOP THROWS ROCKS. SEND ONE BACK AT HIM: THE GRILLE SHATTERS INTO A LADDER. OR GO ROUND PAST THE ARCHER.' });
+  ent('sign', 672, 7, { text: 'SEND HIS ROCK BACK AT THE GEOMANCER: THE GRILLE BREAKS INTO A LADDER. OR GO ROUND.' });
   ent('torch', 669, 9); ent('torch', 678, 7); coins([672, 5], [676, 5], [679, 5], [683, 3]);
   (R.gusts = R.gusts || []).push({ x0: 664 * TS, x1: 684 * TS, y0: 2 * TS, y1: 12 * TS, dir: -1, period: 5.5, on: 1.6, phase: 1, told: true });   // headwind gusts on the wind stair, told
 
@@ -70,7 +70,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
     R.rocklocks.push({ id: 'qs-w' + i, kind: 'weight', x: wc, y: 5, box: [wc, wc, 5, 9], lay: [[a, b, B.SLAB_ROW]], seal: 'qs-store' });
     R.reachSpans.push([a, b, B.SLAB_ROW]);
   });
-  ent('sign', 686, 12, { text: 'HIS ROCK, SENT BACK, FINDS THE FIRST WEIGHT: IT DROPS AND ITS SLAB SWINGS LEVEL. THREE MAKE A BRIDGE. A FALL IS ONLY THE LADDER BACK.' });
+  ent('sign', 686, 12, { text: 'HIS ROCK, SENT BACK, DROPS THE FIRST WEIGHT: A SLAB SWINGS LEVEL. THREE MAKE A BRIDGE.' });
   ent('torch', 687, 4); ent('torch', 703, 8); coins([691, 8], [695, 8], [699, 8]);
 
   // ---- B4: the gallery over her door ----
@@ -80,7 +80,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
   for (const x of [G.x0, G.x1]) sup({ x, y: G.row, bottom: 20, kind: 'hcpier' });
   for (const x of [706, 710, 714]) R.hcDeco.push({ k: 'corbel', x, y: G.row + 7 / 16, n: 1 });
   for (const [t, x, y] of B.FOES.b4) ent(t, x, y, { face: -1 });
-  ent('sign', 705, 11, { text: 'STRIKE THE SLOT IN THE FLOOR: THE STONE DROPS ON HER DOOR GUARD. THEN THE LADDER, AND HER DOORS.' });
+  ent('sign', 705, 11, { text: 'STRIKE THE SLOT: THE STONE DROPS ON HER DOOR GUARD. THEN THE LADDER.' });
   ent('torch', 706, 11); ent('torch', 714, 11); coins([708, 10], [712, 10]);
 
   // ---- the section's look: stone tower, an interior store, no garrison sprinkling, snow ----
