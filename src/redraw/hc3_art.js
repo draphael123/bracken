@@ -121,7 +121,7 @@ const farStrip = () => once('far', () => { const W = 1024, H = 190, [c, g] = can
   return c; });
 export function drawFar(g, cx, cy, VW, VH, time) {                                                             // far wards, ridges and a snow-haze, under the facades (parallax 0.35)
   if (!inSpan(K.FAR[0], K.FAR[1], cx, VW)) return;
-  const s = farStrip(), base = Math.round((K.S + 1) * TS - cy) + 2, off = -Math.round(cx * 0.35) % 1024, a0 = Math.max(0, Math.min(1, (cx + VW - K.FAR[0] * TS) / 160, (K.FAR[1] * TS + 160 - cx) / 160));
+  const s = farStrip(), base = Math.round(VH * 0.68 - (cy - ((K.S + 1) * TS - VH * 0.68)) * 0.2) + 2,   /* (gq3 8.1) y rides ~0.2 of the camera like the shared backdrop, anchored where the wall walk puts the camera: no inverted depth on a jump */ off = -Math.round(cx * 0.35) % 1024, a0 = Math.max(0, Math.min(1, (cx + VW - K.FAR[0] * TS) / 160, (K.FAR[1] * TS + 160 - cx) / 160));
   g.globalAlpha = 0.9 * a0; for (let x = off - 1024; x < VW; x += 1024) { if (x + 1024 > 0) g.drawImage(s, x, base - 190); } g.globalAlpha = 1;
   g.globalAlpha = 0.07 * a0; R(g, 0, base - 80, VW, 80, '#c9d8ff'); g.globalAlpha = 1; void time; }
 

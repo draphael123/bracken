@@ -179,7 +179,7 @@ export function drawRoofBack(g, cx, cy, VW, VH, t) {
   R(g, 0, hz, VW, VH - hz, '#2e1418');
   const rnd = mulberry(9);   // the stars that are left (a few; the smoke has most)
   for (let i = 0; i < 26; i++) { const sx = ri(rnd() * VW), sy = ri(rnd() * hz * 0.5); if (Math.sin(t * 2 + i) > -0.6) R(g, sx, sy, 1, 1, i % 5 ? '#6a5a7a' : '#e8dcff'); }
-  const W = Math.max(VW + 80, 420), r = ruin(W), ox = -((cx * 0.22) % W);
+  const W = Math.max(VW + 80, 420), r = ruin(W), ox = -ri((cx * 0.22) % W);   /* (gq3 8.4) whole pixels */
   g.globalAlpha = 0.9; g.drawImage(r, ri(ox), hz - 100); if (ox + W < VW) g.drawImage(r, ri(ox + W), hz - 100); g.globalAlpha = 1;
   g.globalAlpha = 0.5 + 0.1 * wave(t, 3); R(g, 0, hz - 18, VW, 20, '#ff6b2c'); g.globalAlpha = 1;   // the glow of the fires, along the whole horizon
   for (let i = 0; i < 9; i++) { const fx = ri(((i * 83 + 20 - cx * 0.22) % (VW + 60) + VW + 60) % (VW + 60)) - 30; drawFlame(g, fx, hz - 30 - (i * 17) % 22, 8 + 7 * wave(t, 7, i * 1.9), t, i, 6); }

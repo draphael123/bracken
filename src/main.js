@@ -33033,7 +33033,7 @@ function updateCamera(dt) {
   if (LA) { const run = Math.abs(P.vx) > 14 ? Math.sign(P.vx) * Math.min(1, Math.abs(P.vx) / 70) : 0; camLead += (run * VW / 6 - camLead) * Math.min(1, dt * 2.2);
     camFallT = !P.ground && P.vy > 200 ? camFallT + dt : 0; } else { camLead = 0; camFallT = 0; }
   const fallLead = LA && SET.lookDown && camFallT > 0.25 ? Math.min(40, (camFallT - 0.25) * 70) : 0;   /* a long fall: the camera runs ahead of you, down */
-  const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) + fallLead : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
+  const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 && (camFallT > 0.25 || !LA) ? Math.min(60, (P.vy - 120) * 0.4) + fallLead : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
   let tx = P.x + (LA ? P.face * 24 + camLead : P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28))) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
@@ -34707,7 +34707,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.witch && !L.colosseum) drawWitchLandmarks(g, L, cx, cy, time, VW, VH);
   if (L.oreRoad) { const dl = drumLine(); drawOreStructures(g, L, cx, cy, time, VW, VH, dl ? dl.t / 22 : 0); }   /* THE ORE ROAD: the pylon, the tower's timber, the loft, the great drum */   /* THE WITCHLIGHT STAIR: its arches, its colonnade, its statues, its orrery ring */
   if (HIDE.back) { g.fillStyle = HIDE.back; g.fillRect(0, 0, VW, VH); }   /* (claude/unburied4) BK.hide.back = a colour: the backdrop as one flat colour, so tools/unburied-aloft.mjs can see what stands in front of the sky */
-  if (L.hc3) { try { HC3A.drawFar(g, cx, cy, VW, VH, time); } catch (e) { /* the shared sky stays */ } }   /* (claude/hc3art) the far wards and ridges behind the battlements */
+  if (L.hc3 && SET.parallax !== 'off') { try { HC3A.drawFar(g, cx, cy, VW, VH, time); } catch (e) { /* the shared sky stays */ } }   /* (claude/hc3art) the far wards and ridges behind the battlements */
   drawFacades(cx, cy);
   if (L.hc3) { try { HC3A.drawParapet(g, cx, cy, VW, time); } catch (e) { /* no parapet */ } }   /* (claude/hc3art) the wall walk's merlons and loops, behind the walkers */
   if (L.towpath) TPS.drawBack(g, cx, cy, VW, VH, L, time);   /* THE TOWPATH: the back walls of its chambers, races and cuts, the gorge, the basin's far quay (src/redraw/towpath_set.js) */
