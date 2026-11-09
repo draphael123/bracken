@@ -171,6 +171,7 @@ export function makeGQueenHands(ctx) {
     for (const t0 of E.throwers || []) ctx.spawnEnt({ t: t0.t, x: t0.x, y: t0.y, face: -1 });
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
+  const asSeat = (p, fn) => seats(P1 => { if (P1 === p) fn(); });   /* a hit on one seat runs as that seat (main.js asPlayer: P, PROG and the keys are his for the call) */
   /* which storey of THE BURNING TOWER a hero's feet are in (0 = the foot, 4 = the top, 5 = the deck above the hatch); -1 = not in the tower */
   function storeyOf(p, E) {
     const Tw = E.tower; if (p.x < (Tw.SHAFT[0] - 2) * TS || p.x > (Tw.SHAFT[1] + 2) * TS) return p.y < 21 * TS && p.x > Tw.DECK.x0 * TS ? 5 : -1;
@@ -206,7 +207,7 @@ export function makeGQueenHands(ctx) {
       if (!f.burning && top > k && t - f.lastOn >= G.tower.smoke) { if (!f.smokeAt) { f.smokeAt = t; ctx.number((Tw.SHAFT[0] + Tw.SHAFT[1]) / 2 * TS, F[k] * TS - 30, 'THE FLOOR SMOKES', '#c9c9d6'); sfx('crumble'); } if (t - f.lastOn >= G.tower.catch) { f.burning = true; ctx.number((Tw.SHAFT[0] + Tw.SHAFT[1]) / 2 * TS, F[k] * TS - 30, 'THE FLOOR CATCHES', '#ff9a5c'); sfx('crack'); } }
       if (f.burning) for (const h0 of hs) if (h0.k === k && h0.p.ground && Math.abs(h0.p.y - F[k] * TS) < 4) {
         const P1 = h0.p; P1.gqFireT = (P1.gqFireT ?? 0.4) - dt;
-        if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; gqRed(P1.x, G.esc.fire, 'THE BURNING FLOOR', { spare: true, noKnock: true }); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, F[k] * TS - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); }
+        if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; asSeat(P1, () => gqRed(P1.x, G.esc.fire, 'THE BURNING FLOOR', { spare: true, noKnock: true })); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, F[k] * TS - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); }
       } else if (h0.p.gqFireT !== undefined) h0.p.gqFireT = Math.min(h0.p.gqFireT, 0.25);
     }
     // ---- THE BURNING BEAMS: a creak and a shadow on the floor (1.0 s, '!!'), then a beam down the shaft: 14 red, step aside ----
@@ -218,7 +219,7 @@ export function makeGQueenHands(ctx) {
     }
     for (const b of esc.beams) {
       if (b.state === 'tell' && t >= b.at) { b.state = 'fall'; b.at = t + 0.3; ctx.shake(5); sfx('thud'); ctx.dust(b.x, F[b.k] * TS, 8); ctx.burst(b.x, F[b.k] * TS - 6, 12, ['#ff9a5c', '#ffd36b', '#5a3a1a'], 110, 0.5);
-        for (const h0 of hs) if (h0.k === b.k && Math.abs(h0.p.x - b.x) < G.tower.beamW) gqRed(b.x, G.tower.beamDmg, 'A BURNING BEAM', {}); }
+        for (const h0 of hs) if (h0.k === b.k && Math.abs(h0.p.x - b.x) < G.tower.beamW) asSeat(h0.p, () => gqRed(b.x, G.tower.beamDmg, 'A BURNING BEAM', {})); }
       else if (b.state === 'fall' && t >= b.at) b.done = true;
     }
     esc.beams = esc.beams.filter(b => !b.done);
@@ -334,7 +335,7 @@ export function makeGQueenHands(ctx) {
         const want = ad > 56 ? e.face * 62 : 0;
         if (e.modeT <= 0 && !P0.dead) {
           const hpk = e.hp / e.maxHp, stormUp = hpk < G.p2.desperate && !R0.pstorm && tt >= (R0.stormAt ?? 0);
-          if (stormUp) { e.mode = 'stormTell'; e.modeT = G.p2.stormTell; R0.stormAt = tt + G.p2.stormEvery; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); roofMus(2); }
+          if (stormUp) { e.mode = 'stormTell'; e.modeT = G.p2.stormTell; R0.stormAt = tt + G.p2.stormEvery; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('callerChant'); }
           else if (R0.blinkCd <= 0 && R0.last !== 'blink' && ad > 50) { R0.last = 'blink'; startBlink(e); }
           else if (R0.geyserCd <= 0 && ad < 280) { R0.last = 'geyser'; startGeyser(e); }
           else if ((e.crownCd ?? 3) <= 0 && ad > 60) { R0.last = 'crown'; roofCrown(e); }
@@ -363,7 +364,7 @@ export function makeGQueenHands(ctx) {
       case 'geyserTell': e.face = sign(R0.geysers.length ? R0.geysers[0].x - e.x : d) || e.face; if (e.modeT <= 0) { e.mode = 'geyser'; e.modeT = G.roof.geyserN * G.roof.geyserGap + 0.5; ctx.shake(5); sfx('forgeHammer'); } return 0;
       case 'geyser': if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'stormTell': e.face = sign(d) || e.face;   /* DESPERATION: the portal storm */
-        if (e.modeT <= 0) { R0.pstorm = { i: 0, at: tt + 0.3, shard: [] }; e.mode = 'stormFire'; e.modeT = 99; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); ctx.shake(5);
+        if (e.modeT <= 0) { R0.pstorm = { i: 0, at: tt + 0.3, shard: [] }; roofMus(2); e.mode = 'stormFire'; e.modeT = 99; sfx('callerBlast'); ctx.ring(e.x, e.y - 30, 30, '#ffd36b', 0.4); ctx.shake(5);
           const idle = R0.bays.map((b, i) => i).filter(i => R0.bays[i].state === 'idle'); for (let k = 0; k < G.p2.stormBays && idle.length; k++) lightBay(R0, idle.splice(Math.floor(Math.random() * idle.length), 1)[0], tt); }
         return 0;
       case 'stormFire': return 0;   // roofUpdate runs the five rings; it ends in stormOpen
