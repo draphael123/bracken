@@ -42,7 +42,7 @@ if (!ON) {
     ok(r.fields === want && !P.gtRoadMig && !P.fieldsOpen, 'flag off, ' + name + ': the fields ' + (want ? 'locked' : 'open') + ' exactly as master, the save untouched ' + JSON.stringify(P)); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/ghosttrain'));
   ok(tagged.length >= 15 && tagged.length <= 22, tagged.length + ' tagged hook lines in src/main.js (single lines)');
-  const unguarded = tagged.filter(l => !/gtOn\(\)|GTH|CDH|fieldsOpen|case 'conductor'/.test(l));
+  const unguarded = tagged.filter(l => !/gtOn\(\)|GTH|CDH|fieldsOpen|case 'conductor'|LEVELS\.some\(l => l\.id === 'ghosttrain'\)/.test(l));
   ok(!unguarded.length, 'every hook is behind the flag: the road and the old-save rule ask gtOn(), the rest need the level (GTH.on() / its ents / its boss) ' + unguarded.map(l => l.slice(0, 60)).join(' | '));
   ok(/if \(LEVELS\.some\(l => l\.id === 'ghosttrain'\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while the LEVELS row is there (gtOn() at import)');
   ok(/gtOn\(\) && isDev\(\)/.test(main), 'the dev entry needs ?gt=1 and ?dev=1');

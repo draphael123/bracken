@@ -26,8 +26,9 @@ export function makeGhostTrainHands(ctx) {
   /* ---------------- THE TILES this level changes (a cut car, a gangway, a punched hole): every original kept, every one put back on a reset ---------------- */
   H.setCell = (x, y, t) => { if (!S) S = fresh(); const L0 = L(); if (x < 0 || y < 0 || x >= L0.W || y >= L0.H) return; const k = y * L0.W + x; if (!S.cells.has(k)) S.cells.set(k, L0.grid[k]); ctx.cellSet(x, y, t); };
   H.restoreCell = (x, y) => { const L0 = L(), k = y * L0.W + x; if (S && S.cells.has(k)) { ctx.cellSet(x, y, S.cells.get(k)); S.cells.delete(k); } };
-  H.reset = () => { if (S) for (const [k, v] of S.cells) { const L0 = L(); ctx.cellSet(k % L0.W, Math.floor(k / L0.W), v); }
-    S = fresh(); const G = gt(); if (!G) return;
+  H.reset = () => { if (!H.on()) { S = null; return; }   /* another level: nothing of the train's is put into its grid */
+    if (S && S.L === L()) for (const [k, v] of S.cells) { const L0 = L(); ctx.cellSet(k % L0.W, Math.floor(k / L0.W), v); }   /* (only into the grid the cells came out of) */
+    S = fresh(); S.L = L(); const G = gt(); if (!G) return;
     for (const lp of G.lamps) { lp.on = lp.lit; lp.oilT = lp.lit ? 0 : 0; lp.flick = 0; }
     for (const p of G.points) p.set = 'straight';
     for (const c of G.couplings) c.cut = false; };
