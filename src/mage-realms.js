@@ -84,7 +84,7 @@ export const realmFloor = e => e && e.realm && e.realm.i + 1 < realmMarks(e).len
 
 /* INTO IT. P and he are set down at opposite ends; his hall's rings, shots and marks do not come with you. */
 export function enterRealm(e, A, P, c) {
-  const i = e.realmN || 0, kind = REALM.kinds[i], R = { kind, i, t: 0, A };
+  const i = e.realmN || 0, kind = (e.realmKinds || REALM.kinds)[i], R = { kind, i, t: 0, A };   /* (claude/ft5b: e.realmKinds - FT5 retires the poison realm, its mire is phase 1's sea) */
   const b = realmBox(null, A);
   if (kind === 'fire') Object.assign(R, { graceT: REALM.fire.grace, tiles: [], ph: 'wait', phT: 1.6, pat: 0, lit: [], wall: null, castT: 1.4, nextWall: true });
   if (kind === 'ice') { const n = REALM.ice.n; R.icicles = []; for (let k = 0; k < n; k++) { const x = b.x0 + (k + 0.5) * REALM.w / n; R.icicles.push({ x, x0: x, st: 'hang', t: 0, y: 0 }); }
@@ -99,6 +99,10 @@ export function enterRealm(e, A, P, c) {
   if (kind === 'poison') { const Q2 = REALM.poison2; R.vents = Q2.vents.map(f => ({ x: b.x0 + REALM.w * f })); R.vent = R.vents[Q2.first];
     Object.assign(R, { mireBase: R.mire, surgeOff: 0, surge: null, sgT: 0, hopT: Q2.hop, next: null, bubT: 0, rafts: null }); }
   e.realm = R; e.shots = []; e.clouds = []; e.rings = []; e.deathMark = null; e.fireRing = null; e.chained = false; e.flashT = 0;
+  /* (claude/ft5b) A.inPlace (FT5's spire field): THE REALM OPENS IN PLACE, round the middle of the same sky - the carpets were drawn in to it while it tore
+     (src/spire-field.js realmDraw), so nobody is moved and the camera never cuts; he comes out at the far side from you */
+  if (A.inPlace) { P.x = Math.max(b.x0 + 12, Math.min(b.x1 - 12, P.x)); P.y = Math.max(b.y0 + 8, Math.min(b.y1 - 8, P.y)); const far = P.x < (b.x0 + b.x1) / 2 ? 1 : -1;
+    e.x = far > 0 ? b.x1 - 90 : b.x0 + 90; e.y = (b.y0 + b.y1) / 2; e.face = -far; e.mode = 'rhover'; e.modeT = 0.8; c.say && c.say(REALM.name[kind], true); c.sound && c.sound('mageBolt'); c.shake && c.shake(6); return; }
   P.x = b.x0 + 70; P.y = (b.y0 + b.y1) / 2 + 20; P.vx = P.vy = 0;
   e.x = b.x1 - 90; e.y = (b.y0 + b.y1) / 2; e.face = -1; e.mode = 'rhover'; e.modeT = 0.8;
   c.pull && c.pull(kind);
@@ -470,7 +474,7 @@ function drawLiving(g, e, R, b, bb, cx, cy, time, T, P) {
 }
 /* HIS TEAR: the great ring he opens by him in his hall, full of the realm it goes to, flaring before it takes you */
 export function drawTear(g, e, cx, cy, time) {
-  if (!e || e.mode !== 'realmTell' || !e.alive) return; const kind = REALM.kinds[e.realmN || 0], C = REALM.col[kind], k = Math.min(1, (REALM.tear - Math.max(0, e.modeT)) / 0.4);
+  if (!e || e.mode !== 'realmTell' || !e.alive) return; const kind = (e.realmKinds || REALM.kinds)[e.realmN || 0], C = REALM.col[kind], k = Math.min(1, (REALM.tear - Math.max(0, e.modeT)) / 0.4);
   const x = Math.round(e.x - cx + (e.face || 1) * -34), y = Math.round(e.y - cy - 24), rw = Math.round(22 * k), rh = Math.round(32 * k); if (rw < 2) return;
   g.fillStyle = BACK[kind][1]; g.beginPath(); g.ellipse(x, y, rw, rh, 0, 0, Math.PI * 2); g.fill();
   g.fillStyle = C[0]; for (let i = 0; i < 6; i++) g.fillRect(x + Math.round(Math.sin(time * 3 + i) * rw * 0.5), y + Math.round(Math.cos(time * 2 + i * 1.7) * rh * 0.5), 2, 2);

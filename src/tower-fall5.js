@@ -365,7 +365,7 @@ export function buildTowerFall5({ painter, T }) {
   /* HIS HARRYING (the throw-back stun, plan sec 2): where he hovers outside the breaches in Act II-III and over the run - data for the harry wiring (owed) */
   const harry = [F[2], F[3], F[4], F[6]].map(f => ({ floor: f.name, x: f.X1 + 3, y: f.top + 8 })).concat([{ floor: 'THE FALL', x: 170, y: RUN.floor - 10 }]);
 
-  const skins = [[0, W - 1, 0, H - 1, 'fallen']];
+  const skins = [[0, W - 1, 0, H - 1, 'fallen'], ...((field && field.skins) || [])];   /* (claude/ft5b: the sand rows over the field are dune) */
   const START = { x: F[0].X0 + 2, y: F[0].bot - 1 };
   for (const s of supports) { s.x ??= s.col * TS + 8; s.y ??= (s.row + 1) * TS; }
   return {
@@ -380,11 +380,12 @@ export function buildTowerFall5({ painter, T }) {
       grass: '#46506a', grassL: '#56627e', grassD: '#343c52', dirt: '#4a4652', dirtL: '#645e6c', dirtD: '#2e2a36', canopy: ['#181428', '#221c36', '#2c2446', '#3a3058'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'hall' }],
     noCoin: [[0, W - 1, 0, RUN.floor - 3], [A.x0, A.x1, A.y0, A.y1]],
-    calm: [[A.x0 - 1, A.x1 + 1, A.y0, A.y1], [RUN.x0, RUN.x1, RUN.floor - 6, RUN.floor + 3]],   /* the sprinkler leaves the run and the arena alone (the run: pure platforming, plan sec 2) */
+    calm: [[A.x0 - 1, A.x1 + 1, A.y0, A.y1], [RUN.x0, RUN.x1, RUN.floor - 6, RUN.floor + 3], ...((field && field.calm) || [])],   /* the sprinkler leaves the run and the arena alone (the run: pure platforming, plan sec 2) */
     bonesSpots: bones,
     ft5Arena: { ...A, crownSpot: { ...A.crownSpot }, check: { ...A.check } },
     ft5: { acts, pieces, braced, breathers, outer, run, harry, bend: { ...BEND }, floors: F.map(f => ({ name: f.name, kind: f.kind, X0: f.X0, X1: f.X1, top: f.top, bot: f.bot, act: f.act, slopes: f.slopes || 0, tiers: f.tiers.map(t => t.slice()) })),
       roll0: 2.5, field: !!field },   /* roll0: the Folly's lurch carries over (plan sec 4): the first frame is already tipped, settling to Act I's 1.5 */
+    ...((field && field.level) || {}),   /* (claude/ft5b) THE SPIRE FIELD: his arena (both phases, one box), the sanctum's door to the sand, the field's runtime data (src/spire-field.js) */
   };
 }
 /* landings at the same row are one landing (the first wins: its stop is kept) */

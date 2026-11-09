@@ -16,6 +16,7 @@ import { STANDARD } from '../src/bot-profile.js';
 import { BOSS_ROWS } from './boss-rows.mjs';
 import { fmtRate, bandVerdict, spansEdge } from './rate-stats.mjs';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
+if (args.includes('--ft5')) process.env.BK_FT5 = '1';   /* (claude/ft5b) --ft5: FALLING TOWER 5 on in the page (globalThis.__FT5 before the fight's level is built: src/ft5-flag.js) - fallingtower is then fought in THE SPIRE FIELD */
 const rowsArg = args.includes('--all') ? BOSS_ROWS : args.filter(a => !a.startsWith('-')).flatMap(a => a.split(','));
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 6), secs = +opt('secs', 240), jobs = Math.max(1, +opt('jobs', 2));
 const ways = opt('ways', 'practiced,first,built').split(','), prof = opt('profile', STANDARD), OUT = opt('out', ''), flasks = opt('flasks', process.env.BOSS_FLASKS || 'kit');   /* (claude/flasks2) kit: the campaign kit's flasks (B6); bare: one flask at 35% (the old rows) */

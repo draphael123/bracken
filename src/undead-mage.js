@@ -265,7 +265,8 @@ export function updateUndeadMage(e, dt, c) {
   e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.open = mageOpen(e) ? Math.max(0, e.modeT) : 0;
   e.shots ??= []; e.clouds ??= []; e.rings ??= []; e.turn ??= 0; e.blinkT ??= MAGE.blinkEvery; e.squeeze ??= 0; e.flashT = Math.max(0, (e.flashT || 0) - dt);
   const k = mageSpeed(e), py = P.y - 8;
-  if (!e.enraged && e.hp <= e.hp0 * MAGE.enrageAt) { e.enraged = true; e.blinkT = Math.min(e.blinkT, 1); say('HE BURNS. THE SKY CLOSES. HE FIGHTS RING TO RING', true); sound('mageBolt'); }
+  if (!e.enraged && e.hp <= e.hp0 * (e.enrageAt ?? MAGE.enrageAt)) {   /* (claude/ft5b: e.enrageAt - FT5's carpet phase burns at 30%) */
+    e.enraged = true; e.blinkT = Math.min(e.blinkT, 1); say('HE BURNS. THE SKY CLOSES. HE FIGHTS RING TO RING', true); sound('mageBolt'); }
   if (!e.enraged && !e.stage2 && mageStage(e) === 2) { e.stage2 = true; say('HIS RINGS STAY OPEN', true); sound('mageBolt'); }
   if (e.enraged) e.squeeze = Math.min(1, e.squeeze + dt / 3);
   /* HIS WARD AND HIS PHASES, DRAWN (archmage3, src/archmage-acts.js): the turned blow's flare, the ward shattering as an opening begins, the realm shattering as
@@ -281,7 +282,7 @@ export function updateUndeadMage(e, dt, c) {
   // ---- his rings: they open, they close, and an open EXIT carries a dodge through it to him ----
   for (const r of e.rings) { r.t += dt; r.on = r.t < r.life ? Math.min(1, r.on + dt * 4) : Math.max(0, r.on - dt * 4); }
   e.rings = e.rings.filter(r => r.t < r.life || r.on > 0);
-  if (!P.dead && c.dodging && c.dodging() && e.mode !== 'breached' && e.mode !== 'wake') {
+  if (!P.dead && ((c.dodging && c.dodging()) || (e.onFoot && P.dodge > 0)) && e.mode !== 'breached' && e.mode !== 'wake') {   /* (claude/ft5b: e.onFoot - FT5's spire field, a roll through his ring on foot) */
     const r = e.rings.find(q => q.kind === 'exit' && !q.used && q.on >= 0.8 && q.t < q.life && Math.abs(P.x - q.x) < MAGE.ringW + 6 && Math.abs(py - q.y) < MAGE.ringH + 8);
     if (r && !(e.wardHold > 0)) breach(e, r, c); else if (r) { e.wardHitT = MAGE.ward.hitT; e.wardHitX = P.x; e.wardHitY = py; } }   /* (his ward HOLDS after an opening: told, nothing breaks it again yet) */
   // ---- what he has thrown ----
@@ -308,6 +309,7 @@ export function updateUndeadMage(e, dt, c) {
   for (const cl of e.clouds) { cl.t -= dt; if (!P.dead && Math.hypot(P.x - cl.x, py - cl.y) < cl.r) c.venom(); }
   e.clouds = e.clouds.filter(cl => cl.t > 0);
   stepNew(e, dt, c, py);
+  if (e.legStep && e.legStep(e, dt, c)) return;   /* (claude/ft5b) FT5's SPIRE FIELD takes the frame for its own beats: on foot he falls to a spire top, open; at 50% he fades (src/spire-field.js spireLeg) */
   if (c.chase && c.chase(e, dt)) return;   /* (claude/fallingtower3) THE CHASE takes the frame for its own beats: he falls, lies open, flees down through his tower (src/archmage-chase.js) */
   /* IN ONE OF HIS REALMS (src/mage-realms.js): the realm runs the fight until its opening has been had, and then it tears */
   e.realmRest = Math.max(0, (e.realmRest || 0) - dt);
@@ -328,7 +330,7 @@ export function updateUndeadMage(e, dt, c) {
   if (e.mode === 'gather' || e.mode === 'breached' || e.mode === 'reflected') { e.y += Math.sin(e.anim * 2) * 4 * dt; if (e.modeT <= 0) { e.mode = 'hover'; e.modeT = 0.4; e.blinkT = MAGE.afterOpen; e.noBlink = MAGE.afterOpen; } return; }   /* (claude/sweep3, B12: the window closed on a blink half a second later - now he hovers where you can follow him for afterOpen s first) */
   if (e.mode === 'markWait') { return; }
   /* HE TEARS A PORTAL at 75, 50 and 25%: the tear is told (realmTell - his ring of the realm, flaring), then it takes you */
-  if (e.mode === 'hover' && e.modeT <= 0.2 && !e.noRealm && realmDue(e) >= 0) { const kind = REALM.kinds[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
+  if (e.mode === 'hover' && e.modeT <= 0.2 && !e.noRealm && realmDue(e) >= 0) { const kind = (e.realmKinds || REALM.kinds)[e.realmN || 0], T = MAGE.trans[kind]; e.mode = 'realmTell'; e.modeT = T.secs; e.spell = 'realm'; e.face = Math.sign(P.x - e.x) || 1; e.deathMark = null;
     /* (archmage3) A PHASE CHANGE IS A SET PIECE AND A BREATHER: everything of his in the sky goes out, and its own picture plays (src/archmage-acts.js) */
     e.shots = []; e.clouds = []; e.rings = []; e.bones = null; e.void = null; e.echoes = []; e.orbit = null; e.script = null; e.fireRing = null; e.chained = false; e.trans = { kind, t: 0 };
     say(T.say, true); sound(T.sounds[0]); return; }
