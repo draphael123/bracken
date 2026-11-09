@@ -2,7 +2,7 @@
 // music options"). Everything is on screen and clickable: group tabs and an icon strip along the top, the buttons along
 // the bottom, a SETTINGS panel (background, music, time of day, weather, name, width) and a HELP card.
 // main.js hands it a context each frame (drawChrome) and each mouse event (uiMouse); the editor's keys still work.
-import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt } from './maker-palette.js';
+import { TILES, FOES, WATER_FOES, THINGS, nameOf, thingName, pieceRows, pieceName, rowValue, describe, describeEnt, GUIDE, EXAMPLES } from './maker-palette.js';
 import { T } from './level.js';
 import { MUSIC_NAMES } from './audio.js';
 
@@ -30,7 +30,7 @@ const TOOL_SHOWN = ['START', 'LINK', 'EDIT'];
 const TAG_COL = { FLIES: '#8fd1ff', SHOOTS: '#ffb36b', THROWS: '#ffb36b', BOMBS: '#ff8a5a', HEAVY: '#d88a8a', CHARGES: '#d88a8a', SHIELD: '#b3aca0', WATER: '#6fc3ff', FIGHTS: '#c8bcd8', WALKS: '#a8d890', FAST: '#f0e070', LEAPS: '#a8e0c0', RISES: '#b8a0e0', SUMMONS: '#d8a0e8' };   // THEME / WIDER / NARROWER live in SETTINGS now
 
 // ---------------- state ----------------
-const UI = { group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
+const UI = { guide: -1, guideT: 0, group: 0, page: [0, 0, 0, 0, 0, 0, 0, 0, 0], hover: null, panel: null, btns: [], tabs: [], cells: [], arrows: [], rows: [], map: null, mapDrag: false, mapOn: true };
 export function mouseUp() { UI.mapDrag = false; }
 // THE RECENT ROW: the last eight pieces you used, always one click away (Mario Maker's own habit)
 const RECENT = []; export const recent = () => RECENT;
@@ -38,7 +38,7 @@ export function used(cat, i) { const k = RECENT.findIndex(r => r.cat === cat && 
 export const mapRect = () => UI.map;   /* where the MAP was last drawn (tools/maker-editing.mjs clicks it) */
 export const panelOpen = () => !!UI.panel;
 const HELP_KEY = 'bracken.maker.helpSeen';
-export function firstVisit() { try { if (!localStorage.getItem(HELP_KEY)) { UI.panel = 'help'; localStorage.setItem(HELP_KEY, '1'); } } catch (e) {} }
+export function firstVisit() { try { if (!localStorage.getItem(HELP_KEY)) { UI.panel = 'help'; localStorage.setItem(HELP_KEY, '1'); } } catch (e) {} }   /* (its START THE GUIDE button leads a first level) */
 
 // ---------------- the level's settings ----------------
 export const TIMES = [null, 'day', 'dusk', 'night', 'cave'];
@@ -181,6 +181,7 @@ export function drawChrome(c) {
   { const b = 'SLOT ' + (c.slot + 1), w = Math.ceil(c.textW(b, 6)) + 12, r = { x: bx + 6, y: VH - BOT + 2, w, h: BOT - 4, b: 'SLOT' };
     g.fillStyle = UI.hover && UI.hover.b === 'SLOT' ? '#4a3e64' : '#2e2640'; g.fillRect(r.x, r.y, r.w, r.h); text(b, r.x + w / 2, r.y + 3, '#c8bcd8', 'center', 6); UI.btns.push(r); bx += w + 10; }
   { const room = VW - 4 - bx, s0 = c.msgT > 0 ? c.msg : 'ARROWS SCROLL   CTRL+Z UNDO   ESC IN PLAY COMES BACK'; text(c.fitText(s0, room, 6), VW - 4, VH - BOT + 5, c.msgT > 0 ? '#ffd36b' : '#8a7fa0', 'right', 6); }
+  if (UI.guide >= 0) drawGuide(c);
   if (UI.mapOn) drawMinimap(c); else UI.map = null;
   if (UI.panel === 'settings') drawSettings(c); else if (UI.panel === 'help') drawHelp(c); else if (UI.panel === 'piece') drawPiece(c);
 }
@@ -200,12 +201,13 @@ function settingRows(c) {
     { key: 'music', label: 'MUSIC', value: prettyTrack(d.music), hint: 'it plays while you choose' },
     { key: 'time', label: 'TIME OF DAY', value: d.time ? TIME_NAMES[d.time] : "THE BACKGROUND'S OWN" },
     { key: 'weather', label: 'WEATHER', value: d.weather ? d.weather.toUpperCase() : "THE BACKGROUND'S OWN" },
+    { key: 'hero', label: 'TEST AS', value: d.hero ? ((c.heroes.find(h => h.id === d.hero) || {}).name || d.hero.toUpperCase()) : 'YOUR OWN HERO' },
     { key: 'width', label: 'WIDTH', value: d.W + ' TILES' },
     { key: 'name', label: 'NAME', value: d.name, click: true },
   ];
 }
 function drawSettings(c) {
-  const { g, text } = c, w = 380, h = 160, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
+  const { g, text } = c, w = 380, h = 178, { x, y } = panelBox(c, w, h, 'LEVEL SETTINGS');
   text('< > TO CHANGE.  THE MUSIC PLAYS WHILE YOU CHOOSE.', x + w / 2, y + 17, '#8a7fa0', 'center', 6);
   UI.rows = [];
   settingRows(c).forEach((r, k) => { const ry = y + 30 + k * 18;
@@ -220,21 +222,23 @@ function drawSettings(c) {
 const HELP = [
   ['PICK A PIECE', 'click a group tab along the top, then a piece in the strip (< > for more)'],
   ['PAINT', 'left-click or drag in the level.  ERASE: right-click or drag'],
-  ['WATER', 'pick WATER / SHALLOWS / POISON, then drag a box'],
-  ['DOORS', 'paint DOOR tiles; a LEVER or PRESSURE PLATE opens the nearest door,'],
-  ['', 'or use TOOLS > LINK: click the lever or plate, then its door'],
+  ['MOVE A PIECE', 'drag it.  SHIFT+CLICK it to set it up (how far, which way, what it says)'],
+  ['WATER / HILLS', 'WATER: drag a box.  HILL: paint the top of the ground, the ramps make themselves'],
+  ['DOORS', 'paint DOOR tiles; a LEVER or PLATE opens the nearest (TOOLS > LINK picks one)'],
   ['START / GOAL', 'TOOLS > START sets where the knight begins; every level needs a GOAL GATE (ITEMS)'],
-  ['PLAY', 'the PLAY button (or P) plays it with the real combat; ESC comes back here'],
-  ['SETTINGS', 'background, music, time of day, weather, name and width'],
-  ['SAVE / LOAD', 'three slots: SLOT picks one, SAVE and LOAD use it.  SHARE copies a link to the level; OPEN takes one'],
-  ['EDIT A PIECE', 'SHIFT+CLICK a placed piece (or TOOLS > EDIT): how far a platform goes, which way a foe faces, what a sign says'],
-  ['MOVE AROUND', 'mouse wheel (SHIFT+wheel: up/down), drag with the middle button, arrow keys, or click the MAP'],
+  ['PLAY', 'PLAY (or P) plays it; PLAY HERE starts where you are looking; ESC comes back'],
+  ['SETTINGS', 'background, music, time of day, weather, the hero you test as, name and width'],
+  ['SAVE / SHARE', 'three slots (SLOT picks one).  SHARE copies a link to the level; OPEN takes one'],
+  ['MOVE AROUND', 'mouse wheel (SHIFT: up/down), drag with the middle button, arrow keys, or the MAP'],
 ];
 function drawHelp(c) {
-  const { g, text } = c, w = 560, h = 196, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
-  HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(b, x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
-  UI.rows = [{ x: x + w / 2 - 30, y: y + h - 18, w: 60, h: 13, key: 'done' }]; const d = UI.rows[0];
-  g.fillStyle = '#3f7a2c'; g.fillRect(d.x, d.y, d.w, d.h); text('GOT IT', d.x + 30, d.y + 3, '#d8f09a', 'center', 6);
+  const { g, text } = c, w = 560, h = 214, { x, y } = panelBox(c, w, h, 'HOW TO BUILD A LEVEL');
+  HELP.forEach(([a, b], k) => { text(a, x + 12, y + 24 + k * 12, '#8fd160', 'left', 6); text(c.fitText(b, w - 116, 6), x + 104, y + 24 + k * 12, '#e8dcc0', 'left', 6); });
+  UI.rows = []; const by = y + h - 34, btn = (bx, w2, label, key, col) => { const r = { x: bx, y: by, w: w2, h: 13, key }; g.fillStyle = col; g.fillRect(r.x, r.y, r.w, r.h); text(label, r.x + w2 / 2, r.y + 3, '#ffffff', 'center', 6); UI.rows.push(r); };
+  btn(x + 12, 120, 'START THE GUIDE', 'guide', '#3f6a8a');
+  text('OPEN AN EXAMPLE:', x + 146, by + 3, '#c8bcd8', 'left', 6);
+  EXAMPLES.forEach((ex, k) => btn(x + 240 + k * 100, 92, ex.name, 'example:' + k, '#5a4a7a'));
+  const d = { x: x + w / 2 - 30, y: y + h - 17, w: 60, h: 13, key: 'done' }; g.fillStyle = '#3f7a2c'; g.fillRect(d.x, d.y, d.w, d.h); text('GOT IT', d.x + 30, d.y + 3, '#d8f09a', 'center', 6); UI.rows.push(d);
 }
 
 // ---------------- the mouse ----------------
@@ -249,15 +253,19 @@ export function uiMouse(c, mx, my, down) {
     if (r.key === 'remove') { const e = UI.piece; UI.panel = null; UI.piece = null; return { consumed: true, act: 'pieceRemove', piece: e }; }
     if (r.key === 'p') return { consumed: true, act: r.text ? 'pieceText' : 'pieceStep', piece: UI.piece, row: pieceRows(UI.piece)[r.i], d: r.d };
     if (r.key === 'name') return { consumed: true, act: 'name' };
+    if (r.key === 'guide') { UI.panel = null; UI.guide = 0; return { consumed: true, act: 'guide' }; }
+    if (String(r.key).startsWith('example:')) { UI.panel = null; UI.guide = -1; return { consumed: true, act: 'example', n: +r.key.split(':')[1] }; }
     if (r.key === 'width') return { consumed: true, act: r.d > 0 ? 'width+' : 'width-' };
     if (r.key === 'theme') return { consumed: true, act: r.d > 0 ? 'theme+' : 'theme-' };
     const d = c.doc;
     if (r.key === 'time') { d.time = TIMES[(TIMES.indexOf(d.time ?? null) + r.d + TIMES.length) % TIMES.length]; return { consumed: true, act: 'remount' }; }
     if (r.key === 'weather') { d.weather = WEATHERS[(WEATHERS.indexOf(d.weather ?? null) + r.d + WEATHERS.length) % WEATHERS.length]; return { consumed: true, act: 'remount' }; }
+    if (r.key === 'hero') { const L = [null, ...c.heroes.map(h => h.id)]; d.hero = L[(L.indexOf(d.hero ?? null) + r.d + L.length) % L.length]; return { consumed: true }; }
     if (r.key === 'music') { const L = [null, ...MUSIC_NAMES]; d.music = L[(L.indexOf(d.music ?? null) + r.d + L.length) % L.length]; return { consumed: true, act: 'music' }; }
     return { consumed: true };
   }
   const { VW, VH } = c;
+  if (UI.guide >= 0 && UI.guideSkip && inR(UI.guideSkip, mx, my)) { if (down) UI.guide = -1; return { consumed: true }; }
   if (UI.map && (UI.mapDrag || inR(UI.map, mx, my))) {   /* THE MINIMAP: click or drag to look there */
     if (down) UI.mapDrag = true; if (!UI.mapDrag) return { consumed: true };
     const m = UI.map, fx = Math.max(0, Math.min(1, (mx - m.x) / m.w)), fy = Math.max(0, Math.min(1, (my - m.y) / m.h));
@@ -329,4 +337,17 @@ function drawEntCard(c, e) {
   let lx = x + 6; text(d.name, lx, y + 4, '#ffd36b', 'left', 6); lx += Math.ceil(c.textW(d.name, 6)) + 6;
   for (const t of d.tags) { const tw = Math.ceil(c.textW(t, 6)) + 6; g.fillStyle = TAG_COL[t] || '#4a3e64'; g.fillRect(lx, y + 3, tw, 9); text(t, lx + tw / 2, y + 4, '#1b1626', 'center', 6); lx += tw + 3; }
   text(c.fitText(lines[0] || '', w - 12, 6), x + 6, y + 17, '#e8dcc0', 'left', 6);
+}
+
+// ---------------- the guide: five steps, each ticked off by what you have actually done ----------------
+export const guideStep = () => UI.guide;
+function drawGuide(c) {
+  const st = GUIDE[UI.guide]; if (!st) { UI.guide = -1; return; }
+  if (!st.last && st.done(c.doc, c)) { UI.guide++; UI.guideT = 1; return; }
+  const { g, text, VW } = c, w = Math.min(VW - 40, Math.ceil(c.textW(st.say, 6)) + 140), x = Math.round((VW - w) / 2), y = TOP + 6, flash = UI.guideT > 0 ? (UI.guideT -= 1 / 60) : 0;
+  g.fillStyle = flash > 0 ? 'rgba(80,140,60,0.95)' : 'rgba(20,40,60,0.94)'; g.fillRect(x, y, w, 16); g.strokeStyle = '#8fd1ff'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, 15);
+  const lab = st.last ? 'DONE' : 'STEP ' + (UI.guide + 1) + ' OF ' + (GUIDE.length - 1), lw = Math.ceil(c.textW(lab, 6)) + 12;
+  text(lab, x + 6, y + 5, '#ffd36b', 'left', 6);
+  text(c.fitText(st.say, w - lw - 46, 6), x + 6 + lw, y + 5, '#ffffff', 'left', 6);
+  const sk = { x: x + w - 34, y: y + 2, w: 30, h: 12 }; g.fillStyle = '#4a3e64'; g.fillRect(sk.x, sk.y, sk.w, sk.h); text(st.last ? 'OK' : 'SKIP', sk.x + 15, sk.y + 3, '#e8dcc0', 'center', 6); UI.guideSkip = sk;
 }

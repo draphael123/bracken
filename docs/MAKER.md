@@ -110,6 +110,17 @@ checkout, whose link is the live game). After `vercel link`, delete the `.env.lo
   undo rewinds, play whooshes in and out; enemies idle-animate in the editor; the level's music plays ducked.
 - `tools/maker-feel.mjs` (in the suite) - including: every palette piece must have a description line.
 
+## Done (2026-11-09, EXTRAS: title row, test hero, hills, guide, examples, touch)
+- THE MAKER is a title-menu row (MORE MODES; still none in the demo - tools/demo-cut.mjs pin updated to the new name).
+  NOTE for the integrator: merging this lane SHOWS the maker to players.
+- SETTINGS > TEST AS: any hero for a test run (switched in memory, saving held off for the run, your own hero back after).
+- HILL brush: paint the ground's top; one-tile steps ramp themselves (`MKP.hillPaint`).
+- HELP > START THE GUIDE (a five-step first level, each step ticked off by doing it) and three EXAMPLES
+  (THE TOUR, THE MILL, THE CLIMB; `MKP.EXAMPLES`).
+- A stroke paints every cell it crosses (quick drags left holes).
+- TOUCH: one finger = the left button, two = pan, long press = a piece's settings; the ERASE brush takes pieces too.
+- `tools/maker-extras.mjs` (in the suite).
+
 ## Next (in Daniel's order: terrain, enemies + bosses, mechanisms)
 1. (terrain: done above. Later: a path/range tool for platforms; today they use fixed settings.)
 2. **Bosses** (Daniel: later): a BOSS group that places a boss with a generated arena (walls + floor + the `L.arena` it reads), and

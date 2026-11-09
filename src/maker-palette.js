@@ -23,7 +23,7 @@ export const TILES = [
   ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB], ['CRYSTAL', T.CRYST],
   ['REEDS', T.REED], ['PALISADE', T.PALISADE],
   // TERRAIN BRUSHES (string ids: not tiles, see tilePaint / the rectangle brushes below)
-  ['CRUMBLE LEDGE', 'crumble'], ['WATER (drag)', 'water'], ['SHALLOWS (drag)', 'shallows'], ['POISON (drag)', 'poison'],
+  ['HILL (ramps itself)', 'hill'], ['CRUMBLE LEDGE', 'crumble'], ['WATER (drag)', 'water'], ['SHALLOWS (drag)', 'shallows'], ['POISON (drag)', 'poison'],
 ];
 
 // Every foe kind the game's spawner knows (src/main.js spawnEnt, the cases that push an enemy and are not a boss) that
@@ -140,9 +140,9 @@ const TS = 16;
 const isStr = v => typeof v === 'string';
 export const isRectBrush = entry => !!entry && (entry[1] === 'water' || entry[1] === 'shallows' || entry[1] === 'poison');
 // (the level's SETTINGS - music, time of day, weather - ride along with the terrain: saved, loaded and undone with it)
-export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null });
+export const terrainOf = doc => ({ crumble: [...(doc.crumble || [])], water: (doc.water || []).map(w => ({ ...w })), mat: { ...(doc.mat || {}) }, music: doc.music || null, time: doc.time || null, weather: doc.weather || null, hero: doc.hero || null });
 export function setTerrain(doc, t) { doc.crumble = t && t.crumble ? [...t.crumble] : []; doc.water = t && t.water ? t.water.map(w => ({ ...w })) : [];
-  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
+  doc.mat = t && t.mat ? { ...t.mat } : {}; doc.hero = (t && t.hero) || null; doc.music = (t && t.music) || null; doc.time = (t && t.time) || null; doc.weather = (t && t.weather) || null; }
 
 // paint one cell with a TILES entry: returns the tile id to put in the grid
 export function tilePaint(doc, tx, ty, entry) {
@@ -414,7 +414,7 @@ const LINE = {
   12: 'A door: a lever or pressure plate opens it.', 13: 'A rock face: a wall.', 14: 'A rail.', 15: 'Soft rock: a heavy blow breaks it.', 16: 'Ice: slippery.',
   17: 'A web: it slows you.', 18: 'Crystal: solid.', 5: 'Reeds: you walk through them.', 7: 'A palisade: a wooden wall.',
   20: 'A steep slope up.', 21: 'A steep slope down.', 22: 'A gentle slope up (first half).', 23: 'A gentle slope up (second half).', 24: 'A gentle slope down (second half).', 25: 'A gentle slope down (first half).',
-  crumble: 'Holds a moment after you land, then falls. Comes back on a retry.', water: 'Water to swim in. Drag a box.', shallows: 'Wading water, one row deep. Drag a box.', poison: 'Poisoned water: it hurts. Drag a box.',
+  hill: 'Paint the top of the ground: it fills down, and every one-tile step becomes a ramp.', crumble: 'Holds a moment after you land, then falls. Comes back on a retry.', water: 'Water to swim in. Drag a box.', shallows: 'Wading water, one row deep. Drag a box.', poison: 'Poisoned water: it hurts. Drag a box.',
   coin: 'A coin.', silver: 'A silver coin: the rare one.', check: 'A checkpoint: you come back here when you fall.', gate: 'The goal. Every level needs one.',
   mover: 'A platform that slides side to side. Drag its gold handle to set how far.', 'mover:up': 'A lift that rises and sinks. Drag its gold handle to set how high.',
   lever: 'Hit it with your sword: it opens its door.', plate: 'Stand on it (or push a block onto it): it opens its door.',
@@ -469,3 +469,72 @@ export function drawReach(g, doc, cx, cy, hover) {
     g.globalAlpha = 1;
   }
 }
+
+// ================= SMART HILLS (claude/maker) =================
+// Paint where the ground's TOP should be: the column fills down to the ground, and in the columns around it every step of
+// exactly one tile gets a ramp (on the lower side, rising toward the higher one). Bigger steps stay cliffs.
+const isRamp = v => v === SLOPE.R1 || v === SLOPE.L1;
+function topOf(doc, x) { for (let y = 0; y < doc.H; y++) { const v = doc.grid[y * doc.W + x]; if (isSolidId(v) && !(v >= 20 && v <= 25)) return y; } return doc.H; }
+export function hillPaint(doc, tx, ty) {
+  const W = doc.W, changed = [], set = (x, y, v) => { const i = y * W + x; if (doc.grid[i] !== v) { doc.grid[i] = v; changed.push([x, y]); } };
+  for (let y = 0; y < ty; y++) if (isRamp(doc.grid[y * W + tx])) set(tx, y, T.AIR);   // a ramp above the new top would float
+  for (let y = ty; y < doc.H && !(isSolidId(doc.grid[y * W + tx]) && !(doc.grid[y * W + tx] >= 20 && doc.grid[y * W + tx] <= 25)); y++) { set(tx, y, T.SOLID); if (doc.mat) delete doc.mat[tx + ',' + y]; }
+  const occupied = (x, y) => doc.ents.some(e => e.x === x && e.y === y) || inPool(doc, x, y);
+  for (let x = Math.max(1, tx - 2); x <= Math.min(W - 2, tx + 2); x++) {
+    const top = topOf(doc, x); if (top <= 0 || top >= doc.H) continue;
+    const above = (top - 1) * W + x;
+    if (isRamp(doc.grid[above])) set(x, top - 1, T.AIR);   // re-decide this column's ramp
+    if (doc.grid[above] !== T.AIR || occupied(x, top - 1)) continue;
+    const r = topOf(doc, x + 1), l = topOf(doc, x - 1);
+    if (r === top - 1 && l !== top - 1) set(x, top - 1, SLOPE.R1);
+    else if (l === top - 1 && r !== top - 1) set(x, top - 1, SLOPE.L1);
+  }
+  return changed;
+}
+
+// ================= THE GUIDE AND THE EXAMPLES (claude/maker) =================
+function base(W, H = 28, floor = 20) { const d = { W, H, grid: new Uint8Array(W * H), ents: [], theme: 0, name: 'A WOOD', start: { x: 3, y: floor - 1 } };
+  for (let x = 0; x < W; x++) for (let y = floor; y < H; y++) d.grid[y * W + x] = T.SOLID; setTerrain(d, {}); return d; }
+const put = (d, x, y, v) => { if (x >= 0 && y >= 0 && x < d.W && y < d.H) d.grid[y * d.W + x] = v; };
+const box = (d, x0, x1, y0, y1, v) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) put(d, x, y, v); };
+// THE GUIDE'S LEVEL: a floor with a gap in it, no enemies, no goal
+export function guideDoc() { const d = base(70); box(d, 22, 27, 20, 27, T.AIR); d.name = 'MY FIRST LEVEL'; return d; }
+export const GUIDE = [
+  { say: 'FILL THE GAP: pick GROUND (top left), then click-drag across the hole', done: d => [22, 23, 24, 25, 26, 27].every(x => isSolidId(d.grid[20 * d.W + x])) },
+  { say: 'ADD AN ENEMY: open ENEMIES, click the GOBLIN, then click on the ground', done: d => d.ents.some(e => FOES.includes(e.t)) },
+  { say: 'MAKE A HILL: SLOPES & WATER > HILL, then paint a few tops above the floor', done: d => d.grid.some(v => v >= 20 && v <= 25) },
+  { say: 'PUT THE GOAL GATE near the far end: ITEMS > GOAL GATE', done: d => d.ents.some(e => e.t === 'gate') },
+  { say: 'PRESS PLAY and reach the gate. ESC comes back here', done: (d, c) => c.played },
+  { say: 'THAT IS A LEVEL! SHARE sends it to a friend. Try the examples in HELP next', done: () => false, last: true },
+];
+// THE EXAMPLES: open one and take it apart
+export const EXAMPLES = [
+  { name: 'THE TOUR', make() { const d = base(150); d.name = 'THE TOUR';
+    hillPaint(d, 12, 19); hillPaint(d, 13, 18); hillPaint(d, 14, 17); hillPaint(d, 15, 17); hillPaint(d, 16, 18); hillPaint(d, 17, 19);
+    box(d, 26, 35, 20, 23, T.AIR); d.water = [{ kind: 'water', x0: 26, x1: 35, y0: 20, y1: 23 }];
+    box(d, 40, 46, 20, 27, T.AIR); for (let x = 41; x <= 45; x++) { put(d, x, 19, T.ONEWAY); d.crumble.push(x + ',19'); }
+    box(d, 56, 56, 15, 19, T.PORT); box(d, 66, 66, 15, 19, T.PORT);
+    d.ents = [{ t: 'gate', x: 140, y: 19 }, { t: 'check', x: 50, y: 19 }, { t: 'sprig', x: 20, y: 19 }, { t: 'eel', x: 31, y: 22 }, entFor('lever', 53, 19), entFor('plate', 63, 19),
+      entFor('key:brass', 72, 19), entFor('lockgate:brass', 80, 19), entFor('mover', 88, 16), entFor('mover:up', 98, 18), { t: 'shield', x: 106, y: 19 }, { t: 'archer', x: 112, y: 19, face: -1 },
+      entFor('crusher', 127, 19), entFor('firevent', 132, 19), ...[22, 24, 37, 39, 75, 90, 100].map(x => ({ t: 'coin', x, y: 17 }))];
+    for (const e of d.ents) afterPlace(d, e); return d; } },
+  { name: 'THE MILL', make() { const d = base(110); d.name = 'THE MILL'; d.theme = 21;
+    box(d, 14, 40, 20, 25, T.AIR); d.water = [{ kind: 'water', x0: 14, x1: 40, y0: 21, y1: 25 }];
+    for (const x of [18, 24, 30, 36]) { put(d, x, 19, T.SOLID); put(d, x + 1, 19, T.SOLID); for (let y = 20; y <= 25; y++) { put(d, x, y, T.SOLID); put(d, x + 1, y, T.SOLID); } }
+    for (let x = 14; x <= 40; x++) { d.mat[x + ',26'] = 'deck'; }
+    box(d, 50, 50, 14, 19, T.PORT); box(d, 62, 62, 14, 19, T.PORT); box(d, 74, 74, 14, 19, T.PORT);
+    for (let x = 44; x <= 90; x++) d.mat[x + ',20'] = 'cobble';
+    d.ents = [{ t: 'gate', x: 104, y: 19 }, { t: 'puffer', x: 22, y: 23 }, { t: 'eel', x: 33, y: 24 }, entFor('lever', 46, 19), entFor('plate', 58, 19), entFor('pushblock', 55, 19),
+      entFor('lever', 70, 19), { t: 'sprig', x: 66, y: 19 }, { t: 'hound', x: 84, y: 19, face: -1 }, { t: 'check', x: 44, y: 19 }, ...[20, 26, 32, 38].map(x => ({ t: 'coin', x, y: 17 }))];
+    d.ents[3].link = 50; d.ents[4].link = 62; d.ents[6].link = 74;
+    for (const e of d.ents) afterPlace(d, e); return d; } },
+  { name: 'THE CLIMB', make() { const d = base(90); d.name = 'THE CLIMB'; d.time = 'dusk'; d.weather = 'leaves';
+    for (let x = 10; x <= 16; x++) hillPaint(d, x, 19 - (x - 10)); for (let x = 17; x <= 22; x++) hillPaint(d, x, 13);
+    box(d, 23, 33, 13, 27, T.AIR); box(d, 23, 33, 26, 27, T.SOLID); box(d, 23, 33, 25, 25, T.SPIKE);
+    for (const x of [25, 29]) { put(d, x, 13, T.ONEWAY); put(d, x + 1, 13, T.ONEWAY); d.crumble.push(x + ',13', (x + 1) + ',13'); }
+    box(d, 34, 44, 13, 19, T.SOLID); for (let x = 34; x <= 44; x++) d.mat[x + ',13'] = 'masonry';
+    for (let y = 8; y <= 12; y++) put(d, 46, y, T.NET); box(d, 45, 52, 8, 8, T.ONEWAY);
+    d.ents = [{ t: 'gate', x: 84, y: 19 }, { t: 'wasp', x: 20, y: 10 }, { t: 'archer', x: 40, y: 12, face: -1 }, entFor('mover:up', 54, 18), { t: 'goat', x: 70, y: 19, face: -1 },
+      { t: 'check', x: 36, y: 12 }, entFor('rockfall', 62, 12), ...[[12, 14], [14, 12], [26, 11], [30, 11], [48, 7], [50, 7]].map(([x, y]) => ({ t: 'coin', x, y }))];   /* above the hill's ramps, not in them */
+    d.ents[3].rise = 6; for (const e of d.ents) afterPlace(d, e);   /* the lift: up to the masonry */ d.start = { x: 3, y: 19 }; return d; } },
+];
