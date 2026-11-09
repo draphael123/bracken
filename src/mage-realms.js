@@ -314,6 +314,7 @@ export function strikeRealm(e, hb, seen, c) {
   return null;
 }
 
+import { realmBack, realmWalls, realmIceFloor } from './redraw/ft5_art.js';   /* (claude/ft5fix) FALLING TOWER 5's realms: dithered sky, ridges, walls, ice floor (only under A.inPlace) */
 import { paintPit, paintDropTile, paintPitFire, paintBrazier, paintPour, paintCeilingEdge, paintFrostCreep, paintFloe, paintShellCracks, paintShards, paintVent, paintBoneRaft, paintSurgeTell, paintSurgeCrest, paintSpore, paintBite, paintChunk } from './redraw/realm_beats.js';   /* (claude/ft4art) the living realms' paint */
 // ---------------------------------------------------------------- drawing
 const BACK = { fire: ['#1a0806', '#2a0c08', '#3a140a', '#5a200c'], ice: ['#060e1a', '#0c1a2c', '#14283e', '#1e3a56'], poison: ['#060e08', '#0c1a0e', '#142816', '#1e3a20'] };
@@ -321,14 +322,16 @@ const WALL = { fire: ['#2a1410', '#4a2418', '#7a3a20'], ice: ['#1a2a3a', '#2e4a6
 /* THE ROOM: the whole screen is the realm (a realm is somewhere else, not a tint on his hall), walled at the realm's box */
 export function drawRealm(g, e, A, cx, cy, time) {
   const R = e.realm, k = R.kind, VW = g.canvas.width, H = g.canvas.height, b = realmBox(e, A), bb = realmBox(null, A);
-  const C = BACK[k]; for (let i = 0; i < 4; i++) { g.fillStyle = C[i]; g.fillRect(0, Math.round(H * i / 4), VW, Math.ceil(H / 4) + 1); }
+  const C = BACK[k], ft5 = !!A.inPlace && k !== 'poison';   /* (claude/ft5fix) A.inPlace = FT5's spire field: the realm is painted, not four flat bands */
+  if (!(ft5 && realmBack(g, k, VW, H, cx, time))) for (let i = 0; i < 4; i++) { g.fillStyle = C[i]; g.fillRect(0, Math.round(H * i / 4), VW, Math.ceil(H / 4) + 1); }
   /* its weather: embers rising, snow falling, spores drifting */
   for (let i = 0; i < 40; i++) { const s = Math.sin(i * 91.7) * 43758.5, r = s - Math.floor(s), x = ((r * 997 + (k === 'ice' ? 0 : time * 11 * (i % 3 + 1))) % VW + VW) % VW;
     const y = k === 'fire' ? ((H - (time * (20 + r * 30) + r * 700) % (H + 20)) + H) % H : k === 'ice' ? ((time * (14 + r * 20) + r * 600) % (H + 10)) : ((H * r + Math.sin(time + i) * 20) % H);
     g.fillStyle = k === 'fire' ? (i % 3 ? '#ff9b49' : '#ffe9b0') : k === 'ice' ? (i % 3 ? '#9be2ff' : '#ffffff') : (i % 3 ? '#6a9a40' : '#a6e04a'); g.fillRect(Math.round(x), Math.round(y), i % 5 ? 1 : 2, i % 5 ? 1 : 2); }
   /* its walls, outside the realm's box on both sides, and its ceiling */
   const W = WALL[k], x0 = Math.round(bb.x0 - cx) - 12, x1 = Math.round(bb.x1 - cx) + 12, top = Math.round(b.y0 - cy) - 10;   /* (claude/ft4c: b - the ice realm's ceiling comes down) */
-  g.fillStyle = W[0]; if (x0 > 0) g.fillRect(0, 0, x0, H); if (x1 < VW) g.fillRect(x1, 0, VW - x1, H); if (top > 0) g.fillRect(0, 0, VW, top);
+  if (ft5) realmWalls(g, k, [[0, 0, x0, H], [x1, 0, VW - x1, H], [0, 0, VW, top]], cx, cy);   /* (claude/ft5fix) ashlar, world-locked */
+  else { g.fillStyle = W[0]; if (x0 > 0) g.fillRect(0, 0, x0, H); if (x1 < VW) g.fillRect(x1, 0, VW - x1, H); if (top > 0) g.fillRect(0, 0, VW, top); }
   g.fillStyle = W[1]; g.fillRect(x0 - 4, 0, 4, H); g.fillRect(x1, 0, 4, H); g.fillRect(0, top - 4, VW, 4);
   g.fillStyle = W[2]; g.fillRect(x0 - 1, 0, 1, H); g.fillRect(x1, 0, 1, H); g.fillRect(0, top - 1, VW, 1);
   for (let y = ((-cy) % 18 + 18) % 18; y < H; y += 18) { g.fillStyle = W[1]; g.fillRect(x0 - 12, y, 8, 1); g.fillRect(x1 + 4, y, 8, 1); }
@@ -347,7 +350,8 @@ export function drawRealm(g, e, A, cx, cy, time) {
       g.fillStyle = telling ? (Math.floor(time * 12) % 2 ? '#ff6b2c' : '#ffd36b') : '#4a1c0c'; g.fillRect(tx + 1, flr - 22, Math.round(tw) - 2, 2);
       if (telling) { g.fillStyle = 'rgba(255,155,73,0.35)'; g.fillRect(tx + 1, flr - 22, Math.round(tw) - 2, 28); g.fillStyle = '#ffe9b0'; for (let j = 0; j < 4; j++) g.fillRect(tx + 6 + j * 13, flr - 20 + (j % 2) * 6, 6, 1); }
       if (tl) g.restore(); } }
-  if (k === 'ice') { g.fillStyle = '#8ac8f0'; g.fillRect(x0, flr - 22, x1 - x0, 2); g.fillStyle = '#2e4a64'; g.fillRect(x0, flr - 20, x1 - x0, 30); g.fillStyle = 'rgba(255,255,255,0.25)'; for (let x = x0; x < x1; x += 23) g.fillRect(x, flr - 18, 9, 1); }
+  if (k === 'ice' && ft5) realmIceFloor(g, x0, x1, flr, cx);
+  else if (k === 'ice') { g.fillStyle = '#8ac8f0'; g.fillRect(x0, flr - 22, x1 - x0, 2); g.fillStyle = '#2e4a64'; g.fillRect(x0, flr - 20, x1 - x0, 30); g.fillStyle = 'rgba(255,255,255,0.25)'; for (let x = x0; x < x1; x += 23) g.fillRect(x, flr - 18, 9, 1); }
 }
 /* THE REALM'S HAZARDS AND HIS WARD, over the world: pillars, the wall, the icicles, the mire, the vent and its beam, the spores */
 export function drawRealmFx(g, e, cx, cy, time, P, T) {   /* P: the hero (the fire wall's road), T(s, x, y, col): main.js's words in the world */

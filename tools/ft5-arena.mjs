@@ -235,6 +235,34 @@ function connected(tops) { for (const s of tops) { const seen = new Set([s]), q 
   assert.ok(modes.has('down') && modes.has('sfFade') && opens >= 2, 'the fight never opened him on a top / never faded: ' + opens + ' ' + [...modes].join(','));
   out.push('end to end on foot: his real casts (' + [...modes].filter(m => /Tell$/.test(m)).length + ' tells seen), ' + opens + ' openings, 3 tides, 3 topples, the fade, P2 at ' + Math.round(100 * e.hp / e.hp0) + '% after ' + t.toFixed(0) + ' s'); }
 
+// ---- THE WIN (claude/ft5fix): the fight run to his death on the carpets, the door opened as main.js opens it, flown into - solo, co-op, and an idle seat ----
+{ const SN = await import('../src/sanctum.js'), CP = await import('../src/carpet.js');
+  const fight = nSeats => { const w = world(), F = w.L.spireField, R = F.rt, e = w.boss, top = F.spires[2]; w.P.x = (A.x0 + 3) * TS; w.P.y = A.runFloor * TS; w.tick();
+    w.P.x = (top.x0 + 3) * TS; w.P.y = top.top * TS; w.P.hp = 1e9; for (let i = 1; i < nSeats; i++) w.seats.push(w.seat(top.x0 + 3 + i, top.top, { hp: 1e9 }));
+    let t = 0, cd = 0, nextOpen = 6;
+    for (; t < 900 && e.hp > 0; t += 1 / 60) { w.tick(); cd -= 1 / 60; const op = UM.mageOpen(e);
+      if (cd <= 0 && e.mode !== 'sleep' && e.mode !== 'wake' && !['sfRise', 'sfFade', 'sfGone', 'sfReform'].includes(e.mode)) { cd = 0.35; const d = op ? 60 * UM.MAGE.openMul : Math.round(60 * SF.RESIST.chip); e.hp -= e.sf === 'p2' ? Math.round(d * 0.4 + 6) : SF.floorDmg(w.L, e, d); }
+      if (e.sf === 'p1' && t >= nextOpen && !op && e.mode === 'hover' && !(e.wardHold > 0)) { nextOpen = t + 6; e.mode = 'reflected'; e.modeT = UM.MAGE.reflect.openT; } }
+    assert.ok(e.hp <= 0 && e.sf === 'p2' && w.seats.every(p => p.carpet || p.dead), 'the fight did not run to his death on the carpets (' + e.sf + ' ' + e.hp + ')');
+    return w; };
+  const win = (w, label, mover) => { const { L, boss: e, seats } = w, S = L.sanctum, P0 = w.P;
+    e.alive = false; e.squeeze = 1; e.realm = null;   /* the worst case: dead mid-enrage, the storm walls shut (mageRealm() is null once he is dead) */
+    for (let i = 0; i < 140; i++) w.tick(1 / 60, { noPhys: true });   /* main's bossWon 2.2 s: the squeeze eases off */
+    assert.equal(e.squeeze, 0, label + ': the storm walls did not open'); SN.openSanctumDoor(S, L.arena, e.x, e.y - 14);
+    const b = SF.carpetBoxOf(L.arena); assert.ok(S.open && S.out.x >= b.x0 && S.out.x <= b.x1 && S.out.y >= b.y0 && S.out.y <= b.y1, label + ': the door is outside the carpet box');
+    let left = null, t = 0; const ctx = { leave: out => { left = t; for (const p of seats) if (p === P0) { p.carpet = null; p.x = S.sand.x; p.y = S.sand.y; p.ground = true; L.sandWalk = true; S.open = false; } SF.winLeave(L, seats, P0); } };
+    for (; t < 40 && left == null; t += 1 / 60) { for (const p of seats) if (p.carpet) mover(p, S, b, 1 / 60); w.tick(1 / 60, { noPhys: true }); SN.updateSanctum(L, P0, 1 / 60, ctx); }
+    assert.ok(left != null && L.sandWalk, label + ': the door was never reached in 40 s'); assert.ok(seats.every(p => p.dead || (!p.carpet && p.ground && p.y === S.sand.y)), label + ': a live seat is still on a carpet in the sky');
+    const sx = Math.floor(S.sand.x / TS), g = L.ents.find(q => q.t === 'gate'); for (let x = sx; x <= g.x; x++) assert.equal(L.grid[SF.SAND5.row * L.W + x], T.SOLID, label + ': the sand is broken at ' + x);
+    assert.ok(g.x > sx && L.grid[(g.y + 1) * L.W + g.x] === T.SOLID && Math.abs(g.y + 1 - SF.SAND5.row) <= 1, label + ': the gate is not on the sand');
+    return left; };
+  const fly = (p, S, b, dt) => { const dx = S.out.x - p.x, dy = S.out.y - p.y, m = Math.hypot(dx, dy) || 1; CP.stepCarpet(p, { ax: dx / m, ay: dy / m }, dt, b); };   /* a player flying straight at it, in the box as it is now */
+  const idle = (p, S, b, dt) => { CP.stepCarpet(p, { ax: 0, ay: 0 }, dt, b); };
+  const flyBox = (p, S, b, dt) => fly(p, S, b, dt);
+  const t1 = win(fight(1), 'solo', flyBox), t2 = win(fight(2), 'co-op', flyBox), t3 = win(fight(2), 'idle', idle);
+  assert.ok(t3 >= SF.WIN5.glideAfter, 'the idle seat was taken before the door could drift to it');
+  out.push('the win: run to his death on the carpets (solo, co-op x2); the storm walls open, the door is inside the carpet box, flown into at ' + t1.toFixed(1) + ' s (solo) / ' + t2.toFixed(1) + ' s (co-op), every live seat on the sand; an idle seat has the door drift to it (' + t3.toFixed(1) + ' s); the sand runs to the gate'); }
+
 // ---- FLAG OFF: master's tower has no field ----
 { globalThis.__FT5 = false; const Lm = build(); assert.ok(!Lm.spireField && !Lm.ft5 && Lm.arena && Lm.arena.chase, 'with FT5 off the tower is not master\'s'); globalThis.__FT5 = true; out.push('flag off: master\'s tower, no field'); }
 

@@ -58,7 +58,8 @@ export function paintPoison(g, u0, u1, v0, vBot, time, o = {}) {
     /* and now and then a drowned skull, deep and slow */
     if (rnd(k, 30) > 0.9) { const p4 = (time * 0.07 + rnd(k, 31)) % 1; g.globalAlpha = Math.sin(p4 * Math.PI) * 0.4; stamp(g, SKULL, bu, v0 + 28 + (1 - p4) * 30, POI.bone); g.globalAlpha = 1; } }
   /* the haze of his light over it, and sparks off the lip */
-  if (g.createLinearGradient) { const grad = g.createLinearGradient(0, v0, 0, v0 - 36); grad.addColorStop(0, 'rgba(111,224,138,' + (o.tell ? 0.34 : 0.2) + ')'); grad.addColorStop(1, 'rgba(111,224,138,0)'); g.fillStyle = grad; g.fillRect(a, v0 - 36, b - a, 36); }
+  if (g.createLinearGradient) { const grad = g.createLinearGradient(0, v0, 0, v0 - 36); grad.addColorStop(0, 'rgba(111,224,138,' + (o.tell ? 0.34 : 0.2) + ')'); grad.addColorStop(1, 'rgba(111,224,138,0)'); g.fillStyle = grad; g.fillRect(a, v0 - 36, b - a, 36);
+    if (o.haze) { const hz = 36 * o.haze, g2 = g.createLinearGradient(0, v0 - 4, 0, v0 - hz); g2.addColorStop(0, 'rgba(111,224,138,0.26)'); g2.addColorStop(1, 'rgba(111,224,138,0)'); g.fillStyle = g2; g.fillRect(a, v0 - hz, b - a, hz - 4); } }   /* (claude/ft5fix) o.haze: the shaft's, a taller light so it reads from a way off */
   for (let i = 0; i < 7; i++) { const su = ((rnd(i, 40) * 330 + time * 12 * (i % 2 ? 1 : -1) - ph % 330 + 660) % 330), rise = (time * 22 + i * 17) % 30; if (su < a || su > b) continue; g.fillStyle = i % 3 ? POI.rim : POI.glow; g.fillRect(Math.round(su), Math.round(v0 - 3 - rise), 1, 1); }
 }
 /* the poison as a WALL coming along the run: its front at screen x, the poison behind it (dir 1: it comes from the west) */
@@ -375,4 +376,108 @@ function fallingSpire(g, F, s, R, t, cx, cy, i) {
     for (let j = 0; j < 3; j++) R_(g, '#7a5ac0', -sw / 2 + 6 + j * 14, -2, 1, 1); g.restore(); g.globalAlpha = 1; }
   if (t > 0.5 && t < 1.7) { const k = (t - 0.5) / 1.2; for (let j = 0; j < 10; j++) { const sx2 = sx + rnd(j, 201) * sw + dir * k * 20, h2 = Math.sin(clamp(k * 1.4 - j * 0.03, 0, 1) * Math.PI) * (20 + rnd(j, 202) * 26); g.globalAlpha = 1 - k; R_(g, j % 2 ? POI.rim : POI.glow, sx2, sea - 3 - h2, 1 + (j % 2), 2); } g.globalAlpha = 1; }
   void F; void i;
+}
+
+/* ---------------------------------------------------------------- (claude/ft5fix) DITHERED PAINT: the realms' skies and walls, phase 2's sky and witchfire, the shaft's far glow */
+/* Flat bands read as big blocks at 2x. Everything here is BAKED ONCE (cached by size) with a 4x4 ordered dither between neighbouring colours, then drawn with drawImage
+   (tiles are blitted whole or in cut pieces, never scaled: a stretched dither is a block again). Deterministic: no Math.random. */
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+const BK = new Map();
+const baked = (key, w, h, fn) => { let c = BK.get(key); if (!c) { const [cv, g] = canvas(w, h); fn(g, w, h); BK.set(key, c = cv); } return c; };
+const dith = (x, y, f) => f > (BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16;   /* true: the colour it is heading toward */
+/* a vertical ramp through stops [[0..1, '#rrggbb'], ...], dithered between the two nearest (runs merged: one fillRect per run) */
+function ramp(g, w, h, stops) {
+  for (let y = 0; y < h; y++) { const t = h > 1 ? y / (h - 1) : 0; let i = 1; while (i < stops.length - 1 && t > stops[i][0]) i++;
+    const a = stops[i - 1], b = stops[i], f = clamp((t - a[0]) / Math.max(1e-6, b[0] - a[0]), 0, 1); let run = 0, cur = null;
+    for (let x = 0; x <= w; x++) { const col = x < w ? (dith(x, y, f) ? b[1] : a[1]) : null; if (col !== cur) { if (cur) { g.fillStyle = cur; g.fillRect(run, y, x - run, 1); } cur = col; run = x; } } }
+}
+/* a tile laid over a rect in world-locked cuts (ox, oy = how far the world has scrolled): whole tiles in the middle, cut tiles at the edges */
+function tileFill(g, tile, x, y, w, h, ox, oy) {
+  const tw = tile.width, th = tile.height; if (w <= 0 || h <= 0) return;
+  const sx0 = ((Math.round(ox) % tw) + tw) % tw, sy0 = ((Math.round(oy) % th) + th) % th;
+  for (let dy = 0, sy = sy0; dy < h; ) { const ch = Math.min(th - sy, h - dy);
+    for (let dx = 0, sx = sx0; dx < w; ) { const cw = Math.min(tw - sx, w - dx); g.drawImage(tile, sx, sy, cw, ch, x + dx, y + dy, cw, ch); dx += cw; sx = 0; }
+    dy += ch; sy = 0; }
+}
+const RLM = {
+  fire: { sky: [[0, '#10040a'], [0.38, '#2a0a0e'], [0.7, '#5c1a0c'], [1, '#b04a12']], far: '#2a0a0c', farLit: '#7a2810', near: '#160608', nearLit: '#4a1a0c', vein: '#ff9b49', veinHot: '#ffe9b0' },
+  ice: { sky: [[0, '#040a16'], [0.4, '#0c1a30'], [0.75, '#1e3c5c'], [1, '#4a7898']], far: '#16304a', farLit: '#5a98c0', near: '#0e2036', nearLit: '#8ac8f0', vein: '#bfe6f5', veinHot: '#ffffff' },
+};
+/* the realm's sky for a screen of VW x H: the dithered ramp, a few stars and two aurora curtains (ice) or hanging ash (fire) */
+const realmSky = (k, VW, H) => baked('rsky' + k + VW + 'x' + H, VW, H, (g, w, h) => {
+  const C = RLM[k]; ramp(g, w, h, C.sky);
+  if (k === 'ice') {
+    for (let i = 0; i < 46; i++) { const x = Math.floor(rnd(i, 301) * w), y = Math.floor(rnd(i, 302) * h * 0.6); g.fillStyle = i % 5 ? '#6a9ac0' : '#e8f6ff'; g.fillRect(x, y, 1, 1); }
+    for (const [yy, amp, ph, col] of [[0.3, 9, 0.0, '#6ee6c8'], [0.38, 7, 2.1, '#78aaff']]) for (let x = 0; x < w; x++) { const cy2 = Math.round(h * yy + Math.sin(x * 0.03 + ph) * amp + Math.sin(x * 0.011 + ph * 2) * amp * 0.8);
+      for (let j = 0; j < 14; j++) if (dith(x, cy2 + j, (1 - j / 14) * 0.5)) { g.fillStyle = col; g.fillRect(x, cy2 + j, 1, 1); } }
+  } else { for (let i = 0; i < 34; i++) { const x = Math.floor(rnd(i, 311) * w), y = Math.floor(rnd(i, 312) * h * 0.55); g.fillStyle = i % 4 ? '#6a2a1c' : '#a85a30'; g.fillRect(x, y, i % 3 ? 1 : 2, 1); } }
+});
+/* a tileable ridge line (period WR: every sine has a whole number of cycles in it), the rim lit, the foot dissolving into the sky by dither; fire gets lava veins, ice gets facets */
+const WR = 256;
+const ridgeTile = (k, layer) => baked('ridge' + k + layer, WR, 84, (g, w, h) => {
+  const C = RLM[k], far = layer === 0, body = far ? C.far : C.near, lit = far ? C.farLit : C.nearLit, tau = Math.PI * 2 / w;
+  for (let x = 0; x < w; x++) {
+    const peak = k === 'ice' ? (1 - Math.abs((((x * (far ? 3 : 5) / w + layer * 0.37) % 1) + 1) % 1 * 2 - 1)) * (far ? 30 : 36) + Math.sin(x * tau * 2 + layer * 2) * 8
+      : Math.sin(x * tau * (far ? 2 : 3) + layer) * 14 + Math.sin(x * tau * (far ? 5 : 7) + 1.3) * 7 + Math.sin(x * tau * 13) * 2.5;
+    const top = Math.round(h - 20 - (far ? 26 : 16) - peak); if (top >= h) continue;
+    for (let y = Math.max(0, top); y < h; y++) { const d = y - top, fade = clamp((y - (h - 22)) / 22, 0, 1);   /* the foot dissolves into the sky behind */
+      if (fade > 0 && dith(x, y, fade)) continue;
+      g.fillStyle = d === 0 ? lit : d < 3 && dith(x, y, 0.5) ? lit : (d > 6 && (x * 7 + y * 13) % 29 === 0) ? C.far : body; g.fillRect(x, y, 1, 1); }
+    if (k === 'fire' && !far && rnd(x, 321) > 0.93) { const vy = top + 4 + Math.floor(rnd(x, 322) * 20); for (let j = 0; j < 4 + Math.floor(rnd(x, 323) * 6); j++) { g.fillStyle = j % 4 === 0 ? C.veinHot : C.vein; g.fillRect(x + (j % 2), vy + j, 1, 1); } }
+    if (k === 'ice' && x % 17 === 0) { for (let j = 0; j < 9; j++) { g.fillStyle = j % 3 ? C.nearLit : C.far; g.fillRect(x + (j >> 1), top + 2 + j, 1, 1); } } }
+});
+/* THE REALM'S BACKDROP (mage-realms.js drawRealm under A.inPlace): the ramp, two ridge lines drifting with the camera, a breathing glow on the horizon (fire) / cold shimmer (ice) */
+export function realmBack(g, k, VW, H, cx, time) {
+  if (!RLM[k]) return false;
+  g.drawImage(realmSky(k, VW, H), 0, 0);
+  for (const [layer, par, base] of [[0, 0.04, 0.8], [1, 0.1, 0.9]]) { const t = ridgeTile(k, layer), y = Math.round(H * base - t.height + 12); tileFill(g, t, 0, y, VW, t.height, cx * par, 0); }
+  if (g.createLinearGradient) { const gr = g.createLinearGradient(0, H * 0.55, 0, H * 0.95), a = (k === 'fire' ? 0.16 : 0.1) + Math.sin(time * (k === 'fire' ? 1.7 : 0.9)) * 0.04;
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, (k === 'fire' ? 'rgba(255,120,50,' : 'rgba(150,220,255,') + a.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, Math.round(H * 0.55), VW, Math.ceil(H * 0.4)); }
+  return true;
+}
+/* the realm's walls: ashlar courses, dithered dark toward the foot of each block, a lit top edge and a glint or two - laid world-locked over [x, y, w, h] rects */
+const wallTile = k => baked('rwall' + k, 32, 32, (g, w, h) => {
+  const ice = k === 'ice', base = ice ? '#1a2a3a' : '#2a1410', dark = ice ? '#0e1a28' : '#180a08', mortar = ice ? '#0a1420' : '#120706', lit = ice ? '#3a5e80' : '#5a2c1c', glint = ice ? '#8ac8f0' : '#a0502c';
+  for (let c = 0; c < 4; c++) { const y0 = c * 8, o = c % 2 ? 11 : 0;
+    for (let y = 0; y < 8; y++) for (let x = 0; x < w; x++) { const bx = (x + o) % 16; let col = dith(x, y0 + y, y / 8 * 0.9) ? dark : base;
+      if (y === 0) col = mortar; else if (y === 1) col = lit; else if (bx === 0) col = mortar; else if (bx === 1 && y < 6) col = lit; g.fillStyle = col; g.fillRect(x, y0 + y, 1, 1); } }
+  for (const [x, y] of [[6, 4], [20, 13], [27, 28], [10, 21]]) { g.fillStyle = glint; g.fillRect(x, y, 1, 1); }
+  g.fillStyle = dark; for (const [x, y, n] of [[14, 5, 3], [3, 18, 3], [24, 26, 2]]) for (let j = 0; j < n; j++) g.fillRect(x + (j & 1), y + j, 1, 1);
+});
+export function realmWalls(g, k, rects, cx, cy) { const t = wallTile(k); for (const [x, y, w, h] of rects) tileFill(g, t, x, y, w, h, cx, cy); }
+/* the ice realm's floor: a lit lip, frosted body dithered down to deep blue, seams and glints */
+const iceFloor = () => baked('rfloorice', 64, 30, (g, w, h) => { ramp(g, w, h, [[0, '#8ac8f0'], [0.12, '#5a98c0'], [0.4, '#2e4a64'], [1, '#14243a']]);
+  g.fillStyle = '#d8f2ff'; g.fillRect(0, 0, w, 1); g.fillStyle = '#0e1a2c'; for (const sx of [21, 53]) for (let y = 3; y < 24; y++) if ((y + sx) % 5) g.fillRect(sx + ((y >> 3) & 1), y, 1, 1);
+  g.fillStyle = '#bfe6f5'; for (const [x, y] of [[8, 4], [34, 6], [47, 3], [14, 11]]) g.fillRect(x, y, 3, 1); });
+export function realmIceFloor(g, x0, x1, flr, cx) { tileFill(g, iceFloor(), x0, flr - 22, x1 - x0, 30, cx, 0); }
+
+/* PHASE 2's SKY: the night as a dithered ramp (deepest overhead, lighter toward the horizon), laid from y0 so it ends at skyTo; replaces five flat bands (sanctum.js drawSanctum OPEN) */
+export function openSky(g, VW, y0, skyTo, span) {
+  const stops = [[0, '#0a0818'], [0.3, '#100d24'], [0.62, '#171330'], [0.85, '#221c42'], [1, '#2e2656']];
+  g.fillStyle = stops[0][1]; g.fillRect(0, 0, VW, Math.max(0, Math.round(y0)));
+  const h = Math.max(2, Math.round(span)), t = baked('osky' + VW + 'x' + h, VW, h, (c, w, hh) => ramp(c, w, hh, stops));
+  g.drawImage(t, 0, Math.round(y0)); const e = Math.round(y0) + h; if (skyTo > e) { g.fillStyle = stops[stops.length - 1][1]; g.fillRect(0, e, VW, skyTo - e); }
+}
+/* PHASE 2's WITCHFIRE BED: the body of the fire floor - a charred bed glowing from the molten line down to near-black, cracks of heat in it, world-locked; the tongues and the molten line are drawn over it */
+const fireBed = h => baked('fbed' + h, 96, h, (g, w, hh) => {
+  ramp(g, w, hh, [[0, '#5a2a8a'], [0.3, '#47206f'], [0.62, '#2d1450'], [1, '#1a0a2e']]);
+  for (let i = 0; i < 9; i++) { let x = Math.floor(rnd(i, 331) * w), y = 2 + Math.floor(rnd(i, 332) * Math.max(1, hh - 6)); const n = 3 + Math.floor(rnd(i, 333) * 6);
+    for (let j = 0; j < n; j++) { g.fillStyle = j % 3 === 1 ? '#c88aff' : '#9a52e0'; g.fillRect(x % w, y, 1, 1); x += rnd(i * 9 + j, 334) > 0.5 ? 1 : w - 1; y += rnd(i * 9 + j, 335) > 0.4 ? 1 : 0; if (y >= hh) break; } }
+  for (let x = 0; x < w; x += 2) if (dith(x, 3, 0.3)) { g.fillStyle = '#9a52e0'; g.fillRect(x, 1 + (x % 5 === 0 ? 1 : 0), 1, 1); } });
+export function openFireBed(g, x0, x1, y, h, cx) { h = Math.round(h); if (h > 0 && x1 > x0) tileFill(g, fireBed(h), x0, y, x1 - x0, h, cx, 0); }
+
+/* THE SHAFT'S FAR GLOW: the flood is below the bottom of the screen, `dist` px under it - seen from a good way off as a green light coming up the shaft, a lit crest peeking over
+   the foot of the screen, sparks and a few sigils climbing; stronger as it nears (paintPoison draws the surface itself once it is on screen). dist <= 0 draws nothing. */
+export const POISON_SEEN = 460;
+export function paintPoisonGlow(g, VW, VH, dist, time) {
+  if (!(dist > 0) || dist > POISON_SEEN) return;
+  const k = 1 - dist / POISON_SEEN, pulse = 0.85 + Math.sin(time * 2.4) * 0.15, hgt = Math.round(46 + k * 92), a = clamp((0.34 + k * 0.45) * pulse, 0, 0.8);
+  if (g.createLinearGradient) { const gr = g.createLinearGradient(0, VH, 0, VH - hgt); gr.addColorStop(0, 'rgba(111,224,138,' + a.toFixed(3) + ')'); gr.addColorStop(0.5, 'rgba(47,154,85,' + (a * 0.45).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(47,154,85,0)'); g.fillStyle = gr; g.fillRect(0, VH - hgt, VW, hgt); }
+  const rows = Math.max(2, Math.round(3 + k * 6));
+  for (let u = 0; u < VW; u += 2) { const e = Math.round(Math.sin(u * 0.045 + time * 2.2) * 2 * k + Math.sin(u * 0.13 - time * 3) * 1.2 * k), h2 = rows + e; if (h2 <= 0) continue;
+    g.fillStyle = h2 > 3 ? POI.mid : POI.body; g.fillRect(u, VH - h2, 2, h2); g.fillStyle = POI.rim; g.fillRect(u, VH - h2, 2, 1); if (h2 > 2) { g.fillStyle = POI.lit; g.fillRect(u, VH - h2 + 1, 2, 1); } }
+  for (let i = 0; i < 12; i++) { const su = Math.round(rnd(i, 341) * VW), rise = (time * (18 + rnd(i, 342) * 20) + rnd(i, 343) * 80) % (hgt + 20);
+    g.globalAlpha = clamp(1 - rise / (hgt + 20), 0, 1) * (0.5 + k * 0.5); g.fillStyle = i % 3 ? POI.rim : POI.glow; g.fillRect(su, Math.round(VH - rows - 2 - rise), 1, 2); }
+  for (let i = 0; i < 3; i++) { const p3 = (time * 0.15 + rnd(i, 351)) % 1; g.globalAlpha = clamp(k * 1.2, 0, 0.9) * Math.sin(p3 * Math.PI); stamp(g, GLYPHS[i], Math.round(rnd(i, 352) * (VW - 8)), Math.round(VH - rows - 8 - p3 * hgt * 0.8), POI.rune); }
+  g.globalAlpha = 1;
 }

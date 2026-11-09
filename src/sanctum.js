@@ -27,7 +27,7 @@
 // THE SANDY PATH is the last ten seconds of this world, and it is warm and full of sand, because the next world is. It used
 // to be dressing and nothing else; since 2026-09-24 the gold hole LEADS somewhere: THE SUNKEN CARAVAN needs 'fallingtower'
 // and is the desert sheet's first map node (map-redesign §5, reading (a) of §7.4: a needs link and a node, no fight change).
-import { openDress } from './redraw/ft5_art.js';   /* (claude/ft5art) FALLING TOWER 5: phase 2 is outdoors - no parapet, no side walls, no braziers */
+import { openDress, openSky, openFireBed } from './redraw/ft5_art.js';   /* (claude/ft5art) FALLING TOWER 5: phase 2 is outdoors - no parapet, no side walls, no braziers */
 import { DESERT } from './redraw/desert.js';   /* the Caravan's own palette: the desert through the second door and in his rings */
 export const SANCTUM = {
   fire: 26,          /* how deep the witchfire lies on the floor of the hall, in px */
@@ -85,7 +85,8 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
      stands behind him, the tower's far parapet runs along the back of the burning floor against the sky, and the side walls are what
      is left of the tower's own: broken stumps with a merlon or two, still holding the carpet in. */
   const skyTo = Math.min(H, flr + 8);
-  { const bands = ['#0a0818', '#100d24', '#16122e', '#1e1a3c', '#26204a'];   /* deepest overhead, a little lighter toward the horizon */
+  if (OPEN) openSky(g, VW, top - SANCTUM.vault - 40, skyTo, ft - (top - SANCTUM.vault - 40));   /* (claude/ft5fix) phase 2's night is a dithered ramp, not five flat bands */
+  else { const bands = ['#0a0818', '#100d24', '#16122e', '#1e1a3c', '#26204a'];   /* deepest overhead, a little lighter toward the horizon */
     const y0 = top - SANCTUM.vault - 40, span = Math.max(1, ft - y0);
     for (let i = 0; i < bands.length; i++) { const a = i === 0 ? 0 : Math.round(y0 + span * i / bands.length), b = i === bands.length - 1 ? skyTo : Math.round(y0 + span * (i + 1) / bands.length);
       if (b > a) { g.fillStyle = bands[i]; g.fillRect(0, Math.max(0, a), VW, Math.min(skyTo, b) - Math.max(0, a)); } } }
@@ -140,9 +141,11 @@ export function drawSanctum(g, L, A, cx, cy, time, box) {
   if (ft < H + 24 && flr > -24) {
     /* the body of it: DARKER AS IT GOES DOWN, so the fire has a depth. A single flat fill for the whole band was the
        lawn again, just lower down the screen. */
+    if (OPEN) openFireBed(g, vx0, vx1, ft + 4, flr - ft + 8, cx);   /* (claude/ft5fix) a charred bed glowing down to near-black, not three flat purple bands */
+    else {
     band(L0, ft + 4, w + SANCTUM.wall * 2, flr - ft + 8, FIRE[3]);
     band(L0, ft + 15, w + SANCTUM.wall * 2, flr - ft - 11, '#3d1a66');
-    band(L0, ft + 21, w + SANCTUM.wall * 2, flr - ft - 9, FIRE[4]);
+    band(L0, ft + 21, w + SANCTUM.wall * 2, flr - ft - 9, FIRE[4]); }
     /* THE TONGUES. Evenly spaced columns of an even height are a level meter, not a fire, so each one takes its height
        from two beats at different rates PLUS a fixed per-column offset, and a third of them are skipped outright to
        leave gaps you can see the burnt bed through. */

@@ -109,11 +109,22 @@ scene('open-hall', (g) => { g.fillStyle = '#0e0a22'; g.fillRect(0, 0, VW, 110); 
 scene('lurch', (g) => { g.fillStyle = '#1a1830'; g.fillRect(0, 0, VW, VH); ART.lurch(g, 0.6, 2.0); }, VW, VH);
 scene('tip-at', (g) => { assert.equal(ART.tipAt({}, 0, 0, 100, 100), 0, 'tipAt: no FT5 = 0'); assert.ok([5, 15, 30].includes(ART.tipAt(L, L.ft5.floors[0].X0 + 4, L.ft5.floors[0].top, 400, 400)), 'tipAt: Act I room'); }, 4, 4);
 
+/* (claude/ft5fix) the realms, phase 2's hall and the shaft's far glow, through the game's own painters */
+{ const MR = await import('../src/mage-realms.js'), SN = await import('../src/sanctum.js'), P2 = FT5_ARENA, F = L.spireField;
+  const A2 = { ...L.arena, ...F.p2Arena, carpet: true, inPlace: true };
+  for (const kind of ['fire', 'ice']) for (const cx of [A2.x0 + 400]) scene('realm-' + kind, (g) => { const e = { realm: { kind, i: 0, t: 3, A: A2, lit: [2, 5], ph: 'tell', holes: [3], ceil: kind === 'ice' ? 20 : 0, bites: [] } }; MR.drawRealm(g, e, A2, cx, A2.y0 - 40, 2.0); }, VW, VH);
+  scene('p2-hall', (g) => { const cx = (A2.x0 + A2.x1) / 2 - VW / 2, cy = A2.floor - 130; SN.drawSanctum(g, L, A2, cx, cy, 2.0, SF.carpetBoxOf(A2)); }, VW, VH);
+  scene('shaft-far', (g) => { g.fillStyle = '#10142a'; g.fillRect(0, 0, VW, VH); ART.paintPoisonGlow(g, VW, VH, 400, 2.0); }, VW, VH);
+  scene('shaft-mid', (g) => { g.fillStyle = '#10142a'; g.fillRect(0, 0, VW, VH); ART.paintPoisonGlow(g, VW, VH, 200, 2.0); }, VW, VH);
+  scene('shaft-near', (g) => { g.fillStyle = '#10142a'; g.fillRect(0, 0, VW, VH); ART.paintPoisonGlow(g, VW, VH, 40, 2.0); }, VW, VH);
+  scene('shaft-in', (g) => { g.fillStyle = '#10142a'; g.fillRect(0, 0, VW, VH); ART.paintPoison(g, 0, VW, 120, VH, 2.0, { vw: VW, haze: 2 }); }, VW, VH); }
 const names = scenes.map(s => s[0]);
 const group = (list, file, opts) => savePNG(sheet(list.map(n => scenes.find(s => s[0] === n)[1]), opts), join(out, file));
 group(['poison-sea', 'poison-front', 'chunks'], 'ft5art-node-poison-chunks.png', { scale: 2, maxW: 1400, pad: 8 });
 group(['slab', 'skins', 'windows'], 'ft5art-node-slab-skins-windows.png', { scale: 2, maxW: 1400, pad: 8 });
 group(['arena-calm', 'arena-tide-tell', 'arena-tide-high', 'arena-buttress', 'arena-fade', 'spire-collapse'], 'ft5art-node-arena.png', { scale: 2, maxW: 1400, pad: 8 });
+group(['realm-fire', 'realm-ice', 'p2-hall'], 'ft5fix-node-realms-p2.png', { scale: 2, maxW: 1400, pad: 8 });
+group(['shaft-far', 'shaft-mid', 'shaft-near', 'shaft-in'], 'ft5fix-node-shaft.png', { scale: 2, maxW: 1400, pad: 8 });
 group(['run', 'open-hall', 'lurch'], 'ft5art-node-run-hall.png', { scale: 2, maxW: 1400, pad: 8 });
 group(names.filter(n => n.startsWith('piece-')), 'ft5art-node-pieces.png', { scale: 2, maxW: 1400, pad: 8 });
 console.log('ft5art-sheet ok: ' + names.length + ' scenes, deterministic, written to ' + out);

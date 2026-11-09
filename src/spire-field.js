@@ -55,6 +55,8 @@ export const FADE = { rise: 0.6, fade: 1.2, tell: 1.0, clear: 0.5, reform: 1.0, 
 export const P2 = { y0: -15, floor: 3, realmAt: [0.4, 0.2], realmKinds: ['fire', 'ice'], enrageAt: 0.3, pullV: 160 };
 /* THE SAND (the desert rows over the field: the win's door puts you here) and the level's end */
 export const SAND5 = { row: 6, deep: 12, arrive: 20, gate: 34 };
+/* (claude/ft5fix) THE WIN DOOR: the storm walls open as he dies (the enrage had squeezed the carpet box to 60% of its width, and the door - clamped to the arena, not the squeezed box - could hang in the wall), and the door drifts to the nearest carpet if none has gone in (px/s) */
+export const WIN5 = { openT: 1.0, glideAfter: 4, glideV: 70, sandGap: 14 };
 /* the realm ward chips (plan 3.2 Resist: never invulnerable; GREED.chipBy.undeadmage 0.4 lands it - main.js lets the blow through under FT5) */
 export const RESIST = { chip: 0.4 };
 
@@ -181,6 +183,25 @@ export function spireStep(L, P, dt, c) {
   // ---- THE FADE AND THE FALL (his leg starts it: spireLeg) ----
   if (R.fade) fadeStep(L, F, R, P, seats, dt, c);
   if (e && e.alive && e.sf === 'p2') realmDraw(L, e, seats, dt);
+  winStep(L, F, R, e, seats, dt, P);
+}
+/* (claude/ft5fix) THE WIN: once he is dead the sky opens (the squeeze eases off), and his door - which main.js opens where he fell - is held inside the carpet box and,
+   if nobody has flown to it in WIN5.glideAfter s, drifts to the lead's carpet (the one main.js's door check reads; the nearest live one if the lead is down): the win is never out of reach (solo or co-op) */
+export function winStep(L, F, R, e, seats, dt, lead) {
+  if (e && !e.alive && e.squeeze > 0) e.squeeze = Math.max(0, e.squeeze - dt / WIN5.openT);
+  const S = L.sanctum; if (!S || !S.open || !S.out || L.sandWalk) { R.doorT = 0; return; }
+  const b = carpetBoxOf(L.arena);
+  S.out.x = Math.max(b.x0 + 24, Math.min(b.x1 - 24, S.out.x)); S.out.y = Math.max(b.y0 + 30, Math.min(b.y1 - 70, S.out.y));
+  R.doorT = (R.doorT || 0) + dt; if (R.doorT < WIN5.glideAfter) return;
+  let near = null, nd = Infinity; for (const p of (lead && !lead.dead && lead.carpet ? [lead] : live(seats))) if (p.carpet) { const d = Math.hypot(p.x - S.out.x, p.y - S.out.y); if (d < nd) { nd = d; near = p; } }
+  if (!near || nd < 1) return; const k = Math.min(nd, WIN5.glideV * dt) / nd;
+  S.out.x += (near.x - S.out.x) * k; S.out.y += (near.y - S.out.y) * k;
+}
+/* the door was entered: every live seat comes through it onto the sand (the lead's own leave did only the lead) */
+export function winLeave(L, seats, lead) {
+  const S = L.sanctum; if (!S || !S.sand) return;
+  let n = 0; for (const p of seats) { if (!p || p === lead || p.dead) continue; n++;
+    p.carpet = null; p.vx = p.vy = 0; p.x = S.sand.x + (n % 2 ? -1 : 1) * Math.ceil(n / 2) * WIN5.sandGap; p.y = S.sand.y; p.ground = true; p.climb = false; p.dodge = 0; }
 }
 function topple(F, R, i, c) {
   const s = F.spires[i], A = F.A; R.spires[i] = { st: 'gone', t: 0 };

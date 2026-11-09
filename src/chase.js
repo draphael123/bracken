@@ -52,7 +52,7 @@
 // THE CHECKPOINT RULE: a shrine within CHECKPOINT_GAP px before the start line (chaseProblems fails a level that has none), and a death
 // puts every chase back to IDLE (chaseReset) - the chaser goes back to its start and the trigger waits for the hero again.
 import { DUCK_H } from './duck.js';
-import { paintPoison, paintPoisonFront } from './redraw/ft5_art.js';   /* (claude/ft5art) HIS POISON: one look for the shaft, the wall run and the sea */
+import { paintPoison, paintPoisonFront, paintPoisonGlow } from './redraw/ft5_art.js';   /* (claude/ft5art) HIS POISON: one look for the shaft, the wall run and the sea */
 import { paintFront } from './redraw/ft4_art.js';   /* (claude/ft4art) THE TOWER FAILING: the collapse front's look */
 
 export const TS = 16;
@@ -180,7 +180,7 @@ export function drawChaser(g, sp, st, cx, cy, VW, VH, time) {
   { const z = sp.drawZone || sp.zone; if (z) { const zx = z[0] - cx, zy = z[2] - cy; g.beginPath(); g.rect(Math.round(zx), Math.round(zy), Math.round(z[1] - z[0]), Math.round(z[3] - z[2])); g.clip(); } }   /* only over its own place */
   const jag = i => Math.round(Math.sin(i * 1.7 + time * 9) * 3 + Math.sin(i * 0.6) * 4);
   if (sp.look === 'collapse' && sp.axis === 'y' && sp.dir < 0 && g.createLinearGradient) { paintFront(g, x, VW, time, st.speed); g.restore(); return; }   /* (claude/ft4art) the tower's own stone, not the rock slide's */
-  if (sp.look === 'dark' && sp.ft5 && (sp.axis === 'x' || sp.dir < 0)) { if (sp.axis === 'x') paintPoisonFront(g, x, sp.dir, VH, time); else paintPoison(g, 0, VW, x + 6, VH, time, { vw: VW }); g.restore(); return; }   /* (claude/ft5art) FALLING TOWER 5: his poison, the same swell up the shaft, along the wall and over the spires */
+  if (sp.look === 'dark' && sp.ft5 && (sp.axis === 'x' || sp.dir < 0)) { if (sp.axis === 'x') paintPoisonFront(g, x, sp.dir, VH, time); else { paintPoison(g, 0, VW, x + 6, VH, time, { vw: VW, haze: 2 }); paintPoisonGlow(g, VW, VH, x + 6 - VH, time); } g.restore(); return; }   /* (claude/ft5fix) the shaft's flood is seen from far off: a green glow and crest from under the screen, a taller haze once it is up */   /* (claude/ft5art) FALLING TOWER 5: his poison, the same swell up the shaft, along the wall and over the spires */
   if (sp.look === 'train' && sp.axis === 'x') { drawTrain(g, sp, x, (sp.zone ? Math.floor(sp.zone[3] / TS) * TS : cy + VH) - cy, time);   /* on the zone's floor tile */ g.restore(); return; }
   if (sp.axis === 'x') { const lo = sp.dir > 0 ? x - depth : x, hi = sp.dir > 0 ? x : x + depth;
     g.fillStyle = L.body; g.fillRect(lo, 0, hi - lo, VH);
