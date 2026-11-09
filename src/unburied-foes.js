@@ -32,6 +32,7 @@
 //                              becomes THE RED CALL (three at once) and BLOOD SURGE !! (get away from him) joins the rotation.
 // Touching none of them hurts (the touch rule): every blow is a told one.
 import { canvas, rect, line, circle, fillPoly, outline, flipX, whiten } from './px.js';
+import * as DKA from './dk-lift-art.js';   /* (claude/dkart) the topple-the-standard art, drawn only behind the lift flag */
 import * as SG from './redraw/unburied_siege.js';   /* the engines, the cover and the breach as drawn pictures (claude/unburiedart) */
 
 export const UNB = {
@@ -477,8 +478,8 @@ function bkLiftStep(e, dt, c) { const S = UNB.bk, Lf = S.lift;
     if (bkRooted(e)) { if (e.mode === 'ward' || e.mode === 'wardTell') { e.breaks = (e.breaks || 0) + 1; e.poleBroke = (e.poleBroke || 0) + 1; }
       e.mode = 'pinned'; e.modeT = e.phase === 2 ? Lf.pinT2 : Lf.pinT; e.open = e.modeT; e.openMax = Math.max(e.openMax || 0, e.modeT); e.pinTake = 0; e.pinOff = false; e.pins = (e.pins || 0) + 1; e.pinS = s;
       e.wardBroke = false; e.wardLock = false; e.wardFill = 0; e.committed = false; e.threat = false; e.drinking = false; e.strLeft = 0; e.paid = 0; e.paidN = 0; s.onHim = true;
-      c.say(BK_LIFT_SAY.pin, '#8fd160'); c.sound('heavy'); c.sound('crack'); c.shake?.(7); }
-    else { e.clears = (e.clears || 0) + 1; e.x = Math.max(c.A.x0 + 20, Math.min(c.A.x1 - 20, s.x + s.dir * (Lf.arc1 + Lf.stepOut))); c.say(BK_LIFT_SAY.clear, '#c8b6ff'); } }
+      c.say(BK_LIFT_SAY.pin, '#8fd160'); c.sound('pin'); c.shake?.(7); }
+    else { c.sound('stdfall'); e.clears = (e.clears || 0) + 1; e.x = Math.max(c.A.x0 + 20, Math.min(c.A.x1 - 20, s.x + s.dir * (Lf.arc1 + Lf.stepOut))); c.say(BK_LIFT_SAY.clear, '#c8b6ff'); } }
   /* THE TELL: a standing pole's fall shadow - he is under one (either side) */
   e.under = -1; e.stds.forEach((s, i) => { if (s.up && e.under < 0 && bkInArc(e, s, Math.sign(e.x - s.x) || 1)) e.under = i; });
   if (e.under >= 0 && bkRooted(e) && !e.underSaid) { e.underSaid = true; c.say(BK_LIFT_SAY.under, '#c8b6ff'); c.sound('creak'); }
@@ -499,7 +500,7 @@ export function updateBloodKnight(e, dt, c) {
   e.stds ??= (A.stdX || []).map(x => ({ x: LIFT ? x + Math.sign((A.x0 + A.x1) / 2 - x) * (S.lift.stdIn - S.stdIn) : x, up: true })); for (const s of e.stds) s.ft = (s.ft ?? 9) + dt;   /* (claude/dk2art: how long since it fell / rose, for its animation) */
   for (const s of e.stds) if (s.up && c.struck && c.struck(s.x - 6, floor - 44, 12, 44, s)) { s.up = false; s.ft = 0; s.rose = false; e.stdCuts = (e.stdCuts || 0) + 1; c.sound('crack'); c.sound('stdfall'); c.shake?.(3);
     if (e.mode === 'ward' && !e.wardLock) { e.wardBroke = true; e.stdBroke = (e.stdBroke || 0) + 1; c.say('THE STANDARD FALLS: THE WARD BREAKS', '#8fd160'); } else c.say('THE STANDARD FALLS', '#c8b6ff');
-    if (LIFT) { s.dir = Math.sign(P.face || 0) || Math.sign(e.x - s.x) || 1; s.fallT = S.lift.fallT; } }   /* (claude/dklift) it falls the way the blow travels */
+    if (LIFT) { s.dir = Math.sign(P.face || 0) || Math.sign(e.x - s.x) || 1; s.fallT = S.lift.fallT; c.sound('creak'); } }   /* (claude/dklift) it falls the way the blow travels */
   if (LIFT) bkLiftStep(e, dt, c);
   if (e.mode === 'ward' && !e.wardLock) { const n = e.stds.filter(s => s.up).length; e.feedT = (e.feedT || 0) + dt * n; if (e.feedT >= S.stdFeed) { e.feedT = 0; if ((e.wardFill || 0) < S.wardFull) { e.wardFill = (e.wardFill || 0) + 1; e.wardEvt = (e.wardEvt || 0) + 1; e.fed = (e.fed || 0) + 1; } } } else e.feedT = 0;
   /* WHAT YOUR HANDS ARE DOING (he reads them as a player reads a boss): a heavy being charged, a cut starting, and how far into a string */
@@ -650,18 +651,19 @@ export const BK_KIT = { string: "THE RED RHYTHM (the chain: the rising cut, THE 
    15,16 blood boil | 17,18 death coil | 19,20 grave tide | 21,22 summon / gravecall | 23,24 surge and nova | 25 wrenching it free, reeling | 26 hurt */
 export const BK_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 2], ['heavy', 2], ['heavy', 0], ['heavy', 1], ['block', 0], ['block', 1],
   ['slide', 0], ['grip', 0], ['grip', 1], ['boil', 0], ['boil', 1], ['coil', 0], ['coil', 1], ['tide', 0], ['tide', 1], ['call', 1], ['call', 2], ['unholy', 0], ['unholy', 1], ['slump', 0],
-  ['priceHold', 0], ['priceHold', 1], ['priceHold', 2], ['priceHold', 3], ['crescent', 0], ['crescent', 1], ['crescent', 2], ['atkB', 0], ['atkB', 2], ['drainPull', 0], ['drainPull', 1], ['atkC', 0], ['atkC', 1], ['atkC', 2], ['atkC', 3], ['hurt', 0]];   /* (claude/dk2b, redrawn claude/dk2art) 26-29 the blood price held (four beats) | 30-32 the crescent | 33,34 THE HOOK (tell, the point out) | 35,36 THE DRAIN (the hand drawing your blood) | 37-40 THE DRAG (up, over, down, dragged) | 41 hurt */
+  ['priceHold', 0], ['priceHold', 1], ['priceHold', 2], ['priceHold', 3], ['crescent', 0], ['crescent', 1], ['crescent', 2], ['atkB', 0], ['atkB', 2], ['drainPull', 0], ['drainPull', 1], ['atkC', 0], ['atkC', 1], ['atkC', 2], ['atkC', 3], ['pinned', 0], ['pinned', 1], ['hurt', 0]];   /* (claude/dk2b, redrawn claude/dk2art) 26-29 the blood price held (four beats) | 30-32 the crescent | 33,34 THE HOOK (tell, the point out) | 35,36 THE DRAIN (the hand drawing your blood) | 37-40 THE DRAG (up, over, down, dragged) | 41,42 PINNED under his standard (claude/dkart: the hurt pose moved 41 -> 43; BK_HURT) | 43 hurt */
 export const BK_SCALE = 1.4;   /* (claude/dk2b: 1.5 -> 1.4, like the Crusader and the Pyromancer as bosses) */
 /* the blade over his shoulder, four beats as the prices mount (the hero's own priceHold) */
 export const bkPriceFrame = n => 26 + (n >= 5 ? 3 : n >= 3 ? 2 : n >= 2 ? 1 : 0);
+export const BK_PIN = 41, BK_HURT = BK_POSES.length - 1;   /* (claude/dkart) the pinned pair, and his hurt - still the LAST row (HAS_HURT reads it) */
 export function bkFrame(e) {
   switch (e.mode) { case 'swingTell': return (e.cutN || 0) === 1 && !e.punish ? 33 : 4; case 'swing': return e.cutN === 2 && !e.punish ? 34 : 6;
-    case 'priceTell': return bkPriceFrame(e.paidN || 0); case 'crescent': return e.modeT > 0.28 ? 31 : 32; case 'spent': return 32; case 'drain': return 35 + (Math.floor((e.anim || 0) * 3) % 2); case 'cleaveTell': return e.committed ? 38 : 37; case 'cleave': return 39; case 'stuck': case 'blade': return 7; case 'wrench': case 'reel': case 'pinned': return 25;   /* (claude/dklift: PINNED is the reel pose until the art lane draws his own) */
+    case 'priceTell': return bkPriceFrame(e.paidN || 0); case 'crescent': return e.modeT > 0.28 ? 31 : 32; case 'spent': return 32; case 'drain': return 35 + (Math.floor((e.anim || 0) * 3) % 2); case 'cleaveTell': return e.committed ? 38 : 37; case 'cleave': return 39; case 'stuck': case 'blade': return 7; case 'pinned': return bkLiftOn() ? BK_PIN + (Math.floor((e.anim || 0) * 3) % 2) : 25;   /* (claude/dkart) PINNED has his own pair: hunched under the pole, then the heave */ case 'wrench': case 'reel': return 25;
     case 'bladeTell': return e.modeT > UNB.bk.tell.blade * bkMul(e) * 0.5 ? 8 : 9; case 'wardTell': case 'ward': return 10 + Math.floor((e.anim || 0) * 3) % 2;
     case 'pass': return 12; case 'gripTell': return 13; case 'grip': case 'drag': return 14; case 'boilTell': return 15; case 'boil': return 16; case 'coilTell': return 17; case 'coil': return 18;
     case 'tideTell': return 19; case 'tide': return 20; case 'raiseTell': case 'callTell': case 'raise': return 21 + Math.floor((e.anim || 0) * 4) % 2;
     case 'surgeTell': case 'novaTell': return 23; case 'surge': case 'nova': return 24; case 'sleep': case 'wake': return 0; }
-  if (e.hurtT > 0) return 41;
+  if (e.hurtT > 0) return BK_HURT;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 8) % 3 : 0;
 }
 /* 0 idle carrying | 1,2 walk | 3 plant tell | 4 guard (planted, pole in hand) | 5 pole tell | 6 pole | 7 hurt */
@@ -862,6 +864,7 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
       g.globalAlpha = 0.14 + 0.06 * Math.sin(time * 3); g.fillStyle = '#b07cf0'; g.fillRect(fx - UNB.bannerR, fy - 2, UNB.bannerR * 2, 2); g.globalAlpha = 1;   /* the ground its standard holds */
       drawStandard(g, fx, fy, time, false, false); }
     if (e.t === 'barrowrider') drawRiderWorld(g, e, x, fy, cx, cy, time);
+    if (e.t === 'corpse' && e.laid && e.boundTo != null && bkLiftOn()) { e.lfxT ??= time; DKA.drawPuff(g, x, fy, time - e.lfxT, 0); }   /* (claude/dkart) THE LAST STANDARD: his dead lie down in a breath of dust */
     if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff');
       g.globalAlpha = 0.7; for (let i = 0; i < 7; i++) { const t = (time * 2.2 + i * 0.37) % 1; R(g, x - 10 + i * 3 + Math.round(Math.sin(time * 5 + i * 2) * 3), fy - 2 - Math.round(t * 16), 2 + (i % 2), 2, i % 2 ? '#ece8d8' : '#bdb8a4'); } g.globalAlpha = 1; }   /* and the lime dust of the pit they lay in lifts off them */
     if (e.t === 'deathknight') { const D = UNB.dk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
@@ -910,11 +913,23 @@ function bkThread(g, x0, y0, x1, y1, time, k, dir) {   /* a curve of blood from 
   g.globalAlpha = 1; }
 /* (claude/dklift) GREYBOX: each standing pole's FALL SHADOW (violet, 'arc0..arc1' out on both sides; red on the side he stands in), the pole lying across his back while
    he is PINNED, and in phase two a violet thread from each bound dead man to his pole (cut it and they drop) */
-function bkLiftDraw(g, e, x, fy, cx, cy, time, k) { const LF = UNB.bk.lift;
-  (e.stds || []).forEach((s, i) => { if (!s.up) return; const sx = Math.round(s.x - cx);
-    for (const d of [-1, 1]) { const hot = e.under === i && Math.sign(e.x - s.x) === d; g.globalAlpha = hot ? 0.3 + 0.25 * k : 0.12; R(g, d > 0 ? sx + LF.arc0 : sx - LF.arc1, fy - 1, LF.arc1 - LF.arc0, 2, hot ? '#ff4a5a' : '#9a7aff'); } g.globalAlpha = 1; });
-  if (e.mode === 'pinned') { const d = (e.pinS && e.pinS.dir) || 1; g.save(); g.translate(x - d * 18, fy - 22); g.rotate(d * 0.25); R(g, d > 0 ? 0 : -44, 0, 44, 3, '#5a4a36'); R(g, d > 0 ? 30 : -42, -4, 12, 7, '#7a1e24'); g.restore(); }   /* (his open clock is the gold ring: bkOpen counts 'pinned') */
-  for (const [bx, by, px] of e.binds || []) { g.globalAlpha = 0.35 + 0.2 * k; g.strokeStyle = '#9a7aff'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(bx - cx), Math.round(by - cy) - 12); g.quadraticCurveTo((bx + px) / 2 - cx, fy - 70, Math.round(px - cx), fy - 56); g.stroke(); g.globalAlpha = 1; } }
+function bkLiftDraw(g, e, x, fy, cx, cy, time, k) { const LF = UNB.bk.lift, L = e.lfx ??= { breaks: e.breaks || 0, pins: e.pins || 0, clears: e.clears || 0, lastX: x + cx, binds: null, snapT: -9 };   /* (claude/dkart: what the draw has seen, so the one-shot pictures time themselves; it is never read by the fight) */
+  (e.stds || []).forEach((s, i) => { if (!s.up) return; DKA.drawFallShadow(g, Math.round(s.x - cx), fy, LF, e.under === i ? Math.sign(e.x - s.x) || 1 : 0, time, k); });   /* the pole's fall lane: chevrons to where the tip lands, red on his side */
+  if ((e.breaks || 0) !== L.breaks) { L.breaks = e.breaks || 0; L.breakT = time; L.breakX = x + (e.wardFace || e.face || 1) * 20; L.breakF = e.wardFace || e.face || 1; }
+  if (L.breakT !== undefined) DKA.drawWardShatter(g, L.breakX, fy, L.breakF, time - L.breakT);   /* the ward going: the crack web, the shards, the sparks */
+  if ((e.pins || 0) !== L.pins) { L.pins = e.pins || 0; L.pinT = time; }
+  if (e.mode === 'pinned' && L.pinT !== undefined) { DKA.drawPinCrack(g, x, fy, time - L.pinT); DKA.drawPuff(g, x, fy, time - L.pinT, 1); }   /* the stone splitting under him, the dust off the blow (the pole itself is drawn over him: drawUnbFront) */
+  if ((e.clears || 0) !== L.clears) { L.clears = e.clears || 0; L.clearT = time; L.clearFrom = L.lastX - cx; }
+  if (L.clearT !== undefined && time - L.clearT < 0.3) { const u = (time - L.clearT) / 0.3; for (let i = 0; i < 6; i++) { const sx = Math.round(L.clearFrom + (x - L.clearFrom) * (i / 6)); g.globalAlpha = (0.38 - 0.3 * u) * (i + 1) / 6; R(g, sx - 9, fy - 52, 18, 50, '#2a2034'); g.globalAlpha = (0.2 - 0.18 * u) * (i + 1) / 6; R(g, sx - 10, fy - 30, 20, 3, '#b07cf0'); } g.globalAlpha = 1; }   /* HE STEPS CLEAR: the same smear as the passing, from where he was to where he is */
+  L.lastX = x + cx;
+  if (e.binds && e.binds.length) L.binds = e.binds.map(q => q.slice());
+  if (e.binds) for (const [bx, by, ppx] of e.binds) DKA.drawThread(g, Math.round(bx - cx), Math.round(by - cy) - 12, Math.round(ppx - cx), fy - 56, time, k);   /* each raised dead man tied to his pole */
+  if (e.bannerDown && L.binds && L.snapT < -1) L.snapT = time;
+  if (L.snapT > -1 && time - L.snapT < 0.4) for (const [bx, by, ppx] of L.binds) DKA.drawThread(g, Math.round(bx - cx), fy - 8, Math.round(ppx - cx), fy - 56, time, k, true, time - L.snapT);   /* THE LAST STANDARD: the threads part */
+}
+/* (claude/dkart) drawn AFTER the creatures (main.js, one hook): the pole lying across his back while he is PINNED */
+export function drawUnbFront(g, foes, cx, cy, time) { if (!bkLiftOn()) return;
+  for (const e of foes) if (e.alive && e.t === 'bloodknight' && e.mode === 'pinned' && e.pinS) DKA.drawPinPole(g, Math.round(e.pinS.x - cx), Math.round(e.y - cy), e.pinS.dir || 1, Math.round(e.x - cx), time, 26); }
 function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   const S = UNB.bk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 14);
   if (e.mode === 'swingTell') { g.globalAlpha = 0.16 + 0.18 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.swingR, fy - 2, S.swingR + S.cleaveBack, 2, '#ffd36b'); g.globalAlpha = 1; }
@@ -935,13 +950,14 @@ function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   /* (claude/dk2b) THE CHAPEL STANDARDS: standing - a pole and a red standard, and while his ward stands a thread of blood from each into it; cut - lying */
   const LIFT = bkLiftOn(), LF = UNB.bk.lift;   /* (claude/dklift) GREYBOX for the art lane (BOSSLIFT-DKART): the fall shadow, the pole across his back, the threads of his bound dead */
   if (LIFT) bkLiftDraw(g, e, x, fy, cx, cy, time, k);
-  for (const s of e.stds || []) { const sx = Math.round(s.x - cx), ft = s.ft ?? 9, lean = (LIFT && s.dir) || Math.sign(e.x - s.x) || 1;
+  for (const s of e.stds || []) { const sx = Math.round(s.x - cx), ft = s.ft ?? 9, sway = LIFT && s.up && e.under === e.stds.indexOf(s) && Math.floor(time * 24) % 2 ? 1 : 0, lean = (LIFT && s.dir) || Math.sign(e.x - s.x) || 1;
     R(g, sx - 5, fy - 2, 10, 2, '#3a2e22'); R(g, sx - 3, fy - 4, 6, 2, '#4a3a2c');   /* the stone it stands in */
     if (s.up) { const rising = s.rose && ft < 0.5, ang = rising ? lean * (Math.PI / 2) * Math.pow(1 - ft / 0.5, 2) : 0;
-      if (ang) { g.save(); g.translate(sx, fy - 3); g.rotate(ang); drawStandard(g, 0, 0, time, true, false); g.restore(); } else drawStandard(g, sx, fy - 3, time, true, false);
+      if (ang) { g.save(); g.translate(sx, fy - 3); g.rotate(ang); drawStandard(g, 0, 0, time, true, false); g.restore(); } else drawStandard(g, sx + sway, fy - 3, time, true, false);   /* (claude/dkart: he is standing under it - the pole creaks) */
       if (rising) { g.globalAlpha = 0.7 * (1 - ft / 0.5); g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(sx, fy - 3, 8 + 28 * ft, 3 + 6 * ft, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }   /* the risen-again flare */
       else { g.globalAlpha = 0.12 + 0.1 * k; g.fillStyle = '#c0283a'; g.beginPath(); g.arc(sx, fy - 60, 7, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (e.mode === 'ward' && !e.wardLock) { const wx = x + (e.wardFace || f) * 20; bkThread(g, sx, fy - 56, wx, fy - 30, time + s.x * 0.01, k, 1); } }   /* it FEEDS the ward: a thread of blood from the banner into the shell */
+    else if (LIFT) DKA.drawPoleFall(g, sx, fy, s.dir || 1, ft, LF.fallT, time, e.mode === 'pinned' && e.pinS === s);   /* (claude/dkart) the cut pole: three keyframes, the cloth whipping, the stump; on him, only the stump */
     else { const fall = Math.min(1, ft / (LIFT ? LF.fallT : 0.45)), ang = lean * (Math.PI / 2) * fall * fall;
       if (fall < 1) { g.save(); g.translate(sx, fy - 3); g.rotate(ang); drawStandard(g, 0, 0, time, true, false); g.restore(); }
       else { R(g, sx - 14, fy - 4, 30, 2, '#5a4a36'); R(g, sx + lean * 6 - 5, fy - 7, 12, 4, '#7a1e24'); R(g, sx + lean * 6 - 3, fy - 7, 6, 1, '#d8b04a'); }   /* lying torn on the chapel floor */

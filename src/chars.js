@@ -2902,6 +2902,11 @@ function reaperRhythmPoses(F, sh, atkOnly = false) {
   F.graveKneel = [kneel(0, { bits: [a(X + 6, Y + 9, DRED), a(X + 5, Y + 9, DRED), a(X + 7, Y + 9, DRED)] }),
     kneel(1, { sho: 1, hy: 2, bits: [a(X + 6, Y + 9, PINK), a(X + 5, Y + 9, RED), a(X + 7, Y + 9, RED), a(X + 6, Y + 5, RED), a(X + 6, Y + 1, DRED), [4, 4, '#ff4a5a'], [5, 4, '#ff4a5a']] }),
     kneel(0, { dx: -1, wide: 4, bits: [a(X + 6, Y + 9, HOT), a(X + 4, Y + 8, PINK), a(X + 8, Y + 8, PINK), a(X + 3, Y + 7, RED), a(X + 9, Y + 7, RED), a(X + 5, Y + 3, HOT), a(X + 8, Y + 3, PINK), a(X + 6, Y - 1, PINK)] })];
+  /* (claude/dkart, BOSSLIFT) PINNED UNDER HIS OWN STANDARD: down on both knees and hunched, the helm bowed and its lights gone dull, both fists planted flat on the floor taking the pole's weight, the greatsword let fall
+     out along the stone before him; the second beat is the HEAVE - the shoulders up, the helm lifted, the near fist driven in and the red straining up off him. Drawn with the pole across his back (src/dk-lift-art.js). */
+  { const blade = Array.from({ length: 15 }, (_, i) => a(X + 8 + i, Y + 9, i < 2 ? '#5a4a36' : i === 2 ? '#8a968e' : i > 11 ? '#e8f4ec' : i % 3 ? '#b8c4bc' : '#8a968e')).concat([a(X + 10, Y + 8, '#c0c6ce'), a(X + 10, Y + 10, '#c0c6ce')]);   /* the greatsword let fall: hilt by his fist, guard, the blade out along the stone */
+    const pin = (o = {}, bits = []) => K({ dy: 4, legs: 'kneel', hy: 2, sho: -1, dx: 1, arm: [X, Y, X + 6, Y + 8], arm2: [OFF[0], OFF[1], X + 1, Y + 8], plume: 0, ...o, bits: [...blade, ...bits] });
+    F.pinned = [pin({}, [a(X + 4, Y + 5, DRED)]), pin({ dy: 3, hy: 0, sho: 1, dx: 2, wide: 2 }, [a(X + 6, Y + 8, HOT), a(X + 4, Y + 6, PINK), a(X + 3, Y + 4, RED), a(X + 7, Y + 5, DRED), a(X + 10, Y + 9, '#8a7a68'), a(X + 2, Y + 9, '#8a7a68')])]; }
   /* THE BLOOD PRICE, HELD: the blade back over his shoulder, point up behind him, drinking; four beats as the prices mount - the blade LONGER and REDDER, the helm's lights going red,
      the stance dropping and leaning into it; the last (the full price) white-hot at the point */
   const hold = (n, tipx, tipy, o) => K({ dx: -1 - (n > 1 ? 1 : 0), dy: 1 + (n > 1 ? 1 : 0), legs: 'wide', ...gs(X - 3, Y - 2, tipx, tipy), plume: 2, ...o });
