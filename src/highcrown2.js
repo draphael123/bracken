@@ -293,6 +293,7 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   // ---- the stair up out of the banquet's east door onto the walk ----
   air(523, 524, S + 1, 23);   /* (the banquet floor stands at 25: two steps of two) */
   ent('check', B.BANQ_SHRINE[0], B.BANQ_SHRINE[1]);
+  ent('check', 616, S);   /* (batch155, boss-checkpoint) the battlements were 100 columns with no shrine: one before the Bell Tower's west door, so a death in her fight is a few steps back, not a 100-tile walk */
   ent('sign', 526, S, { text: 'THE BATTLEMENTS. SHE RUNS FOR THE ALARM BELLS: STRIKE EACH TOWER WINCH IN TIME.' });
 
   // ---- W1: the open walk, one soldier, the first tower's archer shooting along it ----
