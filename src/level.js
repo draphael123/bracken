@@ -4,7 +4,7 @@ import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblin
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
 import { knightRow } from './order-chapters.js';   /* (claude/order) THE ROAD WARDENS: who holds which exam (src/order-chapters.js ORDER_AT) */
 import { SPRINKLE, PLAN } from './foe-tactics.js';   /* THE SPRINKLE CUT: the halved rows and the designed encounters (see garrison()) */
-import {polishTower,buildTowerAscent} from './tower-ascent.js';
+import {polishTower,buildTowerAscent} from './tower-ascent.js'; import { ft5On } from './ft5-flag.js'; import { buildTowerFall5 } from './tower-fall5.js';   /* (claude/ft5a) FALLING TOWER 5 behind FT5_SHIPS (off: master's tower, byte for byte) */
 import {TOWER_FLYERS,overFlat} from './tower-flyers.js';   /* THE FALLING TOWER's flyers keep to its floors (round 3): the sprinkler asks it too (L.flatFlyers) */
 import {buildBurningVillage} from './burning-village.js';
 import {buildWitchlight} from './witchlight.js';
@@ -8021,8 +8021,8 @@ export const LEVELS = [
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: withBanner(theHexedFields, 'fields', ...LOST_BANNERS.fields), needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
   { id: 'burial', name: 'THE BURIAL CAVERNS', sub: 'the dead under the hill', rule: 'LIGHT THE GAS. THE DEAD WILL NOT RISE IN ITS LIGHT.', build: withBanner(()=>burialCaverns({painter,T,TS}), 'burial', ...LOST_BANNERS.burial), needs: 'fields' },
-  { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: theMagesFolly, needs: 'witchlight' },   /* (batch 4c: the Witchlight Stair is the road up to it now) */
-  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', rule: 'CLIMB. STRIKE A CRACKED PILLAR AND WHAT IT HOLDS UP COMES DOWN YOUR WAY.', build: ()=>buildTowerAscent({painter,T,TS}), needs: 'mage', leadsTo: 'caravan' },   /* (claude/archmage3, Daniel 10-04) beating him, his portal TAKES YOU TO THE DESERT: the map walks you on into THE SUNKEN CARAVAN (main.js, the win card) */
+  { id: 'mage', name: "THE MAGE'S FOLLY", sub: "the archmage's tower", rule: 'THE ROOM IS THE SPELL. STRIKE WHAT GLOWS, AND THE GLYPHS TURN THE FLOOR OVER.', build: () => { const L = theMagesFolly(); if (ft5On()) L.follyFt5 = true; return L; }, needs: 'witchlight' },   /* (claude/ft5a) follyFt5: his death sets the tower going over (src/ft5-level.js follyStep; FT5 only) */   /* (batch 4c: the Witchlight Stair is the road up to it now) */
+  { id: 'fallingtower', name: 'THE FALLING TOWER', sub: 'the last way up', get rule() { return ft5On() ? 'CLIMB WHAT FALLS. JUMP WHAT BREAKS.' : 'CLIMB. STRIKE A CRACKED PILLAR AND WHAT IT HOLDS UP COMES DOWN YOUR WAY.'; }, build: ()=>ft5On()?buildTowerFall5({painter,T,TS}):buildTowerAscent({painter,T,TS}),   /* (claude/ft5a) FT5: src/tower-fall5.js */ needs: 'mage', leadsTo: 'caravan' },   /* (claude/archmage3, Daniel 10-04) beating him, his portal TAKES YOU TO THE DESERT: the map walks you on into THE SUNKEN CARAVAN (main.js, the win card) */
   /* THE BURNING VILLAGE (batch 5): the Pyromancer's class level, off the Stockade on the road to Sporewood. Appended here, not
      between them, so no level's index moves (the map's nodes and the saves count by index) */
   /* CLASS-LEVEL SIDE ROAD (2026-09-25, Daniel: "they weren't accessible... side paths that are locked until you do
@@ -8656,7 +8656,7 @@ const AMBUSH = {
 /* THE ROOM'S OWN MACHINERY STAYS: a firepit, a hanging ram or a rockfall is a hazard to knock them into, not a creature */
 const AMB_KEEP = new Set(['rockfall', 'catapult', 'towertop', 'dropcage', 'firepit', 'firevent', 'hotplate', 'hammer', 'skybolt', 'sweep', 'bale', 'ram', 'gas', 'timber', 'minerlamp', 'ballast']);
 function ambushRooms(L, id) {
-  const list = (L.ambushes || []).concat(AMBUSH[id] || []); if (!list.length) return L;
+  const list = (L.ambushes || []).concat(L.ft5 ? [] : AMBUSH[id] || []); if (!list.length) return L;   /* (claude/ft5a: FT5's tower has no orrery pit - the row's coordinates are FT4's) */
   L.ambushes = list.map(A=>singleAmbush(A,id));   /* a copy per build: the run's state lives on it */
   for (const A of L.ambushes) {
     const y0 = A.y0 !== undefined ? A.y0 : A.row - 9, inRoom = (e, pad) => e.x >= A.wallL - pad && e.x <= A.wallR + pad && e.y >= y0 && e.y <= A.row + 2;
@@ -8728,7 +8728,7 @@ export function eliteGate(L, col, row) {
   return { col, top, bot, sill };
 }
 function elites(L, id) {
-  for (let [t, x, y, o] of ELITES[id] || []) {
+  for (let [t, x, y, o] of (L.ft5 ? [] : ELITES[id] || [])) {   /* (claude/ft5a: FT5 places its own elite husk - the row's coordinates are FT4's) */
     if (o && o.replaces) { const old = L.ents.findIndex(e => e.t === o.replaces && e.y === y && Math.abs(e.x - x) <= 3 && !e.mini && !e.boss && !e.elite); if (old >= 0) { const q = L.ents[old]; for (const k of ['enc', 'squad']) if (q[k] !== undefined && o[k] === undefined) o = { ...o, [k]: q[k] }; L.ents.splice(old, 1); } }   /* (claude/order) A KNIGHT REPLACES the elite whose place he takes (review-first2: replace, not add); he keeps its encounter */
     const was = L.ents.find(e => e.t === t && e.y === y && Math.abs(e.x - x) <= 3 && !e.mini && !e.boss && !e.elite);
     if (was) Object.assign(was, { x, elite: true }, o || {}); else L.ents.push(Object.assign({ t, x, y, face: -1, elite: true }, o || {}));

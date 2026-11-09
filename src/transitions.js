@@ -14,6 +14,7 @@
    the state after a skip is the state after a full watch (the next level, the arrival) - skipping only drops the pictures.
    WHEN IT PLAYS: policy() below. ON BY DEFAULT since the art pass (claude/transwmart; ?trans=0 is the off switch); the Settings row TRANSITIONS (ALWAYS / FIRST TIME /
    NEVER, default FIRST TIME) is honoured inside that. The flag gate is gone. */
+import { ft5On } from './ft5-flag.js';   /* (claude/ft5a) the Folly -> Falling Tower 5 row, behind FT5_SHIPS */
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
@@ -74,7 +75,11 @@ export const mountainPan = (s, reduce = false) => (reduce ? (s >= MOUNTAIN.panAt
 export const mountainRise = s => smooth((s - 0.2) / 2.2);   /* the columns standing up over the wood */
 export const mountainGlow = s => smooth(s / 1.2);           /* the red sky behind */
 /* the row for a level. ctx: the flags a row's `when` asks for ({ burningOpen: bool }); a row with no when always matches. */
-export const entryFor = (from, to, ctx = {}) => TABLE.find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
+/* (claude/ft5a) FALLING TOWER 5 (plan sec 4): THE MAGE'S FOLLY's end sets the tower going over and you walk out of his observatory door straight into it - a GATE-END
+   walk-out, no level between. Only with FT5 on (src/ft5-flag.js): with it off the Folly ends on its win card, as master does (tools/fallingtower5.mjs holds it) */
+export const FT5_ROW = { from: 'mage', to: 'fallingtower', scene: null, beats: [{ id: 'walk', dur: 1.4, max: 2.6 }, { id: 'fade', dur: 0.7 }], arrive: { ferry: false, walk: 0.6 }, ft5: true };
+const rows = () => ft5On() ? TABLE.concat([FT5_ROW]) : TABLE;
+export const entryFor = (from, to, ctx = {}) => rows().find(e => e.from === from && (to === undefined || e.to === to) && (!e.when || Object.keys(e.when).every(k => !!e.when[k] === !!ctx[k]))) || null;
 /* a scene beat (shore, ride, road, smoke...) is one that carries sc, or the ferry's own two */
 export const isSceneBeat = b => !!b && (b.sc === true || b.id === 'shore' || b.id === 'ride');
 

@@ -5,7 +5,7 @@
 //   TOLD BEFORE IT IS TOUCHED  its tiles wear cracks and trickle dust always (the drawing is main.js's; crackMarks() is the shape)
 //   WEIGHT STARTS IT           a hero standing on it starts its count; the count is drawn over it (3, 2, 1) and cracks on every second
 //   THEN IT GOES               the tiles become air
-//   IT COMES BACK              BACK seconds after it fell, never into anybody standing in its tiles, and at once on a respawn (B4)
+//   IT COMES BACK              BACK seconds after it fell (a section's own `back` if it has one: FT5's profiles, claude/ft5a), never into anybody standing in its tiles, and at once on a respawn (B4)
 //   A CHAIN IS A FAILING STAIR every section sharing a `chain` id is one stair: weight on any of them starts the lowest whole one,
 //                              and each one that goes starts the next on `gap` seconds - the stair fails from the bottom up
 //   `opens`                    the section IS the way on (the Orrery's gallery floor): src/reachcore.js drops through it
@@ -25,7 +25,9 @@ const inTiles = (c, b) => !!b && b.x > c.x0 * 16 - 6 && b.x < (c.x1 + 1) * 16 + 
 export function crumbleStart(c, t) { if (!c || c.gone || c.st !== 'whole') return false; c.st = 'count'; c.t = t ?? c.count; c.shown = Math.ceil(c.t); return true; }
 /* BREAK ONE NOW (a charge onto counting planks): it does not wait for its count */
 export function crumbleBreak(c) { if (!c || c.gone || c.st === 'down') return false; c.st = 'count'; c.t = 0; c.heavy = true; return true; }
-function chainStart(L, c) { const ch = (L.crumbles || []).filter(q => q.chain === c.chain && !q.gone).sort((a, b) => b.row - a.row);
+/* (claude/ft5a) A CHAIN'S ORDER: bottom up by row (a failing stair), or by `seq` when its sections share a row (FALLING TOWER 5's SNAP chunks along a run) */
+const chainOrd = q => q.seq ?? -q.row;
+function chainStart(L, c) { const ch = (L.crumbles || []).filter(q => q.chain === c.chain && !q.gone).sort((a, b) => chainOrd(a) - chainOrd(b));
   const first = ch.find(q => q.st === 'whole'); if (first && !ch.some(q => q.st === 'count')) crumbleStart(first); }
 /* ONE STEP. bodies: the heroes (the ones whose weight counts). Returns events: { t: 'start' | 'tick' | 'fall' | 'back', c, n? } */
 export function crumbleStep(L, bodies, dt, change) {
@@ -37,9 +39,9 @@ export function crumbleStep(L, bodies, dt, change) {
       if (c.t > 0) continue;
       c.st = 'down'; c.downT = 0; for (let y = c.row; y < c.row + c.rows; y++) for (let x = c.x0; x <= c.x1; x++) change(x, y, 'fall');
       ev('fall', c, { heavy: c.heavy }); c.heavy = false;
-      if (c.chain) { const next = (L.crumbles || []).filter(q => q.chain === c.chain && !q.gone && q.st === 'whole' && q.row < c.row).sort((a, b) => b.row - a.row)[0]; if (next) crumbleStart(next, next.gap ?? CRUMBLE.gap); }
+      if (c.chain) { const next = (L.crumbles || []).filter(q => q.chain === c.chain && !q.gone && q.st === 'whole' && chainOrd(q) > chainOrd(c)).sort((a, b) => chainOrd(a) - chainOrd(b))[0]; if (next) crumbleStart(next, next.gap ?? CRUMBLE.gap); }
       continue; }
-    if (c.st === 'down') { c.downT += dt; if (c.downT < CRUMBLE.back || bodies.some(b => inTiles(c, b)) || (c.blockers && c.blockers().some(b => inTiles(c, b)))) continue;
+    if (c.st === 'down') { c.downT += dt; if (c.downT < (c.back ?? CRUMBLE.back) || bodies.some(b => inTiles(c, b)) || (c.blockers && c.blockers().some(b => inTiles(c, b)))) continue;
       for (let y = c.row; y < c.row + c.rows; y++) for (let x = c.x0; x <= c.x1; x++) change(x, y, 'restore');
       c.st = 'whole'; c.t = 0; c.downT = 0; ev('back', c); }
   }

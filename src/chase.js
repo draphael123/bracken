@@ -75,7 +75,7 @@ export function chaseSpec(c) {
     contact: c.contact === 'hurt' ? 'hurt' : 'kill', dmg: num(c.dmg, 45), hold: num(c.hold, 0.7),
     autoscroll: !!c.autoscroll, edge: num(c.edge, 24), show: Number.isFinite(c.show) ? c.show : null, showKeep: num(c.showKeep, 0.1), glow: num(c.glow, 300), look: c.look || 'rock', music: c.music || null, say: c.say || 'RUN!', zone: Array.isArray(c.zone) && c.zone.length === 4 ? c.zone.slice() : null,
     beams: (c.beams || []).map(b => ({ th: BEAM.th, dmg: BEAM.dmg, name: 'A LOW BEAM', ...b })), checkpoint: c.checkpoint || null, runsOver: !!c.runsOver,
-    drawZone: Array.isArray(c.drawZone) && c.drawZone.length === 4 ? c.drawZone.slice() : null, ft4: !!c.ft4, act: c.act || 0, after: c.after || null };   /* (claude/ft4b) drawZone: where it is DRAWN when that is wider than where its start line counts (the Falling Tower's collapse front); ft4/act/after: the tower's own (src/tower-front.js) */
+    drawZone: Array.isArray(c.drawZone) && c.drawZone.length === 4 ? c.drawZone.slice() : null, ft4: !!c.ft4, ft5: !!c.ft5, act: c.act || 0, after: c.after || null };   /* (claude/ft5a) ft5: FALLING TOWER 5's poison - one co-op seat at a time (src/ft5-level.js leadHero / seatsCaught, main.js) */   /* (claude/ft4b) drawZone: where it is DRAWN when that is wider than where its start line counts (the Falling Tower's collapse front); ft4/act/after: the tower's own (src/tower-front.js) */
 }
 export const newChase = () => ({ phase: 'idle', pos: 0, dist: 0, speed: 0, t: 0, warned: {}, warnT: 0, warnText: '', hold: 0, crash: 0, rumT: 0, capI: 0, hits: 0 });
 export const chaseReset = st => Object.assign(st, newChase());

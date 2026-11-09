@@ -282,6 +282,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
+import * as FT5L from './ft5-level.js';   /* (claude/ft5a) FALLING TOWER 5 hook: src/ft5-level.js */
 import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -2746,6 +2747,7 @@ function spawnEntities() {
   if (PUPH) PUPH.clear();   /* THE PUPPETEER's show is made again with him (his spawn case) */
   if (LEH) LEH.clear();   /* THE LANTERN-EATER's show is made again with it (its spawn case) */
   if (GLH) GLH.clear(); if (CQH) CQH.clear(); if (COH) COH.clear(); if (HMH) HMH.clear(); if (FKH) FKH.clear(); if (CHH) CHH.clear(); if (ADH) ADH.clear(); if (FL2H) FL2H.clear(); if (F3H) F3H.clear(); if (PMK) PMK.clear(); if (PBH) PBH.clear(); if (BZH) BZH.clear(); if (DCH) DCH.clear(); if (GDH) GDH.clear(); if (DJH) DJH.clear(); if (GCH) GCH.clear(); if (MTH) MTH.clear(); if (HNH) HNH.clear(); if (HGK) HGK.clear(); if (SMH) SMH.clear(); if (TKH) TKH.clear(); if (OTH) OTH.clear(); if (GBH) GBH.clear(); if (BBH) BBH.clear(); if (SSH) SSH.clear(); if (HQH) { HQH.restore(); HQH.clear(); } if (BTH) BTH.clear(); if (SNR) SNR.reset(); if (HPD) HPD.reset();   /* THE GANG LEADER's and THE CISTERN QUEEN's fights are made again with them (their spawn cases) */
+  if(L.ft5)FT5L.ft5Reset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]));   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): every chunk, piece and plank back on a retry */
   if(L.towerAscent){   /* THE TOWER STANDS AGAIN on a retry, and whatever is under the checkpoint goes again - silently, it is not news */
     towerAscentReset(L,(x,y)=>cellSet(x,y,grid0[y*LW+x]),typeof checkpoint!=='undefined'&&checkpoint?(inSpiral(L.spiral,checkpoint.x,checkpoint.y-1)||inChase3(L,checkpoint.x,checkpoint.y-1)?0:checkpoint.y/TS):LH,   /* (a checkpoint on THE SPIRAL STAIR: every floor of the tower is behind you) */(x,y)=>cellSet(x,y,T.AIR),(x,y)=>cellSet(x,y,T.SOLID));
     for(const z of L.deckBreaks||[]){z.t=-1;z.down=false;z.seen=false;z.downT=0;for(let y=z.row-1;y<=z.row;y++)for(let x=z.x0;x<=z.x1;x++)cellSet(x,y,grid0[y*LW+x]);}
@@ -13125,7 +13127,8 @@ function onDeck(x, y) { const R = L.roll; if (!R) return false;
   const tx = x / TS; if (!R.bands && (tx < R.x0 || tx > R.x1 || (R.not || []).some(([a, b]) => tx >= a && tx <= b + 1))) return false;
   return !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 + 1 && y / TS >= y0 && y / TS <= y1 + 1.5); }
 const heeling = () => !!(roll && roll.state === 'heel' && roll.k > 0.5);
-function seaTilt() { if (L && L.ft2 && !SET.reduceMotion) return bossActive || (P && P.carpet) || chaseView() ? 0 : -(L.ft2.leanShown || 0) * Math.PI / 180;   /* (claude/fallingtower2) THE TOWER LEANS: half a degree a fallen floor, the frame going over with it (none in his sky, none on his stair) */
+function seaTilt() { if (L && (L.ft5 || L.follyTip) && !SET.reduceMotion) return FT5L.tiltOf(L, bossActive, !!(P && P.carpet)) * Math.PI / 180;   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): THE TOWER GOES OVER: the act's roll; the Folly tips as he dies */
+  if (L && L.ft2 && !SET.reduceMotion) return bossActive || (P && P.carpet) || chaseView() ? 0 : -(L.ft2.leanShown || 0) * Math.PI / 180;   /* (claude/fallingtower2) THE TOWER LEANS: half a degree a fallen floor, the frame going over with it (none in his sky, none on his stair) */
   if (!roll || !L || !L.roll || SET.reduceMotion) return 0; return roll.dir * (L.roll.heel || 0.05) * roll.k * (1 - seaCalm()); }
 /* THE HORIZON GOES OVER WITH HER. The frame already rolls with her heel; the far sea rolls half as far again, and rocks a little with
    every swell under her the rest of the time, so the horizon is never a ruled line on a storm deck. */
@@ -22198,6 +22201,7 @@ function updateAscent(dt){
   hurt:(x,d,blow)=>damagePlayer(x,d,{unblockable:blow!=='chest',name:{debris:'FALLING STONE',flare:'THE BURNING BOOKS',chest:'A SLIDING CHEST',lightning:'THE LIGHTNING'}[blow]||'THE TOWER'}),
   fall:()=>{damagePlayer(P.x,1,{unblockable:true,pct:SV.HAZARD.pct,name:'THE DROP'});if(!P.dead&&P.hp>0)hazardBack();},
   say:(x,y,s,col)=>number(x,y,s,col),callout:s=>callout(s),sound:k=>(SFX[k]||({creak:SFX.clank,whoosh:SFX.throwWhoosh})[k]||SFX.stone)(),shake:n=>shakeCam(n),push:dx=>{moveBody(P,dx,0,false);},dust:(x,y,n)=>dust(x,y,n)});   /* (fallingtower2) src/tower-fall2.js */
+ if(L.ft5)FT5L.ft5Update(L,P,dt,{T,set:(x,y,t)=>cellSet(x,y,t),tile:(x,y)=>tileAt(x,y),say:s=>callout(s),sound:k=>(SFX[k]||SFX.stone)(),shake:n=>shakeCam(n),dust:(x,y,n)=>dust(x,y,n),onMover:()=>P.onMover||null,sextonDown:()=>!enemies.some(q=>q.t==='sexton'&&q.alive),crumbleBreak:(x0,x1,row)=>{for(const q of L.crumbles||[])if(q.kind==='deck'&&q.row===row&&q.x1>=x0&&q.x0<=x1)crumbleBreakAt(q);},chases:()=>chases,carry:dy=>{P.y+=dy;P.vy=0;}});   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): the acts, the roll, the set pieces, the peel, the poison's breathers */
  if(L.ft4)updateFt4(dt);   /* (claude/ft4b) FALLING TOWER 4: the acts, the set pieces, the braced rooms, the face peeling (src/tower-front.js) */
  updateCarpet(L,P,dt,{board:()=>{SFX.leap();SFX.throwWhoosh&&SFX.throwWhoosh();dcBank();number(P.x,P.y-30,L.sanctum?'THROUGH THE DOOR':'THE CARPET RISES','#e0b050');checkpoint={x:L.carpetAt.x-5*TS,y:L.carpetAt.y+TS};   /* a retry comes back on the walk beside it, not on it: a breath before the sky again */if(L.chase3){checkpoint={...L.chase3.check};chaseToAscent();}   /* (claude/fallingtower3) THE CHASE: up through his door into the hall, and a retry is the whole fight from his ring */if(L.sanctum&&!L.chase3){shakeCam(6);zoomKick(1.12,.5);flash=Math.max(flash,.3);burst(P.x,P.y,26,['#b07cf0','#e0c8ff','#4a2a7a'],150,.9,0,2);camX=P.x-VW/2;camY=P.y-VH/2;}else if(L.chase3){SFX.leap();burst(P.x,P.y,18,['#e0b050','#f3ce77','#c9463d'],110,.7,0,2);}   /* A DOOR SNAPS. Without this the camera panned the 160px from the parapet up to the spawn, which reads as flying there - the one thing a portal is not */if(boss&&boss.alive&&!bossActive&&boss.t==='undeadmage')bossStart();for(const c of chases)if(c.sp.id==='towerscroll')chaseReset(c.st);   /* THE RISING DARK stays on the stair (claude/towerscroll) */}});
  /* THE SECOND DOOR: through it the carpet is left behind, the sky goes warm, and the last walk of the world is on sand */
@@ -26902,6 +26906,7 @@ function chaseEvent(c, e) {
   const sp = c.sp;
   if (e.k === 'start') { if (sp.music) { music.play(sp.music); chaseMusicOn = true; } number(P.x, P.y - 34, sp.say, '#ff6b6b'); SFX.rumble(); shakeCam(4); if (sp.band) { c.st.warnT = 2.6; c.st.warnText = sp.say; } }   /* (a banded chase says it over the screen too: claude/archmage2b) */
   else if (e.k === 'warn') { number(P.x, P.y - 40, e.text, '#ff6b6b'); SFX.thunder(); shakeCam(3); c.st.flashT = 0.35; }   /* A SURGE IS TOLD: the banner, thunder, and a flash of its colour */
+  else if (e.k === 'contact' && sp.ft5 && coop()) { for (const q of FT5L.seatsCaught(sp, c.st, players)) asSeat(q, () => { damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name, noKnock: !!sp.knockTo, spare: true }); if (sp.knockTo && !P.dead) chaseKnock(c, chaseHero(sp)); }); shakeCam(6); }   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): the poison touches each seat it reaches */
   else if (e.k === 'contact') { if (e.mode === 'kill') damagePlayer(P.x, 9999, { unblockable: true, pierce: true, name: sp.name }); else { const front = chaseHero(sp); damagePlayer(P.x - sp.dir * 20, e.dmg, { unblockable: true, name: sp.name, noKnock: !!sp.knockTo, spare: !!sp.ft4 });   /* (claude/ft4b: THE FALLING TOWER's front never kills - Daniel 10-29 #2) */   /* (claude/archmage3: a dark that THROWS you up does not also knock you off the ledge it threw you onto) */ if (sp.knockTo && !P.dead) chaseKnock(c, front); } shakeCam(6); }
   else if (e.k === 'end') { number(P.x, P.y - 34, 'SAFE', '#8fd160'); SFX.rumble(); chaseMusicOff(); }
   else if (e.k === 'crash') { shakeCam(5); SFX.thud(); }
@@ -26921,7 +26926,7 @@ function updateChase(dt) {
     if (c.st.phase === 'idle' && (chases.some(o => o !== c && o.st.phase === 'run') || !chaseInZone(c.sp, P.x, P.y))) continue;   /* (a zone: its start line counts only there) */
     if (c.st.phase === 'idle' && c.sp.after === 'bell' && !(L.ft4 && L.ft4.rt && L.ft4.rt.bell.st === 'down')) continue;   /* (claude/ft4b) THE FALLING TOWER's act III front waits for THE BELL FALLS */
     c.st.flashT = Math.max(0, (c.st.flashT || 0) - dt);
-    for (const e of chaseStep(c.sp, c.st, chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);
+    for (const e of chaseStep(c.sp, c.st, c.sp.ft5 && coop() ? (FT5L.leadHero(c.sp, players) ?? chaseHero(c.sp)) : chaseHero(c.sp), dt, !!P.ground)) chaseEvent(c, e);   /* (claude/ft5a: FT5's poison follows the LOWEST living human seat) */
     if (c.sp.runsOver && c.st.phase === 'run') for (const q of enemies) if (q.alive && !q.boss && (q.x - c.st.pos) * c.sp.dir < 0 && chaseInZone(c.sp, q.x, q.y - 4)) { q.alive = false; burst(q.x, q.y - 10, 12, COLS[q.t] || ['#9ae0a8', '#ffffff'], 80, 0.5); spawnCorpse(q, 1); if (FAIR) FAIR.runOver++; }   /* THE GHOST TRAIN runs over what it overtakes in its cutting too (claude/fairfix) */
     if (c.sp.look === 'scree') updateRockslide(c, dt);   /* THE ROCKSLIDE (claude/scree2, src/scree-chase.js): grit off the crest before it, dust and stones off its front */
     const k = chaseDanger(c.sp, c.st, chaseHero(c.sp)); c.st.rumT -= dt; const r = rumbleFor(k);
@@ -30074,7 +30079,8 @@ function updateEnemies(dt) {
   seeds = seeds.filter(s => !s.dead);
   if (bossMusicT > 0) { bossMusicT -= dt; if (bossMusicT <= 0 && bossActive) music.play(L.arena.music || 'boss'); }
   updateRain(dt); updateVines(dt); updateRocks(dt); updateEscape(dt); updateAir(dt);
-  if (bossWon > 0 && !bossBeat) startBossBeat();   /* (claude/actcards) the one shared beat, on the first frame of every boss kill */
+  if (bossWon > 0 && !bossBeat) startBossBeat();
+  if (bossWon > 0 && L.follyFt5) FT5L.follyStep(L, dt, { say: s => callout(s), shake: n => shakeCam(n), sound: k => (SFX[k] || SFX.stone)(), burst: () => burst(boss.x, boss.y - 30, 18, ['#6fe08a', '#07120c', '#c8ffd8'], 120, 0.9) });   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): THE MAGE'S FOLLY: his death sets the tower going over */   /* (claude/actcards) the one shared beat, on the first frame of every boss kill */
   if (bossWon > 0) { bossWon -= dt; if (Math.random() < dt * 6) burst(boss.x + (Math.random() - 0.5) * 40, boss.y - 10 - Math.random() * 20, 8, COLS.queen, 80, 0.5);
     /* THE SANCTUM DOES NOT END ON THE KILL. Every other boss in the game wins the level where it falls; here the hole
        the Archmage leaves opens into a door, and the level ends at the GATE on the sand beyond it. Rush mode keeps the
@@ -32552,6 +32558,7 @@ function updateMovers(dt) {
     if (m.kind === 'bucket') { updateBucket(m, dt); continue; }
     if ((m.kind === 'hexvine' || m.kind === 'haycart') && updateFieldsMover(m, dt)) continue;   /* THE HEXED FIELDS */
     if (m.mage && updateMageMover(m, dt)) continue;
+    if (m.ft5 === 'slab') { const ox = m.x, oy = m.y, ev = FT5L.slabStep(m, dt, players.filter(q => q.onMover === m && !q.dead).length); m.dx = ev === 'gone' || ev === 'back' ? 0 : m.x - ox; m.dy = ev === 'gone' || ev === 'back' ? 0 : m.y - oy; if (ev === 'tell') { SFX.crack(); shakeCam(2); callout(FT5L.SLAB_SAY); } else if (ev === 'gone') for (const q of players) if (q.onMover === m) { q.onMover = null; q.ground = false; } continue; }   /* (claude/ft5a) FALLING TOWER 5 hook (src/ft5-level.js): THE SLAB */
     if (m.ft2) { ftMover(L, m, dt, time); continue; }   /* (fallingtower2) THE OBSERVATORY's telescope and THE SNAP's chunk */
     if (m.leRaft) { const ox = m.x, oy = m.y; if (LEH) LEH.raftMover(m, dt); m.dx = m.x - ox; m.dy = m.y - oy; continue; }   /* THE LANTERN-EATER's raft: out on its water (src/lantern-eater-hands.js) */   /* THE MAGE'S FOLLY: the books and the lanes (a planet is a wheel, and falls through to the wheel) */
     if (m.windlass && WTH && WTH.bucket(m, dt)) continue;
