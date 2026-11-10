@@ -34714,7 +34714,7 @@ function drawSwing(cx, cy) {
       if (f > 0) g.arc(px, py - 2, 30 - i, s2, e2); else g.arc(px, py - 2, 30 - i, Math.PI - e2, Math.PI - s2); g.stroke(); }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return;
   }
-  if (JUICE2_SHIPS && !P.heavy && !P.heavySwing && !P.swingKind && !P.swingRiposte && !P.plunge && !P.dashCut && (hero() === 'knight' || isPaladin() || isPirate())) { g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return; }   /* (claude/recs158-d) JUICE2: the light-cut smear (drawLightSmear) IS the knight/paladin/pirate light cut - the old generic arc under it doubled it. Flag off: the arc below, unchanged */
+  if (JUICE2_SHIPS && !P.heavy && !P.heavySwing && !P.swingKind && !P.swingRiposte && !P.plunge && !P.dashCut && (hero() === 'knight' || isPaladin() || isPirate() || isGeo() || isBz())) { g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; return; }   /* (claude/recs158-d) JUICE2: the light-cut smear (drawLightSmear) IS the knight/paladin/pirate/geomancer/berserker light cut (ARC2-d: the ranger draws no arc, her light is a shot) - the old generic arc under it doubled it. Flag off: the arc below, unchanged */
   /* the trail follows the swing it belongs to: the first comes over and down, the backhand comes UP from below, and the
      thrust is not an arc at all but a line straight out through the point */
   { const pal = isPaladin(), cm = P.heavy ? 1 : (P.combo || 1) % 3, a0 = -1.25, sweep = 2.25 * Math.min(1, k * 2.2), r = pal ? 25 : 18;
