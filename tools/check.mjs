@@ -283,6 +283,8 @@ for (const t of ['tells', 'gorm-scaffold-reach', 'hornsman', 'underleaf', 'shake
    stays a gate: adding a report-only sweep must not turn a shipped assertion off. Each name is a standalone tool so the
    release script can rerun a reported failure by the same check-name field it has always used. */
 for (const t of ['drawn-solids-sweep', 'visible-supports']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+/* THE BODY IN MOTION (claude/airmotion): the jump, hit, skid, slide and crouch drawn moving - art only, the jump's path unchanged (src/air-motion.js) */
+for (const t of ['air-motion']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 /* THE SCREE PATH AND THE MONASTERY ARE A GATE (claude/screefix, Daniel 2026-10-15: floating slabs on thin posts, floating architecture): every overhang of the two has a VERIFIED visible
    support - the strict run, on a port of its own so it never shares the report-only sweep's server. Other levels stay report-only until their art lanes clear the backlog. */
 if (take('visible-supports-strict')) results.push(run('visible-supports-strict', process.execPath, ['tools/visible-supports.mjs', 'scree', 'spire', '--strict'], { PORT: String(portFor(1)) }));
