@@ -75,7 +75,7 @@ export function navStep(c, gx, gy, o = {}) {
   if (nxt.web) {   /* a spring web: step onto the part of it that lies under where we want to land, then the throw takes us */
     const lt = after || goal; nv.hop = { to: lt, via: nxt, plunge: nxt.row - lt.row >= 7, stage: 0 }; const wx = clamp(lt.cx, nxt.px0 + 6, nxt.px1 - 6); go(wx); k.jump = true; return { hop: 'web', plat: cur, goal };
   }
-  if (cur.web) { if (!nv.hop || nv.hop.to.key !== nxt.key) nv.hop = { to: nxt, via: cur, plunge: cur.row - nxt.row >= 7, stage: 0 }; k.jump = true; return { hop: 'web', plat: cur, goal }; }
+  if (cur.web) { if (!nv.hop || nv.hop.to.key !== nxt.key) nv.hop = { to: nxt, via: cur, plunge: cur.row - nxt.row >= 7, stage: 0 }; if (!(P.labJump > 0)) { BK.press('jump'); P.labJump = 26; } k.jump = true; return { hop: 'web', plat: cur, goal }; }   /* (standing ON a web throws nothing: a jump, then the landing throws) */
   if (nxt.row === cur.row && Math.max(0, nxt.x0 - cur.x1 - 1, cur.x0 - nxt.x1 - 1) === 0) { go(right ? nxt.px0 + 8 : nxt.px1 - 8); return { hop: 'walk', plat: cur, goal }; }   /* touching: walk on */
   nv.hop = { to: nxt };
   if (over > 0 && up >= 1) {   /* straight up through the shared span (a held jump) */
@@ -112,10 +112,13 @@ export function cryptMotherHands(c) {
   if (S.flash) { const s = G.secs[S.flash.i]; if (s && P.ground && P.y > floorY - 6 && P.x > s.px0 - 8 && P.x < s.px1 + 8) { const l = s.px0 - 20, r = s.px1 + 20, lok = l > G.x0 && !secDown(l), rok = r < G.x1 && !secDown(r), tx = lok && (!rok || P.x - l < r - P.x) ? l : r; go(tx); return done(); } }
   /* ---- HER BROOD: spiderlings cut as they close ---- */
   const ling = BK.enemies().filter(q => q.alive && q !== e && !q.maxHp && Math.abs(q.y - P.y) < 24 && Math.abs(q.x - P.x) < 46).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-  if (ling && !open && P.ground) { P.face = Math.sign(ling.x - P.x) || P.face; if (Math.abs(ling.x - P.x) > reach - 2) go(ling.x - (Math.sign(ling.x - P.x) || 1) * (reach - 4)); else if (P.atk < 0 && !tired) { swing = true; if (c.keyVerb && c.keyVerb(BK, h, ling) === 'sweep') k.down = true; } return done(); }
+  const bossNear = Math.abs(e.x - P.x) < reach + 34 && Math.abs((e.y + 8) - P.y) < 44 && !open;   /* (she is beside us on the floor - landed, climbing: a blow on her now is outside an opening: a twentieth, and the greed reprisal) */
+  if (ling && !open && P.ground && !bossNear) { P.face = Math.sign(ling.x - P.x) || P.face; if (Math.abs(ling.x - P.x) > reach - 2) go(ling.x - (Math.sign(ling.x - P.x) || 1) * (reach - 4)); else if (P.atk < 0 && !tired) { swing = true; if (c.keyVerb && c.keyVerb(BK, h, ling) === 'sweep') k.down = true; } return done(); }
   /* ---- HER BACK IS TURNED: she is on the floor, open. Down to her and cut ---- */
   if (open) {
-    const side = P.x < e.x ? -1 : 1, spot = e.x + side * 18;
+    const side = P.x < e.x ? -1 : 1, fr = platformsOf(BK, T, Math.floor(G.x0 / TS), Math.ceil(G.x1 / TS), Math.floor(floorY / TS), Math.floor(floorY / TS)).filter(p => !p.web), want0 = e.x + side * 18;
+    /* the floor that is still there: she may have fallen over a strand that is gone - the nearest standing floor to her is where to stand */
+    let spot = want0, bd = 1e9; for (const p of fr) { const x = clamp(want0, p.px0 + 6, p.px1 - 6), d = Math.abs(x - want0); if (d < bd) { bd = d; spot = x; } }
     if (!P.ground && !P.onMover) { go(spot); if (Math.abs(P.x - e.x) < reach + 12 && Math.abs(P.y - e.y) < 30 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }
     const near = Math.abs(P.x - e.x) < reach + 16 && Math.abs(P.y - e.y) < 26;
     if (!near && P.ground && P.y < floorY - 24 && !secDown(P.x)) { k.down = true; BK.press('jump'); go(spot); return done(); }   /* (on a strand or a tier above her: DOWN + JUMP lets you through a one-way floor - and fall at her) */
@@ -132,8 +135,9 @@ export function cryptMotherHands(c) {
   const spotX = clamp(kn.x, perch.px0 + 14, perch.px1 - 14), face = Math.sign(kn.x - spotX) || (kn.x < perch.cx ? -1 : 1);
   const atSpot = P.x >= perch.px0 && P.x <= perch.px1 && Math.abs(P.x - spotX) < 9 && (P.ground ? Math.abs(P.y - perch.y) < 3 : P.y < perch.y + 4 && P.y > perch.y - 80);
   if (atSpot) { dbg = 'knot' + S.knot + ' AT';
-    if (P.ground) { P.face = face; if (P.atk < 0 && !tired && !(P.labJump > 0)) jump(30); }
-    else if (P.vy > -150 && P.vy < 70 && P.atk < 0 && !tired && Math.abs(P.x - kn.x) < reach + 8) { P.face = face; swing = true; } }
+    const near = Math.abs(e.x - kn.x) < 120; P.labKnotW = near ? 0 : (P.labKnotW || 0) + 1;   /* (she walks her line toward you: cut when she is over the perch, not at the far end of the cave - she would fall out of reach; a player waits a few seconds) */
+    if (P.ground) { P.face = face; if (P.atk < 0 && !tired && !bossNear && (near || P.labKnotW > 420)) swing = true; }   /* (the knot sits 24 px over a hero's feet - inside the reach of a swing from the ground; at the top of a jump it is BELOW the blow) */
+    else if (P.vy > 0 && P.y > kn.y + 4 && P.atk < 0 && !tired && Math.abs(P.x - kn.x) < reach + 8) { P.face = face; swing = true; } }
   else { const r = navStep(c, spotX, perch.y, { centre: true, tol: 3 }); dbg = 'knot' + S.knot + ' ' + (r.hop || (r.onGoal ? 'ON' : r.air ? 'air' : r.stuck ? 'STUCK' : '?')) + ' ' + (r.plat ? r.plat.key : '-') + '>' + (r.goal ? r.goal.key : '-'); }
   return done();
 }

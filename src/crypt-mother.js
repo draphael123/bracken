@@ -15,13 +15,13 @@
    B15: x0.45 outside an opening, x2 in one (capped), x1 from above; never untouchable. P1 cannot pass 50% (the floor holds until her move in hand ends). */
 
 export const CM = {
-  hp: 3000, w: 30, h: 20, markH: 40, speed: 60,
-  resist: 0.45, openMul: 2, openCap: 0.12, floorP1: 0.5, aboveMul: 1.0,
+  hp: 1800, w: 30, h: 20, markH: 40, speed: 60,
+  resist: 0.45, openMul: 2, openCap: 0.14, floorP1: 0.5, aboveMul: 1.0,
   spit: { tell: 0.7, speed: 150, dmg: 8, snare: 1.3, cd: 3.2, life: 3.2, r: 9 },
   pounce: { tell: 1.0, fall: 380, dmg: 22, w: 22, ground: 1.2, climb: 120, cd: 7 },
   clutch: { tell: 0.9, hatch: 4.0, n: 3, cd: 12, max: 2 },
   sweep: { tell: 0.6, act: 0.35, dmg: 18, reach: 110, cd: 5 },
-  drop: { open: 3.0, fall: 420 },
+  drop: { open: 4.0, fall: 420 },
   p2: { lament: 2.0, every: 14, flash: 2.0, keep: 2, faster: 0.8 },
 };
 export const cmOpen = e => !!e && e.mode === 'fallen' && e.modeT > 0;

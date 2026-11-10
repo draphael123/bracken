@@ -80,6 +80,8 @@ export function makeCryptMotherHands(ctx) {
     if (word === 'ABOVE') ctx.number(e.x, e.y - CM.markH, CM_SAY.abdomen, '#ffd36b');
     if (word === 'HOLDS') ctx.number(e.x, e.y - CM.markH, CM_SAY.holds, '#e6e6ee');
     return d; };
+  /* (claude/nighthands) THE CAMERA while she hangs: her hang point (y 192) is 320 px over the floor, and the boss view is 270-360 px tall - from the floor she was off the top of the picture. The camera now rises toward her, but never so far that the hero's feet (+ 28 px) leave the bottom: ty is the normal target; returns the biased one. Her arena only (CMH.on()), hanging modes only: on the floor she is already in the picture. */
+  H.camY = (ty, VH) => { const e = live(); if (!S || !e || !A() || !CMM.hanging(e)) return ty; const p = ctx.hero && ctx.hero(); if (!p) return ty; const want = e.y - CM.markH - 34, lim = p.y + 28 - VH; return Math.max(lim, Math.min(ty, want)); };
   H.barName = e => CM_SAY.name + (CMM.cmOpen(e) ? '  ' + CMM.OPEN_NAME[e.mode] : '');
   H.end = () => { if (S) { S.globs = []; S.sacs.forEach(s => { s.dead = true; }); S.flash = null; S.won = true; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, knot: S.knot, fallen: [...S.fallen], n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };

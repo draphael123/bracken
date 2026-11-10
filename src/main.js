@@ -33286,6 +33286,7 @@ function updateCamera(dt) {
   /* THE LANTERN-EATER's basin is tall (the lights come down out of the fog over the raft): the camera holds the whole of it when the view is tall enough */
   else if (bossActive && boss && boss.t === 'lanterneater' && LEH && LEH.on()) ty = LEH.camY(ty);
   else if (bossActive && boss && boss.t === 'cisternqueen' && CQH && CQH.on()) ty = CQH.camY(ty);
+  else if (bossActive && boss && boss.t === 'cryptmother' && CMH && CMH.on()) ty = CMH.camY(ty, VH);   /* (claude/nighthands) the Crypt Mother hangs 320 px over the floor: the camera rises toward her, the hero's feet kept in the picture */
   else if (bossActive && boss && boss.t === 'abbot' && L.arena && L.arena.house) { ty = Math.min(ty, L.arena.floor + 16 - VH); const af = abbotCamFocus(); if (af) { tx += (af.x - VW / 2 - tx) * af.w; if (af.y !== null) ty += (af.y - VH * 0.5 - ty) * af.w; } }   /* (claude/abbotclear) the intro beat and the nudge */   /* (claude/abbot3) the belfry's bridges and his chair hang high: the camera looks up from the floor */   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
   else if (bossActive && boss && boss.t === 'grubbag' && GBH && GBH.on()) ty = GBH.camY(ty, VH);   /* (claude/grubbagbig) the whole of LORD GRUBBAG (and his belly flop's rise) in the picture */
   /* THE SPIRAL STAIR (src/spiral-chase.js): the Undead Archmage waits over the landing you are climbing to, and he casts only with his whole

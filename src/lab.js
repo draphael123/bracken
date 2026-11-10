@@ -981,7 +981,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
-    ROWBOSS = boss; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2, !!LABP.bkKit) : null;
+    ROWBOSS = boss; BK.labHoldSkills = false; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2, !!LABP.bkKit) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
@@ -1105,8 +1105,9 @@ async function runbossLab(BK, opts) {
         const nh=({cryptmother:cryptMotherHands,headmistress:headmistressHands,lanternwidow:lanternWidowHands})[boss.t]({BK,boss,P,k,A,h,f,reach:LAB_REACH[h],T:lvm.T,strike:labStrike,keyVerb,shielded:SHIELDED(h)});
         if(nh.swing&&P.atk<0){BK.press('atk');swings++;}if(nh.struck)swings++;
         if(OPEN(boss,BK)&&boss.open>0&&!wasOpen)opened++;wasOpen=boss.open>0;
+        BK.labHoldSkills=!(boss.open>0);
         if(opts.nhHp&&f===0)boss.hp=Math.min(boss.hp,boss.maxHp*opts.nhHp);   /* (dev: start a night boss part-way through its fight) */
-        if(opts.samples&&f%20===0){out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,'ph'+boss.phase,Math.round(P.x),Math.round(P.y),P.ground?'g':'a',Math.round(boss.x),Math.round(boss.y),Math.round(boss.hp),Math.round(P.hp),Math.round(P.st),k.left?'L':'',k.right?'R':'',k.jump?'J':'',k.block?'B':'',nh.swing||nh.struck?'X':'',boss.open>0?'OPEN':'',nh.dbg||''].join(' '));}
+        if(opts.samples&&f%20===0){out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,'ph'+boss.phase,Math.round(P.x),Math.round(P.y),P.ground?'g':'a',Math.round(boss.x),Math.round(boss.y),Math.round(boss.hp),Math.round(P.hp),Math.round(P.st),k.left?'L':'',k.right?'R':'',k.jump?'J':'',k.block?'B':'',nh.swing||nh.struck?'X':'',boss.open>0?'OPEN':'',BK.greed?'g'+BK.greed.count(boss):'',nh.dbg||''].join(' '));}
         const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       /* THE MOTHER CAP 2 (claude/sporewood2): src/lab-mother.js plays her - her seed caps struck and climbed, a plunge on her knot, her told moves answered; nothing is grown or opened for the bot */
