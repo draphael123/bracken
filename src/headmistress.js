@@ -72,7 +72,7 @@ export function takeBlow(e, S, dmg, used, W) {
   if (hmOpen(e)) { const cap = S.cap * e.maxHp, room = cap - S.openDealt; d = dmg * HM.openMul <= room ? dmg * HM.openMul : Math.max(dmg * HM.resist, room); S.openDealt = Math.min(cap, S.openDealt + d); S.n.openHits++; }
   else { d = dmg * HM.resist; word = 'WORK'; S.n.work++; }
   const fl = S.ph <= 3 ? HM.floors[S.ph - 1] : 0;
-  if (e.hp - d < e.maxHp * fl) { d = Math.max(0, e.hp - e.maxHp * fl); if (!S.told['holds' + S.ph]) { S.told['holds' + S.ph] = 1; word = 'HOLDS'; } }
+  if (fl > 0 && e.hp - d < e.maxHp * fl) {   /* (claude/nightwalk) only a real floor: at floor 0 (her last phase) the clamp took d = e.hp, rounded it to 2 decimals and left hp at +1e-13 - alive, and every later blow clamped to 0.00: an IMMORTAL Headmistress (seen: 400 blows, hp 1.1e-13) */ d = Math.max(0, e.hp - e.maxHp * fl); if (!S.told['holds' + S.ph]) { S.told['holds' + S.ph] = 1; word = 'HOLDS'; } }
   return [Math.round(d * 100) / 100, word];
 }
 function open(e, S, W) {
