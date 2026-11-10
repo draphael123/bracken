@@ -192,6 +192,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
 };
 Object.assign(THREAT, { wwspan: 0, wwcandle: 0, wwlamp: 0, wwstone: 0, wwhands: 0, wwthief: 2, lanternwidow: 6 });   /* (claude/wispwood) WISPWOOD: its pale spans, candles, lamps, waystones and hand pools are machines (the hands are the pools' own hazard); a wisp thief; its boss */
 
+Object.assign(THREAT, { skweb: 0, skanchor: 0, sksconce: 0, skwall: 0, sksac: 0, skgoo: 0, silklurker: 3, cryptmother: 6 });   /* (claude/silk) THE SILK UNDERCROFT: its taut webs, anchors, sconces, sticky walls, egg sacs and goo are machines (a sac's spiderlings are spiders); THE SILK LURKER; its boss */
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
 // A tall level is long, it is just long upwards, so the span counts height at three columns a row.
