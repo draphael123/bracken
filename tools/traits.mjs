@@ -3,6 +3,7 @@
 // Core passives on at their level; a trait on only while worn in a slot the level has; slot 2 at L20; ranks 0.70/0.85/1.0; migrate idempotent;
 // a v2 save round-trips; with TRAITS_SHIP off NOTHING differs from today. Data-agnostic: it reads each split hero's own rows from src/traits.js.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { SKILLS, passiveOn, migrateProgress, validateProgress, wearTrait, migrateTraits, HERO_IDS, TRT } from '../src/progression.js';
 import { xpFloor } from '../src/xp.js';
 import { readFileSync } from 'node:fs';
@@ -36,7 +37,7 @@ try {
   for (const h of split) {
     const s = T.TRAIT_SPLIT[h];
     /* every passive of the hero is classified (no 'cut' by accident): core, trait, merged, folded, shared or retired */
-    for (const n of SKILLS.filter(x => x.hero === h && !x.active)) { const k = T.kindOf(h, n.id); assert(['core', 'trait', 'merged', 'folded', 'shared', 'retired'].includes(k), h + '/' + n.id + ' is ' + k + ' (list it in the split)'); }
+    for (const n of SKILLS.filter(x => x.hero === h && !x.active)) { const k = T.kindOf(h, n.id); assert(['core', 'trait', 'merged', 'folded', 'shared', 'retired'].includes(k) || (k === 'cut' && (s.cut || []).includes(n.id)), h + '/' + n.id + ' is ' + k + ' (list it in the split, or in cut:[] if it is a deliberate cut)'); }
     assert(s.defaults.every(id => T.slottable(h).includes(id)), h + ' defaults are slottable');
     for (const id of T.traitIds(h)) assert(T.learnLevel(h, id) <= 18, h + '/' + id + ' arrives by L18 (so it reaches rank III at L20)');
     for (const id of s.core) { const n = SKILLS.find(x => x.hero === h && x.id === id); assert(n.level <= 20, h + ' core ' + id + ' by L20'); }
@@ -133,8 +134,24 @@ try {
     const rt = migrateProgress(JSON.stringify(keep), []).progress; assert.deepEqual(rt, migrateProgress(JSON.stringify(rt), []).progress, 'round trip stable'); }
   /* level-up words */
   assert.match(T.traitUpText('knight', 1, 2), /TRAIT LEARNED/); assert.match(T.traitUpText('knight', 9, 10), /RANK II/); assert.match(T.traitUpText('knight', 19, 20), /RANK III.*SECOND TRAIT SLOT/);
-  assert.equal(T.traitUpText('pyro', 1, 24), '', 'unsplit hero: the old line');
+  assert.equal(T.traitUpText('paladin', 1, 24), '', 'unsplit hero: the old line');
   assert.deepEqual(T.traitRows('knight').slice(0, 5).map(r => r.tkind), ['core', 'core', 'core', 'core', 'core']);
+  /* TRAITDATA-B (pyro, pirate, reaper, berserker): rows as planned, a rank number at every effect site, cards rename only while the flag is on */
+  { const want = { pyro: [5, 10, 6, 2], pirate: [5, 10, 0, 4], reaper: [5, 10, 2, 1], berserker: [5, 10, 4, 2] };   /* core, traits, merged ids, folded */
+    const shared = { pyro: 0, pirate: 1, reaper: 1, berserker: 0 };
+    for (const h of Object.keys(want)) { const s = T.TRAIT_SPLIT[h]; assert(T.hasSplit(h), h + ' is split');
+      assert.equal(s.core.length, want[h][0], h + ' core'); assert.equal(s.traits.length, want[h][1], h + ' traits');
+      assert.equal(Object.values(s.merged).reduce((n, a) => n + a.length, 0), want[h][2], h + ' merged'); assert.equal(Object.keys(s.folded).length, want[h][3], h + ' folded');
+      assert.equal((s.shared || []).length, shared[h], h + ' shared'); assert.equal(s.defaults.length, 2);
+      for (const id of s.defaults) assert(T.learnLevel(h, id) <= 10, h + ' default ' + id + ' arrives by L10');
+      for (const id of T.traitIds(h)) assert(T.learnLevel(h, id) >= 2, h + '/' + id + ' not before L2');
+      /* a merged id is on exactly when its host is worn */
+      for (const [host, ids] of Object.entries(s.merged)) for (const id of ids) { assert.equal(passiveOn({ traits: { [h]: [host] } }, h, id, 24), true, h + '/' + id + ' rides ' + host); assert.equal(passiveOn({ traits: { [h]: [s.traits.find(x => x !== host)] } }, h, id, 24), false); } }
+    assert.equal(T.nameOf('berserker', 'bzPrice'), 'RED FEAST'); assert.equal(T.nameOf('pyro', 'brand'), 'BRAND');
+    /* RANK SITES: each trait/merged/folded id of the four heroes has a trk('id') / K('id') / rk('id') in the source, bar the documented rankless riders */
+    const src = ['main.js', 'berserker.js', 'crouch-c.js'].map(f => fs.readFileSync(new URL('../src/' + f, import.meta.url), 'utf8')).join('');
+    const rankless = new Set(['phoenixTrail', 'skip', 'sunder', 'ossuary', 'graveProvides', 'bzSpinChop', 'parryCut']);   /* boolean riders / owed (parryCut shares counterLand with COUNTERSTROKE: scale after TRAITDATA-A merges) */
+    for (const h of Object.keys(want)) { const s = T.TRAIT_SPLIT[h]; for (const id of [...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat()]) if (!rankless.has(id)) assert(new RegExp("(trk|K|rk)[(]'" + id + "'[)]").test(src), h + '/' + id + ' has no rank site'); } }
 } finally { T.setTraitsShip(false); }
 assert.equal(T.traitsShip(), false);
 console.log('traits ok: flag-off identical for ' + HERO_IDS.length + ' heroes; knight/warden/ranger/geomancer core/traits/merged/folded/new/slots/ranks/rank sites/migrate/round-trip/shared/pvp/lab pass');

@@ -21,6 +21,7 @@
 //   learnAt: { id: level }   re-levels a trait's arrival (<= L18 so every trait reaches rank III at L20); core keeps its catalog level
 // An id a split hero's catalog has but this table lists NOWHERE is OFF while the flag is on (the cuts), so list every passive.
 import { SKILLS } from './progression-catalog.js';
+import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
 
 export const TRAITS_SHIP = false;
 let ship = TRAITS_SHIP;
@@ -110,11 +111,17 @@ export const NEW_TRAITS = [
   { id: 'geoMoss', hero: 'geomancer', name: 'MOSSBACK', desc: 'standing against a stone of hers mends her a little: the stone gives up three in a hundred of her health, then is bare', active: false, level: 8 },
 ];
 export const isNewTrait = (h, id) => NEW_TRAITS.some(n => n.hero === h && n.id === id);
+
+Object.assign(TRAIT_SPLIT, TRAIT_SPLIT_B);   /* claude/traitdata-b: its four heroes' rows live in traits-b.js */
+
 const NODE = {};   /* hero -> id -> catalog node (own lookup: no import of progression.js) */
 for (const n of SKILLS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
 for (const n of NEW_TRAITS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
 const splitOf = h => { const s = TRAIT_SPLIT[h]; return s && ((s.core && s.core.length) || (s.traits && s.traits.length)) ? s : null; };
 export const hasSplit = h => !!splitOf(h);
+/* a card name that differs from the catalog (split.names, shown only while the flag is on) and a row tag ('JET' / 'BLOODWORMS': split.tags) */
+export const nameOf = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return (ship && s && s.names && s.names[id]) || (ship && s && s.words && s.words[id] && s.words[id].name) || (n ? n.name : id); };
+export const tagOf = (h, id) => { const s = splitOf(h); return (s && s.tags && s.tags[id]) || ''; };
 
 /* what an id is for this hero: 'core' | 'trait' | 'merged' | 'folded' | 'shared' | 'retired' | 'cut' | null (not a passive of his) */
 export function kindOf(h, id) {
@@ -224,7 +231,7 @@ export function wearTrait(p, h, id, index, lv) {
 /* THE MENU ROWS (main.js skills TRAITS tab): core, then traits, then shared. tkind drives the label; level is the arrival level shown as 'LV n'. */
 export function traitRows(h) {
   const s = splitOf(h); if (!s) return [];
-  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, traitWord(h, id), { tkind, level: tkind === 'core' ? n.level : learnLevel(h, id), baseLevel: n.level }) : null; };
+  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, traitWord(h, id), { name: nameOf(h, id), tag: tagOf(h, id), tkind, level: tkind === 'core' ? n.level : learnLevel(h, id), baseLevel: n.level }) : null; };
   const out = [];
   for (const id of s.core) out.push(row(id, 'core'));
   for (const id of traitIds(h)) out.push(row(id, 'trait'));
@@ -246,8 +253,8 @@ export function traitUpText(h, from, to) {
   const s = splitOf(h), bits = [];
   const got = [...(s.traits || []), ...Object.keys(s.folded || {})].filter(id => learnLevel(h, id) > from && learnLevel(h, id) <= to && NODE[h][id]).sort((a, b) => learnLevel(h, a) - learnLevel(h, b));
   const core = (s.core || []).filter(id => NODE[h][id] && NODE[h][id].level > from && NODE[h][id].level <= to);
-  if (core.length) bits.push(core.length > 1 ? 'CORE: ' + traitWord(h, core[0]).name + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + traitWord(h, core[0]).name + '.');
-  if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + traitWord(h, got[0]).name + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + traitWord(h, got[0]).name + '.');
+  if (core.length) bits.push(core.length > 1 ? 'CORE: ' + nameOf(h, core[0]) + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + nameOf(h, core[0]) + '.');
+  if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + nameOf(h, got[0]) + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + nameOf(h, got[0]) + '.');
   const grow = RANK_AT.slice(1).filter(n => from < n && to >= n);
   if (grow.length) bits.push('YOUR TRAITS GROW (RANK ' + ROMAN[RANK_AT.indexOf(grow[grow.length - 1])] + ').');
   if (from < SECOND_TRAIT_SLOT_LEVEL && to >= SECOND_TRAIT_SLOT_LEVEL) bits.push('A SECOND TRAIT SLOT.');
