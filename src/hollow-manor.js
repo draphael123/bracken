@@ -6,7 +6,7 @@
    THE VERBS (src/manor-hands.js runs them; every one DRAWN):
      TURN YOUR BACK  a SHIFTING PANEL (a wall's doorway, a stair, a bookcase) has two states. It swaps ONCE when no hero has faced it for MOVE.unwatched s (the boo's
                      `watched` rule: in front of the hero's face, within MOVE.range px) and must be watched again before it can swap back. The built grid holds the
-                     permissive state (both states' open cells AIR, every stair step SOLID: what the reach and quality tools read); the hands set state A on a reset.
+                     open state B (what the reach and quality tools read); the hands set state A on a reset.
      KNOCK IT OUT    a POSSESSED SUIT (the `armour`, skin 'mnsuit') falls when its hold is gone: its GHOST (a wisp) flies to the nearest EMPTY SUIT (a rack, or the pile it
                      left) and stands it up again unless a blow LAYS IT TO REST in flight.
      LIGHT           a CANDELABRA (strike its stand: carry it, lit); WALL CANDLES lit or out (touch one with the flame: lit). SHADES will not enter a lit candle's light.
@@ -45,11 +45,11 @@ export function buildHollowManor({ painter, T, TS }) {
   const shelves = [], panels = [], candles = [], stands = [], racks = [], portraits = [], doors = [];
   /* A SHELF: a one-way gallery, balcony or table (the frames: tools/solid-islands.mjs reads them as hullZones) */
   const shelf = (x0, x1, y) => { fill(x0, x1, y, y, T.ONEWAY); shelves.push([x0, x1, y]); };
-  /* A SHIFTING PANEL: a = the cells SOLID in state A, b = the cells SOLID in state B (the other state's are AIR). The built grid: a's cells AIR, b's cells SOLID when b is a STAIR
-     (o.stair: the permissive state is the one that climbs), else AIR. The eye is where it is watched from (the middle of its cells). */
+  /* A SHIFTING PANEL: a = the cells SOLID in state A, b = the cells SOLID in state B (the other state's are AIR). The built grid holds STATE B, the open one (a moving door's
+     floor doorway open and its high one shut, the stair standing, the bookcase swung): what the reach and quality tools read, and no wall floats. The eye is where it is watched from. */
   const panel = (kind, a, b, o = {}) => { const cells = a.concat(b), ex = cells.reduce((s, c) => s + c[0], 0) / cells.length, ey = cells.reduce((s, c) => s + c[1], 0) / cells.length;
     const p = { id: 'ps' + panels.length, kind, a, b, eye: { x: ex * TS + 8, y: ey * TS + 8 }, ...o }; panels.push(p);
-    for (const [x, y] of a) set(x, y, T.AIR); for (const [x, y] of b) set(x, y, o.stair ? T.SOLID : T.AIR);
+    for (const [x, y] of a) set(x, y, T.AIR); for (const [x, y] of b) set(x, y, T.SOLID);
     ent('mnshift', Math.round(ex), Math.round(ey), { id: p.id, kind }); return p; };
   const col = (x, y0, y1) => { const c = []; for (let y = y0; y <= y1; y++) c.push([x, y]); return c; };
   const block = (x0, x1, y0, y1) => { const c = []; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) c.push([x, y]); return c; };
@@ -72,7 +72,7 @@ export function buildHollowManor({ painter, T, TS }) {
   sign(18, 29, MN_SAY.wisp);
   sign(25, 29, MN_SAY.shift);
   const door0 = movingDoor(28, 11, 30, 15);                                         /* THE MOVING DOOR (REQUIRED TURN): face away from it, and its doorway comes down */
-  portrait(32, 28); sign(30, 29, MN_SAY.portrait); coins([34, 29], [35, 29]);
+  portrait(32, 28); sign(30, 29, MN_SAY.portrait); coins([34, 29], [35, 29]); boo(42, 24, 'hallBoo');   /* the first boo: it drifts while your back is turned (the door taught you to turn it) */
   shelf(36, 40, 27); coins([37, 26], [39, 26]);                                      /* the servants' table */
   ground(46, 52, 28); suit(49, 27, 'daisSuit'); rack(51, 27); coins([47, 27]);
   shelf(53, 58, 25); coins([54, 24], [56, 24], [58, 24]);
@@ -82,7 +82,7 @@ export function buildHollowManor({ painter, T, TS }) {
   ground(60, 139, 30); sign(61, 29, MN_SAY.gallery);
   sign(66, 29, MN_SAY.poltergeist); polter(71, 24, 'galleryPolter');
   shelf(68, 74, 27); coins([70, 25], [72, 25]);
-  portrait(77, 28); coins([78, 29], [79, 29]);
+  portrait(77, 28); coins([78, 29], [79, 29]); suit(74, 29, 'portraitSuit'); rack(64, 29);
   sign(81, 29, MN_SAY.stair);
   /* THE SHIFTING STAIR (REQUIRED TURN): four steps up to the balcony appear only while nobody watches the place they stand */
   const stairCells = [].concat(block(84, 86, 28, 29), block(87, 89, 26, 29), block(90, 92, 24, 29), block(93, 95, 22, 29));
@@ -93,11 +93,11 @@ export function buildHollowManor({ painter, T, TS }) {
   suit(108, 29, 'lowSuit'); rack(115, 29); coins([111, 29], [113, 29], [117, 29], [118, 29]);   /* the low hall under the balcony: a suit, its rack, coins (a pocket that pays) */
   suit(104, 19, 'balconySuit'); rack(99, 19);
   /* SECRET ONE: the bookcase alcove hangs from the roof over the balcony; its bookcase swaps when nobody faces it */
-  fill(121, 129, 9, 12, T.SOLID); fill(129, 129, 13, 16, T.SOLID); fill(121, 129, 17, 17, T.SOLID);
-  const case1 = panel('bookcase', col(123, 13, 16), [], {});
-  shelf(117, 120, 18);                                                              /* a step up off the balcony to the alcove ledge */
-  ent('silver', 127, 16); coins([125, 16], [126, 16]);
-  ground(132, 139, 30); coins([134, 29]); shelf(133, 138, 27);
+  fill(120, 129, 9, 9, T.SOLID); fill(129, 129, 10, 13, T.SOLID); fill(120, 129, 14, 14, T.SOLID);
+  const case1 = panel('bookcase', col(123, 10, 13), [], {});
+  shelf(116, 119, 17);                                                              /* a step up off the balcony to the alcove's ledge */
+  ent('silver', 127, 13); coins([125, 13], [126, 13]);
+  ground(132, 139, 30); coins([134, 29]); shelf(133, 138, 27); polter(137, 22, 'stairPolter');
 
   // ================= 3. THE LONG GALLERY (140-209): REMIX - THE BLACKOUT =================
   roof(140, 209, 10);

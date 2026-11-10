@@ -974,5 +974,5 @@ export function markOf(e) {
   if (!MISSED.has(k)) { MISSED.add(k); console.warn('[marks] a windup with no row in src/marks.js: ' + k + ' - it wears no mark'); }
   return '';
 }
-Object.assign(MARK, { 'armour|thrustTell': '!', 'armour|cleaveTell': '!!', 'haunt|lungeTell': '!!', 'poltergeist|liftTell': '!' }); Object.assign(ANSWER, { 'armour|thrustTell': 'block', 'armour|cleaveTell': 'dodge', 'haunt|lungeTell': 'dodge', 'poltergeist|liftTell': 'block' }); Object.assign(HEIGHT, { 'armour|thrustTell': 'mid', 'armour|cleaveTell': 'high', 'haunt|lungeTell': 'mid', 'poltergeist|liftTell': 'mid' });   /* (claude/hollowmanor) THE HOLLOW MANOR: a suit's thrust and cleave, a shade's lunge, THE POLTERGEIST's lift */
+Object.assign(MARK, { 'armour|thrustTell': '!', 'armour|cleaveTell': '!!', 'haunt|lungeTell': '!!', 'poltergeist|liftTell': '!' }); Object.assign(ANSWER, { 'armour|thrustTell': 'block', 'armour|cleaveTell': 'dodge', 'haunt|lungeTell': 'dodge', 'poltergeist|liftTell': 'block' }); Object.assign(HEIGHT, { 'armour|thrustTell': 'high', 'armour|cleaveTell': 'high', 'haunt|lungeTell': 'high', 'poltergeist|liftTell': 'high' });   /* (claude/hollowmanor) THE HOLLOW MANOR: a suit's thrust and cleave, a shade's lunge, THE POLTERGEIST's lift */
 export const marksMissed = () => [...MISSED];

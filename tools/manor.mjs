@@ -134,8 +134,8 @@ const hitAt = (x, y, r = 4) => ({ l: x - r, r: x + r, t: y - r, b: y + r });
   setSt(s1.id, 'B'); const w3 = pan(REQUIRED.wing.panel); ok(!far('wing'), 'REQUIRED TURN (the nursery wing): its moving door holds the wing (col ' + REQUIRED.wing.far[0] + ')');
   P.x = at(222, 29)[0]; P.y = at(222, 29)[1]; P.face = 1; step(0.3); P.face = -1; step(MOVE.unwatched + 0.1); ok(G.read().panels[w3.id] === 'B' && far('wing'), 'turned from, it opens');
   /* the bookcase silver */
-  const c1 = pan(L0.mn.case1); P.x = at(119, 17)[0]; P.y = at(119, 17)[1]; P.face = 1; step(0.3); ok(!reach().jumpNear(127, 16), 'THE BOOKCASE seals SECRET ONE');
-  P.face = -1; step(MOVE.unwatched + 0.1); ok(G.read().panels[c1.id] === 'B' && reach().jumpNear(127, 16), 'turned from, the bookcase swings: SECRET ONE in reach');
+  const c1 = pan(L0.mn.case1); P.x = at(121, 13)[0]; P.y = at(121, 13)[1]; P.face = 1; step(0.3); ok(!reach().jumpNear(127, 13), 'THE BOOKCASE seals SECRET ONE');
+  P.face = -1; step(MOVE.unwatched + 0.1); ok(G.read().panels[c1.id] === 'B' && reach().jumpNear(127, 13), 'turned from, the bookcase swings: SECRET ONE in reach');
   /* the nursery */
   ok(!far('nursery'), 'THE SEALED NURSERY (SECRET TWO, col ' + REQUIRED.nursery.far[0] + ') is shut');
   for (const p of L0.mn.portraits.slice(0, 2)) G.strike(hitAt(p.x, p.y), P); ok(G.read().keys === 2 && !G.read().door && !far('nursery'), 'two portraits struck: two keys, still shut');
