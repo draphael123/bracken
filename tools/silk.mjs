@@ -122,7 +122,7 @@ const hitAt = (x, y, r = 4) => ({ l: x - r, r: x + r, t: y - r, b: y + r });
   ok(!reach().jumpNear(56, 28), 'the first sticky wall (col 52) seals the crypt door: nothing past it until it burns');
   const sc0 = L0.sk.sconces[0]; P.x = sc0.x - 6; P.y = sc0.y; G.strike({ l: sc0.x - 4, r: sc0.x + 4, t: sc0.y - 18, b: sc0.y - 10 }, P);
   ok(G.hasTorch(P), 'a SCONCE struck gives the hero a TORCH (' + TORCH.t + ' s)');
-  const w0 = W('sw0'); P.hasT = G.hasTorch(P); G.strike({ l: w0.x * TS + 2, r: w0.x * TS + 10, t: 26 * TS, b: 28 * TS }, P); step(0.6);
+  const w0 = W('sw0'); P.hasT = G.hasTorch(P); G.strike({ l: w0.x * TS + 2, r: w0.x * TS + 10, t: 30 * TS, b: 32 * TS }, P); step(0.6);
   ok(cell(L0, w0.x, 20) === T.AIR && G.read().walls[0] === 'gone', 'BURN: a torch-bearer\'s blow burns the sticky wall away (0.5 s)');
   ok(!far('cut') && G.cutAnchor(REQUIRED.cut.anchor) && far('cut'), 'REQUIRED CUT: the gallery ledge (col ' + REQUIRED.cut.far[0] + ') is out of reach with the bridge high, in reach once its stake is cut (the bridge swings down into a ramp)');
   ok(A('an1').hold.every(([x, y]) => cell(L0, x, y) === T.AIR) && A('an1').ramp.every(([x, y]) => cell(L0, x, y) === T.ONEWAY), 'the bridge\'s high cells gone, the ramp\'s real');
@@ -130,12 +130,12 @@ const hitAt = (x, y, r = 4) => ({ l: x - r, r: x + r, t: y - r, b: y + r });
   ok(!reach().jumpNear(282, 20), 'the strands\' sticky sheet (col 255) holds the cellar stair shut until it burns');
   G.burnWall('sw2'); step(0.6); ok(reach().jumpNear(282, 20) && reach().jumpNear(313, 19), 'burned, the road runs on to SHRINE TWO and the Mother\'s tier');
   /* walls without a torch */
-  G.reset(); P.x = at(50, 28)[0]; P.y = at(50, 28)[1]; G.show().torch.clear(); G.strike({ l: w0.x * TS + 2, r: w0.x * TS + 10, t: 26 * TS, b: 28 * TS }, P); step(0.6);
+  G.reset(); P.x = at(50, 32)[0]; P.y = at(50, 32)[1]; G.show().torch.clear(); G.strike({ l: w0.x * TS + 2, r: w0.x * TS + 10, t: 30 * TS, b: 32 * TS }, P); step(0.6);
   ok(cell(L0, w0.x, 20) === T.SOLID, 'struck WITHOUT a torch, sticky silk holds (STUCK, and the hint names the torch)');
   G.giveTorch(P); P.x = w0.x * TS - 4; step(0.7); ok(cell(L0, w0.x, 20) === T.AIR, 'and a torch-bearer who walks into it burns it too');
   G.show().torch.set(P, 0.05); step(0.1); ok(!G.hasTorch(P), 'the torch goes out (told) - relight at any sconce');
   /* the cocoon */
-  const c0 = A('an0'); const l1 = { t: 'spider', cnSkin: 'skling', x: at(42, 28)[0], y: 29 * TS, hp: 8, alive: true }, l2 = { t: 'spider', cnSkin: 'skling', x: at(43, 28)[0], y: 29 * TS, hp: 8, alive: true }; F.ens.push(l1, l2);
+  const c0 = A('an0'); const l1 = { t: 'spider', cnSkin: 'skling', x: at(42, 32)[0], y: 33 * TS, hp: 8, alive: true }, l2 = { t: 'spider', cnSkin: 'skling', x: at(43, 32)[0], y: 33 * TS, hp: 8, alive: true }; F.ens.push(l1, l2);
   G.strike(hitAt(c0.x, c0.y), P); step(1.0);
   ok(!l1.alive && !l2.alive && G.show().n.cocoonHits === 2, 'CUT: the first anchor drops its cocoon on the spiderling pair under it (' + FOE.cocoon + ' each)');
   F.ens.length = 0;

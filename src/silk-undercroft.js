@@ -28,7 +28,7 @@ export const SK = {
 };
 export const SECTIONS = [['THE CRYPT DOOR', 0, 60], ['THE HANGING HALL', 60, 140], ['THE EGG GALLERY', 140, 210], ["THE MOTHER'S STRANDS", 210, 274], ['THE CELLAR STAIR', 274, 288], ['THE CATHEDRAL WEB', 288, 340]];
 /* THE REQUIRED USES (tools/silk.mjs: without the verb the far side is out of reach, with it in reach) */
-export const REQUIRED = { bounce: { web: 'tw0', far: [33, 24] }, cut: { anchor: 'an1', far: [100, 17] }, burn: { wall: 'sw1', far: [175, 23] } };
+export const REQUIRED = { bounce: { web: 'tw0', far: [33, 28] }, cut: { anchor: 'an1', far: [100, 17] }, burn: { wall: 'sw1', far: [175, 23] } };
 
 export function buildSilkUndercroft({ painter, T, TS }) {
   const { W, H } = SK;
@@ -59,21 +59,22 @@ export function buildSilkUndercroft({ painter, T, TS }) {
   // ================= 1. THE CRYPT DOOR (0-59): TEACH =================
   fill(0, 0, 0, H - 1, T.SOLID); roof(0, 59, 14);
   ground(0, 12, 24); sign(2, 23, SK_SAY.start);                                     /* the last crypt step: from here the road goes DOWN */
-  ground(13, 18, 27); ground(19, 30, 31); coins([15, 26], [17, 26]);
-  ling(20, 30, 'doorLing');
-  sign(23, 30, SK_SAY.bounce); taut(27, 29, 31);                                    /* THE FIRST TAUT WEB: the shelf is six rows up - only the web throws you there (REQUIRED BOUNCE) */
-  coins([28, 27], [28, 25]);
-  ground(31, 37, 25); sign(33, 24, SK_SAY.cut);
-  anchor(36, 23, 'cocoon', { cocoon: { col: 42, top: 18, floor: 29 } });          /* THE FIRST ANCHOR, on the shelf's lip: cut it and the cocoon drops on the pair below */
-  ground(38, 59, 29); ling(41, 28, 'cocoonPair'); ling(43, 28, 'cocoonPair');
-  strand(44, 50, 25); coins([46, 24], [48, 24]);
-  sign(45, 28, SK_SAY.torch); sconce(47, 28);
-  sign(50, 28, SK_SAY.sticky); wall(52, 15, 28);                                    /* THE FIRST STICKY WALL, floor to roof: take the torch, burn it */
-  goo(54, 28, 5); ling(56, 28, 'gooLing'); coins([58, 28]);
+  ground(13, 18, 28); ground(19, 30, 35); coins([15, 27], [17, 27]);
+  ling(20, 34, 'doorLing');
+  sign(23, 34, SK_SAY.bounce); taut(27, 29, 35);                                    /* THE FIRST TAUT WEB: the shelf is six rows up - only the web throws you there (REQUIRED BOUNCE) */
+  coins([28, 31], [28, 29]);
+  ground(31, 37, 29); sign(33, 28, SK_SAY.cut);
+  anchor(36, 27, 'cocoon', { cocoon: { col: 42, top: 22, floor: 33 } });          /* THE FIRST ANCHOR, on the shelf's lip: cut it and the cocoon drops on the pair below */
+  ground(38, 57, 33); ling(41, 32, 'cocoonPair'); ling(43, 32, 'cocoonPair');
+  strand(44, 50, 29); coins([46, 28], [48, 28]);
+  sign(45, 32, SK_SAY.torch); sconce(47, 32);
+  sign(50, 32, SK_SAY.sticky); wall(52, 15, 32);                                    /* THE FIRST STICKY WALL, floor to roof: take the torch, burn it */
+  goo(53, 32, 4); ling(55, 32, 'gooLing'); ground(58, 59, 31); coins([58, 30]);
 
   // ================= 2. THE HANGING HALL (60-139): TEST =================
   roof(60, 139, 6);
   ground(60, 95, 29); sign(61, 28, SK_SAY.hall); sign(64, 28, SK_SAY.lurker);
+  fill(63, 64, 29, 33, T.AIR); fill(65, 75, 31, 33, T.AIR); taut(63, 64, 34); coins([71, 33], [72, 33], [73, 33], [74, 33], [75, 33]);   /* A BURIAL NICHE under the hall floor: drop in, its web throws you back out (a pocket that pays) */
   lurker(69, 7, 'hallLurker');                                                      /* THE LURKER taught over firm ground: the thread first */
   strand(70, 76, 24); coins([72, 23], [74, 23]);
   sign(75, 28, SK_SAY.sac); sac(78, 28);
@@ -85,15 +86,15 @@ export function buildSilkUndercroft({ painter, T, TS }) {
   spitter(91, 28, 'hallSpitter');
   ground(96, 139, 18);                                                              /* THE GALLERY LEDGE */
   ling(100, 17, 'galleryLings'); ling(103, 17, 'galleryLings'); coins([98, 17], [105, 17]);
-  lurker(110, 7, 'galleryLurker'); strand(106, 114, 15); coins([108, 14], [112, 14]);
-  taut(119, 121, 18); strand(122, 127, 11); ent('silver', 126, 10); coins([123, 10], [124, 10]);   /* SECRET ONE: a taut web up into the roof's nook */
+  lurker(110, 7, 'galleryLurker'); strand(106, 114, 15); coins([108, 14], [112, 14]); strand(62, 67, 25); strand(86, 91, 24);
+  taut(119, 121, 18); strand(122, 131, 11); ent('silver', 130, 10); coins([125, 10], [126, 10], [127, 10], [128, 10]);   /* SECRET ONE: a taut web up into the roof's nook */
   strand(128, 136, 15); spitter(134, 14, 'gallerySpitter'); ling(130, 17, 'galleryTail'); coins([137, 17]);
 
   // ================= 3. THE EGG GALLERY (140-209): REMIX =================
   roof(140, 209, 11);
   ground(140, 209, 24); sign(141, 23, SK_SAY.gallery);
   goo(144, 23, 6); ling(146, 23, 'gooPair'); ling(148, 23, 'gooPair');
-  strand(150, 157, 19); coins([152, 18], [155, 18]);
+  strand(150, 157, 19); coins([152, 18], [155, 18]); strand(141, 148, 19); strand(158, 165, 19); strand(199, 208, 19);
   sconce(163, 23); wall(168, 12, 23);                                               /* THE SEALED TUNNEL (REQUIRED BURN): roof to floor */
   coins([160, 23], [165, 23]);
   sign(171, 23, SK_SAY.spitter); strand(176, 184, 19); spitter(180, 18, 'ledgeSpitter'); sac(178, 23);
@@ -106,13 +107,13 @@ export function buildSilkUndercroft({ painter, T, TS }) {
   ground(210, 215, 24); sign(211, 23, SK_SAY.strands);
   pit(216, 250);
   strand(216, 222, 24); ling(219, 23, 'strandLing');
-  taut(225, 227, 24);                                                               /* a taut sheet in the gap: up to the high strand */
-  strand(229, 240, 17); lurker(236, 6, 'strandLurker'); coins([231, 16], [233, 16]);
-  taut(234, 235, 23); strand(236, 241, 23); ent('silver', 240, 22); coins([238, 22]);   /* SECRET TWO: a shelf in the net under the high strand; its own web throws you back up */
+  taut(225, 227, 23);                                                               /* a taut sheet in the gap: up to the high strand */
+  strand(229, 240, 16); lurker(236, 6, 'strandLurker'); coins([231, 15], [233, 15]);
   strand(243, 249, 19); ling(246, 18, 'strandLing2');
+  taut(243, 244, 24); strand(245, 250, 24); ent('silver', 250, 23); coins([247, 23], [248, 23], [249, 23]);   /* SECRET TWO: a shelf in the net under the strand; its own web throws you back up */
   fill(251, 252, 19, H - 1, T.SOLID); sconce(251, 18); spitter(252, 18, 'columnSpitter');   /* a crypt column out of the net: a sconce on it, a spitter on top */
   pit(253, 262); strand(253, 262, 18); wall(255, 6, 17);                           /* a sticky sheet hangs over the last strand: burn it mid-route */
-  ground(263, 285, 21); sac(267, 20); ling(270, 20, 'bankLings'); ling(272, 20, 'bankLings'); coins([264, 20], [274, 20]);
+  ground(263, 285, 21); strand(266, 272, 17); strand(275, 280, 17); sac(267, 20); ling(270, 20, 'bankLings'); ling(272, 20, 'bankLings'); coins([264, 20], [274, 20]);
 
   // ================= 5. THE CELLAR STAIR (274-287) =================
   sign(277, 20, SK_SAY.gate); ent('check', 282, 20);                               /* SHRINE TWO */
