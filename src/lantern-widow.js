@@ -19,17 +19,17 @@
    Every move: its own windup pose, release pose, sound (POSE, src/lantern-widow-hands.js). */
 
 export const WD = {
-  hp: 2600, w: 14, h: 30, markH: 46, speed: 70, hover: 12,
-  resist: 0.45, openMul: 2, openCap: 0.12, floorP1: 0.5,
+  hp: 1800, w: 14, h: 30, markH: 46, speed: 70, hover: 12,
+  resist: 0.55, openMul: 2, openCap: 0.16, floorP1: 0.5,
   veil: { tell: 0.6, act: 0.18, reach: 44, dmg: 14, cd: 1.4 },
   wail: { tell: 0.9, act: 0.7, r: 160, band: 20, dmg: 16, cd: 6.5 },
   hands: { tell: 1.0, rise: 0.8, n: 3, spread: 40, w: 12, dmg: 12, hold: 0.5, cd: 7.5 },
-  theft: { tell: 1.2, every: 15, first: 5, drown: 20 },
-  reclaim: { open: 3.5, r: 14, lanternDx: 12, lanternDy: 16 },
+  theft: { tell: 1.2, every: 28, first: 5, drown: 24 },
+  reclaim: { open: 4.5, r: 14, lanternDx: 12, lanternDy: 16 },
   perch: { glide: 1.0, stay: 4.5 },
   lament: 2.0,
-  p2: { lit: 8 },
-  march: { tell: 1.2, speed: 150, h: 20, dmg: 16, cd: 9 },
+  p2: { lit: 14 },
+  march: { tell: 1.2, speed: 150, h: 20, dmg: 12, cd: 12 },
   falseLight: { n: 2, orbit: 38, glow: 44 },
   glow: 96, glowStolen: 120,
 };

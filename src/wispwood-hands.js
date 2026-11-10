@@ -12,7 +12,7 @@ import { WW_SAY } from './ww-lines.js'; import * as ART from './redraw/wispwood_
 export const LIGHT = { lantern: 72, candle: 60, lamp: 80, stone: 80, thief: 44, hyst: 8, burn: 12, gutter: 2, relight: 15, lanternY: 14 };
 export const HAND = { reach: 112, near: 3, tell: 0.7, speed: 300, maxT: 0.6, sink: 0.3, dmg: 10, hold: 0.6, cd: 2.4, w: 10, h: 18 };
 export const THIEF = { hp: 18, sense: 200, senseY: 110, tell: 0.6, swoop: 0.5, swoopV: 260, flee: 120, escapeT: 14, escapeD: 520, stun: 1.2, drift: 40, dmg: 4, cd: 1.6 };
-export const MERE = { dmg: 16 };
+export const MERE = { dmg: 8 };
 const SOUND = { lit: s => (s.ui || s.tell)(), out: s => (s.puff || s.thud || s.tell)(), handTell: s => (s.tell)(), hand: s => (s.whoosh || s.tell)(), banish: s => (s.puff || s.thud)(),
   swoopTell: s => (s.tell)(), swoop: s => (s.whoosh || s.tell)(), steal: s => (s.ghostWake || s.moan || s.tell)(), back: s => (s.ui || s.tell)(), scorch: s => (s.sizzle || s.puff || s.thud)(),
   drag: s => (s.thud)(), relit: s => (s.ui || s.tell)() };
