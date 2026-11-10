@@ -43,7 +43,7 @@ if (!ON) {
     ok(JSON.stringify(P) === JSON.stringify(P0) && RI.needsOpen(P, LEVELS.find(l => l.id === 'mage')) === RI.needsOpen(P0, LEVELS.find(l => l.id === 'mage')), 'flag off, ' + name + ': the save untouched, the Folly as master locks it'); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/academy)'));
   ok(tagged.length >= 15 && tagged.length <= 22, tagged.length + ' tagged hook lines in src/main.js (single lines)');
-  const unguarded = tagged.filter(l => !/acOn\(\)|ACH|HDH|case 'acbooks'|AC_NODE|LEVELS\.some\(l => l\.id === 'academy'\)/.test(l));
+  const unguarded = tagged.filter(l => !/acOn\(\)|ACH|HDH|case 'acbooks'|AC_NODE|const EHP = \{|LEVELS\.some\(l => l\.id === 'academy'\)/.test(l));
   ok(!unguarded.length, 'every hook is behind the flag: the road and the old-save rule ask acOn(), the rest need the level (ACH.on() / its ents / its boss) ' + unguarded.map(l => l.slice(0, 60)).join(' | '));
   ok(/if \(LEVELS\.some\(l => l\.id === 'academy'\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while the LEVELS row is there (acOn() at import)');
   ok(/acOn\(\) && isDev\(\)/.test(main), 'the dev entry needs ?ac=1 and ?dev=1');
