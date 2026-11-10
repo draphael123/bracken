@@ -4,7 +4,7 @@
 // DMFOES edits to FAMILY flow in; the DM-only sets (high guard, helm, leap-swat) are the plan's lists, below.
 //   node tools/dir-mix.mjs [--live] [--quiet] [--act=1,2] [--strict]     (default: report-only, exit 0; --strict exits 1 on any miss in the --act set, default acts 1-2)
 import { readFileSync } from 'node:fs';
-import { DM } from '../src/dirmoves.js';
+import { DM, FAMILY_ADD } from '../src/dirmoves.js';
 const live = process.argv.includes('--live');   /* --live = DM.on false (what ships today); default = DM.on true (the flip state, the direction swaps applied) */
 DM.on = !live;
 const { LEVELS } = await import('../src/level.js');
@@ -22,7 +22,7 @@ for (const m of body.matchAll(/^\s*(\w+):\s*\{([^\n]*?)kinds:\s*\[([^\]]*)\]/gm)
   FAM[m[1]] = { key: ((m[2].match(/key:\s*\[([^\]]*)\]/) || [])[1] || '').match(/\w+/g) || [], kinds: m[3].match(/\w+/g) || [] };
 }
 if (!FAM.guard || !FAM.wing) throw new Error('dir-mix: could not read FAMILY from main.js');
-const famKinds = n => FAM[n].kinds;
+const famKinds = n => [...FAM[n].kinds, ...(DM.on ? Object.keys(FAMILY_ADD).filter(t => FAMILY_ADD[t] === n) : [])];   /* (claude/dmcharge) DM.on: the desert kinds DMFOES classified (FAMILY_ADD) count - imported, not re-read from main.js */
 
 // DM-only sets (plan section 8)
 const HIGH_GUARD = ['shield', 'soldier', 'heavy', 'watch', 'pike', 'turtle', 'tideguard', 'merrowbrute', 'glasssentinel', 'kingsshield', 'myconidguard', 'herbwarden', 'shieldguard'];   /* 8.2 (crab is in the guard family but is its own plunge job, 8.5) */

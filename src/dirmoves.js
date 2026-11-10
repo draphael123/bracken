@@ -220,3 +220,48 @@ export const FAMILY_ADD = {
   cutthroat: 'crew', ambusher: 'crew', slinger: 'shooter',
 };
 export const famNameOf = (famOf, t) => famOf[t] || (dmOn() ? FAMILY_ADD[t] : undefined);
+
+/* ==== (claude/dmcharge) ONE CHARGED GRAMMAR (plan section 5, 6): HOLD UP+X = the CHARGED LAUNCHER, HOLD DOWN+X = the CHARGED SLAM / SWEEP ====
+   Ground only. The press already swung (a tap), the hold winds, the direction is read LIVE (the aim glyph) and the one HELD AT RELEASE fires.
+   ONE step, no tiers: ready at HEAVY_START + DM.charge.step x the hero's scale. Let go before it = nothing more (SFX.ui). Every number is DM.charge. */
+export const CHARGE_HEROES_OFF = new Set(['ranger']);   /* her kneel draw IS hold + down: DMHEROES-C retunes it, so no directional charge for her yet */
+export const chargeOn = heroId => dmOn() && !CHARGE_HEROES_OFF.has(heroId);
+/* the direction a held key pair asks for: UP and DOWN both held = nothing */
+export const chargeDir = (up, down) => up && !down ? 'up' : down && !up ? 'down' : null;
+export const chargeReadyAt = (heroId, heavyStart) => heavyStart + DM.charge.step * (DM.charge.scale[heroId] || 1);
+export const chargeReady = (held, heroId, heavyStart) => held >= chargeReadyAt(heroId, heavyStart);
+/* the blow tags: arrays (verb first, then 'heavy': never stale; the family table reads arrays) */
+export const chargedBlow = dir => dir === 'up' ? ['rise', 'heavy'] : ['sweep', 'heavy'];
+export const chargedMul = dir => dir === 'up' ? DM.charge.launcherMul : DM.charge.slamMul;
+/* the live window of the swing's box (P.atk units), the same for both */
+export const CHARGE_LIVE = [0.02, 0.2];
+/* the box, per hero row (face = +1 / -1). Launcher: the hero's rise box +24 px tall; slam: ground AoE +-slamHalfW both sides.
+   WARDEN: POLE HOIST = the tip under the foe (narrow, reach), HAMSTRING = the shaft along the floor, ONE side, full reach. */
+export function chargeBox(dir, heroId, x, y, face, atk) {
+  if (atk < CHARGE_LIVE[0] || atk >= CHARGE_LIVE[1]) return null;
+  const f = face >= 0 ? 1 : -1, W = DM.charge.slamHalfW, mk = (a, b, t, bt) => f > 0 ? { l: x + a, r: x + b, t: y + t, b: y + bt } : { l: x - b, r: x - a, t: y + t, b: y + bt };
+  if (dir === 'up') {
+    if (heroId === 'warden') return mk(-4, 22, -68, 4);                          /* the tip under the foe: tall, narrow */
+    const r = heroId === 'paladin' ? 24 : heroId === 'pyro' || heroId === 'reaper' ? 28 : 22;
+    return mk(-4, r + 4, -64, 14);                                              /* the rise box (-40) + 24 tall */
+  }
+  if (heroId === 'warden') return mk(-6, 58, -8, 2);                             /* HAMSTRING: one side, the shaft at full reach */
+  return { l: x - W, r: x + W, t: y - 8, b: y + 2 };                             /* both sides, 2.5 tiles */
+}
+export const CHARGE_NAME = {
+  knight: { up: 'HEAVEN CUT', down: 'SHIELD DRIVE' }, warden: { up: 'POLE HOIST', down: 'HAMSTRING' },
+  _: { up: 'CHARGED LAUNCH', down: 'CHARGED SWEEP' },
+};
+export const chargeName = (heroId, dir) => (CHARGE_NAME[heroId] || CHARGE_NAME._)[dir];
+/* per-hero feel of the release: the knight HOPS after his cut (flows into air hits), the warden hoists / hamstrings at her reach */
+export const CHARGE_MOVE = {
+  knight: { up: { vx: 40, vy: -190 }, down: { vx: 200, vy: 0 } },
+  warden: { up: { vx: 20, vy: 0 }, down: { vx: 60, vy: 0 } },
+  _: { up: { vx: 30, vy: 0 }, down: { vx: 100, vy: 0 } },
+};
+export const chargeMove = (heroId, dir) => (CHARGE_MOVE[heroId] || CHARGE_MOVE._)[dir];
+/* the foe side of a charged blow, as plain numbers: weight of the launch (any common incl. beast/brute; elite 0.6; boss / mini never), the trip time (a beast 0.7) */
+export const launchWeight = e => !e || e.maxHp || e.mini ? 0 : e.elite ? 0.6 : 1.0;
+export const tripTime = (e, heavyBody) => heavyBody ? DM.charge.tripBeast : 1.1;
+/* the aim glyph: which way, and whether the one step is there */
+export const aimGlyph = (dir, ready) => ({ dir, ready: !!ready });
