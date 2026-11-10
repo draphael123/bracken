@@ -50,48 +50,48 @@ export function buildAcademy({ painter, T, TS }) {
   const ride = (x0, x1, y0, y1) => rigBands.push([x0, x1, y0, y1]);
 
   // ================= 0. THE ACADEMY STEPS (0-17) =================
-  ground(0, 11, F); ground(12, 17, F - 1);
-  sign(3, F - 1, AC_SAY.start); sign(8, F - 1, AC_SAY.rule);
-  foe('apprentice', 15, F - 2, 'stepsPupil', { face: -1 });
-  coins([6, F - 1], [10, F - 1]);
+  ground(0, 7, F + 4); ground(8, 12, F + 2); ground(13, 17, F);                     /* up the last steps from the Stair's road */
+  sign(3, F + 3, AC_SAY.start); sign(9, F + 1, AC_SAY.rule);
+  foe('apprentice', 16, F - 1, 'stepsPupil', { face: -1 });
+  coins([6, F + 3], [11, F + 1]);
 
   // ================= 1. THE LIBRARY (18-99): TEACH - LEVITATION =================
   room('library', 'levitate', 18, 99);
   ground(18, 99, F); fill(18, 99, 0, 13, T.SOLID);                                  /* the library's ceiling: a tall hall of stacks */
   lectern(22, F - 1, 'levitate', 'library'); sign(20, F - 1, AC_SAY.library);
-  stack(27, 29, 36); stack(34, 36, 33); stack(41, 43, 30); fill(44, 56, 30, 30, T.SOLID);   /* THE STACKS, each higher, to THE READING GALLERY (a shelf off the third stack) */
-  coins([28, 35], [35, 32], [42, 29], [48, 29], [52, 29]);
+  stack(27, 29, 36); stack(34, 36, 32); stack(41, 43, 28); fill(44, 56, 26, 26, T.SOLID);   /* THE STACKS, each higher, to THE READING GALLERY (a shelf off the third stack) */
+  coins([28, 35], [35, 31], [42, 27], [48, 25], [52, 25]);
   foe('apprentice', 38, F - 1, 'libPupil', { face: -1 });
-  foe('acflock', 50, 24, 'libFlock');                                              /* THE FIRST FLOCK, over the gallery */
+  foe('acbooks', 50, 21, 'libFlock');                                              /* THE FIRST FLOCK, over the gallery */
   sign(57, F - 1, AC_SAY.archive); well(58, 67, 'THE ARCHIVE');                     /* THE ARCHIVE PIT: float over it (or ride the reading desk) */
   ent('mover', 59, 34, { len: 3, range: 5, speed: 30 });                           /* A DRIFTING READING DESK over the pit */
   stack(70, 72, 20); ent('silver', 71, 19); coins([71, 18]);                       /* SECRET ONE: the top shelf of the tallest stack (float to it from the desk / the next stack) */
   stack(76, 78, 28); coins([77, 27]);
-  foe('broom', 74, F - 1, 'libBroom', { face: -1 }); foe('acflock', 80, 22, 'libFlock2');
+  foe('broom', 74, F - 1, 'libBroom', { face: -1 }); foe('acbooks', 80, 22, 'libFlock2');
   sign(68, F - 1, AC_SAY.flock);
-  stack(82, 83, 35); fill(86, 95, 30, 30, T.SOLID);                                 /* the landing shelf by the door */
-  fill(96, 99, 14, F - 1, T.SOLID); fill(96, 99, 27, 29, T.AIR);                    /* THE EAST WALL: the only way on is the high door (rows 27-29) */
+  stack(82, 83, 34); fill(86, 95, 26, 26, T.SOLID);                                 /* the landing shelf by the door */
+  fill(96, 99, 14, F - 1, T.SOLID); fill(96, 99, 23, 25, T.AIR);                    /* THE EAST WALL: the only way on is the high door (rows 23-25) */
   foe('armour', 90, F - 1, 'libArmour', { face: -1 });
-  fill(97, 98, 37, 39, T.AIR); coins([97, 39], [98, 39], [98, 38]);                /* THE CARREL: an alcove in the east wall's foot ... */
-  rune(93, F - 1, [[96, 37], [96, 38], [96, 39]]);                                  /* ... behind a shutter its rune lifts */
+  fill(96, 98, 37, 39, T.AIR); coins([97, 39], [98, 39], [98, 38]);                /* THE CARREL: an alcove in the east wall's foot ... */
+  rune(93, F - 1, [[96, 37], [96, 38], [96, 39]]);                                  /* ... behind a shutter its rune lifts (open in the built grid: the hands close it) */
   ride(23, 95, 18, 39);                                                             /* LEVITATION (the reach model's ride band) */
 
   // ================= 2. THE LECTURE HALL (100-179): DEVELOP - BLINK =================
   room('lecture', 'blink', 100, 179);
-  fill(100, 179, 0, 26, T.SOLID);                                                   /* the hall's ceiling: the rails run floor to ceiling */
-  ground(100, 107, 30); lectern(104, 29, 'blink', 'lecture'); sign(101, 29, AC_SAY.lecture);
-  ground(108, 111, 32); ground(112, 115, 34); ground(116, 119, 36); ground(120, 123, 38);   /* THE TIERED BENCHES, down to the lecture floor */
-  coins([110, 31], [114, 33], [118, 35]);
-  ground(124, 149, F); foe('imp', 121, 30, 'benchImp');
+  fill(100, 179, 0, 21, T.SOLID);                                                   /* the hall's ceiling: the rails run floor to ceiling */
+  ground(100, 107, 26); lectern(104, 25, 'blink', 'lecture'); sign(101, 25, AC_SAY.lecture);
+  ground(108, 110, 28); ground(111, 113, 30); ground(114, 116, 32); ground(117, 119, 34); ground(120, 123, 37);   /* THE TIERED BENCHES, down to the lecture floor */
+  coins([109, 27], [112, 29], [115, 31], [118, 33]);
+  ground(124, 149, F); foe('imp', 121, 28, 'benchImp');
   sign(126, F - 1, AC_SAY.duel);
-  rail(130, 27, F - 1);                                                             /* RAIL ONE: blink through */
+  rail(130, 22, F - 1);                                                             /* RAIL ONE: blink through */
   foe('apprentice', 135, F - 1, 'duel', { face: 1 }); foe('apprentice', 141, F - 1, 'duel', { face: -1 });   /* AN APPRENTICE DUEL behind the rails */
   coins([133, 39], [143, 39]);
-  rail(146, 27, F - 1);                                                             /* RAIL TWO */
+  rail(146, 22, F - 1);                                                             /* RAIL TWO */
   well(150, 156, 'THE ORCHESTRA PIT'); coins([153, 34]);                            /* jump, then blink across */
-  ground(157, 179, F); rail(162, 27, F - 1);                                        /* RAIL THREE, past the pit */
-  fill(164, 169, 41, 42, T.AIR); coins([165, 42], [166, 42], [168, 42]);            /* THE PREP CELLAR under the floor ... */
-  rune(163, F - 1, [[166, 40], [167, 40]]);                                         /* ... its trapdoor lifts for the rune */
+  ground(157, 179, F); rail(162, 22, F - 1);                                        /* RAIL THREE, past the pit */
+  fill(164, 169, 41, 42, T.AIR); fill(166, 167, 40, 40, T.AIR); coins([165, 42], [166, 42], [168, 42]);   /* THE PREP CELLAR under the floor ... */
+  rune(163, F - 1, [[166, 40], [167, 40]]);                                         /* ... its trapdoor lifts for the rune (open in the built grid: the hands close it) */
   foe('armour', 168, F - 1, 'hallArmour', { face: -1 }); foe('bat', 158, 30, 'hallBat', { perch: true });
   ent('check', 172, F - 1);                                                         /* SHRINE ONE */
   coins([176, 39]);
@@ -104,26 +104,28 @@ export function buildAcademy({ painter, T, TS }) {
   fill(200, 202, 37, 37, T.SOLID); hull.push([200, 202, 37, 37]); coins([201, 36]);                  /* FLOATING STONES: a breath between chains */
   ent('mover', 213, 36, { len: 3, range: 3, vert: true, speed: 24 });                               /* a summoned stone, bobbing */
   fill(226, 228, 36, 36, T.SOLID); hull.push([226, 228, 36, 36]); coins([227, 35]);
-  foe('imp', 207, 30, 'wellImp'); foe('acflock', 220, 28, 'wellFlock');
-  ground(236, 249, F);
-  foe('apprentice', 240, F - 1, 'yardPupil', { face: -1 }); foe('broom', 247, F - 1, 'yardBroom', { face: -1 });
-  fill(241, 246, 41, 42, T.AIR); ent('silver', 245, 42); coins([242, 42]);        /* SECRET TWO: the summoners' cellar ... */
-  rune(239, F - 1, [[242, 40], [243, 40]]);                                        /* ... under a trapdoor */
-  ride(186, 238, 33, 39);                                                           /* CONJURE STEP over the well */
+  foe('imp', 207, 30, 'wellImp'); foe('acbooks', 220, 28, 'wellFlock');
+  const B = F - 4;                                                                   /* THE FAR BANK stands higher: you build UP to it */
+  ground(236, 249, B);
+  foe('apprentice', 240, B - 1, 'yardPupil', { face: -1 }); foe('broom', 247, B - 1, 'yardBroom', { face: -1 });
+  fill(241, 246, B + 1, B + 2, T.AIR); fill(242, 243, B, B, T.AIR); coins([242, B + 2], [244, B + 2], [245, B + 2]);   /* THE SUMMONERS' CELLAR ... */
+  rune(239, B - 1, [[242, B], [243, B]]);                                          /* ... under a trapdoor (open in the built grid: the hands close it) */
+  fill(213, 215, 25, 25, T.SOLID); hull.push([213, 215, 25, 25]); ent('silver', 214, 24);   /* SECRET TWO: the high summoned stone - climb to it on your own steps (jump off one, conjure at the top) */
+  ride(186, 238, 23, 39);                                                           /* CONJURE STEP over the well (and up: a step at each jump's top is a stair) */
 
   // ================= 4. THE EXAM HALL (250-299): EXAM - EVERY LESSON, FAST =================
   room('exam', null, 250, 299);                                                      /* the lecterns here swap the spell as you go */
-  fill(250, 299, 0, 21, T.SOLID);
-  ground(250, 259, F); lectern(252, F - 1, 'levitate', 'exam'); sign(250, F - 1, AC_SAY.exam);
-  foe('apprentice', 256, F - 1, 'examPupil', { face: -1 });
-  fill(260, 261, 28, F - 1, T.SOLID);                                               /* QUESTION ONE: a wall to float over */
-  ground(262, 279, F); lectern(264, F - 1, 'blink', 'exam');
-  foe('armour', 268, F - 1, 'examArmour', { face: -1 });
-  rail(272, 22, F - 1);                                                             /* QUESTION TWO: a rail to blink */
-  lectern(276, F - 1, 'conjure', 'exam'); coins([274, 39]);
-  well(280, 289, 'THE EXAM GAP'); foe('acflock', 285, 30, 'examFlock');              /* QUESTION THREE: a gap to build over */
-  ground(290, 299, F); sign(292, F - 1, AC_SAY.gate); ent('check', 296, F - 1);     /* SHRINE TWO */
-  ride(253, 263, 26, 39); ride(266, 278, 39, 39); ride(277, 291, 34, 39);
+  fill(250, 299, 0, 17, T.SOLID);
+  ground(250, 259, B); lectern(252, B - 1, 'levitate', 'exam'); sign(250, B - 1, AC_SAY.exam);
+  foe('apprentice', 256, B - 1, 'examPupil', { face: -1 });
+  fill(260, 261, 24, B - 1, T.SOLID);                                               /* QUESTION ONE: a wall to float over */
+  ground(262, 279, B); lectern(264, B - 1, 'blink', 'exam');
+  foe('armour', 268, B - 1, 'examArmour', { face: -1 });
+  rail(272, 18, B - 1);                                                             /* QUESTION TWO: a rail to blink */
+  lectern(276, B - 1, 'conjure', 'exam'); coins([274, B - 1]);
+  well(280, 289, 'THE EXAM GAP'); fill(280, 289, B, F - 1, T.AIR); foe('acbooks', 285, 27, 'examFlock');   /* QUESTION THREE: a gap to build over */
+  ground(290, 293, B); ground(294, 299, F); sign(291, B - 1, AC_SAY.gate); ent('check', 296, F - 1);   /* SHRINE TWO, down the hall's last steps */
+  ride(253, 263, 22, B - 1); ride(266, 278, B - 1, B - 1); ride(277, 291, 30, B - 1);
 
   // ================= 5. THE EXAMINATION (300-339): THE HEADMISTRESS =================
   const A = AC.arena;
@@ -138,7 +140,7 @@ export function buildAcademy({ painter, T, TS }) {
     pit: A.pit.map(([a, b]) => [a, b]), ledges: A.ledges.map(([a, b]) => [a, b]), deskY: 35 * TS, ceil: 23 * TS };
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: F - 1 }, pools: [], falls: [],
+    W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: F + 3 }, pools: [], falls: [],
     arena, academy: true,
     ac: { rooms, lecterns, rails, wells, runes, catchY: AC.catchY, sections: SECTIONS },
     calm: [[0, W - 1, 0, H - 1]], noCoin: [[A.x0, W - 1, 0, H - 1]],

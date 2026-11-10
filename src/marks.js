@@ -971,4 +971,4 @@ export function markOf(e) {
   return '';
 }
 export const marksMissed = () => [...MISSED];
-Object.assign(MARK, { 'acflock|gatherTell': '!' }); Object.assign(ANSWER, { 'acflock|gatherTell': 'block' }); Object.assign(HEIGHT, { 'acflock|gatherTell': 'high' });   /* (claude/academy) A SPELLBOOK FLOCK's stream: a yellow ! (a block scatters it), at head height */
+Object.assign(MARK, { 'acbooks|gatherTell': '!' }); Object.assign(ANSWER, { 'acbooks|gatherTell': 'block' }); Object.assign(HEIGHT, { 'acbooks|gatherTell': 'high' });   /* (claude/academy) A SPELLBOOK FLOCK's stream: a yellow ! (a block scatters it), at head height */

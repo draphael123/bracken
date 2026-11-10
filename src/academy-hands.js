@@ -41,7 +41,7 @@ export function makeAcademyHands(ctx) {
   H.restoreCell = (x, y) => { const L0 = L(), k = y * L0.W + x; if (!S.cells.has(k)) return; ctx.cellSet(x, y, S.cells.get(k)); S.cells.delete(k); };
   H.reset = () => { if (!H.on()) { S = null; return; }
     if (S && S.L === L()) for (const [k, v] of S.cells) { const L0 = L(); ctx.cellSet(k % L0.W, Math.floor(k / L0.W), v); }
-    S = fresh(); S.L = L(); };
+    S = fresh(); S.L = L(); const G = ac(); if (G) for (const r of G.runes) for (const [x, y] of r.cells) H.setCell(x, y, ctx.T.SOLID); };   /* THE SHUTTERS: open in the built grid (the reach and quality tools read the secret), shut in play until the rune is struck */
   /* ---------------- A HERO'S CANTRIP ---------------- */
   const st = p => { if (!S.hero.has(p)) S.hero.set(p, { spell: null, room: null, floatT: 0, floated: false, blinkCd: 0, railT: -9, stepCd: 0, stepT: -9, onStep: false }); return S.hero.get(p); };
   H.state = p => (S ? st(p) : null);
@@ -121,9 +121,9 @@ export function makeAcademyHands(ctx) {
   const hitBox = (hb, x, y, r) => hb.l < x + r && hb.r > x - r && hb.t < y + r && hb.b > y - r;
   H.strike = (hb, by) => { if (!H.on() || !hb) return; if (!S) H.reset(); const G = ac(), who = by || (ctx.hero && ctx.hero());
     if (who) for (const c of G.lecterns) if (lit(c) && hitBox(hb, c.x, c.y - 10, 10)) { const rm = roomOf(who.x); H.teach(who, c.spell, rm ? rm.id : c.room); }
-    for (const r of G.runes) if (!S.runes.has(r.id) && hitBox(hb, r.x, r.y - 10, 10)) { S.runes.add(r.id); for (const [x, y] of r.cells) H.setCell(x, y, ctx.T.AIR); S.n.runes++; snd('rune'); say(r.x, r.y - 28, AC_SAY.lifted, '#ffe9a0'); } };
+    for (const r of G.runes) if (!S.runes.has(r.id) && hitBox(hb, r.x, r.y - 10, 10)) { S.runes.add(r.id); for (const [x, y] of r.cells) H.restoreCell(x, y); S.n.runes++; snd('rune'); say(r.x, r.y - 28, AC_SAY.lifted, '#ffe9a0'); } };
   /* ---------------- THE SPELLBOOK FLOCK ---------------- */
-  H.spawn = (e, base) => { if (e.t !== 'acflock') return null; return { ...base, t: 'acflock', w: 18, h: 12, hp: FLOCK.hp, maxHp: FLOCK.hp, noGrav: true, mode: 'wheel', modeT: 0, hx: base.x, hy: base.y - 8, y: base.y - 8, squad: e.squad, cd: 0.6, anim: 0 }; };
+  H.spawn = (e, base) => { if (e.t !== 'acbooks') return null; return { ...base, t: 'acbooks', w: 18, h: 12, hp: FLOCK.hp, maxHp: FLOCK.hp, noGrav: true, mode: 'wheel', modeT: 0, hx: base.x, hy: base.y - 8, y: base.y - 8, squad: e.squad, cd: 0.6, anim: 0 }; };
   H.takeFlock = (e, dmg) => (e.mode === 'scattered' ? dmg * 2 : dmg);
   H.flock = (e, dt) => { if (!S) H.reset(); e.anim += dt; e.modeT -= dt; e.cd = Math.max(0, e.cd - dt);
     if (e.mode === 'scattered') { if (e.modeT <= 0) { e.mode = 'regroup'; e.modeT = FLOCK.regroup; } return; }
