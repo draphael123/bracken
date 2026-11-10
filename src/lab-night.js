@@ -150,6 +150,8 @@ function safeX(P, cols, w, lo, hi) {
   for (let d = 4; d <= 80; d += 4) for (const s of [-1, 1]) { const x = P.x + s * d; if (x >= lo && x <= hi && !bad(x)) return x; }
   return null;
 }
+/* GREED (src/boss-greed.js): blows outside an opening feed a told reprisal. The hands stop one short of the count and stand clear of the ring while it closes (as the Mother Cap's and the ground hands do). Returns { hold, flee, out } */
+const greedOf = (BK, e) => { const G = BK.greed; if (!G) return { hold: false, flee: false, out: 0 }; const out = (G.reach || 60) + (e.w || 20) / 2; return { hold: G.open(e) !== true && G.count(e) >= G.limit(e) - 1, flee: e.greedT > 0, out }; };
 /* a blow that can be blocked: the shield heroes hold C toward it; the others step out of its reach */
 const guardOrStep = (c, from) => { const { P, k } = c; if (c.shielded) { k.block = true; P.face = Math.sign(from - P.x) || P.face; return true; } k[P.x >= from ? 'right' : 'left'] = true; return false; };
 const platAround = (c, A) => { const ps = platformsOf(c.BK, c.T, Math.floor(A.x0 / TS) - 1, Math.ceil(A.x1 / TS) + 1, Math.floor((A.y0 !== undefined ? A.y0 : A.floor - 400) / TS), Math.floor(A.floor / TS) + 4); return platUnder(ps, c.P); };
@@ -166,7 +168,7 @@ export function headmistressHands(c) {
   const chalkCols = S.sigils.filter(s => s.t > 0.04);
   const go = x => { if (Math.abs(x - P.x) > 2.5) { const d = x > P.x ? 1 : -1, nx = P.x + d * 8; if (chalkCols.some(s => Math.abs(nx - s.x) < 20 && Math.abs(P.x - s.x) >= 20)) return; k[d > 0 ? 'right' : 'left'] = true; } };   /* (never a step INTO a chalk circle) */
   const jump = n => { if ((P.ground || P.onMover) && !(P.labJump > 0)) { BK.press('jump'); P.labJump = n; } };
-  let swing = false, dbg = ''; const done = () => { holdJump(c); return { swing, dbg }; };
+  const gr = greedOf(BK, e); let swing = false, dbg = '', answer = false; const done = () => { holdJump(c); return { swing: swing && !(gr.hold && !open && !answer), dbg }; };
   const rails = ACH.rails ? ACH.rails() : [], walls = rails.map(r => r.x);
   const lecs = (L.ac.lecterns || []).filter(l => L.arena.lecterns.includes(l.id)), lecOf = sp => lecs.find(l => l.spell === sp);
   const galleries = G.galleries.map(([a, b]) => ({ x0: a, x1: b, cx: (a + b) / 2 })), gal = galleries.slice().sort((a, b) => Math.abs(a.cx - e.x) - Math.abs(b.cx - e.x))[0];
@@ -177,6 +179,7 @@ export function headmistressHands(c) {
   { const cols = S.sigils.filter(s => s.t > 0.04); if (cols.length) { const pl = platAround(c, A), x = safeX(P, cols, 20, pl ? pl.px0 + 4 : A.x0 + 10, pl ? pl.px1 - 4 : A.x1 - 10); if (x !== null) { go(x); dbg = 'chalk'; return done(); } } }   /* chalk: out of the circles (their columns fall the height of the hall) */
   for (const b of S.bolts) if ((P.x - b.x) * b.dir > 0 && Math.abs(P.x - b.x) < 70 && Math.abs((P.y - 10) - b.y) < 22) { if (c.shielded && Math.abs(P.x - b.x) < 40) { k.block = true; P.face = -b.dir; } else jump(24); dbg = 'bolt'; return done(); }   /* the bolt: jumped as it comes, or blocked */
   if (m === 'rulerTell' && Math.abs(P.x - e.x) < HM.ruler.reach + 14 && Math.abs(P.y - e.y) < 40) { guardOrStep(c, e.x); dbg = 'ruler'; return done(); }
+  if (gr.flee && !open && Math.abs(P.x - e.x) < gr.out + 18 && Math.abs(P.y - e.y) < 70) { go(e.x + (P.x >= e.x ? 1 : -1) * (gr.out + 30)); dbg = 'greed-ring'; return done(); }   /* the reprisal's ring is closing on her: stand clear */
   /* ---------- AN OPENING: strike her ---------- */
   if (open) {
     const side = P.x < e.x ? -1 : 1;
@@ -199,13 +202,14 @@ export function headmistressHands(c) {
   /* ---------- ANSWER IT ---------- */
   if (lesson === 'levitate') {
     dbg = 'lev';
-    if (ph === 4 && !inGal) {   /* the finale: she waits at her station - float up BESIDE her from the floor under it (a blow in the air counts), no gallery needed */
+    if (ph === 4 && !inGal) { answer = true;   /* the finale: she waits at her station - float up BESIDE her from the floor under it (a blow in the air counts), no gallery needed */
       const tx = e.x + (P.x < e.x ? -1 : 1) * (reach - 8), dx = e.x - P.x;
       if (P.ground) { P.labFloat = false; if (P.y > e.y + 8) { go(tx); if (Math.abs(P.x - tx) < 8) { BK.press('jump'); P.labFloat = true; k.jump = true; } } else { P.face = Math.sign(dx) || P.face; go(tx); if (Math.abs(dx) < reach + 6 && P.atk < 0 && !tired) swing = true; } return done(); }
       k.jump = !!P.labFloat && P.y > e.y + 2; go(tx); if (Math.abs(dx) < reach + 8 && Math.abs(P.y - e.y) < 32 && P.atk < 0 && !tired) { P.face = Math.sign(dx) || P.face; swing = true; }
       return done(); }
     if (inGal) { P.labFloat = false; const dx = e.x - P.x; P.face = Math.sign(dx) || P.face;
       if (Math.abs(dx) > reach - 4) go(clamp(e.x - Math.sign(dx) * (reach - 6), inGal.x0 + 4, inGal.x1 - 4));
+      answer = S.books.filter(b => !b.dead).length <= HM.shield.pass;   /* (two shield books or fewer: the next blow is the answer) */
       if (Math.abs(dx) < reach + 6 && Math.abs(e.y - P.y) < 30 && P.atk < 0 && !tired) swing = true;
       return done(); }
     if (P.ground) {
@@ -221,7 +225,7 @@ export function headmistressHands(c) {
   if (lesson === 'blink') {
     dbg = 'blink'; const rail = rails[0]; if (!rail) { go(G.mid); return done(); }
     const rx = rail.x * TS, front = e.face || 1, frontX = front > 0 ? rx + TS + 8 : rx - 8, back = Math.sign(P.x - e.x) === -front;   /* out past the rail, on the side she faces */
-    if (back && Math.abs(P.x - e.x) < 70 && P.ground) { dbg = 'blink-hit'; P.face = Math.sign(e.x - P.x) || P.face; const d = Math.abs(P.x - e.x);   /* behind her: her back, inside the window */
+    if (back && Math.abs(P.x - e.x) < 70 && P.ground) { dbg = 'blink-hit'; answer = true; P.face = Math.sign(e.x - P.x) || P.face; const d = Math.abs(P.x - e.x);   /* behind her: her back, inside the window */
       if (d > reach - 6) go(e.x - front * (reach - 8)); else if (P.atk < 0 && !tired) swing = true; return done(); }
     const outside = front > 0 ? P.x > rx + TS : P.x < rx;
     if (!outside) { dbg = 'blink-to-front'; const r = nv({ x: frontX, y: floorY, tol: 3 }); if (r.stuck) go(frontX); return done(); }
@@ -231,7 +235,7 @@ export function headmistressHands(c) {
     return done();
   }
   if (lesson === 'conjure') {
-    dbg = 'conj'; const stg = S.pitStage || 0, pit = G.pit[Math.max(0, Math.min(G.pit.length - 1, (stg || 1) - 1))], rimL = pit[0] * TS, rimR = (pit[1] + 1) * TS;
+    dbg = 'conj'; answer = true; const stg = S.pitStage || 0, pit = G.pit[Math.max(0, Math.min(G.pit.length - 1, (stg || 1) - 1))], rimL = pit[0] * TS, rimR = (pit[1] + 1) * TS;
     const left = Math.abs(e.x - rimL) < Math.abs(e.x - rimR), rimX = left ? rimL - 8 : rimR + 8, onStepNow = ACH.onStep(P);
     if ((m === 'dispelTell' || m === 'dispel') && P.ground && onStepNow) { if (e.modeT < 0.3) jump(22); return done(); }   /* the dispel: in the air when the steps go */
     if (S.tellStage && P.ground && P.y > floorY - 6) { const p0 = G.pit[S.tellStage - 1]; if (P.x > p0[0] * TS - 4 && P.x < (p0[1] + 1) * TS + 4) { go(rimX); dbg = 'leave-floor'; return done(); } }   /* the floor that flickers goes: off it */
@@ -265,7 +269,7 @@ export function lanternWidowHands(c) {
   const G = S.G, m = e.mode || '', floorY = G.floorY, tired = P.labRest || (P.st || 0) < 14, open = m === 'reel' && e.modeT > 0, L = BK.L;
   const go = x => { if (Math.abs(x - P.x) > 2.5) k[x > P.x ? 'right' : 'left'] = true; };
   const jump = n => { if ((P.ground || P.onMover) && !(P.labJump > 0)) { BK.press('jump'); P.labJump = n; } };
-  let swing = false, dbg = ''; const done = () => { holdJump(c); return { swing, dbg }; };
+  const gr = greedOf(BK, e); let swing = false, dbg = '', answer = false; const done = () => { holdJump(c); return { swing: swing && !(gr.hold && !open && !answer), dbg }; };
   const nv = (x, y, o = {}) => navStep(c, x, y, { y0: 6, ...o });
   const lp = lanternAt(e), perch = S.perchI >= 0 ? G.perches[S.perchI] : null;
   const lamps = (L.ww && L.ww.lamps || []).filter(l => G.lamps.includes(l.id));
@@ -275,6 +279,7 @@ export function lanternWidowHands(c) {
   { const cols = S.spots.filter(s => s.t > 0.1); if (cols.length) { const pl = platAround(c, A), x = safeX(P, cols, 20, pl ? pl.px0 + 4 : A.x0 + 10, pl ? pl.px1 - 4 : A.x1 - 10); if (x !== null) { go(x); dbg = 'hands'; return done(); } } }   /* the hands: out of the ripples */
   for (const q of S.marches) if (P.ground && P.y > floorY - 22 && (P.x - q.x) * q.dir > -8 && Math.abs(P.x - q.x) < 64) { jump(24); dbg = 'march'; return done(); }   /* the march: jumped */
   if (m === 'veilTell' && Math.abs(P.x - e.x) < WD.veil.reach + 14 && Math.abs(P.y - e.y) < 50 && Math.sign(P.x - e.x) === (e.face || 1)) { guardOrStep(c, e.x); dbg = 'veil'; return done(); }
+  if (gr.flee && !open && Math.abs(P.x - e.x) < gr.out + 18 && Math.abs(P.y - e.y) < 70) { go(e.x + (P.x >= e.x ? 1 : -1) * (gr.out + 30)); dbg = 'greed-ring'; return done(); }
   /* ---------- the stolen light: reel her in ---------- */
   if (open) {   /* RECLAIMED: she reels low - strike her */
     const side = P.x < e.x ? -1 : 1;
@@ -286,7 +291,7 @@ export function lanternWidowHands(c) {
   if (S.stolen && S.G) {
     dbg = 'stolen'; const gliding = m === 'glide' || m === 'perch', tx = gliding || !perch ? lp.x : lp.x, ty = m === 'glide' && perch ? perch.y : e.y;
     const on = P.x > lp.x - reach - 4 && P.x < lp.x + reach + 4 && Math.abs(lp.y - (P.y - 14)) < 26;
-    if (on && P.atk < 0 && !tired) { P.face = Math.sign(lp.x - P.x) || P.face; swing = true; dbg = 'reclaim'; return done(); }
+    if (on && P.atk < 0 && !tired) { P.face = Math.sign(lp.x - P.x) || P.face; swing = true; answer = true; dbg = 'reclaim'; return done(); }
     const gx = m === 'glide' && perch ? perch.x : lp.x, spot = gx + (P.x < gx ? -(reach - 8) : reach - 8);
     const r = nv(spot, ty, { tol: 4 }); if (r.stuck) { dbg += ' stuck'; }
     return done();
