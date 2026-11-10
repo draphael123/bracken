@@ -8,9 +8,9 @@
 //   FOES        SPIDERLINGS and WEB-SPITTERS are the existing spider in their own skins (cnSkin 'skling' / 'skspitter'): main.js hands them here before updateSpider.
 //               THE SILK LURKER ('silklurker'), the level's one new foe: it hides on the roof; its THREAD drops first (told), then it drops; it bites on the floor,
 //               climbs its thread home - cut the thread while it climbs and it falls, STUNNED (x2).
-// Every cell this module changes is kept and put back on a reset. GREYBOX DRAWING (the sonnet art lane draws the final).
+// Every cell this module changes is kept and put back on a reset. DRAWING: src/redraw/silk_art.js (claude/silkart).
 // main.js calls (one tagged line each): on, reset, update, strike, spawn, mine, foe, takeFoe, drawBack, drawOver, drawFoe, holes.
-import { SK_SAY } from './sk-lines.js';
+import { SK_SAY } from './sk-lines.js'; import * as ART from './redraw/silk_art.js';
 
 export const TORCH = { t: 30, r: 72, sconceR: 56, touch: 12 };
 export const SAC = { reach: 36, linger: 1.0, decay: 0.5, n: 3, r: 22 };
@@ -141,33 +141,25 @@ export function makeSilkHands(ctx) {
   H.read = () => S && { t: +S.t.toFixed(2), walls: Object.values(S.wall).map(w => w.st), cut: Object.keys(S.cut).filter(k => S.cut[k]), sacs: Object.values(S.sac).map(s => s.st), torches: heroes().map(p => +(S.torch.get(p) || 0).toFixed(1)), n: { ...S.n } };
   /* ================= THE DARK: every torch, sconce and sac is a hole ================= */
   H.holes = (hole, cx, cy) => { if (!S) return; for (const l of H.lightsNow()) hole(l.x - cx, l.y - cy, l.r * 1.25); };
-  /* ================= THE GREYBOX DRAWING ================= */
+  /* ================= THE DRAWING (src/redraw/silk_art.js, claude/silkart) ================= */
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* behind the tiles: THE MANOR'S FOUNDATIONS overhead (the landmark), the hanging silk sheets, the net over every pit */
-  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = sk();
-    const off = -cx * 0.3; for (let i = -1; i < Math.ceil(VW / 96) + 2; i++) { const bx = R(((i * 96 + off) % (VW + 192) + VW + 192) % (VW + 192) - 96); rect(g, bx, 0, 90, 34, 'rgba(70,64,72,0.9)'); rect(g, bx, 34, 90, 3, 'rgba(40,36,42,0.9)'); rect(g, bx + 40, 10, 10, 8, 'rgba(255,176,74,' + (0.15 + 0.1 * Math.sin(time + i)).toFixed(2) + ')'); }   /* the manor's footings, a cellar grate lit */
-    for (let i = 0; i < 10; i++) { const sx = ((i * 131 - cx * 0.5) % (VW + 60) + VW + 60) % (VW + 60) - 30; rect(g, sx, 34, 1, VH * 0.7, 'rgba(230,230,240,0.10)'); rect(g, sx - 10, 40 + (i % 4) * 22, 20, 1, 'rgba(230,230,240,0.08)'); }
-    for (const pt of G.pits) { const a = x(pt.x0 * TS), b = x((pt.x1 + 1) * TS); if (b < 0 || a > VW) continue; const ny = y(G.catchY - 24); for (let k = a; k < b; k += 8) rect(g, k, ny + ((k / 8) % 2) * 3, 8, 1, 'rgba(220,220,235,0.35)'); } };
+  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; ART.drawBackdrop(g, cx, cy, VW, VH, time, sk()); };
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = sk();
-    for (const w of G.webs) for (let c = w.x0; c <= w.x1; c++) { const px = x(c * TS), py = y(w.y * TS); rect(g, px, py, TS, 2, 'rgba(240,240,250,' + (0.7 + 0.3 * Math.sin(time * 6 + c)).toFixed(2) + ')'); rect(g, px + 7, py - 3, 2, 3, 'rgba(240,240,250,0.5)'); }   /* TAUT: drawn tight, shimmering */
+    for (const w of G.webs) ART.webShimmer(g, x(w.x0 * TS), y(w.y * TS), (w.x1 - w.x0 + 1) * TS, time);   /* TAUT: the tile is drawn tight; the pulse running along it is the hum */
     for (const a of G.anchors) { if (a.kind === 'knot') continue; const cut = S.cut[a.id], kx = x(a.x), ky = y(a.y);
-      rect(g, kx - 3, ky - 3, 6, 6, cut ? '#5a5a64' : ((time * 3) % 2 < 1 ? '#ffffff' : '#c8c8d4'));
-      if (!cut) { g.strokeStyle = 'rgba(235,235,245,0.8)'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, ky); const tx = a.kind === 'cocoon' ? x(a.cocoon.col * TS + 8) : x(a.hold[0][0] * TS), ty = a.kind === 'cocoon' ? y(a.cocoon.top * TS + 10) : y(a.hold[0][1] * TS); g.lineTo(tx + 0.5, ty); g.stroke();
-        if (a.kind === 'cocoon') { rect(g, tx - 5, ty, 10, 16, '#d8d8e0'); rect(g, tx - 5, ty + 5, 10, 1, '#a8a8b4'); rect(g, x(a.cocoon.col * TS + 8) - 1, y(1 * TS), 2, ty - y(TS), 'rgba(235,235,245,0.4)'); }
-        if (a.kind === 'bridge') for (const [hx, hy] of a.hold) rect(g, x(hx * TS), y(hy * TS), TS, 2, 'rgba(240,240,250,0.8)'); }
-      else if (a.kind === 'bridge') for (const [rx, ry] of a.ramp) rect(g, x(rx * TS), y(ry * TS), TS, 2, 'rgba(240,240,250,0.8)'); }
-    for (const c of S.cocoons) if (!c.done) rect(g, x(c.x) - 5, y(c.y), 10, 16, '#d8d8e0'); else rect(g, x(c.x) - 8, y(c.floorY) - 4, 16, 4, 'rgba(216,216,224,0.6)');
-    for (const ww of G.walls) { const st = S.wall[ww.id]; if (st.st === 'gone') continue; const px = x(ww.x * TS), top = y(ww.y0 * TS), h = (ww.y1 - ww.y0 + 1) * TS;
-      rect(g, px, top, TS, h, st.st === 'burning' ? ((time * 12) % 2 < 1 ? '#ff9a3a' : '#ffd36b') : 'rgba(225,225,235,0.85)');
-      if (st.st === 'whole') for (let k = 0; k < h; k += 6) rect(g, px + (k % 12 ? 3 : 9), top + k, 4, 1, '#a8a8b8'); }
-    for (const s of G.sconces) { const px = x(s.x), py = y(s.y); rect(g, px - 3, py - 12, 6, 3, '#4a4048'); rect(g, px - 2, py - 18 + Math.sin(time * 9 + s.x) * 1, 4, 6, '#ffb04a'); }   /* THE ONE ACCENT: torch amber */
-    for (const s of G.sacs) { const st = S.sac[s.id], px = x(s.x), py = y(s.y); if (st.st === 'whole') { const k = st.t / SAC.linger; rect(g, px - 5, py - 12, 10, 12, 'rgba(150,220,120,' + (0.35 + 0.5 * k * ((time * (4 + 10 * k)) % 2 < 1 ? 1 : 0.3)).toFixed(2) + ')'); } else rect(g, px - 6, py - 3, 12, 3, st.st === 'burned' ? '#3a3030' : 'rgba(150,220,120,0.4)'); }
-    for (const gp of G.goos) rect(g, x(gp.x0 * TS), y((gp.y + 1) * TS) - 3, (gp.x1 - gp.x0 + 1) * TS, 3, 'rgba(230,230,240,0.7)');
-    for (const gl of S.globs) rect(g, x(gl.x) - 3, y(gl.y) - 3, 6, 6, '#d8e8c8');
-    for (const p of heroes()) if (H.hasTorch(p)) { const px = x(p.x) + (p.face || 1) * 7, py = y(p.y) - 16; rect(g, px - 1, py, 2, 8, '#5a4030'); rect(g, px - 2, py - 5 + Math.sin(time * 14) * 1, 4, 5, (S.torch.get(p) || 0) < 4 && (time * 6) % 2 < 1 ? '#8a5020' : '#ffb04a'); }
-    for (const e of (ctx.enemies() || [])) if (e.alive && e.t === 'silklurker' && e.mode !== 'hide') { const red = e.mode === 'threadTell' && (time * 10) % 2 < 1; g.strokeStyle = red ? '#ff4a2a' : 'rgba(235,235,245,0.85)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x(e.x) + 0.5, y(e.homeY)); g.lineTo(x(e.x) + 0.5, y(e.mode === 'threadTell' ? e.floorY : e.y - 10)); g.stroke(); } };
-  H.drawFoe = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), tell = e.mode === 'biteTell' || e.mode === 'threadTell', st = e.mode === 'fallen';
-    for (let i = 0; i < 3; i++) { rect(g, ex - 12, ey - 8 + i * 3, 6, 1, '#2a2a30'); rect(g, ex + 6, ey - 8 + i * 3, 6, 1, '#2a2a30'); }
-    rect(g, ex - 6, ey - 12, 12, 10, st ? '#8a7a5a' : tell ? '#e6e6ee' : '#3a3a44'); rect(g, ex - 3 + (e.face || 1) * 3, ey - 9, 2, 2, '#ff4a2a'); if (st) rect(g, ex - 7, ey - 15, 14, 2, '#ffd36b'); };
+      if (!cut) { const tx = a.kind === 'cocoon' ? x(a.cocoon.col * TS + 8) : x(a.hold[0][0] * TS), ty = a.kind === 'cocoon' ? y(a.cocoon.top * TS + 10) : y(a.hold[0][1] * TS);
+        ART.strandLine(g, kx, ky, tx, ty);
+        if (a.kind === 'cocoon') { ART.strandLine(g, tx, y(1 * TS), tx, ty - 1, 0.5); ART.drawCocoon(g, tx, ty); } }
+      ART.drawKnot(g, kx, ky, cut, time, true); }
+    for (const c of S.cocoons) if (!c.done) ART.drawCocoon(g, x(c.x), y(c.y)); else ART.drawCocoonSplat(g, x(c.x), y(c.floorY));
+    for (const ww of G.walls) { const st = S.wall[ww.id]; if (st.st !== 'burning') continue; ART.drawWallBurn(g, x(ww.x * TS), y(ww.y0 * TS), (ww.y1 - ww.y0 + 1) * TS, 1 - Math.max(0, st.t) / 0.5, time); }
+    for (const s of G.sconces) ART.drawSconce(g, x(s.x), y(s.y), time, true);   /* THE ONE ACCENT: torch amber */
+    for (const s of G.sacs) { const st = S.sac[s.id]; ART.drawSac(g, x(s.x), y(s.y), st.st === 'whole' ? 'whole' : st.st === 'burned' ? 'burned' : 'burst', st.st === 'whole' ? Math.min(1, st.t / SAC.linger) : 1, time); }
+    for (const gp of G.goos) ART.drawGoo(g, x(gp.x0 * TS), y((gp.y + 1) * TS), (gp.x1 - gp.x0 + 1) * TS, time);
+    for (const gl of S.globs) ART.drawGlob(g, x(gl.x), y(gl.y), gl.vx, gl.vy);
+    for (const p of heroes()) if (H.hasTorch(p)) ART.drawTorch(g, x(p.x) + (p.face || 1) * 7, y(p.y) - 16, time, (S.torch.get(p) || 0) < 4);
+    for (const e of (ctx.enemies() || [])) if (e.alive && e.t === 'silklurker' && e.mode !== 'hide') ART.drawThread(g, x(e.x), y(e.homeY), e.mode === 'threadTell' ? y(e.floorY) : y(e.y - 10), e.mode === 'threadTell', time); };
+  H.drawFoe = (g, e, cx, cy, time) => { ART.drawLurker(g, e.x - cx, e.y - cy, e.mode, e.face, time, e.mode === 'biteTell' || e.mode === 'threadTell'); };
   return H;
 }

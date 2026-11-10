@@ -1,10 +1,10 @@
 // src/crypt-mother-hands.js - THE CRYPT MOTHER's HANDS (claude/silk, the OPUS GREYBOX). src/crypt-mother.js is the fight (pure); this binds it to the world:
 // the knots (a hero's blow on the live one = THE CUT), the floor strands P2 drops (through src/silk-hands.js setCell, so a reset puts them back), her sacs (a torch
 // from src/silk-hands.js burns them), the spiderlings they hatch (src/silk-hands.js ling), her told blows on the heroes (keyed once a blow), the snare - and the greybox.
-// GREYBOX (the sonnet art lane draws the final, src/redraw/crypt_mother_art.js to come): every move its own windup pose and release pose (POSE, B16), its own sound.
+// DRAWN (src/redraw/crypt_mother_art.js, claude/silkart): every move its own windup pose and release pose (POSE, B16), its own sound.
 // main.js calls (one tagged line each): spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, clear.
 import * as CMM from './crypt-mother.js';
-import { CM_SAY, SK_SAY } from './sk-lines.js';
+import { CM_SAY, SK_SAY } from './sk-lines.js'; import * as CMA from './redraw/crypt_mother_art.js'; import * as ART from './redraw/silk_art.js';
 const { CM } = CMM;
 
 export const SOUND = { spitTell: s => (s.hiss || s.tell)(), spit: s => (s.puff || s.whoosh || s.tell)(), pounceTell: s => (s.hiss || s.tell)(), pounce: s => (s.whoosh || s.tell)(),
@@ -83,25 +83,16 @@ export function makeCryptMotherHands(ctx) {
   H.barName = e => CM_SAY.name + (CMM.cmOpen(e) ? '  ' + CMM.OPEN_NAME[e.mode] : '');
   H.end = () => { if (S) { S.globs = []; S.sacs.forEach(s => { s.dead = true; }); S.flash = null; S.won = true; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, knot: S.knot, fallen: [...S.fallen], n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
-  /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.hang, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy), up = p.upside ? -1 : 1;
-    if (CMM.hanging(e) || e.mode === 'climb' || e.mode === 'wake' || e.mode === 'sleep') { const k = S && CMM.knotOf(S); if (k) { g.strokeStyle = 'rgba(235,235,245,0.85)'; g.lineWidth = 1; g.beginPath(); g.moveTo(ex + 0.5, ey - 8); g.lineTo(R(k.x - cx) + 0.5, R(k.y - cy)); g.stroke(); } }
-    for (let i = 0; i < 4; i++) { const lx = (6 + i * 5), ly = (p.lift * (i === 0 ? 1 : 0.3)) * -up, sp = p.spread;   /* eight legs, four a side */
-      rect(g, ex - lx - sp * 0.4, ey + ly - 2 + i, sp * 0.4 + 2, 2, '#2a2a30'); rect(g, ex + lx, ey + ly - 2 + i, sp * 0.4 + 2, 2, '#2a2a30'); }
-    if (p.leg) rect(g, ex + f * 10, ey + 6, f * p.leg, 3, '#3a3a44');
-    rect(g, ex - 10 - f * 4, ey - 8 + p.abd * -up * 0.3, 20, 16, p.pulse && (time * 8) % 2 < 1 ? '#5a6a4a' : '#3a3a44');   /* the abdomen */
-    rect(g, ex - 6 + f * 8, ey - 5, 12, 10, '#4a4a54');   /* the cephalothorax */
-    rect(g, ex - 2 + f * 13, ey - 3, 2, 2, '#ff4a2a'); rect(g, ex + f * 13, ey - 3, 2, 2, '#ff4a2a');
-    if (p.fang) rect(g, ex + f * 14, ey + 2, 2, p.fang, '#e6e6ee');
-    if (p.spin) rect(g, ex - f * 14, ey - 2, 4, 4, '#e6e6ee');
-    if (p.upside) rect(g, ex - 12, ey - 12, 24, 2, '#ffd36b');   /* ON HER BACK: the open read */
-  };
+  /* ================= THE DRAWING (src/redraw/crypt_mother_art.js, claude/silkart) ================= */
+  H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.hang, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy);
+    if (CMM.hanging(e) || e.mode === 'climb' || e.mode === 'wake' || e.mode === 'sleep') { const k = S && CMM.knotOf(S); if (k) CMA.drawAnchorLine(g, R(k.x - cx), R(k.y - cy), ex, ey - 8); }
+    CMA.drawMother(g, ex, ey, p, f, time, { flash: e.flash > 0.06 && e.alive }); };
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const x = v => R(v - cx), y = v => R(v - cy);
-    for (const k of S.G.knots) { const live0 = k === CMM.knotOf(S); rect(g, x(k.x) - 4, y(k.y) - 4, 8, 8, live0 ? ((time * 4) % 2 < 1 ? '#ffd36b' : '#e6e6ee') : '#6a6a78'); }   /* THE KNOTS: the live one glints */
-    if (S.shadow) { rect(g, x(S.shadow.x) - 14, y(S.G.floorY) - 2, 28, 3, 'rgba(10,10,14,0.8)'); g.strokeStyle = (time * 10) % 2 < 1 ? '#ff4a2a' : '#e6e6ee'; g.beginPath(); g.moveTo(x(S.shadow.x) + 0.5, y(S.G.hangY)); g.lineTo(x(S.shadow.x) + 0.5, y(S.G.floorY)); g.stroke(); }
-    for (const gl of S.globs) rect(g, x(gl.x) - 3, y(gl.y) - 3, 6, 6, '#d8e8c8');
-    for (const s of S.sacs) if (!s.dead) { const k = 1 - s.t / CM.clutch.hatch; rect(g, x(s.x) - 5, y(s.y) - 12, 10, 12, 'rgba(150,220,120,' + (0.4 + 0.5 * k * ((time * (4 + 8 * k)) % 2 < 1 ? 1 : 0.4)).toFixed(2) + ')'); }
-    if (S.flash) { const s = S.G.secs[S.flash.i]; if ((time * 8) % 2 < 1) rect(g, x(s.px0), y(S.G.floorY), s.px1 - s.px0, 4, '#ff4a2a'); }
-    const e = live(); if (e && e.mode === 'sweepTell') rect(g, x(e.x) - CM.sweep.reach, y(S.G.floorY) - 3, CM.sweep.reach * 2, 2, (time * 8) % 2 < 1 ? '#ff4a2a' : '#ff9a5c'); };
+    for (const k of S.G.knots) ART.drawKnot(g, x(k.x), y(k.y), false, time, k === CMM.knotOf(S));   /* THE KNOTS: the live one glints */
+    if (S.shadow) CMA.drawPounceShadow(g, x(S.shadow.x), y(S.G.floorY), y(S.G.hangY), time);
+    for (const gl of S.globs) ART.drawGlob(g, x(gl.x), y(gl.y), gl.vx || 0, gl.vy || 0);
+    for (const s of S.sacs) if (!s.dead) ART.drawSac(g, x(s.x), y(s.y), 'whole', 1 - s.t / CM.clutch.hatch, time);
+    if (S.flash) { const s = S.G.secs[S.flash.i]; CMA.drawStrandFlash(g, x(s.px0), x(s.px1), y(S.G.floorY), time); }
+    const e = live(); if (e && e.mode === 'sweepTell') CMA.drawSweepTell(g, x(e.x), y(S.G.floorY), CM.sweep.reach, time); };
   return H;
 }
