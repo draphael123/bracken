@@ -17,7 +17,8 @@
 // strike you, he HURLS A CART, and the cart is a mover that does its own unblockable damage somewhere else.
 import { ORDER_MARKS, TYPES as ORDER_TYPES } from './order-chapters.js';   /* (claude/order) */
 
-export const THROWN = new Set(['updatePyromancer|chargeBigTell',   /* (claude/pyroboss2) THE PYROMANCER 2's big fireball (step 3+): the ball flies on its own (updatePyroBalls) and its BLAST no shield turns - out of the red ring */
+export const THROWN = new Set(['updateRam|boulderTell',   /* (claude/scree3, listed batch156) THE BOULDER BUTT: the blow is the rolled stone (src/ram-lord.js boulderStep), thrown by nobody - red, JUMP IT; a raised shield only shoves you back (SHOVED), it does not turn the hit */
+  'updatePyromancer|chargeBigTell',   /* (claude/pyroboss2) THE PYROMANCER 2's big fireball (step 3+): the ball flies on its own (updatePyroBalls) and its BLAST no shield turns - out of the red ring */
   'updateCaptain|braceTell',   /* (claude/hurricane3) THE CAPTAIN 3's BRACE!: his shout is the tell; the blow is the SWEEP of sea across every yard a beat later (capSweep) - no shield turns it, a hand on a line holds */
   'updateLance|volleyTell', 'updateLance|vaultTell',   /* (claude/stormhold3) THE LANCE's SPEAR VOLLEY lands on its marked spots on its own clock (boss.lz.spears), and THE VAULT's stab lands after the perch: both unblockable - move off the mark */
   'updateFrog|flopTell',   /* (claude/marsh2) THE BULLFROG KING's BELLY-FLOP: the shockwave runs the court on its own (waves, w.flop) - unblockable, jump it */
