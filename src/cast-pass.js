@@ -55,6 +55,28 @@ export const CAST_SWAPS = {
   kitchengate: [
     { from: 'sprig', to: 'thief', every: 3, min: 4 },          /* the larder thieves: five of the kitchen's fourteen plain sprigs */
     { from: 'rockgoblin', to: 'burngob', every: 2, min: 2 },    /* a cook already alight, in a kitchen: the first and the third rock-thrower */
+    { from: 'sprig', to: 'sprig', skin: 'clubsprig', every: 2, min: 3 },               /* the crew with a stick, in a kitchen: skins of one kind (foevar3) */
+    { from: 'hearthgob', to: 'archer', skin: 'firearcher', every: 3, allow: ['perch'], min: 2 },   /* a fire-bow for every third hearth goblin (3 -> 2): fire in a kitchen, told by its own arrow; the one new kind here */
+  ],
+  /* (claude/foevar3) THE SKY, THE KEEP AND THE TOWER (foe-variety audit 11-10, lane F3): rows below; the curve index of every level holds within +-2 (a new kind costs 3 index points, so each is paid for in threat) */
+  rookery: [
+    { from: 'harpy', to: 'kite', every: 1, x1: 120, allow: ['perch'], min: 2 },        /* goblin kites (pre-Queen) for the perched crag harpies: threat 1.5 for 2.5, which pays the kind term so the curve index holds. The roost and ride harpies keep their roles, and the two perched harpies by the first Shrieker (140) keep their dive (tools/rookery.mjs) */
+    { from: 'harpy', to: 'kite', every: 1, x0: 160, allow: ['perch'], min: 3 },
+    { from: 'crow', to: 'bat', every: 3, allow: ['perch'], min: 3 },                    /* a bat for every third crow: 1 for 1 */
+  ],
+  waymeet: [
+    { from: 'hedgeknight', to: 'orderpaladin', every: 4, min: 2 },                      /* the order's men at the gates: the whole shield and the offered gleam (src/order-paladin.js; Waymeet is where its header puts them) */
+    { from: 'hedgeknight', to: 'crossbow', every: 6, x0: 60, min: 1 },                          /* a bolt for a knight (3 for 4.5): with the paladins, the curve index holds */
+  ],
+  warcairn: [
+    { from: 'soldier', to: 'orderpaladin', every: 5, min: 2 },                          /* two of the order's paladins stand with the keep's men (the parry window is the lesson) */
+    { from: 'soldier', to: 'shield', every: 2, min: 2 },                                /* a shield for a spear: 2 for 3, which pays the paladins' kind term so the curve index holds */
+    { from: 'soldier', to: 'javelin', every: 3, min: 1 },
+  ],
+  fallingtower: [
+    { from: 'apprentice', to: 'topiary', every: 6, min: 3 },                            /* a hedge-beast that wandered in from the Stair (the one new kind here) */
+    { from: 'armour', to: 'mimic', every: 2, x0: 30, min: 3 },                                  /* a mimic for every other suit east of the lab landing (2.5 for 3.5; the armour that stands under the lab pillar stays, tools/fallingtower4.mjs): pays the kind term so the curve index holds; the armour is still the level's second foe. Walkers only: the imps and brooms fly and tools/tower-flyers.mjs holds them to flat ground */
+    { from: 'apprentice', to: 'zombie', every: 5, min: 3 },                           /* the drowned scholars of the library: 2 for 2.5 */
   ],
   storm: [
     { from: 'sprig', to: 'thief', every: 2, x0: 100, min: 2 },        /* the Outer Works' sneaks */
@@ -76,6 +98,8 @@ export const CAST_SWAPS = {
   underleaf: [
     { from: 'archer', to: 'archer', skin: 'venomarcher', every: 1, min: 3 },
     { from: 'sprig', to: 'thief', every: 3, min: 5 },                                         /* the village's herb-thieves (its reskin gives them the village's look); snuffer stays the Hanging Village's own foe */
+    { from: 'sprig', to: 'sprig', skin: 'clubsprig', every: 2, min: 3 },               /* the crew with a stick: skins of one kind (foevar3) */
+    { from: 'archer', to: 'archer', skin: 'rockarcher', every: 1, allow: ['perch'], min: 1 },   /* a sling for the bow that is left (fire archers are off-theme in a wooden village) */
   ],
   palisadewood: [
     { from: 'archer', to: 'archer', skin: 'firearcher', every: 2, allow: ['perch'], min: 4 },
