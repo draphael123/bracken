@@ -36,6 +36,7 @@ GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
+import { makeTowerClimb } from './tower-climb.js';   /* (claude/gq4l) THE BURNING TOWER's seven storeys + the outside stretch (only when the level carries TW.OUT: GQ4L_SHIPS) */
 export function makeGQueenHands(ctx) {
   const TS = ctx.TS, H = {};
   const L = () => ctx.L;
@@ -166,16 +167,20 @@ export function makeGQueenHands(ctx) {
     const E = L().gqEscape; if (!E) return;
     const tt = now();
     S.esc = { on: true, tower: true, inTower: false, fireOn: false, checked: !!checked, step: null, musicSet: false, graceUntil: tt + (checked ? 0 : G.flee.tell),
-      volT: G.esc.fan, vol: null, beams: [], beamT: G.tower.beamFirst, fl: [0, 1, 2, 3].map(() => ({ lastOn: tt, smokeAt: 0, burning: false, tick: new Map() })),
+      volT: G.esc.fan, vol: null, beams: [], beamT: G.tower.beamFirst, fl: Array.from({ length: E.tower.OUT ? E.tower.FLOORS.length : 4 }, () => ({ lastOn: tt, smokeAt: 0, burning: false, tick: new Map() })),
       q: { k: G.tower.start, x: (E.tower.SHAFT[0] + 14) * TS + 8, hopAt: tt + G.tower.hopEvery, entry: null, flash: null } };
     for (const t0 of E.throwers || []) ctx.spawnEnt({ t: t0.t, x: t0.x, y: t0.y, face: -1 });
+    TCL.init(S.esc, E);   /* (gq4l) the climb's own state (tapestries, hoarding boards, debris, boulder, her hop) - a retry restores the boards */
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
   const asSeat = (p, fn) => seats(P1 => { if (P1 === p) fn(); });   /* a hit on one seat runs as that seat (main.js asPlayer: P, PROG and the keys are his for the call) */
+  const TCL = makeTowerClimb({ ctx, TS, seats, now, sfx, hit: (a, b, c) => hit(a, b, c), q, asSeat, gqRed, L, portalDraw: (...a) => portalDraw(...a) });
   /* which storey of THE BURNING TOWER a hero's feet are in (0 = the foot, 4 = the top, 5 = the deck above the hatch); -1 = not in the tower */
   function storeyOf(p, E) {
-    const Tw = E.tower; if (p.x < (Tw.SHAFT[0] - 2) * TS || p.x > (Tw.SHAFT[1] + 2) * TS) return p.y < 21 * TS && p.x > Tw.DECK.x0 * TS ? 5 : -1;
-    if (p.y < 22 * TS) return 5;
+    const Tw = E.tower, nS = Tw.FLOORS.length, DK = Tw.OUT ? nS + 1 : nS;   /* (gq4l) ON: 0..nS-1 the storeys, nS the OUTSIDE, nS + 1 the deck; OFF: the deck is index 5 as it was */
+    if (Tw.OUT) { const O = Tw.OUT; if (p.y < 21 * TS && p.x > Tw.DECK.x0 * TS) return DK; if (p.x >= O.x0 * TS - 4 && p.x <= (O.x1 + 1) * TS + 4 && p.y >= 21 * TS && p.y <= (O.floor + 1) * TS) return nS; }
+    if (p.x < (Tw.SHAFT[0] - 2) * TS || p.x > (Tw.SHAFT[1] + 2) * TS) return p.y < 21 * TS && p.x > Tw.DECK.x0 * TS ? DK : -1;
+    if (p.y < 22 * TS) return DK;
     for (let k = 0; k < Tw.FLOORS.length; k++) if (p.y > (Tw.FLOORS[k] - 12) * TS && p.y <= Tw.FLOORS[k] * TS + 2) return k;
     return -1;
   }
@@ -211,10 +216,11 @@ export function makeGQueenHands(ctx) {
       } else if (h0.p.gqFireT !== undefined) h0.p.gqFireT = Math.min(h0.p.gqFireT, 0.25);
     }
     // ---- THE BURNING BEAMS: a creak and a shadow on the floor (1.0 s, '!!'), then a beam down the shaft: 14 red, step aside ----
-    if (top >= 0 && top < 5) {
+    const nS = F.length;
+    if (top >= 0 && top < nS) {
       esc.beamT -= dt;
       if (esc.beamT <= 0) { const tg = hs.find(h0 => h0.k === top).p, bx = Math.max(Tw.SHAFT[0] * TS + 10, Math.min(Tw.SHAFT[1] * TS - 10, tg.x + (Math.random() - 0.5) * 70));
-        esc.beams.push({ x: bx, k: top, at: t + G.tower.beamTell, state: 'tell', done: false }); esc.beamT = G.tower.beamEvery[0] + Math.random() * (G.tower.beamEvery[1] - G.tower.beamEvery[0]);
+        esc.beams.push({ x: bx, k: top, at: t + G.tower.beamTell, state: 'tell', done: false }); const be = (Tw.BURN || []).includes(top) ? [5, 7] : G.tower.beamEvery; esc.beamT = be[0] + Math.random() * (be[1] - be[0]);   /* (gq4l) the burning storeys let go a little oftener: every 5-7 s */
         ctx.number(bx, F[top] * TS - 34, '!!', '#ff6b6b'); sfx('crack'); sfx('crumble'); }
     }
     for (const b of esc.beams) {
@@ -225,7 +231,8 @@ export function makeGQueenHands(ctx) {
     esc.beams = esc.beams.filter(b => !b.done);
     // ---- HER: seen a storey ahead; she hops up by portal every ~8 s (her entry portal stays open 1.5 s: step in = a SHORTCUT) ----
     const e = q(), qq = esc.q;
-    if (e) {
+    if (Tw.OUT) { TCL.step(dt, esc, E, hs, top, t); TCL.queen(esc, E, hs, top, t, e); }   /* (gq4l) ON: the burning storeys, the outside stretch and HER hop in view (src/tower-climb.js) */
+    else if (e) {
       e.hidden = false; e.x = qq.x; e.y = F[qq.k] * TS; e.face = -1; e.mode = (qq.flash && t < qq.flash.until) ? 'towerHop' : (qq.hopAt - t < 0.7 ? 'towerCrouch' : 'towerWatch'); e.vx = 0; e.vy = 0;
       if (t >= qq.hopAt && qq.k < 4 && qq.k <= top) {
         const nx = Tw.SHAFT[0] + 6 + Math.floor(Math.random() * 14), ex = { x: nx * TS + 8, y: F[qq.k + 1] * TS };
@@ -234,12 +241,12 @@ export function makeGQueenHands(ctx) {
         qq.k++; qq.x = ex.x; qq.hopAt = t + G.tower.hopEvery;
       }
       if (qq.entry && t < qq.entry.until) {
-        const en = qq.entry, who = hs.find(h0 => h0.k >= 0 && Math.abs(h0.p.x - en.x) < 12 && Math.abs(h0.p.y - en.y) < 26);
+        const en = qq.entry, who = en.exit && en.exit.out ? null : hs.find(h0 => h0.k >= 0 && Math.abs(h0.p.x - en.x) < 12 && Math.abs(h0.p.y - en.y) < 26);   /* (gq4l) her shortcut portal stays INSIDE the tower */
         if (who) { const ex = en.exit; qq.entry = null; let n = 0; for (const h0 of hs) { h0.p.x = ex.x - 26 + ([0, 14, 28, 42][n++] ?? 14); h0.p.y = ex.y; h0.p.vx = 0; h0.p.vy = 0; } sfx('portalOpen'); ctx.burst(ex.x, ex.y - 12, 12, ['#b28cff', '#e8dcff'], 80, 0.5); ctx.number(ex.x, ex.y - 40, 'A SHORTCUT', '#b28cff'); }
       } else if (qq.entry) qq.entry = null;
     }
     // ---- THE PHOTO'S ATTACK (item 4): ONE portal above you, glowing 0.9 s, then three shards at 165 px/s (4 each) every 6.0 s ----
-    if (esc.fireOn && top >= 0 && top < 5) {
+    if (esc.fireOn && top >= 0 && top < nS) {
       esc.volT -= dt;
       if (esc.volT <= 0 && !esc.vol) { const tg = hs.find(h0 => h0.k === top).p; esc.vol = { at: t + G.esc.cue, px: tg.x + (Math.random() < 0.5 ? -22 : 22), py: Math.max((F[top] - 11) * TS + 14, tg.y - 70), k: top }; esc.volT = G.esc.fan; ctx.number(esc.vol.px, esc.vol.py - 14, '!', '#ffd36b'); sfx('portalOpen'); }
       if (esc.vol && t >= esc.vol.at) { const tg = ctx.P(); fan(esc.vol.px, esc.vol.py, tg.x, tg.y - 8, true); esc.vol = null; }
@@ -277,7 +284,8 @@ export function makeGQueenHands(ctx) {
   /* (gq3fix) THE HATCH IS SHUT for the fight on the deck: a two-column hole in the middle of the west deck swallowed the melee bots (and any hero who mistimed a jump) into the burning shaft, with no way back into the fight. The oak trap (the old hatch art, closed) lies flush; a retry into the tower opens it again. */
   function sealHatch(on) {
     const Lv = L(), A0 = Lv && Lv.arenaRoof, Tw = A0 && A0.tower; if (!Tw || !Lv.grid) return; const [c0, c1] = Tw.HATCH.cols, fy = Tw.DECK.floor;
-    for (let y = fy; y <= fy + 1; y++) { Lv.grid[y * Lv.W + c0] = on ? 8 : 9; Lv.grid[y * Lv.W + c1] = on ? 8 : 0; }   /* 8 = T.PLANK, 9 = T.NET (the ladder), 0 = air */
+    if (Tw.OUT) { const [m0, m1] = Tw.OUT.mouth; for (let y = fy; y <= fy + 1; y++) for (let x = m0; x <= m1; x++) Lv.grid[y * Lv.W + x] = on ? 8 : (x === Tw.OUT.mouthLadder ? 9 : 0); }   /* (gq4l) the outside stretch's mouth in the deck floor (a ladder up it) */
+    else for (let y = fy; y <= fy + 1; y++) { Lv.grid[y * Lv.W + c0] = on ? 8 : 9; Lv.grid[y * Lv.W + c1] = on ? 8 : 0; }   /* 8 = T.PLANK, 9 = T.NET (the ladder), 0 = air */
     S.hatchShut = !!on;
   }
   function roofBegin(e) { sealHatch(true); S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
@@ -901,7 +909,7 @@ export function makeGQueenHands(ctx) {
   /* (gq3 GREYBOX) THE BURNING TOWER's picture: her portal in the hall, the smoking and burning floors, the beams' shadows and their fall, her hop's portals, the volley's portal. GQ3ART draws the stone shaft, the timber floors
      (smoke / burning / charred), the falling beam x2 + its impact, the stairs, the hatch and the slit-window backdrop. */
   function towerDraw(g, cx, cy, t) {
-    if (art3(() => towerArt(g, cx, cy, t))) return;
+    if (art3(() => towerArt(g, cx, cy, t))) { const E1 = L().gqEscape, es = S.esc; if (E1 && E1.tower.OUT && es && es.on && (es.inTower || es.step)) TCL.draw(g, cx, cy, t, es, E1); return; }
     const E = L().gqEscape, esc = S.esc; if (!E || !esc || !esc.on) return; const Tw = E.tower, F = Tw.FLOORS;
     portalDraw(g, E.portal.x * TS + 8 - cx, E.portal.y * TS + 2 - cy, t, esc.step ? 1 + Math.min(1, (t - esc.step.t0) / G.esc.step) : 0.5 + 0.5 * Math.sin(t * 3), esc.step ? '#fff6c8' : '#b28cff');
     if (!esc.inTower && !esc.step) return;
@@ -915,6 +923,7 @@ export function makeGQueenHands(ctx) {
     const qq = esc.q; if (qq.entry) portalDraw(g, qq.entry.x - cx, qq.entry.y - 14 - cy, t, 0.8, '#ffd36b');
     if (qq.flash && t < qq.flash.until) portalDraw(g, qq.flash.x - cx, qq.flash.y - 14 - cy, t, 0.6, '#fff6c8');
     if (esc.vol) { const k = Math.min(1, 1 - (esc.vol.at - t) / G.esc.cue); portalDraw(g, esc.vol.px - cx, esc.vol.py - cy, t, 0.4 + 0.6 * k, k > 0.7 ? '#fff6c8' : '#b28cff'); }
+    if (Tw.OUT) TCL.draw(g, cx, cy, t, esc, E);
   }
   function escapeDraw(g, cx, cy, t) { towerDraw(g, cx, cy, t); }
   H.drawWorld = (g, cx, cy, t) => {

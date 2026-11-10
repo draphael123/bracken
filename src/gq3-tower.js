@@ -40,7 +40,7 @@ if (G4) {   /* the outside stretch's data, in the final columns (the pocket is c
     flights: [   /* ONEWAY steps 2 cols wide, one row each: { first step's left col, its tile row, steps, direction } */
       { id: 'f1', x: o + 6, row: 55, n: 8, dir: 1 }, { id: 'f2', x: o + 18, row: 36, n: 6, dir: -1 }, { id: 'f3', x: o + 8, row: 29, n: 6, dir: 1 }],
     landings: [[o + 22, o + 27, 47], [o, o + 7, 30], [o + 20, o + 27, 23]],      /* the east landing, the west landing, the TOP landing (the ladder to the deck is at the mouth) */
-    corbels: [[o + 18, o + 19, 45], [o + 13, o + 14, 43], [o + 8, o + 9, 41]], catch: [o, o + 9, 39],   /* stone corbels west, then the catch beam under the hoarding */
+    corbels: [[o + 17, o + 19, 45], [o + 12, o + 14, 43], [o + 7, o + 9, 41]], catch: [o, o + 9, 39],   /* stone corbels west, then the catch beam under the hoarding */
     hoard: { row: 37, x0: o + 2, x1: o + 21, seg: 2 },
     spire: [o + 25, o + 27, 52, 55],                                              /* the neighbouring spire: the archer's perch (stand row 51) */
     perches: [[o + 24, 47], [o + 3, 39], [o + 3, 30], [o + 24, 23]],              /* where the Queen stands to watch (x col, tile row of the floor) */
