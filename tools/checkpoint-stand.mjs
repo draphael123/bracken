@@ -21,6 +21,8 @@ import { ksarOpened } from './ksar-locks.mjs';   /* the Ksar's winch, arches, wa
 const ACROSS = 5, VW = 320, VH = 180, TS = 16, SPRITE = 32;
 /* GAPS IN THE MODEL, each with its reason. Not levels that are wrong: rides the fill cannot follow with a shorter jump. */
 const MODEL_GAPS = {
+  /* (batch156 integ, claude/gq3) HIGHCROWN's BURNING TOWER shrine (795,19, the roof deck): the tower is entered THROUGH the Queen's fight (her portal / the hatch ladder, toEscape), never walked to, so the fill from the level start never stands there. tools/gqueen3.mjs and tools/gq3fix-ladder.mjs walk it. */
+  crown: [[795, 19, 'the Burning Tower deck is entered through the Queen fight, not walked to']],
   /* (claude/windcaller4 + batch127 integ) THE GALE STAIR's Landing: the six-row summit wall (cols 693-695) is crossed only on the stair's TOLD GUST (its gale updraft is the one required ride, A4); the reach fill has no gust, so it never gets over the wall to the Landing's checkpoint */
   /* (batch135 integ, deeprails6) THE LEADING BORE (cols 1286-1355): the high line is TORN (rubble to the rock), so the ONLY way on is to strike the points OPEN and drop to the low line (a required, told verb; tools/minecart.mjs walks it). The fill reads the points SET (the high line), hits the rubble and never drops - so it cannot reach STATION NINE at the bore's mouth. */
   minecart: [[1358, 29, 'the Leading Bore: the torn high line is passed only by opening the points and dropping to the low line; the fill reads the points set']],
