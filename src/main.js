@@ -314,6 +314,8 @@ const [buf, g0] = canvas(VW, VH, true); let g = g0;   /* `g` is the sheet being 
 let viewMode = 'normal';
 function viewFor(mode) {
   if (mode === 'coop') return PARTY.coopViewSize(innerWidth || 1280, innerHeight || 720);   /* THE PARTY'S VIEW (claude/tavern): one whole pixel-scale step out, capped at 1.25x - src/party.js CAM */
+  if (mode === 'zoomfar') { const dw = innerWidth || 1280, dh = innerHeight || 720, S0 = Math.max(1, Math.floor(Math.min(dw / 320, dh / 180))), S1 = Math.max(1, Math.floor(S0 / 2));   /* (claude/nighthands) THE CRYPT MOTHER's cathedral is 320 px from her hang point to the floor: one pixel-scale step further out than the boss view (S0/2, not S0/1.5), the same 640x360 cap - 1080p gets 640x360 instead of 480x270 */
+    return [Math.max(320, Math.min(640, Math.floor(dw / S1))), Math.max(180, Math.min(360, Math.floor(dh / S1)))]; }
   if (mode !== 'zoom') return [320, 180];
   const dw = innerWidth || 1280, dh = innerHeight || 720;
   const S0 = Math.max(1, Math.floor(Math.min(dw / 320, dh / 180))), S1 = Math.max(1, Math.floor(S0 / 1.5));
@@ -37370,7 +37372,7 @@ function drawTransition() {
   } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
-  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? 'zoom' : typeof partyCam !== 'undefined' && partyCam.wide && coop() ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? (bossActive && boss && boss.alive && boss.t === 'cryptmother' && CMH && CMH.on() ? 'zoomfar' : 'zoom') : typeof partyCam !== 'undefined' && partyCam.wide && coop() ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
 
 // ==================================================================================
 // THE EDITOR
