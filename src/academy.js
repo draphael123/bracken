@@ -136,7 +136,7 @@ export function buildAcademy({ painter, T, TS }) {
   ride(301, 338, 28, 39);
   const arena = { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: F * TS, y0: 23 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'headmistress', music: 'boss3', tint: '#c8b0ff', tintA: 0.05,
     /* THE FIGHT'S GEOMETRY (src/headmistress.js geom): the rafters she lectures from, the lecterns, the floor that dissolves and the ledges that stay */
-    rafterY: (A.gallery - 1) * TS, galleries: [[302, 307], [332, 337]].map(([a, b]) => [a * TS, (b + 1) * TS]), lecterns: aLec.map(l => l.id),
+    rafterY: A.gallery * TS, galleries: [[302, 307], [332, 337]].map(([a, b]) => [a * TS, (b + 1) * TS]), lecterns: aLec.map(l => l.id),
     pit: A.pit.map(([a, b]) => [a, b]), ledges: A.ledges.map(([a, b]) => [a, b]), deskY: 35 * TS, ceil: 23 * TS };
 
   return {

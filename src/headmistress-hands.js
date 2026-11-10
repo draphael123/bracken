@@ -86,7 +86,7 @@ export function makeHeadmistressHands(ctx) {
   }
   /* THE ANSWER A STRIKING HERO GIVES (src/academy-hands.js): his spell, floated this airtime / on a gallery, blinked through a rail, on a conjured step, at her back */
   H.used = (pp, e) => { const a = ACH(); if (!a || !pp) return null; const s = a.state(pp); if (!s) return null; const G = S.G;
-    const onGallery = !!pp.ground && Math.abs(pp.y - (G.rafterY + TS)) < 6 && G.galleries.some(([x0, x1]) => pp.x >= x0 && pp.x <= x1);
+    const onGallery = !!pp.ground && Math.abs(pp.y - G.rafterY) < 6 && G.galleries.some(([x0, x1]) => pp.x >= x0 && pp.x <= x1);
     return { spell: s.spell, floated: (!pp.ground && s.floated) || onGallery, railBlink: a.blinkedRail(pp, HM.blinkWindow), onStep: a.onStep(pp), back: Math.sign(pp.x - e.x) === -(e.face || 1) }; };
   H.update = (e, dt) => { if (!S || !e.alive || !A()) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; ctx.number(e.x, e.y - HM.markH - 16, HM_SAY.wake, '#d8c8ff'); world(e).sound('wake'); ctx.hint && ctx.hint(HM_SAY.rule); }

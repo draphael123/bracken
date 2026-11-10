@@ -86,7 +86,7 @@ export function makeCryptMotherHands(ctx) {
   /* ================= THE DRAWING (src/redraw/crypt_mother_art.js, claude/silkart) ================= */
   H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.hang, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy);
     if (CMM.hanging(e) || e.mode === 'climb' || e.mode === 'wake' || e.mode === 'sleep') { const k = S && CMM.knotOf(S); if (k) CMA.drawAnchorLine(g, R(k.x - cx), R(k.y - cy), ex, ey - 8); }
-    CMA.drawMother(g, ex, ey, p, f, time, { flash: e.flash > 0.06 && e.alive }); };
+    CMA.drawMother(g, ex + 6 * f, ey - 6, p, f, time, { flash: e.flash > 0.06 && e.alive }); };   /* (claude/nighttune) the art's origin sits 6 px behind its mass (abdomen -24..head +16): drawn 6 px forward and 6 up so the 30x20 hitbox sits on the body, not 10 px to its left */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const x = v => R(v - cx), y = v => R(v - cy);
     for (const k of S.G.knots) ART.drawKnot(g, x(k.x), y(k.y), false, time, k === CMM.knotOf(S));   /* THE KNOTS: the live one glints */
     if (S.shadow) CMA.drawPounceShadow(g, x(S.shadow.x), y(S.G.floorY), y(S.G.hangY), time);
