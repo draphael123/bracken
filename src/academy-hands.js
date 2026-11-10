@@ -1,4 +1,4 @@
-// src/academy-hands.js - THE MAGE ACADEMY's HANDS (claude/academy, the OPUS GREYBOX). src/academy.js lays the school; this runs it:
+// src/academy-hands.js - THE MAGE ACADEMY's HANDS (claude/academy, the OPUS GREYBOX; drawn by claude/academyart). src/academy.js lays the school; this runs it:
 //   THE LECTERNS   touch (or strike) one: its CANTRIP is yours while you stay in its room (L.ac.rooms); another lectern swaps it. The Examination's three are
 //                  lit by THE HEADMISTRESS one phase at a time (ctx.arenaLit).
 //   LEVITATION     hold JUMP in the air: float up at LEV.rise, LEV.meter s per airtime (refilled on landing)                     -> player()
@@ -7,9 +7,9 @@
 //   THE PITS       a hero whose feet pass L.ac.catchY is filed back onto his last firm footing for PIT.dmg (spare: never a death)
 //   SHORTCUT RUNES struck: their shutter cells lift (a cellar or an alcove that pays)
 //   THE SPELLBOOK FLOCK (the one new foe) - its own small machine: wheel, told GATHER (yellow !), STREAM through where you were, SCATTERED by a block.
-// Every tile it changes is kept (original) and put back on a reset. GREYBOX DRAWING (the sonnet art lane draws the final).
+// Every tile it changes is kept (original) and put back on a reset. DRAWING: src/redraw/academy_art.js (claude/academyart).
 // main.js calls (one tagged line each): on, reset, update, player, blink, strike, spawn, flock, takeFlock, drawBack, drawOver, drawFlock. tools/academy.mjs drives it in node.
-import { AC_SAY, SPELL_NAME, SPELL_HOW } from './ac-lines.js';
+import { AC_SAY, SPELL_NAME, SPELL_HOW } from './ac-lines.js'; import * as ART from './redraw/academy_art.js';
 
 export const LEV = { rise: 112, meter: 1.4 };
 export const BL = { dist: 80, min: 20, cd: 0.45, inv: 0.18, hang: 0.12 };
@@ -139,23 +139,17 @@ export function makeAcademyHands(ctx) {
     if (t && e.cd <= 0) { e.mode = 'gatherTell'; e.modeT = FLOCK.tell; e.tx = t.x + Math.sign(t.x - e.x) * 30; e.ty = t.y - 8; e.face = Math.sign(t.x - e.x) || 1; S.n.gathers++; snd('gather'); hint('flock', AC_SAY.flock); } };
   /* ---------------- WHAT A TOOL READS ---------------- */
   H.read = () => S && { t: +S.t.toFixed(2), spells: heroes().map(p => st(p).spell), steps: S.steps.length, rails: S.tmp.size, runes: S.runes.size, n: { ...S.n } };
-  /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const G = ac(), x = v => R(v - cx), y = v => R(v - cy);
-    for (const w of G.wells) { const a = x(w.x0 * TS), b = x((w.x1 + 1) * TS); if (b < 0 || a > VW) continue; rect(g, a, y(L().ac.catchY - 64), b - a, VH, '#0a0614'); rect(g, a, y(L().ac.catchY - 64), b - a, 2, 'rgba(200,170,255,' + (0.25 + 0.1 * Math.sin(time * 2)).toFixed(2) + ')'); } };
+  /* ================= THE DRAWING (src/redraw/academy_art.js, claude/academyart) ================= */
+  H.openExit = () => { if (S) S.exitOpen = true; };   /* the Headmistress closes the register: the Examination's gate shows light */
+  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const L0 = L(), at = (x, y) => cellAt(x, y);
+    ART.drawBackdrop(g, cx, cy, VW, VH, time, ac(), L0, { exitOpen: !!S.exitOpen }); ART.drawDecor(g, cx, cy, VW, VH, time, L0, at, ctx.T); };
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const G = ac(), x = v => R(v - cx), y = v => R(v - cy);
-    for (const c of G.lecterns) { const px = x(c.x), py = y(c.y); if (px < -20 || px > VW + 20) continue; const on = lit(c);
-      rect(g, px - 2, py - 14, 4, 14, '#5a4a3a'); rect(g, px - 7, py - 18, 14, 4, on ? '#8a7050' : '#3a3030'); rect(g, px - 5, py - 21, 10, 3, on ? SPELL_COL[c.spell] : '#2a2a34');
-      if (on && (time * 3) % 2 < 1) rect(g, px - 1, py - 26, 2, 3, SPELL_COL[c.spell]); }
-    const rl = (r, k) => { const px = x(r.x * TS), top = y(r.y0 * TS), bot = y((r.y1 + 1) * TS); if (px < -TS || px > VW) return; rect(g, px + 2, top, TS - 4, bot - top, 'rgba(216,160,255,' + (0.18 + 0.08 * Math.sin(time * 4 + k)).toFixed(2) + ')');
-      for (let yy = top; yy < bot; yy += 6) rect(g, px + 3, yy, TS - 6, 2, 'rgba(240,220,255,0.75)'); };
-    (G.rails || []).forEach(rl); [...S.tmp.values()].forEach((r, i) => rl(r, i + 9));
-    for (const q of S.steps) { const fl = q.t < CJ.warn && (time * 12) % 2 < 1; for (const [cx2, cy2] of q.cells) { const px = x(cx2 * TS), py = y(cy2 * TS); rect(g, px, py, TS, 4, fl ? 'rgba(255,211,107,0.35)' : 'rgba(255,224,140,0.9)'); rect(g, px + 2, py + 4, TS - 4, 2, 'rgba(255,190,90,0.5)'); } }
-    for (const r of G.runes) { const px = x(r.x), py = y(r.y), done = S.runes.has(r.id); rect(g, px - 4, py - 16, 8, 8, done ? '#4a4652' : '#c8a0ff'); if (!done) for (const [sx, sy] of r.cells) rect(g, x(sx * TS) + 1, y(sy * TS) + 1, TS - 2, TS - 2, 'rgba(120,100,160,0.55)'); }
-    for (const p of heroes()) { const s = st(p); if (!s.spell) continue; const px = x(p.x), py = y(p.y) - 30; rect(g, px - 3, py - 3, 6, 6, SPELL_COL[s.spell]);
-      if (s.spell === 'levitate') { const k = 1 - Math.min(1, s.floatT / LEV.meter); rect(g, px - 8, py + 5, 16, 2, '#2a2a34'); rect(g, px - 8, py + 5, 16 * k, 2, SPELL_COL.levitate); }
-      if (p.acFloat) rect(g, px - 6, y(p.y) + 1, 12, 2, 'rgba(159,216,255,0.7)'); } };
-  H.drawFlock = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), n = Math.max(1, Math.ceil(e.hp / (FLOCK.hp / FLOCK.books))), tell = e.mode === 'gatherTell', sc = e.mode === 'scattered';
-    for (let i = 0; i < n; i++) { const a = e.anim * (tell ? 6 : 2.4) + i * (Math.PI * 2 / n), rr = tell ? 6 : sc ? FLOCK.orbit + 10 : e.mode === 'stream' ? 3 : FLOCK.orbit * 0.6, bx = ex + Math.cos(a) * rr - (e.mode === 'stream' ? (e.face || 1) * i * 7 : 0), by = ey + Math.sin(a) * rr * 0.5;
-      const flap = Math.sin(time * 14 + i) > 0; rect(g, bx - 4, by - 3, 8, 6, sc ? '#7a5a8a' : tell ? '#ffffff' : '#8a3a3a'); rect(g, bx - (flap ? 5 : 3), by - 4, flap ? 10 : 6, 1, '#efe6d2'); } };
+    for (const c of G.lecterns) { const px = x(c.x), py = y(c.y); if (px < -24 || px > VW + 24) continue; ART.drawLectern(g, px, py, c.spell, lit(c), time); }
+    const rl = (r, k, temp) => { const px = x(r.x * TS), top = y(r.y0 * TS), bot = y((r.y1 + 1) * TS); if (px < -TS || px > VW) return; ART.drawRail(g, px, top, bot, time, k, temp); };
+    (G.rails || []).forEach((r, k) => rl(r, k, false)); [...S.tmp.values()].forEach((r, i) => rl(r, i + 9, true));
+    for (const q of S.steps) { const fl = q.t < CJ.warn && (time * 12) % 2 < 1, xs = q.cells.map(c => c[0]); q.cells.forEach(([cx2, cy2], i) => ART.drawStep(g, x(cx2 * TS), y(cy2 * TS), !xs.includes(cx2 - 1), !xs.includes(cx2 + 1), fl, time, i)); }
+    for (const r of G.runes) { const done = S.runes.has(r.id); ART.drawRune(g, x(r.x), y(r.y), done, time); if (!done) for (const [sx, sy] of r.cells) { const px = x(sx * TS), py = y(sy * TS); if (px > -TS && px < VW) g.drawImage(ART.shutterTile(sx + sy), px, py); } }
+    for (const p of heroes()) { const s = st(p); if (!s.spell) continue; const o = { float: !!p.acFloat }; if (s.spell === 'levitate') o.meter = 1 - Math.min(1, s.floatT / LEV.meter); ART.drawAura(g, x(p.x), y(p.y) - 36, s.spell, o, time); } };
+  H.drawFlock = (g, e, cx, cy, time) => ART.drawFlock(g, e, cx, cy, time, FLOCK);
   return H;
 }
