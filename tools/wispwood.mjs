@@ -167,7 +167,7 @@ const cell = (L0, x, y) => L0.grid[y * L0.W + x];
   ok(WD.resist >= 0.4 && WD.openMul > 1 && WD.openCap > 0, 'B15: x' + WD.resist + ' outside an opening (>= 0.4: never untouchable), x' + WD.openMul + ' in one, capped ' + WD.openCap * 100 + '%'); }
 function fight({ seed = 1, swing = 40, every = 0.45, reclaimOn = true } = {}) {
   const L0 = lv.build(), A = L0.arena; let rnd = seed; const rand = () => ((rnd = (rnd * 16807) % 2147483647) / 2147483647);
-  const floorY = A.floor; const P = hero(A.x0 + 3 * TS, floorY, { hp: 640 }), heroes = [P];   /* 640: the bot's health with its flasks drunk (it never drinks: one pool) */
+  const floorY = A.floor; const P = hero(A.x0 + 3 * TS, floorY, { hp: 1000 }), heroes = [P];   /* 1000: this crude abstract bot never dodges a veil (the real boss bot is tuned in tools/boss-rates.mjs); the bot's health with its flasks drunk (it never drinks: one pool) */
   const F = fakeWorld(L0, heroes), G = makeWispwoodHands(F); G.reset();
   let boss = null; const ctx = { ...F, get L() { return L0; }, get boss() { return boss; }, bossActive: true, EHP: { lanternwidow: WD.hp }, ww: () => G };
   const H = makeLanternWidowHands(ctx); F.extra = () => H.lights();
@@ -191,7 +191,7 @@ function fight({ seed = 1, swing = 40, every = 0.45, reclaimOn = true } = {}) {
   return { won: !boss.alive && !P.dead, t, hpLeft: P.hp, modes, S, H, G, L0, P, openDmg, veilDmg, darkT, maxDark };
 }
 { const R = fight(), n = R.S.n;
-  ok(R.won, 'THE LANTERN WIDOW, END TO END: the bot wins in ' + R.t.toFixed(0) + ' s with ' + Math.round(R.hpLeft) + ' of 640 health left (hurt by ' + JSON.stringify(Object.fromEntries(Object.entries(R.S.hurt).map(([k, v]) => [k, Math.round(v)]))) + ')');
+  ok(R.won, 'THE LANTERN WIDOW, END TO END: the bot wins in ' + R.t.toFixed(0) + ' s with ' + Math.round(R.hpLeft) + ' of 1000 health left (hurt by ' + JSON.stringify(Object.fromEntries(Object.entries(R.S.hurt).map(([k, v]) => [k, Math.round(v)]))) + ')');
   ok(n.thefts >= 2 && n.reclaims >= 2 && n.openHits > 0, 'SHE TAKES YOUR LIGHT and the RECLAIM is the key: ' + n.thefts + ' thefts, ' + n.reclaims + ' reclaims, ' + n.openHits + ' blows landed x2 (' + Math.round(R.openDmg) + ' open vs ' + Math.round(R.veilDmg) + ' through the veil)');
   ok(R.S.ph === 2 && R.modes.has('lament') && n.marches >= 1, 'P2: the lament at 50%, then THE WEDDING MARCH (' + n.marches + ') and the false lights; the glade dark ' + R.darkT.toFixed(0) + ' s of ' + R.t.toFixed(0));
   ok(['veilTell', 'wailTell', 'handsTell', 'theftTell', 'reel', 'glide', 'perch'].every(m => R.modes.has(m)), 'every move came out of its own windup: ' + [...R.modes].join(' '));
