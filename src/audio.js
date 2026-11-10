@@ -1,6 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
+import { JUICE2_SHIPS } from './juice.js'; import { feel as jfFeel } from './jump-feel.js';   /* (claude/juice2) the flag and the hero weights: the thwack layer, the clink, the jump / land weight (all OFF = today's sound) */
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
 const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg', canal: './audio/canal.ogg', harvestfair: './audio/harvestfair.ogg', wickerqueen: './audio/wickerqueen.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', blacklord: './audio/blacklord.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.ogg', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', mountain: './audio/mountain.ogg',   /* THE SCREE PATH (claude/scree2, Daniel 10-08): "Mountain Theme Loop" by beardalaxy, CC0 (audio/CREDITS.txt) */ boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
   ambWind: './audio/ambWind.ogg', ambTown: './audio/ambTown.ogg', ambShore: './audio/ambShore.ogg', ambShip: './audio/ambShip.ogg', ambCave: './audio/ambCave.ogg', ambDeep: './audio/ambDeep.ogg', ambDrip: './audio/ambDrip.ogg',
@@ -159,6 +160,9 @@ export function duckBeat(depth = DUCK.depth) {
   const t = ac.currentTime;
   for (const n of [musicDuck, ambDuck]) { n.gain.cancelScheduledValues(t); n.gain.setTargetAtTime(depth, t, 0.012); n.gain.setTargetAtTime(1, t + DUCK.hold, DUCK.release); }
 }
+/* (claude/juice2) THE THWACK DUCK: for 90 ms after the shared transient the combat / voice layers sit 15% lower so the stack never clips; 1 with the flag off */
+let thwackUntil = 0;
+const duckUnder = cat => (JUICE2_SHIPS && ac && ac.currentTime < thwackUntil && (cat === 'combat' || cat === 'voice')) ? 0.85 : 1;
 function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
   if (!voicesOn && VOCAL.has(name)) return false;
@@ -166,7 +170,7 @@ function file(name, v = 0.6, rate = 1, dest = null) {
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const cat = catOf(name); if (!admit(cat, v)) return true;   /* a capped-out sound counts as played: the caller must not fall back to its synth on top */
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
-  const g = ac.createGain(); g.gain.value = v * SFX_TRIM[cat]; s.connect(g); g.connect(dest || out()); s.start(); track(s, g, cat, v);
+  const g = ac.createGain(); g.gain.value = v * SFX_TRIM[cat] * duckUnder(cat); s.connect(g); g.connect(dest || out()); s.start(); track(s, g, cat, v);
   return true;
 }
 
@@ -181,7 +185,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
   const opts = (clips[name] || []).filter(Boolean); if (!opts.length) return false;
   if (!admit('voice', v)) return true;
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + Math.random() * 0.1);
-  const g = ac.createGain(); g.gain.value = v * SFX_TRIM.voice;
+  const g = ac.createGain(); g.gain.value = v * SFX_TRIM.voice * duckUnder('voice');
   if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; f.Q.value = 0.8; s.connect(f); f.connect(g); } else s.connect(g);
   g.connect(out()); s.start(ac.currentTime + delay); track(s, g, 'voice', v); return true;
 }
@@ -2315,6 +2319,35 @@ for (const k of ['hitHeavy', 'hitFinish', 'heavy', 'blockHeavy', 'guardBreak']) 
 { const base = SFX.pHurt; SFX.pHurt = function (...a) { duckBeat(); const plate = heroVoice === 'knight' || heroVoice === 'paladin' || heroVoice === 'reaper'; file(plate ? 'bd_plate' : 'bd_flesh', 0.2, plate ? 0.9 : 1); return base.apply(this, a); }; }
 { const base = SFX.pHurtHeavy; SFX.pHurtHeavy = function (...a) { file('bd_heavy', 0.3, 0.95); return base.apply(this, a); }; }
 { const base = SFX.pLand; SFX.pLand = function (surf, tier = 0) { landTier = tier | 0; try { return base.call(this, surf, tier); } finally { landTier = 0; } }; }
+/* (claude/juice2, J3) THE HIT 'THWACK', THE CLINK, THE JUMP AND LAND WEIGHT. All behind JUICE2_SHIPS (off = each is a no-op and glance() is the old sound).
+   THWACK: one shared transient under EVERY landed blow, whoever swung and whatever it hit: a 30 ms click (2.4 kHz) over a 140 Hz body (light); a 60 Hz sub, 90 ms, under it (heavy); a crunch on top (finish).
+   Pitch +/- 6% per hit; the voice / material layers sit 15% under it (duckUnder). Peak (naive sum, layers never coincide): light ~0.24, finish ~0.62, under the 0.9 mix headroom with the voice + material + music ducks. */
+export const THWACK = { light: { click: 0.11, body: 0.13, sub: 0, crunch: 0 }, heavy: { click: 0.13, body: 0.15, sub: 0.2, crunch: 0 }, finish: { click: 0.12, body: 0.14, sub: 0.18, crunch: 0.12 }, jitter: 0.06, duck: 0.85, duckSec: 0.09, gate: 0.03 };
+SFX.thwack = function (cls = 'light') {
+  if (!JUICE2_SHIPS || !ac) return; const R = THWACK[cls] || THWACK.light; if (!gate('thwack', THWACK.gate)) return;
+  const k = 1 - THWACK.jitter + Math.random() * 2 * THWACK.jitter;   /* +/- 6% */
+  noise(0.03, R.click, 2400 * k, 1.1); tone('sine', 140 * k, 90 * k, 0.07, R.body);
+  if (R.sub) tone('sine', 60 * k, 40 * k, 0.09, R.sub);
+  if (R.crunch) { noise(0.08, R.crunch, 1200 * k, 0.9, 0.012); tone('triangle', 520 * k, 260 * k, 0.07, R.crunch * 0.5, 0.01); }
+  thwackUntil = ac.currentTime + THWACK.duckSec;
+};
+/* THE CLINK: the blocked blow, the clash file and a high ping (the synth glance while the files load or the flag is off) */
+SFX.clink = function () {
+  if (!JUICE2_SHIPS) return SFX.glance(); if (!gate('clink', 0.05)) return;
+  const k = 0.95 + Math.random() * 0.1;
+  if (!file('blk_clash', 0.3, 1.15 * k)) { noise(0.1, 0.2, 2600, 0.45); tone('square', 520 * k, 380, 0.07, 0.12); }
+  tone('triangle', 2900 * k, 2600 * k, 0.14, 0.07); tone('sine', 4300 * k, 4100 * k, 0.09, 0.035, 0.005); noise(0.04, 0.08, 4200, 1.6);
+};
+/* JUMP AND LAND BY WEIGHT (src/jump-feel.js w): the pitch of the jump chirp is 1/w, a 40 ms cloth / mail noise for w >= 1.1 and an airy one under 0.85; the landing thud's depth and
+   length grow with w and with the fall tier. Extra layers UNDER the existing sounds, so a recorded jump still plays. */
+export const WEIGHT_SND = { jumpF0: 310, jumpF1: 620, clothW: 1.1, airyW: 0.85 };
+export const jumpPitch = w => 1 / (w > 0 ? w : 1);
+export const landDepth = (w, tier) => ({ f0: 150 / Math.max(0.5, w), f1: 60 / Math.max(0.5, w), dur: 0.06 + 0.05 * w + 0.03 * tier, v: Math.min(0.3, 0.05 + 0.09 * w + 0.04 * tier) });
+{ const base = SFX.pJump; SFX.pJump = function (...a) { const r = base.apply(this, a); if (JUICE2_SHIPS && ac) { const w = jfFeel(heroVoice).w, p = jumpPitch(w);
+    tone('sine', WEIGHT_SND.jumpF0 * p, WEIGHT_SND.jumpF1 * p, 0.1, 0.05);
+    if (w >= WEIGHT_SND.clothW) noise(0.04, 0.07, 1100, 0.6); else if (w <= WEIGHT_SND.airyW) noise(0.05, 0.05, 3200, 0.8); } return r; }; }
+{ const base = SFX.pLand; SFX.pLand = function (surf, tier = 0) { const r = base.call(this, surf, tier); if (JUICE2_SHIPS && ac && surf !== 'water') { const w = jfFeel(heroVoice).w, d = landDepth(w, tier | 0);
+    tone('sine', d.f0, d.f1, d.dur, d.v); if (w >= 1.2) noise(0.05 + 0.02 * tier, 0.08 + 0.02 * tier, 420, 0.6); } return r; }; }
 /* Sound Test rows for the layered cases (the hero shown is the one picked in the game): the third cut, a drop, a big drop */
 SFX.swingThird = () => SFX.swingUp(2); SFX.pLandDrop = () => SFX.pLand('stone', 1); SFX.pLandBig = () => SFX.pLand('stone', 2);
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');

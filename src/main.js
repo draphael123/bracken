@@ -66,7 +66,7 @@ import { makeDrains } from './drain.js';   /* (claude/underwater) OUT OF BREATH 
 import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
 import * as APL from './arena-polish.js'; const aplTint = APL.makeTint();   /* (claude/arenapolish) THE ARENA POLISH PACK: the phase-tint helper (arena.tintFn / arena.phaseTints) and the Hexed Fields / Rootway / Harbor / Waymeet dressing (src/arena-polish.js) */
-import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
+import { attackPose } from './attack-animation.js'; import { smearOf, followFrame, swingHit } from './swing-smear.js';   /* (claude/juice2) the light-cut smear + the follow hold (JUICE2_SHIPS) */ import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
 import { AMBUSH_HEALTH } from './ambush.js';
 import {drawTowerBackdrop,gateOccupied,updateTowerAscent,towerAscentReset} from './tower-ascent.js';
 import { ftUpdate, ftMover, ftDraw, FT2, ftReset } from './tower-fall2.js'; import { ft4Update, ft4Draw, ft4Reset } from './tower-front.js';   /* (claude/ft4b) FALLING TOWER 4: THE COLLAPSE FRONT's acts, set pieces and braced rooms */   /* THE FALLING TOWER 2 (claude/fallingtower2): debris on told shadows, burning books, spills, the tilting vault, the outer face, the snap */
@@ -9119,7 +9119,7 @@ function addPoise(e, dmg, fromX, plunge, verb = null) {
 /* THE GLANCE, SEEN AND HEARD: the wrong tool for that body. EVERY wrong-verb hit in the game says it the same way - the family table's
    glancing blow and a guard turning a light cut alike - with ONE sound (SFX.glance, a scrape and no ring) and ONE grey word, GLANCES,
    over the creature, so the player learns a single signal for "not with that". */
-function glanceSay(e) { SFX.glance(); number(e.x, e.y - (e.h || 16) - 18, 'GLANCES', '#9aa39a'); }
+function glanceSay(e) { (JUICE2_SHIPS && SFX.clink ? SFX.clink : SFX.glance)();   /* (claude/juice2) the clink: the clash file + a high ping */ number(e.x, e.y - (e.h || 16) - 18, 'GLANCES', '#9aa39a'); }
 function glanceBeat(e, fromX) { const d = Math.sign(fromX - e.x) || 1;
   glanceSay(e);
   if (JUICE2_SHIPS) { const gx = e.x + d * ((e.w || 12) / 2), gy = e.y - (e.h || 16) / 2; hitSpawned = 0;   /* (claude/juice1) THE CLINK: a longer freeze, white sparks and a steel star at the guard, a 1 px camera kick back toward the hero, and the hero rebounds a step (ground only, never over a ledge) */
@@ -9791,7 +9791,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
     e.alive = false; if (e.t === 'swarm' && e.onHero) { SWX.drainOff(e, e.onHero); e.onHero = null; }   /* (claude/hornetsnest) a swarm cut down while it was on him takes its sting with it (the drain was left running) */ if(e.ambushLeader)e.defeated=true; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && (tal('conflagration') || prk('pspread')) && e.burn > 0) { const spr = Math.max(tal('conflagration') ? 46 : 0, prk('pspread') ? 30 + 10 * prk('pspread') : 0); for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < spr && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = Math.min(P.vy, -210); P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go (never DOWN from a pogo already thrown this frame: her fire finishing a head she just came up off cut the 330 to 210)
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(voiceOf(e)); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
-    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor2('finish'), big ? undefined : 'finish'); SFX.hitFinish(); if (JUICE2_SHIPS) { hitSpawned = 0; starAt(e.x - dir * Math.min((e.w || 12) / 2, 8), e.y - e.h / 2, 'finish', dir, MAT[e.t] === 'steel' || MAT[e.t] === 'stone' ? 'steel' : 'hit'); ringAt(e.x, e.y - e.h / 2, JUICE2.killRing, '#fff6e0', 0.2); chips(e.x, e.y - e.h / 2, dir, JUICE2.killChips, ['#fff6e0', '#ffd36b', ...(COLS[e.t] || [])], 150, 520, 1); }   /* (claude/juice1) THE KILL POP: a finish-size star, a 22 px ring, 8 more chips */ landShake('finish', big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); landRumble('finish'); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
+    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor2('finish'), big ? undefined : 'finish'); if (JUICE2_SHIPS && SFX.thwack) { SFX.thwack('finish'); P.smearHitT = time; P.smearHitAtk = P.atk; } SFX.hitFinish(); if (JUICE2_SHIPS) { hitSpawned = 0; starAt(e.x - dir * Math.min((e.w || 12) / 2, 8), e.y - e.h / 2, 'finish', dir, MAT[e.t] === 'steel' || MAT[e.t] === 'stone' ? 'steel' : 'hit'); ringAt(e.x, e.y - e.h / 2, JUICE2.killRing, '#fff6e0', 0.2); chips(e.x, e.y - e.h / 2, dir, JUICE2.killChips, ['#fff6e0', '#ffd36b', ...(COLS[e.t] || [])], 150, 520, 1); }   /* (claude/juice1) THE KILL POP: a finish-size star, a 22 px ring, 8 more chips */ landShake('finish', big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); landRumble('finish'); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
     sparks(e.x, e.y - e.h / 2, dir, JUICE2_SHIPS ? JUICE2.finish.sparks : 6);
     spawnCorpse(e, dir); beastSlain(e.cnSkin || e.t);
@@ -9826,6 +9826,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
     if (e.t === 'shaman' && e.hp > 0) { burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); const dir2 = Math.sign(e.x - P.x) || 1; let nx = e.x + dir2 * 70; if (isSolid(Math.floor(nx / TS), Math.floor((e.y - 1) / TS)) || !isSolid(Math.floor(nx / TS), Math.floor((e.y + 1) / TS))) nx = e.x - dir2 * 70; e.x = nx; e.flash = 0.3; burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); number(e.x, e.y - 18, 'POOF', '#4aa0b0'); }
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
+    if (JUICE2_SHIPS && !P.jetHit && SFX.thwack) { SFX.thwack(blowKind(e, dmg, tag)); P.smearHitT = time; P.smearHitAtk = P.atk; }   /* (claude/juice2) the shared thwack under the voice + material, and the stamp the smear reads to snap bright */
     const voice = SFX.hurtOf(voiceOf(e)), staleNow = e.amStaleAt === time; if (staleNow && SFX.hitDull) SFX.hitDull(); else if (voice) voice(); else SFX.hit();   /* (claude/difficulty) A STALE BLOW is heard duller (no word) */ // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
     if (!P.jetHit) { const jc = blowKind(e, dmg, tag), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, tag); landShake(jc, JR.shake, dir * JR.kick); landRumble(jc); const J2R = j2row(jc) || JR; e.flash = Math.max(e.flash, J2R.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = recoilEase(); e.recT0 = e.rec; e.recD = dir; e.recA = J2R.recoil;
       if (JUICE2_SHIPS) { hitSpawned = 0; e.jitCls = jc; e.jitAt = jitStamp; starAt(e.x - dir * Math.min((e.w || 12) / 2, 8), e.y - e.h / 2, jc, dir, MAT[e.t] === 'steel' || MAT[e.t] === 'stone' ? 'steel' : 'hit');   /* (claude/juice1) the foe shakes in the freeze (juiceJit) and a star sits at the contact edge */
@@ -12141,6 +12142,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
          a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
       dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 4); { const hd = JF.hopDust(hero(), prevVy, tier); jfPuff(P.x - 6, P.y, hd, -1); jfPuff(P.x + 6, P.y, hd, 1); } SFX.pLand(surface(), tier); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
       jfLand(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
+      if (JUICE2_SHIPS && !SET.reduceMotion) { const w = JF.feel(hero()).w; if (heavy) shakeCam(Math.max(0, (w - 1) * 2.4)); else if (w >= 1.2) shakeCam((w - 1) * 2); }   /* (claude/juice2, J3) LAND FEEL BY WEIGHT: the maul and the axes land harder (paladin +0.7 px on a drop, 0.6 on a hop), the light heroes add nothing (the squash + dust were already weighted: jump-feel.js) */
       if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); if (prevVy > 250) hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
       if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
       scatterPebbles(P.x, P.y, tier); dipUnderfoot(tier); }
@@ -34662,7 +34664,22 @@ function drawAirUpCrescent(cx, cy) {
   g.fillStyle = col[0]; g.globalAlpha = 0.8 * al; ring(R, 5, tail, head);                /* the colour */
   g.fillStyle = '#ffffff'; g.globalAlpha = 0.95 * al; ring(R - 0.5, 2, Math.min(-0.35, head + 0.9), head);   /* the white core, at the leading edge */
   g.restore(); }
+/* (claude/juice2, J2) THE LIGHT-CUT SMEAR (src/swing-smear.js): a thin crescent in the weapon's colour on frames 1-2 of every hero's light cut; it SNAPS to full alpha for the freeze when a blow lands. Art only; JUICE2_SHIPS off draws nothing. */
+function drawLightSmear(cx, cy) {
+  const sm = smearOf(hero(), P, swingHit(P, time)); if (!sm) return;
+  const px = Math.round(P.x - cx), py = Math.round(P.y - cy) - 9, f = P.face, al = (SET.reduceMotion ? 0.45 : 1) * sm.alpha * (sm.hit ? Math.max(0.5, flashK()) : 1);   /* Flashes slider scales the snap; reduce motion keeps it dim */
+  if (al <= 0.01) return;
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 2; i++) { g.globalAlpha = Math.min(1, al * (i ? 1 : 0.7)); g.strokeStyle = sm.col[i ? 0 : 1]; g.lineWidth = i ? 1 : Math.max(1, Math.round(sm.w * (0.5 + 0.5 * Math.sin(Math.PI * Math.min(1, sm.k + 0.15)))));
+    g.beginPath();
+    if (sm.geom === 'line') { const len = Math.round(sm.r * 0.7 * Math.min(1, sm.k * 2.4 + 0.3)), x0 = f > 0 ? px + 8 : px - 8 - len; g.moveTo(x0, py + 1); g.lineTo(x0 + len, py + 1); }
+    else { const a = sm.tail, b = sm.head, r = sm.r - i;
+      if (sm.geom === 'arcUp') { if (f > 0) g.arc(px, py, r, -b, -a); else g.arc(px, py, r, Math.PI + a, Math.PI + b); }
+      else if (f > 0) g.arc(px, py, r, a, b); else g.arc(px, py, r, Math.PI - b, Math.PI - a); }
+    g.stroke(); }
+  g.restore(); }
 function drawSwing(cx, cy) {
+  if (JUICE2_SHIPS) drawLightSmear(cx, cy);
   drawRiseCrescent(cx, cy); drawRiposteGlint(cx, cy);
   if (drawCutArc(cx, cy)) return;
   if (!P.dead && P.atk >= 0 && !P.heavy && P.swingKind === 'airUp') { drawAirUpCrescent(cx, cy); return; }   /* (claude/airupart) */
@@ -36215,7 +36232,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.atk >= 0 && CA && CA.atkPose(K.R)) { [key, frame] = CA.atkPose(K.R); }   /* THE SHIELD TRIP and THE LOW POKE, from the crouch (src/crouch-a.js) */
       else if (P.atk >= 0) { const pose = attackPose(hero(), P, K.R); key = pose.key; frame = pose.frame; }
       else if (P.atkRec > 0 && P.recPose && P.ground && !(P.flourishT > 0 && !P.swingRiposte)) { [key, frame] = P.recPose;
-        if (!P.heavy && K.R.follow && (key === 'atk' || key === 'atkB' || key === 'atkC' || key === 'bloodLash') && P.atkRecMax > 0) { key = 'follow'; frame = P.atkRec / P.atkRecMax > 0.5 ? 0 : 1; } }   /* FOLLOW-THROUGH (heroanim): the spent weapon carried on, then back to guard, inside the same recovery (art only) */   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
+        if (!P.heavy && K.R.follow && (key === 'atk' || key === 'atkB' || key === 'atkC' || key === 'bloodLash') && P.atkRecMax > 0) { key = 'follow'; frame = JUICE2_SHIPS ? followFrame(P.atkRec / P.atkRecMax, time - (P.smearHitT ?? -9) < 0.5) : P.atkRec / P.atkRecMax > 0.5 ? 0 : 1; } }   /* FOLLOW-THROUGH (heroanim): the spent weapon carried on, then back to guard, inside the same recovery (art only) */   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
       else if (P.rpPoseT > 0 && K.R.parry && !P.dodge && !P.swim) { key = 'parry'; frame = RP.parryFrame(P); }   /* (claude/riposteart) THE PARRY POSE: the catch the moment the blow lands on the beat, then the hold - each hero's own look */
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
       else if (isWarden() && P.onFoot && P.ground && K.R.wPerch && !(P.atk >= 0)) { key = 'wPerch'; frame = Math.floor(time * 2.2) % 2; }   /* (claude/heropassaart) STOOD ON THE SHAFT: bare-handed, arms out for her balance */
