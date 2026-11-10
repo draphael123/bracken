@@ -1011,7 +1011,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     const GQS = boss.t === 'gqueen' ? gqLabState() : null, gqSpf = (BK.SET.speed || 1) / 60;   /* (claude/gq2) her hall, the escape, the tower top: the stage clocks + stuns (src/lab-gqueen.js) */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
-      if (GQS) gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf);   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
+      if (GQS) { if (PERC) PERC.restore(); const gqSk = gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf); if (PERC) { if (gqSk) PERC.update(); PERC.apply(); } }   /* (gq4tune-d) the skip runs on the REAL state: with the eyes applied, the perception's restore() wrote the pre-skip mode (gone) back over her wake and she never began P2 (bar 100% for 240 s) */   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
       if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
