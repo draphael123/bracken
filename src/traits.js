@@ -56,15 +56,15 @@ export const sharedUnlocked = (p, id) => { const s = SHARED_BY_ID[id]; if (!s) r
 /* THE SPLIT. Knight is SEEDED (plan sec 2) to prove the path; TRAITDATA-A/B fill the rest. */
 export const TRAIT_SPLIT = {
   knight: {
-    core: ['thirdCut', 'parry', 'sunder', 'holdLine', 'bulwark'],
+    core: ['thirdCut', 'parry', 'sunder', 'holdLine', 'bulwark', 'riposte'],   /* RIPOSTE is CORE (RECS158-d, Daniel 11-10): always on at its level, no slot; the Crusader duel fell 92 -> 50% (built bot) without it */
     traits: ['plated', 'vengeance', 'evasion', 'bleed', 'bash', 'bounding', 'flurry', 'unbroken', 'counterstroke', 'endlessSky'],
     merged: {},
-    folded: { riposte: 'block:A' },   /* RIPOSTE -> the L27 block fork's A side (FORKS lane); until then it is a slottable trait */
+    folded: {},   /* (riposte moved to core, RECS158-d; the L27 block fork's A side no longer folds it) */
     retired: [],
     shared: ['airRoll', 'airDash', 'lightStep', 'momentum', 'hangCut', 'execute'],   /* the knight's ids that left his list for the shared six */
     defaults: ['vengeance', 'bash'],
     /* today's order, spread to L18; the DEFAULT trait is learned FIRST (the plan's slot-1 default must exist at L1-2). TRAITDATA-A may re-level. */
-    learnAt: { vengeance: 2, bounding: 4, plated: 5, evasion: 7, bleed: 8, bash: 10, flurry: 12, unbroken: 14, counterstroke: 16, endlessSky: 18, riposte: 6 },
+    learnAt: { vengeance: 2, bounding: 4, plated: 5, evasion: 7, bleed: 8, bash: 10, flurry: 12, unbroken: 14, counterstroke: 16, endlessSky: 18 },
   },
   /* TRAITDATA-A (claude/traitdata-a): WARDEN, RANGER, GEOMANCER (knight above). Ids are catalog ids; every catalog passive of the hero is listed once (a CUT sits in retired: kept, never on). */
   warden: {   /* reach is the verb */

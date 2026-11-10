@@ -68,7 +68,7 @@ try {
   }
   /* TRAITDATA-A: knight, warden, ranger, geomancer - the table as built (plan passiveplan sec 2) */
   const A = {
-    knight: { core: 5, traits: 10, folded: 1, merged: 0, retired: 0, shared: 6, total: 22, def: ['vengeance', 'bash'] },
+    knight: { core: 6, traits: 10, folded: 0, merged: 0, retired: 0, shared: 6, total: 22, def: ['vengeance', 'bash'] },
     warden: { core: 5, traits: 10, folded: 4, merged: 3, retired: 1, shared: 0, total: 23, def: ['vaulter', 'everReady'] },
     ranger: { core: 5, traits: 10, folded: 4, merged: 1, retired: 1, shared: 0, total: 21, def: ['rgKill', 'rgCover'] },
     geomancer: { core: 4, traits: 9, folded: 0, merged: 1, retired: 0, shared: 0, total: 10, def: ['geoAftershock', 'geoShrapnel'], newTraits: 4 },
@@ -110,10 +110,12 @@ try {
   /* an unsplit hero is judged as today even with the flag on */
   for (const h of HERO_IDS.filter(x => !T.hasSplit(x))) for (const n of SKILLS.filter(x => x.hero === h && !x.active).slice(0, 5)) assert.equal(passiveOn({ traits: { [h]: [] } }, h, n.id, 24), legacy({}, h, n.id, 24), 'unsplit ' + h + '/' + n.id);
   /* merged: reads its host's slot (a temporary row, put back) */
-  { const sp = T.TRAIT_SPLIT.knight, keepM = sp.merged, keepF = sp.folded; sp.merged = { bleed: ['riposte'] }; sp.folded = {};
+  { const sp = T.TRAIT_SPLIT.knight, keepM = sp.merged, keepF = sp.folded, keepC = sp.core; sp.merged = { bleed: ['riposte'] }; sp.folded = {}; sp.core = keepC.filter(x => x !== 'riposte');   /* riposte is core now: lift it out for the temporary row */
     assert.equal(T.kindOf('knight', 'riposte'), 'merged');
     assert.equal(passiveOn({ traits: { knight: ['bleed'] } }, 'knight', 'riposte', 24), true, 'merged on with host'); assert.equal(passiveOn({ traits: { knight: ['vengeance'] } }, 'knight', 'riposte', 24), false);
-    sp.merged = keepM; sp.folded = keepF; }
+    sp.merged = keepM; sp.folded = keepF; sp.core = keepC; }
+  /* RIPOSTE is knight CORE (RECS158-d): on at its level with nothing worn, never ranked */
+  assert.equal(T.kindOf('knight', 'riposte'), 'core'); assert.equal(passiveOn({ traits: { knight: [] } }, 'knight', 'riposte', 5), true); assert.equal(passiveOn({ traits: { knight: [] } }, 'knight', 'riposte', 4), false); assert.equal(T.traitScale({ traits: { knight: [] } }, 'knight', 'riposte', 5), 1);
   /* shared: worn + unlocked (account-wide: any hero's first clear) */
   { const sh = T.SHARED_TRAITS[0];
     assert.equal(T.sharedOn({ traits: { knight: [sh.id] } }, 'knight', sh.id, 24), false, 'locked until a first clear');
