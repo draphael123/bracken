@@ -8,6 +8,35 @@
 /* (claude/foevariety) a row may also carry skin: a cnSkin to give the swapped foe (the archer variants and the club goblin, src/foe-variety.js), and allow: extra ent keys that
    do not change the foe's brain and so do not make it "not plain" (perch: an archer on a ledge keeps its ledge). */
 export const CAST_SWAPS = {
+  /* (claude/foevar1) THE DESERT'S CAST PASS (foe-variety audit 11-10, lane F1). Only foes the road has ALREADY introduced (tools/one-new-foe.mjs): the water-thief (Well Town), the fire / venom scorpion
+     (Well Town, hands live on every level), the raptor (Red Gorge: the vulture's machine), the sand-drowned (Buried City). fromSkin picks a level's own reskin to thin; the swapped foe drops it. */
+  caravan: [
+    { from: 'cutthroat', to: 'scorpion', every: 4, min: 2 },                                          /* the first desert level has only the seven base foes: a claw for every fourth blade, threat 3 for 3 */
+  ],
+  underwell: [
+    { from: 'scorpion', fromSkin: 'venomscorpion', to: 'waterthief', every: 3, min: 4 },             /* scorpion 42%: the wells' own thief (blue, Well Town) for every third venom scorpion */
+  ],
+  glasssea: [
+    { from: 'scorpion', fromSkin: 'glassscorpion', to: 'scorpion', skin: 'firescorpion', every: 4, min: 3 },   /* heat glare: the fire scorpion (its hiss and its burning patch tell it) */
+    { from: 'cutthroat', fromSkin: 'nighthunter', to: 'waterthief', every: 4, min: 2 },
+    { from: 'vulture', to: 'raptor', every: 3, min: 2 },                                              /* the cliff bird over the glass: the vulture's machine, dmg 12 */
+  ],
+  ksar: [
+    { from: 'slinger', fromSkin: 'wallslinger', to: 'raptor', every: 4, allow: ['ks'], min: 3 },     /* the falcons' bigger kin keep the walls */
+    { from: 'cutthroat', fromSkin: 'ksarblade', to: 'waterthief', every: 4, allow: ['ks'], min: 3 },
+    { from: 'cutthroat', fromSkin: 'ksarblade', to: 'scorpion', skin: 'firescorpion', every: 5, allow: ['ks'], min: 2 },   /* fire at the gates */
+  ],
+  buriedcity: [
+    { from: 'slinger', fromSkin: 'sandslinger', to: 'raptor', every: 5, min: 2 },                    /* circling over the streets */
+    { from: 'slinger', fromSkin: 'sandslinger', to: 'vulture', every: 4, min: 2 },
+    { from: 'ambusher', fromSkin: 'sanddrowned', to: 'scorpion', skin: 'firescorpion', every: 4, min: 2 },
+  ],
+  sealedpyramid: [
+    { from: 'mummy', to: 'construct', every: 3, min: 2 },                                            /* mummy 49%: the tomb's clockwork wardens */
+    { from: 'mummy', to: 'ambusher', skin: 'sanddrowned', every: 2, min: 2 },                        /* the drowned under the tomb sand */
+    { from: 'mummy', to: 'cutthroat', every: 2, min: 1 },                                            /* a tomb robber */
+    { from: 'hound', fromSkin: 'jackal', to: 'vulture', every: 4, x1: 300, min: 2 },                 /* the outer court's carrion bird */
+  ],
   kitchengate: [
     { from: 'sprig', to: 'thief', every: 3, min: 4 },          /* the larder thieves: five of the kitchen's fourteen plain sprigs */
     { from: 'rockgoblin', to: 'burngob', every: 2, min: 2 },    /* a cook already alight, in a kitchen: the first and the third rock-thrower */
@@ -53,8 +82,9 @@ export const PLAIN_KEYS = new Set(['t', 'x', 'y', 'face', 'squad', 'garrison']);
 export function castSwaps(L, id, report) {
   const rows = CAST_SWAPS[id]; if (!rows || !L || !L.ents) return L;
   for (const r of rows) {
-    const hits = L.ents.filter(e => e.t === r.from && e.x >= (r.x0 ?? -1e9) && e.x <= (r.x1 ?? 1e9) && Object.keys(e).every(k => PLAIN_KEYS.has(k) || (r.allow || []).includes(k))).sort((a, b) => a.x - b.x || a.y - b.y);
-    let n = 0; hits.forEach((e, i) => { if (i % r.every === 0) { e.t = r.to; if (r.skin) e.cnSkin = r.skin; n++; } });
+    const allow = r.fromSkin ? (r.allow || []).concat('cnSkin') : (r.allow || []);   /* (claude/foevar1) fromSkin: only foes in that reskin (and it may carry cnSkin) */
+    const hits = L.ents.filter(e => e.t === r.from && (!r.fromSkin || e.cnSkin === r.fromSkin) && e.x >= (r.x0 ?? -1e9) && e.x <= (r.x1 ?? 1e9) && Object.keys(e).every(k => PLAIN_KEYS.has(k) || allow.includes(k))).sort((a, b) => a.x - b.x || a.y - b.y);
+    let n = 0; hits.forEach((e, i) => { if (i % r.every === 0) { e.t = r.to; if (r.skin) e.cnSkin = r.skin; else if (r.fromSkin) delete e.cnSkin; n++; } });
     if (report) report.push({ id, from: r.from, to: r.to, swapped: n, min: r.min || 1 });
   }
   return L;
