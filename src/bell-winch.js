@@ -58,3 +58,20 @@ export function waveKinds(kinds, seats) { return seats >= 3 ? kinds.concat(['sol
 /* ---------- THE MURDER HOLE (src/main.js murderhole props: Highcrown's six) ---------- a stone a seat drops by striking its slot or chain: dmg to each foe it passes, a heavy
    or an elite staggered, never a hero; it reloads. */
 export const MURDER = { dmg: 40, stagger: 1.0, reload: 10, fall: 420 };
+
+/* ---------- THE GATE (claude/gq4p-d: the Princess's three portcullises; shared with nothing else) ----------
+   A gate is OPEN or SHUT (and, in the add phase, LOCKED open). One blow or shot on its chain pin knocks an OPEN, unlocked one shut; her key opens a shut one.
+   G = { k, open, lock, key: {} (the blow-once key object), lit: 0 (lantern, 1 while a call is live on it) } */
+export function gateNew(k, open) { return { k, open: !!open, lock: false, key: {}, lit: 0, shutT: -9, openT: -9 }; }
+/* a blow on the pin: true when it knocked the gate shut */
+export function gateKnock(G, t) { if (!G || !G.open || G.lock) return false; G.open = false; G.shutT = t; G.key = {}; G.lit = 0; return true; }
+export function gateOpen(G, t) { if (!G || G.open) return false; G.open = true; G.openT = t; return true; }
+export function gateLock(G, t) { if (!G) return; if (!G.open) { G.open = true; G.openT = t; } G.lock = true; }
+export function gateSlam(G, t) { if (!G) return; G.lock = false; if (G.open) { G.open = false; G.shutT = t; } G.lit = 0; }
+/* the goblins a call sends: one per OPEN gate (two at 3-4 seats), never more than `room` (max alive - alive now). order = gate keys, nearest-to-hero first */
+export function callSpawns(gates, order, seats, room) {
+  const out = []; for (const k of order) { const G = gates[k]; if (!G || !G.open) continue; for (let i = 0; i < (seats >= 3 ? 2 : 1); i++) out.push({ gate: k, nth: i }); }
+  return out.slice(0, Math.max(0, room));
+}
+/* the add phase's goblins: 4 (soldier, pike, javelin, shield) +1 per seat past the first, cap 6 */
+export function addKinds(seats) { return ['soldier', 'pike', 'javelin', 'shield', 'soldier', 'pike'].slice(0, Math.min(6, 4 + Math.max(0, seats - 1))); }

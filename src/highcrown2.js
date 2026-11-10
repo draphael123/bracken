@@ -22,7 +22,7 @@
                             THE CHAPEL (rows 10-19, as it was), then the Captains Hall, the Banquet Hall, the Leads and HER HALL (as they were). */
 import { gobgeoLay } from './gobgeo-level.js';   /* (claude/gobgeo) */
 import { towerLay } from './gq3-tower.js';   /* (claude/gq3) THE BURNING TOWER + the 60-column tower top */
-import { queenStairLay } from './queen-stair.js'; import { G4, SHIFT } from './gq4l.js';   /* (claude/gq3) THE QUEEN'S STAIR, between the Princess's tower and her terrace */
+import { queenStairLay } from './queen-stair.js'; import { G4, SHIFT } from './gq4l.js'; import { P4 } from './gq4p.js';   /* (claude/gq3) THE QUEEN'S STAIR, between the Princess's tower and her terrace */
 export const HC2 = {
   START: { x: 8, y: 63 },
   WINCH_GATE: 25, WINCH: 20,                      // the bailey gate and its winch
@@ -381,11 +381,12 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   R.facades.push([b0, b1, 0, S, 'tower', { roof: true }]);
   R.interiors.push([b0 + 1, b1 - 1, B.BT_ROOF + 1, S, 'hchall']);
   R.calm.push([b0, b1, 0, B.BT_ROOF]);
-  R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, { k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }, { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
+  R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, ...(P4 && G4 ? [] : [{ k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }]), { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
   R.mini = { x0: (b0 + 1) * TS, x1: b1 * TS, floor: (S + 1) * TS, y0: B.BT_ROOF * TS, y1: (S + 2) * TS, trigger: (b0 + 4) * TS, wallL: b0, wallR: b1, gate: b1, boss: 'gprincess',
     name: 'THE GOBLIN PRINCESS', music: 'goblinroyal', start: [b0 + 2, S],
     land: { x0: B.LAND[0] * TS, x1: (B.LAND[1] + 1) * TS, y: B.LAND_ROW * TS }, grate: { col: B.GRATE, gy0: B.BT_ROOF + 1, gy1: B.LAND_ROW - 1 },
-    rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8 };
+    rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8,
+    gq4Gates: G4 ? B.ROOM46.gates : null };   /* (claude/gq4p-d) THE THREE GATES (tile coords: portcullis col x rows y0-y1, chain pin tile): src/goblin-princess.js reads them when GQ4P_SHIPS is on */
 
   // ---- THE CHASE (src/goblin-princess.js): where she runs, where she rings ----
   R.gpChase = { x0: 527 * TS, start: 540 * TS + 8, floor: (S + 1) * TS, end: (b0 + 2) * TS, gap: [B.GAP[0] * TS, (B.GAP[1] + 1) * TS],
