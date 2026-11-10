@@ -66,8 +66,10 @@ Verdict: READY AS A GREYBOX. Code only, node-checked. Not browser-walked, no art
   - B15 maths: a 40 blow lands 16 outside, 80 when correct; three shield books block the P1 answer; the opening cap holds; P1 holds at 70%.
 - **level-quality academy (flag on): CLEARS THE BAR** - bands 5 / 54% multi-height, 5 gadget kinds / 4 developed (lectern x7, pit x4, rail x4, rune x3, mover x2),
   secrets 2, checks 2 (1 per 92 route tiles), density 1.42 / 1 empty screen, 4 roles, route 18 rows / 4 pockets.
-  WARN (report-only): music, pilot, mash, blocking (18%). Full gate flag on and off: see the batch line below.
-- **ok flag on AND off:** (batch results below)
+  WARN (report-only): music, pilot, mash, blocking (18%). The full gate passes with the flag on and off (every gated level clears).
+- **ok flag on AND off (23 tools):** checkpoint-gaps, solid-islands, signs, spawns, killzones, checkpoint-stand, boss-read, answer-tags, deadends (4, all pay),
+  map-grammar, map-spacing, map-roads, additional-areas, tells, blow-tags, foe-pass, one-new-foe (the flock is the Academy's new foe; the Folly still passes), death-fx,
+  threat-holes, goblin-lint, comments, architecture, route-insert.
 - **Listed only (as for wispwood/ghosttrain):** floating-geometry 5 groups (the summoned stones and the two galleries), anchor-lint 3 cantilevers.
 
 ## Owed
