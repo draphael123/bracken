@@ -16,7 +16,7 @@
 // Resist 0.5x outside openings (0.4x hiding behind a guard: never less, never invulnerable). A single opening takes no more than GP.capK of her bar.
 // main.js calls makeGoblinPrincessHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read, level, drawWorld, clear, load, labDuty.
 import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js';   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
-import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
+import * as GQ4A from './redraw/gq4_art.js'; import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
   hp: P4 ? 1080 : 1000, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
@@ -431,10 +431,11 @@ export function makeGoblinPrincessHands(ctx) {
       if (e.mode === 'fan') GPA.drawFanGust(g, e.x - cx, e.y - cy - 4, e.face || 1, time, GP.fan.reach * 0.5);
       if (e.mode === 'pinned') { g.fillStyle = '#8fd160'; g.fillRect(x - 16, y - 40, R(32 * Math.max(0, e.modeT / GP.bell.pin)), 3); } }
     if (F.G) { const Pr = F.pir;   /* (gq4p-d) the pirouette's skid line along her path (told: it is where she will spin), the shimmer, the dizzy stars */
-      if (Pr && e && (e.mode === 'pirouetteTell' || e.mode === 'pirouette')) { const a = Math.min(Pr.x0, Pr.x1), b = Math.max(Pr.x0, Pr.x1), hot = e.mode === 'pirouetteTell' ? (Math.floor(time * 14) & 1) : 1;
-        g.fillStyle = hot ? '#ff6b6b' : '#a04040'; for (let xx = a; xx < b; xx += 6) g.fillRect(R(xx - cx), f0 - 1, 4, 1); g.fillStyle = '#ffd36b'; g.fillRect(R(Pr.x1 - cx) - 1, f0 - 7, 2, 7); }
-      if (e && e.shimmer && !e.hidden) { const x = R(e.x - cx), y = R(e.y - cy), k = 0.35 + 0.25 * Math.sin(time * 9); g.save(); g.globalAlpha = k; g.fillStyle = '#bfe8ff'; g.fillRect(x - 11, y - 28, 22, 30); g.fillStyle = '#ffffff'; g.fillRect(x - 11 + (Math.floor(time * 12) % 20), y - 28, 2, 30); g.restore(); g.fillStyle = '#8fd1ff'; g.fillRect(x - 12, y - 29, 24, 1); g.fillRect(x - 12, y + 2, 24, 1); }
-      if (e && (e.mode === 'dizzy' || e.mode === 'dazed')) for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; g.fillStyle = '#ffd36b'; g.fillRect(R(e.x - cx + Math.cos(a) * 9), R(e.y - cy - 30 + Math.sin(a) * 3), 2, 2); } }
+      if (Pr && e && (e.mode === 'pirouetteTell' || e.mode === 'pirouette')) { try { GQ4A.drawSkid(g, R(Pr.x0 - cx), R(Pr.x1 - cx), f0, time, e.mode === 'pirouetteTell' ? (Math.floor(time * 14) & 1) : 0); } catch (err) { /* nothing */ } }
+      if (e && e.shimmer && !e.hidden) GQ4A.drawShimmer(g, R(e.x - cx), R(e.y - cy) + 2, time);
+      if (e && (e.mode === 'keyTell' || e.mode === 'keyTurn') && F.key) { const kg = F.key.G; if (kg) GQ4A.drawKeyFx(g, R(kg.x - cx), R(kg.top - cy) + 10, e.mode === 'keyTurn' ? 1 : Math.max(0, 1 - e.modeT / 1.2), time); }
+      if (e && !e.hidden && (F.add && F.add.state !== 'dazed' || e.mode === 'allGatesTell') && F.G) { const gs = ['W', 'E', 'U'].map(k => F.G[k]).filter(Boolean); if (gs.length) GQ4A.drawMasterChain(g, { xs: gs.map(G => R(G.x - cx)), drum: Ar.land ? R((Ar.land.x0 + Ar.land.x1) / 2 - cx) : R(e.x - cx), y: R(((Ar.y0 || 0) + 2) - cy) + TS, k: e.mode === 'allGatesTell' ? Math.min(1, 1 - e.modeT / GP.gate.allTell) : 1, t: time, lit: e.mode === 'allGatesTell' || (F.add && F.add.state === 'ads') }); }
+    }
     for (const q of F.gems) GPA.drawGem(g, q.x - cx, q.y - cy, q.col, time, q.id || 0);
     if (F.tiara) GPA.drawTiaraFlying(g, F.tiara.x - cx, F.tiara.y - cy, time, F.tiara.home);
     for (const w of F.ripples) GPA.drawRipple(g, w.x - cx, f0, time);
@@ -514,8 +515,10 @@ export function makeGoblinPrincessHands(ctx) {
     HC3A.drawGuardDoor(g, dx, fy, doorSt(W), W && W.state === 'open' ? BW.hornLeft(W, now(), horn) : 0, time, slamOf(W, time));
     HC3A.drawWinchBox(g, wx, fy, dx, spinOf(W, time), W ? (W.n || 0) : 0, GP.guards.crank, !!W && W.state === 'open', time); };
   /* (gq4p-d) a GATE, greybox: stone posts, a portcullis (down = shut, raised = open, red studs = locked open), a lantern in the gate's colour (lit while a call is live), the chain pin hanging to the floor (glows while a call is live) */
+  let gateArtOff = false;
   function drawGate(g, G, cx, cy, time) {
-    if (!G) return; const x = R(G.x - cx), top = R(G.top - cy), bot = R(G.bot - cy), px = R(G.pinX - cx), fy = R(fl() - cy), live = G.lit > 0, pulse = 0.55 + 0.45 * Math.sin(time * 12);
+    if (!G) return;
+    if (!gateArtOff) { try { GQ4A.drawGate(g, G, cx, cy, time, fl() - cy); GQ4A.drawPin(g, G, cx, cy, time, fl() - cy); return; } catch (err) { gateArtOff = true; console.warn('gq4 gate art off (greybox):', err && err.message); } } const x = R(G.x - cx), top = R(G.top - cy), bot = R(G.bot - cy), px = R(G.pinX - cx), fy = R(fl() - cy), live = G.lit > 0, pulse = 0.55 + 0.45 * Math.sin(time * 12);
     if (x < -30 || x > 350) return;
     g.fillStyle = '#0c0c14'; g.fillRect(x - 6, top - 1, 12, bot - top + 1);   /* the doorway: a dark mouth in the wall, so an open (raised) gate still reads */
     g.fillStyle = '#7a7a92'; g.fillRect(x - 9, top - 3, 3, bot - top + 3); g.fillRect(x + 6, top - 3, 3, bot - top + 3); g.fillRect(x - 9, top - 4, 18, 3); g.fillStyle = '#a8a8c0'; g.fillRect(x - 9, top - 4, 18, 1);
@@ -544,6 +547,7 @@ export function makeGoblinPrincessHands(ctx) {
       HC3A.drawRope(g, rx, ceil, fy, sw, time);
       if (Ar.door && !(P4 && Ar.gq4Gates)) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
       else if (Ar.winch) HC3A.drawWinchBox(g, R(Ar.winch - cx), fy, R(Ar.door - cx), 0, 0, GP.guards.crank, false, time);   /* (gq4p-d) the guardroom door is retired (the gates replace it); the winch is the grate's release */
+      { const rm = Lv.gq4Room; if (P4 && rm && rm.galleries && !gateArtOff) { try { for (const k of ['W', 'E']) { const gl = rm.galleries[k]; GQ4A.drawGalleryTrim(g, gl[0] * TS, (gl[1] + 1) * TS, rm.galleries.row * TS, cx, cy, 340); } } catch (err) { /* nothing */ } } }
       if (F && F.G) for (const k of ['W', 'E', 'U']) drawGate(g, F.G[k], cx, cy, time);
       if (Ar.hatch) HC3A.drawHatch(g, R(Ar.hatch - cx), ceil, e && e.mode === 'escape' ? 1 : 0, time); }
   };

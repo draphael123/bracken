@@ -4,7 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
-import { Q4, Q4N } from './gq4q.js'; import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
+import * as GQ4A from './redraw/gq4_art.js'; import { Q4, Q4N } from './gq4q.js'; import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
 import * as GA from './redraw/gqueen_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the GQ3 art: royal portal, geode, tower, roof, stair */ import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
@@ -929,7 +929,8 @@ export function makeGQueenHands(ctx) {
   /* her hall's galleries (one-way, 4 rows over the floor): the jet's answer. Laid at the boss's wake (and again after a reset clears them). */
   function layGalleries() {
     const e = q(); if (!Q4 || !e || !inHall(e)) return; const A = L().arena, row = Math.round(A.floor / TS) - 4, x0t = Math.round(A.x0 / TS), x1t = Math.round(A.x1 / TS) - 1;
-    if (L().grid && L().grid[row * L().W + x0t + 4] === 0) { ctx.tiles(row, x0t + 2, x0t + 7, 'lay'); ctx.tiles(row, x1t - 7, x1t - 2, 'lay'); }
+    if (L().grid && L().grid[row * L().W + x0t + 4] === 0) { ctx.tiles(row, x0t + 2, x0t + 7, 'lay'); ctx.tiles(row, x1t - 7, x1t - 2, 'lay');
+      const fr = Math.round(A.floor / TS); for (const lx of [x0t + 8, x1t - 8]) for (let r = row; r < fr; r++) ctx.tiles(r, lx, lx, 'ladder'); }   /* (claude/gq4art) a ladder at each gallery's inner end (GQ4Q built them 4 rows up with none) */
   }
   const hearthXs = () => { const A = L().arena; return [A.x0 + 3 * TS + 8, A.x1 - 3 * TS - 8]; };
   function hearthStart(e) {
@@ -1071,6 +1072,41 @@ export function makeGQueenHands(ctx) {
           for (let k = 0; k < MT.shards; k++) addShard({ x: gx + (k - (MT.shards - 1) / 2) * 16, y: RA.floor - 14 - (k % 2) * 8, hang: MT.hang, glint: true }); }
         if (M.geode && M.geode.done && tt > M.geode.at + 0.5) P4.mtn = null; } }
     if (P4.volLit && tt > P4.volLit.until) P4.volLit = null;
+  }
+  /* (claude/gq4art) THE GQ4 PICTURE, DRAWN (src/redraw/gq4_art.js): same fields, same timings as the greybox below; any throw falls back to it for the rest of the session */
+  let art4Off = false;
+  function q4DrawArt(g, cx, cy, t) {
+    const e = q(); if (!e) return; const A = L().arena, VW0 = (g.canvas && g.canvas.width) || 320, fy = Math.round(A.floor - cy), Z = GQ4A;
+    if (inHall(e)) {
+      const tx = Math.round((e.throneX || (A.x0 + A.x1) / 2) - cx), lit = S.geode && S.geode.state === 'tell';
+      if (tx > -90 && tx < VW0 + 90) { Z.drawGeodeThrone(g, tx, fy, !!lit, t); Z.drawRoseWindow(g, tx, fy - 168, t, 30); }
+      for (let i = 0; i < 4; i++) { const lx = Math.round((A.x0 + (A.x1 - A.x0) * (0.2 + i * 0.2)) - cx); Z.drawLightPatches(g, lx, fy, t, i); }
+      const h4 = S.h4, hs = hearthXs();
+      hs.forEach(hx => { const x = Math.round(hx - cx); if (x < -40 || x > VW0 + 40) return; const live = h4 && h4.hearth && Math.abs(h4.hearth.src - hx) < 4 && (e.mode === 'hearthTell' || e.mode === 'hearthJet');
+        Z.drawHearth(g, x, fy, !!live, t, !!(live && e.mode === 'hearthTell'));
+        if (live && e.mode === 'hearthTell') { const far = Math.round(h4.hearth.far - cx), kk = 1 - e.modeT / Q4N.hearth.tell; g.globalAlpha = 0.3 + 0.5 * kk; g.fillStyle = '#ff6b6b'; g.fillRect(Math.min(x, far), fy - 3, Math.abs(far - x), 3); g.globalAlpha = 1; Z.drawHearthPortal(g, far, fy - 10, 0.5 + 0.5 * kk, t); Z.drawHearthPortal(g, x, fy - 12, 0.5 + 0.5 * kk, t); } });
+      if (h4 && h4.jet) { const J = h4.jet, age = t - J.t0, front = Math.min(1, age / 0.25); Z.drawHearthJet(g, Math.round(J.src - cx), Math.round(J.src + (J.far - J.src) * front - cx), fy, age, Q4N.hearth.jet, t); }
+      const Rr = h4 && h4.reach; if (Rr) { const x = Math.round(Rr.px - cx), y = Math.round(Rr.py - cy), kk = Rr.state === 'jab' ? 1 : Math.min(1, (t - Rr.t0) / Q4N.reach.tell);
+        Z.drawReachPortal(g, x, y, 0.4 + 0.6 * kk, t); if (Rr.state === 'jab') Z.drawSceptreJab(g, x, y, Rr.dir, 44, t);
+        if (e.mode === 'reachTell') Z.drawReachPortal(g, Math.round(e.x - cx + e.face * 16), Math.round(e.y - 30 - cy), 0.4 + 0.5 * kk, t); }
+      { const row = Math.round(A.floor / TS) - 4, x0t = Math.round(A.x0 / TS), x1t = Math.round(A.x1 / TS) - 1; if (L().grid && L().grid[row * L().W + x0t + 4] !== 0) { Z.drawGalleryTrim(g, (x0t + 2) * TS, (x0t + 8) * TS, row * TS, cx, cy, VW0); Z.drawGalleryTrim(g, (x1t - 7) * TS, (x1t - 1) * TS, row * TS, cx, cy, VW0); for (const lx of [x0t + 8, x1t - 8]) Z.drawGalleryLadder(g, lx * TS + 8, row * TS, A.floor, cx, cy, VW0); } }
+    }
+    const R0 = S.roof, P4 = R0 && R0.q4; if (!P4 || e.stage !== 'roof') return;
+    const RA = L().arena, now0 = t, rfy = Math.round(RA.floor - cy);
+    if (P4.rage) Z.drawRageAura(g, Math.round(e.x - cx), Math.round(e.y - cy), t);
+    if (P4.vol) for (const o of P4.vol.rings) { const p = ringPos(o.r); Z.drawHearthPortal(g, p.x - cx, p.y - 14 - cy, 0.5 + 0.5 * Math.min(1, 1 - (P4.vol.at - now0) / Q4N.p2.volley.tell), t, P4.rage ? '#ff6b9a' : '#e8dcff'); }
+    if (P4.volLit) for (const id of P4.volLit.rings) { const r = rings().find(rr => rr.id === id); if (r) { const p = ringPos(r); Z.drawHearthPortal(g, p.x - cx, p.y - 14 - cy, 1, t, '#fff6c8'); } }
+    const B = P4.boulder; if (B) { if (B.state === 'tell') { Z.drawHearthPortal(g, B.x0 - cx, B.y0 - cy, 0.5 + 0.5 * (1 - e.modeT / Q4N.p2.boulder.tell), t, '#ffd36b'); Z.drawRockShadow(g, Math.round(B.tx - cx), rfy, 0.4, t); }
+      else if (B.x !== undefined) { Z.drawBoulder(g, Math.round(B.x - cx), Math.round(B.y - cy), Math.floor(t * 10) & 3, false); Z.drawRockShadow(g, Math.round(B.tx - cx), rfy, 0.7, t); } }
+    for (const f of P4.fall || []) { if (f.done) { const kk = Math.max(0, (f.until - t) / 0.3); Z.drawRock(g, Math.round(f.x - cx), rfy - Math.round(26 * kk) - 4, 0, t); continue; } Z.drawRockShadow(g, Math.round(f.x - cx), rfy, Math.min(1, (t - f.t0) / Q4N.p2.rockfall.shadow), t); }
+    const M = P4.mtn; if (M) { const MT = Q4N.p2.rage.mtn, w = (RA.x1 - RA.x0) / MT.cols;
+      if (M.state === 'tell') Z.drawSkyPortal(g, Math.round(RA.x0 - cx), Math.round(RA.x1 - cx), Math.round(RA.floor - 120 - cy), Math.max(0, Math.min(1, 1 - (M.t0 - t) / MT.tell)), t);
+      const sweepK = Math.max(0, Math.min(1, (t - (M.t0 - MT.tell)) / (MT.tell + MT.sweep))); for (let i = 0; i < MT.cols; i++) { const x = RA.x0 + (i + 0.5) * w; if (Math.abs(x - M.gapX) < MT.gap / 2 || i / MT.cols > sweepK + 0.15) continue; Z.drawRockShadow(g, Math.round(x - cx), rfy, 0.35, t); }
+      g.globalAlpha = 0.35 + 0.25 * Math.sin(t * 14); g.fillStyle = '#8fd160'; g.fillRect(Math.round(M.gapX - MT.gap / 2 - cx), rfy - 3, MT.gap, 3); g.globalAlpha = 1;
+      if (M.cols) for (const c of M.cols) if (c.done && t < c.at + 0.25) Z.drawRock(g, Math.round(c.x - cx), rfy - 10, 1, t);
+      if (M.geode && !M.geode.done) { Z.drawRockShadow(g, Math.round(M.geode.x - cx), rfy, 0.6, t); Z.drawGreatGeode(g, Math.round(M.geode.x - cx), rfy - 22 - Math.round(Math.max(0, M.geode.at - t) / 0.9 * 170), t, 0); } }
+    for (const r of S.rocks) if (r.p2 && !r.dead && (r.glint || r.hang > 0)) Z.drawHangGlint(g, Math.round(r.x - cx), Math.round(r.y - cy), t + r.t);
+    if (now() < (P4.ward || 0)) Z.drawWardShell(g, Math.round(e.x - cx), Math.round(e.y - cy), t);
   }
   /* the picture (GREYBOX; the art lane replaces it): the geode throne, the rose window's light, the grated hearths, the jet, the reach's portal; on the tower top the volley's rings, the boulder, the shadows, the ward */
   function q4Draw(g, cx, cy, t) {
@@ -1250,7 +1286,7 @@ export function makeGQueenHands(ctx) {
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
     try { mechDraw(g, cx, cy, t); geodeDraw(g, cx, cy, t); roofDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
-    if (Q4) { try { q4Draw(g, cx, cy, t); } catch (err) { /* greybox only */ } }
+    if (Q4) { if (!art4Off) { try { q4DrawArt(g, cx, cy, t); } catch (err) { art4Off = true; console.warn('gq4 art off (greybox):', err && err.message); } } if (art4Off) { try { q4Draw(g, cx, cy, t); } catch (err) { /* greybox only */ } } }
     if (artOff) return greyWorld(g, cx, cy, t);
     try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
   };

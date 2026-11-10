@@ -13,7 +13,7 @@ export const TC = {
   boardCreak: 1.0, boardBack: 6.0,
   hopEvery: 7, near: 4 * 16, taunt: 1.0, stride: 0.8, open: 0.4, stepIn: 0.35, thread: 0.7, stepOut: 0.35, look: 0.9, actEvery: [3.5, 5.0], actLen: 1.0, brazierTell: 1.0,
 };
-import { Q4 } from "./gq4q.js"; import { heroStrikes } from "./hero-strikes.js";   /* (claude/gq4q) any blow or hero shot sends a boulder back */
+import * as GQ4A from "./redraw/gq4_art.js"; import { Q4 } from "./gq4q.js"; import { heroStrikes } from "./hero-strikes.js";   /* (claude/gq4q) any blow or hero shot sends a boulder back */
 export function makeTowerClimb(env) {
   const { ctx, TS, seats, now, sfx, hit, q, asSeat, gqRed, L, portalDraw, strikes } = env;
   const C = TC, H = {};
@@ -154,22 +154,19 @@ export function makeTowerClimb(env) {
   H.draw = (g, cx, cy, t, esc, E) => {
     const Tw = towerOf(E), tc = esc && esc.tc; if (!Tw || !tc) return; const F = Tw.FLOORS, nS = F.length, O = Tw.OUT;
     const x0 = Math.round(Tw.SHAFT[0] * TS - cx), x1 = Math.round((Tw.SHAFT[1] + 1) * TS - cx);
-    for (const k of Tw.BURN) { const top = F[k] - 11, ty = Math.round(top * TS - cy); g.globalAlpha = 0.18 + 0.08 * Math.sin(t * 3 + k); g.fillStyle = '#ff3a1c'; g.fillRect(x0, ty, x1 - x0, 5 * TS); g.globalAlpha = 1;   /* the ceiling glows red */
-      for (let x = x0 + 6; x < x1; x += 22) { g.fillStyle = (x + k) & 1 ? '#ff6b2c' : '#ffd36b'; if (Math.sin(t * 7 + x * 0.3) > 0.2) g.fillRect(x, ty + 4 + ((Math.sin(t * 4 + x) * 3) | 0), 2, 2); } }
+    for (const k of Tw.BURN) { const top = F[k] - 11, ty = Math.round(top * TS - cy); GQ4A.drawBurnGlow(g, x0, x1, ty, 5 * TS, t, k);   /* (claude/gq4art) the red ceiling + the slit windows showing the fire outside */
+      for (const sx of [x0 - 8, x1 + 8]) GQ4A.drawSlitFire(g, sx, Math.round(F[k] * TS - cy) - 6 * TS, t, k + (sx > x0 ? 1 : 0)); }
     for (const tp of Tw.TAPS || []) { const px = Math.round(tp.x * TS - cx) - 6, fy = Math.round(F[tp.k] * TS - cy), h = 5 * TS;
-      g.fillStyle = '#3a2418'; g.fillRect(px, fy - h, 14, 3);                                  // the rod
-      g.fillStyle = tp.flare ? '#ff6b2c' : '#7a2a1a'; g.fillRect(px + 1, fy - h + 3, 12, h - 20);   // the hanging
-      if (tp.flare) { g.globalAlpha = 0.9; for (let i = 0; i < 6; i++) { const fh = 8 + 8 * (0.5 + 0.5 * Math.sin(t * 11 + i * 1.7)); g.fillStyle = i & 1 ? '#ffd36b' : '#ff9a2c'; g.fillRect(px + 1 + i * 2, fy - 18 - fh, 2, fh + 8); } g.globalAlpha = 1; }
-      else if (tp.spark) { for (let i = 0; i < 4; i++) { const ph = (t * 1.6 + i * 0.27 + tp.x) % 1; g.fillStyle = '#ffd36b'; g.fillRect(px + 2 + i * 3, fy - h + 8 + Math.round(ph * (h - 28)), 2, 2); } } }
+      GQ4A.drawTapestry(g, px, fy - 4, h - 4, tp.flare ? 'flare' : tp.spark ? 'spark' : 'cold', t); }
     if (Tw.OUT) {   // the hoarding's boards (charred; the creak shakes a board), debris rings, the boulder
       for (const b of tc.boards) { if (b.state === 'gone') continue; const bx = Math.round(b.x * TS - cx), by = Math.round(O.hoard.row * TS - cy) + (b.state === 'creak' ? ((Math.sin(t * 40) * 1.5) | 0) : 0);
-        g.fillStyle = b.state === 'creak' ? '#8a4a2a' : '#3a2418'; g.fillRect(bx, by, 32, 4); g.fillStyle = '#1a100a'; g.fillRect(bx + 15, by, 1, 4); if (b.state === 'creak') { g.fillStyle = '#ff9a5c'; g.fillRect(bx + 6, by - 1, 2, 1); g.fillRect(bx + 22, by - 1, 2, 1); } }
+        GQ4A.drawHoardBoard(g, bx, by, b.state === 'creak' ? 'creak' : 'ok', t); }
       for (const d of tc.debris) { const dx = Math.round(d.x - cx), dy = Math.round(d.y - cy);
-        if (d.state === 'tell') { const k = 0.5 + 0.5 * Math.sin(t * 22); g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ff6b6b'; g.fillRect(dx - 12, dy - 2, 24, 2); g.globalAlpha = 0.2; g.fillRect(dx - 12, dy - 70, 24, 68); g.globalAlpha = 1; }
-        else { const k = Math.max(0, (d.at - t) / 0.3); g.fillStyle = '#5a3a1a'; g.fillRect(dx - 5, dy - Math.round(140 * k) - 8, 10, 30); g.fillStyle = '#ff9a5c'; g.fillRect(dx - 5, dy - Math.round(140 * k) - 8, 10, 4); } }
+        if (d.state === 'tell') GQ4A.drawDebrisShadow(g, dx, dy, 0.5 + 0.5 * Math.sin(t * 22), t);
+        else { const k = Math.max(0, (d.at - t) / 0.3); GQ4A.drawBurningDebris(g, dx, dy - Math.round(140 * k) - 4, t, dx); } }
       const B = tc.boulder; if (B) { const bx = Math.round(B.x - cx), py = Math.round(B.py - cy), ty = Math.round(B.ty - cy);
         if (B.state === 'glow') { const k = Math.min(1, 1 - (B.at - t) / C.boulderGlow); portalDraw(g, bx, py, t, 0.4 + 0.6 * k, k > 0.7 ? '#fff6c8' : '#b28cff'); g.globalAlpha = 0.3 + 0.5 * k; g.fillStyle = '#ff6b4a'; g.fillRect(bx - 12 + Math.round(k * 4), ty - 2, 24 - Math.round(k * 8), 2); g.globalAlpha = 1; }
-        else { const by = Math.round(B.y - cy); g.fillStyle = B.state === 'back' ? '#fff6c8' : '#8a8a9c'; g.fillRect(bx - 8, by - 8, 16, 16); g.fillStyle = B.state === 'back' ? '#ffd36b' : '#5a5a6a'; g.fillRect(bx - 5, by - 5, 6, 6); g.fillStyle = '#b28cff'; g.fillRect(bx + 1, by + 1, 3, 3); if (B.state === 'fall') { g.globalAlpha = 0.5; g.fillStyle = '#ff6b4a'; g.fillRect(bx - 12, ty - 2, 24, 2); g.globalAlpha = 1; } } } }
+        else { const by = Math.round(B.y - cy); GQ4A.drawTowerBoulder(g, bx, by, t, B.state); } } }
     const hop = tc.hop, qq = esc.q;
     if (hop && hop.entry && hop.ph !== 'taunt' && hop.ph !== 'stride') portalDraw(g, hop.entry.x - cx, hop.entry.y - 14 - cy, t, hop.ph === 'open' ? Math.min(1, (t - hop.t0) / C.open) : 0.9, '#b28cff');
     if (hop && (hop.ph === 'thread' || hop.ph === 'stepOut')) { const a = hop.entry, b = hop.exit; if (a && b) { const k = hop.ph === 'thread' ? Math.min(1, (t - hop.t0) / C.thread) : 1;
