@@ -8,7 +8,8 @@ import { readFileSync } from 'node:fs';
 import { SKILLS, passiveOn, migrateProgress, validateProgress, wearTrait, migrateTraits, HERO_IDS, TRT } from '../src/progression.js';
 import { xpFloor } from '../src/xp.js';
 const T = TRT;
-assert.equal(T.TRAITS_SHIP, false, 'ships dark');
+/* (claude/traitsmoke-d) the shipped value is not asserted (the flip commit must not break this tool); section 1 is the FLAG OFF path, so it starts by turning the flag off */
+T.setTraitsShip(false);
 assert.equal(T.traitsShip(), false);
 const legacy = (p, h, id, lv) => { const n = SKILLS.find(x => x.hero === h && x.id === id); return !!n && !n.active && (lv >= n.level || !!(p && p.skillOwned && p.skillOwned[h] && p.skillOwned[h][id])); };
 
