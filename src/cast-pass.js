@@ -1,3 +1,4 @@
+import { DM } from './dirmoves.js';
 /* src/cast-pass.js - THE CAST PASS's by-level foe swaps (claude/foecast, Daniel 11-02/11-05: "too many generic goblins; the interesting goblin types sit in one
    level"). Data only, no new foe code: the level's build() runs this over its finished ents (the last wrapper, like src/variety-pass.js and src/goblin-sweep.js), so
    the sprinkler's foes are seen and the hand-written builders - which other lanes are editing - are not touched.
@@ -49,12 +50,19 @@ export const CAST_SWAPS = {
     { from: 'sprig', to: 'thief', every: 3, min: 1 },               /* the village's thief, up in the boughs */
   ],
 };
+/* (claude/dmlint, DIRMOVES lane 3) THE DIRECTION SWAPS: rows applied ONLY while DM.on (src/dirmoves.js, default false), so the live levels do not move until the flip.
+   tools/dir-mix.mjs holds every act's level to one UP foe (wing / leap-swat), one DOWN (high guard / small) and one PLUNGE (plate / shell / helm / beast); a level that misses one
+   swaps a plain kind of its own mix for a theme-fit one here (no new kinds). dy: tiles added to y (a flier is lifted off the floor it would stand on). */
+export const DM_SWAPS = {
+  underleaf: [{ from: 'sprig', to: 'wasp', every: 1, x0: 350, x1: 362, dy: -4, min: 1 }],   /* the grandmother's potion garden: a wasp over the yard's last sprig = THE UP answer (act I had none) */
+  rookery: [{ from: 'fledgling', to: 'rockgoblin', every: 1, x1: 80, min: 1 }],             /* the gully floor: a crag rock-thrower (scree / spire / moor's own kind, before the Goblin Queen) for the fledgling = THE DOWN answer (sweep / plunge; the level had none) */
+};
 export const PLAIN_KEYS = new Set(['t', 'x', 'y', 'face', 'squad', 'garrison']);
 export function castSwaps(L, id, report) {
-  const rows = CAST_SWAPS[id]; if (!rows || !L || !L.ents) return L;
+  const rows = [...(CAST_SWAPS[id] || []), ...(DM.on ? DM_SWAPS[id] || [] : [])]; if (!rows.length || !L || !L.ents) return L;
   for (const r of rows) {
     const hits = L.ents.filter(e => e.t === r.from && e.x >= (r.x0 ?? -1e9) && e.x <= (r.x1 ?? 1e9) && Object.keys(e).every(k => PLAIN_KEYS.has(k) || (r.allow || []).includes(k))).sort((a, b) => a.x - b.x || a.y - b.y);
-    let n = 0; hits.forEach((e, i) => { if (i % r.every === 0) { e.t = r.to; if (r.skin) e.cnSkin = r.skin; n++; } });
+    let n = 0; hits.forEach((e, i) => { if (i % r.every === 0) { e.t = r.to; if (r.skin) e.cnSkin = r.skin; if (r.dy) e.y += r.dy; n++; } });
     if (report) report.push({ id, from: r.from, to: r.to, swapped: n, min: r.min || 1 });
   }
   return L;
