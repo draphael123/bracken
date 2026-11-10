@@ -77,6 +77,7 @@ export function makeGobGeoHands(ctx) {
   H.frame = e => GGA.ggFrame(e);
 
   /* ---------- HIS STONE IN FLIGHT ---------- */
+  const HSX = { eachSeat: fn => seats(fn), hero: () => ctx.hero(), attackBox: () => (ctx.attackBox ? ctx.attackBox() : null), overlap: (a, b) => ctx.overlap(a, b), players: () => (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || [] };   /* (claude/gq4q) fallback for a tool's fake world */
   const rockBox = r => ({ l: r.x - r.r, r: r.x + r.r, t: r.y - r.r, b: r.y + r.r });
   const solid = (x, y) => ctx.solidAt(x, y);
   function sendBack(r, how) { const s = st(); r.back = true; r.g = 0; r.t = 0; r.life = GG.back.life; r.how = how; s.n.back++; if (how === 'parry') s.n.parried++; else s.n.struck++;
@@ -135,7 +136,7 @@ export function makeGobGeoHands(ctx) {
     if (solid(nx, ny)) { r.dead = true; ctx.burst(nx, ny, 5, ['#5c5c6e', '#868698'], 50, 0.3); ctx.dust(nx, ny, 2); return; }
     r.x = nx; r.y = ny;
     /* THE RANGER's tap is a bow shot, not a blade: an arrow of hers IN FLIGHT that meets the rock knocks it back the same way (as src/battering-beast-hands.js reads her arrows) */
-    if (Q4) { const hs = heroStrikes(rockBox(r), 'gg' + r.id); if (hs) { sendBack(r, 'blow'); if (once('blowTeach')) ctx.number(r.x, r.y - 24, 'A BLOW OR A SHOT SENDS IT BACK TOO', '#8fd160'); } }
+    if (Q4) { const hs = heroStrikes(rockBox(r), 'gg' + r.id, HSX); if (hs) { sendBack(r, 'blow'); if (once('blowTeach')) ctx.number(r.x, r.y - 24, 'A BLOW OR A SHOT SENDS IT BACK TOO', '#8fd160'); } }
     else for (const pp of ctx.players || []) for (const ar of pp.rgArrows || []) { if (r.back || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - r.x) < r.r + 10 && Math.abs(ar.y - r.y) < r.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(r, 'blow'); } }
     if (r.back) return;
     /* a hero's blow that meets it (his swing, once a blow) sends it back; else it lands on him: a parry sends it back, a block breaks it, a hit hurts */

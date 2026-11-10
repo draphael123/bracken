@@ -48,6 +48,8 @@ export function makeGQueenHands(ctx) {
   const sfx = k => { const f = ctx.sfx[k]; if (f) f(); };
   const sign = v => (v < 0 ? -1 : 1);
   const G = GQ3;
+  const HSX = { eachSeat: fn => seats(fn), hero: () => ctx.P(), attackBox: () => (ctx.attackBox ? ctx.attackBox() : null), overlap: (a, b) => ctx.overlap(a, b), players: () => (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || [] };
+  const strikes = (b, k) => heroStrikes(b, k, HSX);   /* (claude/gq4q) any blow or hero shot (main.js configures the real arrays; a tool's fake world falls back to ctx) */
   /* (claude/gq2) EVERY SEAT (1-4 heroes): the hits below test each hero still on his feet, with main.js's asPlayer swap (ctx.eachHero), as the game's other bosses do;
      a fake world / single player without it is the one hero. allHeroes = every seat, downed too (the portal step takes the whole party). */
   const seats = fn => { if (ctx.eachHero) ctx.eachHero(fn); else { const p = ctx.P(); if (p && !p.dead) fn(p); } };
@@ -176,7 +178,7 @@ export function makeGQueenHands(ctx) {
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
   const asSeat = (p, fn) => seats(P1 => { if (P1 === p) fn(); });   /* a hit on one seat runs as that seat (main.js asPlayer: P, PROG and the keys are his for the call) */
-  const TCL = makeTowerClimb({ ctx, TS, seats, now, sfx, hit: (a, b, c) => hit(a, b, c), q, asSeat, gqRed, L, portalDraw: (...a) => portalDraw(...a) });
+  const TCL = makeTowerClimb({ ctx, TS, seats, now, sfx, hit: (a, b, c) => hit(a, b, c), strikes: (b, k) => strikes(b, k), q, asSeat, gqRed, L, portalDraw: (...a) => portalDraw(...a) });
   /* which storey of THE BURNING TOWER a hero's feet are in (0 = the foot, 4 = the top, 5 = the deck above the hatch); -1 = not in the tower */
   function storeyOf(p, E) {
     const Tw = E.tower, nS = Tw.FLOORS.length, DK = Tw.OUT ? nS + 1 : nS;   /* (gq4l) ON: 0..nS-1 the storeys, nS the OUTSIDE, nS + 1 the deck; OFF: the deck is index 5 as it was */
@@ -569,7 +571,7 @@ export function makeGQueenHands(ctx) {
     const box = { l: Ge.x - gc.r, r: Ge.x + gc.r, t: Ge.y - gc.r, b: Ge.y + gc.r };
     const sendBack = how => { Ge.state = 'back'; Ge.t = 0; ctx.ring(Ge.x, Ge.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(Ge.x, Ge.y - 14, how === 'parry' ? 'PARRIED: SENT BACK' : 'SENT BACK', '#8fd160'); };
     // any blow or shot that meets it in the air
-    if (Q4) { if (Ge.state === 'fly' && heroStrikes(box, Ge.key)) sendBack('blow'); }   /* (claude/gq4q) ANY blow or hero shot sends it back */
+    if (Q4) { if (Ge.state === 'fly' && strikes(box, Ge.key)) sendBack('blow'); }   /* (claude/gq4q) ANY blow or hero shot sends it back */
     else seats(P1 => { if (Ge.state !== 'fly' || P1.dead) return; if (hit(P1, box, Ge.key)) sendBack('blow'); });
     if (!Q4 && Ge.state === 'fly') for (const pp of (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || []) for (const ar of pp.rgArrows || []) { if (Ge.state !== 'fly' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - Ge.x) < gc.r + 10 && Math.abs(ar.y - Ge.y) < gc.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack('blow'); } }
     if (Ge.state === 'fly' && k >= 1) {   // it lands: 18 (a parry sends it back from the floor), else it shatters
@@ -688,7 +690,7 @@ export function makeGQueenHands(ctx) {
       if (Math.random() < dt * 24) ctx.part({ x: r.x, y: r.y, vx: 0, vy: 0, life: 0.2, max: 0.2, col: r.home ? '#fff6c8' : '#b28cff', size: 1, grav: 0, glow: true });
       if (r.hang > 0) {   // (claude/gq4q) a HANGING shard (a boulder's burst, the great geode's): strike it home or it fades
         r.hang -= dt; if (r.hang <= 0) { r.dead = true; ctx.burst(r.x, r.y, 4, ['#b28cff', '#8a8a9c'], 40, 0.3); continue; }
-        if (!r.home && heroStrikes({ l: r.x - Q4N.shardHurt, r: r.x + Q4N.shardHurt, t: r.y - Q4N.shardHurt, b: r.y + Q4N.shardHurt }, 'rk' + r.id)) { r.hang = 0; r.home = true; r.dead = false; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); ctx.number(r.x, r.y - 14, 'STRUCK HOME', '#8fd160'); }
+        if (!r.home && strikes({ l: r.x - Q4N.shardHurt, r: r.x + Q4N.shardHurt, t: r.y - Q4N.shardHurt, b: r.y + Q4N.shardHurt }, 'rk' + r.id)) { r.hang = 0; r.home = true; r.dead = false; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); ctx.number(r.x, r.y - 14, 'STRUCK HOME', '#8fd160'); }
         if (!r.home) continue;
       }
       if (r.home) {
@@ -705,7 +707,7 @@ export function makeGQueenHands(ctx) {
       r.x += r.vx * dt; r.y += r.vy * dt;
       if (r.t > 4 || ctx.solid(Math.floor(r.x / TS), Math.floor(r.y / TS))) { r.dead = true; ctx.dust(r.x, r.y, 3); continue; }
       if (Q4 && !r.esc && !r.home && e) { const sh = Q4N.shardHurt;   /* (claude/gq4q) ANY blow or hero shot KNOCKS A P1 SHARD OUT (a parry still sends it home for the stun) and sends a P2 shard HOME */
-        const hs = heroStrikes({ l: r.x - sh, r: r.x + sh, t: r.y - sh, b: r.y + sh }, 'rk' + r.id);
+        const hs = strikes({ l: r.x - sh, r: r.x + sh, t: r.y - sh, b: r.y + sh }, 'rk' + r.id);
         if (hs) { if (r.p2) { r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); ctx.number(r.x, r.y - 14, 'STRUCK HOME', '#8fd160'); } else { r.dead = true; ctx.burst(r.x, r.y, 10, ['#b28cff', '#e8dcff', '#8a8a9c'], 80, 0.5); sfx('golemShatter'); ctx.number(r.x, r.y - 14, 'KNOCKED OUT', '#8fd160'); S.knockedOut = (S.knockedOut || 0) + 1; } continue; } }
       seats(P1 => {   /* (claude/gq2) every seat: the first hero it meets */
         if (r.dead || r.home || P1.dead || !ctx.overlap({ l: r.x - pc.r, r: r.x + pc.r, t: r.y - pc.r, b: r.y + pc.r }, ctx.hurtBox())) return;
@@ -760,7 +762,7 @@ export function makeGQueenHands(ctx) {
         if (e.modeT <= 0) { h4.jet = { t0: now(), src: hh.src, far: hh.far, hit: new Set() }; e.mode = 'hearthJet'; e.modeT = Q4N.hearth.jet + 0.2; sfx('callerBlast'); ctx.shake(4); } return 0; }
       case 'hearthJet': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.8; } return 0;
       case 'reachTell': { const h4 = g4(), Rr = h4.reach, P1x = target(); e.vx = 0; if (!Rr) { e.mode = 'rec'; e.modeT = 0.4; return 0; }
-        if (!Rr.locked) { Rr.px = P1x.x - (P1x.face || 1) * Q4N.reach.behind; Rr.py = P1x.y - 16; Rr.dir = sign(P1x.x - Rr.px) || Rr.dir; if (Q4N.reach.tell - e.modeT >= 0.5) Rr.locked = true; }
+        if (!Rr.locked) { Rr.px = P1x.x - (P1x.face || 1) * Q4N.reach.behind; Rr.py = P1x.y - 14; Rr.dir = sign(P1x.x - Rr.px) || Rr.dir; if (Q4N.reach.tell - e.modeT >= 0.5) Rr.locked = true; }
         if (e.modeT <= 0) { Rr.state = 'jab'; Rr.jabAt = now(); e.mode = 'reachJab'; e.modeT = 0.35; sfx('slash'); ctx.shake(3); } return 0; }
       case 'reachJab': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.7; } return 0;
       case 'dazed': case 'jarred': { const dz = e.mode === 'dazed'; e.vx = 0;
@@ -936,7 +938,7 @@ export function makeGQueenHands(ctx) {
     e.mode = 'hearthTell'; e.modeT = Q4N.hearth.tell; e.vx = 0; e.face = sign(src - e.x) || e.face; ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); sfx('bellow');
   }
   function reachStart(e) {
-    const P0 = target(), h4 = g4(); h4.reachCd = Q4N.reach.cd; h4.gapUntil = now() + 2.0; h4.reach = { t0: now(), px: P0.x - (P0.face || 1) * Q4N.reach.behind, py: P0.y - 16, locked: false, dir: sign(P0.x - e.x) };
+    const P0 = target(), h4 = g4(); h4.reachCd = Q4N.reach.cd; h4.gapUntil = now() + 2.0; h4.reach = { t0: now(), px: P0.x - (P0.face || 1) * Q4N.reach.behind, py: P0.y - 14, locked: false, dir: sign(P0.x - e.x) };
     e.mode = 'reachTell'; e.modeT = Q4N.reach.tell; e.vx = 0; e.face = sign(P0.x - e.x) || e.face; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('seaBell');
   }
   function jarr(e) {   // a parried reach: her arm is jarred
@@ -1036,7 +1038,7 @@ export function makeGQueenHands(ctx) {
         if (Math.random() < dt * 80) ctx.part({ x: lo + Math.random() * (hi - lo), y: A.floor - 4 - Math.random() * 8, vx: 0, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 2, grav: 0, glow: true });
         seats(P1 => { if (J.hit.has(P1) || P1.dead || P1.x < lo || P1.x > hi || P1.y <= A.floor - Q4N.hearth.knee) return; J.hit.add(P1); gqRed(J.src, Q4N.hearth.dmg, 'THE HEARTH JET', { noKnock: true }); }); } }
       if (h4.reach && h4.reach.state === 'jab') { const Rr = h4.reach; if (tt - Rr.jabAt > Q4N.reach.jab) h4.reach = null; else if (!Rr.did) { Rr.did = true;
-        seats(P1 => { const box = { l: Math.min(Rr.px, Rr.px + Rr.dir * 44), r: Math.max(Rr.px, Rr.px + Rr.dir * 44), t: Rr.py - 9, b: Rr.py + 9 }; if (P1.dead || !ctx.overlap(box, ctx.hurtBox())) return;
+        seats(P1 => { const box = { l: Math.min(Rr.px, Rr.px + Rr.dir * 44), r: Math.max(Rr.px, Rr.px + Rr.dir * 44), t: Rr.py - 5, b: Rr.py + 5 }; if (P1.dead || !ctx.overlap(box, ctx.hurtBox())) return;
           const h = gqHit(Rr.px, Q4N.reach.dmg, e, 'HER SCEPTRE'); if (h.parried) jarr(e); }); } }
     }
     const R0 = S.roof, P4 = R0 && R0.q4; if (!P4 || e.stage !== 'roof') return;
@@ -1115,7 +1117,7 @@ export function makeGQueenHands(ctx) {
   H.rageOn = () => !!(Q4 && S && S.roof && S.roof.q4 && S.roof.q4.rage);
   H.rageSave = e => { const P4 = S && S.roof && S.roof.q4; if (!P4) return false; if (e.mode === 'rageTell') return true; if (P4.rageDone || P4.rageSaved) return false; P4.rageSaved = true; return true; };
   H.hearthSlot = e => { if (!Q4 || !S || !inHall(e) || e.hp > e.maxHp * 0.5) return false; const h4 = g4(); if (h4.hearthCd > 0 || now() < h4.gapUntil || S.mech.wave || S.mech.lure || S.geode) return false; hearthStart(e); return true; };
-  H.test = H.test || {}; Object.assign(H.test, { q4: () => S && S.roof && S.roof.q4, h4: () => S && S.h4, shards: () => (S ? S.rocks.filter(r => r.p2).map(r => ({ x: r.x, y: r.y, home: r.home, hang: r.hang })) : []), homeTotal: () => (S && S.homeTotal) || 0, dazes: () => (S && S.dazes) || 0, rages: () => (S && S.rages) || 0,
+  H.test = H.test || {}; Object.assign(H.test, { q4: () => S && S.roof && S.roof.q4, h4: () => S && S.h4, shards: () => (S ? S.rocks.filter(r => r.p2).map(r => ({ x: r.x, y: r.y, home: r.home, hang: r.hang })) : []), homeTotal: () => (S && S.homeTotal) || 0, knocked: () => (S && S.knockedOut) || 0, spawnShard: o => { if (!S) return false; S.rocks.push({ x: 0, y: 0, vx: 0, vy: 0, t: 0, dead: false, home: false, cast: null, esc: false, id: 'r' + (++S.rid), ...o }); return true; }, geodeLob: () => { const e = q(); if (e && S) { geodeBegin(e); return true; } return false; }, dazes: () => (S && S.dazes) || 0, rages: () => (S && S.rages) || 0,
     startQ4: k => { const e = q(); if (!e || !S) return false; if (k === 'hearth') hearthStart(e); else if (k === 'reach') reachStart(e); else { if (!S.roof) roofBegin(e); if (k === 'volley') startVolley(e); else if (k === 'boulder') startBoulder(e); else if (k === 'rockfall') startRockfall(e); else if (k === 'bombard') startBombard(e); else if (k === 'rage') startRage(e); else if (k === 'mountain') { S.roof.q4.rage = true; startMountain(e); } else return false; } return e.mode; } });
 
   /* ---------------- PER FRAME ---------------- */
@@ -1258,7 +1260,7 @@ export function makeGQueenHands(ctx) {
     if (!S) return [];
     const out = [];
     if (S.crown && S.crown.state !== 'floor' && S.crown.state !== 'ringwait') out.push({ id: S.crown.id, x: S.crown.x, y: S.crown.y, vx: S.crown.vx, vy: 0, kind: 'crown', home: !!S.crown.home });
-    for (const r of S.rocks) if (!r.dead) out.push({ id: r.id, x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home });
+    for (const r of S.rocks) if (!r.dead) out.push({ id: r.id, x: r.x, y: r.y, vx: r.vx, vy: r.vy, kind: 'rock', home: !!r.home, p2: !!r.p2, hang: r.hang > 0 });
     if (S.geode && (S.geode.state === 'fly' || S.geode.state === 'back')) out.push({ id: S.geode.id, x: S.geode.x, y: S.geode.y, vx: S.geode.state === 'back' ? 0 : (S.geode.tx - S.geode.x0) / G.geode.air, vy: 0, kind: 'geode', home: S.geode.state === 'back' });
     const st = S.roof && S.roof.storm; if (st && st.x !== undefined) { const w = Math.PI * 2 / G.roof.orbitTurn; out.push({ id: 's' + Math.floor(st.ang / (Math.PI * 2)), x: st.x, y: st.y, vx: -Math.sin(st.ang) * G.roof.orbitR * w, vy: Math.cos(st.ang) * G.roof.orbitR * 0.55 * w, kind: 'storm', home: false }); }
     return out;

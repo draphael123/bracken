@@ -15,7 +15,7 @@ export const TC = {
 };
 import { Q4 } from "./gq4q.js"; import { heroStrikes } from "./hero-strikes.js";   /* (claude/gq4q) any blow or hero shot sends a boulder back */
 export function makeTowerClimb(env) {
-  const { ctx, TS, seats, now, sfx, hit, q, asSeat, gqRed, L, portalDraw } = env;
+  const { ctx, TS, seats, now, sfx, hit, q, asSeat, gqRed, L, portalDraw, strikes } = env;
   const C = TC, H = {};
   const rnd = (a, b) => a + Math.random() * (b - a);
   const towerOf = E => E && E.tower && E.tower.OUT ? E.tower : null;
@@ -73,7 +73,7 @@ export function makeTowerClimb(env) {
       if (B.state === 'fall') {
         const k = Math.min(1, (t - B.t0) / C.boulderAir); B.y = B.py + (B.ty - B.py) * k;
         const box = { l: B.x - C.boulderR, r: B.x + C.boulderR, t: B.y - C.boulderR, b: B.y + C.boulderR };
-        if (Q4) { if (B.state === 'fall') { const hs = heroStrikes(box, B.key); if (hs) sendBack(B, hs.how === 'blow' ? 'blow' : 'shot', e, t); } }   /* (claude/gq4q) any blow or hero shot */
+        if (Q4) { if (B.state === 'fall') { const hs = strikes ? strikes(box, B.key) : heroStrikes(box, B.key); if (hs) sendBack(B, hs.how === 'blow' ? 'blow' : 'shot', e, t); } }   /* (claude/gq4q) any blow or hero shot */
         else seats(P1 => { if (B.state !== 'fall' || P1.dead) return; if (hit(P1, box, B.key)) sendBack(B, 'blow', e, t); });
         if (!Q4 && B.state === 'fall') for (const pp of (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || []) for (const ar of pp.rgArrows || []) { if (B.state !== 'fall' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - B.x) < C.boulderR + 10 && Math.abs(ar.y - B.y) < C.boulderR + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(B, 'shot', e, t); } }
         if (B.state === 'fall' && k >= 1) { let hurtAny = false; for (const h0 of out) if (Math.abs(h0.p.x - B.x) < 14 && Math.abs(h0.p.y - B.ty) < 26) { hurtAny = true; asSeat(h0.p, () => gqRed(B.x, C.boulderDmg, 'HER BOULDER', {})); }

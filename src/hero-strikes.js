@@ -3,8 +3,8 @@
 // flag ON adds the pyro's embers, the pirate's / warden's shot tracers, the berserker's hatchets and axe, the paladin's hammers, the reaper's scythe and the geomancer's own stone shards.
 // main.js configures it once (configure) with its own arrays. A projectile struck here is marked with `key` so it strikes a given thing once.
 import { gq4qOn } from './gq4q.js';
-let C = null;
-export function configure(c) { C = c; }
+let C0 = null;
+export function configure(c) { C0 = c; }
 const near = (p, b, m) => p.x >= b.l - m && p.x <= b.r + m && p.y >= b.t - m && p.y <= b.b + m;
 function segHits(t, b, m) {   // a short tracer line against a box (sampled)
   const dx = t.x1 - t.x0, dy = t.y1 - t.y0, n = Math.max(2, Math.ceil(Math.hypot(dx, dy) / 6));
@@ -14,8 +14,8 @@ function segHits(t, b, m) {   // a short tracer line against a box (sampled)
 function mark(p, key) { (p.hit || (p.hit = new Set())).add(key); }
 const unseen = (p, key) => !(p.hit && p.hit.has(key)) && !(p.hk && p.hk.has(key));
 /* box: { l, r, t, b } in world px. key: unique per struck thing. Returns null, or { how: 'blow' | 'arrow' | 'ember' | 'shot' | 'axe' | 'hammer' | 'scythe' | 'stone', P1? }. */
-export function heroStrikes(box, key) {
-  if (!C) return null;
+export function heroStrikes(box, key, alt) {   // alt: the caller's own ctx-shaped fallback (a tool's fake world); main.js's configure wins
+  const C = C0 || alt; if (!C) return null;
   let found = null;
   const eachSeat = C.eachSeat || (fn => { const p = C.hero && C.hero(); if (p && !p.dead) fn(p); });
   eachSeat(P1 => {   // 1. the swing: once a blow, the hero's own hitSet (as every struck thing in main.js)

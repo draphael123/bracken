@@ -817,8 +817,17 @@ function gqEscapeBot(BK, P, k) {
 function gqueenReact(BK, boss, P, k, A, h) {
   const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
   if (stage === 'escape') return gqEscapeBot(BK, P, k);
+  /* (claude/gq4q) THE SHARD FIGHT: her P2 stone shards are STRUCK HOME - face the shard and swing / shoot (every hero's attack key: a blow, an arrow, an ember, a shot); a hanging one (a boulder's burst, the great geode's) is walked to and struck. */
+  if (stage === 'roof' && !P.dead) {
+    let tgt = null, td = 1e9, hang = null, hd = 1e9;
+    for (const q of shots) { if (!q.p2 || q.home) continue; const dx = q.x - P.x, dy = q.y - (P.y - 9), d = Math.hypot(dx, dy);
+      if (q.hang) { if (d < hd && d < 260) { hd = d; hang = q; } continue; }
+      if ((q.vx || 0) * (P.x - q.x) <= 0) continue; if (d < td) { td = d; tgt = q; } }
+    if (tgt && td < 84) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
+    if (hang && !tgt) { const toward = Math.sign(hang.x - P.x) || P.face; P.face = toward; if (hd < 40) { k.left = k.right = false; return { goal: null, strike: true }; } return { goal: hang.x - toward * 14, strike: false }; }
+  }
   let best = null, bt = 9;
-  for (const q of shots) { if (q.home) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
+  for (const q of shots) { if (q.home || q.hang) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
   if (best && bt < 0.6) {
     if (parryShot(BK, h, best)) return { goal: null, strike: false };
     if (best.kind === 'crown') k.down = bt < 0.5; else if (bt < 0.22 && P.ground) BK.press('dodge');   /* not trying this one: the crown is ducked, a shard rolled */
