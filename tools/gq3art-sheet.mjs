@@ -16,7 +16,7 @@ const cell = (w, h, bg, fn, name) => { const c = newCanvas(w, h), g = c.getConte
 
 /* 1. the Queen's new poses */
 const Q = CH.bakeGoblinQueen(), qs = Q.R.map(sig);
-if (Q.R.length !== 43) bad.push('queen: ' + Q.R.length + ' frames (43 expected: 0-27 + 28-40)');
+if (Q.R.length !== 51) bad.push('queen: ' + Q.R.length + ' frames (51 expected: 0-27 + 28-40 + hop 41-50)');
 Q.R.forEach((c, i) => { if (c.width !== Q.R[0].width || c.height !== Q.R[0].height) bad.push('queen ' + i + ': size'); if (qs[i].k < 3000) bad.push('queen ' + i + ': barely drawn'); });
 for (let i = 28; i < Q.R.length; i++) for (let j = 0; j < i; j++) if (qs[i].h === qs[j].h) bad.push('queen ' + i + ' draws the same as ' + j);
 Q.white.R.forEach((c, i) => { if (sig(c).k !== qs[i].k) bad.push('queen ' + i + ': flash silhouette differs'); });
@@ -24,7 +24,7 @@ const QN = ['geodeTell a', 'geodeTell b', 'geodeThrow', 'blink in a', 'blink in 
 
 /* 2. the Princess's death */
 const P = GPA.bakeGoblinPrincess(), ps = P.R.map(sig);
-if (P.R.length !== GPA.GP_FRAMES || GPA.GP_FRAMES !== 40) bad.push('princess: ' + P.R.length + ' frames (40 expected)');
+if (P.R.length !== GPA.GP_FRAMES || GPA.GP_FRAMES !== 47) bad.push('princess: ' + P.R.length + ' frames (40 expected)');
 if (GPA.GPF.hurt !== P.R.length - 2 || GPA.GPF.body !== P.R.length - 1) bad.push('princess: the sheet must end hurt, body');
 ps.forEach((s, i) => { if (s.k < 250) bad.push('princess ' + i + ': barely drawn'); });
 for (let i = 33; i < P.R.length; i++) for (let j = 0; j < i; j++) if (ps[i].h === ps[j].h) bad.push('princess ' + i + ' draws the same as ' + j);

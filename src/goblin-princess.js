@@ -417,7 +417,7 @@ export function makeGoblinPrincessHands(ctx) {
   }
   H.escaped = e => !!(e && e.escaped);
   /* (gq4p-d) greybox poses for the new modes on her existing sheet (the art lane draws the real ones): the call and ALL GATES ring her handbell, the key rattles like a trinket toss, the pirouette is the fan's spin, dizzy / dazed are her stagger and stun */
-  const FRAME_AS = { keyRun: 'walk', keyTell: 'trinketTell', keyTurn: 'trinket', pirouetteTell: 'stompTell', pirouette: 'fan', dizzy: 'stagger', dazed: 'stunned', addHop: 'hop', shimmer: 'perch' };
+  const FRAME_AS = { keyRun: 'walk', dazed: 'stunned', addHop: 'hop', shimmer: 'perch' };
   H.frame = e => (e.mode === 'callTell' || e.mode === 'callRing' || e.mode === 'allGatesTell') ? GPA.GPF.bell : FRAME_AS[e.mode] ? GPA.gpFrame({ ...e, mode: FRAME_AS[e.mode] }) : GPA.gpFrame(e);   /* (claude/hc3art) a pose for every move (src/redraw/goblin_princess_art.js): B16 */
   H.barName = e => 'THE GOBLIN PRINCESS' + (e.mode === 'pinned' ? '  PINNED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'preen' ? '  PREENING' : e.mode === 'stagger' ? '  STAGGERED' : e.shimmer ? '  SHIMMERING' : e.mode === 'dizzy' ? '  DIZZY' : e.mode === 'dazed' ? '  DAZED' : e.hiding ? '  HIDING' : '');
   H.end = () => { if (F) { F.gems = []; F.tiara = null; F.ripples = []; F.wave = null; F.bolt = null; } };
