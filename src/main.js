@@ -134,6 +134,9 @@ import { makeGobGeoHands } from './gobgeo-hands.js'; import * as GGA from './red
 import { makeGlassSeaHands } from './glass-sea-hands.js'; import { makeColossusHands } from './glass-colossus-hands.js'; import * as COG from './glass-colossus.js'; import * as GSF from './glass-foes.js'; import * as GSAR from './redraw/glasssea_art.js'; import * as COART from './redraw/glass_colossus_art.js'; import * as GST from './redraw/glasssea_tiles.js'; let GSH = null, COH = null, SRH = null; import { makeSunRoomHands } from './sunroom-hands.js';   /* (claude/colossus4) THE SUN ROOMS (src/sun-puzzle.js L.sunRooms): the desert kit's sun-doors, priest caches and lamps, drawn by src/beam-path.js - no master level declares one */   /* THE GLASS SEA (claude/glasssea, the greybox): the mirrors, the beams, the cracks, the night; THE GLASS COLOSSUS */
 import { makeNestHands } from './hornets-nest-hands.js'; import { makeHornetQueenHands, bakeHornetQueenCard, warmQueen } from './hornet-queen-hands.js'; import * as HQM from './hornet-queen.js'; import * as HHM from './honey-hornet.js';   /* (claude/hornetsnest2) THE AMBER HORNET */   /* THE HORNET QUEEN 2 (claude/hornetsnest): src/hornet-queen.js the fight, -hands.js the world and the drawing; she fells the old boar's pines too */ import * as HSW from './hornet-swarm.js'; import * as HNA from './redraw/hornets_nest_art.js';   /* THE HORNET'S NEST (claude/hornetsnest): its comb, wax, smoke pots and brood cells (src/hornets-nest-hands.js), THE SWARM (src/hornet-swarm.js), its foe skins */ import { makeOldTuskerHands, bakeOldTuskerCard } from './old-tusker-hands.js'; import * as OTA from './redraw/old_tusker_art.js'; import * as OTM from './old-tusker.js';   /* OLD TUSKER (claude/oldtusker): THE LUMBER TRAIL's great boar - src/old-tusker.js the fight, -hands.js the world and the drawing */ import { makeBuriedCityHands } from './buried-city-hands.js'; import { makeHourglassKingHands } from './hourglass-king-hands.js'; import * as HKG from './hourglass-king.js'; import * as CON from './construct.js'; import * as SPT from './redraw/sealed_pyramid_tiles.js'; import * as SPB from './redraw/sealed_pyramid_backdrop.js'; import * as BCA from './redraw/buried_city_art.js'; import * as BCB from './redraw/buried_city_backdrop.js'; import * as BCT from './redraw/buried_city_tiles.js'; import * as BCFA from './redraw/buried_city_fix_art.js'; let BCH = null, HGK = null; import { makeSealedPyramidHands } from './sealed-pyramid-hands.js'; import { makeScarabMotherHands } from './scarab-mother-hands.js'; import * as SMG from './scarab-mother.js'; import * as MUM from './mummy.js'; import * as SPA from './redraw/sealed_pyramid_art.js'; let PYH = null, SMH = null, TKH = null, OTH = null; let FRH = null, BTH = null, FPK = null, HNS = null, HQH = null; import { makeFenPlanks } from './fen-planks.js'; import * as BLM from './bog-leech.js';   /* (claude/fenroad2) LAY THE ROAD (src/fen-planks.js) and THE BOG LEECH (src/bog-leech.js) */ import { makeFenRoadHands } from './fen-road-hands.js'; import { makeBogTrollHands, bakeBogTrollCard } from './bog-troll-hands.js'; import * as BTM from './bog-troll.js'; import * as SWM from './stilt-walker.js';   /* THE FEN ROAD (claude/fenroad): the road's bowed sections, lashings, crew gaps and horizon (src/fen-road-hands.js), THE BOG TROLL (src/bog-troll.js + -hands.js), THE GOBLIN STILT-WALKER (src/stilt-walker.js) */ import { makeTombKingHands } from './tomb-king-hands.js'; import * as TKG from './tomb-king.js';   /* THE COFFIN KING (claude/pyramidboss): THE SEALED PYRAMID's boss (src/tomb-king.js + hands); the Scarab Mother is its mini */   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the traps, the plates, the counterweights, the storm, the sealed tomb (src/sealed-pyramid-hands.js); the mummy (src/mummy.js); THE SCARAB MOTHER (src/scarab-mother.js + hands) */   /* THE BURIED CITY (claude/buriedcity, the greybox): the sand rooms, the levers, the great sand-gate, the clockwork vault (src/buried-city-hands.js); the clockwork construct (src/construct.js); THE HOURGLASS KING (src/hourglass-king.js + hands) */
 import { makeKsarHands } from './ksar-hands.js'; import { makeHawkMistressHands } from './hawk-mistress-hands.js'; import * as HMG from './hawk-mistress.js'; import * as KSF from './ksar-foes.js'; import * as KSA from './redraw/ksar_art.js'; import * as KST from './redraw/ksar_tiles.js'; let KSH = null, HMH = null, WRK = null, OWK = null;   /* THE BANDIT KSAR (claude/ksar, the greybox): the gongs, the throw, the gate winch; THE HAWK-MISTRESS */
+import * as CKIT from './campaign-kit.js';
+import * as MLIB from './maker-library.js';
+import * as MKS from './maker-stages.js';   /* (claude/maker) bosses that bring their own room */   /* (claude/maker) MY LEVELS */   /* (claude/maker) a set hero's starter kit */
 import * as FGA from './redraw/forge_art.js'; import * as MCK from './redraw/minecart_skins.js'; import * as MCB from './redraw/minecart_backdrop.js'; import * as MCT from './redraw/minecart_tiles.js'; import { makeMinecartHands } from './minecart-hands.js'; import { makeDrillHands } from './great-drill-hands.js'; import * as GDG from './great-drill.js'; let MCH = null, GDH = null; import { makeForgeRails, FORGE as FGR_K } from './forge-rails.js'; let FGR = null;   /* (claude/forgemaster) THE SMELTER FLOOR and THE FORGE: the loop, the junction levers, the slag plugs, the loader (src/forge-rails.js) */   /* THE DEEP RAILS (claude/minecart, the greybox): the cart, the points, the hazards, the goblin carts; THE GREAT DRILL */
 import { makeVotiveHands, VOTIVE_IDS, VOTIVE_N } from './votive-hands.js'; let VTH = null;   /* WAYMEET's three votive lamps (claude/towpathchurch): light them, the hill road to THE LIT CHURCH opens */
 import { makeVillageHands, stageAt } from './village-hands.js'; let VWH = null;   /* (claude/burning3) THE BURNING VILLAGE 3: burst tanks, SOAKED, oil fire, told falling debris, the fire's three stages */
@@ -166,8 +169,9 @@ import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from '
 import * as BAR from './barriers.js';   /* THE BARRIERS BY REGION (claude/barriers): the gate, the boss seal, the lock plate - art only */
 import * as EG from './exit-gates.js';   /* THE EXIT GATES BY REGION (claude/exitgates): art only */
 const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
+const EG_QUIET = { light: () => {}, open: () => {} };   /* (claude/maker) the START gate makes no sound */
 import * as NDSP from './num-display.js'; const numTxt = n => NDSP.shownLabel(n.txt, n.col);   /* (claude/hpdisplay, Daniel 11-07) every HEALTH / DAMAGE number the player reads is the internal number / 10: src/num-display.js, the one helper */
-import * as JF from './jump-feel.js'; import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
+import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';   /* (claude/airmotion) the air frame leans and stretches with the arc - art only */ import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
@@ -292,6 +296,7 @@ import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanion
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
+import * as MKP from './maker-palette.js'; import * as MUI from './maker-ui.js'; import * as MKJ from './maker-juice.js';   /* (claude/maker) THE MAKER's screen: tabs, icon strip, buttons, SETTINGS, HELP */   /* (claude/maker) THE MAKER's palette: what you can place, the bestiary's names, the paged palette screen */
 import * as OT from './opening-tutorial.js'; import * as PARTY from './party.js';   /* (claude/tutorial1) THE ROADSIDE LESSON */ import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -1440,13 +1445,19 @@ function resolveTiles() {
     : inZones(L.masonry, x, y) ? LEDGE_SETS.ruinLedge
     : inZones(L.rockZones, x, y) ? LEDGE_SETS.rockShelf
     : LEDGE_SETS.sandLip;
-  const rnd = mulberry(7);
-  const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, solidish, 9);
+  let rnd = mulberry(7);   /* (claude/maker) a made-by-hand wood re-seeds per tile below */
+  const rockDeep = groundDepth(LW, LH, (x, y) => tileAt(x, y) === T.SOLID, 18), groundDeep = groundDepth(LW, LH, L.custom && SLOPES_ON ? (x, y) => solidish(x, y) || isSlope(tileAt(x, y)) : solidish, 9);   /* (claude/maker) a slope is the surface: counted as open air, the ground under each step shaded lighter and every ramp read as stacked blocks (Daniel) */
   const RDG = redressGround(), RDP = redressProps();   /* THE REDRESS: this level's own rock and dressing, where it has one */
   /* A FLOOR'S OWN GROUND (L.groundZones: THE HANGING VILLAGE's seven floors and its hollow, by tile row) wins over the level's redress */
   const zoneG = L.groundZones ? (y => { const z = L.groundZones.find(q => y >= q.y0 && y <= q.y1); return z ? HV.hvGround(z.look) : null; }) : () => null;   /* THE REDRESS: this level's own rock and dressing, where it has one */
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
+    /* (claude/maker) IN A MADE-BY-HAND WOOD EACH TILE THROWS ITS OWN DICE. One stream read left to right meant painting one tile
+       changed how many rolls came before every tile after it, so all the dressing (trees, fences, tufts) to its right reshuffled
+       on every click (Daniel: "the terrain moves oddly when I try placing things"). Seeded by the cell, an edit only moves its own. */
+    if (L.custom) rnd = mulberry(((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0);
+    /* (claude/maker) GROUND MATERIALS: a cell painted COBBLE / SHORE ROCK / ... is drawn as if the place were that one (MAT_SET) */
+    const MATS = L.mat ? L.mat[y * LW + x] : undefined, PSET = MATS ? MAT_SET[MATS] : (L.palette && L.palette.set);
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.fenroad && L.sagCells && t !== T.SOLID && (L.sagSetI || (L.sagSetI = new Set(L.sagCells.map(([sx, sy]) => sy * LW + sx)))).has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/fenroad) a bowed section's / crew gap's boards are drawn by src/fen-road-hands.js */
     if (L.fenroad && (t === T.SOLID || t === T.PLANK || t === T.ONEWAY)) { const ts = FRA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/fenroadart) THE FEN ROAD's kit: sound boards, stilt decks, driven piles, lashed log cribs, the peat cutting (src/redraw/fen_road_art.js) */
@@ -1462,7 +1473,7 @@ function resolveTiles() {
     if (L.lpKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LP3T.lpTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/lamplit3) THE LAMPLIT STREET's own footing: every one-way is a cobbled lip, an iron balcony, an awning, a lamp crossbar or a gantry - never a plank - and a tar net is drawn as one */
     if (L.welltown && t === T.SOLID) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE WELL TOWN's solids (the street, the houses, the cisterns) are its own kit, ahead of the caravan's sand skin; slopes stay the sand's */
     if (L.ksar && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = KST.ksarTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BANDIT KSAR's own ground (claude/ksar art pass, src/redraw/ksar_tiles.js): mud-brick, ashlar, bedrock, flagstones, the breaches' stakes, the beams */
-    if (L.sealedpyramid && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
+    if (L.sealedpyramid && !L.custom && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
     if (L.wispwood && (t === T.SOLID || t === T.ONEWAY)) { const ts = WWA.wispTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/wispart) WISPWOOD's own ground (src/redraw/wispwood_art.js): peat banks, the barrow stone, the dead oaks' trunks, dead boughs and drowned roots; a spectral cell is a clear tile (drawn live, lit or its glint) */
     if (L.manor && (t === T.SOLID || t === T.ONEWAY)) { const ts = MNA.manorTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/manorart) THE HOLLOW MANOR's own ground (src/redraw/manor_art.js): per-section stone, marble, runner and flags, corbelled galleries, the shifting panels' door leaf / carpeted stair / bookcase */
     if (L.academy && (t === T.SOLID || t === T.ONEWAY)) { const ts = ACA.academyTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/academyart) THE MAGE ACADEMY's own ground (src/redraw/academy_art.js): per-room ashlar, shelving, galleries, runestones, ward-rail glass, the exit gate */
@@ -1473,14 +1484,14 @@ function resolveTiles() {
     if (L.litchurch && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = CHT.churchTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE LIT CHURCH's own ground (claude/churchart, src/redraw/church_tiles.js): cut stone, chequered flags, marble, the crypt's bone-niched stone, turf, the pews and corbels */
     if (L.glasssea && (t === T.SOLID || isSlope(t))) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE GLASS SEA's own ground (claude/glasssea art pass, src/redraw/glasssea_tiles.js): fused glass, slick diagonals; the first columns stay sand */
     if (L.minecart && (t === T.SOLID || t === T.RAIL || t === T.ONEWAY || t === T.SPIKE || isSlope(t))) { const ts = MCT.mineTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE DEEP RAILS' tile kit (claude/minecartart, src/redraw/minecart_tiles.js): the rail bed, shored rock, ragged roofs, ore-veined mass, the trestle deck */
-    if ((L.caravan || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
+    if (((L.caravan && !L.custom) || SLOPES_ON) && !((L.redgorge || L.underwell) && t === T.SOLID) && cvTile(x, y, t)) continue;   /* THE SUNKEN CARAVAN: sand on every slope and flat, sandstone where the level says rock. ANY LEVEL WITH SLOPES paints them (claude/fairlevel: the guard said L.caravan, so the fair's Stall Stair and the Ore Road's ramps were invisible) */
     const underPool = t === T.SOLID && (L.pools || []).some(p => p.shallow && x * TS >= p.x0 && x * TS < p.x1 && y * TS >= p.y - 4 && y * TS < p.y + (p.depth || 12) + 4);
-    const shore = L.palette && L.palette.set === 'shore' && SHORE, reefT = L.palette && L.palette.set === 'reef' && REEF, shipT = ((L.palette && L.palette.set === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = L.palette && L.palette.set === 'city' && CITY;
-    const villT = L.palette && L.palette.set === 'village' && VILL;
+    const shore = PSET === 'shore' && SHORE, reefT = PSET === 'reef' && REEF, shipT = ((PSET === 'ship') || (L.shipZones||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3])) && FLOT, cityT = PSET === 'city' && CITY;
+    const villT = PSET === 'village' && VILL;
     /* LAID STONE. A level can mark the rectangles the masons built (L.masonry, in tiles): rock in them is drawn as coursed
        ashlar with a coping, and the crag outside them stays crag, so a tower grows out of the mountain instead of both
        being the same grey rock with grass on it. */
-    const crownT = CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk || L.masonryKit === 'limestone' ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* STORMHOLD's walls are the town's own limestone, not the Queen's granite next door (F6) */   /* the monks laid warm limestone; the Queen laid granite */
+    const crownT = MATS === 'masonry' ? CROWN : MATS ? null : CROWN && L.masonry && L.masonry.some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) && (L.monk || L.masonryKit === 'limestone' ? (MONK || (MONK = MON.bakeMonkTiles())) : CROWN);   /* STORMHOLD's walls are the town's own limestone, not the Queen's granite next door (F6) */   /* the monks laid warm limestone; the Queen laid granite */
     const SET2 = shipT ? { top: { '00': FLOT.deckTop, '01': FLOT.deckTop, '10': FLOT.deckTop, '11': FLOT.deckTop }, edge: FLOT.hullEdge, fill: FLOT.hull, silt: FLOT.silt, wet: FLOT.deckTop, ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR } : reefT ? REEF : shore ? SHORE : cityT ? CITY : crownT ? crownT : villT ? VILL : ZG || RDG || null, wetT = SET2 && L.wetZone && x >= L.wetZone[0] && x <= L.wetZone[1];
     const timber = reefT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);
     const deckZ = shipT && (L.hullZones || []).some(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[2] + 2);
@@ -1540,7 +1551,7 @@ function resolveTiles() {
       const desertKit = desertLedgeAt(x, y);   /* the desert's own ledges win over the generic castle masonry (crownT): a ruin is not a keep */
       const zoneLedge = (L.ledgeZones || []).find(z => x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]);   /* A PLACE'S OWN LEDGE (L.ledgeZones: [x0, x1, y0, y1, set]) - the Burial Caverns' crypt is stone, its mine-staging elsewhere */
       const named = zoneLedge && LEDGE_SETS[zoneLedge[4]] ? LEDGE_SETS[zoneLedge[4]] : curId()==='waymeet' ? LEDGE_SETS.awning : desertKit ? desertKit : crownT ? LEDGE_SETS.masonry : L.palette && L.palette.ledges && LEDGE_SETS[L.palette.ledges];
-      const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (L.palette.set === 'shore' ? SHORE : L.palette.set === 'reef' ? REEF : L.palette.set === 'city' ? CITY : L.palette.set === 'village' ? VILL : L.palette.set === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
+      const crag = L.palette && L.palette.dress === 'crag', shoreOW = named || (L.palette && (PSET === 'shore' ? SHORE : PSET === 'reef' ? REEF : PSET === 'city' ? CITY : PSET === 'village' ? VILL : PSET === 'ship' ? { ledge: FLOT.rail, ledgeL: FLOT.railL, ledgeR: FLOT.railR }
         : L.palette.myc ? { ledge: TILE.capLedge, ledgeL: TILE.capLedgeL, ledgeR: TILE.capLedgeR }
         : L.palette.dress === 'marsh' ? { ledge: TILE.duck, ledgeL: TILE.duckL, ledgeR: TILE.duckR } : null));
       /* ONE IN THREE, OF HOWEVER MANY THERE ARE (2026-09-25). LEDGE_SETS.masonry has ONE picture, and ledge[(rnd() * 3) | 0] handed back undefined for two
@@ -2873,7 +2884,7 @@ function* loadLevelG(i) {
   const dice0 = Math.random; if (LOAD_OWN_STREAM) Math.random = loadDice(LEVELS[i].id, 'pickups');   /* (claude/wnseed) the pickups' phases draw from the load's own stream, never the seeded one */
   try { for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
-    if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
+    if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6, placed: true }); total++; }   /* (claude/maker: placed - the COLLECT EVERY COIN goal counts these) */
     if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text, mute: !!e.mute }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6, ...(e.offer ? { y0: py - 6, hung: !marks.has('offer:' + e.x + ',' + e.y), y: marks.has('offer:' + e.x + ',' + e.y) ? py - 6 : py - 6 - e.offer * TS, key: 'offer:' + e.x + ',' + e.y } : {}) });   /* (claude/monastery2) THE MONKS' OFFERING: a silver hung in its basket over a belfry, let down when its bell is struck */
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
@@ -2949,6 +2960,10 @@ function spawnEntitiesRaw() {
   shots = []; bodies = []; risen = []; rbolts = []; bkWorms = []; bkBolts = []; bkDrains = []; bloodBolts = []; bkWaves = []; bkStreams = []; bkDecals = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (typeof P !== 'undefined' && P) { P.leech = null; P.plankPose = null; P.plankPoseT = 0; } if (PTK) PTK.reset(); if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.riding = null; P.spinning = null; P.holyLandT = 0; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
+  if (L.custom && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); crumbleInit(L); }   /* (claude/maker) THE MAKER's crumbling ledges stand again on every attempt */
+  if (L.custom && L.swCells && L.swOn) mkFlipSwitch(false);   /* (claude/maker) and the switch blocks go back to RED */
+  if (L.custom && L.arena && L.arena.maker) { L.mkBossDone = false; L.gateOpen = !L.mkBossLocks; }   /* (claude/maker) shut only if the boss is LINKED to the goal */
+  if (L.custom) { L.mkHp = null; L.mkFailT = 0; L.mkGateT = 0; }   /* (claude/maker) the GOAL rule starts again */   /* (claude/maker) the boss stands again, and its goal is shut */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) { P.candle = 0; P.snuffed = false; } for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; bossBeat = null; actCard = null; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
   miniIntroT = 0;   /* the previous level's mini name card cannot follow a level load */
   if((L.harborSections||L.reverseTower)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
@@ -3209,7 +3224,7 @@ function spawnEnt(e) {
       case 'thief': enemies.push({ ...base, t: 'thief', w: 8, h: 11, hp: EHP.thief, speed: 70, loot: 0, mode: 'stalk' }); break;
       case 'pike': enemies.push({ ...base, t: 'pike', w: 10, h: 12, hp: EHP.pike, speed: 20, mode: 'guard', modeT: 0 }); break;
       case 'bell': props.push({ t: 'bell', x: px, y: py, hp: 3, rung: false, broken: false, gate: e.gate, section: e.section, ringT: 0, lure: !!e.lure }); break;   /* (claude/highcrown2) lure: a hero's blow RINGS it (raiseAlarm) - it is never broken */
-      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, say: e.say, on: false }); break;   /* say (claude/marsh3): its own words when it opens its column (the marsh's boom) */
+      case 'lever': props.push({ t: 'lever', mkSwitch: !!e.mkSwitch, x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, say: e.say, on: false }); break;   /* say (claude/marsh3): its own words when it opens its column (the marsh's boom) */
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, gate: e.gate, down: false }); break;
       case 'tidegate': props.push({ t: 'tidegate', x: px, y: py, col: e.x, y0: e.y0, y1: e.y1, mode: e.mode, open: false }); break;   /* THE LONG WATER's TIDE GATES (updateTideGates) */
@@ -3477,7 +3492,7 @@ function spawnEnt(e) {
       case 'chainpost': { const cut = marks.has('chain:' + e.x); props.push({ t: 'chainpost', x: px, y: py, hp: 3, cut, tx: e.x }); break; }
       case 'glowbud': { const pr = { t: 'glowbud', x: px, y: py, lit: 0, mycelium:e.mycelium, motherNode:e.motherNode }; props.push(pr); lights.push({ x: px, y: py - 8, r: 18, glow: true }); pr.light = lights[lights.length - 1]; break; } // dim until you strike it
       case 'glow': props.push({ t: 'glow', x: px, y: py, dark: 0 }); lights.push({ x: px, y: py - 8, r: 52, glow: true, ref: null }); lights[lights.length - 1].ref = props[props.length - 1]; break;
-      case 'mover': movers.push({ x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena, brittle: !!e.brittle, regrow: e.regrow || 0 }); break;
+      case 'mover': movers.push({ track: e.track && e.track.length > 1 ? e.track.map(q => [q[0] * TS, q[1] * TS]) : null, tLoop: !!e.loop && (e.track || []).length > 2, x0: e.x * TS, x: e.x * TS, y: e.y * TS, y0: e.y * TS, w: e.len * TS, h: 8, range: (e.range || 0) * TS, p: 0, dir: 1, dx: 0, dy: 0, speed: e.speed || 36, cap: !!e.cap, bob: !!e.bob, vert: !!e.vert, rise: (e.rise || 0) * TS, period: e.period || 3.2, phase: e.vert ? (e.ph || 0) : (e.x % 7) * 0.9, stone: !!e.stone, slab: !!e.slab, ghost: e.ghost || null, tide: !!e.tide, sink: !!e.sink, sinkK: 0, cracked: !!e.cracked, arena: !!e.arena, brittle: !!e.brittle, regrow: e.regrow || 0 }); break;
       case 'vent': props.push({ crevice: !!e.crevice, shaft: !!e.shaft, t: 'vent', x: px, y: py, period: e.period || 4, on: e.on || 1.6, phase: e.phase || 0, h: e.h || 112, wind: !!e.wind, heat: !!e.heat, glass: !!e.glass, incense: !!e.incense, snuff: !!e.snuff, ember: !!e.ember, rune: !!e.rune, lift: e.lift || 190, w: e.w || 13, thermal: !!e.thermal, gale: !!e.gale, stair: !!e.stair, src: e.src || null, order: e.order || 0, arena: !!e.arena }); break;   /* (thermal: THE SKY ROAD's rising air, src/sky-road-hands.js) */
       case 'roller': props.push({ t: 'roller', x: px, y: py, vx: (e.face || 1) * (e.speed || 55), alive: true, rot: 0 }); break;
     }
@@ -5126,6 +5141,8 @@ function danceAfterBoss() {
 }
 function winLevel() { return asHost(winLevel0); }   /* (claude/coopprogress) a seat who reaches the gate last ends it from his pass: the win is still the save's */
 function winLevel0() {
+  if (edLinkPlay) edLinkWon = true;
+  if (edTesting && !edRunHere && !MKP.ownHero(edDoc)) { edDoc.cleared = MKP.docSig(edDoc); edJustCleared = true; }   /* (a run with your own saved hero proves nothing for anyone else) */   /* (claude/maker) THE CLEAR CHECK: beaten from START, so it can be SHARED */
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
   PROG.done = PROG.done || {};
@@ -7380,12 +7397,34 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && TCH
   disp.addEventListener('contextmenu', ev => { if (state === 'editor') ev.preventDefault(); });
   disp.addEventListener('mousedown', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { initAudio(); const [x, y] = toGame(ev); if (DUELO.rosterMouse(x, y, true)) ev.preventDefault(); } });   /* (claude/duelroster) the pick screen's mouse: player one clicks a hero, a seat's row, a tab */
   disp.addEventListener('mousemove', ev => { if (state === 'play' && DUELO && DUELO.rosterOpen()) { const [x, y] = toGame(ev); DUELO.rosterMouse(x, y, false); } });
-  disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev); edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
-  disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); edMouse(x, y, ev.button, false, true); });
-  addEventListener('mouseup', () => { if (state === 'editor') { edPaint = 0; edPainted = null; } });
-  disp.addEventListener('wheel', ev => { if (state !== 'editor') return; const items = edItems(edCat); const d = ev.deltaY > 0 ? 1 : -1;
-    if (ev.shiftKey) edCat = (edCat + d + ED_CATS.length) % ED_CATS.length; else edSel[edCat] = (edSel[edCat] + d + items.length) % items.length;
-    SFX.ui(); ev.preventDefault(); }, { passive: false });
+  disp.addEventListener('mousedown', ev => { if (state !== 'editor') return; initAudio(); const [x, y] = toGame(ev);
+    if (ev.button === 1) { edPanFrom = { x, y, cx: edCam.x, cy: edCam.y }; ev.preventDefault(); return; }   /* (claude/maker) the middle button drags the level along */
+    edShift = ev.shiftKey;
+    edMouse(x, y, ev.button, true, false); ev.preventDefault(); });
+  disp.addEventListener('mousemove', ev => { if (state !== 'editor') return; const [x, y] = toGame(ev); if (edPanFrom) { edCam.x = edPanFrom.cx - (x - edPanFrom.x); edCam.y = edPanFrom.cy - (y - edPanFrom.y); edClampCam(); return; } edMouse(x, y, ev.button, false, true); });
+  addEventListener('mouseup', () => edMouseUpAll());
+  addEventListener('beforeunload', () => { if (state === 'editor' || edTesting) { const t = edTesting; edTesting = false; edAutoSave(); edTesting = t; } });   /* (claude/maker) the last change is kept when the tab closes */
+  function edMouseUpAll() { edPanFrom = null; MUI.mouseUp(); MKP.selEnd(); if (state === 'editor' && edGrab) edDrop();   /* (claude/maker) the mouse button or the last finger came up */
+    if (state === 'editor' && edEraseBox) { const a = edEraseBox; edEraseBox = null; edPush(); const n = edEraseRect(a, edCur, MUI.eraseMode().what); if (n) { edMount(false); MKJ.erase(); MKJ.poofAt(edCur.x, edCur.y); edSay('erased ' + n); } else { edUndo.pop(); edSay('nothing there to erase'); } }   /* (claude/maker) */
+    if (state === 'editor' && MKP.rampActive()) { edPush(); const ch = MKP.rampEnd(edDoc, edCur); if (ch && ch.length) { for (const [x, y] of ch) { const k = edEntAt(x, y); if (k >= 0 && MKP.isSolidId(edDoc.grid[y * LW + x])) L.ents.splice(k, 1); } edMount(false); MKJ.place('tile'); MKJ.popAt(edCur.x, edCur.y); edSay('slope'); } else edUndo.pop(); }   /* (claude/maker) */
+    if (state === 'editor' && MKP.rectActive()) { const en = ED_TILES[edBrush().i]; edPush(); if (MKP.rectEnd(edDoc, edCur, en)) { edMount(false); edSay(en[0].replace(' (drag)', '') + ' poured'); } else edUndo.pop(); }   /* (claude/maker) */
+    if (state === 'editor') { edPaint = 0; edPainted = null; } }
+  /* (claude/maker) TOUCH IN THE MAKER: one finger is the left button (pick, paint, drag a piece, press a button), two fingers
+     drag the view, and a long press on a placed piece opens its settings (what SHIFT+CLICK does with a mouse). */
+  { let tPan = null, tHold = null, tMoved = false;
+    const at = t => toGame({ clientX: t.clientX, clientY: t.clientY });
+    const mid = ts => at({ clientX: (ts[0].clientX + ts[1].clientX) / 2, clientY: (ts[0].clientY + ts[1].clientY) / 2 });
+    disp.addEventListener('touchstart', ev => { if (state !== 'editor') return; initAudio(); ev.preventDefault();
+      if (ev.touches.length >= 2) { clearTimeout(tHold); if (!tPan) { edMouseUpAll(); const [x, y] = mid(ev.touches); tPan = { x, y, cx: edCam.x, cy: edCam.y }; } return; }
+      const [x, y] = at(ev.touches[0]); tMoved = false; edShift = false; edMouse(x, y, 0, true, false);
+      clearTimeout(tHold); tHold = setTimeout(() => { if (!tMoved && !edGrab?.moved) { edMouseUpAll(); edEditAt(edCur.x, edCur.y); } }, 550); }, { passive: false });
+    disp.addEventListener('touchmove', ev => { if (state !== 'editor') return; ev.preventDefault();
+      if (tPan && ev.touches.length >= 2) { const [x, y] = mid(ev.touches); edCam.x = tPan.cx - (x - tPan.x); edCam.y = tPan.cy - (y - tPan.y); edClampCam(); return; }
+      if (tPan) return; tMoved = true; const [x, y] = at(ev.touches[0]); edMouse(x, y, 0, false, true); }, { passive: false });
+    disp.addEventListener('touchend', ev => { if (state !== 'editor') return; ev.preventDefault(); clearTimeout(tHold); if (!ev.touches.length) { if (!tPan) edMouseUpAll(); tPan = null; } }, { passive: false });
+  }
+  disp.addEventListener('wheel', ev => { if (state !== 'editor') return; if (MUI.browseWheel(ev.deltaY)) { ev.preventDefault(); return; }   /* (claude/maker) THE WHEEL SCROLLS THE LEVEL (sideways; SHIFT: up and down). Picking pieces is the icon strip's job now */
+    if (ev.shiftKey) edCam.y += ev.deltaY * 0.6; else edCam.x += (ev.deltaY + (ev.deltaX || 0)) * 0.6; edClampCam(); ev.preventDefault(); }, { passive: false });
 }
 // Gamepad: A jump, X swing, B dodge, RB/LB block, Start pause, d-pad or left stick to move.
 /* AND IN CO-OP THERE ARE TWO PAIRS OF HANDS ON IT. Player one keeps the keyboard and the FIRST pad is player two's;
@@ -9840,6 +9879,8 @@ function breakCrate(tx, ty) {
   SFX.crack(); hitstop(0.03); shakeCam(1.5);
   burst(tx * TS + 8, ty * TS + 8, 10, ['#8a5a32', '#a8743f', '#5c3a1d'], 80, 0.5, 350, 2);
   const key = tx + ',' + ty;
+  { const lk = L.crateLoot && L.crateLoot[key]; if (lk && lk !== 'coin') {   /* (claude/maker) a made-by-hand crate holds what was put in it */
+    if (lk === 'mend') healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); else { spawnEnt({ t: lk, x: tx, y: ty }); number(tx * TS + 8, ty * TS - 4, '!', '#ff6b6b'); } return; } }
   if (!collectedCrates.has(key)) acorns.push({ x: tx * TS + 8, y: ty * TS + 8, got: false, ph: 0, crate: key, vy: -60 });
   if (!healCrates.has(key) && Math.random() < HEAL.crate) { healCrates.add(key); healths.push({ x: tx * TS + 8, y: ty * TS + 8, vy: -140, t: 0 }); } // a crate sometimes holds a heart
 }
@@ -12319,7 +12360,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
-  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else { winLevel(); trnBegin(); } }   /* (claude/demotransitions) a GATE-END level (Hornet's Nest, Fen Road, Rootway) starts its walk-out when the party walks into the gate */   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
+  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate() && mkGoalLets()) { escape = null; if (bossSelectFight) bossSelectQuit(); else { winLevel(); trnBegin(); } }   /* (claude/demotransitions) a GATE-END level (Hornet's Nest, Fen Road, Rootway) starts its walk-out when the party walks into the gate */   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 100 * TS) music.preload(L.arena.music || 'boss');   /* (claude/marsh3) 100 tiles out, not 40: six seconds of walking was less than a 1.4 MB boss track takes on a slow line (tools/music-priority.mjs) */
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
@@ -12340,8 +12381,8 @@ const saveUnstarted = r => !r || (!r.heroPicked && !LEVELS.some(l => r[l.id]) &&
 /* (claude/titlemenu, Daniel 11-08) THE TITLE IS SIX ROWS: CONTINUE, CHOOSE A SAVE, PLAY TOGETHER >, MORE MODES >, OPTIONS >, EXTRAS >. A group opens in place on the same board with a BACK row (ESC / X / the back key / BACK
    close it). A group with ONE row left shows that row directly. SWAP HERO left the title (inn, store, pause menu keep it). Row ids are unchanged: every handler and tool still names LOCAL CO-OP, ARENA YARD... */
 const titleRushRow = () => rushUnlocked() && !MODES_PARKED && !DS.DEMO ? ['BOSS RUSH'] : [];   /* (still off in the demo and without ?modes) */
-const titleEditorRow = () => MODES_PARKED || DS.DEMO ? [] : ['THE EDITOR'];
-const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow(), titleEditorRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
+const titleEditorRow = () => DS.DEMO ? [] : ['THE MAKER (TEST)'];   /* (claude/maker, Daniel 2026-11-09) the level maker, in EXTRAS as a test ("commit to it under extras on the live game, not the demo"); MODES_PARKED still hides BOSS RUSH */
+const TITLE_GROUPS = { 'PLAY TOGETHER': () => ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': () => ['ARENA YARD'].concat(PVP_SHIPS ? ['DUEL (BETA)'] : [], ['BOSS SELECT'], titleRushRow()), 'EXTRAS': () => ["WHAT'S NEW", 'UNLOCKS'].concat(titleEditorRow(), ['GIVE FEEDBACK', 'CREDITS']) };
 const titleGroupRows = g => TITLE_GROUPS[g] ? TITLE_GROUPS[g]() : null;
 const titleTop = () => { const out = !saveUnstarted(readSlot(slot)) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
   const grp = g => { const r = titleGroupRows(g); if (r.length > 1) out.push(g); else if (r.length === 1) out.push(r[0]); };
@@ -16340,6 +16381,59 @@ function mageHint(key, msg) { const k = 'mgHint' + key; if ((PROG[k] || 0) >= 2)
 const bcRetile = (x, y) => { if (!L || !L.buriedcity || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT) tileSpr[i] = BCT.bcTile(t, xx, yy, tileAt, T, L) || tileSpr[i]; else if (isSlope(t)) { tileSpr[i] = null; cvTile(xx, yy, t); } } };   /* (claude/buriedcity4: THE TILTING DUNE's slopes are re-picked from the sand kit) */
 /* (claude/underleaf4art) THE POTION MASTER's ground, RE-PICKED: a vine bridge/ladder that grows and a hedge that burns away are cells the hands wrote after the level was baked - without this their sprite was null (an invisible bridge you stand on). Re-pick the cell and its eight neighbours from UNDERLEAF's own kit (src/redraw/underleaf3_tiles.js). */
 const ul3Retile = (x, y) => { if (!L || !L.ul3 || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET || t === T.PORT) tileSpr[i] = UL3T.ul3Tile(t, xx, yy, tileAt, T, L) || tileSpr[i]; } };
+/* (claude/maker) THE SWITCH BLOCKS: RED solid while the switch is off, BLUE while it is on; `hit` flips, a reset puts them back */
+/* (claude/maker) A BOSS FALLS IN A MADE-BY-HAND ARENA: whatever its home level does next (the Chieftain's hall burns and the way
+   out moves to the Stockade's own gate at column 344) is not this level's - the walls open, the goal is the one that was
+   placed, and it opens. Reset on every attempt (spawnEntities). */
+/* (claude/maker) LEVEL GOALS (Daniel: like Mario Maker's clear conditions). DEFEAT EVERY ENEMY and COLLECT EVERY COIN hold the
+   goal gate shut until they are done; DO NOT GET HIT and BEAT THE CLOCK fail the run, which starts again from the top. */
+const mkFoesLeft = () => enemies.filter(e => e.alive && !e.harmless).length + (boss && boss.alive ? 1 : 0);
+const mkCoins = () => { const a = acorns.filter(q => q.placed); return [a.filter(q => q.got).length, a.length]; };
+function mkGoalLeft() { const k = L && L.custom && L.mkGoal; if (k === 'foes') { const n = mkFoesLeft(); return n ? n + (n === 1 ? ' ENEMY' : ' ENEMIES') + ' LEFT' : ''; }
+  if (k === 'coins') { const [a, b] = mkCoins(); return a < b ? (b - a) + (b - a === 1 ? ' COIN' : ' COINS') + ' LEFT' : ''; } return ''; }
+function mkGoalLets() { const left = mkGoalLeft(); if (!left) return true;
+  if (!(L.mkGateT > time)) { L.mkGateT = time + 1.5; number(P.x, P.y - 34, 'NOT YET: ' + left, '#ffd36b'); SFX.buzz(); } return false; }
+function mkGoalTick(dt) {
+  if (L.mkFailT) { L.mkFailT -= dt; if (L.mkFailT <= 0) { L.mkFailT = 0; loadLevel(levelIndex); startGame(); bannerT = 0; transT = 0; } return; }   /* the run starts again, as a test run does */
+  const k = L.mkGoal, hp = players.reduce((s, q) => s + Math.max(0, q.hp || 0), 0);
+  if (k === 'nohit') { if (L.mkHp !== null && hp < L.mkHp) mkGoalFail('HIT! THE RUN STARTS AGAIN'); else L.mkHp = hp; }
+  const secs = MKP.goalSecs(k); if (secs && levelTime > secs) mkGoalFail('TIME UP!');
+}
+function mkGoalFail(why) { if (L.mkFailT) return; L.mkFailT = 1.4; number(P.x, P.y - 40, why, '#ff6b6b'); SFX.buzz(); shakeCam(3); }
+function mkGoalHud() { const k = L.mkGoal; let s0 = '';
+  if (k === 'foes') { const n = mkFoesLeft(); s0 = n ? 'DEFEAT EVERY ENEMY: ' + n + ' LEFT' : 'EVERY ENEMY DOWN: TO THE GOAL!'; }
+  else if (k === 'coins') { const [a, b] = mkCoins(); s0 = a < b ? 'COINS ' + a + ' / ' + b : 'EVERY COIN: TO THE GOAL!'; }
+  else if (k === 'nohit') s0 = 'DO NOT GET HIT';
+  else { const t = Math.max(0, MKP.goalSecs(k) - levelTime); s0 = 'TIME ' + Math.ceil(t); }
+  const warn = L.mkFailT || (MKP.goalSecs(k) && MKP.goalSecs(k) - levelTime < 10);
+  text(s0, VW / 2, 22, warn ? '#ff6b6b' : '#ffd36b', 'center', 8); }
+/* (claude/maker) A WARP DOOR: UP (or TALK) standing in one comes out of its partner; the whole party goes, the camera with them */
+function mkWarpTry() {
+  if (P.mkWarpT > time || P.dead) return;
+  const e = (L.ents || []).find(q => q.t === 'warp' && Math.abs(P.x - (q.x * TS + 8)) < 10 && Math.abs(P.y - (q.y + 1) * TS) < 14); if (!e) return;
+  const o = MKP.warpPartner(L.ents, e); if (!o) { number(P.x, P.y - 34, 'IT LEADS NOWHERE', '#ff6b6b'); P.mkWarpT = time + 1; return; }
+  const nx = o.x * TS + 8, ny = (o.y + 1) * TS;
+  for (const p of players || [P]) { p.x = nx; p.y = ny; p.vx = 0; p.vy = 0; p.onMover = null; p.climb = false; p.mkWarpT = time + 0.6; }
+  camX = P.x - VW / 2; camY = P.y - VH * CAM_FOOT; SFX.gateOpen(); burst(nx, ny - 12, 10, [MKP.WARP_COL[o.col || 0], '#ffffff'], 60, 0.4, 0, 1);
+}
+/* (claude/maker) A PLATFORM ON A TRACK: along the smooth curve through its points, by distance, at its speed; back and forth, or round */
+function mkTrackStep(m, dt) {
+  if (!m.tPts) { m.tPts = MKP.trackCurve(m.track, m.tLoop); m.tLen = [0]; for (let i = 1; i < m.tPts.length; i++) m.tLen.push(m.tLen[i - 1] + Math.hypot(m.tPts[i][0] - m.tPts[i - 1][0], m.tPts[i][1] - m.tPts[i - 1][1])); m.tS = 0; m.tDir = 1; }
+  const L0 = m.tLen[m.tLen.length - 1] || 1; m.tS += m.tDir * m.speed * dt;
+  if (m.tLoop) m.tS = ((m.tS % L0) + L0) % L0; else if (m.tS >= L0) { m.tS = L0; m.tDir = -1; } else if (m.tS <= 0) { m.tS = 0; m.tDir = 1; }
+  let i = 1; while (i < m.tLen.length - 1 && m.tLen[i] < m.tS) i++;
+  const a = m.tPts[i - 1], b = m.tPts[i], seg = (m.tLen[i] - m.tLen[i - 1]) || 1, k = Math.max(0, Math.min(1, (m.tS - m.tLen[i - 1]) / seg));
+  m.x = a[0] + (b[0] - a[0]) * k; m.y = a[1] + (b[1] - a[1]) * k;
+}
+function mkBossDown() {
+  L.mkBossDone = true; escape = null; bossActive = false; camLock = null;
+  if (L.arena.wallL !== undefined) setWall(L.arena.wallL, false); if (L.arena.wallR !== undefined) setWall(L.arena.wallR, false);
+  const ge = (L.ents || []).find(e => e.t === 'gate'); if (ge) gate = { x: ge.x * TS + 8, y: (ge.y + 1) * TS };
+  L.gateOpen = true; if (gate) number(gate.x, gate.y - 40, 'THE WAY IS OPEN', '#8fd160');
+}
+function mkFlipSwitch(hit) { if (!L || !L.swCells) return; L.swOn = hit ? !L.swOn : false;
+  for (const [x, y, kind] of L.swCells) { const solid = (kind === 'red') !== L.swOn; cellSet(x, y, solid ? T.CRYST : T.AIR); }
+  resolveTiles(); if (hit) { SFX.stone(); number(P.x, P.y - 34, L.swOn ? 'BLUE!' : 'RED!', L.swOn ? '#6fb0ff' : '#ff6b6b'); } }
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
   MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (L && L.academy) MG = { shots: [], shelves: [], shotsOnly: true };   /* (claude/nightwalk) the imps' shots only */ if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
@@ -24793,11 +24887,18 @@ function cvBackdrop() { BG.sky = DZ.bakeDesertSky(VH); BG.far = DZ.bakeFarMesas(
     fg.restore(); } }
 /* THE GROUND: the sand skin on every slope and every flat top, the skin carried down under a slope, and the rock's own skin
    (sandstone) where the level says it is rock - the arch, the caravanserai, the rim's overhang */
+/* (claude/maker) the ground set a style's slopes are cut from (top and fill, as cvTile reads them); null: the level's own */
+function mkStyleSet(m) {
+  if (m === 'grass') return { top: TILE.top, fill: TILE.dirt };
+  if (m === 'deck') return FLOT ? { top: { '00': FLOT.deckTop }, fill: FLOT.hull } : null;
+  return ({ cobble: VILL, shore: SHORE, reef: REEF, city: CITY, masonry: CROWN })[m] || null;
+}
 function cvTile(x, y, t) {
-  if (!L.caravan) {   /* A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
+  if (!L.caravan || L.custom) {   /* (claude/maker: a made level that borrows the caravan for the Dune Worm keeps its own ground) A SLOPE IN THE LEVEL'S OWN GROUND (src/redraw/ground-slopes.js): its own top and fill, so a village ramp is cobble and earth, not sand */
     if (!isSlope(t)) return false;
     const fk = L.fairKit ? FTL.slopeSkins(L, x, y) : null;   /* (claude/fairfix5) the fair's slopes wear its own ground */
-    const gs = ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = fk ? fk.top : gs ? gs.top['00'] : TILE.top['00'], fill = fk ? fk.fill : gs ? gs.fill : TILE.dirt;
+    const ms = L.custom && L.mat ? L.mat[y * LW + x] : null, msSet = ms ? mkStyleSet(ms) : null;   /* (claude/maker) a slope in a STYLE is cut from that style's ground */
+    const gs = msSet || ({ village: VILL, shore: SHORE, reef: REEF, city: CITY })[L.palette && L.palette.set] || null, h3 = ((x * 7 + y * 13) % 3 + 3) % 3, top = fk ? fk.top : gs ? gs.top['00'] : TILE.top['00'], fill = fk ? fk.fill : gs ? gs.fill : TILE.dirt;
     tileSpr[y * LW + x] = slopeTile(t, top[h3 % top.length], fill[h3 % fill.length]); return true; }
   const A = cvArt(), i = y * LW + x, h = ((x * 7 + y * 13) % 3 + 3) % 3;
   /* THE RUINS (2026-09-25): what the masons laid (L.masonry) is coursed ashlar, not the rock's strata and not sand - a cracked block
@@ -25335,6 +25436,10 @@ function drawBurningTown(cx, cy) {
 }
 function updateVillage(dt) {
   updateUnburied(dt); updateCaravan(dt); updateFair(dt);
+  if (L.custom && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);
+  if (L.custom && L.arena && L.arena.maker && boss && !boss.alive && !L.mkBossDone && state === 'play') mkBossDown();   /* (claude/maker) */
+  if (L.custom && (L.mkGoal || L.mkFailT) && state === 'play') mkGoalTick(dt);
+  if (L.custom && state === 'play' && (upPress || talkPress)) mkWarpTry();   /* (claude/maker) WARP DOORS */   /* (claude/maker) THE MAKER's crumbling ledges count, fall and come back */
   if (CANAL) CNH.canalUpdate(CANAL, CNX, dt);   /* THE FOG CANAL (src/canal-hands.js) */
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
@@ -29178,7 +29283,12 @@ function placeLandmarks() {
   const roof = (x, y) => (L.interiors || []).some(([ix0, ix1, iy0]) => x >= ix0 && x <= ix1 && y >= iy0 - 4 && y < iy0);
   const flats = []; for (let y = 4; y < LH - 1; y++) for (let x = 6; x < Math.min(LW - 8, arenaX0); x++) { let ok = !roof(x, y); for (let k = 0; k < 6 && ok; k++) if (!(tileAt(x + k, y) === T.SOLID && tileAt(x + k, y - 1) === T.AIR && tileAt(x + k, y - 2) === T.AIR && tileAt(x + k, y - 3) === T.AIR)) ok = false; if (ok) flats.push([x, y]); }
   const used = []; const pick = () => { for (let t = 0; t < 40; t++) { const f = flats[(rnd() * flats.length) | 0]; if (f && used.every(u => Math.abs(u[0] - f[0]) > 40)) { used.push(f); return f; } } return null; };
-  const put = (c, dx, dy, extra = {}) => { const f = pick(); if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
+  /* (claude/maker) A MADE-BY-HAND WOOD'S LANDMARKS STAY PUT: each keeps its spot (L.lmKeep, shared by the editor and play) while
+     that spot is still open flat ground. Picked afresh, they jumped every time an edit changed the list of flats (the big oak
+     by the start vanished when a block went down at the other end). */
+  const keep = L.custom ? (L.lmKeep || (L.lmKeep = [])) : null; let slot = 0;
+  const stillFlat = f => !!f && flats.some(q => q[0] === f[0] && q[1] === f[1]) && used.every(u => Math.abs(u[0] - f[0]) > 40);
+  const put = (c, dx, dy, extra = {}) => { const k = slot++; let f; if (keep && stillFlat(keep[k])) { f = keep[k]; used.push(f); } else { f = pick(); if (keep) keep[k] = f; } if (f) decor.push(Object.assign({ k: 'landmark', landmark: true, bg: true, x: f[0] * TS + dx, y: f[1] * TS - c.height + dy, c }, extra)); return f; };
   const lmId = curId(), lmPut = ([n, i, dx]) => put(i < 0 ? PROP[n] : PROP[n][i], dx, 0);   /* (src/landmarks.js: the village set is Waymeet's alone; Kingswood's court has no beehives or birdhouses) */
   if (dress === 'wood') for (const e of woodLandmarks(lmId)) lmPut(e);
   if (dress === 'marsh') { put(PROP.fishTrap[0], 12, 0); put(PROP.fishTrap[1], 44, 0); put(PROP.lanternPost, 24, 0); put(PROP.birdhouse, 60, 0); }
@@ -32569,7 +32679,8 @@ function updateProps(dt) {
     if (pr.t === 'npc' && pr.ride) { const fm = movers.find(mv => mv.ferry); if (fm) { pr.x = fm.x + 16; pr.y = fm.y; } }
     if (pr.t === 'npc' && pr.kind === 'ferryman' && !P.dead && state === 'play' && talkPress && Math.abs(P.x - pr.x) < 30 && Math.abs(P.y - pr.y) < 24) { const fm = movers.find(mv => mv.ferry); if (fm && !fm.paid && !fm.free && fm.toll) { if (PROG.coins >= fm.toll) { PROG.coins -= fm.toll; saveProgress(); fm.paid = true; marks.add('ferry:' + fm.x0); SFX.coin(); SFX.uiSel(); number(pr.x, pr.y - 28, 'PAID ' + fm.toll + ' GOLD', '#ffd34a'); number(pr.x, pr.y - 38, 'STEP ABOARD', '#bfe6f5'); } else { SFX.clank(); number(pr.x, pr.y - 28, 'NOT ENOUGH GOLD', '#ff6b6b'); } } }
     if (pr.t === 'stray' && !pr.got && !P.dead && Math.abs(pr.x - P.x) < 15 && Math.abs(pr.y - P.y) < 22) { const Q = questOf(); pr.got = true; straysGot.add(pr.x); if (pr.kind === 'folk') freeFolk(pr); strayLast = { x: pr.x, y: pr.y }; if (pr.kind === 'sheep') SFX.bleat(); else if (pr.kind === 'canary' || pr.kind === 'pigeon') { SFX.bird(); SFX.sting(); } else { SFX.coin(); SFX.sting(); } burst(pr.x, pr.y - 4, 8, ['#e8e0d0', '#fff6c8'], 50, 0.5); number(pr.x, pr.y - 18, Q.name + ' ' + straysGot.size + '/' + Q.n, '#ffe6a0'); if (straysGot.size >= Q.n) questDone(pr.x, pr.y); }
-    if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; towerLever(pr); SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
+    if (pr.t === 'lever' && pr.mkSwitch && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { if (!(pr.swT > time)) { pr.swT = time + 0.45; pr.on = !pr.on; mkFlipSwitch(true); } }   /* (claude/maker) */
+    else if (pr.t === 'lever' && !pr.on && hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y })) { pr.on = true; towerLever(pr); SFX.stone(); const ram = props.find(r => r.t === 'ram' && Math.floor(r.x / TS) === pr.ram); if (ram) { ram.active = 3.2; ram.tm = 0; ram.hit.clear(); number(pr.x, pr.y - 20, 'THE RAM SWINGS', '#ffd36b'); } }
     if (pr.t === 'ram' && pr.active > 0) { pr.active -= dt; pr.tm += dt; pr.th = Math.sin(pr.tm * 4.2) * 1.35 * Math.min(1, pr.active / 1.2); const pts = [30, 44, 58, 72].map(r => [pr.x + Math.sin(pr.th) * r, pr.y + Math.cos(pr.th) * r]); const nearSeg = (x, y) => pts.some(([qx, qy]) => Math.hypot(x - qx, y - qy) < 14); if (Math.abs(pr.th) > 0.12) { if (!P.dead && nearSeg(P.x, P.y - 8)) damagePlayer(pr.x, DMG.ram, { up: true, unblockable: true }); for (const e of enemies) if (e.alive && !pr.hit.has(e) && nearSeg(e.x, e.y - e.h / 2)) { pr.hit.add(e); hurtEnemy(e, 30, pr.x, false); } } if (pr.active <= 0) pr.th = 0; }
     if (pr.t === 'plate' && !pr.down) { const on = (!P.dead && P.ground && Math.abs(P.x - pr.x) < 10 && Math.abs(P.y - pr.y) < 4) || enemies.some(e => e.alive && Math.abs(e.x - pr.x) < 10 && Math.abs(e.y - pr.y) < 4) || movers.some(mv => mv.kind === 'pushblock' && mv.ground && Math.abs(mv.x + mv.w / 2 - pr.x) < 10 && Math.abs(mv.y + mv.h - pr.y) < 6);   /* A PUSHED BLOCK HOLDS A PLATE DOWN exactly like standing on it (backlog #12) */ if (on) { pr.down = true; SFX.stone(); if (pr.gate != null) { openGateCol(pr.gate); } const cg = props.find(c => c.t === 'dropcage' && Math.floor(c.x / TS) === pr.cage); if (cg && !cg.dropped) { cg.dropped = true; cg.landed = 0; cg.hit.clear(); if (cg.boss) cg.resetT = 5; number(cg.x, cg.y - 20, 'THE CAGE FALLS', '#ffd36b'); SFX.crack(); shakeCam(2); } } }
     /* A CAGE THAT HAS HELD THE KING IS SCRAP (pr.spent). His five cages used to be winched back up five seconds after
@@ -32847,6 +32958,7 @@ function updateMovers(dt) {
       else if (m.bier) stepBier(m, (players || [P]).some(p => !p.dead && p.onMover === m), dt, time);   /* THE DROWNED OSSUARY's floating biers: a moment, then under (burial-expansion.js) */
       else if (m.bob) { m.y = m.y0 + Math.sin(time * 1.5 + (m.phase || 0)) * 5; m.dy = m.y - oldY; }
       else if (m.tide) causeFloat(m, oldY);   /* THE DROWNED CAUSEWAY: a moored boat rides the tide's surface (the causeway block) */
+      else if (m.track) { mkTrackStep(m, dt); m.dy = m.y - oldY; }   /* (claude/maker) a platform on a TRACK */
       else if (m.vert) { // A RISING PILLAR: the water pushes it up out of itself and lets it back down
         const ph = (time / m.period + (m.phase || 0)) % 1, k = ph < 0.5 ? ph * 2 : 2 - ph * 2;
         const e2 = k * k * (3 - 2 * k); // it comes up slowly, holds at the top, and drops
@@ -33404,7 +33516,8 @@ function update(dt) {
     const sp = (keys.block ? 460 : 200) * dt; // hold block to fly
     if (keys.left) edCam.x -= sp; if (keys.right) edCam.x += sp;
     if (keys.up) edCam.y -= sp; if (keys.down) edCam.y += sp;
-    edCam.x = Math.max(0, Math.min(LW * TS - VW, edCam.x)); edCam.y = Math.max(0, Math.min(LH * TS - VH, edCam.y));
+    edClampCam();   /* (claude/maker) with room to see past the palette bar and the button bar */
+    for (const e of enemies) if (e.alive) e.anim = (e.anim || 0) + dt;   /* (claude/maker) the cast idles in place: a living editor */
     edMsgT = Math.max(0, edMsgT - dt); time += dt; return;
   }
   if (state === 'title') { if (attractTickIdle(dt)) return; ambient.set('forest'); { const tt = titleTrack(); if (!titleWas || tt !== titleMusicFor) { titleWas = true; titleMusicFor = tt; if (tt) music.play(tt); } } if (titleLeaves.length < 26 && Math.random() < dt * 5) titleLeaves.push({ x: Math.random() * (VW + 40) - 20, y: -4, vy: 14 + Math.random() * 16, ph: Math.random() * 6, col: ['#d9782a', '#c9463d', '#e0b040', '#8fd160'][(Math.random() * 4) | 0] }); for (const lf of titleLeaves) { lf.y += lf.vy * dt; lf.x += Math.sin(time * 1.5 + lf.ph) * 18 * dt + 4 * dt; } titleLeaves = titleLeaves.filter(lf => lf.y < VH - 20); if (fireflies.length < 12 && Math.random() < dt * 4) fireflies.push({ x: camX + Math.random() * VW, y: camY + 30 + Math.random() * (VH - 70), t: Math.random() * 6, life: 5 + Math.random() * 5 }); for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; } fireflies = fireflies.filter(f => f.life > 0); if (PBOARD.shown()) { leftPress = rightPress = confirmPress = pausePress = upPress = downPress = atkPress = jumpPress = dodgePress = throwPress = anyPress = false; }   /* (claude/titlemenu2) the party board over the title (PLAY WITH AI) has the keys and the pad: the title takes no press, and none is left waiting for when the board closes */
@@ -33427,7 +33540,7 @@ function update(dt) {
         else if (k === 'BOSS SELECT') bossSelectOpen('title');
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */
-        else if (k === 'THE EDITOR') edEnter();
+        else if (k === 'THE EDITOR' || k === 'THE MAKER' || k === 'THE MAKER (TEST)') { edEnter(); edSay('A TEST, STILL BEING MADE: YOUR LEVELS ARE KEPT IN THIS BROWSER'); }   /* (claude/maker) */
         else if (k === 'OPTIONS' || TITLE_GROUPS[k]) { titleSub = k; titleI = 0; }
         else if (k === 'BACK') { titleI = titleBackTo(); titleSub = null; }
         else if (k === 'SETTINGS') openMenu('title');
@@ -33551,7 +33664,8 @@ function update(dt) {
   }
   if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
   if (state === 'win' && trnChoice) { trnChoiceUpdate(dt); return; }   /* (claude/transchoice) */
-  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
+  if (state === 'win') { if (edTesting && (confirmPress || pausePress)) { edResume(); return; }   /* (claude/maker) a test run's win goes back to the editor, not the map */
+    if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = DS.demoEndsHere(LEVELS[levelIndex].id) ? -1 : partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
     if (confirmPress || (nextK >= 0 && pausePress)) { if (DS.demoEndsHere(LEVELS[levelIndex].id) && !bossSelectFight && !rushOn()) { demoEndOpen(); } else if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* (claude/demoend) THE DEMO'S END CARD (src/demo-end.js, a DOM board) holds until a button is taken */
   if (state === 'demoend') { updateParticles(dt); return; }
@@ -34698,7 +34812,7 @@ function drawGroundLight(cx, cy, tx0, ty0) {
   g.globalAlpha = 1;
   for (let ty = ty0; ty <= ty0 + H; ty++) for (let tx = tx0; tx <= tx0 + W; tx++) {
     if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1) continue;
-    if (solidish(tx, ty)) continue;
+    if (solidish(tx, ty) || (L.custom && isSlope(tileAt(tx, ty)))) continue;   /* (claude/maker) no shadow inside a slope */
     const x = tx * TS - cx, y = ty * TS - cy;
     if (solidish(tx, ty - 1)) g.drawImage(AO.top, x, y);
     if (solidish(tx - 1, ty)) g.drawImage(AO.left, x, y);
@@ -34888,7 +35002,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.arenaYard) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.arenaYard.floor * TS, cheer: YARD ? YARD.st.cheer : 0, gate: L.arenaYard.gate ? [L.arenaYard.gate[0] * TS, L.arenaYard.gate[1] * TS] : null }); else if (L.duelPit) ARB.drawArenaBack(g, cx, cy, VW, VH, time, { floor: L.duelPit.floor * TS, cheer: DUELO && DUELO.on() && DUELO.st.m.phase !== 'fight' ? 0.7 : 0, gate: null });   /* (claude/pvpduel) the duel pit wears the arena set: the crowd cheers between rounds */   /* (claude/arenayardart) THE ARENA SET's sky, far towers and CROWD STAND (it cheers on a PERFECT: YARD.st.cheer), src/redraw/arena_backdrop.js */
-  if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
+  if (L.sealedpyramid && !L.custom) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
   if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and resin lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (curId() === 'wood' || curId() === 'marsh') HNB.drawNeighbourPine(g, cx, cy, VW, VH, curId(), bgDY(cy), time);   /* (claude/hornetsnest2) the great pine and its paper nest on the horizon: past the Lumber Trail's clearing (the road climbs on to it), behind MARSH WOOD's start (you came down it) */
   if (L.buriedcity) BCB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE BURIED CITY (claude/buriedcity2): UNDER THE SAND ROOF - the back wall, the roof's underside and THE HOURGLASS TOWER over the desert sky (the dunes keep theirs), whatever the parallax setting (src/redraw/buried_city_backdrop.js) */
@@ -34909,7 +35023,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest && !L.arenaYard && !L.duelPit) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
+  else if (SET.parallax !== 'off' && !L.colosseum && !(L.sealedpyramid && !L.custom) && !L.hornetsNest && !L.arenaYard && !L.duelPit) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
   /* THE FLOTILLA'S HARBOUR is laid for where her camera lives (a deck twenty rows down a forty-row level), not for the bottom of the
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
@@ -35034,6 +35148,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) { drawMageTiles(cx, cy); drawArchImages(cx, cy); }   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice; and the Archmage's images, behind every creature */
   if (L.hc2Kit) HC2A.drawFront(g, L, cx, cy, time, VW, VH);   if (L.hc3) { try { HC3A.drawTowers(g, cx, cy, VW, time); HC3A.drawTowerTops(g, cx, cy, VW, time, GPH && GPH.towersLit ? GPH.towersLit() : null); HC3A.drawBellTowerTop(g, cx, cy, VW, time); HC3A.drawGapRubble(g, cx, cy, time); HC3A.drawYard(g, cx, cy, VW, time); } catch (e) { /* the greybox stands */ } }   /* (claude/hc3art) the alarm towers' machicolations, the belfry, the broken wall's stumps, the bakehouse yard's ovens */   if (L.hc2Kit && L.arenaRoof && cx + VW > L.arenaRoof.x0 - 40 && cx < L.arenaRoof.x1 + 56) { try { GQA.drawRoofFront(g, L.arenaRoof, TS, cx, cy, time, VW); } catch (e) { /* greybox deck */ } }   /* (claude/gq2art) the tower top's deck: battlement teeth, the stack's cap, flag seams */   /* (claude/highcrown2art) arch rings, corbels, the murder-hole slot, the stair door (over the tiles, under the creatures) */
+  if (L.custom && L.swCells) MKP.drawSwitchBlocks(g, L.swCells, cx, cy, L.swOn);   /* (claude/maker) red / blue, solid tinted, empty dashed */
   drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
   if (L.ftSupports) drawSupports(g, L, cx, cy, time, VW, VH); if (L.chase3 && boss && boss.t === 'undeadmage') drawChase3(g, boss, cx, cy, time, VW);   /* (claude/fallingtower3) THE CRACKED PILLARS, and the crack he runs across a floor */
   /* HIS HALL GOES ON AFTER THE TILES, NOT BEFORE THEM. Drawn first, the level's own tiles painted straight back over it -
@@ -35501,6 +35616,8 @@ function drawWorld(cx, cy, showPlayer) {
     g.drawImage(shPair[s.lit ? 1 : 0], s.x - 10 - cx, s.y - 34 - cy); if (s.lit) { g.globalAlpha = 0.25 + Math.sin(time * 5) * 0.08; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(s.x - cx, s.y - 24 - cy, 14, 0, 7); g.fill(); g.globalAlpha = 1; } }
   if (gate) { let nr = 1e9; for (const p of (players || [P])) if (Math.abs(p.y - gate.y) < 90) nr = Math.min(nr, Math.abs(p.x - gate.x));   /* (EG: the landmark of this region, lantern dark until you near it; the trigger above is untouched) */
     EG.draw(g, EG.kindOf(LEVELS[levelIndex].id), gate.x, gate.y, cx, cy, time, nr, !!(L.arena && !escape && !L.sandWalk && !L.gateOpen), gate.eg || (gate.eg = {}), EGSFX); }
+  if (L.custom) { MKP.drawArrows(g, L.ents, cx, cy); MKP.drawWarps(g, L.ents, cx, cy, time, P); }   /* (claude/maker) the ARROW signs */
+  if (L.custom && L.mkStart) EG.draw(g, EG.kindOf(LEVELS[levelIndex].id), L.mkStart.x * TS + 8, (L.mkStart.y + 1) * TS, cx, cy, time, 0, false, L.mkStartEg || (L.mkStartEg = {}), EG_QUIET);   /* (claude/maker) THE START GATE you came out of */
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10 && ((time * 0.7 + a.ph) % 3) < 0.18) { const gx = Math.round(a.x - cx) + 2, gy = Math.round(a.y - 4 + Math.sin(time * 4 + a.ph) * 1.5 - cy) - 4; g.fillStyle = '#fff6c8'; g.fillRect(gx - 3, gy, 7, 1); g.fillRect(gx, gy - 3, 1, 7); } // a glint now and then
   for (const a of acorns) if (!a.got && a.x > cx - 10 && a.x < cx + VW + 10) g.drawImage(PROP.coin[Math.floor(time * 8 + a.ph) % 4], a.x - 4 - cx, Math.round(a.y - 5 + Math.sin(time * 4 + a.ph) * 1.5) - cy);
   for (const s of silvers) if (s.y0 !== undefined && !s.got && s.x > cx - 12 && s.x < cx + VW + 12) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#3a2a1c'; g.fillRect(x, y - 60, 1, 50); g.fillStyle = '#6a4a2c'; g.fillRect(x - 6, y - 10, 12, 8); g.fillStyle = '#8a6640'; g.fillRect(x - 6, y - 10, 12, 1); g.fillRect(x - 6, y - 6, 12, 1); }   /* THE OFFERING's basket and rope */
@@ -36168,7 +36285,9 @@ function drawWorld(cx, cy, showPlayer) {
       { const pz = PTK.pose(P, time, K.R); if (pz) { key = pz.key; frame = pz.frame; swimRot = pz.rot; } }
       if (P.dipT > 0 && P.ground && !SET.reduceMotion) dY += 1;
       if (HPK) dY += HPK.drawMod(P).dY;   /* (claude/heropassa) THE LOW HOP's lift */   /* (feelplatform) the plank gives a pixel under him, and so does he */   /* (claude/partnerthrow) the dangler flails, the thrown partner tumbles, the carrier heaves */
-      const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
+      const k = P.sqT > 0 ? P.sqT / 0.12 : 0; let sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
+      const am = AIRM.airMotion(P, key, 1 / 60, JF.feel(hero()), { reduce: SET.reduceMotion, squashing: P.sqT > 0, sqSx: sx, sqSy: sy, scale: isReaper() ? 1.22 : 1, crouching: P.ground && !!P.ducking && P.atk < 0 });   /* (claude/airmotion) THE BODY IN MOTION: the air arc, a hit, a skid, a slide and a crouch drawn moving (src/air-motion.js; art only) */
+      if (am) { sx *= am.sx; sy *= am.sy; swimRot = am.rot; } P.artTurn = am ? am.rot : 0; P.artTall = sy;   /* remembered for tools/air-motion.mjs, as lastKey is */
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = false;   /* the Blood Knight is the biggest of them (claude/bloodstep: and when he steps he is whole and red-misted, no longer a shadow: src/hero-pass.js 'shade' fx) */
       const fy = P.flip ? P.y - P.h : P.y, fs = P.flip ? -1 : 1;   /* THE MAGE'S FOLLY: the room turned over draws him feet to the ceiling */
@@ -36179,6 +36298,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (CF_KEYS.has(key) && (P.charge > 0 || knightWinding()) && !(P.atk >= 0 && P.heavy) && P.ground && !P.swim && !P.climb && !P.dead && !(P.dodge > 0) && Math.abs(P.vx) > 10 && !(P.dance > 0) && !(P.drinkT > 0) && K.R.run && (!K.bare || K.bare.R[key])) { const cf = legsPose(K, key, frame, Math.floor(P.anim * 13) % 6); if (cf && (!K.bare || legsPose(K.bare, key, frame, 0))) { key = cf[0]; frame = cf[1]; } }   /* (claude/chargefeet, Daniel 11-04) WALKING UNDER THE HELD CHARGE: the legs play the run cycle, the upper body keeps the pose; stood still, the planted stance stays (src/charge-legs.js) */
       P.lastKey = key; P.lastFrame = frame;   /* remembered for the audits (tools/audit-hitboxes.mjs), as e.lastFrame is for a creature */
       if (rp) { drawReachShaft(cx, cy, key, frame, dY, dFace); if ((key === 'reachA' || key === 'reachB' || key === 'reachC') && (frame === 1 || frame === 2)) for (let ai = 3; ai >= 1; ai--) drawTinted(KD, key, frame, P.x - cx - dFace * ai * 5, fy - cy + dY * fs, dFace, 1, 1, 0, '#8fd160', 0.3 - ai * 0.07); }   /* the shaft behind her hands; afterimages trailing every thrust */
+      if (am) { g.save(); g.translate(Math.round(am.ox), Math.round(am.oy)); }   /* (claude/airmotion) the lean turns him about his middle, not his feet */
       drawWarm('rim', KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, sx * (2 - br) * hs, sy * br * hs * fs, swimRot, P.x, P.y - 10);
       drawSet(KD, key, frame, P.x - cx, fy - cy + dY * fs, dFace, false, sx * (2 - br) * hs, sy * br * hs * fs, shadowed ? 0.55 : 1, swimRot);
       if (rp) drawReachFx(cx, cy, key, frame, dY, dFace);   /* the head, the glow and the wake over her hands */
@@ -36203,6 +36323,7 @@ function drawWorld(cx, cy, showPlayer) {
       if (P.dance > 0) { for (let i = 0; i < 2; i++) { const t2 = (P.dance * 0.8 + i * 0.5) % 1, nx = Math.round(P.x - cx) + (i ? 10 : -12) + Math.round(Math.sin(t2 * 6) * 3), ny = Math.round(P.y - cy) - 30 - Math.round(t2 * 16);
         g.globalAlpha = 1 - t2; g.fillStyle = i ? '#ffd36b' : '#ff9ad0'; g.fillRect(nx, ny, 2, 2); g.fillRect(nx + 1, ny - 5, 1, 5); g.fillRect(nx + 2, ny - 5, 2, 1); } g.globalAlpha = 1; }   /* music notes off whoever is dancing */
       drawWarm('tint', K, key, frame, P.x - cx, P.y - cy + dY, dFace, sx * (2 - br) * hs, sy * br * hs, swimRot, P.x, P.y - 10);
+      if (am) g.restore();
       if (P.zip) ZL.drawRider(g, P, cx, cy);   /* his grip on the rope, over his hands */
       if (P.hookT) { P.hookT.life -= 1 / 60; if (P.hookT.life <= 0) P.hookT = null;
         else { const h = P.hookT; g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath();
@@ -36526,7 +36647,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.welltown && WTB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE WELL TOWN's rooms: the cisterns' cut stone, a house's plaster, the dovecote's niches */
   if (L.deepHolds && DH.paintHold(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE DEEP: a cargo hold, a galley, a gun deck, the tribute hold (src/deep-holds.js) */
   if (L.monk && MON.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and so does THE MONASTERY */
-  if (L.caravan && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */
+  if (L.caravan && !L.custom && CR.paintRuinRoom(g, st, sx, sy, w, h, tx0, ty0)) return;   /* and THE SUNKEN CARAVAN its ruins: the inside of a tower or a house, in the violet of the shade */
   if (L.keepLook && KLK.paintKeepRoom(g, st, sx, sy, w, h, tx0, ty0, time, L)) return;   /* and THE UNDERWATER KEEP, section by section */
   if (L.burialLook && paintBurialRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* and THE BURIAL CAVERNS, one backdrop a section: barrow, crypt, bone stair, procession (src/burial-looks.js; 'ossuary' is painted below) */
   const hsh = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233 + tx0 * 0.7) * 43758.5453; return v - Math.floor(v); };
@@ -37421,30 +37542,27 @@ function desiredView() { if (state === 'editor') return 'zoom';
 let edDoc = null;              // { W, H, grid, ents, theme, name, start }
 let edCam = { x: 0, y: 0 }, edCur = { x: 0, y: 0 }, edCat = 0, edSel = [1, 0, 0, 0];
 let edUndo = [], edShowGrid = true, edMsg = '', edMsgT = 0, edPal = false, edTesting = false;
+let edRunHere = false, edJustCleared = false, edCoopWas, edLinkPlay = false, edLinkWon = false, edSetRun = null;   /* edSetRun: { name, hero, docs, i, back } - a set being played */   /* (claude/maker) playing a shared level from its link; won it */   /* (claude/maker) this run began at PLAY HERE; it just cleared the level; the party to put back */
 let edPaint = 0, edPainted = null, edSlot = 0, edThemes = null;
 const ED_KEY = i => 'bracken.level.' + i, ED_SLOTS = 3;
 
 // the nine woods, borrowed for their look. Built once, the first time the editor opens.
 function edThemeList() {
   if (edThemes) return edThemes;
+  const arenas = {};   /* (claude/maker) each boss's home arena: its music, tint and width, for THE MAKER's bosses */
   edThemes = LEVELS.filter(l => !l.hidden).map(l => { const b = l.build();
+    if (b.arena && b.arena.boss && !arenas[b.arena.boss]) arenas[b.arena.boss] = { music: b.arena.music, tint: b.arena.tint, tintA: b.arena.tintA, fx: b.arena.fx, w: (b.arena.x1 - b.arena.x0) / TS, level: l.name };
     return { name: l.name, palette: b.palette, weather: b.weather, ambient: b.ambient, music: b.music,
       night: b.night, glowNight: b.glowNight, nightA: b.nightA, dark: b.dark, duskStart: b.duskStart, duskLen: b.duskLen }; });
+  MKP.setArenaInfo(arenas);
   return edThemes;
 }
 
-const ED_TILES = [['ERASE', T.AIR], ['STONE', T.SOLID], ['LEDGE', T.ONEWAY], ['SPIKES', T.SPIKE], ['CRATE', T.CRATE],
-  ['PLANK', T.PLANK], ['ROPE', T.NET], ['SPRING', T.BOUNCER], ['SHELF', T.SHELF], ['DOOR', T.PORT],
-  ['ROCK FACE', T.CLIMB], ['RAIL', T.RAIL], ['SOFT ROCK', T.SOFT], ['ICE', T.ICE], ['WEB', T.WEB],
-  ['REEDS', T.REED], ['PALISADE', T.PALISADE]];
-const ED_FOES = ['sprig', 'shield', 'spit', 'wasp', 'thorn', 'archer', 'sapper', 'brute', 'hound', 'hopper',
-  'sporeling', 'lurker', 'drone', 'shaman', 'thief', 'pike', 'spider', 'squirrel', 'harpy', 'goat',
-  'troll', 'bat', 'grub', 'rockgoblin', 'miner', 'hare', 'kite', 'snuffer', 'sailer', 'watch'];
-const ED_THINGS = ['coin', 'silver', 'check', 'gate', 'sign', 'torch', 'brazier', 'barrel', 'glow', 'puffball',
-  'lantern', 'firepit', 'rockfall', 'vent', 'npc'];
-const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER'];
+const ED_TILES = MKP.TILES, ED_FOES = MKP.FOES, ED_THINGS = MKP.THINGS;
+const MAT_SET = { grass: '-', cobble: 'village', shore: 'shore', reef: 'reef', city: 'city', deck: 'ship', masonry: '-' };   /* (claude/maker) a ground material -> the place whose skin it wears (resolveTiles) */   /* (claude/maker) the lists live in src/maker-palette.js */
+const ED_TOOLS = ['START', 'THEME', 'WIDER', 'NARROWER', 'LINK', 'EDIT', 'SELECT', 'TRACK'];   /* (claude/maker) LINK: a lever or a plate, then the door it opens */
 const ED_CATS = ['TILES', 'FOES', 'THINGS', 'TOOLS'];
-const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES : c === 2 ? ED_THINGS : ED_TOOLS;
+const edItems = c => c === 0 ? ED_TILES.map(t => t[0]) : c === 1 ? ED_FOES.map(MKP.nameOf) : c === 2 ? ED_THINGS.map(MKP.thingName) : ED_TOOLS;
 const edBrush = () => ({ cat: edCat, i: edSel[edCat], name: edItems(edCat)[edSel[edCat]] });
 
 function edSay(m) { edMsg = m; edMsgT = 2.4; }
@@ -37453,19 +37571,24 @@ function edSay(m) { edMsg = m; edMsgT = 2.4; }
 function edBlank(W = 120, H = 28) {
   const grid = new Uint8Array(W * H);
   for (let x = 0; x < W; x++) for (let y = 20; y < H; y++) grid[y * W + x] = T.SOLID; // a floor to stand on
-  return { W, H, grid, ents: [{ t: 'gate', x: W - 6, y: 19 }], theme: 0, name: 'A NEW WOOD', start: { x: 3, y: 19 } };
+  return { W, H, grid, ents: [{ t: 'gate', x: W - 6, y: 19 }], theme: 0, name: 'A NEW WOOD', start: { x: 3, y: 19 }, crumble: [], water: [] };
 }
 function edLevelObj(doc, copy) {
-  const th = edThemeList()[doc.theme] || edThemeList()[0];
-  return { W: doc.W, H: doc.H,
+  const th = edThemeList()[doc.theme] || edThemeList()[0], userPools = MKP.enginePools(doc), stx = MKS.stageLevelExtra(doc, userPools), bx = MKP.bossExtras(doc);   /* (claude/maker) a boss room's own machinery */
+  return MUI.applySettings({ W: doc.W, H: doc.H,
     grid: copy ? new Uint8Array(doc.grid) : doc.grid,
-    ents: copy ? doc.ents.map(e => Object.assign({}, e)) : doc.ents,
-    START: { x: doc.start.x, y: doc.start.y },
-    pools: [], falls: [], moversExtra: [], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
+    ents: copy ? [...MKP.engineEnts(doc), ...bx.ents] : doc.ents,   /* (claude/maker) played: copies, each lever / plate told its door */
+    START: doc.start ? { x: doc.start.x, y: doc.start.y } : { x: 2, y: 2 },
+    pools: [...userPools, ...stx.pools, ...bx.pools], crumbles: MKP.engineCrumbles(doc), mat: MKP.engineMat(doc), lmKeep: doc._lm || (doc._lm = []),
+    crateLoot: MKP.engineLoot(doc), swCells: MKP.engineSwitch(doc), mkGoal: doc.goal || null,   /* (claude/maker) the level's GOAL rule */
+      /* (claude/maker) what crates hold; the RED / BLUE blocks */
+    ...MKP.bossLevelExtra(doc), ...stx.rest,   /* (claude/maker) what a few bosses read from the level */
+    ...(MKP.arenaFor(doc) ? { arena: MKP.arenaFor(doc), gateAfterBoss: true, mkBossLocks: MKP.bossLocks(doc.ents.find(e => MKP.isBoss(e.t))) } : {}), mkStart: doc.start ? { x: doc.start.x, y: doc.start.y } : null,   /* (claude/maker) a boss gets its arena; the goal opens when it falls */   /* (claude/maker) THE MAKER's water and crumbling ledges */
+    falls: [], moversExtra: [...stx.moversExtra, ...bx.moversExtra], interiors: [], stone: [], scree: [], gusts: [], ropes: [],
     palette: th.palette, weather: th.weather, ambient: th.ambient, music: th.music,
     night: th.night, glowNight: th.glowNight, nightA: th.nightA, dark: th.dark,
     duskStart: th.duskStart === undefined ? -1 : th.duskStart, duskLen: th.duskLen || 1,
-    custom: true, strays: 0 };
+    custom: true, strays: 0 }, doc, TS);   /* (claude/maker) the level's own music, time of day and weather over the background's */
 }
 const edIndex = () => LEVELS.findIndex(l => l.id === 'custom');
 
@@ -37474,7 +37597,7 @@ function edMount(rebake) {
   L = edLevelObj(edDoc, false); LW = L.W; LH = L.H;
   if (rebake) bakeAll(L.palette || {});
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set();
-  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); resolveTiles(); retireBakes();
+  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); SLOPES_ON = levelHasSlopes(L.grid); resolveTiles();   /* (claude/maker) the editor draws slopes: loadLevel was the only place this was set */ retireBakes();
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
   edRespawn();
 }
@@ -37488,130 +37611,338 @@ function edRespawn() {
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
     if (e.t === 'gate') gate = { x: px, y: py }; }
   spawnEntities();
-  for (const e of enemies) { e.stagger = 1e9; e.anim = 0; } // frozen while you work
+  for (const e of enemies) { e.stagger = 1e9; e.anim = ((e.x * 7 + e.y * 3) % 30) / 10; }   /* (off the game's dice: a varied start from where it stands) */ // held in place while you work (they breathe: the editor's update turns e.anim)
 }
 
 function edEnter() {
+  MKP.setNames(BEASTS); MKP.setEliteKinds(Object.keys(ELITE)); MUI.firstVisit();   /* (claude/maker) the HELP card, once */   /* (claude/maker) the palette speaks the bestiary's names */
   edThemeList();
-  if (!edDoc) edDoc = edLoad(edSlot) || edBlank();
+  if (!edDoc) { MLIB.migrateSlots(ED_KEY, ED_SLOTS, edLoad); const nw = MLIB.newest(); edDoc = nw ? MLIB.get(nw.id) : null; if (!edDoc) { edDoc = edEmpty(); edHoldStart(); } edKeptSig = edSigOf(edDoc); }   /* (claude/maker) the level you were last making */   /* (claude/maker) a new level: a set hero */
   edTesting = false; state = 'editor'; edPal = false; edMsgT = 0;
-  edMount(true); music.stop(); setView('zoom');
-  edCam.x = Math.max(0, edDoc.start.x * TS - VW / 2); edCam.y = Math.max(0, LH * TS - VH);
+  edMount(true); music.stop(); setView('zoom'); music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);   /* (claude/maker) the level's music, quietly, while you build */
+  edCam.x = Math.max(0, (edDoc.start ? edDoc.start.x * TS : 0) - VW / 2); edCam.y = Math.max(0, LH * TS - VH);
 }
-function edPlay() {
-  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GATE down first (THINGS)'); SFX.buzz(); return; }
-  edPush(); edTesting = true;
-  CUSTOM.build = () => edLevelObj(edDoc, true);
+/* (claude/maker) PLAY IS INSTANT AND COMES BACK TO WHERE YOU WERE (Daniel: make it feel like Mario Maker). No name banner and no
+   iris on a test run; `here` (a cell) starts the knight there instead of at START - PLAY HERE / SHIFT+P. Back in the editor
+   the view is where the knight got to. */
+function edPlay(here) {
+  if (!edDoc.start) { edSay('no START yet: START/GOAL tab > START, then click where the knight begins'); SFX.buzz(); return; }   /* (claude/maker) */
+  if (!edDoc.ents.some(e => e.t === 'gate')) { edSay('no way out: put a GOAL GATE down first (START/GOAL tab)'); SFX.buzz(); return; }
+  edPush(); edTesting = true; edPlayed = true; MKJ.whoosh(); edRunHere = !!here; edJustCleared = false;
+  /* (claude/maker) PLAYERS: the test run's party is the level's (an AI ally or a second player), never the campaign's; put back on return */
+  if (edCoopWas === undefined) edCoopWas = coopWant;
+  { const me = edDoc.hero || hero(), mate = (HEROES.find(x => x.id !== me) || {}).id;
+    coopWant = edDoc.players && mate ? { hero: mate, ally: edDoc.players === 'ally', seats: [{ hero: mate, ally: edDoc.players === 'ally' }] } : null; }
+  /* (claude/maker) TEST AS another hero: switched in memory, saving held off for the run (as the boss jump does), put back on return */
+  if (!MKP.ownHero(edDoc) && HEROES.some(x => x.id === edDoc.hero)) { edHeroWas = hero(); edSaveWas = saveBlocked; saveBlocked = true;   /* (claude/maker) A SET HERO on the STARTER KIT, the same for everyone */
+    edProgWas = typeof structuredClone === 'function' ? structuredClone(PROG) : JSON.parse(JSON.stringify(PROG));   /* the save's own progress, put back on return (it never reaches a save: saving is held) */
+    const kc = CKIT.kitCfg(LEVELS, LEVELS[0].id, edDoc.hero, 1, null); CKIT.kitPre(window.BKT, window.BK, kc); window.BK.setHero(edDoc.hero); window.BK.reset({ fresh: true }); CKIT.kitPost(window.BKT, window.BK, kc); }
+  CUSTOM.build = () => { const o = edLevelObj(edDoc, true); if (here) o.START = { x: here.x, y: here.y }; return o; };
   const i = edIndex(); LEVELS[i].name = edDoc.name; LEVELS[i].sub = 'made by hand';
-  loadLevel(i); startGame(); edSay('');
+  loadLevel(i); startGame(); bannerT = 0; transT = 0; transPrev = state; edSay('');
 }
-function edResume() { edTesting = false; state = 'editor'; edMount(true); music.stop(); edSay('back in the editor'); }
+function edPlayHere(tx) {   /* the first standing place in that column, from the top of the view down */
+  const c = MKP.standIn(edDoc, Math.max(1, Math.min(edDoc.W - 2, tx)), Math.max(0, Math.floor((edCam.y + MUI.BARS.top) / TS)));
+  if (!c) { edSay('nowhere to stand in that column'); SFX.buzz(); return; } edPlay(c);
+}
+/* (claude/maker) PLAYING A SET: each level in turn with the set's hero; the end card offers the next one. A set from your own levels
+   comes back to the level you were editing; one from a link stays a player's run (nothing is kept unasked). */
+function edStartSet(name, hero, docs, fromLink) { edAutoSave(); edSetRun = { name, hero, docs, i: 0, back: fromLink ? null : edDoc }; edSetLevel(); }
+function edSetLevel() { const S = edSetRun; while (S.docs[S.i] && !(S.docs[S.i].start && S.docs[S.i].ents.some(e => e.t === 'gate'))) S.i++;   /* a level not finished yet (no START or goal) is skipped */
+  const d = S.docs[S.i]; if (!d) { edUiAct({ act: 'linkQuit' }); edSay('that set has no playable level left'); return; } d.hero = S.hero || 'own'; edDoc = d; edKeptSig = edSigOf(d); edLinkPlay = true; edLinkWon = false; MUI.closePanel(); edMount(true); edPlay(); }
+function edResume() { const px = P.x, py = P.y; edTesting = false;
+  if (coop()) coopEnd(); if (edCoopWas !== undefined) { coopWant = edCoopWas; edCoopWas = undefined; }   /* (claude/maker) the campaign's party back */
+  if (edHeroWas) { if (edProgWas) { for (const k of Object.keys(PROG)) delete PROG[k]; Object.assign(PROG, edProgWas); edProgWas = null; } window.BK.setHero(edHeroWas); window.BK.reset({ fresh: true }); saveBlocked = edSaveWas; edHeroWas = null; }   /* your own hero, and its progress, back */   /* (claude/maker) your own hero back */ state = 'editor'; edMount(false); music.stop(); if (edDoc.music !== 'none') music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(true);
+  setView('zoom');   /* the editor's size first: centred with the play view's width, the knight sat at the left edge */
+  edCam.x = px - VW / 2; edCam.y = py - VH * 0.6; edClampCam(); transT = 0; transPrev = 'editor'; MKJ.whoosh(true); edSay(edJustCleared ? 'CLEARED! SHARE IS READY' : 'back in the editor'); if (edJustCleared) MKJ.place('piece'); edJustCleared = false;
+  if (edLinkPlay) MUI.openLinkEnd(edDoc.name, edLinkWon, edSetRun ? { name: edSetRun.name, i: edSetRun.i, n: edSetRun.docs.length } : null); }   /* (claude/maker) a shared level: its own end card, not the editor */
 
 // ---- undo ----
-function edPush() { edUndo.push({ g: new Uint8Array(edDoc.grid), e: JSON.stringify(edDoc.ents), s: { x: edDoc.start.x, y: edDoc.start.y } }); if (edUndo.length > 40) edUndo.shift(); }
+/* (claude/maker) UNDO and REDO: a snapshot of everything a level is. A new edit clears REDO. */
+const edSnap = () => ({ id: edDoc.libId || null, g: new Uint8Array(edDoc.grid), W: edDoc.W, H: edDoc.H, name: edDoc.name, theme: edDoc.theme, e: JSON.stringify(edDoc.ents), s: edDoc.start ? { x: edDoc.start.x, y: edDoc.start.y } : null, w: MKP.terrainOf(edDoc) });   /* W/H too: undoing WIDER or NEW restored the old grid into the new width and scrambled the level */
+let edRedo = [];
+/* (claude/maker) AUTOSAVE: what was last kept (a fingerprint of everything, the name and the clear too); a level goes into MY LEVELS
+   the first time it changes, then every time it changes again. A level opened from a link becomes a level of yours only if you edit it. */
+let edKeptSig = null, edAutoT = 0;
+const edSigOf = d => d ? MKP.docSig(d) + '|' + d.name + '|' + (d.cleared || '') : null;
+function edAutoSave(force) { if (!edDoc || edTesting || edLinkPlay) return;   /* (a shared level or a set's run is never kept unasked) */ const sg = edSigOf(edDoc); if (!force && sg === edKeptSig) return; if (MLIB.put(edDoc)) edKeptSig = sg; }
+/* every replacement of the level goes through here: what you were making is kept first, never lost to a link or NEW */
+function edReplace(d, msg) { edAutoSave(); edPush(); edDoc = d; edKeptSig = edSigOf(d); edMount(true); if (msg) edSay(msg); }
+function edPush() { edUndo.push(edSnap()); if (edUndo.length > 40) edUndo.shift(); edRedo.length = 0; }
+function edRestore(u) { const rebake = u.theme !== undefined && u.theme !== edDoc.theme; if (u.id !== undefined) edDoc.libId = u.id;
+  edDoc.grid = u.g; if (u.W) { edDoc.W = u.W; edDoc.H = u.H; edDoc.name = u.name; edDoc.theme = u.theme; } edDoc.ents = JSON.parse(u.e); edDoc.start = u.s; MKP.setTerrain(edDoc, u.w); edMount(rebake); }
 function edPop() {
   const u = edUndo.pop(); if (!u) { edSay('nothing to undo'); return; }
-  edDoc.grid = u.g; edDoc.ents = JSON.parse(u.e); edDoc.start = u.s; edMount(false); edSay('undone'); SFX.ui();
+  edRedo.push(edSnap()); MKJ.undo(); edRestore(u); edSay('undone (CTRL+Y redoes)'); SFX.ui();
+}
+function edRedoAct() {
+  const u = edRedo.pop(); if (!u) { edSay('nothing to redo'); return; }
+  edUndo.push(edSnap()); MKJ.undo(); edRestore(u); edSay('redone'); SFX.ui();
 }
 
 // ---- save and load: run-length on the grid, because most of a level is air and stone ----
 function edRLE(gr) { let out = '', run = 1; for (let i = 1; i <= gr.length; i++) { if (i < gr.length && gr[i] === gr[i - 1]) { run++; continue; } out += gr[i - 1].toString(36) + (run > 1 ? run.toString(36) : '') + '.'; run = 1; } return out; }
 function edUnRLE(str, n) { const gr = new Uint8Array(n); let at = 0; for (const part of str.split('.')) { if (!part) continue; const v = parseInt(part[0], 36), c = part.length > 1 ? parseInt(part.slice(1), 36) : 1; for (let k = 0; k < c && at < n; k++) gr[at++] = v; } return gr; }
 function edSave(i) {
-  try { localStorage.setItem(ED_KEY(i), JSON.stringify({ v: 1, name: edDoc.name, W: edDoc.W, H: edDoc.H, theme: edDoc.theme, start: edDoc.start, ents: edDoc.ents, grid: edRLE(edDoc.grid) })); edSay('saved to slot ' + (i + 1)); SFX.medal(); }
+  try { localStorage.setItem(ED_KEY(i), JSON.stringify({ v: 1, name: edDoc.name, W: edDoc.W, H: edDoc.H, theme: edDoc.theme, start: edDoc.start, ents: edDoc.ents, grid: edRLE(edDoc.grid), ...MKP.terrainOf(edDoc) })); edSay('saved to slot ' + (i + 1)); SFX.medal(); }
   catch (err) { edSay('could not save'); }
 }
 function edLoad(i) {
   try { const raw = localStorage.getItem(ED_KEY(i)); if (!raw) return null; const d = JSON.parse(raw);
-    return { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start || { x: 3, y: 19 } }; }
+    const o = { W: d.W, H: d.H, grid: edUnRLE(d.grid, d.W * d.H), ents: d.ents || [], theme: d.theme || 0, name: d.name || 'A WOOD', start: d.start === undefined ? { x: 3, y: 19 } : d.start }; MKP.setTerrain(o, d); return o; }   /* (claude/maker) every extra through setTerrain: a field list here kept going stale */
   catch (err) { return null; }
 }
 function edResize(dw) {
   const W2 = Math.max(40, Math.min(600, edDoc.W + dw)); if (W2 === edDoc.W) { edSay(dw > 0 ? 'that is as wide as it goes' : 'that is as narrow as it goes'); return; }
   edPush(); const g2 = new Uint8Array(W2 * edDoc.H);
   for (let y = 0; y < edDoc.H; y++) for (let x = 0; x < Math.min(W2, edDoc.W); x++) g2[y * W2 + x] = edDoc.grid[y * edDoc.W + x];
-  if (W2 > edDoc.W) for (let x = edDoc.W; x < W2; x++) for (let y = 20; y < edDoc.H; y++) g2[y * W2 + x] = T.SOLID;
-  edDoc.grid = g2; edDoc.W = W2; edDoc.ents = edDoc.ents.filter(e => e.x < W2 - 1);
+  if (W2 > edDoc.W) for (let x = edDoc.W; x < W2; x++) for (let y = 0; y < edDoc.H; y++) { const v = edDoc.grid[y * edDoc.W + edDoc.W - 2]; g2[y * W2 + x] = v === T.SOLID ? T.SOLID : 0; }   /* (claude/maker) the ground at the edge carries on (it was a fixed floor from row 20, whatever the level was) */
+  edDoc.grid = g2; edDoc.W = W2; edDoc.ents = edDoc.ents.filter(e => e.x < W2 - 1); MKP.clipTerrain(edDoc);
+  if (edDoc.start && edDoc.start.x > W2 - 2) edDoc.start = { x: W2 - 2, y: edDoc.start.y };   /* (claude/maker, found by tools/maker-fuzz.mjs) the START stays inside a narrower level */
+  for (const e of edDoc.ents) if (e.track) e.track = e.track.map(([x, y]) => [Math.min(x, W2 - 2), y]);
   edMount(false); edSay('width ' + W2);
 }
 
 // ---- painting ----
 const edEntAt = (tx, ty) => { for (let i = L.ents.length - 1; i >= 0; i--) { const e = L.ents[i]; if (e.x === tx && e.y === ty) return i; } return -1; };
-function edPlace(tx, ty, erase) {
+function edPlace(tx, ty, erase, what) {
   if (tx < 1 || ty < 0 || tx >= LW - 1 || ty >= LH) return;
   const b = edBrush(), key = tx + ':' + ty;
   if (edPainted && edPainted.has(key)) return; edPainted && edPainted.add(key);
   if (b.cat === 3) return;
-  if (erase) { const i = edEntAt(tx, ty); if (i >= 0) { L.ents.splice(i, 1); edRespawn(); return; } edSetTile(tx, ty, T.AIR); return; }
-  if (b.cat === 0) { edSetTile(tx, ty, ED_TILES[b.i][1]); return; }
+  if (erase) { const w = what || 'all', was = L.grid[ty * LW + tx], i = edEntAt(tx, ty), e0 = i >= 0 ? L.ents[i] : null;   /* (claude/maker) ERASE takes everything, or only GROUND / PIECES / ENEMIES */
+    const takeEnt = !!e0 && (w === 'all' || w === 'pieces' || (w === 'foes' && ED_FOES.includes(e0.t))), takeGround = w === 'all' || w === 'ground';
+    if (takeEnt || (takeGround && (was || MKP.inPool(edDoc, tx, ty)))) { MKJ.erase(); MKJ.poofAt(tx, ty); }   /* the juice */
+    if (takeEnt) { L.ents.splice(i, 1); edRespawn(); return; } if (!takeGround) return; if (MKP.terrainErase(edDoc, tx, ty)) { edMount(false); return; } edSetTile(tx, ty, T.AIR); return; }
+  if (b.cat === 0 && ED_TILES[b.i][1] === T.AIR && !erase) { edPlace(tx, ty, true, MUI.eraseMode().what); return; }
+  if (b.cat === 0 && MKP.styleBanned(edDoc.style, 0, ED_TILES[b.i][1])) { edSay('NOT IN ' + MKP.styleName(edDoc.style) + ' STYLE: pick another piece, or another style'); MKJ.refuse(); return; }   /* (claude/maker) */   /* (claude/maker) the ERASE brush takes pieces and water too (a finger has no right button) */
+  if (b.cat === 0 && ED_TILES[b.i][1] === 'hill') {   /* (claude/maker) SMART HILLS: fill down and ramp the one-tile steps around it */
+    const ch = MKP.hillPaint(edDoc, tx, ty); if (!ch.length) return;
+    for (const [x, y] of ch) { const i = y * LW + x; grid0[i] = L.grid[i]; tileSpr[i] = null; const k = edEntAt(x, y); if (k >= 0 && MKP.isSolidId(L.grid[i])) L.ents.splice(k, 1); }
+    L.mat = MKP.engineMat(edDoc); SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; MKJ.place('tile'); MKJ.popAt(tx, ty); return; }
+  if (b.cat === 0) { const had = (L.crumbles || []).length; const en0 = ED_TILES[b.i], en = en0[1] === T.SOLID && edShift && edDoc.style ? [en0[0], 'mat:' + edDoc.style] : en0; const v = MKP.tilePaint(edDoc, tx, ty, en);   /* (claude/maker) SHIFT: this cell keeps the style */ if (L.grid[ty * LW + tx] !== v || ED_TILES[b.i][1] !== v) { MKJ.place('tile'); MKJ.popAt(tx, ty); } if (MKP.isSolidId(v)) { const k = edEntAt(tx, ty); if (k >= 0) { L.ents.splice(k, 1); edRespawn(); edSay('covered over: the piece there is gone'); } } edSetTile(tx, ty, v); L.crumbles = MKP.engineCrumbles(edDoc); if (had !== L.crumbles.length || ED_TILES[b.i][1] === 'crumble') edRespawn(); return; }   /* (claude/maker) terrain brushes */
   const t = b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i];
+  { const why = MKS.hasStage(t) ? null : MKP.placeProblem(edDoc, t, tx, ty); if (why && why.loot) { (edDoc.loot || (edDoc.loot = {}))[tx + ',' + ty] = t; edSay(why.say); MKJ.place('piece'); MKJ.popAt(tx, ty); return; }   /* (claude/maker) INTO the crate */
+    if (why && why.refuse) { edSay(why.say); MKJ.refuse(); return; } if (why) edSay(why.say); }   /* (claude/maker) not inside the ground; a water kind told it needs water */
+  if (MKS.hasStage(t)) {   /* (claude/maker) A BOSS WITH ITS OWN ROOM: the room is stamped into the level from this column */
+    if (edPainted && edPainted.size > 1) return;   /* one per click, not one per cell of a drag */
+    const keep = edDoc.ents; edDoc.ents = edDoc.ents.filter(q => !MKP.isBoss(q.t)); const r = MKS.stampStage(edDoc, t, tx, ty);
+    if (!r.ok) { edDoc.ents = keep; edSay(r.say); MKJ.refuse(); return; }
+    edMount(false); MKJ.place('piece'); MKJ.popAt(tx, ty); MUI.used(b.cat, b.i); edSay(MKP.nameOf(t) + ': ' + r.say); return; }
   const old = edEntAt(tx, ty); if (old >= 0) L.ents.splice(old, 1);
-  const e = { t, x: tx, y: ty };
+  if (MKP.isBoss(t)) for (let k = L.ents.length - 1; k >= 0; k--) if (MKP.isBoss(L.ents[k].t)) L.ents.splice(k, 1);
+  const bossNew = MKP.isBoss(t);   /* (claude/maker) one boss a level */
+  const e = b.cat === 2 ? MKP.entFor(t, tx, ty) : { t, x: tx, y: ty };   /* (claude/maker) a moving platform is one kind with two settings */
+  MKJ.place('piece'); MKJ.popAt(tx, ty); MUI.used(b.cat, b.i);   /* (claude/maker) the juice, and the RECENT row */
   if (t === 'sign') e.text = 'A SIGN. WRITE ON IT LATER.';
   if (t === 'npc') e.kind = 'squire';
   if (t === 'vent') { e.period = 4; e.on = 2.4; e.h = 100; }
   if (t === 'rockfall') e.every = 2.6;
   if (t === 'spider') e.drop = 100;
   if (t === 'firepit') { e.period = 3.2; e.on = 1.4; }
-  L.ents.push(e); edRespawn();
+  if (t === 'warp' && MKP.placeWarp(edDoc, e)) edSay('WARP DOORS PAIRED: UP in one comes out of the other');   /* (claude/maker) */
+  else if (t === 'warp') edSay('a WARP DOOR: place its partner next');
+  if (bossNew) { e.lockGoal = false; edSay('BOSS: TOOLS > LINK it to the goal gate to keep the goal shut until it falls'); }   /* (claude/maker) unlinked: the goal is open */
+  L.ents.push(e); if (MKP.afterPlace(edDoc, e)) edMount(false); else edRespawn();   /* (claude/maker) a locked gate builds its bars */
 }
-function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v) return; L.grid[i] = v; grid0[i] = v; tileSpr[i] = null; resolveTiles(); }
+function edSetTile(tx, ty, v) { const i = ty * LW + tx; if (L.grid[i] === v && !L.mat && !edDoc.style) return; L.grid[i] = v; L.mat = MKP.engineMat(edDoc); grid0[i] = v; tileSpr[i] = null; SLOPES_ON = levelHasSlopes(L.grid); edDirty = true; }   /* (claude/maker) redrawn ONCE a frame (edFlush), not once a tile: a drag across a 600-wide wood cost 11 ms a tile; slopes drawn in the editor too; a material repaint of the same tile redraws; the landmarks (the big oak, the beehives) come back to their kept spots - resolveTiles empties decor and only a level load put them back */
 
 // ---- input ----
 function edKey(k, ev) {
+  if (MUI.browseKey(k)) return true;   /* (claude/maker) the FIND browser types its search */
+  if (MKP.trackEditing() && (k === 'enter' || k === 'escape')) { MKP.trackEnd(); edSay('track done'); edMount(false); return true; }
+  if (MUI.linkEndOpen()) { if (k === 'enter' || k === ' ') edUiAct({ act: 'linkAgain' }); return true; }   /* (claude/maker) the shared level's card stays until a button is taken */
+  if (MUI.panelOpen()) { if (k === 'escape' || k === 'enter') { if (MUI.closePanel() === 'settings') music.stop(); } return true; }   /* (claude/maker) */
   const shift = ev && ev.shiftKey, ctrl = ev && (ev.ctrlKey || ev.metaKey);
+  if (ctrl && (k === 'y' || (k === 'z' && shift))) { edRedoAct(); return true; }   /* (claude/maker) */
   if (ctrl && k === 'z') { edPop(); return true; }
-  if (k === 'tab') { edPal = !edPal; SFX.ui(); return true; }
+  if (k === 'tab') return true;   /* (claude/maker) the old full-screen palette is retired: the icon strip is the one way to pick */
   if (k === 'g') { edShowGrid = !edShowGrid; return true; }
   if (k === 'r') { const nm = prompt('Name this wood', edDoc.name); if (nm) { edDoc.name = nm.toUpperCase().slice(0, 22); edSay('called ' + edDoc.name); } return true; }
+  if (ctrl && k === 'c') { if (MKP.copySel(edDoc)) edSay('copied: CTRL+V to paste'); else edSay('TOOLS > SELECT a box first'); return true; }   /* (claude/maker) */
+  if (ctrl && k === 'x') { if (MKP.selection()) { edPush(); MKP.copySel(edDoc); MKP.clearSel(edDoc); edMount(false); edSay('cut: CTRL+V to paste'); } return true; }
+  if (ctrl && k === 'v') { if (MKP.startPaste()) edSay('click where it goes (right-click cancels)'); else edSay('copy something first'); return true; }
+  if ((k === 'delete' || k === 'backspace') && MKP.selection()) { edPush(); MKP.clearSel(edDoc); edMount(false); edSay('cleared'); return true; }
+  if (k === 'escape' && (MKP.selection() || MKP.isPasting())) { MKP.selClear(); return true; }
+  if (k === 'p' && shift) { edPlayHere(edCur.x); return true; }   /* (claude/maker) from under the mouse */
   if (k === 'p' || k === 'enter') { edPlay(); return true; }
   if (k === 'escape') { if (edPal) { edPal = false; return true; } state = 'title'; music.play(menuTrack()); return true; }
   if (k >= '1' && k <= '9') { const n = +k - 1; if (n < edItems(edCat).length) { edSel[edCat] = n; SFX.ui(); } return true; }
   if (k === 'q') { edCat = (edCat + ED_CATS.length - 1) % ED_CATS.length; SFX.ui(); return true; }
   if (k === 'e') { edCat = (edCat + 1) % ED_CATS.length; SFX.ui(); return true; }
-  if (k === '[') { edSel[edCat] = (edSel[edCat] + edItems(edCat).length - 1) % edItems(edCat).length; SFX.ui(); return true; }
-  if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; SFX.ui(); return true; }
+  if (k === 'pageup' || k === 'pagedown') { MKP.turnPage(edCat, k === 'pagedown' ? 1 : -1, edItems(edCat).length, VW); SFX.ui(); return true; }   /* (claude/maker) */
+  if (k === '[') { edSel[edCat] = (edSel[edCat] + edItems(edCat).length - 1) % edItems(edCat).length; MKP.showSelected(edCat, edSel[edCat], VW); SFX.ui(); return true; }
+  if (k === ']') { edSel[edCat] = (edSel[edCat] + 1) % edItems(edCat).length; MKP.showSelected(edCat, edSel[edCat], VW); SFX.ui(); return true; }
   if (k === 's') { edSave(shift ? 1 : edSlot); return true; }
   if (k === 'l') { const d = edLoad(edSlot); if (d) { edPush(); edDoc = d; edMount(true); edSay('loaded slot ' + (edSlot + 1)); } else edSay('slot ' + (edSlot + 1) + ' is empty'); return true; }
-  if (k === 'n') { edPush(); edDoc = edBlank(); edMount(true); edSay('a new wood'); return true; }
+  if (k === 'n') { edReplace(edEmpty(), 'a new level: place the START'); edHoldStart(); return true; }
   if (k === 'f') { edSlot = (edSlot + 1) % ED_SLOTS; edSay('slot ' + (edSlot + 1) + (edLoad(edSlot) ? ' (' + edLoad(edSlot).name + ')' : ' (empty)')); return true; }
   if (k === 't') { edPush(); edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); return true; }
-  if (k === 'x') { edPush(); edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); return true; }
+  if (k === 'x') { edPush(); edSetStart(edCur.x, edCur.y); return true; }
   if (k === '-') { edResize(-10); return true; }
   if (k === '=' || k === '+') { edResize(10); return true; }
   return false;
 }
 function edMouse(mx, my, btn, down, moved) {
+  if (btn === 1 && down) return;   /* (claude/maker) the middle button pans (the listener) */
   // screen pixels -> the level's tiles, through the same camera the world was drawn with
-  const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
+  const [cx, cy] = edCamXY();
   edCur.x = Math.floor((mx + cx) / TS); edCur.y = Math.floor((my + cy) / TS);
   if (edPal) { if (down) edPalClick(mx, my); return; }
-  if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; }
+  edMouseXY = { x: mx, y: my };
+  { const u = MUI.uiMouse(edUiCtx(), mx, my, down); if (u) { edHoverEnt = null; edUiAct(u); return; } }   /* (claude/maker) the bars and panels take their own clicks */
+  edHoverEnt = edGrab ? null : edDoc.ents.slice().reverse().find(q => q.x === edCur.x && q.y === edCur.y) || null;   /* (claude/maker) the hover card's piece */
+  if (MKP.isPasting()) { if (down && btn === 0) { edPush(); MKP.pasteAt(edDoc, edCur); edMount(false); MKJ.place('piece'); edSay('pasted'); } else if (down) { MKP.selClear(); edSay('paste cancelled'); } return; }   /* (claude/maker) the copy follows the mouse until a click lays it down */
+  if (MKP.selDragging()) { if (moved) MKP.selMove(edCur); return; }
+  const edGroundBrush = edBrush().cat === 0 && ED_TILES[edBrush().i][1] === T.SOLID;
+  if (down && btn === 0 && edShift && !edGroundBrush) { edEditAt(edCur.x, edCur.y); return; }
+  if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRampBrush(ED_TILES[edBrush().i])) { MKP.rampStart(edCur); return; }   /* (claude/maker) the SLOPE: drag low end to high end */
+  if (MKP.rampActive()) return;
+  if (down && btn === 0 && edBrush().cat === 0 && ED_TILES[edBrush().i][1] === T.AIR && MUI.eraseMode().box) { edEraseBox = { ax: edCur.x, ay: edCur.y }; return; }   /* (claude/maker) ERASE > BOX: drag it */
+  if (edEraseBox) return;   /* (claude/maker) SHIFT+CLICK a piece: its settings */
+  if (down && btn !== 2 && edBrush().cat === 0 && MKP.isRectBrush(ED_TILES[edBrush().i])) { MKP.rectStart(edCur); return; }   /* (claude/maker) water: drag a box */
+  if (MKP.rectActive()) return;
+  /* (claude/maker) GRAB AND MOVE: a left press on a platform's handle drags its reach; on a placed piece it picks the piece up
+     (Mario Maker's own gesture). Tools (START / LINK / EDIT) still act on a click. */
+  if (edGrab && moved) { edDragTo(edCur); return; }
+  if (down && btn === 0 && (edBrush().cat !== 3 || edBrush().i === 0)) {   /* (claude/maker) holding START still drags pieces */
+    const h = MKP.handleAt(edDoc, edCur); if (h) { edPush(); edGrab = { h, moved: false }; MKJ.pick(); return; }
+    const e = edDoc.ents.slice().reverse().find(q => q.x === edCur.x && q.y === edCur.y);
+    if (e && MKP.movable(e)) { edPush(); edGrab = { e, moved: false, x0: e.x, y0: e.y }; MKJ.pick(); return; }
+  }
+  if (down) { edPush(); edPainted = new Set(); edPaint = btn === 2 ? 2 : 1; edLastCell = null; }
   if (edPaint && (down || moved)) {
     const b = edBrush();
     if (b.cat === 3 && down) { // the tools act once, where you clicked
-      if (b.i === 0) { edDoc.start = { x: edCur.x, y: edCur.y }; edSay('the knight starts here'); SFX.equip(); }
+      if (b.name === 'LINK') { MKP.linkClick(edDoc, edCur, edSay); SFX.ui(); return; }   /* (claude/maker) */
+      if (b.name === 'EDIT') { edEditAt(edCur.x, edCur.y); return; }
+      if (b.name === 'SELECT') { MKP.selStart(edCur); return; }
+      if (b.name === 'TRACK') { if (!MKP.trackEditing()) edPush(); MKP.trackClick(edDoc, edCur, edSay); SFX.ui(); return; }   /* (claude/maker) */
+      if (b.i === 0) edSetStart(edCur.x, edCur.y);
       else if (b.i === 1) { edDoc.theme = (edDoc.theme + 1) % edThemeList().length; edMount(true); edSay(edThemeList()[edDoc.theme].name); }
       else if (b.i === 2) edResize(10); else edResize(-10);
       return;
     }
-    edPlace(edCur.x, edCur.y, edPaint === 2);
+    /* (claude/maker) A STROKE PAINTS EVERY CELL IT CROSSED: a quick drag sends few mouse events, and painting only the cells
+       they landed on left holes in the line (the guide's gap took three tries). Walk the line from the last cell to this one. */
+    const from = down || !edLastCell ? { x: edCur.x, y: edCur.y } : edLastCell, n = Math.max(Math.abs(edCur.x - from.x), Math.abs(edCur.y - from.y));
+    for (let k = 0; k <= n; k++) { const t = n ? k / n : 1; edPlace(Math.round(from.x + (edCur.x - from.x) * t), Math.round(from.y + (edCur.y - from.y) * t), edPaint === 2); }
+    edLastCell = { x: edCur.x, y: edCur.y };
   }
 }
-function edPalClick(mx, my) {
-  const bw = 96, bh = 11, x0 = 8, y0 = 26;
-  for (let c = 0; c < ED_CATS.length; c++) { const tx = x0 + c * 54; if (mx >= tx && mx < tx + 52 && my >= 12 && my < 23) { edCat = c; SFX.ui(); return; } }
-  const items = edItems(edCat);
-  for (let i = 0; i < items.length; i++) { const col = Math.floor(i / 12), row = i % 12; const bx = x0 + col * (bw + 4), by = y0 + row * bh;
-    if (mx >= bx && mx < bx + bw && my >= by && my < by + bh) { edSel[edCat] = i; SFX.ui(); edPal = false; return; } }
-  if (my > y0 + 12 * bh) edPal = false;
+function edPalClick(mx, my) {   /* (claude/maker) src/maker-palette.js knows the paged layout */
+  const r = MKP.paletteClick(edPalCtx(), mx, my); if (!r) return;
+  if (r.cat !== undefined) { edCat = r.cat; SFX.ui(); } else if (r.pick !== undefined) { edSel[edCat] = r.pick; SFX.ui(); edPal = false; } else if (r.close) edPal = false; else if (r.page) SFX.ui();
 }
 
 // ---- drawing ----
 function edSprFor(t) { return SPR[t] || null; }
+/* (claude/maker) THE CAMERA: the level may scroll out past its edges far enough that the bars never hide its top or bottom row */
+function edCamLim() { return { x0: -TS * 2, x1: Math.max(-TS * 2, LW * TS - VW + TS * 2), y0: -MUI.BARS.top, y1: Math.max(-MUI.BARS.top, LH * TS - VH + MUI.BARS.bottom) }; }
+function edClampCam() { const m = edCamLim(); edCam.x = Math.max(m.x0, Math.min(m.x1, edCam.x)); edCam.y = Math.max(m.y0, Math.min(m.y1, edCam.y)); }
+function edCamXY() { edClampCam(); return [Math.round(edCam.x), Math.round(edCam.y)]; }
+/* (claude/maker) ONE REDRAW A FRAME: painting marks the level dirty; the frame redraws the tiles and puts the landmarks back once */
+let edHeroWas = null, edSaveWas = false, edPlayed = false, edProgWas = null, edScrollT = 0;
+/* (claude/maker) THE START: where the knight comes out. Not inside the ground; with nothing to stand on below, a three-tile ledge of
+   ground goes under it (an empty level's first click makes somewhere to begin). */
+function edSetStart(x, y) {
+  if (x < 1 || x >= LW - 1 || y < 1 || y >= LH - 1) return;
+  if (MKP.isSolidId(edDoc.grid[y * edDoc.W + x])) { edSay('the START goes in the open, not inside the ground'); SFX.buzz(); return; }
+  const first = !edDoc.start; if (first) edPush();
+  edDoc.start = { x, y }; let floor = false; for (let yy = y + 1; yy < Math.min(LH, y + 7); yy++) if (MKP.isSolidId(edDoc.grid[yy * edDoc.W + x])) { floor = true; break; }
+  if (!floor && y + 1 < LH) for (let xx = Math.max(1, x - 1); xx <= Math.min(LW - 2, x + 1); xx++) { const i = (y + 1) * edDoc.W + xx; if (!edDoc.grid[i]) edDoc.grid[i] = T.SOLID; }
+  edMount(false); edSay(floor ? 'the knight starts here' : 'the knight starts here (on a little ground: build out from it)'); SFX.equip(); MKJ.place('piece');
+  if (first) { edCat = 0; edSel[0] = ED_TILES.findIndex(t => t[1] === T.SOLID); MUI.showGroup('GROUND'); }   /* the first START: GROUND in hand, to build out from it */
+}
+/* (claude/maker) A NEW LEVEL IS EMPTY (Daniel: "there's already terrain, which doesn't make sense"): no ground, no goal, no START yet; the
+   START tool is in hand. MKR.blank keeps the old floor for the checks. */
+function edEmpty() { const d = edBlank(); d.grid.fill(0); d.ents = []; d.start = null; d.hero = 'knight'; return d; }
+function edHoldStart() { edCat = 3; edSel[3] = 0; MUI.showGroup('START/GOAL'); } let edLastCell = null; let edEraseBox = null, edStartEg = {};
+/* (claude/maker) ERASE > BOX: everything (or only one kind) inside the box; returns how many cells and pieces went */
+function edEraseRect(a, b, what) {
+  const x0 = Math.max(1, Math.min(a.x, b.x)), x1 = Math.min(LW - 2, Math.max(a.x, b.x)), y0 = Math.max(0, Math.min(a.y, b.y)), y1 = Math.min(LH - 1, Math.max(a.y, b.y)); let n = 0;
+  if (what !== 'ground') for (let k = edDoc.ents.length - 1; k >= 0; k--) { const e = edDoc.ents[k]; if (e.x < x0 || e.x > x1 || e.y < y0 || e.y > y1) continue; if (what === 'foes' && !ED_FOES.includes(e.t)) continue; edDoc.ents.splice(k, 1); n++; }
+  if (what === 'all' || what === 'ground') for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = y * edDoc.W + x; if (edDoc.grid[i] || MKP.inPool(edDoc, x, y)) n++; MKP.terrainErase(edDoc, x, y); edDoc.grid[i] = 0; }
+  return n;
+}
+let edDirty = false, edPanFrom = null, edShift = false, edLastDraw = 0, edGrab = null, edHoverEnt = null, edMouseXY = { x: 0, y: 0 };
+function edDragTo(c) {
+  if (edGrab.h) { const before = (edGrab.h.e.range || 0) + (edGrab.h.e.rise || 0); MKP.dragHandle(edGrab.h, c); if ((edGrab.h.e.range || 0) + (edGrab.h.e.rise || 0) !== before) { edGrab.moved = true; edGrab.h = MKP.handleOf(edGrab.h.e); MKJ.place('tile'); edRespawn(); } return; }
+  const e = edGrab.e; if ((e.x === c.x && e.y === c.y) || !MKP.canMoveTo(edDoc, e, c.x, c.y)) return;
+  if (e.track) { const dx = c.x - e.x, dy = c.y - e.y; e.track = e.track.map(([x, y]) => [x + dx, y + dy]); }   /* (claude/maker) the track comes along */
+  e.x = c.x; e.y = c.y; edGrab.moved = true; edRespawn();
+}
+function edDrop() {
+  const gr = edGrab; edGrab = null; if (!gr) return;
+  if (!gr.moved) { edUndo.pop(); return; }   /* a click that moved nothing leaves no undo step */
+  const e = gr.e || gr.h.e; MKJ.place('piece'); MKJ.popAt(e.x, e.y); edSay(gr.h ? (e.vert ? 'rises ' + e.rise + ' tiles' : 'travels ' + e.range + ' tiles') : 'moved');
+}
+const edFrameDt = () => { const n = performance.now(), d = edLastDraw ? Math.min(0.1, (n - edLastDraw) / 1000) : 0; edLastDraw = n; return d; };
+function edEditAt(tx, ty) { const e = edDoc.ents.slice().reverse().find(q => q.x === tx && q.y === ty); if (e) { MUI.openPiece(e); SFX.ui(); } else edSay('click on a placed piece to change it'); }
+function edFlush() { if (!edDirty || !L) return; edDirty = false; resolveTiles(); placeLandmarks(); }
+function edUiCtx() { return { lib: MLIB.list(), sets: MLIB.sets(), heroes: HEROES, g, text, textW, fitText, SPR, drawSet, VW, VH, time, cat: edCat, sel: edSel[edCat], tools: ED_TOOLS, slot: edSlot, msg: edMsg, msgT: edMsgT, doc: edDoc,
+  themes: edThemeList(), noGate: !!L && !L.ents.some(e => e.t === 'gate'), played: edPlayed, heroes: HEROES.map(h => ({ id: h.id, name: (h.name || h.id).toUpperCase() })), problems: MKP.problems(edDoc).length, cam: { x: edCam.x, y: edCam.y }, hoverEnt: edHoverEnt && edDoc.ents.includes(edHoverEnt) ? edHoverEnt : null, mouse: edMouseXY, LWp: LW * TS, LHp: LH * TS }; }
+/* (claude/maker) what a click on the maker's screen asks for */
+function edUiAct(u) {
+  if (u.pick) { edCat = u.pick.cat; edSel[edCat] = u.pick.i; MKJ.pick(); if (u.pick.cat === 0) MUI.used(0, u.pick.i); return; }
+  if (u.cam) { edCam.x = u.cam.x; edCam.y = u.cam.y; edClampCam(); return; }   /* the minimap */
+  const a = u.act; if (!a) return;
+  if (a === 'play') edPlay();
+  else if (a === 'play here') edPlayHere(Math.floor((edCam.x + VW / 2) / TS));
+  else if (a === 'undo') edPop();
+  else if (a === 'redo') edRedoAct();
+  else if (a === 'save') { edAutoSave(true); edSay(edDoc.libId ? 'saved to MY LEVELS (it also saves itself)' : 'could not save in this browser'); SFX.medal(); }
+  else if (a === 'libNew') edKey('n');
+  else if (a === 'linkAgain') { edLinkWon = false; edPlay(); }
+  else if (a === 'linkNext' && edSetRun) { edSetRun.i++; edSetLevel(); }
+  else if (a === 'linkSetAgain' && edSetRun) { edSetRun.i = 0; edSetLevel(); }
+  else if (a === 'linkQuit') { const back = edSetRun && edSetRun.back; edSetRun = null; edLinkPlay = false; if (back) { edDoc = back; edKeptSig = edSigOf(back); edMount(true); edSay('back to your level'); } else edKey('n'); }
+  else if (a === 'setNew') { const nm = prompt('Name this set of levels', 'MY SET'); if (nm) { edAutoSave(true); const st = MLIB.newSet(nm.toUpperCase().slice(0, 22), edDoc.libId); edSay('a new set: ' + st.name + (st.ids.length ? ' (with this level in it)' : '')); MUI.openLib(); } }
+  else if (a === 'setDelete') { const st = MLIB.getSet(u.id); if (st && confirm('Delete the set ' + st.name + '? Its levels stay in MY LEVELS.')) { MLIB.removeSet(u.id); edSay('set deleted'); } }
+  else if (a === 'setName') { const st = MLIB.getSet(u.id), nm = st && prompt('Name this set', st.name); if (nm) MLIB.editSet(u.id, q => { q.name = nm.toUpperCase().slice(0, 22); }); }
+  else if (a === 'setHero') { const L0 = ['own', ...HEROES.map(h => h.id)]; MLIB.editSet(u.id, q => { q.hero = L0[(Math.max(0, L0.indexOf(q.hero || 'own')) + u.d + L0.length) % L0.length]; }); }
+  else if (a === 'setAdd') { edAutoSave(true); if (!edDoc.libId) edSay('this browser would not keep the level'); else MLIB.editSet(u.id, q => { if (!q.ids.includes(edDoc.libId)) q.ids.push(edDoc.libId); }); }
+  else if (a === 'setUp' || a === 'setDown') MLIB.editSet(u.id, q => { const j = u.k + (a === 'setUp' ? -1 : 1); if (j >= 0 && j < q.ids.length) [q.ids[u.k], q.ids[j]] = [q.ids[j], q.ids[u.k]]; });
+  else if (a === 'setRemove') MLIB.editSet(u.id, q => { q.ids.splice(u.k, 1); });
+  else if (a === 'setPlay') { const st = MLIB.getSet(u.id), docs = st ? st.ids.map(id => MLIB.get(id)).filter(Boolean) : []; if (!docs.length) { edSay('that set has no levels yet'); MUI.openLib(); } else edStartSet(st.name, st.hero, docs, false); }
+  else if (a === 'setShare') { const st = MLIB.getSet(u.id), docs = st ? st.ids.map(id => MLIB.get(id)).filter(Boolean) : [], bad = docs.find(d => !d.start || !d.ents.some(e => e.t === 'gate'));
+    if (!docs.length) edSay('that set has no levels yet'); else if (bad) edSay(bad.name + ' has no START or goal yet');
+    else MKP.setLink(st.name, st.hero, docs).then(url => { const done = () => edSay('SET LINK COPIED: ' + docs.length + ' LEVELS, ONE LINK'); if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url)); else prompt('Copy this link:', url); }).catch(() => edSay('could not make a link')); }
+  else if (a === 'linkEdit') { edLinkPlay = false; edSay('YOUR COPY OF ' + edDoc.name + ': change anything and it saves to MY LEVELS'); }
+  else if (a === 'linkNew') { edLinkPlay = false; edKey('n'); }
+  else if (a === 'libOpen') { const d = MLIB.get(u.id); if (d) edReplace(d, 'opened ' + d.name); else edSay('that level could not be read'); }
+  else if (a === 'libCopy') { edAutoSave(); const id = MLIB.copy(u.id); const d = id && MLIB.get(id); if (d) edReplace(d, 'a copy: ' + d.name); }
+  else if (a === 'libDelete') { const e = MLIB.list().find(q => q.id === u.id); if (e && confirm('Delete ' + e.name + '? This cannot be undone.')) { MLIB.remove(u.id); if (edDoc.libId === u.id) { edDoc.libId = null; edKeptSig = edSigOf(edDoc); } edSay('deleted ' + e.name); } }
+  else if (a === 'load') edKey('l');
+  else if (a === 'new') edKey('n');
+  else if (a === 'slot') edKey('f');
+  else if (a === 'name') { const nm = prompt('Name this level', edDoc.name); if (nm) { edDoc.name = nm.toUpperCase().slice(0, 22); edSay('called ' + edDoc.name); } }
+  else if (a === 'width+' || a === 'width-') edResize(a === 'width+' ? 10 : -10);
+  else if (a === 'height+' || a === 'height-') { edPush(); const dh = a === 'height+' ? 4 : -4; if (MKP.resizeHeight(edDoc, dh)) { edMount(false); edCam.y += dh * TS; edClampCam(); edSay('height ' + edDoc.H); } else { edUndo.pop(); edSay('that is as ' + (dh > 0 ? 'tall' : 'short') + ' as it goes'); } }
+  else if (a === 'theme+' || a === 'theme-') { edPush(); const n = edThemeList().length; edDoc.theme = (edDoc.theme + (a === 'theme+' ? 1 : -1) + n) % n; edMount(true); if (!edDoc.music) music.play(edThemeList()[edDoc.theme].music); }
+  else if (a === 'remount') edMount(true);
+  else if (a === 'style') { const nb = u.style ? MKP.bannedIn(edDoc, u.style) : 0; if (nb && !confirm(nb + (nb === 1 ? ' tile' : ' tiles') + ' in this level (reeds, wooden walls...) do not belong in ' + MKP.styleName(u.style) + '. Change the style anyway? They stay where they are.')) return;
+    if ((edDoc.style || null) !== u.style) { edPush(); edDoc.style = u.style; edMount(false); MKJ.place('tile'); } edSay('STYLE: ' + MKP.styleName(u.style)); }   /* (claude/maker) the level's ground wears it */
+  else if (a === 'music') music.play(edDoc.music || edThemeList()[edDoc.theme].music);
+  else if (a === 'closeSettings') music.duck(true);
+  else if (a === 'openSettings') { music.play(edDoc.music || edThemeList()[edDoc.theme].music); music.duck(false); }
+  else if (a === 'guide') { edReplace(MKP.guideDoc()); edPlayed = false; edCam.x = 0; edClampCam(); }
+  else if (a === 'example') { edReplace(MKP.EXAMPLES[u.n].make()); edCam.x = 0; edClampCam(); edSay('an example: take it apart, then PLAY'); }
+  else if (a === 'pieceStep') { edPush(); if (MKP.stepRow(edDoc, u.piece, u.row, u.d)) edMount(false); else edRespawn(); }
+  else if (a === 'pieceText') { const t = prompt('What does the sign say?', u.piece.text || ''); if (t !== null) { edPush(); u.piece.text = t.toUpperCase().slice(0, 80); edRespawn(); } }
+  else if (a === 'pieceRemove') { edPush(); const i = edDoc.ents.indexOf(u.piece); if (i >= 0) edDoc.ents.splice(i, 1); edRespawn(); edSay('removed'); }
+  else if (a === 'share' && !MKP.shareReady(edDoc)) { edSay(edDoc.cleared ? 'CHANGED SINCE YOU BEAT IT: PLAY IT TO THE GOAL AGAIN, THEN SHARE' : 'BEAT IT FIRST: PLAY FROM THE START TO THE GOAL, THEN SHARE'); SFX.buzz(); }   /* (claude/maker) THE CLEAR CHECK */
+  else if (a === 'share') { MKP.shareLink(edDoc).then(url => { history.replaceState(null, '', url); const done = () => edSay(MKP.ownHero(edDoc) ? 'LINK COPIED (NOT CHECKED: EACH PLAYER BRINGS THEIR OWN HERO)' : 'LINK COPIED: ANYONE WHO OPENS IT GETS THIS LEVEL');
+      if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, () => prompt('Copy this link:', url)); else prompt('Copy this link:', url); }).catch(() => edSay('could not make a link')); }
+  else if (a === 'open') { const s0 = prompt('Paste a level link (or its code):'); if (s0) MKP.fromShareCode(s0).then(d => { edReplace(d, 'opened ' + d.name + ' (it becomes yours in MY LEVELS once you change it)'); }).catch(() => edSay('that link did not open')); }
+  if (a !== 'play') SFX.ui();
+}
 function drawEditor() {
+  { const n = performance.now(); if (n - edAutoT > 2000) { edAutoT = n; edAutoSave(); } }   /* (claude/maker) AUTOSAVE */
+  { const sh = MUI.scrollHold(), n = performance.now(); if (sh) { const d = edScrollT ? Math.min(0.05, (n - edScrollT) / 1000) : 0; edCam.x += sh.dx * d * 420; edCam.y += sh.dy * d * 420; edClampCam(); edScrollT = n; } else edScrollT = 0; }   /* (claude/maker) the scroll buttons */
+  edFlush();
   if (!edDoc || !L || !L.custom) { state = 'title'; return; } // the editor is entered through the menu; never draw it half-built
-  const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, edCam.x))), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, edCam.y)));
+  const [cx, cy] = edCamXY();
   camX = cx; camY = cy;
   drawWorld(cx, cy, false);
   // the grid, so you can count tiles
@@ -37627,49 +37958,28 @@ function drawEditor() {
   // the edges of the world
   g.strokeStyle = '#c9463d'; g.lineWidth = 1; g.strokeRect(0.5 - cx, 0.5 - cy, LW * TS - 1, LH * TS - 1);
   // where the knight starts
-  { const sx = edDoc.start.x * TS + 8 - cx, sy = (edDoc.start.y + 1) * TS - cy;
+  if (edDoc.start) { const sx = edDoc.start.x * TS + 8 - cx, sy = (edDoc.start.y + 1) * TS - cy;
+    try { EG.draw(g, EG.kindOf(LEVELS[edIndex()].id), edDoc.start.x * TS + 8, (edDoc.start.y + 1) * TS, cx, cy, time, 0, false, edStartEg, EG_QUIET); } catch (e) {}   /* (claude/maker) THE START GATE */
     g.globalAlpha = 0.75; drawSet(K, 'idle', Math.floor(time * 4.5), sx, sy, 1, false); g.globalAlpha = 1;
     g.fillStyle = '#8fd160'; g.fillRect(sx - 9, sy - 30, 18, 7); text('START', sx, sy - 29, '#0f1a0f', 'center', 6); }
   // the cursor
   { const x = edCur.x * TS - cx, y = edCur.y * TS - cy, b = edBrush();
     g.strokeStyle = edPaint === 2 ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, TS - 1, TS - 1);
+    if (b.cat === 0 && !edPaint && !edEraseBox && !MKP.rampActive()) { const id = ED_TILES[b.i][1]; g.globalAlpha = MKP.styleBanned(edDoc.style, 0, id) ? 0.25 : 0.5; MUI.drawTileGhost(g, id, x, y); g.globalAlpha = 1;   /* (claude/maker) what a click puts here */
+      if (id === T.AIR && MUI.eraseMode().box) text('BOX', x + 8, y - 8, '#ff9a9a', 'center', 6); }
+    if (edEraseBox) { const x0 = Math.min(edEraseBox.ax, edCur.x), x1 = Math.max(edEraseBox.ax, edCur.x), y0 = Math.min(edEraseBox.ay, edCur.y), y1 = Math.max(edEraseBox.ay, edCur.y);
+      g.save(); g.globalAlpha = 0.18; g.fillStyle = '#ff4a4a'; g.fillRect(x0 * TS - cx, y0 * TS - cy, (x1 - x0 + 1) * TS, (y1 - y0 + 1) * TS); g.globalAlpha = 1; g.strokeStyle = '#ff6b6b'; g.setLineDash([4, 3]); g.strokeRect(x0 * TS - cx + 0.5, y0 * TS - cy + 0.5, (x1 - x0 + 1) * TS - 1, (y1 - y0 + 1) * TS - 1); g.restore();
+      text('ERASE ' + ({ all: 'EVERYTHING', ground: 'GROUND', pieces: 'PIECES', foes: 'ENEMIES' })[MUI.eraseMode().what], x0 * TS - cx + 2, y0 * TS - cy - 9, '#ff9a9a', 'left', 6); }
     if (b.cat === 1 || b.cat === 2) { const sp = edSprFor(b.cat === 1 ? ED_FOES[b.i] : ED_THINGS[b.i]);
       if (sp) { g.globalAlpha = 0.55; drawSet(sp, null, 0, x + 8, y + TS, 1, false); g.globalAlpha = 1; } }
   }
-  // ---- chrome ----
-  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, 0, VW, 11);
-  text(edDoc.name, 4, 2, UI.title, 'left', 6);
-  text(edThemeList()[edDoc.theme].name, 4 + edDoc.name.length * 6 + 14, 2, UI.dim, 'left', 6);
-  { const foes = L.ents.filter(e => ED_FOES.includes(e.t)).length, coins = L.ents.filter(e => e.t === 'coin').length;
-    const hasGate = L.ents.some(e => e.t === 'gate');
-    text(edDoc.W + 'x' + edDoc.H + '   ' + foes + ' FOES   ' + coins + ' COIN   SLOT ' + (edSlot + 1), VW - 4, 2, UI.dim, 'right', 6);
-    if (!hasGate) text('NO GATE: NO WAY OUT', VW / 2, 2, '#ff6b6b', 'center', 6); }
-  g.fillStyle = 'rgba(12,10,18,0.86)'; g.fillRect(0, VH - 26, VW, 26);
-  { const b = edBrush(); text(ED_CATS[edCat] + '  >  ' + b.name, 4, VH - 23, UI.sel, 'left', 6);
-    text(edCur.x + ',' + edCur.y, VW - 4, VH - 23, UI.dim, 'right', 6); }
-  if (edMsgT > 0) text(edMsg, 4, VH - 14, UI.title, 'left', 6);
-  else { text('LMB paint   RMB erase   WHEEL item   SHIFT+WHEEL group   TAB palette   ARROWS pan (hold C to fly)', 4, VH - 15, UI.dim, 'left', 6);
-    text('X start  T theme  R name  -/= width  P play  S/L save/load  N new  F slot  G grid  CTRL+Z undo  ESC out', 4, VH - 8, UI.dim, 'left', 6); }
+  MKP.drawTerrainOverlay(g, edDoc, cx, cy, edCur, edBrush().cat === 0 ? ED_TILES[edBrush().i] : null, time); MKP.drawRampPreview(g, edDoc, cx, cy, edCur, time); MKP.drawGears(g, edDoc, cx, cy); MKP.drawArena(g, edDoc, cx, cy, time, SPR, text); MKP.drawSwitchBlocks(g, MKP.engineSwitch(edDoc) || [], cx, cy, false); MKP.drawLoot(g, edDoc, cx, cy, SPR); MKP.drawSel(g, cx, cy, edCur, time); MKP.drawSelInfo(g, edDoc, cx, cy, text); MKP.drawArrows(g, edDoc.ents, cx, cy); MKP.drawWarps(g, edDoc.ents, cx, cy, time, null); MKP.drawTracks(g, edDoc, cx, cy, time); MKP.drawLinks(g, edDoc, cx, cy, time); MKP.drawPieceHints(g, edDoc, cx, cy); MKP.drawReach(g, edDoc, cx, cy, edHoverEnt); MKP.drawHandles(g, edDoc, cx, cy, time); MKJ.draw(g, cx, cy, edFrameDt()); MKP.drawProblems(g, edDoc, cx, cy, time, text);   /* (claude/maker) water outlines, crumble cracks, the box being dragged */
+  MUI.drawChrome(edUiCtx());   /* (claude/maker) the maker's screen: group tabs + icon strip on top, buttons below (src/maker-ui.js) */
   if (edPal) drawEdPalette();
 }
-function drawEdPalette() {
-  g.fillStyle = 'rgba(10,8,16,0.94)'; g.fillRect(0, 0, VW, VH);
-  text('THE PALETTE', VW / 2, 3, UI.title, 'center', TYPE.head);
-  const bw = 96, bh = 11, x0 = 8, y0 = 26;
-  ED_CATS.forEach((c, i) => { const tx = x0 + i * 54, sel = i === edCat;
-    g.fillStyle = sel ? 'rgba(60,90,60,0.9)' : 'rgba(40,36,50,0.8)'; g.fillRect(tx, 12, 52, 11);
-    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(tx + 0.5, 12.5, 51, 10); }
-    text(c, tx + 26, 15, sel ? UI.sel : UI.dim, 'center', 6); });
-  const items = edItems(edCat);
-  items.forEach((it, i) => { const col = Math.floor(i / 12), row = i % 12, bx = x0 + col * (bw + 4), by = y0 + row * bh, sel = i === edSel[edCat];
-    if (bx + bw > VW) return;
-    g.fillStyle = sel ? 'rgba(60,90,60,0.7)' : 'rgba(30,26,40,0.7)'; g.fillRect(bx, by, bw, bh - 1);
-    if (sel) { g.strokeStyle = UI.sel; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 2); }
-    const sp = edCat === 1 ? SPR[ED_FOES[i]] : edCat === 2 ? SPR[ED_THINGS[i]] : null;
-    if (sp) { g.globalAlpha = 0.9; drawSet(sp, null, 0, bx + 9, by + bh - 2, 1, false, 0.55, 0.55); g.globalAlpha = 1; }
-    text(it, bx + 18, by + 2, sel ? UI.title : UI.text, 'left', 6); });
-  text('CLICK one  ESC close', VW / 2, VH - 10, UI.dim, 'center', 6);
-}
+function edPalCtx() { return { g, text, drawSet, SPR, UI, TYPE, VW, VH, cats: ED_CATS, cat: edCat, items: edItems(edCat), sel: edSel[edCat],
+  ids: edCat === 1 ? ED_FOES : edCat === 2 ? ED_THINGS : null }; }
+function drawEdPalette() { MKP.drawPalette(edPalCtx()); }   /* (claude/maker) paged: src/maker-palette.js */
 
 function render() {
   TCH.beginFrame(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
@@ -37715,6 +38025,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
+  if (L && L.custom && L.mkGoal && state === 'play') mkGoalHud();   /* (claude/maker) */
   if (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     drawBkEdge();   /* (claude/bkblood) THE RALLY's red edge pulse (the Blood Knight with debt; off in reduce motion) */
@@ -38177,7 +38488,7 @@ function render() {
   if (state === 'title' && titleSayT > 0 && !SWAPUI.isOpen) { titleSayT -= 1 / 60; const w = inkW(titleSay, 6) + 12; g.fillStyle = 'rgba(16,13,24,0.9)'; g.fillRect(Math.round((VW - w) / 2), 4, w, 11); g.strokeStyle = '#a8e06e'; g.strokeRect(Math.round((VW - w) / 2) + 0.5, 4.5, w - 1, 10); text(titleSay, VW / 2, 7, '#a8e06e', 'center', 6); }   /* (claude/heroroster2) what the title's SWAP HERO said */
   if (SWAPUI.isOpen) SWAPUI.draw(); if (UNLUI.isOpen) UNLUI.draw();   /* (claude/unlocks) */   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
-  if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
+  if(saveBlocked&&!edTesting&&state!=='editor'){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SAVE. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   if (window.BK && window.BK.sheet) {
     g.fillStyle = '#3a4a6a'; g.fillRect(0, 0, VW, VH);
@@ -38417,6 +38728,17 @@ window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on =
 partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (skOn() && isDev() && !q.get('level') && !q.get('boss') && (q.get('skboss') === '1' || q.get('sksec') || q.get('sk') === '1') && levelJump('silk', q.get('hero'))) { const sx = q.get('skboss') === '1' ? 282 : [0, 60, 140, 210, 282][+(q.get('sksec') || 0)] ?? 0; const sy = { 60: 28, 140: 23, 210: 23, 282: 20 }[sx]; if (sx > 0) { checkpoint = { x: sx * TS + 8, y: (sy + 1) * TS }; respawn(); camX = P.x - VW / 2; camY = P.y - 100; } }   /* (claude/silk) THE SILK UNDERCROFT DEV ENTRY: ?sk=1&dev=1 (from the crypt door), &sksec=1..4 (a section's first column), &skboss=1 (the cellar stair shrine; the Mother beyond); and ?sk=1&boss=cryptmother. Never saved (levelJump) */
+if (q.get('maker')) edEnter();
+/* (claude/maker) A LINK: #S= a set (played from its first level), #L= one level (played, not edited) */
+function edOpenLink(h) {
+  if (/#S=/.test(h)) return MKP.fromSetCode(h).then(S => { MUI.closePanel(); edStartSet(S.name, S.hero, S.docs, true); }).catch(() => edSay('that set link did not open'));
+  if (/#L=/.test(h)) return MKP.fromShareCode(h).then(d => { edAutoSave(); edDoc = d; edKeptSig = edSigOf(d); MUI.closePanel(); edMount(true);
+    if (d.start && d.ents.some(e => e.t === 'gate')) { edLinkPlay = true; edLinkWon = false; edSetRun = null; edPlay(); } else edSay('A SHARED LEVEL: ' + d.name + ' (it has no START or goal yet)'); }).catch(() => edSay('that share link did not open'));
+  return Promise.resolve();
+}
+if (q.get('maker') && /#[LS]=/.test(location.hash)) edOpenLink(location.hash);
+/* (claude/maker) the maker's test handle: tools/maker-sweep.mjs builds one-foe woods through it */
+window.MKR = { blank: (W, H) => edBlank(W, H), tools: ED_TOOLS, openLink: h => edOpenLink(h), redo: () => edRedoAct(), undo: () => edPop(), act: u => edUiAct(u), autosave: f => edAutoSave(f), get linkPlay() { return edLinkPlay; }, get setRun() { return edSetRun; }, startAt: (x, y) => edSetStart(x, y), drawOnce: () => drawEditor(), depthAt: (x, y) => tileDeep[y * LW + x], eraseBox: (a, b, what) => { const n = edEraseRect(a, b, what); edMount(false); return n; }, get doc() { return edDoc; }, set doc(d) { edDoc = d; }, enter: () => edEnter(), play: () => edPlay(), resume: () => edResume(), select: (c, i) => { edCat = c; edSel[c] = i; }, mount: () => edMount(true), place: (tx, ty, erase) => { edPush(); edPainted = null; edPlace(tx, ty, !!erase); edFlush(); }, spr: (tx, ty) => tileSpr[ty * LW + tx], get decor() { return decor; }, get undoDepth() { return edUndo.length; }, get viewW() { return VW; }, playAt: c => edPlay(c), toScreen: (bx, by) => { const r = disp.getBoundingClientRect(); return [r.left + (bx * S + offX) / DPR, r.top + (by * S + offY) / DPR]; }, get cam() { return { x: edCam.x, y: edCam.y }; }, get testing() { return edTesting; }, get state() { return state; } };   /* (claude/maker) THE MAKER: ?maker=1 opens the level maker straight from the link */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 if (wwOn() && isDev() && !q.get('level') && !q.get('boss') && (q.get('wwboss') === '1' || q.get('wwsec') || q.get('ww') === '1') && levelJump('wispwood', q.get('hero'))) { const sx = q.get('wwboss') === '1' ? 265 : [0, 48, 120, 180, 265][+(q.get('wwsec') || 0)] ?? 0; const sy = { 48: 25, 120: 23, 180: 27, 265: 26 }[sx]; if (sx > 0) { checkpoint = { x: sx * TS + 8, y: (sy + 1) * TS }; respawn(); camX = P.x - VW / 2; camY = P.y - 100; } }   /* (claude/wispwood) WISPWOOD DEV ENTRY: ?ww=1&dev=1 (the level from the barrow mouth), &wwsec=1..4 (a section's first column), &wwboss=1 (the gate shrine; the Widow beyond); and ?ww=1&boss=lanternwidow. Never saved (levelJump) */
 if (mnOn() && isDev() && !q.get('level') && !q.get('boss') && (q.get('mnboss') === '1' || q.get('mnsec') || q.get('mn') === '1') && levelJump('manor', q.get('hero'))) { const sx = q.get('mnboss') === '1' ? 280 : [0, 60, 140, 210, 280][+(q.get('mnsec') || 0)] ?? 0; const sy = { 60: 29, 140: 29, 210: 27, 280: 29 }[sx]; if (sx > 0) { checkpoint = { x: sx * TS + 8, y: (sy + 1) * TS }; respawn(); camX = P.x - VW / 2; camY = P.y - 100; } }   /* (claude/hollowmanor) THE HOLLOW MANOR DEV ENTRY: ?mn=1&dev=1 (from the cellar stair), &mnsec=1..4 (a section's first column), &mnboss=1 (the armoury door shrine; the Castellan beyond); and ?mn=1&boss=castellan. Never saved (levelJump) */
