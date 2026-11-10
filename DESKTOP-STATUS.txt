@@ -7,3 +7,4 @@
 11-10 09:21 juiceproof-d DONE 0f76b4189 JUICE2 ON (juice.js l.93); tools green; boss n=6 wood/stockade 5/6 OFF=ON; clink recoil built; proof in desktop-out/juice
 11-10 09:44 GQ4L-d DONE 7ac6e3618 claude/gq4l-d: Highcrown level half behind GQ4L_SHIPS (?gq4l=1): battlements +40 G1/G2, bell tower 46-col shell (ROOMS FIXED 0ee80a12a), stair +36 B3b/B3c, 7-storey burning tower + outside climb, Queen hop in view; tools green ON+OFF; report work/claude/lane-done/claude-gq4l-d.md
 11-10 10:36 GQ4P-d DONE 8403bb710 gates+key+add phase+pirouette behind GQ4P_SHIPS; n=6 flasks crown:mini 44% (8/18)
+11-10 10:54 GQ4Q-d DONE 369608ef6 Queen P1+P2 behind GQ4Q_SHIPS; proof 9/9 heroes; n=6 knight/warden/pyro 1/6 each (17%, untuned)
