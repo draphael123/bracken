@@ -191,6 +191,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
 
+Object.assign(THREAT, { skweb: 0, skanchor: 0, sksconce: 0, skwall: 0, sksac: 0, skgoo: 0, silklurker: 3, cryptmother: 6 });   /* (claude/silk) THE SILK UNDERCROFT: its taut webs, anchors, sconces, sticky walls, egg sacs and goo are machines (a sac's spiderlings are spiders); THE SILK LURKER; its boss */
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
 // A tall level is long, it is just long upwards, so the span counts height at three columns a row.

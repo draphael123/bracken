@@ -53,6 +53,7 @@ import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the 
 import { highcrownTwo } from './highcrown2.js';
 import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js'; import { buildLesson } from './opening-tutorial.js';   /* (claude/tutorial1, Daniel 11-05) THE ROADSIDE LESSON: the generic opening for a new save, replayable from the inn */   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
+import { buildSilkUndercroft } from './silk-undercroft.js'; import { SK_RULE } from './sk-lines.js'; import { skOn } from './sk-flag.js';   /* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX): behind SILK_SHIPS */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -8177,6 +8178,10 @@ if (gdOn()) LEVELS.push({ id: 'greatdune', arc: 'the desert', name: 'THE GREAT D
    BEHIND ITS FLAG (src/airship.js asOn: ?airship=1, AS=1): OFF (as shipped) this row is NOT appended. ON it is appended HIDDEN (no map node), needing the last desert level that exists
    (THE KING'S PYRAMID once it merges, the Sealed Pyramid until then): ?airship=1&level=airship. THE ROAD INSERT is src/route-insert.js's, live with AS_SHIPS (art before live). */
 if (asOn()) LEVELS.push({ id: 'airship', arc: 'the desert', name: AS_NAME, sub: 'feed the burners, climb into the storm', rule: AS_RULE, build: () => buildAirship({ T, TS }), needs: LEVELS.some(l => l.id === 'kingspyramid') ? 'kingspyramid' : 'sealedpyramid', hidden: !AS_SHIPS });
+/* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX; scratch/brief-silkundercroft-1015.md): APPENDED (saves count levels by index), and ONLY WHILE SILK_SHIPS / ?sk=1 is on (src/sk-flag.js) -
+   with it off LEVELS is master's. It goes on the road just before THE WITCHLIGHT STAIR: it takes the stair's needs (THE BURIAL CAVERNS on master; WISPWOOD if that lands first) and the stair needs it
+   (a save that had the stair open keeps it, and a save past the stair gets the undercroft as an extra: src/main.js skRoadMig). Its boss: THE CRYPT MOTHER */
+if (skOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ id: 'silk', name: 'THE SILK UNDERCROFT', sub: 'the web beneath the manor', rule: SK_RULE, build: () => buildSilkUndercroft({ painter, T, TS }), needs: wl.needs }); wl.needs = 'silk'; }
 applyInserts(LEVELS);   /* (claude/greatdune) the desert's road inserts (src/route-insert.js): rewires `needs` only for an insert that is live - none is on this branch */
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
