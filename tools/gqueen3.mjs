@@ -19,6 +19,7 @@ const fnBody = (src, name) => { const i = src.search(new RegExp('function ' + na
 const { LEVELS, T } = await imp('src/level.js');
 const L = LEVELS.find(l => l.id === 'crown').build();
 const { SH_HALL: HC, G4 } = await import('../src/gq4l.js'); const HS = HC * 16;
+const { Q4: Q4T, Q4N: Q4NT } = await import('../src/gq4q.js'); const K1 = Q4T ? Q4NT.p1.dmgK : 1, SC1 = x => Math.max(1, Math.round(x * K1));   /* (gq4tune-d) the hall's blows ride the tuned Q4N.p1.dmgK (1 with the flag off) */
 const A = L.arena, W = L.W, at = (x, y) => L.grid[y * W + x];
 
 /* ================= LEVEL ================= */
@@ -128,13 +129,13 @@ console.log('== HANDS (src/gqueen-hands.js in a fake world)');
     ok(w.st.dmg.length === 0 && w.e.mode !== 'crownToss', 'a DUCKED crown (chest height) goes over the hero both ways'); }
   /* 4. a plain hit lands once a pass, 16, yellow */
   { const w = make({ mode: 'hit' }); w.P.x = (11774 + HS); w.e.mode = 'crownTossTell'; w.e.modeT = 0.8; w.step(60 * 4);
-    ok(w.st.dmg.length >= 1 && w.st.dmg.length <= 2 && w.st.dmg.every(d => d.d === GQ3.crown.dmg && !d.o.unblockable && !d.o.pierce), 'the crown hits once a pass for ' + GQ3.crown.dmg + ', yellow (' + w.st.dmg.length + ' hits)'); }
+    ok(w.st.dmg.length >= 1 && w.st.dmg.length <= 2 && w.st.dmg.every(d => d.d === SC1(GQ3.crown.dmg) && !d.o.unblockable && !d.o.pierce), 'the crown hits once a pass for ' + GQ3.crown.dmg + ', yellow (' + w.st.dmg.length + ' hits)'); }
   /* 5. the portal cast: two portals, a fan of three each, one stun a cast, the rest only clank */
   { const w = make({ mode: 'parry' }); w.P.x = (11644 + HS); w.e.x = (11924 + HS); w.e.mode = 'portalTell'; w.e.modeT = 1.0; let seen = 0; for (let i = 0; i < 60 * 6; i++) { w.step(1); seen = Math.max(seen, w.H.portals().length); }
     ok(seen === 2, 'the P1a cast opens TWO portals (' + seen + ')'); ok(w.H.read().stuns === 1, 'a parried shard stuns her ONCE a cast (' + w.H.read().stuns + ')');
     ok(w.e.hp < 2400 - Math.round(2400 * GQ3.portal.stunHp) + 1 && w.e.hp >= 2400 - Math.round(2400 * 0.2), 'the other parried shards only clank (hp ' + w.e.hp + ')'); }
   { const w = make({ mode: 'hit' }); w.e.phase = 2; w.P.x = (11644 + HS); w.e.mode = 'portalTell'; w.e.modeT = 1.0; let seen = 0; for (let i = 0; i < 60 * 3; i++) { w.step(1); seen = Math.max(seen, w.H.portals().length); }
-    ok(seen === 3, 'the P1b cast opens THREE portals (' + seen + ')'); ok(w.st.dmg.every(d => d.d === GQ3.portal.dmg && !d.o.unblockable), 'a shard is 10, yellow'); }
+    ok(seen === 3, 'the P1b cast opens THREE portals (' + seen + ')'); ok(w.st.dmg.every(d => d.d === SC1(GQ3.portal.dmg) && !d.o.unblockable), 'a shard is 10 (x the tuned hall K), yellow'); }
   /* 6. the flee: no death, FULL HEAL (hp, stamina, flasks), the fight ends, her portal stays open in the hall; THE BURNING TOWER (gq3 item 6) */
   { const w = make(); w.e.hp = 0; const r = w.H.spare(w.e);
     ok(r === true && w.e.alive && w.e.hp === GQ3.hp2 && w.e.stage === 'flee', 'a lethal P1 blow is SPARED: she lives, at her phase-two bar (' + w.e.hp + ')');
@@ -200,7 +201,7 @@ console.log('== HANDS (src/gqueen-hands.js in a fake world)');
       const [m0, m1] = G4 ? Tw.OUT.mouth : [h0, h1];   /* (gq4l) ON: the mouth in the deck floor (the outside stretch's ladder) is what the fight shuts */
       ok(g(m0, 20) === T.PLANK && g(m1, 20) === T.PLANK && g(m0, 21) === T.PLANK, '(gq3fix) the hatch (or the outside stretch mouth) is SHUT for the deck fight (no hole to fall into the burning shaft)');
       w.H.test.escape && 0; }
-    { const w = mk(); w.e.hp = Math.round(GQ3.hp2 * 0.78); w.e.mode = 'roofStand'; w.e.modeT = 9; w.step(60 * 2); ok(w.st.spawned.length === 2 && w.st.spawned.map(s => s.t).join() === 'soldier,javelin', 'at 80% a green ring, then two goblins drop (a soldier and a javelin)'); }
+    { const w = mk(); w.e.hp = Math.round(GQ3.hp2 * 0.78); w.e.mode = 'roofStand'; w.e.modeT = 9; w.step(60 * 2); ok(w.st.spawned.length === (GQ3.p2.addMax >= 2 ? 2 : 1) && w.st.spawned.map(s => s.t).join() === (GQ3.p2.addMax >= 2 ? 'soldier,javelin' : 'soldier'), 'at 80% a green ring, then two goblins drop (a soldier and a javelin)'); }
     { const w = mk(); const R0 = w.H.test.roof(); R0.bayT = 0; w.e.mode = 'roofStand'; w.e.modeT = 9; w.step(2); ok(R0.bays[0].state === 'smoke', 'a roof bay smokes (A first)'); w.step(60 * 1.7); ok(R0.bays[0].state === 'burn', 'then burns');
       w.P.x = (w.Lw.arenaRoof.tower.BAYS[0][0] + 2) * 16; w.P.y = w.Lw.arena.floor; w.P.ground = true; w.st.dmg.length = 0; w.step(60 * 2); ok(w.st.dmg.some(d => d.d === GQ3.esc.fire && d.o.spare), 'the burning bay ticks 3 (spare, never kills)'); w.step(60 * 6); ok(R0.bays[0].state === 'idle', 'and goes out after 6 s'); }
     if (process.env.BRACKEN_GQ4Q === '1') { const w = mk(); w.e.hp = Math.round(GQ3.hp2 * 0.2); w.e.mode = 'roofStand'; w.e.modeT = 0; w.step(2); ok(w.e.mode === 'rageTell', 'GQ4Q: under 25% the ENRAGE is told (the desperation storm is retired)'); }
@@ -213,8 +214,8 @@ console.log('== HANDS (src/gqueen-hands.js in a fake world)');
     ok(w.e.mode === 'geodeTell' && Ge0 && Ge0.state === 'tell' && Math.abs(w.e.modeT - GQ3.geode.tell) < 1e-9, 'the geode lob is told: geodeTell ' + GQ3.geode.tell + ' s');
     w.step(30); w.P.x = (11724 + HS); w.step(60 * 0.2); const lockedAt = w.H.test.geode().tx; w.P.x = (11624 + HS); w.step(10); ok(w.H.test.geode().locked && w.H.test.geode().tx === lockedAt, 'the ring tracks the hero 0.6 s and then LOCKS (it does not follow a late dodge)');
     w.P.x = lockedAt; w.step(60 * 0.4); ok(w.e.mode === 'geodeThrow' || w.e.mode === 'rec', 'the release pose, then recovery'); w.step(60 * 0.75);
-    ok(w.st.dmg.some(d => d.d === GQ3.geode.dmg && !d.o.unblockable), 'a geode that lands on the hero is 18, yellow'); ok(w.H.test.geodeBits().length === 2, 'and it shatters into 2 low shards (' + w.H.test.geodeBits().length + ')');
-    ok(w.st.dmg.some(d => d.d === GQ3.geode.shardDmg), 'a floor shard runs into a hero who stays put: 8 (a jump clears it)'); w.step(60 * 1); ok(w.H.test.geodeBits().length === 0, 'the shards run 40 px and are done'); }
+    ok(w.st.dmg.some(d => d.d === SC1(GQ3.geode.dmg) && !d.o.unblockable), 'a geode that lands on the hero is 18, yellow'); ok(w.H.test.geodeBits().length === 2, 'and it shatters into 2 low shards (' + w.H.test.geodeBits().length + ')');
+    ok(w.st.dmg.some(d => d.d === SC1(GQ3.geode.shardDmg)), 'a floor shard runs into a hero who stays put: 8 (a jump clears it)'); w.step(60 * 1); ok(w.H.test.geodeBits().length === 0, 'the shards run 40 px and are done'); }
   { const w = make({ mode: 'hit' }); w.P.x = (11774 + HS); w.P.hitSet = new Set(); w.e.x = (11924 + HS); w.H.test.geodeBegin(); w.step(60 * 1.35); const Ge = w.H.test.geode();
     ok(Ge && Ge.state === 'fly', 'in the air');
     w.ctx.attackBox = () => ({ l: Ge.x - 14, r: Ge.x + 14, t: Ge.y - 14, b: Ge.y + 14 }); w.step(2);

@@ -7,6 +7,7 @@ const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const { LEVELS } = await imp('src/level.js'); const { G4 } = await imp('src/gq4l.js'); const { P4 } = await imp('src/gq4p.js');
 const GPX = await imp('src/goblin-princess.js'), { GP, gpMul, CHAINS } = GPX;
+const BWT = await imp('src/bell-winch.js');   /* (gq4tune-d) the add count rides BW.ADDN */
 const TS = 16;
 /* ---------- a fake world for her hands ---------- */
 const make = (seats = 1, opt = {}) => {
@@ -76,7 +77,7 @@ console.log('== THE KEY');
   const d = w.H.take(w.e, 10); ok(w.e.mode === 'stagger' && Math.abs(w.e.modeT - 1.5) < 0.05 && d > 0 && F.n.keyStaggers === 1, 'a blow during the turn: STAGGERED 1.5 s (x1.0 opening)'); w.step(60 * 2); ok(!E.open, 'and the gate stays shut'); }
 
 console.log('== 50 %: ALL GATES! - the add phase');
-for (const seats of [1, 2, 3]) { const w = make(seats); const F = w.H.fight(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); const want = Math.min(6, 4 + seats - 1);
+for (const seats of [1, 2, 3]) { const w = make(seats); const F = w.H.fight(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); const want = Math.min(6, BWT.ADDN.n + seats - 1);
   if (seats === 1) { ok(w.e.mode === 'allGatesTell' && w.e.shimmer && w.st.said.includes('ALL GATES!'), 'at 50 %: ALL GATES! (told 1.5 s), the shimmer starts'); ok(w.H.take(w.e, 50) === 0, 'during the tell she cannot be hurt'); }
   w.step(60 * 1.6); const Gs = gm(w); ok(F.add && F.add.state === 'ads' && Object.values(Gs).every(G => G.open && G.lock), seats + ' seat(s): all 3 gates fly open and LOCK open');
   ok(w.st.spawned.length === want, seats + ' seat(s): ' + want + ' goblins in (' + w.st.spawned.map(s => s.t).join() + ')');
@@ -86,14 +87,14 @@ for (const seats of [1, 2, 3]) { const w = make(seats); const F = w.H.fight(); f
     ok(w.H.take(w.e, 10) > 0, 'and she can be cut');
     w.step(60 * 2.1); ok(F.ph === 2 && Object.values(Gs).every(G => !G.open && !G.lock) && w.e.mode === 'tantrum', 'then PHASE 2: the gates slam shut, the tantrum is kept'); } }
 { const w = make(); const F = w.H.fight(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); w.step(60 * 2);
-  w.step(60 * 38.5); ok(F.add && F.add.state === 'ads' && w.e.shimmer, 'ads stuck alive: still shimmering at 38 s'); w.step(60 * 2); ok(!w.e.shimmer && F.n.failsafes === 1 && F.ph === 2 && w.st.said.includes('THE SHIMMER CRACKS'), '40 s failsafe: the shimmer cracks, phase 2');
+  w.step(60 * (GP.gate.failsafe - 1.5)); ok(F.add && F.add.state === 'ads' && w.e.shimmer, 'ads stuck alive: still shimmering just before the failsafe (' + GP.gate.failsafe + ' s)'); w.step(60 * 2); ok(!w.e.shimmer && F.n.failsafes === 1 && F.ph === 2 && w.st.said.includes('THE SHIMMER CRACKS'), '40 s failsafe: the shimmer cracks, phase 2');
   ok(w.H.take(w.e, 10) > 0 && gpMul(w.e) <= 0.5 && F.n.addKilled === 0, 'she takes 0.4x again and the ads keep fighting'); }
 
 console.log('== THE PIROUETTE (phase 2)');
 { const w = make(); const F = w.H.fight(); free(w); F.ph = 2; w.e.phase = 2; F.callAt = 1e9; F.chain = ['pirouette']; F.step = 0; const h = w.heroes[0]; h.x = w.e.x - 90; w.e.modeT = 0.01; w.step(2);
   ok(w.e.mode === 'pirouetteTell' && GPX.GP_MODES.pirouetteTell === '!!', 'told: the heel click, 0.7 s, !! (mode pirouetteTell)'); w.step(60 * 0.75); ok(w.e.mode === 'pirouette', 'the spin begins');
   const n0 = w.st.dmg.length; for (let i = 0; i < 60 * 4; i++) { h.y = w.A.floor; h.x = w.e.x; w.step(1); if (w.e.mode !== 'pirouette') break; }
-  ok(w.st.dmg.length - n0 >= 1 && w.st.dmg.some(d => d.d === 14 && d.o.name === 'HER PIROUETTE'), 'stand in it: 14 damage at shin height');
+  ok(w.st.dmg.length - n0 >= 1 && w.st.dmg.some(d => d.d === GP.pir.dmg && d.o.name === 'HER PIROUETTE'), 'stand in it: ' + GP.pir.dmg + ' damage at shin height');
   ok(w.e.mode === 'dizzy' && Math.abs(w.e.modeT - 1.4) < 0.05 && gpMul(w.e) === 1.0, 'after two passes: DIZZY 1.4 s (x1.0)'); }
 { const w = make(); const F = w.H.fight(); free(w); F.ph = 2; F.callAt = 1e9; F.chain = ['pirouette']; F.step = 0; const h = w.heroes[0]; h.x = w.e.x - 90; w.e.modeT = 0.01; w.step(2); const n0 = w.st.dmg.length;
   for (let i = 0; i < 60 * 8 && w.e.mode !== 'dizzy'; i++) { w.step(1); h.y = w.A.floor - 22; h.x = w.e.x; }
