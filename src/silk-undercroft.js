@@ -107,7 +107,7 @@ export function buildSilkUndercroft({ painter, T, TS }) {
   ground(210, 215, 24); sign(211, 23, SK_SAY.strands);
   pit(216, 250);
   strand(216, 222, 24); ling(219, 23, 'strandLing');
-  taut(225, 227, 23);                                                               /* a taut sheet in the gap: up to the high strand */
+  taut(225, 227, 22);                                                               /* a taut sheet in the gap: up to the high strand */
   strand(229, 240, 16); lurker(236, 6, 'strandLurker'); coins([231, 15], [233, 15]);
   strand(243, 249, 19); ling(246, 18, 'strandLing2');
   taut(243, 244, 24); strand(245, 250, 24); ent('silver', 250, 23); coins([247, 23], [248, 23], [249, 23]);   /* SECRET TWO: a shelf in the net under the strand; its own web throws you back up */

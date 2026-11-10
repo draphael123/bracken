@@ -75,7 +75,7 @@ export function makeCryptMotherHands(ctx) {
   /* a torch-bearer who walks into a sac burns it too */
   H.touch = () => { const e = live(), G = SKH(); if (!S || !e || !G) return; for (const pp of ctx.players()) if (!pp.dead && G.hasTorch(pp)) S.sacs.forEach((s, i) => { if (!s.dead && Math.abs(pp.x - s.x) < 12 && Math.abs(pp.y - s.y) < 20) CMM.strikeSac(S, i, true, world(e)); }); };
   H.cut = () => { const e = live(); return e && S ? CMM.cutKnot(e, S, CMM.knotOf(S).id, world(e)) : 'none'; };   /* (a pilot hook for the tune lane's page bot) */
-  H.take = (e, dmg, from) => { if (!S) return dmg; const who = from || (ctx.hero && ctx.hero()); const [d, word] = CMM.takeBlow(e, S, dmg, who ? { x: who.x, y: who.y } : null);
+  H.take = (e, dmg, tag, from) => { if (!S) return dmg; const who = from || (ctx.hero && ctx.hero()); const [d, word] = CMM.takeBlow(e, S, dmg, who ? { x: who.x, y: who.y } : null);
     if (word === 'HIDE') { e.chipHit = ctx.time ? ctx.time() : 0; e.guardFx = 0.2; e.guardWord = CM_SAY.warded; if (!S.told.hide) { S.told.hide = 1; ctx.hint && ctx.hint(CM_SAY.warded + '. ' + CM_SAY.rule + '.'); } }
     if (word === 'ABOVE') ctx.number(e.x, e.y - CM.markH, CM_SAY.abdomen, '#ffd36b');
     if (word === 'HOLDS') ctx.number(e.x, e.y - CM.markH, CM_SAY.holds, '#e6e6ee');

@@ -44,7 +44,7 @@ if (!ON) {
     ok(r.stair === want && !P.skRoadMig && !P.roadOpen, 'flag off, ' + name + ': the stair ' + (want ? 'locked' : 'open') + ' exactly as master, the save untouched ' + JSON.stringify(P)); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/silk)'));
   ok(tagged.length >= 15 && tagged.length <= 22, tagged.length + ' tagged hook lines in src/main.js (single lines)');
-  const unguarded = tagged.filter(l => !/skOn\(\)|SKH|CMH|silkOpen|case 'cryptmother'|SK_NODE/.test(l));
+  const unguarded = tagged.filter(l => !/skOn\(\)|SKH|CMH|silkOpen|case 'cryptmother'|SK_NODE|SK_LURK/.test(l));
   ok(!unguarded.length, 'every hook is behind the flag: the road and the old-save rule ask skOn(), the rest need the level (SKH.on() / its ents / its boss) ' + unguarded.map(l => l.slice(0, 60)).join(' | '));
   ok(/if \(LEVELS\.some\(l => l\.id === 'silk'\)\) \{ INLAND_NODES\.splice/.test(main), 'the map node and its road vertex go in only while the LEVELS row is there (skOn() at import)');
   ok(/skOn\(\) && isDev\(\)/.test(main), 'the dev entry needs ?sk=1 and ?dev=1');
@@ -208,7 +208,7 @@ function fight({ seed = 1, swing = 40, every = 0.45, cutOn = true, read = 0.7 } 
     swingT -= dt; if (swingT <= 0) { swingT = every;
       if (canCut && Math.abs(k.x - P.x) < 20 && Math.abs(boss.x - k.x) < 80) H.strike(hitAt(k.x, k.y), P);   /* it waits on the knot until she walks her line over it */
       for (let i = 0; i < S.sacs.length; i++) if (!S.sacs[i].dead && Math.abs(S.sacs[i].x - P.x) < 30) H.strike(hitAt(S.sacs[i].x, S.sacs[i].y - 6), P);
-      if (Math.abs(boss.x - P.x) < 34 && Math.abs(boss.y - P.y) < 40) { const o = CMM.cmOpen(boss), d = H.take(boss, swing, P); boss.hp -= d; if (o) openDmg += d; else hideDmg += d; if (boss.hp <= 0) { boss.alive = false; H.end(boss); } } }
+      if (Math.abs(boss.x - P.x) < 34 && Math.abs(boss.y - P.y) < 40) { const o = CMM.cmOpen(boss), d = H.take(boss, swing, null, P); boss.hp -= d; if (o) openDmg += d; else hideDmg += d; if (boss.hp <= 0) { boss.alive = false; H.end(boss); } } }
   }
   return { won: !boss.alive && !P.dead, t, hpLeft: P.hp, modes, S, H, G, P, openDmg, hideDmg, minSecs, lings: F.ens.length };
 }
