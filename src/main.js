@@ -261,6 +261,7 @@ import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_
 import * as LNA from './lance-art.js';
 import * as SHA from './stormhold-art.js'; import * as LSA from './lance-storm-art.js';   /* (claude/lance5art) THE STORM over the Long Bridge: sky, teeth, updraft, gust, skewer column, pivot ring, the torn pennant (src/lance-storm-art.js) */
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
+import * as LG from './level-guard.js';
 import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN, trialSteps } from './level.js';
 import { makeDuel, PVP_SHIPS, forgetSlot as duelForget } from './pvp-duel.js';   /* (claude/pvpduel, Daniel 11-05) DUEL (BETA): the tavern's DUEL PIT, hero against hero */ import { makeArenaYard, gradeOf } from './arena-yard.js'; import * as MVB from './move-board.js';   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard + its move board */
 import { floodReach } from './reachcore.js';
@@ -2838,6 +2839,7 @@ function loadLevel(i) { for (const _ of loadLevelG(i)); if (P) CM.clearCommit(P)
 const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K] });
 /* THE SAME LOAD AS A GENERATOR, for the loading screen (src/loading-screen.js drive()): it yields a step id after each stage and does no work of its own between them */
 function* loadLevelG(i) {
+  { const gi = LG.safeLevelIndex(LEVELS, i, PROG); if (gi !== i) { console.warn('unknown level ' + i + ' -> ' + (LEVELS[gi] || {}).id); i = gi; } }   /* (claude/levelguard) a level index or id this build does not know (a newer save, an older main.js) falls back to the last known level, the inn or 0; the save is never touched */
   BUG.evlog('load ' + ((LEVELS[i] || {}).id || i));
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
   trnChoice = null; if (TRN && !TRN.loading) TRN = null;   /* (claude/transchoice) a pending choice card goes with the level */ /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
@@ -34838,6 +34840,7 @@ function drawLightHolders(cx,cy) {
 
 let STK_SMOKE_L = null, STK_SMOKE = [];   /* (claude/stockade3) the Stockade's smoke sources, built once a level load */
 function drawWorld(cx, cy, showPlayer) {
+  if (!L) { g.fillStyle = '#0e0c12'; g.fillRect(0, 0, VW, VH); return; }   /* (claude/levelguard) no level object (an unknown level survived to a draw): a dark frame, never a throw */
   g.__world = true;   /* a string drawn in here lives in the world and is allowed off the edge: the playtest bot reads this */
   swimQ.length = 0; darkQ.length = 0;   /* (a frame with no water pass or no dark pass must not carry last frame's swimmers into this one) */
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
