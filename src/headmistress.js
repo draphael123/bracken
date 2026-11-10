@@ -34,7 +34,7 @@ export const HM = {
   about: { tell: 0.8, every: 5.5, behind: 1.2, railDx: 30 },
   crumble: { tell: 1.5, next: 9 },
   dispel: { tell: 1.0, cd: 6.5 },
-  fin: { tell: 1.2, glide: 0.9, wait: 7, open: 1.8, cap: 0.06 },
+  fin: { tell: 1.2, glide: 0.9, wait: 9, open: 1.8, cap: 0.06 },
 };
 export const LESSON = { 1: 'levitate', 2: 'blink', 3: 'conjure' };
 const OPEN_MODES = new Set(['stagger']);

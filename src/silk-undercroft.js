@@ -125,9 +125,9 @@ export function buildSilkUndercroft({ painter, T, TS }) {
   ground(288, 293, F); ground(334, 339, F); fill(339, 339, 0, H - 1, T.SOLID); pit(294, 333);
   const secs = [[294, 303], [304, 313], [314, 323], [324, 333]]; for (const [a, b] of secs) strand(a, b, F);   /* the floor strands over the pit (P2 cuts them) */
   const aWebs = [taut(291, 292, F), taut(335, 336, F)];
-  strand(289, 292, 24); strand(335, 338, 24);                                       /* the high ledges at the walls, a bounce up */
+  strand(289, 292, 25); strand(335, 338, 25);                                       /* the high ledges at the walls, a bounce up (claude/nightfix: 7 rows over the floor web, a held spring reaches them; was 8 = only a plunge) */
   strand(296, 302, 26); strand(304, 309, 23); strand(309, 318, 20); strand(318, 323, 23); strand(325, 331, 26);   /* the tiers */
-  const knots = [anchor(289, 22, 'knot'), anchor(313, 18, 'knot'), anchor(338, 22, 'knot')];
+  const knots = [anchor(289, 23, 'knot'), anchor(313, 18, 'knot'), anchor(338, 23, 'knot')];
   const aSc = [sconce(290, F - 1), sconce(337, F - 1)];
   ent('cryptmother', 313, 19, { face: -1 });   /* (on the top tier: she spawns at her hang point, src/crypt-mother-hands.js) */
   const arena = { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: F * TS, y0: 4 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'cryptmother', music: 'boss3', tint: '#d8d8e8', tintA: 0.05,
