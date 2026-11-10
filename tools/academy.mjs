@@ -26,19 +26,25 @@ const h = v => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(
 const mig = /if \(acOn\(\)\) roadMigrate\(PROG, AC_INSERT\);/.exec(main);
 const migRun = (PROG, on) => { if (on) RI.roadMigrate(PROG, AC_INSERT); return PROG; };   /* the line in progDefaults, as a function of the flag */
 
+/* SHIPPED STATE (11-10, claude/batch157): all four night areas are live together, so the "this area alone, flag off = master" half only runs while its constant is false;
+   with it true the process asserts the shipped state instead and the child (--on) checks the area on the road */
+const OFF = !ACADEMY_SHIPS;
 if (!ON) {
   console.log('== THE MAGE ACADEMY, FLAG OFF (ACADEMY_SHIPS = ' + ACADEMY_SHIPS + ')');
-  ok(!ACADEMY_SHIPS && !acOn(), 'the ship flag is off and nothing turns it on here');
-  ok(!LEVELS.some(l => l.id === 'academy'), 'no LEVELS row');
-  ok(LEVELS.find(l => l.id === 'mage').needs === 'witchlight', "THE MAGE'S FOLLY still needs THE WITCHLIGHT STAIR");
+  if (OFF) ok(!ACADEMY_SHIPS && !acOn(), 'the ship flag is off and nothing turns it on here');
+  else ok(ACADEMY_SHIPS && acOn() && LEVELS.some(l => l.id === 'academy'), 'SHIPPED: the ship flag is true and the LEVELS row is there (all four night areas live together)');
+  if (OFF) ok(!LEVELS.some(l => l.id === 'academy'), 'no LEVELS row');
+  if (OFF) ok(LEVELS.find(l => l.id === 'mage').needs === 'witchlight', "THE MAGE'S FOLLY still needs THE WITCHLIGHT STAIR");
   /* master 067c6de7e's signature (the same hash over this checkout before the lane changed a line) */
+  if (OFF) {
   const MASTER = { n: 72, levels: 'e1d37b905059043c', witchlight: 'b2904bf68aaa0cfc', mage: '0899dfe9f3854786' };
   const rows = LEVELS.map(l => [l.id, l.needs || null, l.leadsTo || null, !!l.hidden]);
   const b = id => { const L = LEVELS.find(l => l.id === id).build(); return h([L.W, L.H, Array.from(L.grid), L.ents]); };
   const now = { n: LEVELS.length, levels: h(rows), witchlight: b('witchlight'), mage: b('mage') };
   ok(JSON.stringify(now) === JSON.stringify(MASTER), "LEVELS (ids, needs, order), THE WITCHLIGHT STAIR and THE MAGE'S FOLLY are master's exactly " + JSON.stringify(now));
+  }
   ok(!!mig, 'the old-save rule is one guarded line in progDefaults (src/route-insert.js roadMigrate with the Academy\'s own row)');
-  for (const [name, P0] of [['a fresh save', {}], ['the Stair cleared', { witchlight: { cleared: true } }], ['past the Folly', { witchlight: { cleared: true }, mage: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
+  if (OFF) for (const [name, P0] of [['a fresh save', {}], ['the Stair cleared', { witchlight: { cleared: true } }], ['past the Folly', { witchlight: { cleared: true }, mage: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
     const P = migRun(JSON.parse(JSON.stringify(P0)), acOn());
     ok(JSON.stringify(P) === JSON.stringify(P0) && RI.needsOpen(P, LEVELS.find(l => l.id === 'mage')) === RI.needsOpen(P0, LEVELS.find(l => l.id === 'mage')), 'flag off, ' + name + ': the save untouched, the Folly as master locks it'); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/academy)'));
@@ -69,8 +75,9 @@ const lv = LEVELS.find(l => l.id === 'academy');
 ok(!!lv && acOn(), 'the LEVELS row is there with the flag on');
 if (!lv) process.exit(1);
 // ---- THE ROAD ----
-ok(LEVELS[LEVELS.length - 1] === lv, 'APPENDED (saves count levels by index): nothing before it moved');
-ok(lv.needs === 'witchlight' && LEVELS.find(l => l.id === 'mage').needs === 'academy', "THE WITCHLIGHT STAIR > THE MAGE ACADEMY > THE MAGE'S FOLLY (the 11-08 seam - nothing between the Folly and the Falling Tower - untouched: " + LEVELS.find(l => l.id === 'fallingtower').needs + ')');
+const need = id => LEVELS.find(l => l.id === id).needs;
+ok(LEVELS.indexOf(lv) === 75 && LEVELS.length === 76 && LEVELS.slice(72).map(l => l.id).join() === 'wispwood,silk,manor,academy', 'APPENDED in ship order (saves count levels by index): the four night areas are rows 72-75 (this one is 75), nothing before them moved');
+ok(need('wispwood') === 'burial' && need('silk') === 'wispwood' && need('manor') === 'silk' && need('witchlight') === 'manor' && need('academy') === 'witchlight' && need('mage') === 'academy', 'THE ROAD (shipped, all four live): BURIAL > WISPWOOD > SILK > MANOR > WITCHLIGHT STAIR > ACADEMY > THE MAGE FOLLY');
 ok(lv.rule === AC_RULE && /LEARN THE SPELL AT THE LECTERN/.test(lv.rule), 'the rule line: ' + lv.rule);
 ok(/GATE = \[[^\]]*'academy'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(['aclectern', 'acrail', 'acwell', 'acrune'].every(k => THREAT[k] === 0) && THREAT.acbooks > 0 && THREAT.headmistress > 0, 'the threat table knows its machines (0), its flock and its boss');

@@ -26,20 +26,26 @@ const h = v => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(
 const { roadKept } = await import('../src/route-insert.js');
 const mig = /if \(skOn\(\) && !PROG\.skRoadMig\) \{[^\n]*?ro\.silk = 1; \}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
 const gateRun = (PROG, on) => { if (mig) new Function('PROG', 'skOn', mig[0])(PROG, () => on); const q = { get: () => null };
-  const locked = id => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q, roadKept); return { stair: locked('witchlight'), silk: locked('silk') }; };
+  const locked = id => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q, roadKept); return { stair: locked('witchlight'), silk: locked('silk'), of: locked }; };
 
+/* SHIPPED STATE (11-10, claude/batch157): all four night areas are live together, so the "this area alone, flag off = master" half only runs while its constant is false;
+   with it true the process asserts the shipped state instead and the child (--on) checks the area on the road */
+const OFF = !SILK_SHIPS;
 if (!ON) {
   console.log('== THE SILK UNDERCROFT, FLAG OFF (SILK_SHIPS = ' + SILK_SHIPS + ')');
-  ok(!SILK_SHIPS && !skOn(), 'the ship flag is off and nothing turns it on here');
-  ok(!LEVELS.some(l => l.id === 'silk'), 'no LEVELS row');
-  ok(LEVELS.find(l => l.id === 'witchlight').needs === 'burial', 'THE WITCHLIGHT STAIR still needs THE BURIAL CAVERNS');
+  if (OFF) ok(!SILK_SHIPS && !skOn(), 'the ship flag is off and nothing turns it on here');
+  else ok(SILK_SHIPS && skOn() && LEVELS.some(l => l.id === 'silk'), 'SHIPPED: the ship flag is true and the LEVELS row is there (all four night areas live together)');
+  if (OFF) ok(!LEVELS.some(l => l.id === 'silk'), 'no LEVELS row');
+  if (OFF) ok(LEVELS.find(l => l.id === 'witchlight').needs === 'burial', 'THE WITCHLIGHT STAIR still needs THE BURIAL CAVERNS');
+  if (OFF) {
   const MASTER = { n: 72, levels: 'e1d37b905059043c', burial: '62a3ba78de07aae8', witchlight: 'b2904bf68aaa0cfc' };   /* master 067c6de7e (git archive export, before any edit) */
   const rows = LEVELS.map(l => [l.id, l.needs || null, l.leadsTo || null, !!l.hidden]);
   const b = id => { const L = LEVELS.find(l => l.id === id).build(); return h([L.W, L.H, Array.from(L.grid), L.ents]); };
   const now = { n: LEVELS.length, levels: h(rows), burial: b('burial'), witchlight: b('witchlight') };
   ok(JSON.stringify(now) === JSON.stringify(MASTER), 'LEVELS (ids, needs, order), THE BURIAL CAVERNS and THE WITCHLIGHT STAIR are master\'s exactly ' + JSON.stringify(now));
+  }
   ok(!!mig && !!lock && /!roadKept\(PROG, lv\)/.test(lock[0]), 'the old-save rule is in src/main.js; what it keeps open goes through levelLocked\'s own roadKept clause (PROG.roadOpen, src/route-insert.js) - no clause of its own');
-  if (mig && lock) for (const [name, P0] of [['a fresh save', {}], ['the caverns cleared', { burial: { cleared: true } }], ['past the stair', { burial: { cleared: true }, witchlight: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
+  if (OFF && mig && lock) for (const [name, P0] of [['a fresh save', {}], ['the caverns cleared', { burial: { cleared: true } }], ['past the stair', { burial: { cleared: true }, witchlight: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
     const P = JSON.parse(JSON.stringify(P0)), r = gateRun(P, false), want = !(P0.burial && P0.burial.cleared) && !(P0.witchlight && P0.witchlight.cleared);
     ok(r.stair === want && !P.skRoadMig && !P.roadOpen, 'flag off, ' + name + ': the stair ' + (want ? 'locked' : 'open') + ' exactly as master, the save untouched ' + JSON.stringify(P)); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/silk)'));
@@ -69,8 +75,9 @@ const lv = LEVELS.find(l => l.id === 'silk');
 ok(!!lv && skOn(), 'the LEVELS row is there with the flag on');
 if (!lv) process.exit(1);
 // ---- THE ROAD ----
-ok(LEVELS[LEVELS.length - 1] === lv, 'APPENDED (saves count levels by index): nothing before it moved');
-ok(lv.needs === 'burial' && LEVELS.find(l => l.id === 'witchlight').needs === 'silk', 'THE BURIAL CAVERNS > THE SILK UNDERCROFT > THE WITCHLIGHT STAIR (it takes the stair\'s needs: Wispwood\'s, if that lands first)');
+const need = id => LEVELS.find(l => l.id === id).needs;
+ok(LEVELS.indexOf(lv) === 73 && LEVELS.length === 76 && LEVELS.slice(72).map(l => l.id).join() === 'wispwood,silk,manor,academy', 'APPENDED in ship order (saves count levels by index): the four night areas are rows 72-75 (this one is 73), nothing before them moved');
+ok(need('wispwood') === 'burial' && need('silk') === 'wispwood' && need('manor') === 'silk' && need('witchlight') === 'manor' && need('academy') === 'witchlight' && need('mage') === 'academy', 'THE ROAD (shipped, all four live): BURIAL > WISPWOOD > SILK > MANOR > WITCHLIGHT STAIR > ACADEMY > THE MAGE FOLLY');
 ok(lv.rule === SK_RULE && /SILK HOLDS WHAT TOUCHES IT/.test(lv.rule), 'the rule line: ' + lv.rule);
 ok(/GATE = \[[^\]]*'silk'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(['skweb', 'skanchor', 'sksconce', 'skwall', 'sksac', 'skgoo'].every(k => THREAT[k] === 0) && THREAT.silklurker > 0 && THREAT.cryptmother > 0, 'the threat table knows its machines (0), its lurker and its boss');
@@ -79,8 +86,8 @@ if (mig && lock) {
   const past = gateRun({ burial: { cleared: true }, witchlight: { cleared: true } }, true), atCav = gateRun({ burial: { cleared: true } }, true), fresh = gateRun({ skRoadMig: 1, burial: { cleared: true } }, true), done = gateRun({ skRoadMig: 1, burial: { cleared: true }, silk: { cleared: true } }, true);
   ok(!past.stair && !atCav.stair, 'an old save that cleared the caverns (or the stair) keeps the stair open (grandfathered once): ' + JSON.stringify([past, atCav]));
   ok(!past.silk, 'a save past the stair finds the undercroft UNLOCKED as an extra');
-  ok(fresh.stair && !fresh.silk, 'a save made with the undercroft on the road: the caverns open it, the stair waits for it');
-  ok(!done.stair, 'clearing the undercroft opens the stair');
+  ok(fresh.stair && fresh.silk && !gateRun({ skRoadMig: 1, burial: { cleared: true }, wispwood: { cleared: true } }, true).silk, 'a save made with the undercroft on the road: the wood opens it (it needs wispwood now), the stair waits');
+  ok(done.stair && !done.of('manor'), 'clearing the undercroft opens the manor; the stair waits for the manor (shipped road)');
 }
 // ---- THE BUILD ----
 const L = lv.build();

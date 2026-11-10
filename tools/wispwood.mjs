@@ -24,21 +24,27 @@ const h = v => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(
 /* THE OLD-SAVE RULE AND THE GATE CLAUSE, lifted out of src/main.js and run over a fake PROG */
 const mig = /if \(wwOn\(\) && !PROG\.wwRoadMig\) \{[^\n]*?PROG\.witchlightOpen = 1; \}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
 const gateRun = (PROG, on) => { if (mig) new Function('PROG', 'wwOn', mig[0])(PROG, () => on); const q = { get: () => null };
-  const locked = id => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q, roadKept); return { stair: locked('witchlight'), wood: locked('wispwood') }; };
+  const locked = id => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q, roadKept); return { stair: locked('witchlight'), wood: locked('wispwood'), of: locked }; };
 
+/* SHIPPED STATE (11-10, claude/batch157): all four night areas are live together, so the "this area alone, flag off = master" half only runs while its constant is false;
+   with it true the process asserts the shipped state instead and the child (--on) checks the area on the road */
+const OFF = !WISPWOOD_SHIPS;
 if (!ON) {
   console.log('== WISPWOOD, FLAG OFF (WISPWOOD_SHIPS = ' + WISPWOOD_SHIPS + ')');
-  ok(!WISPWOOD_SHIPS && !wwOn(), 'the ship flag is off and nothing turns it on here');
-  ok(!LEVELS.some(l => l.id === 'wispwood'), 'no LEVELS row');
-  ok(LEVELS.find(l => l.id === 'witchlight').needs === 'burial', 'THE WITCHLIGHT STAIR still needs THE BURIAL CAVERNS');
+  if (OFF) ok(!WISPWOOD_SHIPS && !wwOn(), 'the ship flag is off and nothing turns it on here');
+  else ok(WISPWOOD_SHIPS && wwOn() && LEVELS.some(l => l.id === 'wispwood'), 'SHIPPED: the ship flag is true and the LEVELS row is there (all four night areas live together)');
+  if (OFF) ok(!LEVELS.some(l => l.id === 'wispwood'), 'no LEVELS row');
+  if (OFF) ok(LEVELS.find(l => l.id === 'witchlight').needs === 'burial', 'THE WITCHLIGHT STAIR still needs THE BURIAL CAVERNS');
   /* master 85d152eb8's signature (the same hash over that checkout, taken before this lane changed a line) */
+  if (OFF) {
   const MASTER = { n: 72, levels: 'e1d37b905059043c', burial: '62a3ba78de07aae8', witchlight: 'b2904bf68aaa0cfc' };
   const rows = LEVELS.map(l => [l.id, l.needs || null, l.leadsTo || null, !!l.hidden]);
   const b = id => { const L = LEVELS.find(l => l.id === id).build(); return h([L.W, L.H, Array.from(L.grid), L.ents]); };
   const now = { n: LEVELS.length, levels: h(rows), burial: b('burial'), witchlight: b('witchlight') };
   ok(JSON.stringify(now) === JSON.stringify(MASTER), 'LEVELS (ids, needs, order), THE BURIAL CAVERNS and THE WITCHLIGHT STAIR are master\'s exactly ' + JSON.stringify(now));
+  }
   ok(!!mig && !!lock && /lv\.id === 'witchlight' && PROG\.witchlightOpen/.test(lock[0]), 'the old-save rule and the gate clause are in src/main.js');
-  if (mig && lock) for (const [name, P0] of [['a fresh save', {}], ['the caverns cleared', { burial: { cleared: true } }], ['past the stair', { burial: { cleared: true }, witchlight: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
+  if (OFF && mig && lock) for (const [name, P0] of [['a fresh save', {}], ['the caverns cleared', { burial: { cleared: true } }], ['past the stair', { burial: { cleared: true }, witchlight: { cleared: true } }], ['the fields only', { fields: { cleared: true } }]]) {
     const P = JSON.parse(JSON.stringify(P0)), r = gateRun(P, false), want = !(P0.burial && P0.burial.cleared) && !(P0.witchlight && P0.witchlight.cleared);
     ok(r.stair === want && !P.wwRoadMig && !P.witchlightOpen, 'flag off, ' + name + ': the stair ' + (want ? 'locked' : 'open') + ' exactly as master, the save untouched ' + JSON.stringify(P)); }
   const tagged = main.split('\n').filter(l => l.includes('(claude/wispwood)'));
@@ -67,8 +73,9 @@ const lv = LEVELS.find(l => l.id === 'wispwood');
 ok(!!lv && wwOn(), 'the LEVELS row is there with the flag on');
 if (!lv) process.exit(1);
 // ---- THE ROAD ----
-ok(LEVELS[LEVELS.length - 1] === lv, 'APPENDED (saves count levels by index): nothing before it moved');
-ok(lv.needs === 'burial' && LEVELS.find(l => l.id === 'witchlight').needs === 'wispwood', 'THE BURIAL CAVERNS > WISPWOOD > THE WITCHLIGHT STAIR');
+const need = id => LEVELS.find(l => l.id === id).needs;
+ok(LEVELS.indexOf(lv) === 72 && LEVELS.length === 76 && LEVELS.slice(72).map(l => l.id).join() === 'wispwood,silk,manor,academy', 'APPENDED in ship order (saves count levels by index): the four night areas are rows 72-75 (this one is 72), nothing before them moved');
+ok(need('wispwood') === 'burial' && need('silk') === 'wispwood' && need('manor') === 'silk' && need('witchlight') === 'manor' && need('academy') === 'witchlight' && need('mage') === 'academy', 'THE ROAD (shipped, all four live): BURIAL > WISPWOOD > SILK > MANOR > WITCHLIGHT STAIR > ACADEMY > THE MAGE FOLLY');
 ok(lv.rule === WW_RULE && /WHAT THE LIGHT TOUCHES IS REAL/.test(lv.rule), 'the rule line: ' + lv.rule);
 ok(/GATE = \['wispwood'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(['wwspan', 'wwcandle', 'wwlamp', 'wwstone', 'wwhands'].every(k => THREAT[k] === 0) && THREAT.wwthief > 0 && THREAT.lanternwidow > 0, 'the threat table knows its machines (0), its thief and its boss');
@@ -77,7 +84,7 @@ if (mig && lock) {
   const past = gateRun({ burial: { cleared: true }, witchlight: { cleared: true } }, true), atCav = gateRun({ burial: { cleared: true } }, true), fresh = gateRun({ wwRoadMig: 1, burial: { cleared: true } }, true), done = gateRun({ wwRoadMig: 1, burial: { cleared: true }, wispwood: { cleared: true } }, true);
   ok(!past.stair && !atCav.stair, 'an old save that cleared the caverns (or the stair) keeps the stair open (grandfathered once): ' + JSON.stringify([past, atCav]));
   ok(fresh.stair && !fresh.wood, 'a save made with the wood on the road: the caverns open the wood, the stair waits for it');
-  ok(!done.stair, 'clearing the wood opens the stair');
+  ok(done.stair && !done.of('silk'), 'clearing the wood opens the undercroft; the stair waits for the manor (shipped road: wood > silk > manor > stair)');
 }
 // ---- THE BUILD ----
 const L = lv.build();
