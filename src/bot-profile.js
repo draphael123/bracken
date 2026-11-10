@@ -15,6 +15,7 @@
 //              sometimes forgets to keep a roll's stamina back. tools/harnesscard-rates.mjs and tools/boss-rates.mjs use it.
 //   (first)    first: true on any profile = A FIRST ATTEMPT: it has never seen this boss - each tell is misread far more often until it
 //              has seen it learnAfter times, its timing is twice as rough, and his first opening costs it openDiscover s to notice.
+import * as TR0 from './traits.js';
 export const PROFILES = {
   legacy: { name: 'legacy', perceive: false, v2: false },
   human: {
@@ -50,6 +51,9 @@ export const PROFILES = {
    fatigueAfter/fatigueMult  after 120 s in one fight the reactions are 15% slower */
 PROFILES.person = { ...PROFILES.human, name: 'person', tellTable: true, guardMean: 0.025, guardSd: 0.04, guardLapse: 0.08, skillSpread: [0.85, 1.3], fatigueAfter: 120, fatigueMult: 1.15 };
 PROFILES.human03 = { ...PROFILES.human, name: 'human03', rtMin: 218, rtMax: 446, rtMode: 302, misread: 0.062, greed: 0.19 };   /* BOT2's d=0.3 human, for re-reading old tables */
+/* WHAT THE BOTS WEAR (claude/traitframe, plan sec 3): the hero's DEFAULT traits (src/traits.js defaultsAt). 'def' | 'core' (none) | an array of trait ids. The boss lab's ?traits= and tools override it; inert while TRAITS_SHIP is off. */
+export const BOT_TRAITS = 'def';
+export function traitsFor(h, lvl, spec = BOT_TRAITS) { return spec === 'core' ? [] : Array.isArray(spec) ? spec.slice(0, TR0.traitSlotsAt(lvl)) : TR0.defaultsAt(h, lvl); }
 export const STANDARD = 'human';   /* the profile the boss standard (50-60% across knight / warden / pyro) is measured with */
 export function profileOf(p) {
   if (!p) return PROFILES.legacy;

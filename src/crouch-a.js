@@ -102,10 +102,10 @@ export function makeCrouchA(api) {
     if (!(front || api.tal('plated'))) return null;   /* from behind it finds him (PLATED: the shield at his back too, as standing) */
     if (unblockable) { stats.lowThrough++; said(p, 'thru', 'UNDER THE SHIELD', '#ff6b6b'); return null; }   /* RED: no shield, low or high */
     if (pierce) return null;   /* a piercing bolt goes through a shield already set; only one raised on the beat turns it */
-    const cost = blockCost(dmg, api.tal('steady'));   /* WEIGHT (Daniel 10-02): the price is the blow's weight, as the standing shield's */
+    const cost = blockCost(dmg, api.tal('steady')) * (!front && api.tal('plated') ? 1 + 0.4 * (api.trLack ? api.trLack('plated') : 0) : 1);   /* PLATED: the back cover's extra wind by rank */   /* WEIGHT (Daniel 10-02): the price is the blow's weight, as the standing shield's */
     if (p.st < cost) { stats.lowBroken++; exhaust(p); p.stFlash = 0.5; p.hurt = Math.max(p.hurt || 0, STAM.breakStagger); p.guardTired = Math.max(p.guardTired || 0, STAM.breakTired); api.SFX.guardBreak(); api.SFX.gasp(); api.shakeCam(4, -p.face * 3); api.hitstop(0.1); api.number(p.x, p.y - 22, 'GUARD BREAK', '#ffd36b'); return 'half'; }
     p.st -= cost; p.stDelay = api.ST.delay; api.gainResolve(K.resolve); stats.lowBlocks++; p.caBlockT = 0.16;
-    if (api.tal('vengeance')) p.venge = Math.min(30, (p.venge || 0) + Math.round(dmg * 0.5));   /* VENGEANCE keeps what the shield took, low or high */
+    if (api.tal('vengeance')) p.venge = Math.min(Math.round(30 * (api.trk ? api.trk('vengeance') : 1)), (p.venge || 0) + Math.round(dmg * 0.5));   /* VENGEANCE keeps what the shield took, low or high */
     const sd = Math.sign(fromX - p.x) || p.face;
     api.blockFx(p.x + sd * 9, p.y - 5, sd); api.SFX.lowGuard();   /* NO KNOCKBACK: he is not slid back - that is the whole of the low guard */
     said(p, 'low', 'LOW GUARD', '#c9d1dc', 1.2);
