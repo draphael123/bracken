@@ -825,6 +825,8 @@ function gqueenReact(BK, boss, P, k, A, h) {
     return { goal: null, strike: false };
   }
   const R0 = rd && rd.roof;
+  /* (gq3fix) HER BELL CHARGE is told now (a 0.6 s planted wind-up, then the run): a player in her path rolls THROUGH her as she comes (a roll's frames), a parry on a shield hero is the existing tell branch */
+  if (stage === 'hall' && boss.mode === 'lure' && Math.abs(boss.vx || 0) > 100 && P.ground && !(P.dodge > 0)) { const dq = boss.x - P.x; if (Math.abs(dq) < 78 && dq * boss.vx < 0) { k.left = dq < 0; k.right = dq > 0; BK.press('dodge'); return { goal: null, strike: false }; } }
   if (stage === 'roof' && R0) {
     const m = boss.mode;
     if (m === 'lashHighTell') { if (boss.modeT < 0.3) k.down = true; return { goal: null, strike: false }; }
