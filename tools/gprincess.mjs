@@ -15,7 +15,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
-const { LEVELS, T } = await imp('src/level.js');
+const { LEVELS, T } = await imp('src/level.js'); const { SH_HALL, G4 } = await imp('src/gq4l.js');
 const { HC3 } = await imp('src/highcrown2.js');
 const GPX = await imp('src/goblin-princess.js'), { GP, gpMul, gpOpen } = GPX;
 const BW = await imp('src/bell-winch.js');
@@ -23,7 +23,7 @@ const TS = 16;
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
 
 console.log('== LAYOUT');
-ok(W === 841, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
+ok(W === 841 + SH_HALL, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
 ok(L.ents.some(e => e.t === 'sign' && /CAPTAINS HALL/.test(e.text || '')), 'the Captains Hall is kept (Daniel 11-06 22:34: do NOT cut it)');
 ok(L.ents.some(e => e.t === 'sign' && /BAKEHOUSE YARD/.test(e.text || '')) && L.pools.some(p => p.fire), 'the bakehouse yard is kept (its sign and its fire)');
 const M = L.mini; ok(!!M && M.boss === 'gprincess' && M.name === 'THE GOBLIN PRINCESS', 'L.mini is THE GOBLIN PRINCESS');
@@ -148,7 +148,7 @@ console.log('== THE CHASE and the alarm towers');
   if (W1.state === 'open') { for (let i = 0; i < 3; i++) { w.blow(h, wb); w.H.level(1 / 60); h.box = null; w.st.time += 0.3; } } ok(W1.state === 'kept', 'tower 1: three blows on its winch keep the guardroom in');
   run(40); const C = w.H.test.chase(); ok(TW.has('tower2'), 'she rings tower 2\'s alarm');
   ok(C.state === 'in', 'she reaches her bell tower (' + C.state + ', x ' + Math.round(C.x / TS) + ')');
-  ok(w.st.spawned.some(s => s.t === 'pike'), 'tower 2 left alone: its guardroom is out (pike, soldier, hound)');
+  ok(w.st.spawned.some(s => (G4 ? s.cnSkin === 'gobknight' : s.t === 'pike')), 'tower 2 left alone: its guardroom is out (pike, soldier, hound)');
   w.H.clear(); w.H.level(1 / 60); ok(!w.H.test.chase() || w.H.test.chase().state === 'in', 'a death after she is in her tower: the chase is not replayed'); }
 { const w = make(); const Ch = w.Lw.gpChase, h = w.heroes[0]; h.y = Ch.floor; h.x = Ch.x0 + 20; w.H.level(1 / 60); w.H.clear(); w.H.level(1 / 60); ok(!w.H.test.chase() || w.H.test.chase().state !== 'in', 'a death mid-chase: it starts again'); }
 

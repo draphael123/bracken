@@ -17,7 +17,7 @@ install();
 globalThis.window = globalThis.window || {};
 const { makeGobGeoHands } = await import('../src/gobgeo-hands.js');
 const { LEVELS, T } = await import('../src/level.js');
-const { GOBGEO } = await import('../src/gobgeo-level.js');
+const { GOBGEO } = await import('../src/gobgeo-level.js'); const { SH_HALL } = await import('../src/gq4l.js');
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 
 /* ---------------- RULES ---------------- */
@@ -104,7 +104,7 @@ function room(o = {}) {
 
 /* ---------------- LAYOUT ---------------- */
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
-ok(W === 841, 'Highcrown is 841 columns (gq3: the Queen Stair +64, the tower top +12); the Geomancer rooms are laid into columns that are there (' + W + ')');
+ok(W === 841 + SH_HALL, 'Highcrown is 841 columns (gq3: the Queen Stair +64, the tower top +12); the Geomancer rooms are laid into columns that are there (' + W + ')');
 const geos = L.ents.filter(e => e.t === 'gobgeo'); ok(geos.length === 8, 'eight Geomancers: teach, shield, chandelier, the secret, the last walk (the five of gobgeo) + gq3: the stair grille, the geode store, the burning tower (' + geos.length + ')');
 ok(geos.filter(e => e.x < L.arena.x0 / 16).length === 7 && geos.filter(e => e.x > L.arena.x1 / 16).length === 1, 'seven of them BEFORE the Queen hall (the Captains Hall, the battlements, gq3 the stair), one in the burning tower AFTER it (gq3: the tower is past her flee portal)');
 const TG = GOBGEO.TEACH, seal = L.rocklocks.find(k => k.id === 'gg-teach');

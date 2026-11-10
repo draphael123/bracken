@@ -5,19 +5,21 @@
    (src/gqueen-hands.js); the foes are laid here: S1 soldier + javelin, S2 shield + an archer on a ledge, S3 a Geomancer, S4 two castle hounds, S5 a heavy at the hatch.
    THE TOWER TOP (phase two) is 60 columns now (776-836): WEST + EAST PARAPET WALKS (one-way stone, 9 cols each) with a two-step stair up each, a central BELL CUPOLA (4 solid cols, a one-way
    frame over it) in place of the lone chimney, FOUR ROOF BAYS A-D on the deck (they burn, told), and FIVE PORTAL RINGS (deck W / E, both parapets, the cupola top). */
+import { SH_HALL } from './gq4l.js';
+const d = SH_HALL;   /* (claude/gq4l) the Queen's hall, her escape and the tower top slide east whole (+96 with GQ4L_SHIPS; 0 off) */
 export const TW = {
-  DECK: { x0: 776, x1: 836, floor: 20 },                                   // wall column to wall column; the deck floor is row 20 (stand 19)
-  SHAFT: [782, 805], FLOORS: [81, 69, 57, 45, 33],                         // interior columns; the floor tile row of storeys 0..4 (stand = row - 1)
-  LADDERS: [[784, 68, 80], [803, 56, 68], [784, 44, 56], [803, 32, 44]],   // [column, top row, bottom row]: the ladder through floor 1..4's stairwell
-  GAPS: [[783, 785], [802, 804], [783, 785], [802, 804]],
-  HATCH: { cols: [792, 793], ladder: [792, 19, 32] },
-  PARAPETS: { w: [778, 786], e: [826, 834], row: 16, stepW: [787, 788], stepE: [824, 825], stepRow: 18 },
-  CUPOLA: { x0: 804, x1: 807, solid: [17, 19], frame: [803, 808, 14] },
-  BAYS: [[779, 784], [795, 800], [811, 816], [827, 832]],                  // A, B, C, D: floor spans (cols) that burn, one at a time
-  RINGS: [{ id: 'dw', x: 782, y: 19 }, { id: 'de', x: 830, y: 19 }, { id: 'pw', x: 782, y: 15 }, { id: 'pe', x: 830, y: 15 }, { id: 'cu', x: 806, y: 13 },
-    { id: 'dm', x: 799, y: 19, noStorm: true }, { id: 'dn', x: 811, y: 19, noStorm: true }],   /* (gq3fix) two MID-DECK rings (blink exits only - the portal storm still lights the five): on a 60-column deck split by the cupola, the two end rings were 380 px from a hero in the middle, so a blink's 1.2 s opening was never in a blade's reach */
-  FOLLOW: { shrine: [795, 19], begin: 800 },                               // the roof shrine at the hatch top; the fight begins when you walk past col 800
-  FOES: [['soldier', 795, 80], ['javelin', 798, 80], ['shield', 794, 68], ['archer', 789, 65], ['gobgeo', 796, 56], ['hound', 790, 44], ['hound', 797, 44], ['heavy', 796, 32]],
+  DECK: { x0: (776 + d), x1: (836 + d), floor: 20 },                                   // wall column to wall column; the deck floor is row 20 (stand 19)
+  SHAFT: [(782 + d), (805 + d)], FLOORS: [81, 69, 57, 45, 33],                         // interior columns; the floor tile row of storeys 0..4 (stand = row - 1)
+  LADDERS: [[(784 + d), 68, 80], [(803 + d), 56, 68], [(784 + d), 44, 56], [(803 + d), 32, 44]],   // [column, top row, bottom row]: the ladder through floor 1..4's stairwell
+  GAPS: [[(783 + d), (785 + d)], [(802 + d), (804 + d)], [(783 + d), (785 + d)], [(802 + d), (804 + d)]],
+  HATCH: { cols: [(792 + d), (793 + d)], ladder: [(792 + d), 19, 32] },
+  PARAPETS: { w: [(778 + d), (786 + d)], e: [(826 + d), (834 + d)], row: 16, stepW: [(787 + d), (788 + d)], stepE: [(824 + d), (825 + d)], stepRow: 18 },
+  CUPOLA: { x0: (804 + d), x1: (807 + d), solid: [17, 19], frame: [(803 + d), (808 + d), 14] },
+  BAYS: [[(779 + d), (784 + d)], [(795 + d), (800 + d)], [(811 + d), (816 + d)], [(827 + d), (832 + d)]],                  // A, B, C, D: floor spans (cols) that burn, one at a time
+  RINGS: [{ id: 'dw', x: (782 + d), y: 19 }, { id: 'de', x: (830 + d), y: 19 }, { id: 'pw', x: (782 + d), y: 15 }, { id: 'pe', x: (830 + d), y: 15 }, { id: 'cu', x: (806 + d), y: 13 },
+    { id: 'dm', x: (799 + d), y: 19, noStorm: true }, { id: 'dn', x: (811 + d), y: 19, noStorm: true }],   /* (gq3fix) two MID-DECK rings (blink exits only - the portal storm still lights the five): on a 60-column deck split by the cupola, the two end rings were 380 px from a hero in the middle, so a blink's 1.2 s opening was never in a blade's reach */
+  FOLLOW: { shrine: [(795 + d), 19], begin: (800 + d) },                               // the roof shrine at the hatch top; the fight begins when you walk past col 800
+  FOES: [['soldier', (795 + d), 80], ['javelin', (798 + d), 80], ['shield', (794 + d), 68], ['archer', (789 + d), 65], ['gobgeo', (796 + d), 56], ['hound', (790 + d), 44], ['hound', (797 + d), 44], ['heavy', (796 + d), 32]],
 };
 export function towerLay(R, { T, TS }) {
   const D = TW.DECK, A = R.arenaRoof; if (!A) return R;
@@ -49,23 +51,23 @@ export function towerLay(R, { T, TS }) {
   for (const [c, y0, y1] of TW.LADDERS) rungs(c, y0, y1);
   rungs(TW.HATCH.ladder[0], TW.HATCH.ladder[1], TW.HATCH.ladder[2]);
   // the archer's ledge in storey 1 (one-way, three rows over its floor) and a foothold for the Geomancer's storey
-  plat(787, 792, 66); (R.routeSupports).push({ x: 787, y: 66, bottom: 69, kind: 'hcpier' }, { x: 792, y: 66, bottom: 69, kind: 'hcpier' });
+  plat((787 + d), (792 + d), 66); (R.routeSupports).push({ x: (787 + d), y: 66, bottom: 69, kind: 'hcpier' }, { x: (792 + d), y: 66, bottom: 69, kind: 'hcpier' });
   for (const [t, x, y] of TW.FOES) { const o = { face: -1 }; if (t === 'gobgeo') Object.assign(o, { leash: 8, sight: 300 }); ent(t, x, y, o); }
   for (const k of [0, 1, 2, 3, 4]) { ent('torch', s0 + 3, F[k] - 1); ent('torch', s1 - 3, F[k] - 1); }
-  coins([790, 79], [800, 79], [800, 67], [790, 55], [800, 43], [790, 31], [800, 31]);
+  coins([(790 + d), 79], [(800 + d), 79], [(800 + d), 67], [(790 + d), 55], [(800 + d), 43], [(790 + d), 31], [(800 + d), 31]);
   // ---- the shrine on the deck beside the hatch top, her sign ----
   ent('check', TW.FOLLOW.shrine[0], TW.FOLLOW.shrine[1]);
-  ent('torch', 790, 19); ent('torch', 822, 19); ent('deco', 800, 19, { kind: 'banner', v: 1 }); ent('deco', 812, 19, { kind: 'banner', v: 0 });
+  ent('torch', (790 + d), 19); ent('torch', (822 + d), 19); ent('deco', (800 + d), 19, { kind: 'banner', v: 1 }); ent('deco', (812 + d), 19, { kind: 'banner', v: 0 });
   // ---- the arena (phase two) ----
-  Object.assign(A, { x0: D.x0 * TS, x1: D.x1 * TS, floor: D.floor * TS, wallL: D.x0 - 1, wallR: D.x1 + 1, exit: { x: TW.FOLLOW.begin, y: 19 }, hatches: [], stack: [C.x0, C.x1], poles: [790, 822], tower: TW, noWall: true });
+  Object.assign(A, { x0: D.x0 * TS, x1: D.x1 * TS, floor: D.floor * TS, wallL: D.x0 - 1, wallR: D.x1 + 1, exit: { x: TW.FOLLOW.begin, y: 19 }, hatches: [], stack: [C.x0, C.x1], poles: [(790 + d), (822 + d)], tower: TW, noWall: true });
   // ---- the escape table (the burning-hall climb is retired: no rafters, no roof slates, no hall portals) ----
-  const Ar = R.arena, hallPortal = { x: 748, y: 19 };   /* on the hall floor in front of the dais steps */
-  R.gqEscape = { tiers: [], supports: [], hallPortals: [], slates: null, throwers: [], tower: TW, start: { x: 790, y: F[0] - 1 }, check: { x: TW.FOLLOW.shrine[0], y: TW.FOLLOW.shrine[1] }, portal: hallPortal,
-    route: [[hallPortal.x, 19], [784, 80], [784, 68], [803, 56], [784, 44], [803, 32], [792, 20], [TW.FOLLOW.shrine[0], 19]] };
+  const Ar = R.arena, hallPortal = { x: (748 + d), y: 19 };   /* on the hall floor in front of the dais steps */
+  R.gqEscape = { tiers: [], supports: [], hallPortals: [], slates: null, throwers: [], tower: TW, start: { x: (790 + d), y: F[0] - 1 }, check: { x: TW.FOLLOW.shrine[0], y: TW.FOLLOW.shrine[1] }, portal: hallPortal,
+    route: [[hallPortal.x, 19], [(784 + d), 80], [(784 + d), 68], [(803 + d), 56], [(784 + d), 44], [(803 + d), 32], [(792 + d), 20], [TW.FOLLOW.shrine[0], 19]] };
   (R.masonry = R.masonry || []).push([s0 - 1, s1 + 1, 22, F[0]]); (R.interiors = R.interiors || []).push([s0, s1, 22, F[0] - 1, 'gq3shaft']);
   (R.calm = R.calm || []).push([s0 - 2, s1 + 2, 22, 82], [D.x0, D.x1, 0, 19]);
   ent('sign', hallPortal.x - 3, 19, { text: 'SHE HAS GONE THROUGH HER PORTAL AND THE TOWER IS ON FIRE. FOLLOW HER UP.' });
-  ent('sign', 786, 80, { text: 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });
+  ent('sign', (786 + d), 80, { text: 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });
   R.ents = R.ents.filter(e => !(e.t === 'sign' && /THE FIRE HAS TAKEN HER HALL/.test(e.text || '')));   /* the burning-hall climb's sign goes with it */
   R.gq3Tower = true;
   return R;

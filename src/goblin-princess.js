@@ -375,7 +375,7 @@ export function makeGoblinPrincessHands(ctx) {
         if (r === 'kept') { ctx.number(Tw.winch, Tw.floor - 44, 'THE GATE DROPS: GUARDS KEPT IN', '#8fd160'); sfx('gateDrop'); W.keptT = t; }
         else ctx.number(Tw.winch, Tw.floor - 40, r + ' / ' + GP.chase.crank, '#ffd36b'); }
       const ev = BW.waveTick(W, t, GP.chase.win, GP.chase.closeAfter);
-      if (ev === 'spawn') { BW.waveKinds(Tw.wave, seatN()).forEach((k, i) => ctx.spawnEnt({ t: k, x: Tw.doorCol + (i % 2 ? 1 : 0), y: Math.floor(Tw.floor / TS) - 1, face: -1 })); ctx.number(Tw.door, Tw.floor - 44, 'THE GUARDROOM IS OUT', '#ff6b6b'); sfx('gateDrop'); ctx.shake(3); }
+      if (ev === 'spawn') { BW.waveKinds(Tw.wave, seatN()).forEach((k, i) => ctx.spawnEnt({ ...(k === 'gobknight' ? { t: 'hedgeknight', cnSkin: 'gobknight' } : { t: k }), x: Tw.doorCol + (i % 2 ? 1 : 0), y: Math.floor(Tw.floor / TS) - 1, face: -1 }));   /* (claude/gq4l) 'gobknight' = THE QUEEN'S KNIGHT: the hedge knight's kit under the skin */ ctx.number(Tw.door, Tw.floor - 44, 'THE GUARDROOM IS OUT', '#ff6b6b'); sfx('gateDrop'); ctx.shake(3); }
       if (id && W.state === 'kept' && !W.counted) W.counted = true; }
   }
   /* the banquet: her Captain storms to the bell rope's sound; the grate mid-hall; the servery's winch */

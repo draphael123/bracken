@@ -16,7 +16,8 @@ import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { pacing } from './pacing.mjs';
 import { GREED } from '../src/boss-greed.js';
-import { HC2 } from '../src/highcrown2.js';
+import { HC2, HC3 } from '../src/highcrown2.js';
+import { SH_HALL } from '../src/gq4l.js';
 
 const lv = LEVELS.find(l => l.id === 'crown');
 const L = lv.build();
@@ -24,7 +25,7 @@ const at = (x, y) => L.grid[y * L.W + x];
 const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---- 1. THE CUTS ---- */
-assert.equal(L.W, 609 + 56 + 100 + 64 + 12, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609, the Goblin Queen 3 adds the tower top (56, claude/gqueen3), and HIGHCROWN 3 inserts the battlements and the bell tower (100, claude/highcrown3)');
+assert.equal(L.W, 609 + 56 + 100 + 64 + 12 + SH_HALL, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609, the Goblin Queen 3 adds the tower top (56, claude/gqueen3), and HIGHCROWN 3 inserts the battlements and the bell tower (100, claude/highcrown3)');
 assert(L.START.x >= 6 && L.START.x <= 10 && L.START.y === 63, 'the level does not start inside the gatehouse passage: ' + JSON.stringify(L.START));
 for (const t of ['hotplate', 'anvil', 'hammer', 'boiler', 'cart', 'cascade']) assert(!L.ents.some(e => e.t === t), 'a ' + t + ' is still in Highcrown: the armoury and the road were cut');
 assert(!L.ents.some(e => e.t === 'sign' && /ARMOURY|FURNACE LINE|OLD SIEGE LINES|THIS ROAD/.test(e.text || '')), 'a sign of the cut armoury or road is still standing');
@@ -99,7 +100,7 @@ const whelps = L.ents.filter(e => e.t === 'whelp');
 /* (claude/highcrown3) THE LEADS ARE GONE: the battlements that replace them have no death falls and no spikes (HCPLAN Q9), so they have no whelp. The rule stays for any whelp:
    "only where there are spikes to stomp them onto" (Daniel, 2026-09-28) - and no spikes on the battlements' walk */
 const winds = L.winds || [];
-for (let x = 523; x <= 622; x++) for (let y = 0; y <= 30; y++) assert.notEqual(at(x, y), T.SPIKE, 'a spike on the battlements at ' + x + ',' + y + ': their drops are a time cost, never a death (HCPLAN Q9)');
+for (let x = 523; x <= HC3.W3[1]; x++) for (let y = 0; y <= 30; y++) assert.notEqual(at(x, y), T.SPIKE, 'a spike on the battlements at ' + x + ',' + y + ': their drops are a time cost, never a death (HCPLAN Q9)');
 for (const w of whelps) {
   let over = false; for (let dx = -4; dx <= 4; dx++) for (let d = 1; d <= L.H; d++) { const y = w.y + d; if (y >= L.H) break;
     if (at(w.x + dx, y) === T.SPIKE && winds.some(z => w.x + dx >= z.x0 && w.x + dx <= z.x1 && Math.abs(z.row - y) <= 1)) { over = true; break; } }

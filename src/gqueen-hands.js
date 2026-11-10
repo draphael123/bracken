@@ -167,7 +167,7 @@ export function makeGQueenHands(ctx) {
     const tt = now();
     S.esc = { on: true, tower: true, inTower: false, fireOn: false, checked: !!checked, step: null, musicSet: false, graceUntil: tt + (checked ? 0 : G.flee.tell),
       volT: G.esc.fan, vol: null, beams: [], beamT: G.tower.beamFirst, fl: [0, 1, 2, 3].map(() => ({ lastOn: tt, smokeAt: 0, burning: false, tick: new Map() })),
-      q: { k: G.tower.start, x: 796 * TS + 8, hopAt: tt + G.tower.hopEvery, entry: null, flash: null } };
+      q: { k: G.tower.start, x: (E.tower.SHAFT[0] + 14) * TS + 8, hopAt: tt + G.tower.hopEvery, entry: null, flash: null } };
     for (const t0 of E.throwers || []) ctx.spawnEnt({ t: t0.t, x: t0.x, y: t0.y, face: -1 });
   }
   function gqRed(x, dmg, name, extra) { return ctx.damage(x, dmg, { unblockable: true, name, ...(extra || {}) }); }
@@ -261,7 +261,7 @@ export function makeGQueenHands(ctx) {
     ctx.setCheckpoint(E.start.x * TS + 8, (E.start.y + 1) * TS);
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7); sfx('portalOpen');
     ctx.number(P0.x, P0.y - 40, 'THE BURNING TOWER', '#ff9a5c'); ctx.hint('THE FLOORS BEHIND YOU CATCH. CLIMB. MIND THE BEAMS.');
-    esc.q.hopAt = now() + G.tower.hopEvery; esc.q.k = G.tower.start; esc.q.x = 796 * TS + 8; esc.volT = G.esc.fan;
+    esc.q.hopAt = now() + G.tower.hopEvery; esc.q.k = G.tower.start; esc.q.x = (E.tower.SHAFT[0] + 14) * TS + 8; esc.volT = G.esc.fan;
   }
   /* the portal step: the WHOLE PARTY is set down at the tower top's portal exit (seat n a step aside, as a respawn), her arena becomes the tower top's, and phase two begins (bossStart: the name card, the walls, the music) */
   function toRoof() {
