@@ -15,7 +15,7 @@
    B15: x0.45 outside an opening (x0.4 on the knight's shield), x2 in one, never untouchable. A set cannot pass its floor (it holds until the move in hand ends). */
 
 export const CS = {
-  hp: 3200, w: 14, h: 28, markH: 44, resist: 0.45, shield: 0.4, openMul: 2, openCap: 0.12, open: 3.0,
+  hp: 4400, w: 14, h: 28, markH: 44, resist: 0.45, shield: 0.4, openMul: 2, openCap: 0.12, open: 3.0,
   floors: [0.8, 0.6, 0.4, 0.2], order: ['knight', 'halberd', 'duelist', 'greatsword'], leave: 1.4, speed: { knight: 46, halberd: 40, duelist: 70, greatsword: 32 },
   knight: { thrust: { tell: 0.8, act: 0.25, dmg: 16, reach: 40, cd: 2.0 }, bash: { tell: 0.7, act: 0.45, dash: 300, dmg: 18, w: 18, cd: 4.5 } },
   halberd: { sweep: { tell: 0.7, act: 0.3, dmg: 16, reach: 72, cd: 2.6 }, chop: { tell: 1.0, act: 0.3, dmg: 22, at: 44, w: 18, cd: 4.2 } },
