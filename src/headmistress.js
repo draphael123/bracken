@@ -24,7 +24,7 @@
    the move in hand ends. Every move: its own windup pose, release pose, sound (POSE, src/headmistress-hands.js). */
 
 export const HM = {
-  hp: 3000, w: 14, h: 30, markH: 46, speed: 60,
+  hp: 2800, w: 14, h: 30, markH: 46, speed: 60,
   resist: 0.4, openMul: 2, open: 3.0, openCap: 0.12, floors: [0.7, 0.45, 0.2],
   bell: 1.6, blinkWindow: 1.5,
   shield: { n: 4, orbit: 30, regrow: 9, pass: 2 },
