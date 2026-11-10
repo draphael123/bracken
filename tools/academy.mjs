@@ -245,6 +245,6 @@ function fight({ seed = 1, swing = 40, every = 0.42, answer = true, react = 0.6 
   ok(R.t >= 60 && R.t <= 260, 'the exam runs ' + R.t.toFixed(0) + ' s for a node bot (brief: 90-150 s for a player; the tune lane sets hp at n=6)'); }
 { const R = fight({ answer: false }), n = R.S.n;
   ok(n.correct === 0, 'a bot that never uses a lesson never opens her (' + n.work + ' blows all SHOW YOUR WORK at x' + HM.resist + ')');
-  ok(!R.won || R.t > fight().t * 1.5, 'and is the slow road (never untouchable, never quick): ' + (R.won ? 'passed in ' + R.t.toFixed(0) + ' s' : (R.P.dead ? 'FAILED' : 'out of time') + ' at ' + R.t.toFixed(0) + ' s, her hp ' + Math.round(R.S && R.HD.show() ? 0 : 0))); }
+  ok(!R.won || R.t > fight().t * 1.5, 'and is the slow road (never untouchable, never quick): ' + (R.won ? 'passed in ' + R.t.toFixed(0) + ' s' : (R.P.dead ? 'FAILED' : 'out of time') + ' at ' + R.t.toFixed(0) + ' s')); }
 console.log(bad ? 'FLAG ON: ' + bad + ' FAIL(S)' : 'FLAG ON: all ok');
 process.exit(bad ? 1 : 0);

@@ -59,8 +59,8 @@ export function buildAcademy({ painter, T, TS }) {
   room('library', 'levitate', 18, 99);
   ground(18, 99, F); fill(18, 99, 0, 13, T.SOLID);                                  /* the library's ceiling: a tall hall of stacks */
   lectern(22, F - 1, 'levitate', 'library'); sign(20, F - 1, AC_SAY.library);
-  stack(27, 29, 36); stack(34, 36, 32); stack(41, 43, 28); fill(44, 56, 26, 26, T.SOLID);   /* THE STACKS, each higher, to THE READING GALLERY (a shelf off the third stack) */
-  coins([28, 35], [35, 31], [42, 27], [48, 25], [52, 25]);
+  stack(27, 29, 36); stack(34, 36, 31); stack(41, 43, 26); fill(44, 56, 26, 26, T.SOLID);   /* THE STACKS, each higher, to THE READING GALLERY (a shelf off the third stack) */
+  coins([28, 35], [35, 30], [42, 25], [48, 25], [52, 25]);
   foe('apprentice', 38, F - 1, 'libPupil', { face: -1 });
   foe('acbooks', 50, 21, 'libFlock');                                              /* THE FIRST FLOCK, over the gallery */
   sign(57, F - 1, AC_SAY.archive); well(58, 67, 'THE ARCHIVE');                     /* THE ARCHIVE PIT: float over it (or ride the reading desk) */
@@ -118,7 +118,7 @@ export function buildAcademy({ painter, T, TS }) {
   fill(250, 299, 0, 17, T.SOLID);
   ground(250, 259, B); lectern(252, B - 1, 'levitate', 'exam'); sign(250, B - 1, AC_SAY.exam);
   foe('apprentice', 256, B - 1, 'examPupil', { face: -1 });
-  fill(260, 261, 24, B - 1, T.SOLID);                                               /* QUESTION ONE: a wall to float over */
+  fill(260, 261, 24, H - 1, T.SOLID);                                               /* QUESTION ONE: a wall to float over */
   ground(262, 279, B); lectern(264, B - 1, 'blink', 'exam');
   foe('armour', 268, B - 1, 'examArmour', { face: -1 });
   rail(272, 18, B - 1);                                                             /* QUESTION TWO: a rail to blink */
