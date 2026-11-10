@@ -2844,7 +2844,7 @@ function* loadLevelG(i) {
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = []; lostBanners = [];
   flaskFinds = F2.findsIn(LEVELS[i] && LEVELS[i].id, PROG).map(f => ({ ...f, px: f.x * TS + 8, py: (f.y + 1) * TS - 6, got: false }));   /* (claude/flasks2) the hidden flask finds of this wood (src/flasks2.js FINDS) */
-  const dice0 = Math.random; Math.random = loadDice(LEVELS[i].id, 'pickups');   /* (claude/wnseed) the pickups' phases draw from the load's own stream, never the seeded one */
+  const dice0 = Math.random; if (LOAD_OWN_STREAM) Math.random = loadDice(LEVELS[i].id, 'pickups');   /* (claude/wnseed) the pickups' phases draw from the load's own stream, never the seeded one */
   try { for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
@@ -2893,8 +2893,10 @@ function applyLevelRims() {
 /* (claude/wnseed, release142 rec) LEVEL LOAD DOES NOT CONSUME THE SEEDED STREAM. Loading and spawning a level draw Math.random for phases and timers; a test that pinned Math.random
    before the load had every seeded fight shift whenever a level gained or lost an entity (puppeteer salt, combat-part2 seed, small-adds salt). The load now draws from its own
    deterministic stream (a hash of the level id), so the pinned stream is untouched by it. */
+/* (batch156 integ) OFF: with the load on its own stream every seeded fight and replay shifts (normal-health marsh/pyro seed 1919 dies, walk-controls walks 73% not 95%, boss-navigation, puppeteer salt 12, ai-companion, slopes-trace wood + kings); prod spawn phases would also stop varying per visit. Turn it on only together with a re-pin of those tools (scratch/lane-reports/wnseed.md RE-PIN LIST). */
+const LOAD_OWN_STREAM = false;
 const loadDice = (id, part) => { let h = 2166136261 >>> 0; const k = String(id) + '|load|' + part; for (let q = 0; q < k.length; q++) { h ^= k.charCodeAt(q); h = Math.imul(h, 16777619) >>> 0; } return mulberry(h); };
-function spawnEntities() { const dice0 = Math.random; Math.random = loadDice(curId() || levelIndex, 'spawn'); try { spawnEntitiesRaw(); } finally { Math.random = dice0; } }
+function spawnEntities() { const dice0 = Math.random; if (LOAD_OWN_STREAM) Math.random = loadDice(curId() || levelIndex, 'spawn'); try { spawnEntitiesRaw(); } finally { Math.random = dice0; } }
 function spawnEntitiesRaw() {
   if (PUPH) PUPH.clear();   /* THE PUPPETEER's show is made again with him (his spawn case) */
   if (LEH) LEH.clear();   /* THE LANTERN-EATER's show is made again with it (its spawn case) */
