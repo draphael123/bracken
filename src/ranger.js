@@ -1,3 +1,4 @@
+import * as DMX from './dirmoves.js';   /* (claude/dmheroes-c) DIRMOVES: her UP+X lofted shot / DOWN+X ankle shot (DM.on only) */
 import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */
 // src/ranger.js - THE RANGER'S KIT (claude/ranger 2026-10-14, scratch/brief-ranger.md: Daniel 10-12, "didn't love the Berserker" - THE RANGER is the
 // fourth free starter). A hooded woodland archer: a LONGBOW, a QUIVER of a few arrows she has to go and pick up again, and a HUNTING KNIFE for
@@ -143,6 +144,8 @@ export function makeRanger(api) {
     if (landed && a.emp && a.kind === 'pierce' && e.alive && !markOn(e)) markFoe(p, e, 'QUARRY', RG.mark.tSteady);   /* (claude/ults) a steady shot that lands marks its quarry */
     if (landed && a.great && e.alive) { if (big) { e.stagger = Math.max(e.stagger || 0, e.mini || e.maxHp ? RG.great.miniStagger : RG.great.stagger); api.poiseLean && api.poiseLean(e, 30); e.vx = 0; } else { e.stagger = Math.max(e.stagger || 0, 0.8); e.vx = Math.sign(a.vx || p.face) * 200; } api.hitstop(0.08); api.shakeCam(5, p.face * 3); }
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
+    if (landed && a.dmLoft && e.alive && api.dmPop) api.dmPop(e);   /* (claude/dmheroes-c) THE LOFTED SHOT pops a ground foe (a flier is grounded by its rise + heavy tags in hurtEnemy) */
+    if (landed && a.dmTrip && e.alive && api.dmTrip) api.dmTrip(e);   /* (claude/dmheroes-c) THE ANKLE SHOT trips (a high guard is broken by its sweep + heavy tags) */
     if (landed && a.kind === 'quick' && e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.12);
         api.sparks(a.x, a.y, Math.sign(a.vx) || 1, landed ? 4 : 6); if (a.kind === 'draw' || a.kind === 'pierce' || false) api.hitstop(0.04);
     return landed; }
@@ -230,6 +233,16 @@ export function makeRanger(api) {
     if (tier >= 2 && p.rgKneel) { const a = p.rgArrows.at(-1); if (a) a.kneel = true; }   /* (the knee's trial counts any drawn tier) */
     /* (claude/chargetiers) EACH TIER LOOSES IN ITS OWN BODY: the long shot's loose, the piercing shot's flat snap (rgLoose2), the triple shot's heavy follow-through (rgLoose3) */
     p.rgKneel = false; p.rgCd = RG.draw.rec; pose(p, tier === 2 ? 'rgLoose2' : 'rgLoose', tier >= 2 ? 0.26 : 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); if (tier >= 2 && api.SFX.rgTierLoose) api.SFX.rgTierLoose(tier); return true; }
+
+  /* ---- (claude/dmheroes-c) HER CHARGED PAIR (DM.on; main.js fireCharged hands it here once the one step is held): UP = THE LOFTED SHOT, DOWN = THE ANKLE SHOT (the kneel draw, retuned).
+     Returns true when an arrow went (the wind was paid by the caller). ---- */
+  function dmShot(p, dir) { if (!DMX.dmOn() || (dir !== 'up' && dir !== 'down') || !takeArrow(p)) return false;
+    const S = DMX.rangerShot(dir, p.face, RG.draw.vx1), up = dir === 'up';
+    const a = loose(p, { kind: S.kind, vx: S.vx, vy: S.vy, g: S.g, dmg: dmgBase() * S.mul, tag: S.tag, focus: up ? RG.sweet.rise : RG.sweet.draw, low: S.low });
+    if (up) a.dmLoft = true; else { a.dmTrip = true; a.kneel = true; }
+    p.rgKneel = false; p.rgNock = null; p.rgCd = RG.draw.rec; pose(p, up ? 'rgRise' : 'rgLoose', 0.24); api.SFX.rgLoose && api.SFX.rgLoose(2); api.noteVerb && api.noteVerb(up ? 'rise' : 'sweep');
+    api.number(p.x, p.y - 30, DMX.chargeName('ranger', dir), up ? '#dfffb0' : '#e8dcb0'); api.shakeCam(2, p.face * 2); api.zoomKick(1.03, 0.14);
+    if (!up) api.dust(p.x + p.face * 8, p.y, 3); return true; }
 
   /* ---- X, PRESSED (main.js: her X before the swing). Returns true when the press is hers (a shot is nocked or loosed); false: it is the knife ---- */
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
@@ -507,7 +520,7 @@ export function makeRanger(api) {
   const hudOf = (p, mq, rt) => { ensure(p); let lying = 0; for (const a of p.rgArrows) if ((a.state === 'lie' || a.state === 'stuck') && !a.free && !a.wild) lying++;
     return { stance: p.rgStance || 'bow', q: p.rgQ, mq, lying, refill: p.rgQ < mq ? Math.min(1, (p.rgRefT || 0) / rt) : 0 }; };   /* (a seat's plate reads the maxima her own update stored: p.rgMaxQ / p.rgRefMax) */
   const hud = () => hudOf(P(), maxQ(), refillT());
-  return { RG, distMul, greatReady, greatArrow, greatDrawing: () => !!P().rgGreat, kickHit: e => kickHit(P(), e), arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier, shaky) => release(P(), w, tier || 0, !!shaky), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
+  return { RG, distMul, greatReady, greatArrow, greatDrawing: () => !!P().rgGreat, kickHit: e => kickHit(P(), e), arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier, shaky) => release(P(), w, tier || 0, !!shaky), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()), dmShot: dir => dmShot(P(), dir),
     bashTakes, guardTakes, guardUp: () => guardUp(P()), snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };

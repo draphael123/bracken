@@ -10057,6 +10057,7 @@ function dmWindFx(dir, dt) {   /* the wind with a direction held: the tier ladde
   if (!P.dmReady && DMX.chargeReady(P.atkHeld, hero(), HEAVY_START)) { P.dmReady = true; P.dmReadyAt = time; SFX.tell(true); ringAt(P.x, P.y - 14, 14, col, 0.3); shakeCam(1.5); burst(P.x + P.face * 4, P.y - (dir === 'up' ? 30 : 4), 6, [col, '#ffffff'], 50, 0.3, dir === 'up' ? -40 : -10, 1); }
   if (Math.random() < dt * 22) parts.push({ x: P.x + P.face * 6 + (Math.random() - 0.5) * 10, y: P.y - (dir === 'up' ? 30 : 3), vx: 0, vy: dir === 'up' ? -36 : -6, life: 0.3, max: 0.3, col, size: 1, grav: -20 }); }
 function fireCharged(dir) {
+  if (isRg()) return rgCharged(dir);   /* (claude/dmheroes-c) the ranger has no melee row: her charged pair is two arrows */
   noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = false;
   if (!spend(heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
   const up = dir === 'up', mv = DMX.chargeMove(hero(), dir), c = specialCol();
@@ -10068,6 +10069,22 @@ function fireCharged(dir) {
   number(P.x, P.y - 30, DMX.chargeName(hero(), dir), '#ffd36b'); dmHeroRow(dir);
   if (up) { streaks(P.x + P.face * 8, P.y - 10, P.face, c, 140); burst(P.x + P.face * 12, P.y - 14, 12, c, 110, 0.45, -140, 2); if (isPaladin()) motes(P.x + P.face * 12, P.y - 8, 8, 8); }
   else { dust(P.x + P.face * 10, P.y, 6); dust(P.x - P.face * 10, P.y, 6); ringAt(P.x, P.y - 2, 24, c[0] || '#ffd36b', 0.3); SFX.skid(); if (isPyro()) for (let i = 0; i < 8; i++) parts.push({ x: P.x + (i - 3.5) * 9, y: P.y - 1, vx: 0, vy: -20 - Math.random() * 20, life: 0.35, max: 0.35, col: c[i % 2], size: 1, grav: -30 }); } }
+/* (claude/dmheroes-c) THE RANGER'S CHARGED PAIR: UP = LOFTED SHOT, DOWN = ANKLE SHOT (the kneel draw retuned). Costs an arrow and the heavy's wind (33 st on a 15-cost weapon); an empty quiver says so. */
+function rgCharged(dir) {
+  if (!RGK || !(P.rgQ > 0)) { SFX.clank(); number(P.x, P.y - 26, 'OUT OF ARROWS', '#9aa39a'); return; }
+  if (!spend(heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
+  noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = false;
+  if (!RGK.dmShot(dir)) SFX.clank(); }
+/* the ranger's arrows, on the foe side (the same rules as the melee launcher / slam; swingKindHit is the model) */
+function dmArrowPop(e) { if (!e || !e.alive || !DMX.dmOn()) return;
+  const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t), wing = DMX.famNameOf(FAMILY_OF, e.t) === 'wing';
+  if (wing || !can) { e.stagger = Math.max(e.stagger || 0, wing ? 0.3 : 0.25); return; }
+  const wt = DMX.launchWeight(e); e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -300 * wt; e.launchedT = time + DMX.DM.charge.launchT; e.liftImm = time + 2; DMX.onLaunch(P, e, time);
+  hitstop(0.05); number(e.x, e.y - e.h - 8, 'POPPED UP', '#dfffb0'); burst(e.x, e.y - e.h / 2, 8, ['#dfffb0', '#ffffff'], 90, 0.35, -60, 1); }
+function dmArrowTrip(e) { if (!e || !e.alive || !DMX.dmOn()) return;
+  const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t); if (!can) { e.stagger = Math.max(e.stagger || 0, 0.3); return; }
+  const hb = POISE_HEAVY.has(e.t) || e.big || DMX.famNameOf(FAMILY_OF, e.t) === 'beast'; e.broken = Math.max(e.broken || 0, DMX.tripTime(e, hb)); e.tripImm = time + 3.2; e.vx = 0; DMX.onTrip(P, time);
+  dust(e.x, e.y, 6); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); breakBeat(e); }
 /* (claude/dmheroes-b) the hero rows' world side: PYRO heat + fire line / pillar, GEOMANCER stone fist origin + slab plant, BERSERKER (the rend rides heroCut) */
 function dmHeroRow(dir) {
   const H = DMX.DM.heroes;
@@ -10077,6 +10094,9 @@ function dmHeroRow(dir) {
   else if (isGeo() && GEO) {
     if (dir === 'up') { const ox = DMX.geoStoneOrigin(GEO.stoneXs(), P.x, P.face); P.dmOx = ox; const x = ox != null ? ox : P.x + P.face * 22; GEO.fistSpike(x, P.y); if (ox != null) number(ox, P.y - 40, 'FROM THE STONE', '#e8a83a'); }
     else { P.dmPlant = { x: DMX.slabStopX(P.x, P.face), dir: P.face, at: time + H.geomancer.plantAfter }; for (let i = 0; i < 8; i++) parts.push({ x: P.x + P.face * (8 + i * 5), y: P.y - 1, vx: P.face * 70, vy: -20 - Math.random() * 25, life: 0.3, max: 0.3, col: i % 2 ? '#a8a696' : '#e8a83a', size: 1, grav: 200 }); } }
+  else if (isReaper()) {   /* (claude/dmheroes-c) GRAVE HOIST: the blade heaved up under it (the launch marks the foe, swingKindHit). BLOOD FURROW: a line of blood spikes either side, the bleed rides swingKindHit */
+    if (dir === 'down') { for (const x of DMX.furrowXs(P.x)) { dkGraves.push({ x, y: P.y, t: 0, life: 0.45, reach: 12, seed: Math.floor(Math.random() * 1e6), spike: true }); } ringAt(P.x, P.y - 2, 26, '#c0283a', 0.3); dust(P.x + 14, P.y, 4); dust(P.x - 14, P.y, 4); for (let i = 0; i < 10; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 60, y: P.y - 1, vx: 0, vy: -50 - Math.random() * 60, life: 0.4, max: 0.4, col: i % 2 ? '#c0283a' : '#7a1020', size: 1, grav: 300 }); }
+    else burst(P.x + P.face * 14, P.y - 16, 10, ['#c0283a', '#ff6b6b', '#3a0a10'], 100, 0.4, -140, 1); }
   else if (isBz()) { if (dir === 'down') dust(P.x + P.face * 18, P.y, 6); else burst(P.x + P.face * 14, P.y - 14, 8, ['#ff9a5c', '#e8dcc0'], 90, 0.35, -120, 1); }
 }
 function dmHeroTick() {   /* the slab plants its stone a beat after it stops (a foe in the cell gets a column over: plantAtX walks back toward her) */
@@ -10088,9 +10108,10 @@ function updateCharge(dt) {
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
   const quick = isPirate() && tal('quickHands'), can = !(isBz() && (P.braceT > 0 || P.pounceT > 0 || P.pounceRec > 0)) && !(isRg() && (P.rgBashT > 0 || P.rgCd > 0)) && (P.ground || P.swim || quick || (isRg() && tal('rgAirDraw'))) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing())) && !(isWarden() && wardJav);   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
+  if (keys.atk && keys.up && isRg() && P.rgCd > 0 && DMX.chargeOn('ranger') && (P.ground || P.swim) && !(P.hurt > 0) && !P.dead) { P.atkHeld = (P.atkHeld || 0) + dt; return; }   /* (claude/dmheroes-c) UP+X: the rising shot's 0.2 s lock-out is part of the wind (the UP-key jump stays suppressed, the one step lands at the same time as every hero's) */
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
-    if (DMX.chargeOn(hero()) && can && (P.ground || P.swim) && P.charge > 0) { const d = dmAim() || (P.dmAimLast && time - (P.dmAimAt || 0) < 0.07 ? P.dmAimLast : null);   /* (claude/dmcharge) the direction HELD AT RELEASE (a key let go with X in the same beat still counts) */
-      if (d) { const ok = DMX.chargeReady(P.atkHeld || 0, hero(), HEAVY_START); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; P.dmAim = null; P.dmReady = false; P.dmAimLast = null; P.rgTierWant = P.bzTierWant = P.geoTierWant = P.bkWant = 0; if (ok) fireCharged(d); else SFX.ui(); return; } }
+    if (DMX.chargeOn(hero()) && can && (P.ground || P.swim) && P.charge > 0) { const d = dmAim() || (P.dmAimLast && time - (P.dmAimAt || 0) < 0.07 ? P.dmAimLast : null), held0 = P.atkHeld || 0, charge0 = P.charge;   /* (claude/dmcharge) the direction HELD AT RELEASE (a key let go with X in the same beat still counts) */
+      if (d) { const ok = DMX.chargeReady(P.atkHeld || 0, hero(), HEAVY_START); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; P.dmAim = null; P.dmReady = false; P.dmAimLast = null; P.rgTierWant = P.bzTierWant = P.geoTierWant = P.bkWant = 0; if (ok) { fireCharged(d); return; } if (!(isRg() && d === 'down')) { SFX.ui(); return; } P.atkHeld = held0; P.charge = charge0; } }
     P.dmAim = null; P.dmReady = false;
     if (isRg()) { const dr = rgDrawing() && can; P.rgTierWant = dr ? rgTier() : 0; P.rgShakyWant = dr && rgShaky() ? 1 : 0; P.rgShown = 0; }   /* (claude/chargetiers) THE THREE-TIER DRAW: the tier the hold reached is the shot that goes (fireHeavy) */
     if (isBz()) { P.bzTierWant = can && P.charge > heavyWind() * 0.55 ? Math.max(1, bzTierNow()) : 0; P.bzShown = 0; }   /* (claude/chargetiers) THE RAGE WIND-UP: the tier it reached is the blow (fireHeavy -> bzHeavyStart) */
@@ -28704,6 +28725,7 @@ function drawBkWaves(cx, cy) { const W = BKIT.BLOOD.wave, spr = bkWaveSprites();
     g.globalAlpha = Math.min(1, 1.4 * (1 - k)); g.save(); g.translate(x, y - h + 1); g.scale(f > 0 ? 1 : -1, 1); g.drawImage(c, -4, 0, c.width, h); g.restore(); g.globalAlpha = 1; } }
 /* A BLOW OF HIS THAT LANDS RECLAIMS BLOOD DEBT (never above where he was before the hit: it fills the red segment and no more) */
 function bkReclaim(dmg, e) { if (!isReaper()) return 0; const fr = (P.bkFrenzyT || 0) > 0;
+  { const hv = DMX.hoistPay(e, time, P.maxHp); if (hv > 0) { P.bkVitIn = (P.bkVitIn || 0) + hv; number(e.x, e.y - (e.h || 16) - 14, 'VITAE', '#ff6b6b'); ringAt(e.x, e.y - (e.h || 16) / 2, 8, '#c0283a', 0.2); } }   /* (claude/dmheroes-c) GRAVE HOIST: every air hit on the heaved foe pays vitae (a few times per launch) */
   if (!(P.bd > 0)) { if (fr) { const hp0 = P.hp, h = BKIT.frenzySteal(P, dmg); if (h > 0) { bkRecPulse(hp0); bkDrinkFx(e, h); } return h; } return 0; }   /* (claude/bkblood) CRIMSON FRENZY: past the debt, a small capped lifesteal */
   const hp0 = P.hp, r = BKIT.debtReclaim(P, BKIT.reclaimOf(dmg, { bleeding: !!(e && e.bleed > 0), frenzy: fr })); if (r > 0) bkRecPulse(hp0); if (r > 0) { P.bkReclaimed = (P.bkReclaimed || 0) + r; bkDrinkFx(e, r); } return r; }
 /* (claude/bkblood) THE RALLY, LOUD: every reclaiming blow pulls a BLOOD STREAM out of the foe into him (a tether + a gush of drops that fly to him), a wet DRINK, and a big '+N' */
@@ -30225,7 +30247,7 @@ function berserkerKit(dt, canAct, tired) {
 const rgTal = () => ({ deep: tal('rgDeep'), steady: tal('rgSteady'), fletch: tal('rgFletch'), far: tal('rgFar'), bodkin: tal('rgBodkin'), twin: tal('rgTwin'), eagle: tal('rgEagle'),
   keen: tal('rgKeen'), longMark: tal('rgLongMark'), snares: tal('rgSnares'), toothed: tal('rgToothed'), trail: tal('rgTrail'), kill: tal('rgKill'), apex: tal('rgApex'),
   bashLong: tal('rgBashLong'), bashBack: tal('rgBashBack'), highFlip: tal('rgHighFlip'), softStep: tal('rgSoftStep'), airDraw: tal('rgAirDraw'), cover: tal('rgCover'), last: tal('rgLast') });
-RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
+RGK = makeRanger({ dmPop: e => dmArrowPop(e), dmTrip: e => dmArrowTrip(e), boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
   isRg: () => isRg(), tal: rgTal, spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, blockCost: d => CM.blockCost(d, tal('steady')), STAM: CM.STAM, exhaust: p => CM.exhaust(p), ST, teachGuard: () => braceLesson(),   /* (claude/heroblocksb) the bow guard's price */
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n),
@@ -31227,6 +31249,9 @@ function lowSweep() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind
 function swingKindHit(e) {
   if (e.t === 'dummy') { number(e.x, e.y - e.h - 14, P.swingKind === 'rise' ? 'LAUNCHED' : 'TRIPPED', '#ffd36b'); trialEvent(P.swingKind); return; }
   const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t);
+  if (isReaper() && P.dmCharged && DMX.dmOn() && e.alive) {   /* (claude/dmheroes-c) BLOOD KNIGHT rows: GRAVE HOIST marks the foe it heaves (its air hits pay vitae, bkReclaim); BLOOD FURROW bleeds what it trips */
+    if (P.swingKind === 'rise' && can && DMX.famNameOf(FAMILY_OF, e.t) !== 'wing') DMX.hoistMark(e, time, time + DMX.DM.charge.launchT);
+    else if (P.swingKind === 'sweep') bkBleed(e, DMX.furrowBleedOf('reaper')); }
   if (P.swingKind === 'rise') {
     const chg = !!P.dmCharged && DMX.dmOn(), chgWing = chg && DMX.famNameOf(FAMILY_OF, e.t) === 'wing';   /* (claude/dmcharge) a CHARGED launcher: any common (beast / brute too), 1.6 s, past liftImm; a flier is GROUNDED instead (the blow's tags do it) */
     if (chgWing) { e.stagger = Math.max(e.stagger || 0, 0.3); }

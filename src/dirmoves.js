@@ -41,6 +41,10 @@ export const DM = {
     pyro: { heat: 12, fireTiles: 3, fireLife: 2, geyserNear: 24, geyserFar: 52 },
     geomancer: { fistRange: 48, slabLen: 48, slabMin: 10, plantAfter: 0.3, fistW: 12 },
     berserker: { rend: 1, chopFar: 38 },
+    /* (claude/dmheroes-c) BLOOD KNIGHT: GRAVE HOIST pays vitae for air hits on the heaved foe (hp points as a fraction of his max, at most hoistPays times per launch); BLOOD FURROW bleeds what it trips + a line of blood spikes either side */
+    reaper: { hoistVitae: 0.05, hoistPays: 3, hoistGap: 0.06, furrowBleed: 2, furrowSpikes: 3, furrowGap: 14 },
+    /* RANGER: LOFTED SHOT = a steep arc (vx / vy / g), dmg x loftMul (the long shot's 1.7); the ANKLE SHOT (her kneel draw, retuned) skims the floor: vx x the full draw's top speed, nearly no drop, dmg x ankleMul, trips */
+    ranger: { loftVx: 150, loftVy: -330, loftG: 560, loftMul: 1.7, ankleVx: 1.15, ankleVy: -6, ankleG: 90, ankleMul: 1.5 },
   },
 };
 
@@ -230,7 +234,7 @@ export const famNameOf = (famOf, t) => famOf[t] || (dmOn() ? FAMILY_ADD[t] : und
 /* ==== (claude/dmcharge) ONE CHARGED GRAMMAR (plan section 5, 6): HOLD UP+X = the CHARGED LAUNCHER, HOLD DOWN+X = the CHARGED SLAM / SWEEP ====
    Ground only. The press already swung (a tap), the hold winds, the direction is read LIVE (the aim glyph) and the one HELD AT RELEASE fires.
    ONE step, no tiers: ready at HEAVY_START + DM.charge.step x the hero's scale. Let go before it = nothing more (SFX.ui). Every number is DM.charge. */
-export const CHARGE_HEROES_OFF = new Set(['ranger']);   /* her kneel draw IS hold + down: DMHEROES-C retunes it, so no directional charge for her yet */
+export const CHARGE_HEROES_OFF = new Set();   /* (claude/dmheroes-c) empty now: the ranger's kneel draw IS her charged DOWN (retuned: the ankle shot) and her UP is the lofted shot */
 export const chargeOn = heroId => dmOn() && !CHARGE_HEROES_OFF.has(heroId);
 /* the direction a held key pair asks for: UP and DOWN both held = nothing */
 export const chargeDir = (up, down) => up && !down ? 'up' : down && !up ? 'down' : null;
@@ -263,6 +267,7 @@ export function chargeBox(dir, heroId, x, y, face, atk, opt) {
 }
 export const CHARGE_NAME = {
   knight: { up: 'HEAVEN CUT', down: 'SHIELD DRIVE' }, warden: { up: 'POLE HOIST', down: 'HAMSTRING' },
+  reaper: { up: 'GRAVE HOIST', down: 'BLOOD FURROW' }, ranger: { up: 'LOFTED SHOT', down: 'ANKLE SHOT' },
   pyro: { up: 'FIRE PILLAR', down: 'FLOOR FIRE' }, geomancer: { up: 'STONE FIST', down: 'SLAB SLIDE' }, berserker: { up: 'GUT HEAVE', down: 'HAMSTRING CHOP' },
   _: { up: 'CHARGED LAUNCH', down: 'CHARGED SWEEP' },
 };
@@ -272,6 +277,8 @@ export const CHARGE_MOVE = {
   knight: { up: { vx: 40, vy: -190 }, down: { vx: 200, vy: 0 } },
   warden: { up: { vx: 20, vy: 0 }, down: { vx: 60, vy: 0 } },
   pyro: { up: { vx: 10, vy: 0 }, down: { vx: 40, vy: 0 } }, geomancer: { up: { vx: 0, vy: 0 }, down: { vx: 0, vy: 0 } }, berserker: { up: { vx: 50, vy: 0 }, down: { vx: 150, vy: 0 } },   /* (dmheroes-b) the staff stands planted; the axes lunge */
+  reaper: { up: { vx: 20, vy: 0 }, down: { vx: 70, vy: 0 } },   /* (dmheroes-c) the blade heaved from a stand; dragged a step as he furrows */
+  ranger: { up: { vx: 0, vy: 0 }, down: { vx: 0, vy: 0 } },   /* she shoots from where she stands (no melee swing) */
   _: { up: { vx: 30, vy: 0 }, down: { vx: 100, vy: 0 } },
 };
 export const chargeMove = (heroId, dir) => (CHARGE_MOVE[heroId] || CHARGE_MOVE._)[dir];
@@ -299,3 +306,24 @@ export const slabStopX = (x, face) => x + (face >= 0 ? 1 : -1) * DM.heroes.geoma
 export const fireLineXs = (x, face) => { const f = face >= 0 ? 1 : -1, n = DM.heroes.pyro.fireTiles, out = []; for (let k = 1; k <= n; k++) out.push(x + f * 16 * k); return out; };
 export const rendOnCharge = heroId => heroId === 'berserker' ? DM.heroes.berserker.rend : 0;
 export const heatOnCharge = heroId => heroId === 'pyro' ? DM.heroes.pyro.heat : 0;
+
+/* ==== (claude/dmheroes-c) THE BLOOD KNIGHT / RANGER ROWS (plan section 6) - pure rules; main.js (reaper side) and ranger.js (her shots) do the world side ====
+   BLOOD KNIGHT  UP GRAVE HOIST: the blade under and heaved (the generic launcher box); every air hit on the heaved foe pays VITAE. DOWN BLOOD FURROW: the blade dragged
+                 both sides (the generic slam), trips, bleeds what it struck, a line of blood spikes either side. The FIVE TIERS stay on the neutral hold: holding UP / DOWN
+                 FREEZES the ladder at the one step (no tier climbs, no auto-loose, never a T4/T5 debt spend) - ladderFrozen.
+   RANGER        UP LOFTED SHOT: a steep arc, anti-air (a flier is grounded by its rise + heavy tags), pops a ground foe. DOWN ANKLE SHOT (the kneel draw retuned): flat, ankle-high,
+                 trips, breaks a high guard (sweep + heavy tags). A direction held and let go BEFORE the step: UP = nothing (the rising shot already flew), DOWN = the ordinary partial draw. */
+export const ladderFrozen = (heroId, dir) => chargeOn(heroId) && !!dir;
+/* GRAVE HOIST: mark the heaved foe (until its launch ends) / pay one air hit. Returns the hp-equivalent vitae to add (0 = none). */
+export function hoistMark(e, now, until) { if (!dmOn() || !e) return; e.dmHoist = until; e.dmHoistAt = now; e.dmHoistN = 0; }
+export function hoistPay(e, now, maxHp) { const R = DM.heroes.reaper; if (!dmOn() || !e || !((e.dmHoist || 0) > now) || now - (e.dmHoistAt || 0) < R.hoistGap || (e.dmHoistN || 0) >= R.hoistPays) return 0; e.dmHoistN = (e.dmHoistN || 0) + 1; return R.hoistVitae * (maxHp || 0); }
+/* BLOOD FURROW's spikes: x of each on both sides of him */
+export const furrowXs = x => { const R = DM.heroes.reaper, out = []; for (let k = 1; k <= R.furrowSpikes; k++) out.push(x - R.furrowGap * k, x + R.furrowGap * k); return out; };
+export const furrowBleedOf = heroId => heroId === 'reaper' ? DM.heroes.reaper.furrowBleed : 0;
+/* the ranger's two shots, as arrow launch numbers (face = +1 / -1); dmg is x swordDmg (ranger.js multiplies; the full draw's top speed is passed in) */
+export function rangerShot(dir, face, fullVx) { const f = face >= 0 ? 1 : -1, R = DM.heroes.ranger;
+  return dir === 'up' ? { kind: 'lofted', vx: f * R.loftVx, vy: R.loftVy, g: R.loftG, mul: R.loftMul, tag: ['rise', 'heavy', 'shot'], low: false }
+    : { kind: 'ankle', vx: f * (fullVx || 420) * R.ankleVx, vy: R.ankleVy, g: R.ankleG, mul: R.ankleMul, tag: ['sweep', 'heavy', 'shot'], low: true }; }
+/* the peak height / flat range of a shot (px): used by the node checks and the lint of 'covers some of the room, not all' */
+export const arcApex = (vy, g) => vy * vy / (2 * g);
+export const arcRange = (vx, vy, g) => Math.abs(vx) * (2 * Math.abs(vy) / g);

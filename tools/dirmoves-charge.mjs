@@ -6,7 +6,7 @@ const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); l
 const { DM } = D; const HS = 0.14;
 // off = inert
 DM.on = false; ok(!D.chargeOn('knight') && !D.chargeOn('warden'), 'DM.on false: no directional charge');
-DM.on = true; ok(D.chargeOn('knight') && D.chargeOn('pyro') && !D.chargeOn('ranger'), 'DM.on: all but the ranger (her kneel draw is DMHEROES-C)');
+DM.on = true; ok(D.chargeOn('knight') && D.chargeOn('pyro') && D.chargeOn('ranger') && D.chargeOn('reaper'), 'DM.on: every hero (the ranger joined in DMHEROES-C: lofted shot / ankle shot)');
 // direction
 ok(D.chargeDir(true, false) === 'up' && D.chargeDir(false, true) === 'down' && D.chargeDir(false, false) === null && D.chargeDir(true, true) === null, 'direction: up / down / none / both = none');
 // ONE step, per-hero scale
