@@ -116,6 +116,7 @@ export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false, bk = fa
   const KEYS = ['throw', 'skill2', 'skill3'], P = () => BK.P; let last = -9, casts = {}, pend = -1;
   return { casts: () => casts, step() {
     const p = P(); if (!p || p.dead || (h === 'reaper' && !v2) || p.atk >= 0 || (p.dodge > 0) || !boss.alive) return;
+    if (BK.labHoldSkills) return;   /* (claude/nighthands) a night boss's hands keep the skills for the opening: outside one a blow lands at a twentieth and feeds the greed reprisal */
     const now = BK.time;
     const open = boss.open > 0, wind = !!(BK.windingUp && BK.windingUp(boss)) && !open, dx = boss.x - p.x, edge = Math.abs(dx) - (boss.w || 20) / 2;
     /* (claude/botbuilt, bot audit G1) THE GENERIC ULTIMATE HAND: any hero with an ultimate registered (src/ultimate.js) presses UP+C at a full meter, the boss in the hero's reach and not winding up (or OPEN). Counted: casts.ultTry presses, casts.ult those that spent the meter. */
