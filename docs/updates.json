@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-11-11",
+    "batch": 156,
+    "lines": [
+      { "s": "GOBLIN QUEEN reworked: a told bell-lure charge, a blink that really fires, a sealed hatch", "lv": ["crown"] },
+      { "s": "The Goblin Princess fight is tuned and her bell tower is fair to climb", "lv": ["crown"] },
+      { "s": "Highcrown fixes: no goat on the Crag Walk, the banquet hearth drawn as a real hearth", "lv": ["crown"] },
+      { "s": "The Ram Lord can now butt a boulder loose from the cliff: jump it", "lv": ["scree"] },
+      { "s": "The inn has a STORE at the bar, and a better What's New by level", "lv": ["tavern"] },
+      { "s": "Co-op partners climb tall levels better and can ping the way", "lv": [] }
+    ]
+  },
+  {
     "date": "2026-11-09",
     "batch": 155,
     "lines": [
