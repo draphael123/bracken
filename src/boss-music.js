@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { champion: 1, sealedpyramid: 1, scarabmother: 1, tombking: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { champion: 1, sealedpyramid: 1, scarabmother: 1, tombking: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1, tourneyfest: 1, tychampion: 1 };   /* (claude/tourneyart) THE TOURNEY's festival fanfare and THE CHAMPION's herald march */
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -616,6 +616,75 @@ function champion(i, delay, variant, env) {
   if (bar % 8 === 7 && s === 0) for (const n of ['D3', 'A3']) held(env, 'sawtooth', nf(n), ACM_STEP * 5, 0.03 * g, delay, { lp: 900, att: 0.12, hold: 0.7, det: 14 });   /* the war horn */
 }
 
+// ---------------------------------------------------------------- THE TOURNEY (claude/tourneyart: original in-engine tracks, Daniel 11-09)
+// 'tourneyfest'  THE TOURNEY's level: a bright festival fanfare. C major, 4/4 at 120 (eighth = 0.25 s), 16 bars = 32 s. A side drum (kick on the one and three,
+//                the stick on two and four, a roll into every fourth bar), a fife on the tune (C - G - Am - F, C - G - F - G), a brass herald's call on the first bars of each
+//                half, an oom-pah bass, and the CROWD: a swell of noise and a patter of clapping that rises under bars 3, 7, 11 and 15. The second half doubles the fife an octave
+//                up with a piccolo and adds brass stabs on the off-beats.
+// 'tychampion'   THE CHAMPION's lists: a herald-brass march. D Dorian, 4/4 at 108 (eighth = 0.278 s), 16 bars = 35.6 s: massed brass in unison on a three-note call, a
+//                marching snare, timpani, a walking bass. 'tychampion:p2' (he is on foot) is FASTER (138) and TENSER: the brass a step up with the flat second against it, a
+//                galloping kick (1, the and of 2, 3, the and of 4), the snare on every eighth, the bass pulsing, a chain rattle.
+const TF_STEP = 60 / 120 / 2, TF_LEN = 8, TF_BARSN = 16;
+const TF_TUNE = [['E5', '-', 'G5', 'E5', 'C5', '-', 'D5', 'E5'], ['D5', '-', 'G5', 'D5', 'B4', '-', 'C5', 'D5'], ['C5', '-', 'E5', 'C5', 'A4', '-', 'B4', 'C5'], ['A4', '-', 'C5', 'F5', 'E5', '-', 'D5', 'C5'],
+  ['E5', '-', 'G5', 'E5', 'C6', '-', 'B5', 'G5'], ['A5', '-', 'G5', 'F5', 'D5', '-', 'E5', 'D5'], ['A4', 'C5', 'F5', '-', 'E5', 'D5', 'C5', 'A4'], ['B4', '-', 'D5', '-', 'G5', '-', '-', '-']];
+const TF_ROOT = [['C3', 'G3', 'E3'], ['G2', 'D3', 'B2'], ['A2', 'E3', 'C3'], ['F2', 'C3', 'A2'], ['C3', 'G3', 'E3'], ['G2', 'D3', 'B2'], ['F2', 'C3', 'A2'], ['G2', 'D3', 'B2']];   // [root, fifth, third]
+const TF_CALL = [['C4', '-', 'E4', '-', 'G4', '-', '-', '-'], ['-', '-', '-', '-', '-', '-', '-', '-'], ['-', '-', '-', '-', '-', '-', '-', '-'], ['G4', '-', 'E4', 'E4', 'D4', '-', 'G3', '-']];   // bars 0-3 of each half: the herald's call, and its answer
+function tourneyfest(i, delay, variant, env) {
+  const bar = Math.floor(i / TF_LEN), s = i % TF_LEN, b = bar % 8, second = bar >= 8, g = env.gain, [root, fifth, third] = TF_ROOT[b], roll = bar % 4 === 3;
+  // THE SIDE DRUM
+  if (s === 0 || s === 4) { pluck(env, 'sine', 110, 0.2, 0.55 * g, delay, { to: 48 }); noise(env, 0.04, 0.08 * g, 260, 0.7, delay); }
+  if (s === 2 || s === 6) noise(env, 0.07, (roll && s === 6 ? 0.2 : 0.3) * g, 2600, 0.6, delay);
+  if (s === 3 || s === 7) noise(env, 0.03, 0.09 * g, 3000, 0.7, delay);                                    // the ghost stroke
+  if (roll && s >= 5) for (const d of [0.25, 0.5, 0.75]) noise(env, 0.04, 0.14 * g, 2800, 0.6, delay + TF_STEP * d);   // the roll into the next bar
+  // OOM-PAH
+  if (s === 0 || s === 4) pluck(env, 'triangle', nf(s === 0 ? root : fifth), TF_STEP * 1.6, 0.3 * g, delay, { lp: 700 });
+  if (s === 2 || s === 6) for (const n of [fifth, third]) pluck(env, 'triangle', nf(n) * 2, TF_STEP * 0.8, 0.06 * g, delay, { lp: 1500 });
+  // THE FIFE: a bright square through a lowpass, a little breath on every note; the piccolo doubles it up an octave in the second half
+  const tn = nf(TF_TUNE[b][s]);
+  if (tn) { const len = TF_STEP * (TF_TUNE[b][(s + 1) % TF_LEN] === '-' && s < TF_LEN - 1 ? 2.1 : 1.1);
+    held(env, 'square', tn, len, 0.05 * g, delay, { lp: 3200, att: 0.012, hold: 0.7, from: 0.985 }); pluck(env, 'triangle', tn * 2, len * 0.8, 0.03 * g, delay);
+    if (second) held(env, 'sine', tn * 2, len, 0.045 * g, delay, { lp: 5200, att: 0.015, hold: 0.7, from: 0.99 }); }
+  // THE HERALD'S CALL: brass, the first four bars of each half
+  const cn = b < 4 ? nf(TF_CALL[b][s]) : null;
+  if (cn) { const len = TF_STEP * (s === 4 ? 3.4 : 1.4); held(env, 'sawtooth', cn, len, 0.1 * g, delay, { lp: 2100, att: 0.02, hold: 0.6, det: 9, from: 0.95 }); held(env, 'sawtooth', cn * 1.5, len, 0.05 * g, delay, { lp: 1800, att: 0.025, hold: 0.6, from: 0.96 }); }
+  if (second && (s === 2 || s === 6) && b >= 4) for (const n of [nf(root) * 2, nf(fifth) * 2]) held(env, 'sawtooth', n, TF_STEP * 0.9, 0.04 * g, delay, { lp: 1500, att: 0.015, hold: 0.5 });   // brass stabs on the off-beats
+  // THE CROWD: a swell under the last half of every fourth bar and a patter of clapping on its top
+  if (roll && s === 0) noise(env, TF_STEP * 7.5, 0.07 * g, 1100, 0.5, delay);
+  if (roll && s === 4) noise(env, TF_STEP * 4, 0.05 * g, 1700, 0.5, delay);
+  if (roll && s >= 3) for (let k = 0; k < 3; k++) noise(env, 0.02, 0.04 * g, 3800 + ((i * 7 + k * 13) % 5) * 300, 1.2, delay + TF_STEP * (k * 0.31 + ((i + k) % 3) * 0.08));
+}
+const TC_STEP = 60 / 108 / 2, TC_STEP2 = 60 / 138 / 2, TC_LEN = 8, TC_BARSN = 16;
+const TC_BASSN = ['D2', 'D2', 'Bb1', 'C2', 'D2', 'F2', 'G2', 'A1'];
+const TC_BRASS = [['D4', '-', 'D4', 'D4', 'A4', '-', '-', '-'], ['G4', '-', 'F4', 'E4', 'D4', '-', '-', '-'], ['Bb3', '-', 'Bb3', 'Bb3', 'F4', '-', '-', '-'], ['E4', '-', 'D4', 'C4', 'D4', '-', '-', '-'],
+  ['D4', '-', 'D4', 'D4', 'A4', '-', 'C5', '-'], ['D5', '-', 'C5', 'A4', 'F4', '-', 'A4', '-'], ['G4', '-', 'Bb4', '-', 'A4', '-', 'G4', 'F4'], ['A3', '-', 'C#4', 'E4', 'A4', '-', '-', '-']];
+function tychampion(i, delay, variant, env) {
+  const p2 = variant === 'p2', bar = Math.floor(i / TC_LEN), s = i % TC_LEN, b = bar % 8, second = bar >= 8, g = env.gain, step = p2 ? TC_STEP2 : TC_STEP, root = nf(TC_BASSN[b]);
+  // DRUMS: P1 a march (kick on the one and three, the snare on two and four with its ghost); P2 a gallop (kick 1, and of 2, 3, and of 4) with the snare on every eighth
+  if (!p2) {
+    if (s === 0 || s === 4) { pluck(env, 'sine', 100, 0.26, 0.7 * g, delay, { to: 40 }); noise(env, 0.04, 0.1 * g, 240, 0.7, delay); }
+    if (s === 2 || s === 6) noise(env, 0.09, 0.34 * g, 2200, 0.6, delay);
+    if (s === 3 || s === 7) noise(env, 0.03, 0.1 * g, 2900, 0.7, delay);
+    if (s === 0 && bar % 2 === 0) pluck(env, 'sine', 76, 0.5, 0.5 * g, delay, { to: 44 });   // the timpani
+  } else {
+    if (s === 0 || s === 3 || s === 4 || s === 7) { pluck(env, 'sine', 108, 0.2, 0.7 * g, delay, { to: 40 }); noise(env, 0.04, 0.1 * g, 240, 0.7, delay); }
+    noise(env, 0.05, (s % 2 ? 0.14 : 0.3) * g, 2400, 0.6, delay);
+    if (s === 0) pluck(env, 'sine', 70, 0.45, 0.55 * g, delay, { to: 40 });
+    if (s === 2 || s === 6) { noise(env, 0.06, 0.08 * g, 4200, 3, delay); noise(env, 0.05, 0.06 * g, 6100, 4, delay + 0.04); }   // the flail chain
+  }
+  // THE BASS: P1 a root on the one and its fifth on the three; P2 pulses the root every eighth
+  if (!p2) { if (s === 0 || s === 4) pluck(env, 'triangle', s === 0 ? root : root * 1.5, step * 2.2, 0.22 * g, delay, { lp: 600 }); }
+  else pluck(env, 'triangle', root * (s % 2 ? 2 : 1), step * 0.9, 0.2 * g, delay, { lp: 700 });
+  // THE HERALDS: massed brass in unison (an octave under, detuned); P2 a tone up with the flat second leaning on the call
+  const bn = nf(TC_BRASS[b][s]);
+  if (bn) {
+    const k = p2 ? Math.pow(2, 2 / 12) : 1, len = step * (TC_BRASS[b][(s + 1) % TC_LEN] === '-' ? 2.3 : 1.2), v = (second || p2 ? 0.13 : 0.11) * g;
+    held(env, 'sawtooth', bn * k, len, v, delay, { lp: p2 ? 2800 : 2200, att: 0.02, hold: 0.65, det: 12, from: 0.95 }); held(env, 'sawtooth', bn * k * 0.5, len, v * 0.6, delay, { lp: 900, att: 0.025, hold: 0.65 });
+    if (p2 && (b === 1 || b === 5) && (s === 0 || s === 4)) held(env, 'sawtooth', bn * k * Math.pow(2, 1 / 12), len, v * 0.45, delay, { lp: 2200, att: 0.02, hold: 0.6 });   // the flat second against it
+    if (second && !p2 && s === 0) held(env, 'sawtooth', bn * 2, len, 0.05 * g, delay, { lp: 2600, att: 0.03, hold: 0.6, det: 8 });
+  }
+  if (b === 7 && s === 4) for (const n of ['D3', 'A3']) held(env, 'sawtooth', nf(n), step * 4, 0.04 * g, delay, { lp: 1100, att: 0.1, hold: 0.7, det: 10 });   // a held chord under the turn
+}
+
 export const SYNTH_BOSS = {
   champion: { step: ACM_STEP, total: ACM_LEN * ACM_BARSN, play: champion },   /* (claude/flotilla2) THE ADMIRAL'S CHAMPION */
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
@@ -635,6 +704,7 @@ export const SYNTH_BOSS = {
   drownedking: { step: DK_STEP, total: DK_LEN * DK_BARSN, play: drownedking },
   winchmaster: { step: WM_STEP, total: WM_LEN * WM_BARSN, play: winchmaster },
   gargoyle: { step: GG_STEP, total: GG_LEN * GG_BARSN, play: gargoyle },
+  tourneyfest: { step: TF_STEP, total: TF_LEN * TF_BARSN, play: tourneyfest }, tychampion: { step: TC_STEP, total: TC_LEN * TC_BARSN, play: tychampion },   /* (claude/tourneyart) THE TOURNEY's festival fanfare and THE CHAMPION's herald march */
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
@@ -648,6 +718,7 @@ export const SYNTH_VARIANT = {
   'colossus:p2': { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus }, 'colossus:p3': { step: COM_STEP3, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) its night and its dawn */
   'banditking:p2': { step: BKM_STEP2, total: BKM_LEN * BKM_BARSN, play: banditking },
   'cisternqueen:p2': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen }, 'cisternqueen:p3': { step: CQM_STEP2, total: CQM_LEN * CQM_BARSN, play: cisternqueen },
+  'tychampion:p2': { step: TC_STEP2, total: TC_LEN * TC_BARSN, play: tychampion },   /* (claude/tourneyart) the Champion on foot: faster and tenser */
   'djinn:p2': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn }, 'djinn:p3': { step: DJM_STEP2, total: DJM_LEN * DJM_BARSN, play: djinn } };   /* THE BANDIT KING's second phase: faster, the zurna an octave up */
 /* the whole track's loudness, next to a file track's 0.5 x the file's own level (audio.js trackVol) */
 export const BOSS_SYNTH_GAIN = 0.62;

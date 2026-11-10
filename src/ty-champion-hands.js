@@ -67,7 +67,7 @@ export function makeChampionHands(ctx) {
       sound: k => { const f = SOUND[k]; if (f && ctx.sfx) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake && ctx.shake(n),
       mark: (m, who) => ctx.number(who.x, who.y - TC.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       say: (k, x, y) => { const s = sayKey[k]; if (s) ctx.number(x, y - TC.markH - 8, s[0], s[1]); },
-      music: () => {},
+      music: ph => ctx.music && ctx.music(ph === 2 ? 'tychampion:p2' : 'tychampion'),   /* (claude/tourneyart) on foot: the faster, tenser voicing of his march */
       hitHero: (h, d, name, key, o = {}) => { const pp = h.pp; if (!pp || keyed(pp, key)) return; ctx.asPlayer(pp, () => { const r = ctx.damage(e.x, d, { who: e, name: 'THE CHAMPION', unblockable: !o.blockable });
         S.hurt[name] = (S.hurt[name] || 0) + d; if (o.knock && r === 'hit') { pp.vx = o.knock; pp.vy = Math.min(pp.vy || 0, -140); } }); },
       lanceHit: (boss, h) => { const pp = h.pp; if (!pp) return; const dmg = Math.round((ctx.swordDmg ? ctx.swordDmg() : 20) * (ctx.lanceK || 1.5)); ctx.asPlayer(pp, () => ctx.hurt(boss, dmg, pp.x)); },

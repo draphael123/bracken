@@ -147,7 +147,7 @@ export function buildTourney({ painter, T, TS }) {
   const solidAt = (x, y) => L.grid[y * W + x] === T.SOLID;
   const structures = runs.map(([x0, x1, y]) => { let fl = y + 1; while (fl < H - 1 && !solidAt(x0, fl)) fl++; return { x0, x1, top: y, floor: fl, kind: 'timber' }; });
   const A = TY.arena;
-  const arena = { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: G * TS, y0: 10 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'tychampion', music: 'boss2', tint: '#ffe8b0', tintA: 0.05,
+  const arena = { x0: A.x0 * TS, x1: (A.x1 + 1) * TS, floor: G * TS, y0: 10 * TS, trigger: A.trigger * TS, wallL: A.wallL, wallR: A.wallR, boss: 'tychampion', music: 'tychampion', tint: '#ffe8b0', tintA: 0.05,
     /* THE FIGHT'S GEOMETRY (src/ty-champion.js geom): the lists, the pavilion his squire runs out of, where the rival knights come in */
     pavilion: 366 * TS + 8, rivalX: 367 };
   return {
@@ -165,7 +165,7 @@ export function buildTourney({ painter, T, TS }) {
       { kind: 'tyquint', opens: 'the stable loft, the stand\'s tier, the crow\'s nest silver (its arm carries a braced hero up)', hud: TY_SAY.carried },
       { kind: 'tyhorse', opens: 'the mounted lists (the horse: trot, gallop, rein; the couched lance)', hud: TY_SAY.mounted },
     ],
-    duskStart: 99999, duskLen: 1, music: 'marketday',
+    duskStart: 99999, duskLen: 1, music: 'tourneyfest',
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: [[104, 170, 225], [214, 236, 222]], far: 'town', mid: 'town', near: 'town', nearSet: 'town', noFg: true,
       haze: 'rgba(255,240,200,0.06)', grass: '#5a9a48', grassL: '#7cc062', grassD: '#3a6a32', dirt: '#7a6040', dirtL: '#9a7c54', dirtD: '#4a3a28' },
     ambient: [{ x0: 0, x1: 99999, kind: 'town' }],

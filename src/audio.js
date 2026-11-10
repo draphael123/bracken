@@ -2314,6 +2314,7 @@ export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormhar
 MUSIC_NAMES.push('marsh', 'chieftain', 'bellcrab', 'chase', 'fenroad', 'hornetnest', 'hornetqueen', 'kitchengate', 'grubbag', 'palisadewood', 'batteringbeast', 'shrieksisters', 'rookery', 'warcairn', 'clanchief');
 MUSIC_NAMES.push('oldtusker');   /* (claude/oldtusker) OLD TUSKER's fight, Battle Theme B */   /* (claude/musicmarsh: the new Sound Test rows; 'frogking' was already listed) */
 MUSIC_NAMES.push('arenayard');   /* (claude/arenamusic) THE ARENA YARD's track */
+MUSIC_NAMES.push('tourneyfest', 'tychampion');   /* (claude/tourneyart) THE TOURNEY's festival fanfare and THE CHAMPION's herald march: original synth tracks (src/boss-music.js), no files */
 MUSIC_NAMES.push('gormglade');   /* (claude/greathound) KING GORM's glade (P2) cut */
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'mineworks', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'blaze2', 'blaze3', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar', 'towpath', 'rootway', 'court', 'palisade', 'rookery', 'litchurch', 'foothills', 'buriedcity', 'sealedpyramid'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
@@ -2424,3 +2425,4 @@ export const MUSIC_CREDITS = {
   fenroad: '"Division By Zero" — Bobjt, CC0',   /* (claude/fenmusic: CC0, credited all the same; THE FEN ROAD's level track, the "creeping orcs" version) */
   chase: '"Chase!" — Wolfgang_, CC0',   /* (claude/musicmarsh: CC0, credited all the same; the chase sequences) */
 };
+Object.assign(MUSIC_CREDITS, { tourneyfest: '"The Tourney" - BRACKEN', tychampion: '"The Heralds March" - BRACKEN' });   /* (claude/tourneyart) original synth tracks */
