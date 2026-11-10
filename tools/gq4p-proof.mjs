@@ -20,13 +20,15 @@ const PRE = `const { LEVELS } = await import('/src/level.js'); const shots = {},
 try {
   const js = part === 'pins' ? `(async () => { ${PRE}
     const rows = [];
-    for (const h of ['knight', 'pyro', 'reaper', 'pirate', 'paladin', 'geomancer', 'warden', 'berserker', 'ranger']) {
+    for (const h of ${JSON.stringify((process.env.HEROES || 'knight,pyro,reaper,pirate,paladin,geomancer,warden,berserker,ranger').split(','))}) {
       const row = { h }; try { const H = fresh(h); const F0 = H.fight(); F0.callAt = 1e9; const G = H.test.gates();
-        for (const k of ['W', 'U', 'E']) { row[k] = null;
-          for (const dx of [-1, -4, -7, 1, 4, 7]) { for (const q of Object.values(G)) { q.lock = false; q.open = true; } const pinCol = Math.floor(G[k].pinX / 16), floorRow = Math.round(BK.L.mini.floor / 16) - 1;
-            BK.tp(pinCol + dx, floorRow); run(30); BK.P.face = dx < 0 ? 1 : -1; const e = BK.boss; if (e) { e.x = G[k].pinX + 200 * (dx < 0 ? 1 : -1); }
-            for (let a = 0; a < 3 && G[k].open; a++) { BK.press('atk'); run(26); }
-            if (!G[k].open) { row[k] = dx; break; } } }
+        for (const k of ['W', 'U', 'E']) { const r = {};
+          for (const [nm, dx, press] of [['ctl', -1, false], ['adj', -1, true], ['far', -4, true]]) { for (const q of Object.values(G)) { q.lock = false; q.open = true; } const pinCol = Math.floor(G[k].pinX / 16), floorRow = Math.round(BK.L.mini.floor / 16) - 1;
+            BK.tp(pinCol + dx, floorRow); run(100); BK.P.face = 1; const e = BK.boss; if (e) { e.x = G[k].pinX + 250; e.mode = 'walk'; e.modeT = 9; } F0.callAt = 1e9;
+            if (nm === 'far' && h === 'pyro') { for (let a = 0; a < 3 && G[k].open; a++) { const K = BK.keys; K.block = true; run(45); K.block = false; run(60); } } else if (nm === 'far') { for (let a = 0; a < 90 && G[k].open; a++) { BK.press('atk'); run(1); } } else for (let a = 0; a < 3 && G[k].open; a++) { if (press) BK.press('atk'); run(26); }
+            run(120);
+            r[nm] = !G[k].open; if (nm === 'ctl' && r[nm]) { G[k].open = true; } }
+          row[k] = r; }
       } catch (err) { row.err = String(err && err.message || err); } rows.push(row); }
     info.rows = rows; return { shots, info }; })()` : `(async () => { ${PRE}
     const H = fresh('knight'); const F = H.fight(), G = H.test.gates(), e = () => BK.boss; const st = () => H.read();
