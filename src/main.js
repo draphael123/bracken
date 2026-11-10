@@ -16314,7 +16314,7 @@ const bcRetile = (x, y) => { if (!L || !L.buriedcity || !tileSpr) return; for (l
 const ul3Retile = (x, y) => { if (!L || !L.ul3 || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET || t === T.PORT) tileSpr[i] = UL3T.ul3Tile(t, xx, yy, tileAt, T, L) || tileSpr[i]; } };
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
-  MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
+  MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (L && L.academy) MG = { shots: [], shelves: [], shotsOnly: true };   /* (claude/nightwalk) the imps' shots only */ if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
   const M = L.mage;
   MG = { shelves: (M.shelves || []).map(s => ({ ...s, up: false, k: 0 })), shots: [], puddles: [], flipFx: 0, stacks: [], A: null, songT: 6, locks: (M.locks || []).map((l, i) => ({ ...l, i, lit: 0, t: 0, open: false, shown: 0, wait: false })) };
   for (const s of MG.shelves) { if (s.lock === undefined) for (let y = s.yUp; y < s.yUp + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.SOLID); }   /* (a lock's stack stands ON the floor and sinks into it: nothing is dug under it) */
@@ -16377,8 +16377,20 @@ function flipTail(dt) {
 
 }
 /* ---------- the props and the machinery, every frame ---------- */
+/* (claude/nightwalk) THE MAGE'S SHOTS, run: split out of updateMage so THE MAGE ACADEMY's imps (their 'throwTell' pushes to MG.shots; MG is the Folly's state, null elsewhere - the imp crashed the page on its first throw) fly, burn and hit. The Academy has MG = { shots, shotsOnly } and nothing else of the Folly */
+function mageShots(dt) {
+  /* THE SHOTS: the imps' fire, the turrets' orbs, the spitters' gobs, the familiar's spit. All of them the shield turns */
+  for (const s of MG.shots) { if (s.wait > 0) { s.wait -= dt; continue; } if (s.g) s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt;
+    if (s.flask) { s.spin = (s.spin || 0) + dt * 14; const onP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 4 && s.y > P.y - P.h && s.y < P.y + 2; if (onP || (s.vy > 0 && s.y >= (L.mini ? L.mini.floor : 1e9) - 2) || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS)) || s.t <= 0) breakFlask(s); continue; }   /* THE HOMUNCULUS'S FLASK breaks into a puddle, wherever it breaks */
+    if (s.fire && Math.random() < dt * 30) flame(s.x, s.y, 1, 2, 30, 2);
+    const hitP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 5 && s.y > P.y - P.h - 4 && s.y < P.y + 4, hitG = isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS));
+    if (hitP || hitG || s.t <= 0 || s.x < camX - 200 || s.x > camX + VW + 200) { s.dead = true;
+      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } if (res === 'hit' && s.owner) s.owner.trickHit = true; if (res === 'hit' && s.venom) poisonPlayer(); if (res === 'hit' && s.ember) for (const dx of [-10, 0, 10]) fires.push({ x: P.x + dx, y: Math.floor(P.y / TS) * TS, life: 1.4, delay: 0 }); }   /* (the Homunculus's pound: a wave that lands keeps its jar on) */
+      burst(s.x, s.y, 8, s.venom ? ['#4ad02a', '#d8ff98'] : s.fire ? ['#ff9a5c', '#ffd36b'] : s.gob ? ['#9a4ad0', '#e0c8ff'] : s.book ? ['#e8dcc0', '#5a2a3a', '#6a5038'] : [MVIO[2], MVIO[3]], 70, 0.4); if (s.fire) { SFX.puff(); for (const dx of (s.ember ? [-16, -8, 8, 16] : s.venom ? [] : [-8, 8])) if (hitG) fires.push({ x: s.x + dx, y: Math.floor(s.y / TS) * TS, life: 1.6, delay: 0 }); } } }
+  MG.shots = MG.shots.filter(s => !s.dead);
+}
 function updateMage(dt, hb) {
-  if (!MG || !L.mage) return;
+  if (MG && MG.shotsOnly) { mageShots(dt); return; } if (!MG || !L.mage) return;
   if (MG.flipFx > 0) MG.flipFx -= dt;
   if (P.flip && P.flipT > 0) { P.flipT -= dt; if (P.flipT <= 0) { P.flipT = 0; setFlip(false); } }   /* A BRIEF GLYPH lets go (the Witchlight Stair): he falls back down */
   if(L.fallingTower)updateDeckBreaks(L,P,dt,(x,y)=>cellSet(x,y,T.AIR),z=>{shakeCam(5);SFX.stone();burst((z.x0+z.x1+1)*8,z.row*16,20,['#726a8a','#c0b4d0'],100,.8);});
@@ -16416,15 +16428,7 @@ function updateMage(dt, hb) {
       if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 14, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); s.up = true; s.k = 0; if (!s.sunk) for (let y = s.yDown; y < s.yDown + s.h; y++) for (let x = s.x0; x <= s.x1; x++) cellSet(x, y, T.AIR); resolveTiles(); sparks(pr.x, pr.y - 6, P.face, 6); ringAt(pr.x, pr.y - 6, 20, MVIO[2], 0.4); SFX.zap(); SFX.stone(); shakeCam(3); if (s.lock !== undefined) mageHint('lockFoot', 'THE STACK SLIDES DOWN INTO THE FLOOR. THE RUNE ON ITS TOP COMES DOWN WITH IT: STRIKE IT NOW.'); else mageHint(s.slab ? 'ward' : 'rune', s.slab ? 'THE RUNE TAKES THE BLOW AND THE PAVING MOVES. THE TOWER WORKS THE SAME WAY.' : 'THE RUNE TAKES THE BLOW AND THE STACK SLIDES UP INTO ITS RECESS.'); }
       continue; }
   }
-  /* THE SHOTS: the imps' fire, the turrets' orbs, the spitters' gobs, the familiar's spit. All of them the shield turns */
-  for (const s of MG.shots) { if (s.wait > 0) { s.wait -= dt; continue; } if (s.g) s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.t -= dt;
-    if (s.flask) { s.spin = (s.spin || 0) + dt * 14; const onP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 4 && s.y > P.y - P.h && s.y < P.y + 2; if (onP || (s.vy > 0 && s.y >= (L.mini ? L.mini.floor : 1e9) - 2) || isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS)) || s.t <= 0) breakFlask(s); continue; }   /* THE HOMUNCULUS'S FLASK breaks into a puddle, wherever it breaks */
-    if (s.fire && Math.random() < dt * 30) flame(s.x, s.y, 1, 2, 30, 2);
-    const hitP = !P.dead && Math.abs(P.x - s.x) < P.w / 2 + 5 && s.y > P.y - P.h - 4 && s.y < P.y + 4, hitG = isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS));
-    if (hitP || hitG || s.t <= 0 || s.x < camX - 200 || s.x > camX + VW + 200) { s.dead = true;
-      if (hitP) { const res = damagePlayer(s.x, s.dmg); if (res === 'blocked') { sparks(s.x, s.y, -P.face, 4); } if (res === 'hit' && s.owner) s.owner.trickHit = true; if (res === 'hit' && s.venom) poisonPlayer(); if (res === 'hit' && s.ember) for (const dx of [-10, 0, 10]) fires.push({ x: P.x + dx, y: Math.floor(P.y / TS) * TS, life: 1.4, delay: 0 }); }   /* (the Homunculus's pound: a wave that lands keeps its jar on) */
-      burst(s.x, s.y, 8, s.venom ? ['#4ad02a', '#d8ff98'] : s.fire ? ['#ff9a5c', '#ffd36b'] : s.gob ? ['#9a4ad0', '#e0c8ff'] : s.book ? ['#e8dcc0', '#5a2a3a', '#6a5038'] : [MVIO[2], MVIO[3]], 70, 0.4); if (s.fire) { SFX.puff(); for (const dx of (s.ember ? [-16, -8, 8, 16] : s.venom ? [] : [-8, 8])) if (hitG) fires.push({ x: s.x + dx, y: Math.floor(s.y / TS) * TS, life: 1.6, delay: 0 }); } } }
-  MG.shots = MG.shots.filter(s => !s.dead);
+  mageShots(dt);
   for (const K of MG.locks || []) { if (K.open) continue; if (K.wait) lockReraise(K);
     if (K.t > 0) { K.t -= dt; const n = Math.ceil(K.t); if (n <= 3 && n > 0 && n !== K.shown) { K.shown = n; number(P.x, P.y - 34, String(n), MVIO[3]); SFX.charge(); } if (K.t <= 0) lockSeal(K); } }
   updatePuddles(dt);
@@ -17308,6 +17312,10 @@ function drawMageProps(cx, cy) {
       if (done) { g.drawImage(A.rune[0], x - 5 + 8, y - 22); continue; } }
     if (pr.t === 'rune') { const s = MG.shelves[pr.shelf]; if (s && s.up) continue; const c = A.rune[Math.floor(time * 2) % 2 && Math.abs(pr.x - P.x) < 120 ? 1 : 0]; g.drawImage(c, x - 5 + 8, y - 22); if (Math.abs(pr.x - P.x) < 120) fbloom(x + 8, y - 17, 8, 0.2, 'green'); continue; }
   }
+  drawMageShots(cx, cy);
+}
+/* (claude/nightwalk) THE MAGE'S SHOTS, drawn: split out of drawMageProps so THE MAGE ACADEMY's imps (which throw through MG.shots) show their fire too */
+function drawMageShots(cx, cy) { const A = ma();
   /* the shots */
   for (const s of MG.shots) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy);
     if (s.wave) { g.fillStyle = '#c8c0b8'; g.fillRect(x - 4, y - 6, 8, 6); g.fillStyle = '#9a9088'; g.fillRect(x - 6, y - 2, 12, 2); if (Math.random() < 0.5) dust(s.x, s.y + 4, 1); }
@@ -35446,7 +35454,7 @@ function drawWorld(cx, cy, showPlayer) {
   // hundred feet under the sea and on a mountain of glass.
   if (L.causeTide || (L.arena && L.arena.boss === 'kraken')) drawCauseProps(cx, cy);
   if (L.fields) drawFieldsProps(cx, cy);   /* the troughs, the poles, the thresher, the portraits' eyes */
-  if (L.mage) drawMageProps(cx, cy);   /* THE MAGE'S FOLLY: the fonts, the arches, the glyphs, the plates, the spitters, the runes and the shots */   /* the tide bells */
+  if (L.mage) drawMageProps(cx, cy); else if (MG && MG.shotsOnly) drawMageShots(cx, cy);   /* THE MAGE'S FOLLY: the fonts, the arches, the glyphs, the plates, the spitters, the runes and the shots */   /* the tide bells */
   const shKind = shrineKind();
   const shPair = shKind === 'rookery' ? [RKP.bakeShrine(false), RKP.bakeShrine(true)] : (PROP.shrineOf && PROP.shrineOf[shKind]) || PROP.shrine;
   for (const s of shrines) { if (s.broken) { g.globalAlpha = 0.5; g.drawImage(shPair[0], s.x - 10 - cx, s.y - 34 - cy); g.globalAlpha = 1; g.fillStyle = '#1b1626'; const bx = Math.round(s.x - cx), by = Math.round(s.y - cy); for (const [dx, dy, w, h] of [[-1, -30, 2, 6], [0, -24, 2, 5], [-2, -19, 2, 6], [-1, -13, 2, 5], [-8, -2, 4, 2], [5, -2, 3, 2], [9, -1, 2, 1]]) g.fillRect(bx + dx, by + dy, w, h); continue; }   /* (survival2) A BROKEN SHRINE: dark, split down the middle, rubble at its foot */
