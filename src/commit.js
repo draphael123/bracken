@@ -50,11 +50,12 @@ export function recoveryFor(h, { heavy = false, third = false, kind = null, air 
 export const swingTotal = (h, P) => artLim(!!P.heavy, h) / artRate(h, !!P.heavy) + recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });
 
 /* THE ONE PREDICATE. Committed: the swing is out, or its recovery has more than the window left. */
-export const committed = P => P.atk >= 0 || (P.atkRec || 0) > WINDOW + 1e-6;
+const winOf = P => P.dmWin || WINDOW;   /* (claude/dmcore) DM.flow.tripCancel: a tripping sweep's wider cancel window (unset = WINDOW, exactly as before) */
+export const committed = P => P.atk >= 0 || (P.atkRec || 0) > winOf(P) + 1e-6;
 export const canBreak = P => !committed(P);
 /* the same question asked one frame ahead (the press pass runs before the frame that ages the recovery) */
-export const committedNext = (P, dt) => P.atk >= 0 || (P.atkRec || 0) - dt > WINDOW + 1e-6;
-export const inRecovery = P => !(P.atk >= 0) && (P.atkRec || 0) > WINDOW + 1e-6;
+export const committedNext = (P, dt) => P.atk >= 0 || (P.atkRec || 0) - dt > winOf(P) + 1e-6;
+export const inRecovery = P => !(P.atk >= 0) && (P.atkRec || 0) > winOf(P) + 1e-6;
 /* THE DEATH KNIGHT'S WARD CUTS THE END OF A SWING (claude/dkhero, Daniel 10-06): the ward may be raised out of the last DK_WARD_CUT seconds of his swing
    (the art's tail and the recovery behind it: his recovery alone is only 0.1 s), so a Bloodknight blow is not always a hit. swingLeft = time to free. */
 export const DK_WARD_CUT = 0.25;

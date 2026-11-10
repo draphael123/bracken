@@ -75,6 +75,16 @@ async function INPUT(o) {
   { fresh(flat.x, flat.y); BK.press('dodge'); let Ld = null; for (let f = 0; f < 90; f++) { BK.sim(1); if (f > 1 && !(P.dodge > 0)) { Ld = f; break; } } out.rollLen = Ld; }
   out.rollSwing = during(() => BK.press('dodge'), () => BK.press('atk'), () => P.atk >= 0 ? 1 : 0, (out.rollLen || 20) + 6);
   out.jumpSwing = during(() => BK.press('atk'), () => BK.press('jump'), () => jumped() ? 1 : 0, Ls + 6);
+  /* DM CLASHES (claude/dmcore, DIRMOVES section 7): with DM.on, X held + an UP-key jump must NOT jump (it is a charged launcher), X held + a Z/Space jump still jumps and
+     cancels the charge, X held + DOWN must not duck (no stone skin / prayer / coil). Seat 2 is covered in node (tools/dirmoves.mjs: per-seat jumpUp / held-X state);
+     the page run below is seat 1. Run with DM.on forced for this block only. */
+  { const DMm = await import('/src/dirmoves.js'); DMm.DM.on = true;
+    const hold = () => { fresh(flat.x, flat.y); BK.press('atk'); BK.keys.atk = true; BK.sim(24); };
+    hold(); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })); BK.keys.up = true; BK.sim(4); const upJump = jumped(); BK.keys.up = false; window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp', bubbles: true })); BK.keys.atk = false; BK.sim(30);
+    hold(); BK.press('jump'); BK.sim(4); const zJump = jumped(); BK.keys.atk = false; BK.sim(30);
+    hold(); BK.keys.down = true; BK.sim(6); const duck = !!P.ducking; BK.keys.down = false; BK.keys.atk = false; BK.sim(30);
+    DMm.DM.on = false; A.clearKeys();
+    out.dmClash = { upKeyJumpWhileXHeld: upJump, zJumpWhileXHeld: zJump, duckWhileXHeld: duck, ok: !upJump && zJump && !duck }; }
   /* TURN */
   { fresh(flat.x - 8, flat.y); BK.keys.right = true; BK.sim(40); const v0 = Math.round(P.vx); BK.keys.right = false; BK.keys.left = true; let face = null, move = null;
     for (let f = 0; f < 60; f++) { BK.sim(1); if (face === null && P.face < 0) face = f; if (move === null && P.vx < 0) move = f; if (face !== null && move !== null) break; }
@@ -91,6 +101,7 @@ async function main() {
       if (r.error) { console.log(h, r.error); continue; }
       const cls = (arr, len) => arr.map(([k, s]) => k + ':' + (s === null ? 'DROP' : s === k || s === k + 1 ? 'now' : 'f' + s)).join(' ');
       console.log('== ' + h + '  coyote ' + r.coyote.frames + 'f (' + r.coyote.byK + ')  buffer ' + r.buffer.frames + 'f (' + r.buffer.byK + ')  swing ' + r.swingLen + 'f  roll ' + r.rollLen + 'f  turn ' + JSON.stringify(r.turn));
+      if (r.dmClash) console.log('  dm clashes (seat 1; DM.on): ' + JSON.stringify(r.dmClash) + (r.dmClash.ok ? ' CLEAN' : ' <-- CHECK'));
       console.log('  swing during swing: ' + cls(r.swing)); console.log('  dodge during swing: ' + cls(r.cancel)); console.log('  swing during roll:  ' + cls(r.rollSwing)); console.log('  jump during swing:  ' + cls(r.jumpSwing));
       if (pg.errors.length) console.log('  page errors: ' + pg.errors.splice(0).slice(0, 3).join(' | ').slice(0, 300)); }
     writeFileSync(join(SCRATCH, 'input.json'), JSON.stringify(rows, null, 1)); console.log('wrote ' + join(SCRATCH, 'input.json'));

@@ -27,4 +27,5 @@ export function bounce(api, kind, head) {
   const n = api.bump(); POGO_CHAIN.count++;
   if (n === POGO_CHAIN.say) { if (api.SFX.laugh) api.SFX.laugh(); api.number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); }
   api.squash(0.8, 1.25, 0.1);
+  if (api.after) api.after(kind, head);   /* (claude/dmcore) DIRMOVES flow: a plunge pogo off a head gives the air dash back (src/dirmoves.js, off while DM.on is false) */
 }

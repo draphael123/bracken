@@ -155,6 +155,7 @@ import { makeDamagePct, stunMul as DP_stun, shoveMul as DP_shove } from './damag
 import { CATCH as HC, catchVerdict, seedVerdict, shotMulFor } from './hook-catch.js';   /* (claude/heroblocksa, Daniel 10-30 21:56) THE FREEBOOTER'S HOOK CATCH: tap C is a ~0.4 s snap that blocks, catches thrown things and flings them back (scratch/brief-pyrokit-1101.md 7a) */
 import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
+import * as DMX from './dirmoves.js'; const dmS = () => ({ atkHeld: P.atkHeld || 0, charge: P.charge || 0, upKeyJump: jumpUpKey, ground: P.ground && !P.swim && !P.climb, jump: keys.jump, down: keys.down });   /* (claude/dmcore) DIRMOVES: UP launches / DOWN goes under / PLUNGE pogoes - DM.on false = off (src/dirmoves.js) */
 import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js'; import * as PLG from './plunges.js'; import { lpSign as LPSIGN, chainDraw as LPCHAIN } from './lamplit3-art.js';   /* (claude/lamplit3tune) the street's iron signs and chains */   /* (claude/plunges) the four new plunges: HAMMER OF DAWN, BOARDING, EARTHFALL, AXE SPIN */   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpGrant, rosterCatching, XP_ROSTER, xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL, xpTier, xpSoftCap, softCapMul, xpCap, LV_MAX } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
@@ -1656,8 +1657,8 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, jumpUp: jumpUpKey, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; if (DMX.dmOn()) jumpUpKey = !!o.jumpUp; };   /* (claude/dmcore) EACH SEAT'S OWN 'this jump came from an UP key': seat two's pad / partner jump no longer reads seat one's ArrowUp (DM.on only) */
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
   if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
@@ -9482,7 +9483,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (dmg > 0 && tag && !glance && e.alive && !e.harmless && !P.jetHit) { RP.landed(P, rpVerbOf(tag, rpSkillBlow())); dmg = Math.round(dmg * RP.chainMul(P)); }   /* (claude/riposte) THE MIX-UP CHAIN: a landed verb, and its pips */
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
-  if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && (e.knock > 0 || e.carried > 0) && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
+  if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && (e.knock > 0 || e.carried > 0) && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); }
+    if (DMX.dmOn() && !P.ground && !P.swim) { const ab = DMX.airBlow(e, time, { pvp: DMX.isHeroTarget(e) }); if (ab) { e.launchedT = ab.launchedT; if (ab.down) { e.kvy = Math.max(e.kvy || 0, 160); e.knock = 0; number(e.x, e.y - e.h - 14, 'KNOCKED DOWN', '#ffd36b'); } else e.vy = Math.min(e.vy || 0, 0); } } }   /* (claude/dmcore) AIR HITS HANG IT: +0.25 s each, two per launch, the third knocks it down */   /* ANY HERO: the rising cut, then the blow while it hangs */
   const finishCut = dmg>0 && !glance && !e.trainer && !e.maxHp && !e.mini && !e.elite && !FINISH_SKIP.has(e.t) && !P.jetHit && P.atk>=0 && (P.swingRiposte || (P.heavy && e.face && Math.sign(fromX-e.x)===-e.face));
   if(finishCut){if(e.rpPaidAt!==time)dmg=Math.round(dmg*COMBAT.finishMul);   /* (claude/riposte) a PARRY's riposte is paid ONCE, by the shared x2 (src/riposte.js payoff) - the finisher's x2.2 no longer stacks on it; it still finishes a low foe */
   if(e.hp-dmg<=fullHp(e)*COMBAT.finishHealth){dmg=e.hp;number(e.x,e.y-e.h-32,P.swingRiposte?'RIPOSTE':'BACKSTAB','#ffd36b');finisher(e);}}
@@ -9840,7 +9842,7 @@ function wardenVault(e) {
   P.plunge = false; P.canCut = false; P.hitSet.clear(); P.perch = 0; P.jbuf = 0;
   P.ground = false; P.onMover = null; P.coyote = 0;
   P.vy = held ? VAULT_HIGH : VAULT_LOW; P.vx = P.face * VAULT_FWD; P.vaultDir = P.face; P.vaultCarry = VAULT_CARRY; P.vaultT = 0.42;   /* up on the shaft (frame 1), and coming down off it (frame 0) */
-  if (e) e.stagger = Math.max(e.stagger || 0, 0.4);
+  if (e) { e.stagger = Math.max(e.stagger || 0, 0.4); DMX.refreshAirDash(P, true); }   /* (claude/dmcore) the vault off a head gives the air dash back */
   SFX.spearVault(); hitstop(0.03); squash(0.78, 1.28, 0.12); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 120);
   if (e) ringAt(e.x, e.y - (e.h || 8) / 2, 12, '#dff0d8', 0.2);
   pogoCount++; pogoChain++; if (pogoChain === 3) { SFX.laugh(); number(P.x, P.y - 26, 'CHAIN!', '#8fd160'); }
@@ -11428,7 +11430,7 @@ function updatePlayer(dt) {
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
   P.ducking = !!(GS > 0 && keys.down && P.ground && !move && !P.slideOn && ((isBz() && CRC && CRC.coiled()) || (!keys.left && !keys.right)) && !P.climb && !P.cling && !P.swim && !P.dead && !P.plunge && P.atk < 0 && !dodging && !stunned
-    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40 || (MCH && MCH.riding(P)))); P.crouch = P.ducking ? 1 : 0; if (isRg() && RGK) RGK.restock(dt, keys);
+    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && !(DMX.duckTwistSuspended(dmS()) && !isRg()) && (P.onMover || Math.abs(P.vx) < 40 || (MCH && MCH.riding(P)))); P.crouch = P.ducking ? 1 : 0; if (isRg() && RGK) RGK.restock(dt, keys);
   if (CRC) CRC.update(dt);   /* THE COIL, THE POUNCE and THE WHETSTONE (src/crouch-c.js, claude/berserker2): the berserker crouched, letting go, and stood still */
   if ((P.hasteT || 0) > 0) P.hasteT = Math.max(0, P.hasteT - dt);   /* A WAR CRY's haste (src/berserker.js warCry), on whoever it reached */
   if (CRH) CRH.update(dt);   /* (claude/crouchfix) the first crouch of each hero says his twist, behind any toast already up */
@@ -11600,7 +11602,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
   { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
     const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
-    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here) || (L.autoGrab && here && !P.netWas && !P.ground && P.vy > -30 && !keys.down && (!move || P.washV) && !(P.grabCD > 0)) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { SFX.ropeHaul(); P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; P.washV = 0; SFX.pStep(); }   /* (claude/hurricane2) L.autoGrab: THE RIGGING CATCHES YOU - falling INTO a line (not already in it: let go of one and you drop) with no sideways key held, or shoved by the sea, takes hold of it */
+    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here && !DMX.upGrabIgnored(dmS())) || (L.autoGrab && here && !P.netWas && !P.ground && P.vy > -30 && !keys.down && (!move || P.washV) && !(P.grabCD > 0)) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { SFX.ropeHaul(); P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; P.washV = 0; SFX.pStep(); }   /* (claude/hurricane2) L.autoGrab: THE RIGGING CATCHES YOU - falling INTO a line (not already in it: let go of one and you drop) with no sideways key held, or shoved by the sea, takes hold of it */
     P.grabCD = Math.max(0, (P.grabCD || 0) - dt); P.netWas = here;
     if (P.climb) {
       const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
@@ -11613,6 +11615,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     } }
   updateMoorWind(dt); owlDropStep(dt); if (GS > 0) updateTowerSlides(dt);
   if (P.asleep > 0) { P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }
+  DMX.tickWindow(P, time); if (P.jbuf > 0 && DMX.jumpCancelOpen(P, time, P.jbufUp)) { P.atk = -1; P.atkRec = 0; P.swingKind = null; P.heavy = false; P.dmLaunchAt = null; }   /* (claude/dmcore) A RISE THAT LAUNCHED IS JUMP-CANCELLED (the JUMP key): the swing is dropped and the jump below goes */
   const jumpHeld = CM.STAM.jumpLock && CM.committed(P) && P.jbuf > 0 ? P.jbuf : 0; if (jumpHeld) P.jbuf = 0;   /* WEIGHT (Daniel 10-02, Q5): no jump out of a commit - the press is kept for the window */
   P.kickT = Math.max(0, (P.kickT || 0) - dt);
   // (she has one jump, like anyone else: the flame kick in the air was a second one and it is gone)
@@ -11622,6 +11625,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   /* UP + ATTACK ON THE GROUND IS THE UP-SLASH, NOT A JUMP (claude/combat3): a jump asked for by an UP key on the ground waits UP_SLASH.grace for an
      attack. If one comes (or the up-slash has just begun) the jump is eaten and the attack is the slash from his feet; if none comes he jumps, a
      beat later. Z, Space, K and the pad's A jump at once, as always. */
+  if (P.jbuf > 0 && P.jbufUp && DMX.upJumpSuppressed(dmS())) { P.jbuf = 0; P.jbufUp = false; }   /* (claude/dmcore) X HELD + an UP key is a charged launcher, not a jump (the Z / Space jump still jumps) */
   if (P.jbuf > 0 && P.jbufUp && P.ground && !P.swim && !P.climb) {
     if (P.abuf > 0 || (P.atk >= 0 && P.atk < UP_SLASH.grace + 0.05 && P.swingKind === 'rise')) { P.jbuf = 0; P.jbufUp = false; }
     else if ((P.jbufUpT = (P.jbufUpT || 0) + dt) < UP_SLASH.grace) { P.jbufStash = P.jbuf; P.jbuf = 0; }
@@ -29237,7 +29241,7 @@ const FIN_API = { hero: () => hero(), number: (x, y, t, c) => number(x, y, t, c)
   kill: e => { if (!e.alive) return; e.hp = 0; hurtEnemy(e, 0, P.x, false); if (e.alive) { e.alive = false; kills++; } } };
 /* THE POGO'S WORLD (src/pogo-chain.js): the rebound is POGO's, and the chain is the one the landing resets */
 POGO_CHAIN.plunge = POGO;
-const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => number(x, y, t, c), squash: (a, b, c) => squash(a, b, c), bump: () => ++pogoChain, spare: e => { for (const b of embers) if (b.plunge) b.hit.add(e); } };
+const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => number(x, y, t, c), squash: (a, b, c) => squash(a, b, c), bump: () => ++pogoChain, after: (kind, head) => { if (kind === 'plunge' && head && DMX.refreshAirDash(P, true)) number(P.x, P.y - 34, 'AIR DASH BACK', '#bfe6f5'); }, spare: e => { for (const b of embers) if (b.plunge) b.hit.add(e); } };
 installTempo(TK, TOKENS);   /* TIGHTER, STILL TOLD (claude/combat3, src/foe-tempo.js): first on the grant, so a held wind-up adds its beat to the tightened tell */
 const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });
 const RX = installReact(TK, TOKENS, { levelId: () => curId(), depth: id => LEVEL_DEPTH[id], claim: tokenClaim, windingUp: e => windingUp(e), walker: e => tkApi.walker(e), safeStep: (x, y) => tkApi.safeStep(x, y), move: (e, dx) => moveBody(e, dx, 0, false), fall: (e, dy) => moveBody(e, 0, dy, false),
@@ -31166,13 +31170,13 @@ function swingKindHit(e) {
   if (e.t === 'dummy') { number(e.x, e.y - e.h - 14, P.swingKind === 'rise' ? 'LAUNCHED' : 'TRIPPED', '#ffd36b'); trialEvent(P.swingKind); return; }
   const can = !e.maxHp && !e.mini && !KNOCK_SKIP.has(e.t);
   if (P.swingKind === 'rise') {
-    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); trialEvent('rise'); if (!L.trial && (PROG.launchSeen || 0) < 2) { PROG.launchSeen = (PROG.launchSeen || 0) + 1; hintSay('mechanic', 4, 'LAUNCHED. WHILE IT HANGS IN THE AIR, EVERY BLOW ON IT LANDS A THIRD HARDER.'); } }
+    if (can && !(e.liftImm > time)) { const wt = POISE_HEAVY.has(e.t) || e.big ? 0.5 : 1; e.slammed = false; e.bounced = false; e.knockAir = 0; e.knock = 0.7; e.kvx = P.face * 25; e.kvy = -(isPaladin() ? 340 : 300) * wt; e.launchedT = time + 1.2; e.liftImm = time + 2; if (DMX.dmOn()) { if (DMX.isHeroTarget(e)) e.kvy = DMX.launchVy(e.kvy, true); else DMX.onLaunch(P, e, time); } hitstop(0.05); number(e.x, e.y - e.h - 8, 'LAUNCHED', '#ffd36b'); trialEvent('rise'); if (!L.trial && (PROG.launchSeen || 0) < 2) { PROG.launchSeen = (PROG.launchSeen || 0) + 1; hintSay('mechanic', 4, 'LAUNCHED. WHILE IT HANGS IN THE AIR, EVERY BLOW ON IT LANDS A THIRD HARDER.'); } }
     else e.stagger = Math.max(e.stagger || 0, 0.25);
     burst(e.x, e.y - e.h / 2, 8, specialCol(), 90, 0.35, -60, 1);
   } else if (P.swingKind === 'sweep') {
     if (CA && P.caTrip) { CA.trip(e, can); return; }   /* THE SHIELD TRIP: knocked down, or held by its weight (src/crouch-a.js) */
     if (CA && P.caPoke) { CA.poke(e); return; }   /* THE LOW POKE: a thrust, it trips nothing */
-    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); breakBeat(e); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintSay('mechanic', 4, 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'); } }   /* a second trip waits: it is an opening, not a lock */
+    if (can && !(e.tripImm > time)) { e.broken = Math.max(e.broken || 0, 1.1); e.tripImm = time + 3.2; e.vx = 0; DMX.onTrip(P, time); dust(e.x, e.y, 5); number(e.x, e.y - e.h - 8, 'TRIPPED', '#ffd36b'); breakBeat(e); trialEvent('sweep'); if (!L.trial && (PROG.tripSeen || 0) < 2) { PROG.tripSeen = (PROG.tripSeen || 0) + 1; hintSay('mechanic', 4, 'TRIPPED. HE IS DOWN A MOMENT, AND EVERY BLOW ON HIM LANDS HALF AS HARD AGAIN.'); } }   /* a second trip waits: it is an opening, not a lock */
     else e.stagger = Math.max(e.stagger || 0, 0.3);
   } }
 function swingKindTrail(k, px0) { const c = specialCol()[0];
