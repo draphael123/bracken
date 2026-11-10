@@ -272,7 +272,7 @@ import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { hasTrackFile, initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
-import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js';   /* THE ONE STORE's rules (claude/onestore) */
+import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js'; import * as C2 from './charms2.js';   /* (claude/charms2) EIGHT NEW CHARMS, dark behind CHARMS2_SHIP */   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
 import * as FC from './first-cards.js';   /* FIRST-TIME EXPLAINER + BOSS STUCK-HINT CARDS (claude/onboard2) */ import * as SCARD from './salt-card.js';   /* THE FIRST-DEATH CARD (claude/onboard1) */
@@ -709,6 +709,7 @@ const CHARMS = [
   { id: 'swift', name: 'SWIFT CHARM', price: 80, desc: 'run a little faster' },
   { id: 'ribbon', name: "RUNNER'S RIBBON", price: 90, desc: 'the medal clock runs a tenth slower for you', feat: 'medals:45', featName: 'win 45 medals' },
 ];
+CHARMS.push(...C2.rows());   /* (claude/charms2) the eight new charms: [] while CHARMS2_SHIP is false, so the shop is today's six */
 const ABILITIES = [
   { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield through them: it stuns what it hits, drops a guard, and cuts again on the way home. 25 stamina, 4s', needs: 'stockade', needsName: 'the Stockade', hero: 'knight' },
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 31 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'knight' },
@@ -909,7 +910,7 @@ const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge
 const sliceLv = lv => !DS.demoLocked(lv);
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
-const featDone = f => String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
+const featDone = f => C2.isFeat(f) ? C2.featDone(f, PROG, { heroes: HEROES.filter(k => heroOwned(k.id)).length }) : String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
 let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sprite bakes below (it used to be a plain knight here and the real hero at the end) */
 // TESTING (for now): UNLOCK EVERYTHING (SET.godmode, the old GOD MODE) owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; GOD MODE (SET.invincible, the old INVINCIBLE; claude/godmode) takes no damage, never tires, jumps in the air and holds JUMP to rise,
@@ -4960,7 +4961,7 @@ function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = her
 const highestLv = () => Math.min(LV_MAX, Math.max(0, ...PICK.map(id => levelOfXp(heroXp(id)))));
 /* THE SOFT CAP's share for this hero in this wood (1 in full; src/xp.js softCapMul) - the start hint and the plate's 1/2 or 1/5 say it */
 const softCut = () => xpWood() && !catchingUp() ? softCapMul(heroLevel(), expectedLv()) : 1;
-function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
+function gainXp(n) { n = Math.round(n); if (!(n > 0)) return; n = Math.round(n * C2.pilgrimMul(PROG.charm, heroLevel(hero()), highestLv()));   /* (claude/charms2) PILGRIM'S KNOT */
   const seatOwn = !!(passOn && players && passOn !== players[0] && passOn.prof && profStack.length);   /* (claude/coopprogress) a seat on HIS OWN save earns into it (his pass's PROG.xp is his: profIn) */
   if (passOn && players && passOn !== players[0] && !seatOwn) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
   const h = hero(), was = heroLevel(h), G = xpGrant({ n, xp: heroXp(h), level: was, wood: xpWood(), expected: expectedLv(), highestLevel: highestLv() }), paid0 = G.paid;   /* (claude/heroroster2) the larger of the wood's x3 curve catch-up (or its soft cap) and the roster's x2 below this save's best hero - never stacked */   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further; THE SOFT CAP over it (src/xp.js: E+3 half, E+6 a fifth) */
@@ -5736,6 +5737,7 @@ function drawMap() {
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
     for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
+  { const sb = C2.worn(PROG.charm) === 'salt' ? bundleOf(players[0]) : null; if (sb && sb.lv) { const sn = NODES.find(n => n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].id === sb.lv); if (sn) { g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4); dcBag(Math.round(sn.x + 8), Math.round(sn.y - 6), '#d9a441'); g.globalAlpha = 1; } } }   /* (claude/charms2) SALT CHARM: the dropped purse sits by the wood it was lost in */
   /* THE UNBURIED FIELD, A SECRET (claude/unburiedsecret): before its three banners it is a DIM UNMARKED SPOT in the hills - no path, no node, no lock, no tip, nothing to press.
      Once it is open a faint GHOST-PATH draws itself from the Witchlight Stair to it (once; PROG.fieldPathDrawn remembers) and it is a node like any spur. */
   for (const nd of NODES) { if (!nd.ghost) continue;
@@ -6191,7 +6193,7 @@ const heroFacts = k => { const sec = SC.forHero(k.id), lv = k.coinNeeds && LEVEL
 const unlockLevelRows = () => NODES.filter(n => n.kind === 'level' && n.level >= 0 && LEVELS[n.level] && !LEVELS[n.level].retired && (!LEVELS[n.level].hidden || LEVELS[n.level].secret)).map(n => { const lv = LEVELS[n.level], r = unlockReq(lv);
   return UL.levelRow(lv, r.kind === 'pieces' && r.hidden ? '? ? ?' : n.name, r, !levelLocked(lv)); });
 const unlockFeatRow = (k, tabId) => { const words = typeof k.featName === 'function' ? k.featName(PROG) : k.featName, fd = !!featDone(k.feat), done = fd || owns(STORE_TABS.find(t => t.id === tabId), k.id);
-  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd }), done, { level: UL.featLevel(k.feat) }); };
+  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd, c2: C2.isFeat(k.feat) ? C2.featProgress(k.feat, PROG, { heroes: HEROES.filter(q => heroOwned(q.id)).length }) : null }), done, { level: UL.featLevel(k.feat) }); };
 const unlockForSale = (list, tabId, what) => { const tab = STORE_TABS.find(t => t.id === tabId), free = list.filter(k => !k.feat), have = free.filter(k => k.price === 0 || owns(tab, k.id)).length;
   return UL.perk(what + ' FOR SALE', 'BUY THEM AT THE STORE, WITH GOLD OR SILVER', have + ' OF ' + free.length + ' OWNED', have >= free.length); };
 const unlockOtherRows = () => { const out = [], cl = id => !!(PROG[id] && PROG[id].cleared), lvl = heroLevel();
@@ -8481,6 +8483,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (!pvpBlow) dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   /* (claude/lategamea) THE PERMANENT MITIGATION CHAIN passes through SV.mitigationMul's soft floor (x0.6): IRON HIDE, IRON CHARM, RINGMAIL, PLATE, WARDED PLATE */
   dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 1 - 0.25 * trk('heatShield') : 1)));
+  if (C2.takeMul(PROG.charm) !== 1 && !(pct > 0)) dmg = Math.max(1, Math.round(dmg * C2.takeMul(PROG.charm)));   /* (claude/charms2) GAMBLER'S COIN: a tenth more taken (a hazard's share is not a blow) */
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
   { const cloak = tal('ashCloak'); if (cloak && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * cloak))); } // ASH CLOAK / THE SHROUD, for a moment after a roll
   if (isBz() && BZK) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * BZK.takeMul())); P.bzSur = Math.max(0, dmg - d0); }
@@ -8513,13 +8516,14 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (P.wick > 0) { P.wick = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }
   if (P.candle > 0) { P.candle = 0; number(P.x, P.y - 34, 'THE FIRE GOES OUT', '#6a7a7a'); SFX.puff(); }   /* and the Burial Caverns' candle flame (src/burial-expansion.js) */
   const dir = Math.sign(P.x - fromX) || -P.face;
-  if (noKnock || (skinR && skinR.noKnock)) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
+  if (noKnock || (skinR && skinR.noKnock) || (C2.worn(PROG.charm) === 'stone' && C2.smallBlow(dmg, P.maxHp))) { }                                          /* NO BLOW BEHIND IT: running out of air hurts where you are, it does not throw you */
   else if (armoured) { P.vx = dir * 60; }                       /* he rocks, he does not fly: the arc has to finish */
   else { const hcK = P.hcShove ? HC.shove : 1; P.hcShove = false; P.vx = P.ground ? safeKnock(dir * 150 * hcK, dx => knockLandsSafe(P.x + dx, P.y)) : dir * 150 * hcK; P.vy = up ? -230 : -170; P.ground = false; }   /* THE THROW NEVER TAKES HIM OFF A LEDGE INTO A PIT: a shorter throw, or none, when the landing is a drop, spikes or deadly water (src/juice.js safeKnock) */
   if (isPirate() && (P.rum || 0) > 0) dmg = Math.round(dmg * 1.25);   // and he feels it more
   { const hj = JUICE[takenClass(dmg)]; hitstop(hj.stop); shakeCam(hj.shake, dir * hj.kick, 'hurt'); flash = hj.flash; SFX[hj.sfx](); if (!armoured) squash(1 + hj.squash, 1 - hj.squash, 0.14); rumble(180, 0.8); }   /* THE HERO TAKING ONE: the table's hurt / hurt-heavy row, every hero the same */
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   if (!pvpBlow) number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
+  { const tw = who || updFoe; if (tw && tw.alive && !tw.maxHp && !tw.harmless && !tw.pvpSeat && C2.thornHits(PROG.charm, { who: tw, pct, geo, dist: Math.abs(tw.x - P.x) })) { if (tw.hp > C2.thornDamage()) { tw.hp -= C2.thornDamage(); tw.flash = 0.1; number(tw.x, tw.y - (tw.h || 16) - 6, '-' + C2.thornDamage(), '#8fd160'); } else hurtEnemy(tw, C2.thornDamage(), P.x, false); } }   /* (claude/charms2) THORN CHARM: the blade that landed takes one back */
   if (isPyro() && tal('emberSkin')) { const f = nearFoe(fromX); if (f) { f.burn = Math.max(f.burn || 0, 2.4 * trk('emberSkin')); flame(f.x, f.y - f.h / 2, 4, 4, 40, 2); } }
   if (P.hp <= 0 && isPyro() && (tal('phoenix') || tal('phoenixTrail')) && !P.phoenixUsed) { P.phoenixUsed = true; P.hp = Math.min(P.maxHp, Math.round(20 * trk('phoenix'))); P.inv = 2; phoenixBurst(); }
   /* (the RED TONIC drunk at once under a quarter is gone: it is a FLASK the player drinks, drinkTick - claude/survival) */
@@ -8683,7 +8687,9 @@ function teachTick(dt) {
 let dcSess = 0;   /* which start of a wood this is: coins dropped in this start go back into this start's count, older ones into the purse */
 const dcHid = b => { if (b && !Object.getOwnPropertyDescriptor(b, 'carrier')) Object.defineProperties(b, { carrier: { value: null, writable: true, enumerable: false }, sess: { value: -1, writable: true, enumerable: false }, name: { value: '', writable: true, enumerable: false }, where: { value: 'spot', writable: true, enumerable: false }, vy: { value: 0, writable: true, enumerable: false }, falling: { value: false, writable: true, enumerable: false }, chk: { value: 0, writable: true, enumerable: false } }); return b; };   /* (not enumerable: a bundle is SAVED, and a saved bundle must never hold the creature that carries it) */
 const carryOf = p => p.dcCarry || (p.dcCarry = emptyCarry());
-const dcGot = n => { carryOf(P).coins += n; };
+const qm = () => C2.sightMul(PROG.charm);   /* (claude/charms2) QUIET BOOTS: a foe's notice radius x0.7 */
+const c2Gold = {};   /* (claude/charms2) GAMBLER'S COIN's fraction, carried between pickups */
+const dcGot = n => { carryOf(P).coins += n + C2.goldExtra(PROG.charm, c2Gold, n); };
 const bundleOf = p => (p === players[0] ? (PROG.deathCost && PROG.deathCost.bundle) : p.bundle) || null;
 const dcSet = (p, b) => { if (p === players[0]) { PROG.deathCost = PROG.deathCost || freshDeathCost(); PROG.deathCost.bundle = b; } else p.bundle = b; };
 const dcOn = () => !!L && !rushOn() && !bossJumpOn && !L.trial && !L.shop && !L.openYard && !edTesting;
@@ -8780,20 +8786,24 @@ function dcTouch() {
 }
 /* THE PICTURE: a small bag, and a warm light. Over a foe's head it is the mark that says THIS ONE HAS IT; on the ground it is the bundle. */
 function dcBag(x, y, col) { g.fillStyle = '#2a1608'; g.fillRect(x - 4, y - 8, 9, 8); g.fillRect(x - 2, y - 10, 5, 3); g.fillStyle = col; g.fillRect(x - 3, y - 7, 7, 6); g.fillRect(x - 1, y - 9, 3, 2); g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - 5, 2, 2); }
+/* (claude/charms2) SALT CHARM: the purse off the screen is a bag and an arrow on the edge it lies past */
+function saltEdge(sx, sy) { if (C2.worn(PROG.charm) !== 'salt') return; const left = sx < 0, x = left ? 12 : VW - 12, y = Math.max(16, Math.min(VH - 16, Math.round(sy))), a = 0.6 + 0.3 * Math.sin(time * 5);
+  g.globalAlpha = a; dcBag(x, y, '#d9a441'); g.fillStyle = '#ffd36b'; for (let i = 0; i < 3; i++) g.fillRect(left ? 2 + i : VW - 3 - i, y - 3 - i, 1, 3 + 2 * i); g.globalAlpha = 1; }
 const dcDraws = { foe: 0, spot: 0 };   /* what the last frames drew (tools/death-cost.mjs asks that a carrier is MARKED, not just flagged) */
 function drawBundles(cx, cy) {
   if (!players) return;
   for (const p of players) { const b = bundleOf(p); if (!dcMine(b, p)) continue;
     const col = p === players[0] ? '#d9a441' : '#4fb3c9', kind = p === players[0] ? 'gold' : 'cool', pulse = 0.5 + 0.18 * Math.sin(time * 5);
     if (b.mode === 'foe') { const e = b.carrier; if (!e || !e.alive) continue; const sx = e.x - cx, sy = e.y - cy - (e.h || 16) / 2;
-      if (sx < -30 || sx > VW + 30) continue; dcDraws.foe++; fbloom(sx, sy, Math.max(16, (e.w || 14) * 1.3), pulse, kind); dcBag(Math.round(sx), Math.round(e.y - cy - (e.h || 16) - 4 + Math.sin(time * 4) * 1.5), col); }
-    else { const sx = b.x - cx, sy = b.y - cy; if (sx < -30 || sx > VW + 30) continue; dcDraws.spot++; fbloom(sx, sy - 6, 14, pulse, kind); dcBag(Math.round(sx), Math.round(sy + Math.sin(time * 3) * 1), col); } }
+      if (sx < -30 || sx > VW + 30) { if (p === players[0]) saltEdge(sx, sy); continue; } dcDraws.foe++; fbloom(sx, sy, Math.max(16, (e.w || 14) * 1.3), pulse, kind); dcBag(Math.round(sx), Math.round(e.y - cy - (e.h || 16) - 4 + Math.sin(time * 4) * 1.5), col); }
+    else { const sx = b.x - cx, sy = b.y - cy; if (sx < -30 || sx > VW + 30) { if (p === players[0]) saltEdge(sx, sy); continue; } dcDraws.spot++; fbloom(sx, sy - 6, p === players[0] && C2.worn(PROG.charm) === 'salt' ? 24 : 14, pulse, kind); dcBag(Math.round(sx), Math.round(sy + Math.sin(time * 3) * 1), col); } }
 }
 /* ==== end of THE DEATH COST ==== */
 /* A RESPAWN PUTS THE ROOM BACK: every creature is a new one, so a bundle a foe was carrying is handed to the same placed foe (its key) in the new room */
 function dcRespawn() { for (const q of players) q.dcDone = false; P.dcSafe = null; P.dcGT = 0; for (const q of players) { const b = dcHid(bundleOf(q)); if (b && b.mode === 'foe') b.carrier = null; } dcTick(0); }
 function die(killer) {
   if (P.dead) return;
+  C2.noteDeath(PROG);   /* (claude/charms2) the count behind SALT CHARM's feat: nothing is written while CHARMS2_SHIP is false */
   if (window.BK && BK.hitLog) BK.hitLog.push([Math.round(time * 10) / 10, 'DIED', killer && killer.name || '?', Math.round(P.hp), 0]);   /* (claude/marsh2) the lab's hit log names what killed him */
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
   if (DUELO && DUELO.on()) { if (!(P.down > 0)) goDown(killer); return; }   /* (claude/pvpduel) NOBODY DIES IN THE DUEL PIT: a K.O. lies down until the round is called - no shrine, no death cost */
@@ -9725,6 +9735,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
   if (e.fa === 'shielded' && e.faShell > 0 && blow && dmg > 0 && !glance && !P.jetHit) dmg = FOA.shellTake(e, dmg, amV, e.keyHit === time, FA_API);   /* (claude/foepass) THE SHELL: x0.4 into it (never immune), a heavy / plunge / riposte / ability / the right tool shatters it (src/foe-affix.js) */
+  if (blow && dmg > 0 && !glance && !P.jetHit && C2.worn(PROG.charm) === 'hound') { const hm = C2.houndMul(PROG.charm, e); e.c2Bit = true; if (hm !== 1) { dmg = Math.round(dmg * hm); number(e.x, e.y - (e.h || 16) - 8, 'FIRST BITE', '#ffd36b'); } }   /* (claude/charms2) HOUND'S TOOTH */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy) * DFM.df('stagger');   /* (claude/difficulty) x the mode's stagger */   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
@@ -21881,8 +21892,13 @@ function wallsStep(dt) {
     const [cx0, cy0] = wallCentre(w, TS), col = w.colour || ['#3a3a42', '#9aa0ac', '#eef0f6'];
     sparks(cx0, cy0, P.face, 6); burst(cx0, cy0, 6, [col[1], col[2]], 65, 0.35);
     if (w.hits >= wallHits(w)) breakWall(w); }
+  if (C2.worn(PROG.charm) === 'lantern' && !P.dead) for (const w of WS) { if (w.broken) continue;   /* (claude/charms2) LANTERN CHARM: a glint on every wall within six tiles, secret or not */
+    const r = wallRect(w, TS), [wx, wy] = wallCentre(w, TS); if (!C2.lanternNear(PROG.charm, wx - P.x, wy - P.y, TS)) continue;
+    w.glintT = (w.glintT || 0) - dt; if (w.glintT > 0) continue; w.glintT = 0.45 + Math.random() * 0.6;
+    parts.push({ x: r.l + Math.random() * (r.r - r.l), y: r.t + Math.random() * (r.b - r.t), vx: 0, vy: -6, life: 0.55, max: 0.55, col: '#fff6c8', size: 1, grav: 0 }); }
 }
 function breakWall(w) {
+  if (w.kind === 'secret') C2.noteSecret(PROG, curId() + ':' + w.x0 + ',' + w.y0);   /* (claude/charms2) the count behind LANTERN CHARM's feat */
   w.broken = true; SFX.stone(); shakeCam(2); hitstop(0.03);
   const [cx0, cy0] = wallCentre(w, TS), col = w.colour || ['#3a3a42', '#9aa0ac', '#eef0f6'];
   burst(cx0, cy0, 16, [col[1], col[2], '#fff6e0'], 100, 0.6);
@@ -29820,7 +29836,7 @@ function updateEnemies(dt) {
         e.zzT = 1.4; if (SFX.snore) SFX.snore(); else SFX.puff();
         noiseAt(e.x, e.y - 6, 34, null);           /* it is asleep, not silent - the village breathes too */ }
       e.zzT = Math.max(0, (e.zzT || 0) - dt);
-      if (!P.dead && Math.abs(P.x - e.x) < 26 && Math.abs(P.y - e.y) < 22 && !(L.hush && HUH && HUH.behind(e) && Math.abs(P.x - e.x) > 6)) { e.woke = 1; e.sleeper = false; e.emote = 'shock'; e.emoteT = 0.7; SFX.foeGasp && SFX.foeGasp(e.t); }
+      if (!P.dead && Math.abs(P.x - e.x) < 26 * qm() && Math.abs(P.y - e.y) < 22 && !(L.hush && HUH && HUH.behind(e) && Math.abs(P.x - e.x) > 6)) { e.woke = 1; e.sleeper = false; e.emote = 'shock'; e.emoteT = 0.7; SFX.foeGasp && SFX.foeGasp(e.t); }
       continue; }
     if (e.sleeper === false && e.woke === 1 && e.mode === undefined) e.woke = 2;
     if (e.sleeper === true && e.zzT > 0 && Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 6, y: e.y - e.h - 2, vx: (Math.random() - 0.5) * 8, vy: -16, life: 0.9, max: 0.9, col: '#c9d1dc', size: 1, grav: -4 });
@@ -29875,7 +29891,7 @@ function updateEnemies(dt) {
     if (e.t === 'harpy' || e.t === 'shrieker' || e.t === 'galeharpy') { updateHarpy(e, dt); continue; }
     if (e.t === 'goat') { updateGoat(e, dt); continue; }
     if (e.t === 'drone') { // drifts at you and bursts
-      const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 && Math.abs(e.y - P.y) < 120 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 * qm() && Math.abs(e.y - P.y) < 120 && !P.dead;
       /* (claude/sporewood2) TOLD: it SWELLS before it bursts (a red !!, 0.55 s, it stops and puffs up) - step out of its reach; it bursts where it hangs (the old drone burst the frame it touched you, with no tell: tools/answer-tags.mjs) */
       /* (claude/sporewood2tune) THE DRONE'S TOLD ATTACK: within a few tiles it RISES AND DRAWS BACK (puffTell, a yellow !, 0.5 s: it swells, flashes white and floats AWAY from you), then LUNGES along the line it drew (puff, 0.3 s, flat out) and pops where it lands. A shield turns the lunge (the foe pass: parry); a step out of the line, a jump or a roll lets it go by - and it then swells where it hangs (the red !! below) */
       if (e.mode === 'puffTell') { e.modeT -= dt; e.swell = Math.min(1, (e.swell || 0) + dt / 0.5); e.x -= (e.lx || 0) * 12 * dt; e.y -= (e.ly || 0) * 10 * dt; if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - 4, vx: 0, vy: -14, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: -6 });
@@ -29888,7 +29904,7 @@ function updateEnemies(dt) {
       continue;
     }
     if (e.t === 'spitcap') { // ROOTED. It swells, and what it lobs bursts into sleep where it lands: move, or be in the cloud.
-      const d = P.x - e.x, ad = Math.abs(d), near = ad > 24 && ad < 240 && Math.abs(P.y - e.y) < 100 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = ad > 24 && ad < 240 * qm() && Math.abs(P.y - e.y) < 100 && !P.dead;
       e.modeT -= dt; if (near) e.face = Math.sign(d) || e.face;
       /* (the combat pass, part 2: THE SWELL WEARS THE RED !!. A shield stops the spore, and the cloud comes up where it stopped all the
          same - there is nothing here for a shield to do. Get out from under the arc) */
@@ -29935,7 +29951,7 @@ function updateEnemies(dt) {
       continue;
     }
     if (e.t === 'shaman') { // walks slowly, raises sporelings; blinks away when struck
-      const d = P.x - e.x, ad = Math.abs(d), near = ad < 220 && Math.abs(e.y - P.y) < 60 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = ad < 220 * qm() && Math.abs(e.y - P.y) < 60 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.timer -= dt; e.cast = Math.max(0, e.cast - dt);
       let want = 0; if (near) { e.face = Math.sign(d) || e.face; want = ad > 90 ? e.face * e.speed : ad < 50 ? -e.face * e.speed : 0; }
       const spawned = enemies.filter(g => g.alive && g.t === 'sporeling' && g.raised).length;
@@ -29949,7 +29965,7 @@ function updateEnemies(dt) {
     }
     if (e.t === 'sprig' && e.ringer && e.bell) { const b = props.find(p => p.t === 'bell' && Math.abs(p.x - e.bell) < 6); if (b && !b.rung && !b.broken && !P.dead && Math.abs(P.x - e.x) < 200) { e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; const dx = b.x - e.x; e.face = Math.sign(dx) || e.face; e.vx += (e.face * 60 - e.vx) * Math.min(1, dt * 8); if (Math.abs(dx) < 8) { b.ringT += dt; if (!e.said) { e.said = true; number(e.x, e.y - 18, 'THE BELL!', '#ff6b6b'); } if (b.ringT > 1.0) ringBell(b); e.vx = 0; } const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0; continue; } }
     if (e.t === 'sapper') { // runs at you with a lit bomb, drops it at your feet, and runs
-      const d = P.x - e.x, ad = Math.abs(d), near = ad < 220 && Math.abs(e.y - P.y) < 60 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = ad < 220 * qm() && Math.abs(e.y - P.y) < 60 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270;
       let want = 0;
       if (e.dynCd > 0) e.dynCd -= dt;
@@ -29981,7 +29997,7 @@ function updateEnemies(dt) {
         if (e.flash > 0 || e.stagger > 0 || (!P.dead && Math.abs(P.x - e.x) < 34 && Math.abs(P.y - e.y) < 30)) { e.held = false; SFX.bark(); number(e.x, e.y - 14, 'UP', '#ffd36b'); }
         continue; }
       if (!P.dead && Math.abs(e.x - P.x) < 130 && Math.abs(e.y - P.y) < 40) { e.barkT = (e.barkT || 0) - dt; if (e.barkT <= 0) { e.barkT = 1.4 + Math.random() * 1.2; SFX.bark(); } } // straight-line chaser, leaps low at the last stride, won't cross fire
-      let d = P.x - e.x, ad = Math.abs(d), near = ad < 240 && Math.abs(e.y - P.y) < 50 && !P.dead;
+      let d = P.x - e.x, ad = Math.abs(d), near = ad < 240 * qm() && Math.abs(e.y - P.y) < 50 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 300) e.vy = 300; e.timer -= dt;
       let want = 0;
       if (e.turncoat) { // hunts the Hound Master's mount, bites, and backs off to come again
@@ -30035,7 +30051,7 @@ function updateEnemies(dt) {
     if (e.t === 'wwthief') { if (WWH) WWH.thief(e, dt); continue; }   /* (claude/wispwood) A WISP THIEF: drifts, swoops (told), steals your flame and flees with it (src/wispwood-hands.js) */
     if (e.t === 'acbooks') { if (ACH) ACH.flock(e, dt); continue; }   /* (claude/academy) A SPELLBOOK FLOCK: wheels, a told GATHER, the STREAM; a block scatters it (src/academy-hands.js) */
     if (e.t === 'brute') { // slow, heavy: an unblockable overhead you dodge, a blockable sweep
-      const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 && Math.abs(e.y - P.y) < 40 && !P.dead;
+      const d = P.x - e.x, ad = Math.abs(d), near = ad < 200 * qm() && Math.abs(e.y - P.y) < 40 && !P.dead;
       e.vy += 1000 * dt; if (e.vy > 270) e.vy = 270; e.modeT -= dt;
       let want = 0;
       if (e.mode === 'walk') { if (near && e.stagger <= 0) { e.face = Math.sign(d) || e.face; want = ad > 26 ? e.face * e.speed : 0;
@@ -30080,7 +30096,7 @@ function updateEnemies(dt) {
         if (e.hornT > HORN_DRAW) hornSounds(e);
         } else if (e.horn && !e.rafters && !e.blown && !e.exam) e.hornT = Math.max(0, e.hornT - dt * (e.stagger > 0 ? 3 : 1));
       if (e.exam && e.examOn && !e.blown) { e.draw = 0; e.timer = Math.max(e.timer, 0.6); }   /* (claude/stockade2) an exam blower winding does not shoot: src/stockade-hands.js winds him */
-      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < (e.sight || 230) && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : e.bandit ? 150 : 70)) && !P.dead && !(e.trialSt && e.trialSt.done) && !(e.fogSight && !CNH.litAt(CANAL, P.x, P.y - 8)) && !(e.tpSight && TPH && TPH.on() && !TPH.seen(e, P));   /* (THE FOG CANAL, e.fogSight: in the fog he sees only a lit hero) */   /* a trial's archer puts the bow down when his gate is up */
+      const d = P.x - e.x, ad = Math.abs(d), near = (e.bowman ? ad < 900 && Math.abs(e.y - P.y) < 120 : ad < (e.sight || 230) * qm() && Math.abs(e.y - P.y) < (e.juggler ? FK.JUGGLER.dy : e.bandit ? 150 : 70)) && !P.dead && !(e.trialSt && e.trialSt.done) && !(e.fogSight && !CNH.litAt(CANAL, P.x, P.y - 8)) && !(e.tpSight && TPH && TPH.on() && !TPH.seen(e, P));   /* (THE FOG CANAL, e.fogSight: in the fog he sees only a lit hero) */   /* a trial's archer puts the bow down when his gate is up */
       const watched = e.juggler && fairWatched(e); e.juggling = watched; if (watched && e.draw > 0) { e.draw = 0; e.timer = Math.max(e.timer, FK.JUGGLER.rethrow); }   /* (claude/fairfix3) THE KNIFE JUGGLER KEEPS THE FAIR'S RULE: looked at, he juggles (a draw in hand goes back up into the air); at a turned back he throws */
       if (near) e.face = Math.sign(d) || e.face;
       if (e.fv) FVR.tell(e, FVC(), dt); e.timer -= dt; e.draw = Math.max(0, e.draw - dt); e.loose = Math.max(0, (e.loose || 0) - dt); e.ordered = Math.max(0, (e.ordered || 0) - dt);   /* (claude/palisadefoe) THE HORNSMAN's order: a hurried beat while it lasts */

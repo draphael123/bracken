@@ -1951,6 +1951,15 @@ export function bakeCharms() {
     feather: mk(g => { fillPoly(g, [[8, 0], [2, 6], [1, 11], [6, 6]], '#c9d1dc'); fillPoly(g, [[8, 0], [4, 5], [3, 9]], '#e8ecf4'); rect(g, 1, 10, 2, 2, '#7c8797'); }),
     heart: mk(g => { rect(g, 1, 3, 3, 3, '#e04848'); rect(g, 6, 3, 3, 3, '#e04848'); rect(g, 1, 5, 8, 3, '#e04848'); rect(g, 2, 8, 6, 2, '#e04848'); rect(g, 4, 10, 2, 1, '#e04848'); px(g, 2, 4, '#ff9a9a'); }),
     swift: mk(g => { rect(g, 1, 2, 7, 2, '#8fd160'); rect(g, 3, 5, 6, 2, '#8fd160'); rect(g, 1, 8, 8, 2, '#8fd160'); px(g, 8, 2, '#dfffa0'); px(g, 9, 8, '#dfffa0'); }),
+    /* (claude/charms2) the eight new charms, 10x12 like the six above: same flat fills, one highlight pixel, the outline pass */
+    thorn: mk(g => { rect(g, 4, 0, 2, 12, '#3f7a48'); rect(g, 4, 0, 1, 12, '#57964f'); for (const y of [2, 6, 9]) { px(g, 2, y, '#dfffa0'); px(g, 3, y, '#8fd160'); px(g, 6, y + 1, '#8fd160'); px(g, 7, y + 1, '#dfffa0'); } }),
+    stone: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#8b8378', '#5f5a52'); px(g, 3, 5, '#c9d1dc'); px(g, 4, 5, '#c9d1dc'); circle(g, 5, 7, 1, '#3a3448'); }),
+    hound: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); fillPoly(g, [[1, 2], [9, 2], [9, 6], [7, 6], [7, 12], [6, 12], [5, 7], [4, 12], [3, 12], [3, 6], [1, 6]], '#f0e8d8'); rect(g, 1, 2, 8, 1, '#ffffff'); rect(g, 3, 6, 1, 4, '#c9b27c'); rect(g, 7, 6, 1, 3, '#c9b27c'); }),
+    gambler: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#ffd34a', '#b8842a'); rect(g, 4, 4, 2, 6, '#e04848'); px(g, 3, 5, '#fff6c8'); px(g, 5, 7, '#fff6c8'); }),
+    salt: mk(g => { rect(g, 3, 0, 4, 2, '#8a5a32'); ellipse(g, 5, 7, 4.5, 4.5, '#e8ecf4', '#9fb4d0'); rect(g, 3, 2, 4, 1, '#9fb4d0'); px(g, 3, 6, '#ffffff'); px(g, 6, 8, '#ffffff'); px(g, 5, 4, '#bfe6f5'); px(g, 4, 10, '#bfe6f5'); }),
+    quiet: mk(g => { rect(g, 2, 0, 4, 2, '#a07850'); rect(g, 2, 2, 4, 6, '#6a4a32'); rect(g, 2, 7, 8, 3, '#6a4a32'); rect(g, 2, 10, 8, 1, '#2a1608'); rect(g, 2, 2, 1, 6, '#8a6a4a'); px(g, 8, 8, '#8a6a4a'); }),
+    lantern: mk(g => { rect(g, 4, 0, 2, 2, '#7c8797'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 6, '#ffd36b'); rect(g, 4, 4, 2, 4, '#fff6c8'); rect(g, 2, 3, 1, 6, '#5f5a52'); rect(g, 7, 3, 1, 6, '#5f5a52'); rect(g, 2, 9, 6, 2, '#5f5a52'); }),
+    pilgrim: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); fillPoly(g, [[5, 2], [1, 5], [0, 9], [10, 9], [9, 5]], '#f0d890'); for (const x of [3, 5, 7]) rect(g, x, 3, 1, 6, '#c9a060'); rect(g, 3, 9, 4, 2, '#c9a060'); rect(g, 4, 11, 2, 1, '#8a5a32'); px(g, 2, 6, '#fff6c8'); }),
   };
 }
 
