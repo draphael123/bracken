@@ -19,8 +19,8 @@ const PRE = `const {LEVELS}=await import('/src/level.js');
   const quiet=q=>{q.crownCd=99;q.portalCd=99;q.geodeCd=99;q.slamT=99;q.sweepT=99;q.courtT=99;q.hLeapT=99;q.decreeT=99;q.throwT2=99;q.ringT=99;};
   const toRoof=()=>{const q=BK.boss;q.hp=2;const hu=BK.hurt||(BK.env&&BK.env().hurt);if(hu)hu(q,50,BK.P.x);run(140);const H=BK.gqHands();H.skipRoof();run(90);return BK.boss;};
   const cv=document.createElement('canvas');cv.width=640;cv.height=360;const cg=cv.getContext('2d');cg.imageSmoothingEnabled=false;const shots={};
-  const snap=id=>{cg.drawImage(BK.buf,0,0,640,360);shots[id]=cv.toDataURL('image/png');};
-  const tap=(i,n)=>{BK.keys.atk=(i%(n||8))<3;};`;
+  const snap=id=>{BK.step(1);cg.drawImage(BK.buf,0,0,640,360);shots[id]=cv.toDataURL('image/png');};
+  const tap=(i,n)=>{if(i%(n||8)===0)BK.press('atk');BK.keys.atk=(i%(n||8))<3;};`;
 try {
   const A = await pg.evalp(`(async()=>{${PRE}const HEROES=${JSON.stringify(HEROES)};const res={};
     for(const h of HEROES){ const r=res[h]={};
