@@ -5,6 +5,7 @@
 import assert from 'node:assert/strict';
 import { SKILLS, passiveOn, migrateProgress, validateProgress, wearTrait, migrateTraits, HERO_IDS, TRT } from '../src/progression.js';
 import { xpFloor } from '../src/xp.js';
+import { readFileSync } from 'node:fs';
 const T = TRT;
 assert.equal(T.TRAITS_SHIP, false, 'ships dark');
 assert.equal(T.traitsShip(), false);
@@ -17,6 +18,13 @@ for (const h of HERO_IDS) for (const n of SKILLS.filter(x => x.hero === h && !x.
 }
 const v2 = () => ({ progressionVersion: 2, xp: { knight: xpFloor(21) }, hero: 'knight', done: { knight: { stockade: 1 } }, coins: 5, skillOwned: { knight: { shieldThrow: true } }, loadouts: { knight: ['shieldThrow'] }, bossRecords: {} });
 { const out = migrateProgress(JSON.stringify(v2()), []).progress; assert.equal(out.traits, undefined, 'flag off: no p.traits written'); }
+
+/* 1b. FLAG OFF, TRAITDATA-A: the 4 NEW geomancer traits are not in the catalog and are never on, at any level, owned or not */
+for (const n of T.NEW_TRAITS) { assert(!SKILLS.some(x => x.id === n.id), n.id + ' is not a catalog node'); for (const lv of [1, 10, 24, 50]) assert.equal(passiveOn({ traits: { [n.hero]: [n.id] }, skillOwned: { [n.hero]: { [n.id]: true } } }, n.hero, n.id, lv), false, 'flag off: ' + n.id); }
+assert.equal(T.rankLack(T.traitScale({}, 'knight', 'plated', 5)), 0, 'flag off: no rank penalty anywhere');
+/* the multiplier pattern the effect sites use is EXACTLY x at rank III (so flag off / rank III change nothing): 1 + (x - 1) * 1 === x for every x in the code */
+for (const x of [1.25, 1.4, 1.5, 1.6, 2, 2.6, 4 / 3]) assert.equal(1 + (x - 1) * 1, x, 'mulK exact at k=1 for ' + x);
+assert.equal(T.rankLack(1), 0); assert(Math.abs(T.rankLack(0.7) - 1) < 1e-9); assert(Math.abs(T.rankLack(0.85) - 0.5) < 1e-9);
 
 /* 2. FLAG ON */
 T.setTraitsShip(true);
@@ -56,6 +64,47 @@ try {
     assert.equal(T.traitScale(p, h, a, 5), 0.7); assert.equal(T.traitScale(p, h, a, 12), 0.85); assert.equal(T.traitScale(p, h, a, 24), 1);
     if (s.core[0]) assert.equal(T.traitScale(p, h, s.core[0], 5), 1);
   }
+  /* TRAITDATA-A: knight, warden, ranger, geomancer - the table as built (plan passiveplan sec 2) */
+  const A = {
+    knight: { core: 5, traits: 10, folded: 1, merged: 0, retired: 0, shared: 6, total: 22, def: ['vengeance', 'bash'] },
+    warden: { core: 5, traits: 10, folded: 4, merged: 3, retired: 1, shared: 0, total: 23, def: ['vaulter', 'everReady'] },
+    ranger: { core: 5, traits: 10, folded: 4, merged: 1, retired: 1, shared: 0, total: 21, def: ['rgKill', 'rgCover'] },
+    geomancer: { core: 4, traits: 9, folded: 0, merged: 1, retired: 0, shared: 0, total: 10, def: ['geoAftershock', 'geoShrapnel'], newTraits: 4 },
+  };
+  for (const [h, w] of Object.entries(A)) {
+    const s = T.TRAIT_SPLIT[h]; assert(T.hasSplit(h), h + ' is split');
+    assert.deepEqual([s.core.length, s.traits.length, Object.keys(s.folded).length, Object.values(s.merged).flat().length, s.retired.length, s.shared.length], [w.core, w.traits, w.folded, w.merged, w.retired, w.shared], h + ' table shape');
+    const cat = SKILLS.filter(x => x.hero === h && !x.active), listed = [...s.core, ...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat(), ...s.retired, ...s.shared];
+    assert.equal(new Set(listed).size, listed.length, h + ': no id is listed twice');
+    for (const n of cat) assert(listed.includes(n.id), h + '/' + n.id + ' unlisted');
+    for (const id of listed) assert(cat.some(n => n.id === id) || T.isNewTrait(h, id), h + '/' + id + ' is neither a catalog passive nor a NEW trait');
+    assert.equal(cat.length, w.total, h + ' catalog passive count (' + cat.length + ')');
+    assert.deepEqual(s.defaults, w.def, h + ' defaults');
+    for (const id of s.defaults) assert(T.learnLevel(h, id) <= 10, h + ' default ' + id + ' arrives by L10');
+    for (const id of T.traitIds(h)) assert(T.learnLevel(h, id) <= 18, h + '/' + id + ' by L18');
+    /* a merged passive is on exactly when its host is worn, and is the same rank */
+    for (const [host, ids] of Object.entries(s.merged)) for (const id of ids) {
+      assert.equal(T.kindOf(h, id), 'merged', id); assert.equal(passiveOn({ traits: { [h]: [host] } }, h, id, 24), true, id + ' on with ' + host); assert.equal(passiveOn({ traits: { [h]: [] } }, h, id, 24), false, id + ' off without ' + host);
+      assert.equal(T.traitScale({ traits: { [h]: [host] } }, h, id, 12), 0.85, id + ' ranks with its host'); }
+    for (const id of s.retired) { assert.equal(T.kindOf(h, id), 'retired'); assert.equal(passiveOn({ traits: { [h]: [id] } }, h, id, 24), false, id + ' never on'); assert(!T.slottable(h).includes(id), id + ' never slots'); }
+    for (const id of s.core) assert.equal(T.traitScale({ traits: { [h]: [] } }, h, id, 5), 1, id + ' is core: no rank');
+    /* every ranked trait of these heroes has a rank number at an effect site (the source names it); FLAT = boolean by nature, rank-flat on purpose */
+    const FLAT = new Set(['geoFourth']);
+    const src = ['main', 'geomancer', 'ranger', 'crouch-a'].map(f => readFileSync(new URL('../src/' + f + '.js', import.meta.url), 'utf8')).join('\n');
+    for (const id of [...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat()]) {
+      if (FLAT.has(id)) continue;
+      const re = new RegExp("(trk|trLack|trOn)\\('" + id + "'|trm\\([0-9.]+, '" + id + "'");
+      assert(re.test(src), h + '/' + id + ' has no rank number at an effect site (trk/trm/trLack/trOn)'); }
+  }
+  /* GEOMANCER: the NEW traits are learnable, wearable and on only while worn; DEEP ROOTS is the card name for geoBulwark; AFTERSHOCK + RUMBLE ride the table */
+  { const g = 'geomancer';
+    for (const n of T.NEW_TRAITS) { assert(T.slottable(g).includes(n.id), n.id + ' slottable'); assert.equal(T.kindOf(g, n.id), 'trait'); assert.equal(passiveOn({ traits: { [g]: [n.id] } }, g, n.id, T.learnLevel(g, n.id)), true, n.id + ' on when worn+learned'); assert.equal(passiveOn({ traits: { [g]: [n.id] } }, g, n.id, T.learnLevel(g, n.id) - 1), false, n.id + ' off before it arrives'); assert.equal(passiveOn({ traits: { [g]: ['geoShrapnel'] } }, g, n.id, 24), false, n.id + ' off when unworn'); }
+    assert.equal(T.traitRows(g).find(r => r.id === 'geoBulwark').name, 'DEEP ROOTS'); assert.equal(SKILLS.find(x => x.id === 'geoBulwark' && x.hero === g).name, 'BULWARK', 'the catalog keeps the old name (flag off)');
+    assert.match(T.traitUpText(g, 1, 2), /AFTERSHOCK/); assert.match(T.traitUpText(g, 6, 7), /GRAVEL/);
+    assert.equal(wearTrait({ traits: {} }, g, 'geoMoss', 0, 8), null); assert.match(wearTrait({ traits: {} }, g, 'geoMoss', 0, 7), /Learned at level 8/); }
+  /* WARDEN / RANGER / KNIGHT spot checks: the default pair is the whole kit at L24 (core + 2 traits) */
+  for (const h of ['knight', 'warden', 'ranger', 'geomancer']) { const s = T.TRAIT_SPLIT[h]; let on = 0; for (const n of SKILLS.filter(x => x.hero === h && !x.active)) if (passiveOn({}, h, n.id, 24)) on++; for (const n of T.NEW_TRAITS.filter(x => x.hero === h)) if (passiveOn({}, h, n.id, 24)) on++;
+    const want = s.core.length + 2 + Object.values(s.merged).flat().filter(id => s.defaults.some(d => (s.merged[d] || []).includes(id))).length; assert.equal(on, want, h + ' at L24 runs core + 2 worn traits (+ their merged), not all: ' + on + ' vs ' + want); }
   /* an unsplit hero is judged as today even with the flag on */
   for (const h of HERO_IDS.filter(x => !T.hasSplit(x))) for (const n of SKILLS.filter(x => x.hero === h && !x.active).slice(0, 5)) assert.equal(passiveOn({ traits: { [h]: [] } }, h, n.id, 24), legacy({}, h, n.id, 24), 'unsplit ' + h + '/' + n.id);
   /* merged: reads its host's slot (a temporary row, put back) */
@@ -88,4 +137,4 @@ try {
   assert.deepEqual(T.traitRows('knight').slice(0, 5).map(r => r.tkind), ['core', 'core', 'core', 'core', 'core']);
 } finally { T.setTraitsShip(false); }
 assert.equal(T.traitsShip(), false);
-console.log('traits ok: flag-off identical for ' + HERO_IDS.length + ' heroes; knight core/traits/slots/ranks/migrate/round-trip/shared/pvp/lab pass');
+console.log('traits ok: flag-off identical for ' + HERO_IDS.length + ' heroes; knight/warden/ranger/geomancer core/traits/merged/folded/new/slots/ranks/rank sites/migrate/round-trip/shared/pvp/lab pass');

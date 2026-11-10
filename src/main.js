@@ -812,10 +812,13 @@ let trialVerbs = false, trialLend = null;   /* trialLend: the skills a hero's tr
    this, the owning - src/progression.js passiveOn). An ACTIVE is still on only while it is slotted. */
 const tal = id => { if(id==='heavy')return 1+grow(hero(),heroLevel()).techniqueRank;if(growthNodes[hero()]?.has(id))return grow(hero(),heroLevel()).techniqueRank; if (trialLend && trialLend.has(id)) return 1;
   if (TRT.traitsShip() && TRT.isShared(id)) return TRT.sharedOn(PROG, hero(), id, heroLevel()) ? 1 : 0;   /* (claude/traitframe, dark behind TRAITS_SHIP) a shared trait is on while worn + unlocked, on any hero */
+  if (TRT.traitsShip() && TRT.isNewTrait(hero(), id)) return TRT.traitGate(PROG, hero(), id, heroLevel()) ? 1 : 0;   /* (claude/traitdata-a) a NEW trait (geoGravel...) is not in the catalog: only the split knows it */
   const n = skillFor(hero(), id); if (n && !n.active) return passiveOn(PROG, hero(), id, heroLevel()) ? 1 : 0;
   return equipped(PROG, hero(), heroLevel()).includes(id) ? 1 : 0; };
 /* TRAIT RANK (claude/traitframe): the number a worn trait scales by (0.70 / 0.85 / 1.00 by hero level, RANK III = today's value). 1 while TRAITS_SHIP is off and for core. Effect sites (TRAITDATA lanes) multiply their ONE number by it. */
 const trk = id => TRT.traitScale(PROG, hero(), id, heroLevel());
+const trm = (x, id) => 1 + (x - 1) * trk(id);   /* (claude/traitdata-a) a multiplier x whose BONUS scales with rank: exactly x at rank III and while the flag is off (x in 0.5..4) */
+const trLack = id => TRT.rankLack(trk(id));   /* 1 at rank I, 0.5 at II, 0 at III / flag off: for a trait whose PRICE shrinks with rank */
 const ptsSpent = h => { const m = talentsOf(h); return TREE.filter(n => n.hero === h).reduce((s, n) => s + Math.min(n.max, m[n.id] || 0) * (n.cost || 1), 0); };
 const ptsTotal = h => godMode() ? 99 : Math.min(PTS_CAP, heroLevel(h));   /* ONE TREE'S WORTH: a point a wood, and never more than thirty */
 const ptsLeft = h => ptsTotal(h) - ptsSpent(h);
@@ -8143,7 +8146,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (src && src.drone && (src.t === 'wasp' || src.t === 'hopper') && dmg > 0) dmg = Math.max(1, Math.round(dmg * DRONE_HIT)); if (src) dmg = RX.tier(src, dmg); if (src && src.fa === 'heavy' && dmg > 0) dmg = Math.round(dmg * FOA.blowMul(src));   /* (claude/foepass) a HEAVY affix hits harder */ if (src && dmg > 0 && L.foeHit && (src.wKey || src.cnSkin) && L.foeHit[src.wKey || src.cnSkin]) dmg = Math.round(dmg * L.foeHit[src.wKey || src.cnSkin]); if (src && dmg > 0 && src.lcMul && src.lcMul !== 1) dmg = Math.max(1, Math.round(dmg * src.lcMul)); }   /* (claude/litchurch) THE LIT CHURCH: a priest's blows by his room's light (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */   /* (RX.tier: a later act's common foe hits harder - src/foe-react.js ACTS) */   /* (claude/bosswave2) THE FIRST BOSSES' SWARMS STING, THEY DO NOT KILL: under WEIGHT the Hornet Queen's drones and the Bullfrog's hoppers did most of a hero's dying (a drone's touch was 24 of 110) */   /* A MINI HITS HARDER (claude/combat3): he keeps his damage taken, and his blows land GREED.miniHit harder */   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (window.BK && window.BK.blowRec) { const q = who || updFoe; if (q && (q === boss || q.xpRole === 'mini')) { const k = q.t + (q.xpRole === 'mini' ? ':mini' : '') + ' ' + (blow || name || '?'), v = pct > 0 ? P.maxHp * pct : dmg * diffNow().take * (1 + 0.28 * bossTierOf(curId())), R = window.BK.blowRec, c = R[k] || (R[k] = { max: 0, n: 0, sum: 0 }); c.n++; c.sum = (c.sum || 0) + Math.round(v); if (v > c.max) c.max = Math.round(v); } }   /* (claude/oneshotcap) tools/blow-census.mjs: the biggest single blow a boss or mini lands (or is turned from), after every table and the dial. Off (null) in play. */
-  if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; CM.refund(P, 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
+  if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; CM.refund(P, Math.round(20 * trk('evasion'))); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (!P.dead && isReaper() && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && P.kPoseK === 'shadowStep' && (who || updFoe) && time - (P.bkPerfectAt ?? -9) >= BKIT.BLOOD.step.cd) bkPerfectStep();   /* (claude/bloodstep) THE BLOOD STEP's PERFECT STEP: stepped through a blow in the last moment */
   if (P.dead || invulnerable()) return false;
   if (HPK) { const w = HPK.takes(fromX, dmg, { unblockable, pierce, low, pct, src: who || updFoe }); if (w === 'blocked') return 'blocked'; if (w === 'miss') return false; if (w === 'half') dmg = Math.ceil(dmg / 2); }   /* (claude/heropassa) THE SHIELD-STEP's guard, THE LOW HOP, THE STONE SHRUG (src/hero-pass.js takes) */
@@ -8225,7 +8228,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     const f = nearFoe(fromX), beat = RP.onBeat('tap', time - (P.deflectAt ?? -9));   /* (claude/riposte) THE SPEAR DEFLECT: on the beat it is her parry; later in the sweep it turns the blow, a short flinch */
     if (beat) RP.parried(rpFoe(fromX, who));
     if (f) { if (!beat) { f.stagger = Math.max(f.stagger || 0, (f.maxHp ? 0.2 : 0.4) * (tal('standFast') ? 2 : 1)); f.flash = 0.2; } if (!f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 150;
-      if (tal('counterpoise')) { f.sunder = 2.5; number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
+      if (tal('counterpoise')) { f.sunder = 2.5 * trk('counterpoise'); number(f.x, f.y - (f.h || 16) - 22, 'OPENED UP', '#8fd160'); } }   /* COUNTERPOISE */
     deflectPays(P.x + P.face * 12, P.y - 10, beat);
     sparks(P.x + P.face * 12, P.y - 10, P.face, 9); number(P.x, P.y - 28, beat ? 'PARRY' : 'TURNED IT', '#ffd36b'); parryBurst();
     return 'blocked';
@@ -8236,6 +8239,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   const geoW = isGeo() && GEO ? GEO.wardTakes(fromX, unblockable, nearFoe(fromX)) : null;
   if (geoW === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; }
   if (geoW === 'half') dmg = Math.ceil(dmg / 2);
+  if (geoW === 'deep') dmg = Math.ceil(dmg * (1 - 0.5 * trk('geoBulwark')));   /* DEEP ROOTS: a RED blow through her ward finds her at 65% / 57.5% / 50% of its force by rank */
   /* (claude/berserker2) THE BERSERKER'S TAKE IT (src/berserker.js takeTakes): the crossed axes held up - a yellow blow from the front is ABSORBED (a tenth of
      it, floored so it never kills him; the rest is rage; stamina like a block, and out of it the guard breaks: half). On the beat it is his PARRY. A RED one
      lands whole (IRON BRACE: at half); a bolt goes through */
@@ -8259,18 +8263,18 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   const pierced = pierce && (P.block || rushUp) && (front || tal('plated')) && !unblockable && (!perfectUp || !(who || updFoe));   /* (claude/riposte) a BOLT is never parried, even on the beat (TOO STRONG); a blade at arm's length that pierces (the Crusader's follow-up) still is */
   if (pierced) { number(P.x, P.y - 30, 'THROUGH THE SHIELD', '#ff6b6b'); SFX.pierce(); }
   if (((P.block && (front || tal('plated'))) || rushUp) && !unblockable && !pierced) {   /* PLATED: the shield at his back too */
-    const perfect = perfectUp, bc = perfect || lcUp ? 0 : Math.round(CM.blockCost(dmg, tal('steady')) * (hero() === 'knight' ? [1, 0.85, 0.75][upg('ustam')] || 1 : 1));
+    const perfect = perfectUp, bc = perfect || lcUp ? 0 : Math.round(CM.blockCost(dmg, tal('steady')) * (hero() === 'knight' ? [1, 0.85, 0.75][upg('ustam')] || 1 : 1) * (!front && tal('plated') ? 1 + 0.4 * trLack('plated') : 1));   /* PLATED: the back cover costs +40% / +20% / 0% more wind by rank */
     if (lcUp) number(P.x, P.y - 28, 'TURNED', '#ffd36b');
     if (P.st >= bc) {
       P.st -= bc; if (!perfect) gainResolve(1);   /* (claude/knightid) a plain turned blow KEEPS the chain; only a perfect guard grows it (below) */ P.stDelay = ST.delay; blocks++; trialEvent('block'); if (tal('riposte')) { P.riposteT = 1; P.riposteHeavy = false; P.ripSrc = 'talent'; }
-      if (tal('vengeance')) { P.venge = Math.min(30, (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
+      if (tal('vengeance')) { P.venge = Math.min(Math.round(30 * trk('vengeance')), (P.venge || 0) + Math.round(dmg * 0.5)); number(P.x, P.y - 26, 'KEPT ' + P.venge, '#c9d1dc'); } // VENGEANCE
       if (perfect) { // THE PARRY. Six frames, and it turns the blow round on whoever threw it.
         const f = RP.parried(rpFoe(fromX, who), { heavy: true });   /* (claude/riposte) THE SHARED PARRY - and the knight's riposte cut is HEAVY on top (his identity) */
         if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 160;
         if (f && tech('kadvance') && (keys.left || keys.right)) { f.stagger = Math.max(f.stagger || 0, 0.7); number(f.x, f.y - (f.h || 16) - 22, 'REELED', '#c9d1dc'); }   /* SHIELD ADVANCE: a perfect guard on the march reels what struck */
         if (hero() === 'knight') gainLink();   /* THE GUARD CHAIN: a perfect guard is +1 link */
         CM.refund(P, 12 + (tal('parry') ? 10 : 0)); perfectGuardFx();
-        if (tal('counterstroke') && f && !f.harmless) counterCut(f, 'COUNTERSTROKE');   /* the shield turns it and the blade answers by itself */
+        if (tal('counterstroke') && f && !f.harmless) counterCut(f, 'COUNTERSTROKE', trk('counterstroke'));   /* the shield turns it and the blade answers by itself */
         noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry');
         SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); shakeCam(2.5, -P.face * 2);
         ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6e0', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6e0'); parryBurst();
@@ -8939,7 +8943,7 @@ function impale(e) {
     try { hurtEnemy(e, Math.round(swordDmg() * 1.3), P.x, false); } finally { P.heavy = was.h; P.heavySwing = was.hs; } }
   gainVigil(30 * (tal('standFast') ? 2 : 1));
   /* SPITTED (claude/wardenid: no pin any more): the charge stays broken half again as long */
-  if (tal('spitted') && e.alive) { e.broken = Math.max(e.broken || 0, e.broken * 1.5); e.stagger = Math.max(e.stagger || 0, e.broken); }   /* (claude/wardenid) no pin: broken half again as long */
+  if (tal('spitted') && e.alive) { e.broken = Math.max(e.broken || 0, e.broken * trm(1.5, 'spitted')); e.stagger = Math.max(e.stagger || 0, e.broken); }   /* (claude/wardenid) no pin: broken half again as long */
   breakBeat(e); SFX.braceStop(); SFX.tipRing();
   ringAt(e.x, e.y - (e.h || 16) / 2, 24, '#8fd160', 0.4); sparks(e.x, e.y - (e.h || 16) / 2, -P.face, 10);
   shakeCam(5, -P.face * 3); zoomKick(1.05, 0.2); hitstop(0.09);
@@ -8984,7 +8988,7 @@ function deflectPays(x, y, beat = true) {
   parries++; blocks++; trialEvent('parry');
   P.parryT = 0.22; P.inv = Math.max(P.inv || 0, 0.1);   /* a breath of grace, so one sweep is not beaten by two blows in the same frame */
   gainVigil(12 * (tal('standFast') ? 2 : 1));   /* STAND FAST: a turned blow pays the bar double */
-  if (tal('everReady')) P.deflectRec = 0;   /* EVER READY: a sweep that TURNED something is back in her hands at once */
+  if (tal('everReady')) P.deflectRec = (P.deflectRec || 0) * (1 - trk('everReady'));   /* EVER READY: the recovery left after a turned sweep is 30% / 15% / none by rank */   /* EVER READY: a sweep that TURNED something is back in her hands at once */
   SFX.parry(); SFX.shaftTurn(); hitstop(beat ? JUICE.parryStop : 0.07); zoomKick(1.03, 0.16); shakeCam(2, -P.face * 2);   /* (claude/demoimpact) ON THE BEAT it is a parry at the mid pack's freeze (was 70 ms, the floor); off the beat it stays the short turn */
   ringAt(x, y, beat ? 18 : 14, '#dff0d8', 0.26);
   deflectLesson();
@@ -9533,7 +9537,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   const dir = Math.sign(e.x - fromX) || 1;
   if (!glance) hitSpray(e, dir);   /* (a glance has its own spark and its own sound: glanceBeat) */
   if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * (KNOCK_SKIP.has(e.t) ? 2 : (weaponOf(hero()) || {}).shove || 2);   /* (claude/foepass) a greatsword shoves it further off the blow */
-  if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
+  if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3 * trk('bleed'); e.bleedN = tal('bleed'); } // OPEN WOUND (the wound bleeds 3 s at rank III)
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
   if (e.hp <= 0 && e.t === 'king' && e.stage === 'glade' && !e.rage && !e.rageSaved && e.alive) { e.hp = 1; e.rageSaved = true; }   /* (claude/gorm3) HE ALWAYS ENRAGES: a blow that would end him before his rage leaves him a sliver ONCE - the rage plays when his opening ends (the told transition is the fight's last act) */
   if (e.hp <= 0 && e.t === 'king' && GMH && GMH.spare(e)) e.flash = 0.3;
@@ -9677,7 +9681,7 @@ const inJet = (x, y, pad = 6) => { const j = jetBox(); return !!j && x > j.l - p
 // costs twice the stamina of a swing, it goes through a guard, and it is slower than mashing on purpose.
 const DTAP = { tap: 0.18, gap: 0.3 };   /* (claude/knightkit) the knight's double-tap C: the first tap's longest hold, and the longest press-to-press */
 const HEAVY_START = 0.14;                                     // how long the key is down before the wind-up shows
-const heavyWind = () => (isPirate() && ((P.hotT || 0) > time || (P.catchShotT || 0) > time)) || spearheadReady() ? 0.04 : (isGeo() ? GEO_K.wind : isBz() ? 0.36 : isRg() ? RG_K.draw.wind * (tal('rgSteady') ? 0.8 : 1) * (P.rgKneel ? RG_K.kneel.wind : 1) : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind runs FAULT LINE out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
+const heavyWind = () => (isPirate() && ((P.hotT || 0) > time || (P.catchShotT || 0) > time)) || spearheadReady() ? 0.04 + (spearheadReady() ? 0.28 * (1 - trk('spearhead')) : 0) : (isGeo() ? GEO_K.wind : isBz() ? 0.36 : isRg() ? RG_K.draw.wind * (tal('rgSteady') ? 0.8 : 1) * (P.rgKneel ? RG_K.kneel.wind : 1) : 0.32) - 0.05 * Math.max(0, tal('heavy') - 1);   /* (THE GEOMANCER winds longer: her wind runs FAULT LINE out, geomancer.js) */ // and how long the wind-up itself takes (HOT BARREL: next to none)
 const heavyMul = () => 2 + 0.15 * Math.max(0, tal('heavy') - 1);
 const heavyCost = () => Math.round((isPaladin() ? 28 : sword().cost) * 2.2);
 const PISTOL_RELOAD = 8;                          // it loads itself in eight seconds, or the moment gold reaches him
@@ -9731,7 +9735,7 @@ function phalanxCast() {   /* (claude/wardenid) THE PHALANX IS A SKILL (id setSp
   dust(P.x, P.y, 8);
   const hit = new Set(); let n = 0;
   /* A WIDER ROW: the spears are set closer together and the row is carried further across the room */
-  const step = PHX_STEP - (tal('widerRow') ? 5 : 0), reach = PHX_REACH + (tal('widerRow') ? 90 : 0);
+  const step = PHX_STEP - (tal('widerRow') ? 5 * trk('widerRow') : 0), reach = PHX_REACH + (tal('widerRow') ? 90 * trk('widerRow') : 0);
   for (let d = step; d <= reach; d += step) {
     const x = P.x + P.face * d, tx = Math.floor(x / TS);
     if (isSolid(tx, Math.floor((P.y - 12) / TS))) break;                    /* a wall: the row ends where the room does */
@@ -9768,7 +9772,7 @@ function updatePhalanx(dt) {
 function drawPhalanx(cx, cy) {
   for (const s of phalanx) {
     if (s.t < s.delay) continue;
-    const life = (s.stay || PHX_LIFE) * (tal('holdTheLine') ? 2.6 : 1);
+    const life = (s.stay || PHX_LIFE) * (tal('holdTheLine') ? trm(2.6, 'holdTheLine') : 1);
     const age = s.t - s.delay, k = Math.min(1, age / PHX_RISE), sink = Math.max(0, (age - (life - 0.3)) / 0.3);
     const h = Math.round(34 * k * (1 - sink));
     if (h <= 0) continue;
@@ -9804,19 +9808,19 @@ function endPin(pulled) {
   P.ground = false; P.canCut = true; P.hitSet.clear();
   if (pulled) { P.vy = -250; P.vx = -P.face * 170; P.atk = -1; SFX.pJump(); dust(P.x, P.y, 5); squash(0.82, 1.22, 0.12);
     /* FREE HAND: the beat of recovery is the whole price of pulling free, and this pays it off */
-    if (tal('freeHand')) { CM.refund(P, 20); number(P.x, P.y - 30, 'FREE HAND', '#8fd160'); } else P.plungeRec = PIN_FREE_REC;
+    if (tal('freeHand')) { CM.refund(P, Math.round(20 * trk('freeHand'))); if (trk('freeHand') < 1) P.plungeRec = PIN_FREE_REC * (1 - trk('freeHand')); number(P.x, P.y - 30, 'FREE HAND', '#8fd160'); } else P.plungeRec = PIN_FREE_REC;   /* FREE HAND: 20 wind and no recovery at rank III; less of both below */
     /* SKIRMISHER (her capstone): she does not just pull the point out, she throws what was on it at whatever is nearest */
     if (tal('skirmisher') && pn.e && pn.e.alive) { const e = pn.e;
       let best = null, bd = 1e9;
       for (const q of enemies) { if (q === e || !q.alive || q.harmless || q.gone > 0 || q.turncoat) continue;
         const d = Math.abs(q.x - e.x); if (d < 150 && d < bd) { bd = d; best = q; } }
       const dir = best ? (Math.sign(best.x - e.x) || P.face) : P.face;
-      knockFoe(e, dir, 340); e.stagger = Math.max(e.stagger || 0, 0.8);
-      if (best) { best.stagger = Math.max(best.stagger || 0, 0.8); knockFoe(best, dir, 180); }
+      knockFoe(e, dir, 340 * trk('skirmisher')); e.stagger = Math.max(e.stagger || 0, 0.8 * trk('skirmisher'));
+      if (best) { best.stagger = Math.max(best.stagger || 0, 0.8 * trk('skirmisher')); knockFoe(best, dir, 180 * trk('skirmisher')); }
       SFX.throwWhoosh(); shakeCam(4); number(e.x, e.y - (e.h || 16) - 22, 'SHAKEN LOOSE', '#8fd160'); } }
   else { P.vy = -60; SFX.pStep(surface()); squash(0.9, 1.12, 0.08); }   /* the hold ran out: she steps down off it, she is not thrown off it */
   /* AIR POINT: she leaves the spear with her jump and her dash back in hand, so a pin is a place to go FROM */
-  if (tal('airPoint')) { P.airJump = 1; P.airRolled = false; P.dashedAir = false; P.airDashN = 0; }
+  if (tal('airPoint')) { P.airJump = 1; if (trk('airPoint') >= 0.85) { P.airRolled = false; P.dashedAir = false; P.airDashN = 0; } }   /* AIR POINT: rank I hands back the jump only */
 }
 /* ==== AND SHE NEVER BOUNCES. The knight's plunge is a POGO: whatever he lands on throws him back up off it, and three
    in a row is a CHAIN. That rebound is his, and she was borrowing it. A POINT THAT GOES IN DOES NOT SPRING BACK OUT.
@@ -9869,8 +9873,8 @@ function wardenPerch(e, x, y) {
 function runThroughDrive(e) {
   if (!P.runThrough || !e.alive) return;
   const dir = P.face;
-  if (tal('openPoint')) { e.sunder = 2.5; number(e.x, e.y - (e.h || 16) - 18, 'OPENED UP', '#8fd160'); }   /* OPENED: the next blow on it lands twice as hard */
-  knockFoe(e, dir, tal('driveHome') ? 380 : 220);   /* DRIVE HOME: thrown hard enough to find a wall, and wallSlam does the rest */
+  if (tal('openPoint')) { e.sunder = 2.5 * trk('openPoint'); number(e.x, e.y - (e.h || 16) - 18, 'OPENED UP', '#8fd160'); }   /* OPENED: the next blow on it lands twice as hard */
+  knockFoe(e, dir, tal('driveHome') ? 220 + 160 * trk('driveHome') : 220);   /* DRIVE HOME: thrown hard enough to find a wall, and wallSlam does the rest */
   for (const q of enemies) {
     if (q === e || !q.alive || q.harmless || q.gone > 0 || q.turncoat) continue;
     if (Math.sign(q.x - e.x) !== dir || Math.abs(q.x - e.x) > 28) continue;
@@ -9932,7 +9936,7 @@ function updateLastCharge(dt, stunned) {
   P.face = dir; P.abuf = 0; P.jbuf = 0; P.dbuf = 0;
   if (P.lcBrace > 0) { P.vx = 0; P.lcBrace -= dt;   /* THE BRACE: the tell. He stands behind the shield and the light gathers on it */
     if (Math.random() < dt * 40) parts.push({ x: P.x + dir * (7 + Math.random() * 4), y: P.y - 4 - Math.random() * 14, vx: -dir * 20, vy: -30, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#c9b27c' : '#8a8272', size: 1, grav: 60 });   /* grit kicked up by the set heels, not light gathering */
-    if (P.lcBrace <= 0) { P.lcBrace = 0; P.lcLeft = LC_DIST + (tal('bash') ? 4 * TS : 0); P.vx = dir * LC_SPEED;   /* BULL RUSH: four tiles further */ SFX.lcRoll(); SFX.shieldScrape(); shakeCam(6, dir * 4); zoomKick(1.08, 0.25); dust(P.x - dir * 4, P.y, 6); streaks(P.x - dir * 4, P.y - 10, 8, ['#ffd36b', '#fff6c8'], 160); }
+    if (P.lcBrace <= 0) { P.lcBrace = 0; P.lcLeft = LC_DIST + (tal('bash') ? 4 * TS * trk('bash') : 0); P.vx = dir * LC_SPEED;   /* BULL RUSH: four tiles further */ SFX.lcRoll(); SFX.shieldScrape(); shakeCam(6, dir * 4); zoomKick(1.08, 0.25); dust(P.x - dir * 4, P.y, 6); streaks(P.x - dir * 4, P.y - 10, 8, ['#ffd36b', '#fff6c8'], 160); }
     return; }
   P.lcLeft -= LC_SPEED * dt; P.vx = dir * LC_SPEED;
   /* THE TRAIL: a gold afterimage of him every other frame or so, and gold streaks thrown off behind */
@@ -9986,10 +9990,10 @@ function lcStrike(e, mul, dir) {
   SFX.shieldSlam(); sparks(e.x - dir * 4, e.y - e.h / 2, dir, big ? 14 : 8); impactAt(e.x - dir * 4, e.y - e.h / 2, 'steel'); chips(e.x - dir * 4, e.y - e.h / 2, dir, 6, ['#c9d1dc', '#8a8272'], 150, 520, 1);
   if (!e.alive) return;
   if (big) {   /* rocked where it stands, and a great bite out of its stagger bar */
-    e.stagger = Math.max(e.stagger || 0, 0.45 * (tal('bash') ? 1.6 : 1) * (1 + 0.15 * prk('kbash'))); const m = poiseMax(e);   /* BULL RUSH: rocked longer */
+    e.stagger = Math.max(e.stagger || 0, 0.45 * (tal('bash') ? trm(1.6, 'bash') : 1) * (1 + 0.15 * prk('kbash'))); const m = poiseMax(e);   /* BULL RUSH: rocked longer */
     if (m && e.hp < hp0 && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * 0.4); if (e.poise >= m) addPoise(e, 1, from, false); }
     hitstop(0.1); shakeCam(8, dir * 4); zoomKick(1.1, 0.3); }
-  else { e.stagger = Math.max(e.stagger || 0, 0.9 * (tal('bash') ? 2 : 1)); if (e.guardT > 0) e.guardT = 0;   /* down, and the guard with it (BULL RUSH: twice as long) */
+  else { e.stagger = Math.max(e.stagger || 0, 0.9 * (tal('bash') ? trm(2, 'bash') : 1)); if (e.guardT > 0) e.guardT = 0;   /* down, and the guard with it (BULL RUSH: twice as long) */
     if (e.maxHp && !(e.knock > 0)) { const mh = e.maxHp; e.maxHp = 0; try { knockFoe(e, dir, 240); } finally { e.maxHp = mh; } }   /* (a duelist's bar is not a boss's footing: knockFoe reads maxHp as the boss flag, so it is lifted for this one call) */
     if (tal('sunder')) { e.sunder = 2.5; number(e.x, e.y - e.h - 18, 'SUNDERED', '#ffd36b'); }
     hitstop(0.04); shakeCam(4, dir * 3); }
@@ -10750,7 +10754,7 @@ function fireHeavy() { noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = fal
    a heavy blow to everything that asks for one (SUNDER, EXECUTION, a straw man's lesson, the stagger bar). A wall stops him with a
    clank, and he pulls up at the lip of a drop he did not jump. It is slower to wind than the LUNGE and stops on the first body. */
 const RUSH_SPEED = 230;
-const rushDist = k => 22 + 34 * Math.max(0, Math.min(1, (k - 0.55) / 0.45)) + (tal('bash') ? TS : 0);   /* px. BULL RUSH: a tile further */
+const rushDist = k => 22 + 34 * Math.max(0, Math.min(1, (k - 0.55) / 0.45)) + (tal('bash') ? TS * trk('bash') : 0);   /* px. BULL RUSH: a tile further */
 const rushing = () => P.rush > 0 || P.rushRec > 0 || lcOn();   /* (THE LAST CHARGE locks him into it the same way: no swing, jump, dash, roll or guard until it is over) */
 function shieldCharge(k) { P.rush = rushDist(k) / RUSH_SPEED; P.rushDir = P.face; P.rushRec = 0; P.block = false; P.vx = P.face * RUSH_SPEED;
   SFX.shieldScrape(); dust(P.x - P.face * 4, P.y, 4); streaks(P.x, P.y - 10, -P.face, ['#fff6e0', '#c9d1dc'], 90); squash(1.12, 0.9, 0.1); }
@@ -10874,7 +10878,7 @@ function attackBox0() {
        art frame by frame, as her thrust is: the drive reaches 36 and the full stretch 48, which is where the point
        is inked on those two frames (chars.js F.heavy, the canvas at 52 and 64 less the anchor at 16). Nothing
        during the coil, because on that frame the point is behind her. */
-    const r = ((P.atk >= 0.2 ? 48 : 36) + (tal('throughAndThrough') ? 16 : 0)) * stretchMul();   /* FULL STRETCH: half again */   /* THROUGH AND THROUGH: a tile further down the line */
+    const r = ((P.atk >= 0.2 ? 48 : 36) + (tal('throughAndThrough') ? 16 * trk('throughAndThrough') : 0)) * stretchMul();   /* FULL STRETCH: half again */   /* THROUGH AND THROUGH: a tile further down the line */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 18, b: P.y + 1 } : { l: P.x - r, r: P.x - 2, t: P.y - 18, b: P.y + 1 };
   }
   if (isWarden() && P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) {
@@ -11339,13 +11343,13 @@ function updatePlayer(dt) {
     else {
       pn.t += dt; P.vx = 0; P.vy = 0; P.ground = false;
       P.y = pe.y - (pe.h || 16) - 2; P.x += (pe.x - P.x) * Math.min(1, dt * 8);
-      if (P.abuf > 0 && pn.stabs < PIN_STABS + (tal('pinTwist') ? 1 : 0)) { P.abuf = 0; pn.stabs++;   /* HOLD THEM DOWN: a fourth stab */
+      if (P.abuf > 0 && pn.stabs < PIN_STABS + (tal('pinTwist') && trk('pinTwist') >= 0.85 ? 1 : 0)) { P.abuf = 0; pn.stabs++;   /* HOLD THEM DOWN: a fourth stab */
         hurtAs('plunge', pe, Math.round(swordDmg() * 1.3), P.x - P.face * 8, true);   /* the point is already in it: the tip's own damage */
         SFX.tipRing(); SFX.pSlash(); hitstop(0.05); shakeCam(3); sparks(pe.x, pe.y - (pe.h || 16) / 2, P.face, 6); gainVigil(6);
-        if (tal('pinTwist') && pe.alive) { pe.bleed = Math.max(pe.bleed || 0, 3); pe.bleedN = Math.max(pe.bleedN || 1, 2); }   /* TWIST IT */
+        if (tal('pinTwist') && pe.alive) { pe.bleed = Math.max(pe.bleed || 0, 3 * trk('pinTwist')); pe.bleedN = Math.max(pe.bleedN || 1, 2); }   /* TWIST IT */
         if (pe.alive) pe.pinned = Math.max(pe.pinned || 0, 0.35); }   /* every stab buys the pin a moment more */
       if (P.jbuf > 0 || P.dbuf > 0) { P.jbuf = 0; P.dbuf = 0; endPin(true); }
-      else if (pn.t >= PIN_HOLD * (tal('pinTwist') ? 1.5 : 1)) endPin(false);   /* HOLD THEM DOWN: it is held half again as long */
+      else if (pn.t >= PIN_HOLD * (tal('pinTwist') ? trm(1.5, 'pinTwist') : 1)) endPin(false);   /* HOLD THEM DOWN: it is held half again as long */
     }
   }
   /* (claude/plunges) HOLY LIGHT's clock, the plunge's age, and the two rides a plunge can become: BOARDING (the freebooter on a foe's back) and AXE SPIN (the berserker shredding one) */
@@ -11507,7 +11511,7 @@ function updatePlayer(dt) {
       /* GIVE GROUND: whatever had got inside the spear is left reeling as she leaves - the hop buys the distance AND the beat */
       if (back && tal('giveGround')) for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue;
         if (Math.abs(e.x - P.x) > SHAFT_AT || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue;
-        e.stagger = Math.max(e.stagger || 0, 0.6); dust(e.x, e.y, 3); }
+        e.stagger = Math.max(e.stagger || 0, 0.6 * trk('giveGround')); dust(e.x, e.y, 3); }
       if (isReaper()) { P.inv = Math.max(P.inv, CM.STAM.rollInv);   /* WEIGHT: the roll's grace (0.26 s: the brief's 0.20 and his wake's 0.06), not the whole roll */   /* THE WAKE: he is not there to be hit */
         /* AND HE LEAVES HIMSELF BEHIND. A cold shape stands where he was; they keep swinging at it, and
            when it goes it goes off. He is the slowest hero in the game - he does not escape a blow, he
@@ -11636,7 +11640,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     else P.jbufUp = false; }
   if (P.jbuf > 0 && P.ballast && P.swim) { P.jbuf = 0; dropBallast(true); }
   else if (SET.invincible && P.jbuf > 0 && !P.ground && !(P.coyote > 0) && !stunned && !P.swim && !P.climb && !P.plunge) { P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* GOD MODE: jump again in mid-air, as often as you like */
-  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV; P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90); ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
+  else if (P.jbuf > 0 && !P.ground && !(P.coyote > 0) && P.airJump > 0 && tal('endlessSky') && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.swim && !P.climb) { P.airJump = 0; P.jbuf = 0; if (dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; } P.vy = JUMPV * trk('endlessSky'); P.canCut = true; P.jumpT = time; P.airHang = false; SFX.pJump(); streaks(P.x, P.y - 8, 5, ['#fff6e0', '#bfe6f5'], 90);   /* ENDLESS SKY: the extra jump rises 70% / 85% / 100% by rank */ ringAt(P.x, P.y, 10, '#bfe6f5', 0.22); }   /* ENDLESS SKY: the jump the plunge gave back */
   /* THE POLE VAULT: a jump taken OUT OF A DASH. She plants the heel and goes over - the same distance every time,
      never from the air, and it wants ground under the plant. It is a RIDE and not a jump: the reach model must never
      count it as ordinary footing, or levels read as reachable when they are not (tools/reach.mjs). */
@@ -11646,9 +11650,9 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   else if (isWarden() && P.jbuf > 0 && P.swim && !P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && !dodging && P.st >= 13) {   /* THE WATER VERSION of the vault: no heel to plant, so it is a kick off the shaft - up and over, a stroke's height and not a leap's */
     P.jbuf = 0; P.dash = 0; P.dashLate = 0; spend(13); P.vaultT = 0.3; P.vy = -190; P.vx = P.face * 240; P.inv = Math.max(P.inv, 0.2); noteVerb('vault'); SFX.braceSet(); squash(0.8, 1.2, 0.1); streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#bfe6f5'], 120);
   }
-  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && (P.st >= (tal('vaulter') ? 6 : 13))) {   /* out of her step FORWARD (the back-step carries no dash) */
-    P.jbuf = 0; P.dash = 0; P.dashLate = 0; P.dodge = 0; P.dodgeInv = 0; spend(tal('vaulter') ? 6 : 13);   /* WEIGHT (10-03): VAULTER halves the vault's wind (it made it free) */   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
-    P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 380 : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
+  else if (isWarden() && P.jbuf > 0 && P.ground && ((P.dash || 0) > 0 || (P.dashLate || 0) > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && (P.st >= (tal('vaulter') ? Math.round(13 - 7 * trk('vaulter')) : 13))) {   /* out of her step FORWARD (the back-step carries no dash) */
+    P.jbuf = 0; P.dash = 0; P.dashLate = 0; P.dodge = 0; P.dodgeInv = 0; spend(tal('vaulter') ? Math.round(13 - 7 * trk('vaulter')) : 13);   /* VAULTER: the vault's wind 8 / 7 / 6 by rank (13 without it) */   /* WEIGHT (10-03): VAULTER halves the vault's wind (it made it free) */   /* VAULTER: the vault costs no wind (it no longer skips the dash: an automatic passive must not take over the jump button) */
+    P.vaultT = 0.42; P.vy = -300; P.vx = P.face * (tal('longVault') ? 300 + 80 * trk('longVault') : 300); P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = true; P.jumpT = time;   /* LONG VAULT: a tile and a half further */
     P.inv = Math.max(P.inv, 0.2);   /* she is up on the shaft and over it: a foe under her is gone past, not run into */
     noteVerb('vault'); SFX.pJump(); SFX.braceSet(); dust(P.x - P.face * 8, P.y, 6); squash(0.78, 1.26, 0.12);
     streaks(P.x, P.y - 10, -P.face, ['#dff0d8', '#c9b27c'], 150);
@@ -11684,7 +11688,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         embers.push({ x: P.x, y: GS > 0 ? P.y - 4 : P.y - P.h + 4, vx: 0, vy: 300 * GS, life: 1.1, hit: new Set(), plunge: true });   /* (turned over, it goes at the ceiling) */
         burst(P.x, P.y + 2, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 120, 2);
         number(P.x, P.y - 26, 'FIREDROP', '#ff9a5c'); } } }
-    else if (P.atk < 0 && !CM.committed(P) && (P.plungeRec <= 0 || (P.plungeRec <= CM.WINDOW + 1e-6 && P.atkRec > 0)) && !(P.dashRec > 0) && !(P.pounceT > 0) && !(P.pounceRec > 0) && !(!P.ground && (keys.down || P.abufDown))) {   /* WEIGHT: the next cut only from the window */ const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((CM.SWING_COST[hero()] ?? sword().cost) * (tal('flurry') && inRun() && ((P.combo || 0) + 1) % 3 === 0 ? 0 : 1) * (perk('light') ? 0.8 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * (P.wLong ? 0 : 75); if (P.wLong && (P.swingKind || P.dashCut)) P.wLong = false; if (P.wLong) SFX.stretch && SFX.stretch(); } }   /* (claude/wardenid) the long thrust keeps its ground: no step in */
+    else if (P.atk < 0 && !CM.committed(P) && (P.plungeRec <= 0 || (P.plungeRec <= CM.WINDOW + 1e-6 && P.atkRec > 0)) && !(P.dashRec > 0) && !(P.pounceT > 0) && !(P.pounceRec > 0) && !(!P.ground && (keys.down || P.abufDown))) {   /* WEIGHT: the next cut only from the window */ const aimUp=P.abufUp??keys.up, aimLow=P.abufLow??keys.down; P.abuf = 0; P.abufUp=P.abufLow=undefined; if (spend((Math.round((CM.SWING_COST[hero()] ?? sword().cost) * (tal('flurry') && inRun() && ((P.combo || 0) + 1) % 3 === 0 ? 1 - trk('flurry') : 1) * (perk('light') ? 0.8 : 1))))) { P.atk = 0; P.hitSet.clear(); SFX.pSlash(); noteVerb('swing'); startSwing(); if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); } if (Math.random() < 0.35) SFX.pEffort(); if (dashCutNow()) dashAttack(); else if (aimUp && !aimLow && (P.ground || P.swim || time - (P.jumpT || -9) < 0.18)) risingCut(); else if (aimUp && !aimLow && !P.ground && !P.swim && !P.climb) airUpCut();   /* (claude/combat3) THE AIR UP-SLASH */   /* up is a jump key too: the cut rides the jump it started. In the water up is the stroke upward, and the cut rides that */ else if (P.ground && aimLow) lowSweep();   /* (on the sea bed too; in open water down+swing is the plunge, the water's own low blow) */ else if (P.ground) P.vx = P.face * (P.wLong ? 0 : 75); if (P.wLong && (P.swingKind || P.dashCut)) P.wLong = false; if (P.wLong) SFX.stretch && SFX.stretch(); } }   /* (claude/wardenid) the long thrust keeps its ground: no step in */
   }
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
@@ -11978,14 +11982,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
           // THE CULL: the landing itself is nothing - one point, so the hit registers and he bounces - and a
           // SHADE tears out of whatever he came down on and does the killing.
           hurtEnemy(e, 1, P.x, true);
-          cullAt(e.x, e.y, Math.round((plungeDmg() + 10 + 5 * tal('graveGoods')) * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.face);
+          cullAt(e.x, e.y, Math.round((plungeDmg() + 10 + 5 * tal('graveGoods')) * (tal('bounding') ? Math.min(trm(2, 'bounding'), 1 + 0.25 * trk('bounding') * pogoChain) : 1)), P.face);
           if (e.t === 'dummy') trialEvent('pogo');
           pogoCount++; pogoBounce(POGO_API, 'plunge', e); continue;   /* (part 2: and HE COMES BACK UP OFF IT like any hero - he fell through into a ground swing, and a pit crossed on heads was a pit he fell into) */
         } else {
         const bd = isPirate() ? boardTry(e) : 0;   /* (claude/plunges) the freebooter's BOARDING: 1 he is on its back, 2 the landing killed it, 0 not rideable */
         if (bd === 1) continue;
-        if (isPaladin()) hammerSlam(e, hdGuard); else if (bd === 2) { /* struck and gone: the pogo below */ } else if (isBz() && spinTry(e) === 1) continue; else if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true);
-        if (isGeo() && GEO) GEO.earthfall({ anchor: e });   /* EARTHFALL: the stone rises under the head she came down on and stands a step */   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) CM.refund(P, 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
+        if (isPaladin()) hammerSlam(e, hdGuard); else if (bd === 2) { /* struck and gone: the pogo below */ } else if (isBz() && spinTry(e) === 1) continue; else if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(trm(2, 'bounding'), 1 + 0.25 * trk('bounding') * pogoChain) : 1)), P.x, true);
+        if (isGeo() && GEO) GEO.earthfall({ anchor: e });   /* EARTHFALL: the stone rises under the head she came down on and stands a step */   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) CM.refund(P, Math.round(8 * trk('bounding'))); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
           plungeHitBeat(e);   /* heavier than any ground swing, whatever comes after it (DOWN_STRIKE) */
           /* THE PIN, before the bounce: the point goes through it and stays there. A boss or a mini is too big to hold,
              so pinFoe says no, it keeps the blow and the stagger, and she rides up off it exactly as she always did. */
@@ -12022,7 +12026,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
       } else { heroCut(e); swordEffect(e); if (isReaper()) dkLanded(e); if (isGeo() && GEO && P.heavySwing && !P.heavy && !P.swingKind && !P.plunge && !dashStriking() && e.alive) { GEO.fistHit(e); geoFistFx(e); }   /* (claude/geoid) THE STONE FIST: her third jab knocks up */ if (isGeo() && GEO && GEO_K.pop.feel && !P.plunge) geoBlowFx(e, !!(P.heavySwing && !P.heavy && !P.swingKind));   /* (claude/geopop c) every landed blow: chips, grit, the geode pulses */ if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
-          const ram = (P.bashing && tal('bash') ? 2 : 1) * (P.bashing ? 1 + 0.15 * prk('kbash') : 1);   /* BULL RUSH: the charge's bash staggers twice as long */
+          const ram = (P.bashing && tal('bash') ? trm(2, 'bash') : 1) * (P.bashing ? 1 + 0.15 * prk('kbash') : 1);   /* BULL RUSH: the charge's bash staggers twice as long */
           if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
           else e.stagger = Math.max(e.stagger || 0, (e.maxHp ? 0.2 : 0.35) * ram);   /* a boss, or a mini under the knight's bash: rocked and its poise taken, never thrown */
           if (isReaper()) markFoe(e);
@@ -29392,6 +29396,7 @@ function updateEnemies(dt) {
     if (e.t === 'abbot') { if (bossActive || rushOn()) { beastSeen('abbot'); updateFalseAbbotBoss(e, dt); } continue; }
     dt = DT_FRAME; if ((e === boss && bossActive) || (e.xpRole === 'mini' && miniActive)) { const g = bpGap(e, bpAct, e !== boss, windingUp(e)); dt = DT_FRAME * (g > 1 ? g * DFM.df('gap') : g === 1 && DFM.df('open') !== 1 && !windingUp(e) && GB.openOf(e) === true ? 1 / DFM.df('open') : g); if (!P.dead && !e.dying) { const kg = Math.abs(e.x - P.x) - ((e.w || 16) / 2 + 5), kv = Math.abs((e.y - (e.h || 16) / 2) - (P.y - 10)) > 80 ? 99 : 0; dt *= bpKite(e, DT_FRAME, kg + kv, windingUp(e) || (e.t === 'windcaller' && e.mode === 'fallen') || GB.openOf(e) === true);   /* (claude/batch139 A11, claude/smallfix10) a told OPENING keeps its full length: the anti-kite clock shortened the Windcaller's fall to 2.7 s; EVERY boss's OPEN_RULE window (src/boss-greed.js: planted, beached, winded, crash, hot, buried, cutRec ...) is now skipped by it the same way */ } }   /* (claude/wardenid) THE ANTI-KITE CLOCK (src/boss-pressure.js KITE): a boss the hero has not been within reach of for 5 s runs his idle clock faster (replaces the DUEL_HERO rows) */   /* (claude/difficulty) MASTER's gap on top of the act's dial; while he is OPEN his clock runs at 1/open, so the told opening (and its gold bar) lasts x open */   /* (claude/flasklever) the act's gap dial, in his idle moments only */
     if (e.hallowSlowT > time && e !== boss && !e.maxHp && !e.mini && e.xpRole !== 'mini') dt = DT_FRAME * HG.patch.slow;
+    if (e.geoGravelT > time && e !== boss && !e.maxHp && !e.mini && e.xpRole !== 'mini') dt *= e.geoGravelK;   /* (claude/traitdata-a) GRAVEL: a common or elite beside a standing stone of hers moves slower (geomancer.js sets the stamp) */
     if (e.bkPoolT > time && e !== boss && !e.maxHp && !e.mini && e.xpRole !== 'mini') dt = DT_FRAME * BKIT.BLOOD.host.pool.slow;   /* (claude/bkkit2) RED GROUND: a foe wading his blood (never a boss or a mini) */
     if (e.fa) { FOA.tick(e, dt); const k = FOA.clock(e, windingUp(e)); if (k !== 1) { faDt = dt; dt *= k; } }   /* (claude/foepass) HASTED: its own clock runs fast - never through a windup (src/foe-affix.js); the next creature gets back the dt it would have had (faDt) */   /* (PALADIN 4) A PATCH OF HOLY LIGHT (SANCTUARY STEP, VERDICT at 3+): a common foe or an elite crossing it moves at HG.patch.slow - never a boss or a mini */   /* (claude/flasklever) the act's gap dial, in his idle moments only */
     if (GLH && GLH.owns(e)) { if (miniActive) { beastSeen('gangleader'); GLH.update(e, dt); } continue; }
@@ -30168,9 +30173,10 @@ function berserkerKit(dt, canAct, tired) {
 /* ==== THE RANGER'S KIT (src/ranger.js, claude/ranger). main.js owns the world, the input and the tal() reads; the module owns her arrows, her quiver, her
    focus, the bow-bash and the snare (all of it on the hero: P.rgQ / P.rgFocus / P.rgArrows...). Her nine bought actives are pressed here (skillPress /
    cdReady / spend, like everyone's: none is free); her passives are read here and handed over by name. ==== */
-const rgTal = () => ({ deep: tal('rgDeep'), steady: tal('rgSteady'), fletch: tal('rgFletch'), far: tal('rgFar'), bodkin: tal('rgBodkin'), twin: tal('rgTwin'), eagle: tal('rgEagle'),
-  keen: tal('rgKeen'), longMark: tal('rgLongMark'), snares: tal('rgSnares'), toothed: tal('rgToothed'), trail: tal('rgTrail'), kill: tal('rgKill'), apex: tal('rgApex'),
-  bashLong: tal('rgBashLong'), bashBack: tal('rgBashBack'), highFlip: tal('rgHighFlip'), softStep: tal('rgSoftStep'), airDraw: tal('rgAirDraw'), cover: tal('rgCover'), last: tal('rgLast') });
+const trOn = (id, on) => (on ? trk(id) : 0);   /* (claude/traitdata-a) a worn TRAIT hands its kit module its RANK scale (0.70 / 0.85 / 1; exactly 1 while the flag is off), an unworn one 0; a core id stays 0/1 */
+const rgTal = () => ({ deep: tal('rgDeep'), steady: tal('rgSteady'), fletch: tal('rgFletch'), far: tal('rgFar'), bodkin: trOn('rgBodkin', tal('rgBodkin')), twin: trOn('rgTwin', tal('rgTwin')), eagle: trOn('rgEagle', tal('rgEagle')),
+  keen: trOn('rgKeen', tal('rgKeen')), longMark: trOn('rgLongMark', tal('rgLongMark')), snares: trOn('rgSnares', tal('rgSnares')), toothed: trOn('rgToothed', tal('rgToothed')), trail: trOn('rgTrail', tal('rgTrail')), kill: trOn('rgKill', tal('rgKill')), apex: tal('rgApex'),
+  bashLong: tal('rgBashLong'), bashBack: trOn('rgBashBack', tal('rgBashBack')), highFlip: trOn('rgHighFlip', tal('rgHighFlip')), softStep: trOn('rgSoftStep', tal('rgSoftStep')), airDraw: trOn('rgAirDraw', tal('rgAirDraw')), cover: trOn('rgCover', tal('rgCover')), last: tal('rgLast') });
 RGK = makeRanger({ boltHome: s => sendBoltHome(s, 'snatch'), get P() { return P; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, get LW() { return LW; }, get boss() { return boss; }, TS, SFX,
   isRg: () => isRg(), tal: rgTal, spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, blockCost: d => CM.blockCost(d, tal('steady')), STAM: CM.STAM, exhaust: p => CM.exhaust(p), ST, teachGuard: () => braceLesson(),   /* (claude/heroblocksb) the bow guard's price */
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), knockSkip: e => KNOCK_SKIP.has(e.t), box: b => box(b), overlap: (a, b) => overlap(a, b),
@@ -30209,8 +30215,9 @@ function rangerKit(dt, canAct, tired) {
 /* ==== THE GEOMANCER'S KIT (src/geomancer.js). main.js owns the world, the input and the tal() reads; the module owns the stone she
    raises. Her nine bought actives are pressed here (skillPress / cdReady / spend, like everyone's); her passives are read here and
    handed over by name. ==== */
-const geoTal = () => ({ fourth: tal('geoFourth'), lasting: tal('geoLasting'), tall: tal('geoTall'), hardLand: tal('geoHardLand'), returnFire: tal('geoReturn'),
-  shrapnel: tal('geoShrapnel'), bulwark: tal('geoBulwark'), rumble: tal('geoRumble'), wideQuake: tal('geoWideQuake'), aftershock: tal('geoAftershock') });   /* (claude/ults: rumble = the AVALANCHE boulders roll half as far again, wideQuake = they hit half again as hard) */
+const geoTal = () => ({ fourth: trOn('geoFourth', tal('geoFourth')), lasting: tal('geoLasting'), tall: tal('geoTall'), hardLand: tal('geoHardLand'), returnFire: tal('geoReturn'),
+  shrapnel: trOn('geoShrapnel', tal('geoShrapnel')), bulwark: trOn('geoBulwark', tal('geoBulwark')), rumble: trOn('geoRumble', tal('geoRumble')), wideQuake: trOn('geoWideQuake', tal('geoWideQuake')), aftershock: TRT.traitsShip() ? trOn('geoAftershock', tal('geoAftershock')) : 0,   /* (AFTERSHOCK read nothing before the split: it is wired only while the flag is on) */
+  gravel: trOn('geoGravel', tal('geoGravel')), lode: trOn('geoLode', tal('geoLode')), scree: trOn('geoScree', tal('geoScree')), moss: trOn('geoMoss', tal('geoMoss')) });   /* (claude/traitdata-a) a worn trait hands geomancer.js its RANK scale, an unworn one 0 */   /* (claude/ults: rumble = the AVALANCHE boulders roll half as far again, wideQuake = they hit half again as hard) */
 GEO = makeGeomancer({ teach: k => geoTeach(k), get boss() { return boss; }, get parts() { return parts; }, refund: n => CM.refund(P, n), tierNow: () => geoTierNow(),   /* (claude/chargetiers: THE RISING PILLAR gives her wind back as it rises) */ get P() { return P; }, get players() { return players; }, get L() { return L; }, get enemies() { return enemies; }, get seeds() { return seeds; }, get time() { return time; }, get VW() { return VW; }, get VH() { return VH; }, get camX() { return camX; }, get camY() { return camY; }, reduceMotion: () => !!SET.reduceMotion, pullBack: (a, t) => pullBack(a, t),   /* (claude/geofix) the view, for the MOUNTAIN COLLAPSE's wave and its pull-back */
   T, TS, get LW() { return LW; }, get LH() { return LH; }, get tileSpr() { return tileSpr; },
   isSolid: (x, y) => isSolid(x, y), tileAt: (x, y) => tileAt(x, y), isOneWay: t => isOneWay(t), resolveTiles: () => resolveTiles(), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d),
@@ -30236,7 +30243,7 @@ FWARD = makeFlameWard({ burnHome: s => burnBoltHome(s), get P() { return P; }, g
    damagePlayer0 (takes), lowSweep (lowSwing), attackBox (box), swingKindHit (trip, poke), firePistol (steady), a windup's first frame
    (onTell) and the hero's draw (the poses, draw) */
 CA = makeCrouchA({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get time() { return time; }, get PROG() { return PROG; }, get levelIndex() { return levelIndex; },
-  hint: m => hintSay('mechanic', 5, m), hero: () => hero(), SFX, ST, tal: k => tal(k), number: (x, y, t, c) => number(x, y, t, c), dust: (x, y, n) => dust(x, y, n), sparks: (x, y, d, n) => sparks(x, y, d, n),
+  hint: m => hintSay('mechanic', 5, m), hero: () => hero(), SFX, ST, tal: k => tal(k), trk: k => trk(k), trLack: k => trLack(k), number: (x, y, t, c) => number(x, y, t, c), dust: (x, y, n) => dust(x, y, n), sparks: (x, y, d, n) => sparks(x, y, d, n),
   shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), gainResolve: n => gainResolve(n), trialEvent: k => trialEvent(k), wardJav: () => !!wardJav,
   blockFx: (x, y, sd) => { const bj = JUICE.block; hitstop(bj.stop); shakeCam(bj.shake, -P.face * bj.kick); SFX[bj.sfx](); impactAt(x, y, 'steel'); ringAt(x, y, 9, '#c9d1dc', 0.2); sparks(x, y, sd, 6); },
   tipReach: e => tipReach(e), box: e => box(e), braceStops: e => BRACE_STOPS.has(e.t + '|' + (e.mode || '')), big: e => lcBig(e) || !!e.maxHp || !!e.mini, impale: e => impale(e),
@@ -31310,7 +31317,7 @@ const holyShield = () => false;   /* (PALADIN 4) DAWNFALL drops the safe landing
 function holySafe() { if (!(P.holyNoteT > time)) { P.holyNoteT = time + 1.4; number(P.x, P.y - 32, 'SAFE LANDING', PLG.HAMMER.glow); ringAt(P.x, P.y - 4, 22, PLG.HAMMER.glow, 0.35); motes(P.x, P.y - 8, 8, 12); SFX.medal && SFX.medal(); } }
 function hammerSlam(e, guarded) {
   const H = PLG.HAMMER, was = guarded || hammerGuarded(e); P.hammerHit = true; P.hammerGuard = !!guarded;
-  try { hurtAs('plunge', e, Math.round(plungeDmg() * H.dmg * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true); } finally { P.hammerHit = false; P.hammerGuard = false; }
+  try { hurtAs('plunge', e, Math.round(plungeDmg() * H.dmg * (tal('bounding') ? Math.min(trm(2, 'bounding'), 1 + 0.25 * trk('bounding') * pogoChain) : 1)), P.x, true); } finally { P.hammerHit = false; P.hammerGuard = false; }
   P.consecrate = false; dawnfall(e.x, e.y, e);   /* (PALADIN 4) DAWNFALL: the pillar round the struck foe, the aura lit, +1 Conviction (was: H.light Light and a safe landing) */
   ringAt(e.x, e.y - (e.h || 16) / 2, 30, H.glow, 0.35); motes(e.x, e.y - 10, 10, 14); SFX.hammerfall && SFX.hammerfall(); shakeCam(5); hitstop(0.09); kitPose(P, 'hammerHit', 0.24);
   number(e.x, e.y - (e.h || 16) - 14, 'DAWNFALL', H.glow);
@@ -31450,7 +31457,7 @@ function startSwing() { P.dkFed = false; P.dkDrained = false; P.bkLashSaid = fal
     if (ripHeavy) { const lk = Math.min(KC.max, P.links | 0); P.kRip = lk; if (lk >= 1) P.kOpen = true; if (lk >= KC.max) { P.finisher = true; P.valiant = true; P.finEcho = new Set(); P.links = 0; P.linkT = 0; P.linkKeep = 0; SFX.parry(); number(P.x, P.y - 44, 'FINISHER', '#ffd36b'); dust(P.x - P.face * 2, P.y, 8); chips(P.x - P.face * 4, P.y - 2, -P.face, 5, ['#8a8272', '#c9b27c'], 90, 520, 1); if (P.ground) P.vx = P.face * 150; zoomKick(1.05, 0.2); }   /* (claude/chargefeet) PHYSICAL: he plants his heel and LUNGES into the cut - the dust behind him, the step forward - not a ring of light (reach and damage are the same boxes) */
       if (tech('kcounter')) { P.counterThrust = true; P.kOpen = true; } }
     else if (P.heavySwing) { P.kBash3 = true; kitPose(P, 'kBash', 0.26); } }
-  P.swingMul = (P.heavySwing ? (isGeo() ? GEO_K.fist.mul : P.wLong ? WID.long.mul : 1.5) + 0.25 * tal('thirdCut') : 1) * (rip && P.ripSrc !== 'parry' ? 2 : 1) * (P.finisher ? 1.15 : 1) * (P.counterThrust ? 2.0 / 1.5 : 1);   /* a COUNTER-THRUST (L25) is k 2.0 against the third cut's 1.5 */   /* (claude/riposte) a PARRY's riposte pays x2 on the foe it opened (src/riposte.js payoff); the RIPOSTE talent's plain block still doubles the swing */
+  P.swingMul = (P.heavySwing ? (isGeo() ? GEO_K.fist.mul : P.wLong ? WID.long.mul : 1.5) + 0.25 * tal('thirdCut') : 1) * (rip && P.ripSrc !== 'parry' ? (P.ripSrc === 'talent' ? trm(2, 'riposte') : 2) : 1) * (P.finisher ? 1.15 : 1) * (P.counterThrust ? 2.0 / 1.5 : 1);   /* a COUNTER-THRUST (L25) is k 2.0 against the third cut's 1.5 */   /* (claude/riposte) a PARRY's riposte pays x2 on the foe it opened (src/riposte.js payoff); the RIPOSTE talent's plain block still doubles the swing */
   if (rip) { P.riposteT = 0; P.riposteHeavy = false; P.ripSrc = null; if (hero() === 'knight') impactAt(P.x + P.face * 10, P.y - 10, 'steel'); else ringAt(P.x + P.face * 10, P.y - 10, 12, '#ffd36b', 0.2); }
   if (rip && !ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); }   /* (claude/riposte) every hero's riposte cut says so */
   if (ripHeavy) { P.ripostes = (P.ripostes || 0) + 1; SFX.riposte(); number(P.x, P.y - 30, 'RIPOSTE', '#ffd36b'); ringAt(P.x + P.face * 12, P.y - 11, 22, '#fff6c8', 0.25); streaks(P.x + P.face * 12, P.y - 12, 7, ['#ffffff', '#ffd36b'], 190); zoomKick(1.03, 0.14); }
@@ -31479,7 +31486,7 @@ function tipPay(e) {
     if (tal('ringing')) e.stagger = Math.max(e.stagger || 0, 0.35);
     /* EXACTNESS: caught on the point in the middle of a wind-up, it loses the blow entirely - the reward for
        standing at the right distance and waiting, which is the whole of how she is meant to be played. */
-    if (tal('exact') && windingUp(e)) { flinch(e); number(e.x, e.y - (e.h || 16) - 26, 'OPENED UP', '#8fd160'); }
+    if (tal('exact') && windingUp(e) && (trk('exact') >= 0.85 || !(e.elite || e.mini || e.maxHp))) { flinch(e);   /* EXACTNESS: rank I takes the blow off a common only; II and III any */ number(e.x, e.y - (e.h || 16) - 26, 'OPENED UP', '#8fd160'); }
     /* DEEP SET: the further out it landed, the harder it bit - up to a fifth more at full stretch */
     /* THE POINT FINDS THE GAP (claude/wardenkit): a boss or a mini IN HIS OPENING (src/boss-greed.js openOf: the same window the chip reads) has no guard
        for the point to glance off, and the tip pays TIP_GAP, a full stretch's worth. Her damage per opening measured ~0.8 of the knight's (fewer blows
@@ -31538,7 +31545,7 @@ const stats_wlong = { hits: 0, drives: 0, recoils: 0 };
 function heroCut(e) { if (P.rallyN > 0 && e && e.alive) { P.rallyN--; poiseLeanK(e, Math.max(3, (poiseMax(e) || 0) * 0.06)); }   /* STANDING ORDERS: the next three cuts of the rallied break poise faster */
   const crack = isBz() && !!BZK && !P.heavy && BZK.rend(e); if (crack) P.heavy = true; if (HPK) HPK.valiantPre(e); try { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); } finally { if (crack) P.heavy = false; } if (HPK) { HPK.valiantPost(e); HPK.counterPost(e); } if (isRg() && RGK && P.heavySwing && !P.heavy && !P.dashCut && e.alive) RGK.kickHit(e); if (isWarden() && P.wLong && !P.swingKind) wardenLongPost(e); if (isWarden() && P.wReachT > 0) wardenReachPost(e); if (hero() === 'knight') knightRider(e); }   /* (claude/heropassa) VALIANT STRIKE through the guard; THE COUNTER-THRUST drives it back out to the point */
 function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT (Daniel 10-02, Q2): the +3 for a landed blow is the third cut's and the heavy's only - it paid mashing */ P.lastStruck = e;   /* (claude/knightid: nothing fills the chain from a cut) */ const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
-  if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
+  if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2 * trk('unbroken');   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
   else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintSay('mechanic', 4, DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DODGE. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DODGE CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'); }
@@ -31549,15 +31556,15 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */
   if (isPaladin() && P.wrathT > 0) { mul *= 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
   if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 2; }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
-  if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? 2 : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
+  if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? trm(2, 'rgLast') : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
   if (isWarden()) { if (wardJav) mul *= 0.35; else { mul *= tipPay(e); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
   if (isWarden() && P.wReachT > 0) mul *= SKK.K_WARDEN_REACH.perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */
   return extra + Math.round(mul * swordDmg() * (P.swingMul || 1)); }
 /* COUNTERSTROKE (the knight's perfect guard) and RIPOSTE (the freebooter's turned blow): the blade answers by itself, a beat after, at full
    swing damage - late enough that whatever the parry opened is open */
-function counterCut(e, name) { P.counter = { e, t: 0.08, name }; }
+function counterCut(e, name, k) { P.counter = { e, t: 0.08, name, k }; }
 function counterLand(c) { const e = c.e; if (!e || !e.alive || P.dead) return; const dir = Math.sign(e.x - P.x) || P.face;
-  hurtEnemy(e, swordDmg(), P.x, false); trail.push({ x0: P.x + dir * 2, y0: P.y - 15, x: P.x + dir * 26, y: P.y - 5, life: 0.14 });
+  hurtEnemy(e, c.k < 1 ? Math.max(1, Math.round(swordDmg() * c.k)) : swordDmg(), P.x, false); trail.push({ x0: P.x + dir * 2, y0: P.y - 15, x: P.x + dir * 26, y: P.y - 5, life: 0.14 });   /* COUNTERSTROKE answers at 70% / 85% / 100% of a swing by rank */
   sparks(e.x, e.y - e.h / 2, dir, 8); SFX.slash(); number(e.x, e.y - e.h - 20, c.name, '#fff6e0'); }
 function castEmber(dir) { noteVerb('cast');
   if (P.dead || P.hurt > 0 || P.asleep > 0 || P.full) return;

@@ -64,11 +64,55 @@ export const TRAIT_SPLIT = {
     /* today's order, spread to L18; the DEFAULT trait is learned FIRST (the plan's slot-1 default must exist at L1-2). TRAITDATA-A may re-level. */
     learnAt: { vengeance: 2, bounding: 4, plated: 5, evasion: 7, bleed: 8, bash: 10, flurry: 12, unbroken: 14, counterstroke: 16, endlessSky: 18, riposte: 6 },
   },
-  pyro: null, paladin: null, pirate: null, reaper: null, warden: null, geomancer: null, berserker: null, ranger: null,   /* TRAITDATA-A (warden, ranger, geomancer) / -B (pyro, pirate, reaper, berserker); paladin rides his rework lane */
+  /* TRAITDATA-A (claude/traitdata-a): WARDEN, RANGER, GEOMANCER (knight above). Ids are catalog ids; every catalog passive of the hero is listed once (a CUT sits in retired: kept, never on). */
+  warden: {   /* reach is the verb */
+    core: ['keenPoint', 'wideGuard', 'standFast', 'ringing', 'sendBack'],
+    traits: ['vaulter', 'throughAndThrough', 'giveGround', 'exact', 'widerRow', 'everReady', 'pinTwist', 'freeHand', 'skirmisher', 'spitted'],
+    merged: { vaulter: ['longVault'], throughAndThrough: ['driveHome'], freeHand: ['airPoint'] },   /* the second passive IS the host's rank-III side */
+    folded: { openPoint: 'L24:POINTED', counterpoise: 'L27:HAFT CATCH', spearhead: 'L24:RUN THROUGH B', holdTheLine: 'L29:PHALANX' },   /* slottable traits until the WARDEN fork lane ships the side (FOLD RULE); the fork keys are provisional */
+    retired: ['deepSet'],   /* CUT (= the tip rule) */
+    shared: [],
+    defaults: ['vaulter', 'everReady'],
+    /* today's order spread to L18 (vaulter 3 -> 2 ... skirmisher 24 -> 18); folded ids arrive by L18 too */
+    learnAt: { vaulter: 2, throughAndThrough: 4, giveGround: 5, exact: 7, widerRow: 8, everReady: 10, pinTwist: 12, freeHand: 14, spitted: 16, skirmisher: 18, openPoint: 6, counterpoise: 13, spearhead: 17, holdTheLine: 18 },
+  },
+  ranger: {   /* distance and breath */
+    core: ['rgDeep', 'rgFletch', 'rgSteady', 'rgFar', 'rgBashLong'],
+    traits: ['rgKeen', 'rgLongMark', 'rgBashBack', 'rgToothed', 'rgSoftStep', 'rgBodkin', 'rgCover', 'rgKill', 'rgEagle', 'rgLast'],
+    merged: { rgLongMark: ['rgTrail'] },
+    folded: { rgSnares: 'L29:SNARE B', rgHighFlip: 'L21:HIGH FLIP B', rgAirDraw: 'L21:HIGH FLIP B', rgTwin: 'L32:SPLIT SHOT A' },
+    retired: ['rgApex'],   /* CUT (mark stacking) */
+    shared: [],
+    defaults: ['rgKill', 'rgCover'],
+    /* the two DEFAULTS arrive early (rgKill 2, rgCover 10); the rest follow today's order */
+    learnAt: { rgKill: 2, rgLongMark: 4, rgKeen: 5, rgBashBack: 7, rgSoftStep: 8, rgCover: 10, rgToothed: 12, rgBodkin: 14, rgEagle: 16, rgLast: 18, rgSnares: 6, rgHighFlip: 9, rgAirDraw: 14, rgTwin: 17 },
+  },
+  geomancer: {   /* the map is her resource: 4 core, 5 old traits + 4 NEW ones (NEW_TRAITS below; they are not in the catalog, so the flag-off game never sees them) */
+    core: ['geoLasting', 'geoReturn', 'geoHardLand', 'geoTall'],
+    traits: ['geoRumble', 'geoAftershock', 'geoShrapnel', 'geoBulwark', 'geoFourth', 'geoGravel', 'geoLode', 'geoScree', 'geoMoss'],
+    merged: { geoRumble: ['geoWideQuake'] },
+    folded: {},
+    retired: [],
+    shared: [],
+    defaults: ['geoAftershock', 'geoShrapnel'],
+    words: { geoBulwark: { name: 'DEEP ROOTS' } },   /* the knight owns BULWARK */
+    learnAt: { geoAftershock: 2, geoRumble: 4, geoShrapnel: 5, geoGravel: 7, geoMoss: 8, geoLode: 10, geoScree: 12, geoBulwark: 14, geoFourth: 16 },
+  },
+  pyro: null, paladin: null, pirate: null, reaper: null, berserker: null,   /* TRAITDATA-B (pyro, pirate, reaper, berserker); paladin rides his rework lane */
 };
 
+/* NEW TRAITS (TRAITDATA-A): passives that never existed in the catalog. They live HERE, not in SKILLS, so with TRAITS_SHIP off nothing in the game can see them (no level-up line, no tree row, never on).
+   passiveOn / tal() ask isNewTrait() when the flag is on. level = arrival (learnAt overrides). */
+export const NEW_TRAITS = [
+  { id: 'geoGravel', hero: 'geomancer', name: 'GRAVEL', desc: 'foes beside a standing stone of hers move a quarter slower. commons and elites only', active: false, level: 7 },
+  { id: 'geoLode', hero: 'geomancer', name: 'LODESTONE', desc: 'the recall drags the small foes it passes a tile along its path', active: false, level: 10 },
+  { id: 'geoScree', hero: 'geomancer', name: 'SCREE', desc: 'the stone fist plants its knee stone with a small ripple along the ground', active: false, level: 12 },
+  { id: 'geoMoss', hero: 'geomancer', name: 'MOSSBACK', desc: 'standing against a stone of hers mends her a little: the stone gives up three in a hundred of her health, then is bare', active: false, level: 8 },
+];
+export const isNewTrait = (h, id) => NEW_TRAITS.some(n => n.hero === h && n.id === id);
 const NODE = {};   /* hero -> id -> catalog node (own lookup: no import of progression.js) */
 for (const n of SKILLS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
+for (const n of NEW_TRAITS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
 const splitOf = h => { const s = TRAIT_SPLIT[h]; return s && ((s.core && s.core.length) || (s.traits && s.traits.length)) ? s : null; };
 export const hasSplit = h => !!splitOf(h);
 
@@ -83,6 +127,8 @@ export function kindOf(h, id) {
   if ((s.shared || []).includes(id)) return 'shared';
   return 'cut';
 }
+/* a card name the split changes (geoBulwark -> DEEP ROOTS); only the menu and the level-up line read it, and only while the flag is on */
+export const traitWord = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return (s && s.words && s.words[id]) ? Object.assign({}, n, s.words[id]) : n; };
 export const mergedHost = (h, id) => { const s = splitOf(h); if (s && s.merged) for (const host of Object.keys(s.merged)) if (s.merged[host].includes(id)) return host; return null; };
 /* ids a hero may WEAR in a slot: his traits and folded ones, and the shared six */
 export const slottable = h => { const s = splitOf(h); return s ? [...(s.traits || []), ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id)), ...SHARED_TRAITS.map(x => x.id)] : []; };
@@ -124,6 +170,8 @@ export const sharedOn = (p, h, id, lv) => isShared(id) && wornOf(p, h, lv).inclu
 /* the number a trait scales by: RANK I/II/III while the flag is on and the id is a trait (or its merge); 1 for core and for everything while the flag is off */
 export const traitScale = (p, h, id, lv) => { if (!ship) return 1; const k = kindOf(h, id); return k === 'trait' || k === 'folded' || k === 'merged' || k === 'shared' || (!k && isShared(id)) ? traitMul(lv) : 1; };
 
+/* how far a worn trait is BELOW rank III: 1 at rank I, 0.5 at II, 0 at III (and 0 while the flag is off). For a trait whose price shrinks with rank (PLATED's back-cover wind, FLURRY's cost). */
+export const rankLack = s => Math.max(0, (1 - s) / 0.3);
 /* THE SAVE: p.traits = { hero: [id|null, id|null] }, no version bump. A bad entry is DROPPED, never an error. Returns true if it changed anything. */
 export function validateTraits(p) {
   if (!p || typeof p !== 'object' || p.traits === undefined) return false;
@@ -176,7 +224,7 @@ export function wearTrait(p, h, id, index, lv) {
 /* THE MENU ROWS (main.js skills TRAITS tab): core, then traits, then shared. tkind drives the label; level is the arrival level shown as 'LV n'. */
 export function traitRows(h) {
   const s = splitOf(h); if (!s) return [];
-  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, n, { tkind, level: tkind === 'core' ? n.level : learnLevel(h, id), baseLevel: n.level }) : null; };
+  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, traitWord(h, id), { tkind, level: tkind === 'core' ? n.level : learnLevel(h, id), baseLevel: n.level }) : null; };
   const out = [];
   for (const id of s.core) out.push(row(id, 'core'));
   for (const id of traitIds(h)) out.push(row(id, 'trait'));
@@ -198,8 +246,8 @@ export function traitUpText(h, from, to) {
   const s = splitOf(h), bits = [];
   const got = [...(s.traits || []), ...Object.keys(s.folded || {})].filter(id => learnLevel(h, id) > from && learnLevel(h, id) <= to && NODE[h][id]).sort((a, b) => learnLevel(h, a) - learnLevel(h, b));
   const core = (s.core || []).filter(id => NODE[h][id] && NODE[h][id].level > from && NODE[h][id].level <= to);
-  if (core.length) bits.push(core.length > 1 ? 'CORE: ' + NODE[h][core[0]].name + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + NODE[h][core[0]].name + '.');
-  if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + NODE[h][got[0]].name + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + NODE[h][got[0]].name + '.');
+  if (core.length) bits.push(core.length > 1 ? 'CORE: ' + traitWord(h, core[0]).name + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + traitWord(h, core[0]).name + '.');
+  if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + traitWord(h, got[0]).name + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + traitWord(h, got[0]).name + '.');
   const grow = RANK_AT.slice(1).filter(n => from < n && to >= n);
   if (grow.length) bits.push('YOUR TRAITS GROW (RANK ' + ROMAN[RANK_AT.indexOf(grow[grow.length - 1])] + ').');
   if (from < SECOND_TRAIT_SLOT_LEVEL && to >= SECOND_TRAIT_SLOT_LEVEL) bits.push('A SECOND TRAIT SLOT.');

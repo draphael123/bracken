@@ -45,7 +45,7 @@ export const skillsFor = h => BY_HERO[h]||[];
 export const isPassive = (h,id) => { const n=BY_ID[h]?.[id]; return !!n && !n.active; };
 /* THE TRAITS SPLIT (claude/traitframe, plan sec 3): with TRAITS_SHIP off this is exactly the line it was. With it on, a SPLIT hero's passive is judged by src/traits.js traitGate:
    core as before, a trait only while worn in a slot his level has (and learned), a merged one by its host. A hero with no split rows yet is judged as before. */
-export const passiveOn = (p,h,id,lv) => { const n=BY_ID[h]?.[id]; if(!n||n.active)return false; if(TRT.traitsShip()&&TRT.hasSplit(h))return TRT.traitGate(p,h,id,lv); return lv>=n.level || !!p?.skillOwned?.[h]?.[id]; };
+export const passiveOn = (p,h,id,lv) => { const n=BY_ID[h]?.[id]; if(!n&&TRT.traitsShip()&&TRT.isNewTrait(h,id))return TRT.traitGate(p,h,id,lv); if(!n||n.active)return false; if(TRT.traitsShip()&&TRT.hasSplit(h))return TRT.traitGate(p,h,id,lv); return lv>=n.level || !!p?.skillOwned?.[h]?.[id]; };
 export const wearTrait = TRT.wearTrait, migrateTraits = p => TRT.migrateTraits(p, levelOfXp), traitSlotsAt = TRT.traitSlotsAt;
 /* the ladder: every passive this hero has, in the order they arrive */
 export const passiveLadder = h => skillsFor(h).filter(n=>!n.active).sort((a,b)=>a.level-b.level||a.branch-b.branch||a.row-b.row||a.col-b.col);
