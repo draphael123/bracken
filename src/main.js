@@ -873,7 +873,7 @@ const sword = () => swordById(PROG.sword);
 const KNIGHT_DMG = 1.1;   /* (claude/knighttune, 11-03) THE KNIGHT RETUNE: knightid took every knight boss handicap row and RESOLVE away, so he fell to 27-54% against the demo bosses; his own cut is x1.1 (1.2 and 1.15 measured 78%: the rounded cut steps up a whole point, 1.1 sits at 61% n=36) (a knight-side dial, the bosses are untouched) */
 const swordDmg = () => Math.round(((isPaladin() ? 14 : isPirate() ? 8 : isReaper() ? 16 : isWarden() ? 11 : isGeo() ? 23 : isBz() ? BZ_K.dmg : isRg() ? RG_K.dmg : sword().dmg) + (PROG.items.edge ? 3 : 0) + (PROG.items.edge2 ? 3 : 0) + (PROG.items.edge3 ? 3 : 0) + (PROG.items.edge4 ? 3 : 0) + grow(hero(), heroLevel()).damage) * (isPyro() ? 0.7 : hero() === 'knight' ? KNIGHT_DMG : isReaper() ? 0.95 * ((P.bkEdgeT || 0) > 0 ? BKIT.BLOOD.price.mul : 1) : 1) * (isGeo() && GEO && GEO.empowered() ? GEO_K.ward.empMul : 1));   /* (EMPOWERED: a perfect RUNE-WARD, geomancer.js) */ /* (claude/bloodknight: BLOOD-EDGED after a BLOOD PRICE, x BLOOD.price.mul) */ /* (claude/batch98, Daniel 10-16) THE DEATH KNIGHT x0.95 per hit: dkfeel measured him 81% over 12 seeds at L3, the target is ~75%; his speed (rhythm/price rate) is unchanged */ // +1 damage every second level
 const footTal = () => LV_GROW();   /* SURE FOOTING, FLEET, IRON LUNGS and SWASHBUCKLE were two ranks of this: the woods give it now */
-const dodgeCost = (back = false) => CM.rollCost(P, hero(), { back, shave: Math.round(2 * footTal()) + 3 * tal('lightStep') }), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
+const dodgeCost = (back = false) => CM.rollCost(P, hero(), { back, shave: Math.round(2 * footTal()) + Math.round(3 * tal('lightStep') * trk('lightStep')) }), plungeCost = () => chainCost(Math.max(12, ST.plunge - Math.round(2 * footTal())), P.plungeN || 0);
 /* ==== THE WARDEN'S BACK-STEP. Not the shared roll played backwards: about HALF the ground, out of it sooner, for
    less wind, and she may take a SECOND one straight away - it is for the constant small adjustments of range her
    tip rule is about, not for one big escape. The third waits (STEP_CD). And because it is cheap and repeatable its
@@ -9020,7 +9020,7 @@ const FINISH_SKIP = new Set(['dummy', 'bale', 'heart', 'gill', 'bearer', 'folk',
 const canFinish = (e, dmg) => !e.maxHp && !e.mini && !e.elite && e.alive && !P.jetHit && !P.dead && !FINISH_SKIP.has(e.t) && !e.slamming
   && (P.atk >= 0 || P.heavySwing || P.dash > 0 || P.plunge)
   && (e.broken > 0 || e.burn > 0 || e.bleed > 0 || e.frozen > 0 || e.stagger > 0.5)
-  && e.hp - dmg > 0 && e.hp - dmg <= fullHp(e) * (0.25 + 0.1 * tal('execute'));
+  && e.hp - dmg > 0 && e.hp - dmg <= fullHp(e) * (0.25 + 0.1 * tal('execute') * (tal('execute') ? trk('execute') : 1));
 function finisher(e) {
   const nm = isPyro() ? 'IMMOLATED' : isPaladin() ? 'SMITTEN' : isPirate() ? 'RUN THROUGH' : isReaper() ? 'REAPED' : 'EXECUTED';
   const col = isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : isPirate() ? '#ffd34a' : isReaper() ? '#ff6b6b' : '#fff6e0';
@@ -9390,7 +9390,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (dmg > 0 && isPirate() && tal('turncoat') && P.riposteT > 0) { dmg = dmg * (1 + trk('turncoat')); P.riposteT = 0; number(e.x, e.y - e.h - 16, 'TURNCOAT', '#ffd36b'); }
   if (dmg > 0 && isPyro() && tal('brand') && e.burn > 0) dmg = Math.round(dmg * (1 + 0.5 * trk('brand'))); // BRAND
   if (dmg > 0 && isPyro() && tal('emberHeart') && P.hp > 0 && P.hp < P.maxHp / 3) dmg = Math.round(dmg * (1 + 0.5 * trk('emberHeart'))); // EMBER HEART: cornered, the fire answers
-  if (dmg > 0 && !isPyro() && !isPaladin() && tal('execute') && P.heavySwing && !e.maxHp && e.alive && e.hp - dmg <= fullHp(e) * 0.25 && e.hp - dmg > 0) { dmg = e.hp; number(e.x, e.y - e.h - 16, 'EXECUTION', '#ffd36b'); SFX.heavy(); } // EXECUTION
+  if (dmg > 0 && (TRT.traitsShip() ? (P.heavySwing || P.heavy) && !e.mini : !isPyro() && !isPaladin() && P.heavySwing) && tal('execute') && !e.maxHp && e.alive && e.hp - dmg <= fullHp(e) * 0.25 && e.hp - dmg > 0) {   /* EXECUTIONER (shared, SHARED lane 11-09): flag on = any hero's heavy/finisher, commons + elites only, never a boss or a mini; flag off = the knight's line as it was */ dmg = e.hp; number(e.x, e.y - e.h - 16, 'EXECUTION', '#ffd36b'); SFX.heavy(); } // EXECUTION
   if (isPaladin() && e.t === 'wight') dmg *= 2; // the light is hard on the dead
   if (e.t === 'bale') { if (e.gone > 0) return; e.gone = 3; e.vx = 0; burst(e.x, e.y - 6, 14, COLS.bale, 70, 0.6); SFX.baleBurst(); return; } // a bale bursts, and another comes tumbling after
   if (ONE_HIT.has(e.t) && !e.maxHp && !e.big && !e.mini && !e.elite && !e.rkRide) dmg = Math.max(dmg, e.hp);   /* (claude/rookery2: a RIDE harpy takes a few blows - you knock her down to ride her) */
@@ -11489,7 +11489,7 @@ function updatePlayer(dt) {
       if (!isWarden() && !flipB) P.face = dir;
       if (P.swim) { const ay = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = ay * 190; burst(P.x - P.face * 6, P.y - 8, 8, ['#e8f4f0', '#bfe6f5'], 60, 0.45, -30, 1); } // A SWIMMING DODGE: aim it up or down with the stroke
       else if (airDodge) { P.airDashN = (P.airDashN || 0) + 1; P.dashedAir = P.airDashN >= (tal('airDash') ? 2 : 1); P.airRolled = true;   /* SLIPSTREAM: a second before you land */
-        P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
+        P.vy = (tal('airRoll') || (isPirate() && tal('swash'))) ? Math.min(P.vy, -80 * (tal('airRoll') ? trk('airRoll') : 1)) : Math.min(P.vy, 40);   /* AIR ROLL / SWASHBUCKLE: the one in the air lifts you; without it, it holds the fall level, as the dash did */
         streaks(P.x, P.y - 8, 5, ['#fff6e0', '#c9d1dc'], 90); }
       P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.stepHeld = back && !P.swim && !airDodge ? P.dodge : 0;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */   /* (her back-step on her feet holds its pace: STEP_PACE) */
       P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
@@ -31552,7 +31552,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
   else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintSay('mechanic', 4, DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DODGE. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DODGE CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'); }
   let extra = 0, mul = 1;
-  if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
+  if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum') * trk('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); } if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini) && !P.wLong) e.vx = P.face * 170; }   /* (claude/wardenid: the long thrust DRIVES them to the point instead: wardenLongPost) */ sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); }
   if (isPirate() && bossActive && (e.maxHp || e.mini) && time - (P.bossPurseAt || -9) > 1.2) { P.bossPurseAt = time; piratePurse(false); }   /* his coin passives still pay in a coinless arena (piratePurse) */
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */

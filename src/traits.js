@@ -37,15 +37,16 @@ export const MAX_TRAIT_SLOTS = TRAIT_SLOT_LEVELS.length;
 export const SECOND_TRAIT_SLOT_LEVEL = TRAIT_SLOT_LEVELS[1];
 export const traitSlotsAt = lv => TRAIT_SLOT_LEVELS.filter(n => (lv || 0) >= n).length;
 
-/* THE SHARED SIX (hero-agnostic code is SHARED lane's job; here only the rows, the unlock and the slot rule). legacy: the catalog id a hero already has for it.
+/* region ids VERIFIED against src/level.js LEVELS (SHARED lane 11-09): stockade kings moor spire fields mage ('mage' = THE MAGE'S FOLLY; 'folly' was a guess). tools/traits.mjs re-checks them against level.js.
+   THE SHARED SIX (hero-agnostic code is SHARED lane's job; here only the rows, the unlock and the slot rule). legacy: the catalog id a hero already has for it.
    needs: the campaign level id whose first clear (by ANY hero: the account) unlocks it. */
 export const SHARED_TRAITS = [
-  { id: 'airRoll', name: 'AIR ROLL', what: 'roll in the air', needs: 'stockade', needsName: 'THE STOCKADE', legacy: { knight: 'airRoll' } },
+  { id: 'airRoll', name: 'AIR ROLL', what: 'roll in the air', needs: 'stockade', needsName: 'THE STOCKADE', legacy: { knight: 'airRoll', pirate: 'swash' } },
   { id: 'lightStep', name: 'LIGHT STEP', what: 'a lighter foot', needs: 'kings', needsName: 'KINGSWOOD', legacy: { knight: 'lightStep' } },
   { id: 'momentum', name: 'MOMENTUM', what: 'speed carries', needs: 'moor', needsName: 'GALE MOOR', legacy: { knight: 'momentum' } },
   { id: 'hangCut', name: 'HANGING CUT', what: 'a cut from a ledge', needs: 'spire', needsName: 'THE MONASTERY', legacy: { knight: 'hangCut' } },
   { id: 'airDash', name: 'SLIPSTREAM', what: 'a dash in the air', needs: 'fields', needsName: 'THE HEXED FIELDS', legacy: { knight: 'airDash' } },
-  { id: 'execute', name: 'EXECUTIONER', what: 'a foe under a quarter health dies to a heavy blow (never a boss)', needs: 'folly', needsName: "THE MAGE'S FOLLY", legacy: { knight: 'execute', reaper: 'winnow' } },
+  { id: 'execute', name: 'EXECUTIONER', what: 'a foe under a quarter health dies to a heavy blow (never a boss)', needs: 'mage', needsName: "THE MAGE'S FOLLY", legacy: { knight: 'execute', reaper: 'winnow' } },
 ];
 const SHARED_BY_ID = Object.fromEntries(SHARED_TRAITS.map(s => [s.id, s]));
 export const isShared = id => !!SHARED_BY_ID[id];
