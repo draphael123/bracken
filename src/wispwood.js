@@ -31,7 +31,8 @@ export function buildWispwood({ painter, T, TS }) {
   const L = painter(W, H), { set, ent } = L;
   const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };
   const ground = (x0, x1, top) => fill(x0, x1, top, H - 1, T.SOLID);
-  const stump = (x0, x1, top) => fill(x0, x1, top, H - 1, T.SOLID);          /* a drowned stump: rock-hard, down to the mere's bottomless floor */
+  const trunks = [];                                                           /* the dead oaks' trunks (the art lane's bark kit: src/redraw/wispwood_art.js) */
+  const stump = (x0, x1, top) => { fill(x0, x1, top, H - 1, T.SOLID); trunks.push({ x0, x1, top, bot: H - 1 }); };          /* a drowned stump: rock-hard, down to the mere's bottomless floor */
   const bough = (x0, x1, y) => fill(x0, x1, y, y, T.ONEWAY);                 /* a real dead bough (one-way) */
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
@@ -62,7 +63,7 @@ export function buildWispwood({ painter, T, TS }) {
   // ================= 2. THE HOLLOW OAKS (48-119): DEVELOP =================
   ground(48, 57, 26); foe('corpse', 51, 25, 'oakRoot', { face: -1, risen: true }); pool(48, 25, 7);
   sign(49, 25, WW_SAY.oaks);
-  fill(56, 57, 15, 25, T.SOLID); bough(54, 61, 14);                                 /* OAK ONE: its trunk on the bank, its crown a real bough at row 14 */
+  fill(56, 57, 15, 25, T.SOLID); trunks.push({ x0: 56, x1: 57, top: 15, bot: 25 }); bough(54, 61, 14);                                 /* OAK ONE: its trunk on the bank, its crown a real bough at row 14 */
   spectral(53, 55, 23, 'rung'); spectral(52, 54, 20, 'rung'); spectral(53, 55, 17, 'rung');   /* the pale ladder up its west side */
   coins([53, 22], [53, 16]);
   mere(58, 89); sign(58, 13, WW_SAY.mere);
@@ -133,7 +134,7 @@ export function buildWispwood({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 31 }, pools: [], falls: [],
     arena, wispwood: true,
-    ww: { spans, candles, lamps, stones, pools, meres, catchY: WW.catchY, sections: SECTIONS },
+    ww: { spans, candles, lamps, stones, pools, meres, trunks, catchY: WW.catchY, sections: SECTIONS },
     calm: [[0, W - 1, 0, H - 1]], noCoin: [[A.x0, W - 1, 0, H - 1]],
     checkRun: 200,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),

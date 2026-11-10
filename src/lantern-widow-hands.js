@@ -1,17 +1,17 @@
 // src/lantern-widow-hands.js - THE LANTERN WIDOW's HANDS (claude/wispwood, the OPUS GREYBOX). src/lantern-widow.js is the fight (pure); this binds it to the world:
 // the heroes' lanterns and the rim lamps (through src/wispwood-hands.js: steal / giveBack / drown / snuff / light), the glade's dark (L.dark while she holds the light),
-// her told blows on the heroes (keyed once a blow), A HERO'S BLOW ON HER LANTERN (strike(hb): the reclaim) or on a false light - and the greybox drawing.
-// GREYBOX (the sonnet art lane draws the final, src/redraw/lantern_widow_art.js to come): every move its own windup pose and release pose (POSE, B16), its own sound (SOUND).
+// her told blows on the heroes (keyed once a blow), A HERO'S BLOW ON HER LANTERN (strike(hb): the reclaim) or on a false light - and the drawing.
+// DRAWING: src/redraw/lantern_widow_art.js (claude/wispart): every move its own windup pose and release pose (POSE, B16, the art's brief), its own sound (SOUND).
 // main.js calls (one tagged line each): spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, lights, clear.
 import * as WDM from './lantern-widow.js';
-import { WD_SAY } from './ww-lines.js';
+import { WD_SAY } from './ww-lines.js'; import * as LWA from './redraw/lantern_widow_art.js';
 const { WD } = WDM;
 
 export const SOUND = { veilTell: s => (s.tell)(), veil: s => (s.whoosh || s.tell)(), wailTell: s => (s.charge || s.tell)(), wail: s => (s.queenShriek || s.roar || s.tell)(),
   handsTell: s => (s.tell)(), hands: s => (s.thud)(), theftTell: s => { (s.charge || s.tell)(); }, theft: s => (s.ghostWake || s.moan || s.whoosh || s.tell)(),
   reclaim: s => { (s.crack || s.thud)(); (s.ui || s.tell)(); }, rise: s => (s.whoosh || s.tell)(), lament: s => (s.queenShriek || s.roar || s.thud)(),
   marchTell: s => (s.bell || s.clank || s.tell)(), march: s => (s.thud)(), pop: s => (s.puff || s.thud)(), wake: s => (s.moan || s.roar || s.tell)() };
-/* THE POSE A MODE WEARS (greybox, local px, facing right, feet at 0,0): lantern hand [x, y], free hand [x, y], veil spread (px), lean, mouth, what shows. Windup and release differ */
+/* THE POSE A MODE WEARS (the art's brief, local px, facing right, feet at 0,0): lantern hand [x, y], free hand [x, y], veil spread (px), lean, mouth, what shows. Windup and release differ */
 export const POSE = {
   sleep: { lan: [10, -16], hand: [-6, -14], veil: 4, lean: 0, mouth: 'shut', bow: true },
   wake: { lan: [12, -30], hand: [-10, -28], veil: 10, lean: -2, mouth: 'open' },
@@ -31,7 +31,6 @@ export const POSE = {
   march: { lan: [12, -30], hand: [-20, -14], veil: 16, lean: 4, mouth: 'open', bell: true },
 };
 const R = Math.round;
-const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 
 export function makeLanternWidowHands(ctx) {
   let S = null; const H = {};
@@ -86,24 +85,19 @@ export function makeLanternWidowHands(ctx) {
   H.barName = e => WD_SAY.name + (WDM.wdOpen(e) ? '  ' + WDM.OPEN_NAME[e.mode] : S && S.stolen ? '  ' + WD_SAY.chase : '');
   H.end = () => { if (S) { const e = { x: 0, y: 0 }; void e; if (WWH()) for (const pp of ctx.players()) WWH().giveBack(pp); if (ctx.L) ctx.L.dark = S.dark0; S.stolen = false; S.rings = []; S.spots = []; S.marches = []; S.falses = []; S.won = true; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, stolen: S.stolen, perch: S.perchI, litT: +S.litT.toFixed(2), n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
-  /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBoss = (g, e, cx, cy, time) => { const p = POSE[e.mode] || POSE.drift, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy) + Math.sin(time * 2.2) * 2;
-    g.globalAlpha = p.dim ? 0.6 : 0.88; const lean = p.lean * f;
-    rect(g, ex - 8 + lean * 0.2 - p.veil / 2, ey - 26, 16 + p.veil, 24, 'rgba(220,226,240,0.35)');           /* the veil, wide in the sweep */
-    rect(g, ex - 6 + lean * 0.3, ey - 26, 12, 26, '#d8dce8'); rect(g, ex - 8 + lean * 0.3, ey - 6, 16, 6, '#c0c6d8');   /* the gown */
-    const hy = ey - 34 + (p.head || 0) + (p.bow ? 4 : 0); rect(g, ex - 4 + lean * 0.5, hy, 8, 8, '#eef2fa'); rect(g, ex - 5 + lean * 0.5, hy - 2, 10, 3, '#bfc8dc');   /* the head, the veil's crown */
-    if (p.mouth !== 'shut') rect(g, ex - 1 + lean * 0.5, hy + 5, 3, p.mouth === 'wide' ? 3 : 1, '#0a0a14');
-    const lx = ex + p.lan[0] * f, ly = ey + p.lan[1], lit = S && !(S.stolen === false && p.dim); rect(g, lx - 4, ly - 5, 9, 10, lit ? (S && S.stolen ? '#fff6c8' : '#ffe9a0') : '#5a5e6a'); rect(g, lx - 5, ly - 7, 11, 2, '#8a8e98');
-    if (S && S.stolen) { rect(g, lx - 6, ly - 7, 13, 1, 'rgba(255,211,107,' + (0.5 + 0.5 * Math.sin(time * 10)).toFixed(2) + ')'); }   /* THE STOLEN LIGHT burns in it: strike it */
-    const hx = ex + p.hand[0] * f, hyy = ey + p.hand[1]; rect(g, hx - 2, hyy - 2, 4, 4, '#eef2fa');
-    if (p.beckon && (time * 6) % 2 < 1) rect(g, hx - 6, hyy - 1, 12, 2, '#ffd36b');
-    if (p.bell) rect(g, hx - 3, hyy - 4, 6, 6, '#c8a040');
-    g.globalAlpha = 1; };
+  /* ================= THE DRAWING (src/redraw/lantern_widow_art.js: claude/wispart) ================= */
+  /* her: every POSE mode through the art; hurt flashes her white; once she has fallen she comes apart into blossom and her lantern drops (about 4.4 s) */
+  H.drawBoss = (g, e, cx, cy, time) => { const dead = !e.alive; let t = 0;
+    if (dead) { if (!S) return; if (S.diedAt == null) { S.diedAt = time; S.deadLan = WDM.lanternAt(e); S.deadAt = { x: e.x, y: e.y }; } t = time - S.diedAt; if (t > 4.4) return; }
+    const p = POSE[dead ? 'reel' : e.mode] || POSE.drift, f = e.face || 1, ex = R((dead ? S.deadAt.x : e.x) - cx), ey = R((dead ? S.deadAt.y : e.y) - cy) + (dead ? Math.min(t, 0.9) * 14 : Math.sin(time * 2.2) * 2);
+    LWA.drawWidow(g, ex, ey, dead ? 'dead' : e.mode, p, f, time, { stolen: !!(S && S.stolen), flash: e.flash > 0, t });
+    if (dead) LWA.drawDeathLantern(g, ex, R(S.G.floorY - cy), S.deadLan.x - cx, S.deadLan.y - cy, t, time); };
+  /* over the world: her wail's rings, the hands that rise, the march and the toll-gate that tells it, her false lights */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const x = v => R(v - cx), y = v => R(v - cy);
-    for (const r of S.rings) { const rad = WD.wail.r * Math.min(1, r.t / WD.wail.act); rect(g, x(r.x - rad) - 2, y(r.y) - 10, 4, 12, 'rgba(200,230,255,0.8)'); rect(g, x(r.x + rad) - 2, y(r.y) - 10, 4, 12, 'rgba(200,230,255,0.8)'); }
-    for (const s of S.spots) { if (s.t > 0.15) rect(g, x(s.x) - 6, y(s.y) - 1, 12, 2, (time * 10) % 2 < 1 ? '#ff4a2a' : '#6a3a8a'); else rect(g, x(s.x) - 4, y(s.y) - 22, 8, 22, '#120a1c'); }
-    for (const m of S.marches) for (let k = 0; k < 4; k++) rect(g, x(m.x - m.dir * k * 14) - 4, y(S.G.floorY) - WD.march.h, 8, WD.march.h, 'rgba(210,220,240,' + (0.7 - k * 0.15).toFixed(2) + ')');
-    for (const f of S.falses) if (!f.dead) rect(g, x(f.x) - 3, y(f.y) - 3, 6, 6, '#fff6c8');
-    const e = live(); if (e && e.mode === 'marchTell') { const wx = e.marchDir > 0 ? S.G.x0 : S.G.x1; rect(g, x(wx) - 3, y(S.G.floorY) - 40, 6, 40, (time * 8) % 2 < 1 ? '#ff4a2a' : '#ff9a5c'); } };
+    for (const r of S.rings) { const k = Math.min(1, r.t / WD.wail.act); LWA.drawWailRing(g, x(r.x), y(r.y), WD.wail.r * k, k, time); }
+    for (const s of S.spots) LWA.drawHandSpot(g, x(s.x), y(s.y), s.t, time);
+    for (const m of S.marches) LWA.drawMourners(g, x(m.x), y(S.G.floorY), m.dir, WD.march.h, time);
+    S.falses.forEach((f, i) => { if (!f.dead) LWA.drawFalseLight(g, x(f.x), y(f.y), time, i); });
+    const e = live(); if (e && e.mode === 'marchTell') { const wx = e.marchDir > 0 ? S.G.x0 : S.G.x1; LWA.drawMarchGate(g, x(wx), y(S.G.floorY), time); } };
   return H;
 }

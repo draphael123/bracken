@@ -5,9 +5,9 @@
 //   SHADOW HANDS   a pool's hand rises at its nearest UNLIT column within reach of a hero, told, and lunges along the ground to where he stood (block / jump / strike it).
 //   WISP THIEVES   their own small machine (drift, told swoop, steal, flee with the flame; struck: the flame comes home; escaped: it drowns - relight at any light).
 //   THE BLACK MERE a hero who falls past ww.catchY is dragged back (16, spare) onto the last firm footing.
-// GREYBOX DRAWING (the sonnet art lane draws the final). main.js calls (one tagged line each): on, reset, update, strike, spawn, thief, takeThief, drawBack, drawOver,
+// DRAWING: src/redraw/wispwood_art.js (claude/wispart). main.js calls (one tagged line each): on, reset, update, strike, spawn, thief, takeThief, drawBack, drawOver,
 // drawThief, holes, read. Pure enough for node: tools/wispwood.mjs drives it with a fake ctx.
-import { WW_SAY } from './ww-lines.js';
+import { WW_SAY } from './ww-lines.js'; import * as ART from './redraw/wispwood_art.js';
 
 export const LIGHT = { lantern: 72, candle: 60, lamp: 80, stone: 80, thief: 44, hyst: 8, burn: 12, gutter: 2, relight: 15, lanternY: 14 };
 export const HAND = { reach: 112, near: 3, tell: 0.7, speed: 300, maxT: 0.6, sink: 0.3, dmg: 10, hold: 0.6, cd: 2.4, w: 10, h: 18 };
@@ -17,7 +17,6 @@ const SOUND = { lit: s => (s.ui || s.tell)(), out: s => (s.puff || s.thud || s.t
   swoopTell: s => (s.tell)(), swoop: s => (s.whoosh || s.tell)(), steal: s => (s.ghostWake || s.moan || s.tell)(), back: s => (s.ui || s.tell)(), scorch: s => (s.sizzle || s.puff || s.thud)(),
   drag: s => (s.thud)(), relit: s => (s.ui || s.tell)() };
 const R = Math.round;
-const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 
 export function makeWispwoodHands(ctx) {
   const H = {}; let S = null;
@@ -35,7 +34,7 @@ export function makeWispwoodHands(ctx) {
   H.reset = () => { if (!H.on()) { S = null; return; }   /* another level: nothing of the wood's is put into its grid */
     if (S && S.L === L()) for (const [k, v] of S.cells) { const L0 = L(); ctx.cellSet(k % L0.W, Math.floor(k / L0.W), v); }   /* (only into the grid the cells came out of) */
     S = fresh(); S.L = L(); S.dark0 = L().dark || 0; const G = ww(); if (!G) return;
-    for (const sp of G.spans) for (let x = sp.x0; x <= sp.x1; x++) S.spec.push({ x, y: sp.y, span: sp.id, real: true, cx: x * TS + 8, cy: sp.y * TS + 8 });
+    for (const sp of G.spans) for (let x = sp.x0; x <= sp.x1; x++) S.spec.push({ x, y: sp.y, span: sp.id, kind: sp.kind, i: x - sp.x0, n: sp.x1 - sp.x0 + 1, real: true, cx: x * TS + 8, cy: sp.y * TS + 8 });
     for (const c of G.candles) S.cand[c.id] = { on: false, t: 0 };
     for (const c of G.lamps) S.lamp[c.id] = { on: false };
     for (const p of heroes()) S.lan.set(p, { st: 'lit', by: null, t: 0 });
@@ -139,28 +138,25 @@ export function makeWispwoodHands(ctx) {
     lanterns: heroes().map(p => lan(p).st), candles: Object.values(S.cand).filter(c => c.on).length, lamps: Object.values(S.lamp).filter(c => c.on).length, n: { ...S.n } };
   /* ================= THE DARK: every light is a hole (main.js's dark mask) ================= */
   H.holes = (hole, cx, cy) => { if (!S) return; for (const l of H.lightsNow()) hole(l.x - cx, l.y - cy, l.r * 1.25); };
-  /* ================= THE GREYBOX DRAWING ================= */
+  /* ================= THE DRAWING (src/redraw/wispwood_art.js: claude/wispart) ================= */
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
-  /* behind the tiles: the mere's black water, the pale trunks of the far wood */
-  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = ww();
-    for (let i = 0; i < 14; i++) { const tx = ((i * 97 - cx * 0.35) % (VW + 80) + VW + 80) % (VW + 80) - 40; rect(g, tx, VH * 0.25, 6, VH * 0.75, 'rgba(150,165,180,0.12)'); rect(g, tx - 8, VH * 0.25 + (i % 3) * 14, 22, 2, 'rgba(150,165,180,0.10)'); }
-    for (const m of G.meres) { const a = x(m.x0 * TS), b = x((m.x1 + 1) * TS); if (b < 0 || a > VW) continue; rect(g, a, y(G.catchY - 40), b - a, VH, '#05070c'); rect(g, a, y(G.catchY - 40), b - a, 2, 'rgba(120,150,190,' + (0.25 + 0.1 * Math.sin(time * 2)).toFixed(2) + ')'); } };
+  /* behind the tiles: the pale oaks of the far wood, the mist and wisps, THE BLACK MERE, the root-hole exit (webbed shut until the Widow has fallen) */
+  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = ww(), L0 = L();
+    ART.drawBackdrop(g, cx, cy, VW, VH, time, L0);
+    G.meres.forEach((m, k) => { const a = x(m.x0 * TS), b = x((m.x1 + 1) * TS); if (b < 0 || a > VW) return; ART.drawMere(g, a, b, y(G.catchY - 40), VW, VH, time, k + 1); });
+    const eh = L0.arena && L0.arena.exitHole; if (eh && eh.x > cx - 60 && eh.x < cx + VW + 60) ART.drawExitHole(g, x(eh.x), y(G.catchY - 40), !!(ctx.exitOpen && ctx.exitOpen()), time); };
+  /* over the world: the pale spans (lit, or their glint), the pools and the hands, candles, lamps, waystones, the heroes' lanterns, a thief's thread */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = X(cx), y = Y(cy), G = ww();
-    for (const c of S.spec) { const px = x(c.x * TS), py = y(c.y * TS); if (px < -TS || px > VW || py < -TS || py > VH) continue;
-      if (c.real) { rect(g, px, py, TS, 4, 'rgba(200,235,255,0.85)'); rect(g, px, py + 4, TS, 2, 'rgba(140,190,230,0.45)'); }
-      else { g.globalAlpha = 0.22 + 0.1 * Math.sin(time * 3 + c.x); for (let k = 0; k < TS; k += 4) rect(g, px + k, py, 2, 1, '#bfe6f5'); g.globalAlpha = 1; } }   /* THE GLINT: what is out of the light is still drawn, faintly */
-    for (const c of G.candles) { const s = S.cand[c.id], px = x(c.x), py = y(c.y); rect(g, px - 2, py - 8, 4, 8, '#d8d4c8'); if (s.on) { const f = s.t < LIGHT.gutter && (time * 8) % 2 < 1; rect(g, px - 1, py - 12, 2, 4, f ? '#ff9a5c' : '#bfe6ff'); } }
-    for (const c of G.lamps) { const on = S.lamp[c.id].on, px = x(c.x), py = y(c.y); rect(g, px - 1, py - 16, 2, 16, '#4a4e58'); rect(g, px - 4, py - 24, 8, 8, on ? '#bfe6ff' : '#2a2e38'); rect(g, px - 5, py - 25, 10, 1, '#6a6e78'); }
-    for (const c of G.stones) { const px = x(c.x), py = y(c.y); rect(g, px - 5, py - 18, 10, 18, '#7a8090'); rect(g, px - 2, py - 14, 4, 4, '#dff4ff'); }
-    for (const pl of G.pools) { const a = x(pl.x0 * TS), b = x((pl.x1 + 1) * TS), py = y((pl.y + 1) * TS); if (b < 0 || a > VW) continue; rect(g, a, py - 2, b - a, 3, 'rgba(10,6,20,0.75)'); }
+    for (const c of S.spec) { const px = x(c.x * TS), py = y(c.y * TS); if (px < -TS || px > VW || py < -TS || py > VH) continue; ART.drawSpectral(g, c, px, py, time); }
+    G.pools.forEach((pl, k) => { const a = x(pl.x0 * TS), b = x((pl.x1 + 1) * TS), py = y((pl.y + 1) * TS); if (b < 0 || a > VW) return; ART.drawPool(g, a, b, py, time, k); });
+    G.candles.forEach((c, k) => { const px = x(c.x); if (px < -30 || px > VW + 30) return; const s = S.cand[c.id]; ART.drawCandle(g, px, y(c.y), s.on ? (s.t < LIGHT.gutter ? 'gutter' : 'lit') : 'cold', time, k); });
+    G.lamps.forEach((c, k) => { const px = x(c.x); if (px < -30 || px > VW + 30) return; ART.drawLamp(g, px, y(c.y), S.lamp[c.id].on, time, k); });
+    for (const c of G.stones) { const px = x(c.x); if (px < -30 || px > VW + 30) continue; ART.drawStone(g, px, y(c.y), time); }
     for (const h of S.hands) { const hx = x(h.x), hy = y(h.y);
-      if (h.st === 'tell') { const k = 1 - h.t / HAND.tell; rect(g, hx - 8 - k * 4, hy - 2, 16 + k * 8, 2, (time * 10) % 2 < 1 ? '#3a1a4a' : '#6a3a8a'); rect(g, R(x(h.tx)) - 1, hy - 3, 2, 3, 'rgba(255,211,107,0.6)'); }
-      else { const up = h.st === 'sink' ? HAND.h * (h.t / HAND.sink) : HAND.h; rect(g, hx - 4, hy - up, 8, up, '#120a1c'); rect(g, hx - 6, hy - up - 3, 12, 4, '#1e1230'); } }
-    for (const p of heroes()) { const l = lan(p), px = x(p.x) + (p.face || 1) * 7, py = y(p.y) - 14; rect(g, px - 2, py - 3, 5, 6, l.st === 'lit' ? '#ffe9a0' : '#3a3e48'); rect(g, px - 1, py - 5, 3, 2, '#8a8e98'); }
-    for (const e of (ctx.enemies() || [])) if (e.alive && e.t === 'wwthief' && e.flame) { const p = e.flame; g.strokeStyle = 'rgba(191,230,255,0.25)'; g.beginPath(); g.moveTo(x(e.x), y(e.y)); g.lineTo(x(p.x), y(p.y - 14)); g.stroke(); } };
-  H.drawThief = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), tell = e.mode === 'swoopTell', sc = e.mode === 'scorched';
-    g.globalAlpha = 0.85; rect(g, ex - 5, ey - 5, 10, 10, sc ? '#ff9a5c' : tell ? '#ffffff' : '#9fd8ff'); rect(g, ex - 3 + (e.face || 1) * 2, ey - 3, 2, 2, '#0a1020');
-    rect(g, ex - 8, ey + 3 + Math.sin(time * 9) * 1.5, 4, 2, 'rgba(159,216,255,0.6)'); rect(g, ex + 4, ey + 3 - Math.sin(time * 9) * 1.5, 4, 2, 'rgba(159,216,255,0.6)');
-    if (e.flame) rect(g, ex - 2, ey - 10, 4, 5, '#ffe9a0'); g.globalAlpha = 1; };
+      if (h.st === 'tell') ART.drawHandTell(g, hx, hy, x(h.tx), 1 - h.t / HAND.tell, time);
+      else ART.drawHand(g, hx, hy, h.st === 'sink' ? Math.max(0.1, h.t / HAND.sink) : 1, Math.sign(h.tx - h.x), time); }
+    for (const p of heroes()) { const l = lan(p); ART.drawHeroLantern(g, x(p.x) + (p.face || 1) * 7, y(p.y) - 14, p.face || 1, l.st, time); }
+    for (const e of (ctx.enemies() || [])) if (e.alive && e.t === 'wwthief' && e.flame) { const p = e.flame; ART.drawTether(g, x(e.x), y(e.y), x(p.x), y(p.y - 14)); } };
+  H.drawThief = (g, e, cx, cy, time) => ART.drawThief(g, e, e.x - cx, e.y - cy, time);
   return H;
 }
