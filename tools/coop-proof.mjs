@@ -3,12 +3,13 @@
              a lift at ~19 s still saves him; a bleed in a LOCKED boss fight returns him inside the arena, the fight still on
      ping    Y press: a spot mark, a foe mark that follows the foe, one per seat, a seat's own press, a HELP mark while downed, the 4 s clock; two shots
    PORT=8789 node tools/coop-proof.mjs [bleed,ping]   (SHOTS=dir for the screenshots) */
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { openLevelPage } from './boss-level.mjs';
 import { LEVELS } from '../src/level.js';
 import { routeOf } from './level-walk.mjs';
 const WANT = (process.argv.slice(2).find(a => !a.startsWith('--')) || 'bleed,ping,xp,ai,vert').split(','), fails = [];
-const OUT = process.env.SHOTS || 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports';
+const OUT = process.env.SHOTS || fileURLToPath(new URL('../work/claude/shots/coopproof', import.meta.url)); mkdirSync(OUT, { recursive: true });   /* inside the repo (tools/homepaths.mjs: no path under somebody's home) */
 const ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 const pg = await openLevelPage({ audio: false, fonts: false }), E = x => pg.evalp(x, 600000);
 const shot = async n => { await E('BK.draw1()'); const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(OUT + '/coopproof-' + n + '.png', Buffer.from((r.result||r).data, 'base64')); };
