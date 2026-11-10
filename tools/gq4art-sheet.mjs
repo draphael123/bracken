@@ -38,7 +38,7 @@ if (GPA.GPF.hurt !== P.R.length - 2 || GPA.GPF.body !== P.R.length - 1) bad.push
   const nm = { 38: 'KEY TURN A', 39: 'KEY TURN B', 40: 'PIROUETTE TELL', 41: 'PIROUETTE SPIN A', 42: 'PIROUETTE SPIN B', 43: 'DIZZY A', 44: 'DIZZY B' };
   for (const i of [38, 39, 40, 41, 42, 43, 44]) spr('2 THE GOBLIN PRINCESS - NEW FRAMES', 'PRINCESS ' + nm[i] + ' (' + i + ')', P.R[i], 2); }
 const gate = (st, col, lit) => ({ x: 40, top: 40, bot: 118, pinX: 76, pinY: 100, box: { t: 24 }, col, open: st !== 'shut', lock: st === 'lock', lit: lit ? 1 : 0 });
-for (const [st, lit, nm] of [['shut', 0, 'GATE SHUT'], ['open', 0, 'GATE OPEN'], ['open', 1, 'GATE OPEN, LANTERN LIT'], ['lock', 0, 'GATE LOCKED OPEN']]) cell('2 THE GOBLIN PRINCESS - THE GATES', nm, 90, 130, WALL, (g, w, h) => { floor(g, w, 118); const G = gate(st, ['#8fd160', '#ffd36b', '#ff6b6b'][0], lit); A.drawGate(g, G, 0, 0, 0.3, 118); }, 2);
+for (const [st, lit, nm] of [['shut', 0, 'GATE SHUT'], ['open', 0, 'GATE OPEN'], ['open', 1, 'GATE OPEN, LANTERN LIT'], ['lock', 0, 'GATE LOCKED OPEN']]) cell('2 THE GOBLIN PRINCESS - THE GATES', nm, 90, 130, WALL, (g, w, h) => { floor(g, w, 118); const G = gate(st, '#8fd160', lit); A.drawGate(g, G, 0, 0, 0.3, 118); }, 1);
 for (const [col, nm] of [['#8fd160', 'LANTERN GREEN (W)'], ['#ffd36b', 'LANTERN GOLD (E)'], ['#6bb8ff', 'LANTERN BLUE (U)']]) cell('2 THE GOBLIN PRINCESS - THE GATES', nm, 40, 40, WALL, g => A.drawLantern(g, 20, 20, col, 1, 0.1), 3);
 for (const [mode, nm] of [['idle', 'PIN IDLE'], ['glow', 'PIN GLOW (CALL LIVE)'], ['struck', 'PIN STRUCK']]) cell('2 THE GOBLIN PRINCESS - THE GATES', nm, 40, 90, WALL, (g, w, h) => { const G = { pinX: 20, pinY: 70, box: { t: 14 }, col: '#8fd160', open: mode !== 'struck', lock: false, lit: mode === 'glow' ? 1 : 0 }; A.drawPin(g, G, 0, 0, 5, 80); if (mode === 'struck') { G.open = false; A.drawPin(g, G, 0, 0, 5.1, 80); } }, 3);
 cell('2 THE GOBLIN PRINCESS - THE GATES', 'MASTER CHAIN SLACK / TAUT / ALL GATES', 260, 40, WALL, g => { A.drawMasterChain(g, { xs: [20, 80], drum: 50, y: 12, k: 0, t: 0, lit: false }); A.drawMasterChain(g, { xs: [100, 160], drum: 130, y: 12, k: 1, t: 0, lit: false }); A.drawMasterChain(g, { xs: [180, 240], drum: 210, y: 12, k: 1, t: 0.2, lit: true }); }, 3);
@@ -51,10 +51,10 @@ cell('2 THE GOBLIN PRINCESS - THE GATES', 'GALLERY TRIM + LADDER', 120, 80, WALL
 cell('3 THE BURNING TOWER', 'SLIT WINDOW SHOWING FIRE', 50, 50, '#2c2e3b', g => A.drawSlitFire(g, 25, 25, 0.4), 3);
 for (const st of ['cold', 'spark', 'flare']) cell('3 THE BURNING TOWER', 'TAPESTRY ' + st.toUpperCase(), 40, 100, '#2c2e3b', g => { floor(g, 40, 90); A.drawTapestry(g, 12, 90, 80, st, 0.3); }, 3);
 cell('3 THE BURNING TOWER', 'RED CEILING GLOW', 150, 40, '#2c2e3b', g => A.drawBurnGlow(g, 0, 150, 0, 30, 0.3, 1), 3);
-cell('3 THE BURNING TOWER', 'THE BREACH', 70, 110, '#3a1a14', g => A.drawBreach(g, 56, 0, 110, 0.3), 3);
-cell('3 THE BURNING TOWER', 'OUTER WALL FACE + CORBELS', 150, 110, '#14151d', g => { A.drawOuterFace(g, 0, 150, 0, 110, 0, 0, 0.2); A.drawCorbel(g, 10, 40, 30); A.drawCorbel(g, 90, 80, 30); }, 3);
+cell('3 THE BURNING TOWER', 'THE BREACH', 70, 110, '#3a1a14', g => A.drawBreach(g, 56, 0, 110, 0.3), 2);
+cell('3 THE BURNING TOWER', 'OUTER WALL FACE + CORBELS', 150, 110, '#14151d', g => { A.drawOuterFace(g, 0, 150, 0, 110, 0, 0, 0.2); A.drawCorbel(g, 10, 40, 30); A.drawCorbel(g, 90, 80, 30); }, 2);
 for (const st of ['ok', 'creak', 'gone']) cell('3 THE BURNING TOWER', 'HOARDING ' + st.toUpperCase(), 50, 30, '#14151d', g => A.drawHoardBoard(g, 9, 8, st, 0.3), 3);
-cell('3 THE BURNING TOWER', 'BURNING CASTLE PANORAMA', 240, 150, '#000', (g, w, h) => A.drawPanorama(g, 0, 0, w, h, 0.3), 3);
+cell('3 THE BURNING TOWER', 'BURNING CASTLE PANORAMA', 240, 150, '#000', (g, w, h) => A.drawPanorama(g, 0, 0, w, h, 0.3), 2);
 cell('3 THE BURNING TOWER', 'FALLING BURNING BEAM + RING', 70, 70, '#1a1620', g => { A.drawBurningDebris(g, 22, 34, 0.2); A.drawDebrisShadow(g, 52, 62, 0.4, 0.1); }, 3);
 cell('3 THE BURNING TOWER', 'TOWER BOULDER FALL / SENT BACK', 70, 40, '#1a1620', g => { A.drawTowerBoulder(g, 18, 22, 0.1, 'fall'); A.drawTowerBoulder(g, 50, 22, 0.1, 'back'); }, 3);
 { const Q = CH.bakeGoblinQueen(); const seen = new Map(); Q.R.forEach((c, i) => { const s = sig(c); if (i >= 41) { if (seen.has(s.h)) bad.push('queen ' + i + ' draws as ' + seen.get(s.h)); } seen.set(s.h, i); if (sig(Q.white.R[i]).k !== s.k) bad.push('queen ' + i + ': flash silhouette'); });
@@ -65,8 +65,8 @@ cell('3 THE BURNING TOWER', 'TOWER BOULDER FALL / SENT BACK', 70, 40, '#1a1620',
   for (let i = 51; i <= 58; i++) spr(i <= 54 ? '4 QUEEN P1 - THE GEODE THRONE HALL' : '5 QUEEN P2 - THE ROOF', 'QUEEN ' + nm2[i] + ' (' + i + ')', Q.R[i], 2); }
 
 // ---------------- 4. QUEEN P1 HALL ----------------
-cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'GEODE THRONE (COLD)', 150, 150, '#1a1218', g => { floor(g, 150, 134); A.drawGeodeThrone(g, 75, 134, false, 0.3); }, 2);
-cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'GEODE THRONE (LIT: GRINDING)', 150, 150, '#1a1218', g => { floor(g, 150, 134); A.drawGeodeThrone(g, 75, 134, true, 0.3); }, 2);
+cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'GEODE THRONE (COLD)', 150, 150, '#1a1218', g => { floor(g, 150, 134); A.drawGeodeThrone(g, 75, 134, false, 0.3); }, 1);
+cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'GEODE THRONE (LIT: GRINDING)', 150, 150, '#1a1218', g => { floor(g, 150, 134); A.drawGeodeThrone(g, 75, 134, true, 0.3); }, 1);
 cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'ROSE WINDOW', 80, 80, '#23252f', g => A.drawRoseWindow(g, 40, 40, 0.3, 30), 3);
 cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'LIGHT PATCHES VIOLET/GOLD', 110, 30, FLOOR, g => { A.drawLightPatches(g, 4, 28, 0, 0); A.drawLightPatches(g, 40, 28, 0, 1); A.drawLightPatches(g, 76, 28, 0, 2); }, 3);
 cell('4 QUEEN P1 - THE GEODE THRONE HALL', 'HEARTH GRATED (CONTAINED)', 60, 60, '#2c2e3b', g => { floor(g, 60, 52); A.drawHearth(g, 30, 52, false, 0.3, false); }, 3);
