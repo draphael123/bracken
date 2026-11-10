@@ -253,3 +253,4 @@ export function worstGap(ents, W, H, arena) {
   return Math.max(gap, end - (cx[cx.length - 1] || 0));
 }
 Object.assign(THREAT, { mnshift: 0, mncandle: 0, mncandelabra: 0, mnrack: 0, mnportrait: 0, mndoor: 0, poltergeist: 3, castellan: 6 });   /* (claude/hollowmanor) THE HOLLOW MANOR: its shifting panels, candles, candelabra stands, empty suits, portraits and the nursery door are machines; THE POLTERGEIST; its boss */
+Object.assign(THREAT, { aclectern: 0, acrail: 0, acwell: 0, acrune: 0, acbooks: 2, headmistress: 6 });   /* (claude/academy) THE MAGE ACADEMY: its lecterns, ward rails, pits and shortcut runes are machines; a spellbook flock; its boss */
