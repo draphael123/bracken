@@ -13,14 +13,15 @@ export function gq4qOn() {
 export const Q4 = gq4qOn();
 /* the numbers (starting values for the tune lane) */
 export const Q4N = {
-  hearth: { tell: 1.0, jet: 0.6, dmg: 16, cd: 12, knee: 14, firstCd: 6 },
+  hearth: { tell: 1.0, jet: 0.6, dmg: 12 /* (GQ4TUNE r1: 16 -> 12; baseline crown n=6/hero 0/18) */, cd: 12, knee: 14, firstCd: 6 },
   reach: { tell: 0.8, jab: 0.25, dmg: 14, cd: 8, minDist: 100, behind: 30, stagger: 1.5, mul: 1.15, cap: 0.08, hw: 20 },
+  p1: { dmgK: 0.65, knockChip: 0.02 },   /* r4: dmgK 0.7 -> 0.65 */   /* (GQ4TUNE r3) x on every hall blow she throws through gqHit */
   shardHurt: 9,                                            // blow hurtbox r for a shard (was 6)
-  p2: { hp: 1500, chip: 0.4, shardPct: 0.03, flinch: 0.4, dazeN: 6, dazeWin: 10, daze: 2.5, dazeMul: 1.25, dazeCap: 0.08, ward: 3.0, capLive: 9, home: 320,
-    volley: { tell: 0.6, v: 240, dmg: 4, cd: 2.5, cdRage: 1.9, n: 3, vSlow: 160 },
+  p2: { dmgK: 0.6, hp: 1200 /* r3: 1500 -> 1200 */, chip: 0.4, shardPct: 0.05 /* r4: 0.03 -> 0.05; r3 crown P2 bars 50-85% at death: her bar drained ~5 hp/s, a standard bot homes ~1 shard in 6 s */, flinch: 0.4, dazeN: 4 /* r4: 6 -> 4 in 10 s */, dazeWin: 10, daze: 2.5, dazeMul: 1.25, dazeCap: 0.08, ward: 3.0, capLive: 9, home: 320,
+    volley: { tell: 0.6, v: 240, dmg: 4, cd: 2.5 /* r3: back to the plan (4 / 2.5 s): fewer shards = fewer homes = a slower kill; the P2 dmgK carries the easing */, cdRage: 1.9, n: 3, vSlow: 160 },
     boulder: { tell: 0.8, air: 0.75, dmg: 9, cd: 7, hang: 1.0, r: 18 },
     rockfall: { tell: 0.8, n: 6, shadow: 1.0, dmg: 6, cd: 10, r: 12 },
     bombard: { at: [0.7, 0.45], dur: 6.0 },
     addAt: [0.8, 0.55], bayEvery: 12,
-    rage: { at: 0.25, tell: 2.0, tempo: 1.35, mtn: { tell: 1.5, cols: 26, gap: 36, sweep: 1.4, dmg: 6, cd: 14, geode: 12, hang: 1.5, shards: 6 } } },
+    rage: { at: 0.25, tell: 2.0, tempo: 1.2 /* r4: 1.35 -> 1.2 */, mtn: { tell: 1.5, cols: 26, gap: 36, sweep: 1.4, dmg: 4 /* r4: 6 -> 4 */, cd: 14, geode: 12, hang: 1.5, shards: 6 } } },
 };

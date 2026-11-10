@@ -74,4 +74,5 @@ export function callSpawns(gates, order, seats, room) {
   return out.slice(0, Math.max(0, room));
 }
 /* the add phase's goblins: 4 (soldier, pike, javelin, shield) +1 per seat past the first, cap 6 */
-export function addKinds(seats) { return ['soldier', 'pike', 'javelin', 'shield', 'soldier', 'pike'].slice(0, Math.min(6, 4 + Math.max(0, seats - 1))); }
+export const ADDN = { n: 3 };   /* (GQ4TUNE r4: 4 -> 3 ads in the ALL GATES phase; r2 crown:mini deaths: 11/34 before the add phase ended) */   /* (gq4tune-d) the ALL GATES add phase's base count, in a table (the lab lever GQ_LEVER reaches it) */
+export function addKinds(seats) { return ['soldier', 'pike', 'javelin', 'shield', 'soldier', 'pike'].slice(0, Math.min(6, ADDN.n + Math.max(0, seats - 1))); }

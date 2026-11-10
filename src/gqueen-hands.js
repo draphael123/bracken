@@ -35,7 +35,7 @@ GQ3.tower = { catch: 2.0, smoke: 1.0, beamEvery: [6, 8], beamFirst: 5, beamTell:
    runs out and the gate drops on her guards; fail and they join her. Hall only. Numbers are starting values for the tune lane. */
 GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.15,   /* (claude/hcqueen: pin 4.0 x1.35 uncapped -> 3.5 s x1.1, a pin's blows at most 15% of her bar (main.js gqPinCap). The tally put 50-80% of her hall bar in the lured pin, a pyro 1000+ a pin. Band 75% -> 70% n=108) */ contact: 14, contactR: 26, wind: 0.6, grateHold: 3.5, queue: 1.5,
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
-if (Q4) { GQ3.hp2 = Q4N.p2.hp; GQ3.p2.resist = Q4N.p2.chip; GQ3.roof.addAt = [...Q4N.p2.addAt, Q4N.p2.rage.at]; GQ3.p2.bayEvery = Q4N.p2.bayEvery; GQ3.p2.desperate = 0; }   /* (claude/gq4q) P2: 1500, chips at 0.4, reinforcements 80 / 55 % + the enrage's pair, bays every 12 s, no desperation storm (the enrage replaces it) */
+if (Q4) { GQ3.hp2 = Q4N.p2.hp; GQ3.p2.resist = Q4N.p2.chip; GQ3.roof.addAt = [...Q4N.p2.addAt, Q4N.p2.rage.at]; GQ3.p2.bayEvery = Q4N.p2.bayEvery; GQ3.p2.addMax = 1; /* (GQ4TUNE r3: 2 -> 1 reinforcement alive; soldiers were 15% of P2 damage) */ GQ3.p2.desperate = 0; }   /* (claude/gq4q) P2: 1500, chips at 0.4, reinforcements 80 / 55 % + the enrage's pair, bays every 12 s, no desperation storm (the enrage replaces it) */
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
 import { makeTowerClimb } from './tower-climb.js';   /* (claude/gq4l) THE BURNING TOWER's seven storeys + the outside stretch (only when the level carries TW.OUT: GQ4L_SHIPS) */
@@ -87,6 +87,7 @@ export function makeGQueenHands(ctx) {
      (Every hero's beat path - the knight's raised shield, the warden's deflect, the pyro's ward, the pirate's catch - calls RP.parried, so all nine are covered with no per-hero code.)
      Never `unblockable`, never `pierce`: a red or a piercing blow is TOO STRONG and is never parried. */
   function gqHit(x, dmg, who, name) {
+    if (Q4 && who && who.t === 'gqueen') { const k = who.stage === 'roof' ? Q4N.p2.dmgK : (!who.stage || who.stage === 'hall') ? Q4N.p1.dmgK : 1; if (k !== 1) dmg = Math.max(1, Math.round(dmg * k)); }   /* (GQ4TUNE r3) ONE LEVER PER PHASE for everything she throws through gqHit (hall: crown, portal, geode, charge, reach; tower top: volley, crown, lash, boulder, rocks): Q4N.p1.dmgK / Q4N.p2.dmgK (the hearth jet has its own dmg) */
     const n0 = ctx.parries();
     const r = ctx.damage(x, dmg, { who, name });
     return { res: r, parried: ctx.parries() > n0 };
@@ -708,7 +709,7 @@ export function makeGQueenHands(ctx) {
       if (r.t > 4 || ctx.solid(Math.floor(r.x / TS), Math.floor(r.y / TS))) { r.dead = true; ctx.dust(r.x, r.y, 3); continue; }
       if (Q4 && !r.esc && !r.home && e) { const sh = Q4N.shardHurt;   /* (claude/gq4q) ANY blow or hero shot KNOCKS A P1 SHARD OUT (a parry still sends it home for the stun) and sends a P2 shard HOME */
         const hs = strikes({ l: r.x - sh, r: r.x + sh, t: r.y - sh, b: r.y + sh }, 'rk' + r.id);
-        if (hs) { if (r.p2) { r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); ctx.number(r.x, r.y - 14, 'STRUCK HOME', '#8fd160'); } else { r.dead = true; ctx.burst(r.x, r.y, 10, ['#b28cff', '#e8dcff', '#8a8a9c'], 80, 0.5); sfx('golemShatter'); ctx.number(r.x, r.y - 14, 'KNOCKED OUT', '#8fd160'); S.knockedOut = (S.knockedOut || 0) + 1; } continue; } }
+        if (hs) { if (r.p2) { r.home = true; ctx.ring(r.x, r.y, 12, '#fff6c8', 0.25); sfx('clank'); ctx.number(r.x, r.y - 14, 'STRUCK HOME', '#8fd160'); } else { r.dead = true; ctx.burst(r.x, r.y, 10, ['#b28cff', '#e8dcff', '#8a8a9c'], 80, 0.5); sfx('golemShatter'); ctx.number(r.x, r.y - 14, 'KNOCKED OUT', '#8fd160'); S.knockedOut = (S.knockedOut || 0) + 1; if (Q4N.p1.knockChip) { e.hp = Math.max(1, e.hp - Math.round(e.maxHp * Q4N.p1.knockChip)); e.flash = 0.2; } }   /* (GQ4TUNE r3) a knocked-out shard pays a small chip (the report's rec): striking costs the bot the stun a parry gave */ continue; } }
       seats(P1 => {   /* (claude/gq2) every seat: the first hero it meets */
         if (r.dead || r.home || P1.dead || !ctx.overlap({ l: r.x - pc.r, r: r.x + pc.r, t: r.y - pc.r, b: r.y + pc.r }, ctx.hurtBox())) return;
         r.dead = true;
@@ -726,6 +727,7 @@ export function makeGQueenHands(ctx) {
     const c = S.crown;
     if (!c) { e.mode = 'rec'; e.modeT = 0.5; e.crownOut = false; return 0; }
     e.face = sign(c.x - e.x);
+    if (e.modeT <= -2.5) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.6; return 0; }   /* (GQ4TUNE) the fetch had no end: a crown on the far side of something she cannot cross (roof seed 4: 270 s of 'SHE FETCHES HER CROWN', bar 100%) held her there for ever. modeT starts at 4 and runs down: 2.5 s past zero she gives it up. */
     if (Math.abs(c.x - e.x) < 18 && c.t >= G.crown.fetch) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.6; ctx.ring(e.x, e.y - 52, 18, '#e0b040', 0.25); sfx('clank'); return 0; }
     return Math.abs(c.x - e.x) < 18 ? 0 : e.face * 90;
   }
