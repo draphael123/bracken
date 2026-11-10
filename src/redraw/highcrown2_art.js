@@ -168,6 +168,10 @@ export function drawFront(g, L, cx, cy, time, VW, VH) {
     else if (d.k === 'eave') { const X = Math.round(d.x0 * 16 - cx), Y = Math.round(d.y * 16 - cy), W = (d.x1 - d.x0 + 1) * 16;                // the barracks' eave beam, an oak balk on stone corbels, and the pulley the counterweight runs over
       R(g, X, Y - 9, W, 7, '#4a3620'); R(g, X, Y - 9, W, 1, '#7a5a3a'); R(g, X, Y - 3, W, 1, '#1e140c'); for (let x = X + 6; x < X + W - 4; x += 20) { R(g, x, Y - 9, 2, 7, '#2a2a34'); R(g, x, Y - 9, 1, 1, '#8a8aa0'); }
       corbel(g, d.x0 + 0.0, d.y, cx, cy, 1); R(g, X + W - 22, Y - 15, 10, 10, S.dk); R(g, X + W - 20, Y - 13, 6, 6, '#4a4a5a'); R(g, X + W - 18, Y - 11, 2, 2, '#c9a040'); }
+    else if (d.k === 'chimney') { const X = Math.round(d.x0 * 16 - cx), Y = Math.round(d.y * 16 - cy), W = (d.x1 - d.x0 + 1) * 16;   // (claude/gq4l) the roof leads' CHIMNEY: a CONTAINED HEARTH - a dark mouth behind an iron grate, a low glow, smoke only (its fire never leaves it)
+      R(g, X + 5, Y + 12, W - 10, 20, '#0a0608'); g.globalAlpha = 0.22 + 0.06 * Math.sin(time * 5); R(g, X + 7, Y + 20, W - 14, 10, '#ff9a3c'); g.globalAlpha = 1;
+      for (let i = 0; i < Math.floor((W - 10) / 4); i++) R(g, X + 7 + i * 4, Y + 12, 1, 20, '#7a7a8a'); R(g, X + 5, Y + 12, W - 10, 1, '#9a9ab0'); R(g, X + 5, Y + 31, W - 10, 1, '#9a9ab0');
+      for (let k = 0; k < 5; k++) { const ph = (time * 0.5 + k * 0.2) % 1; g.globalAlpha = 0.5 * (1 - ph); R(g, X + 8 + k * 7 + Math.round(Math.sin(time * 2 + k) * 3), Y - 4 - Math.round(ph * 28), 5, 5, '#6a6a78'); } g.globalAlpha = 1; }
     else if (d.k === 'bellrope') { const X = Math.round(d.x * 16 + 8 - cx), Y = Math.round(d.y * 16 - cy);                  // the ward bell's pull-rope on an iron bracket in the wall
       R(g, X - 3, Y, 8, 2, S.dk); R(g, X - 3, Y, 8, 1, S.f); R(g, X, Y + 2, 1, 12, '#a0885a'); R(g, X - 1, Y + 14, 3, 4, '#7a5a30'); R(g, X - 1, Y + 14, 3, 1, '#c9a870'); }
     else if (d.k === 'winchframe') { const X = Math.round(d.x * 16 + 8 - cx), Y = Math.round(d.y * 16 - cy);               // the crag gate's hoist: a stone corbel and an iron beam over the tower arch

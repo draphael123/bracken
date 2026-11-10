@@ -31,7 +31,7 @@ try {
         /* the hall portal -> the tower foot */
         BK.tp(E.portal.x,E.portal.y);run(60);res.tower.inTower=!!(H.read().esc&&H.read().esc.inTower);res.tower.heroX=Math.round(BK.P.x/16);res.tower.heroY=Math.round(BK.P.y/16);res.tower.footExpected=[E.start.x,E.start.y+1];
         /* a floor smokes, then catches, behind a hero who has gone up a storey */
-        const F=E.tower.FLOORS;BK.tp(795,F[1]-1);run(60*3);res.tower.burning=H.read().esc.burning;
+        const F=E.tower.FLOORS;BK.tp(E.tower.SHAFT[0]+13,F[1]-1);run(60*3);res.tower.burning=H.read().esc.burning;
         /* a beam is told then lands; a volley is three shards */
         let maxBeams=0,maxRocks=0;for(let i=0;i<60*14;i++){hold();BK.sim(1);const r=H.read();maxBeams=Math.max(maxBeams,r.esc.beams);maxRocks=Math.max(maxRocks,BK.gqShots().filter(s=>s.kind==='rock').length);}
         res.tower.maxBeams=maxBeams;res.tower.maxRocks=maxRocks;
@@ -47,9 +47,9 @@ try {
         let sawFly=false,sawBits=false,sawBack=false;for(let i=0;i<60*4;i++){hold();BK.sim(1);const g=H.test.geode&&H.test.geode();if(g&&g.state==='fly')sawFly=true;if(g&&g.state==='back')sawBack=true;if(H.test.geodeBits&&H.test.geodeBits().length)sawBits=true;}
         res.geode={sawFly,sawBits,sawBack,mode:e.mode};}}
     /* ---- the Queen's Stair ---- */
-    load();{const spots=[[650,19],[660,13],[666,11],[675,7],[683,4],[686,8],[688,8],[702,8],[708,11],[712,19],[717,19]];const seen=[];
+    load();{const {SH_STAIR:SA,SHIFT:SHF}=await import('/src/gq4l.js');const spots=[[650,19],[660,13],[666,11],[675,7],[683,4],[686,8],[688,8],[702,8],[708,11],[712,19],[717,19]].map(([x,y])=>[x+(x>=704?SA+SHF.stair:SA),y]);   /* (gq4l) the stair's columns slide with GQ4L_SHIPS */const seen=[];
       for(const [x,y] of spots){BK.tp(x,y);run(40);seen.push([x,y,Math.round(BK.P.x/16),Math.round(BK.P.y/16)-0]);}
-      res.stair.spots=seen;res.stair.foes=BK.enemies().filter(q=>q.alive&&q.x>=652*16&&q.x<=716*16).map(q=>q.t).sort().join();}
+      res.stair.spots=seen;res.stair.foes=BK.enemies().filter(q=>q.alive&&q.x>=(652+SA)*16&&q.x<=(716+SA+SHF.stair)*16).map(q=>q.t).sort().join();}
     return res;})()`, 170000);
   out.errors = pg.errors.slice(0, 6);
 } finally { await pg.close(); }
