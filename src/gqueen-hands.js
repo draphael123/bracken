@@ -10,7 +10,7 @@ export const GQ3 = {
   crown: { cd: 7, cd2: 5.5, tell: 0.8, out: 230, reach: 210, hang: 0.15, back: 260, dmg: 16, home: 340, stun: 3.0, stunHp: 0.04, fetch: 1.2, dy: 14, r: 5 },
   portal: { cd: 8, cd2: 6, tell: 1.0, n: 2, n2: 3, glow: 0.9, gap: 0.35, fan: 3, spread: 14, v: 210, dmg: 10, minDist: 90, home: 320, stun: 2.2, stunHp: 0.03, clankHp: 0.01, rows: [12, 13, 14, 15, 16], r: 4 },
 };
-GQ3.hp2 = 1700;   /* (gq3 item 6: 1750 -> 1400 with the P2 resist 0.5x; the tune lane owns it) */
+GQ3.hp2 = 1750;   /* (gq3 item 6: 1750 -> 1400 with the P2 resist 0.5x; the tune lane owns it) */
 void 1750;   // phase two's bar (THE TOWER TOP) (claude/hcfix: 1600 -> 1750, the band after all nine can parry her crown)
 GQ3.flee = { tell: 1.6 };
 /* (gq3 item 5) THE GEODE LOB, P1's new attack: the hall's reflecting rock, mother's version. Tell 1.0 s ('!': sceptre up, a small portal over her head, a geode grinds out; a red ring marks the landing and tracks you 0.6 s, then locks), lob 0.9 s (apex 70 px).
