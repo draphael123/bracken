@@ -40,7 +40,7 @@ for (const fn of ['hurtEnemy0', 'wardedDamage']) { const b = bodyOf(fn); let m; 
     if (!args.includes('tag')) missing.push(fn + ': ' + name + '(' + args.join(', ') + ')'); } }
 assert.ok(hooks >= 28, 'the boss hooks are found (' + hooks + '): the pattern still sees them');
 assert.deepStrictEqual(missing, [], 'every boss hook in hurtEnemy0 / wardedDamage receives the blow tag');
-assert.ok(/function hurtEnemy0\(e, dmg, fromX, plunge, blow, tag = blow\) \{ const raw0 = dmg, pl = !!plunge \|\| blowHas\(tag, 'plunge'\);/.test(main), 'hurtEnemy0 takes the tag and reads a plunge BY IT (pl)');
+assert.ok(/function hurtEnemy0\(e, dmg, fromX, plunge, blow, tag = blow\) \{[^\n]*?const raw0 = dmg, pl = !!plunge \|\| blowHas\(tag, 'plunge'\);/.test(main), 'hurtEnemy0 takes the tag and reads a plunge BY IT (pl)');
 assert.ok(/function wardedDamage\(e, dmg, blow, tag = blow\)/.test(main), 'wardedDamage takes the tag');
 assert.ok(/r = hurtEnemy0\(e, dmg, fromX, plunge, blow, tag\);/.test(main), 'hurtEnemy hands hurtEnemy0 the tag');
 for (const w of main.match(/wardedDamage\(e, dmg, blow(?:, tag)?\)/g)) assert.strictEqual(w, 'wardedDamage(e, dmg, blow, tag)', 'every blow into wardedDamage carries the tag');
