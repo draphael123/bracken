@@ -14,6 +14,7 @@
 //               up at him rings it: the guards run to it, and the arch's gate drops on them (src/bell-gate.js, Stormhold's bell-gate: the Queen's bell-and-grate, small).
 // R.rocklocks: [{ id, kind: 'seal' | 'crack', x, y (its centre tile), box [x0, x1, y0, y1] (tiles a sent-back rock must cross), cells [[col, y0, y1]] (opened when smashed), seal (the
 // Geomancer bound to it: the seal fails on its own if he is dead - never a soft-lock) }]. src/gobgeo-hands.js reads them.
+import { G4 } from './gq4l.js';
 export const GOBGEO = {
   CAPT: 431,
   TEACH: { gate: 441, rows: [10, 19], seal: 18, geo: 448 },
@@ -21,6 +22,9 @@ export const GOBGEO = {
   LAMP: { lamp: 471, ledge: [476, 478], row: 14, net: 476, geo: 478, heavy: 470 },
   T1: { face: 557, box: [7, 13], open: [11, 13], room: [558, 560, 10, 13], ledge: [555, 556, 14], steps: [[549, 550, 18], [552, 553, 15]], geo: 559 },
   T2: { bell: 601, bellRow: 14, gate: 602, gy: [15, 21], geo: 604, shield: 588, heavy: 594 },
+  /* (claude/gq4l, GQ4L_SHIPS) THE EARLY SIGHTINGS, before the Captains Hall teach: no seal, no column inserted, the teach stays the first REQUIRED use. E1 the road's crag over the second bend; E2 the chapel's choir loft over the nave. */
+  E1: { geo: 86, row: 53, sign: [84, 63] },
+  E2: { geo: 366, row: 13, soldier: 369, sign: [360, 19] },
 };
 
 export function gobgeoLay(R, { T, TS }) {
@@ -78,5 +82,12 @@ export function gobgeoLay(R, { T, TS }) {
   ent('gatebell', T2.bell, T2.bellRow, { id: 'gg-t2', gate: T2.gate, gy0: T2.gy[0], gy1: T2.gy[1] });
   ent('gobgeo', T2.geo, 6, { face: -1, perch: true, leash: 16 });
   ent('sign', 586, 21, { text: 'HIS ROCK RINGS THE TOWER BELL: THE GUARDS RUN UNDER ITS GATE, AND IT DROPS ON THEM.' });
+  if (G4) {   // ============ (claude/gq4l) THE EARLY SIGHTINGS: E1 THE ROAD'S CRAG, E2 THE CHAPEL LOFT (optional, gentle: a rock goes back, he is hurt, nothing is sealed) ============
+    const E1 = B.E1, E2 = B.E2;
+    ent('gobgeo', E1.geo, E1.row, { face: -1, perch: true, leash: 8, sight: 300 });
+    ent('sign', E1.sign[0], E1.sign[1], { text: 'HIS ROCK GOES BACK THE WAY IT CAME. STRIKE IT OR PARRY IT.' });
+    ent('gobgeo', E2.geo, E2.row, { face: -1, perch: true, leash: 6, sight: 300 }); ent('soldier', E2.soldier, 19, { face: -1 });
+    ent('sign', E2.sign[0], E2.sign[1], { text: 'A GEOMANCER IN THE CHOIR LOFT. HIS ROCK GOES BACK THE WAY IT CAME.' });
+  }
   return R;
 }
