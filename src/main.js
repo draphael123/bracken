@@ -9464,8 +9464,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (e.t === 'frog' && e.mode === 'bellowTell' && dmg > 0 && (Math.sign(fromX - e.x) === (e.face || 1) || Math.abs(fromX - e.x) < 14) && !(time - (e.sacHitAt ?? -9) < 0.1)) { e.sacHits = (e.sacHits || 0) + 1; e.sacHitAt = time; SFX.squelch(); sparks(e.x + (e.face || 1) * 16, e.y - 13, -(e.face || 1), 4);
     if (e.sacHits >= FROGK.bellow.hits) frogBurst(e); else number(e.x + (e.face || 1) * 16, e.y - e.h - 4, 'THE SAC ' + e.sacHits, '#ffe68a'); }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
-  let glance = false, wheel = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
-  { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null, famName = fam ? DMX.famNameOf(FAMILY_OF, e.t) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
+  let glance = false, wheel = false, famName = null; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
+  { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null; famName = fam ? DMX.famNameOf(FAMILY_OF, e.t) : null;   /* (claude/dmcharge: famName was block-scoped and read below under DM.on - a ReferenceError on the first DM.on blow) */   /* (a thing one blow of anything brings down is not asked which blow) */
     if (fam) { const keyed = (DMX.dmOn() ? DMX.familyKey(famName, fam.key) : fam.key).some(v => blowHas(blow, v));
       if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; { const bp = DMX.beastPlunge(famName, blow); if (bp) { e.stagger = Math.max(e.stagger || 0, bp.stagger); e.dmLeanAt = time; } }   /* (claude/dmfoes) a plunge on a beast: STAGGER 0.6 s, poise lean x1.5, never a launch */
         /* OFF BALANCE: the family's head-on answer (a guard met by a dash) does not just bite, it throws the guard wide - open, as a

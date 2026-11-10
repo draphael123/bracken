@@ -83,7 +83,7 @@ async function INPUT(o) {
     hold(); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })); BK.keys.up = true; BK.sim(4); const upJump = jumped(); BK.keys.up = false; window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp', bubbles: true })); BK.keys.atk = false; BK.sim(30);
     hold(); BK.press('jump'); BK.sim(4); const zJump = jumped(); BK.keys.atk = false; BK.sim(30);
     hold(); BK.keys.down = true; BK.sim(6); const duck = !!P.ducking; BK.keys.down = false; BK.keys.atk = false; BK.sim(30);
-    const chg = dir => { hold(50); const k = dir === 'up' ? 'up' : 'down'; BK.keys[k] = true; BK.sim(4); const aim = P.dmAim || null; BK.keys[k] = false; BK.keys.atk = false; let got = null, kind = null; for (let f = 0; f < 8; f++) { BK.sim(1); if (P.dmCharged) { got = P.dmCharged; kind = P.swingKind; break; } } BK.sim(40); return { aim, got, kind }; };
+    const chg = dir => { hold(20); const k = dir === 'up' ? 'up' : 'down'; BK.keys[k] = true; BK.sim(45); const aim = P.dmAim || null; BK.keys[k] = false; BK.keys.atk = false; let got = null, kind = null; for (let f = 0; f < 8; f++) { BK.sim(1); if (P.dmCharged) { got = P.dmCharged; kind = P.swingKind; break; } } BK.sim(40); return { aim, got, kind }; };
     const cu = chg('up'), cd = chg('down');
     { fresh(flat.x, flat.y); BK.press('atk'); BK.keys.atk = true; BK.sim(12); BK.keys.up = true; BK.sim(3); BK.keys.up = false; BK.keys.atk = false; BK.sim(4); BK.sim(40); }
     DMm.DM.on = false; A.clearKeys();
