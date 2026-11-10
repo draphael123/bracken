@@ -121,7 +121,7 @@ const farStrip = () => once('far', () => { const W = 1024, H = 190, [c, g] = can
   return c; });
 export function drawFar(g, cx, cy, VW, VH, time) {                                                             // far wards, ridges and a snow-haze, under the facades (parallax 0.35)
   if (!inSpan(K.FAR[0], K.FAR[1], cx, VW)) return;
-  const s = farStrip(), base = Math.round((K.S + 1) * TS - cy) + 2, off = -Math.round(cx * 0.35) % 1024, a0 = Math.max(0, Math.min(1, (cx + VW - K.FAR[0] * TS) / 160, (K.FAR[1] * TS + 160 - cx) / 160));
+  const s = farStrip(), base = Math.round(VH * 0.68 - (cy - ((K.S + 1) * TS - VH * 0.68)) * 0.2) + 2,   /* (gq3 8.1) y rides ~0.2 of the camera like the shared backdrop, anchored where the wall walk puts the camera: no inverted depth on a jump */ off = -Math.round(cx * 0.35) % 1024, a0 = Math.max(0, Math.min(1, (cx + VW - K.FAR[0] * TS) / 160, (K.FAR[1] * TS + 160 - cx) / 160));
   g.globalAlpha = 0.9 * a0; for (let x = off - 1024; x < VW; x += 1024) { if (x + 1024 > 0) g.drawImage(s, x, base - 190); } g.globalAlpha = 1;
   g.globalAlpha = 0.07 * a0; R(g, 0, base - 80, VW, 80, '#c9d8ff'); g.globalAlpha = 1; void time; }
 
@@ -300,6 +300,13 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
   if (tx0 === K.BANQ) { g.drawImage(bakeBanq(w, h), sx, sy);
     for (const c of CHAND) for (const dx of [-16, -8, 0, 8, 16]) { const fh = 3 + ((Math.floor(time * 9 + dx + c.cx) % 3 + 3) % 3); R(g, sx + c.cx + dx - 1, sy + c.y - 6 - fh - 1, 3, fh, '#ff9a3c'); R(g, sx + c.cx + dx, sy + c.y - 6 - fh, 1, fh - 1, '#ffd36b'); }
     const hx = sx + 40, hy = sy + h - 30; R(g, hx - 6, hy - 70, 62, 70, S.dk); R(g, hx - 10, hy - 76, 70, 8, S.d); R(g, hx - 10, hy - 76, 70, 1, S.f); R(g, hx - 4, hy - 68, 58, 68, '#0a0810'); R(g, hx - 6, hy - 70, 3, 70, S.e); R(g, hx + 53, hy - 70, 3, 70, S.a);   // the great hearth on the west wall
-    const f = 0.5 + 0.5 * Math.sin(time * 7); for (let i = 0; i < 5; i++) { const fh = 18 + ((i * 7 + Math.floor(time * 9 + i * 3)) % 4) * 4; g.globalAlpha = 0.85; R(g, hx + 4 + i * 10, hy - fh, 8, fh, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, hx + 6 + i * 10, hy - fh + 6, 4, fh - 6, '#ffd36b'); g.globalAlpha = 1; }
+    /* (claude/hcfix1, Daniel 11-09 'why is this fire here and it doesn't do damage'): the great hearth read as five free-standing flame bars in a black box. It is a HEARTH, drawn as one:
+       fire-brick back, a hearthstone, firedogs, two crossed logs on them, a bed of embers, and tongues of flame that rise from the logs and taper (never bars floor to lintel). Same footprint. */
+    R(g, hx - 4, hy - 44, 58, 44, '#1c1210'); for (let r = 0; r < 6; r++) { R(g, hx - 4, hy - 44 + r * 8 + 7, 58, 1, '#120c0a'); for (let bx = (r & 1) * 6; bx < 58; bx += 12) R(g, hx - 4 + bx, hy - 44 + r * 8, 1, 7, '#120c0a'); }   // soot-black fire-brick behind the fire
+    R(g, hx - 8, hy - 67, 4, 5, S.f); R(g, hx + 54, hy - 67, 4, 5, S.f); R(g, hx - 10, hy - 5, 70, 5, S.d); R(g, hx - 10, hy - 5, 70, 1, S.f);   // the mantel's corbels, the hearthstone
+    for (const ax of [hx + 3, hx + 46]) { R(g, ax, hy - 17, 3, 12, '#3a3a46'); R(g, ax - 1, hy - 19, 5, 3, '#6a6a7a'); R(g, ax - 2, hy - 6, 7, 1, '#3a3a46'); }   // the firedogs, iron with a knob
+    R(g, hx + 5, hy - 12, 42, 5, '#4a2e1a'); R(g, hx + 5, hy - 12, 42, 1, '#6a4428'); R(g, hx + 5, hy - 8, 42, 1, '#2a1a10'); R(g, hx + 10, hy - 17, 32, 5, '#5a3820'); R(g, hx + 10, hy - 17, 32, 1, '#7a5230'); R(g, hx + 10, hy - 13, 32, 1, '#2a1a10');   // two logs across them
+    for (let e = 0; e < 14; e++) { const ex = hx + 6 + e * 3 + (e & 1), on = (Math.floor(time * 5 + e * 2) & 3) < 3; R(g, ex, hy - 8 + (e % 3 === 0 ? 0 : 1), 2, 1, on ? '#ff5a1c' : '#9a2a10'); }   // the ember bed in the gaps
+    const f = 0.5 + 0.5 * Math.sin(time * 7); for (let i = 0; i < 5; i++) { const fh = 8 + ((i * 7 + Math.floor(time * 9 + i * 3)) % 4) * 3 + (i === 2 ? 4 : 0), cx = hx + 8 + i * 9, base = hy - 17, a = Math.floor(fh * 0.45), b = Math.floor(fh * 0.35); g.globalAlpha = 0.9; R(g, cx - 3, base - a, 7, a, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, cx - 2, base - a - b, 5, b, i & 1 ? '#ff7a2c' : '#ff9a3c'); R(g, cx - 1, base - fh, 3, fh - a - b, '#ff9a3c'); R(g, cx - 1, base - Math.floor(fh * 0.55), 3, Math.floor(fh * 0.55), '#ffd36b'); g.globalAlpha = 1; }
     g.globalAlpha = 0.08 + 0.04 * f; g.fillStyle = '#ff9a3c'; g.fillRect(sx, sy + h - 120, w, 120); g.globalAlpha = 1; return true; }
   return false; }

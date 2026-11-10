@@ -34,14 +34,14 @@ console.log('== the roof stage lifts the track once her wake card is done');
   w.step(60); ok(w.st.lifts.join() === '1' && w.H.musicLevel() === 1, 'the card ends, THE TOWER TOP begins: lift(1) once (x1.06, King Gorm\'s step)');
   w.step(60 * 5); ok(w.st.lifts.join() === '1', 'it is not asked for again while the fight runs');
 
-  console.log('== the final stretch (her crown circles her) steps it up');
+  console.log('== the final stretch (DESPERATION: the portal storm, under 25%) steps it up');
   w.e.hp = w.e.maxHp * 0.2; w.e.mode = 'roofStand'; w.e.modeT = 0; w.step(1);
-  ok(w.e.mode === 'stormTell', 'under 30%: the crown storm is told');
+  ok(w.e.mode === 'stormTell', 'under 25%: the portal storm is told');
   ok(w.st.lifts.join() === '1', 'the step waits for the storm itself, not the tell');
-  w.step(60); ok(w.st.lifts.join() === '1,2' && w.H.musicLevel() === 2, 'the crown circles her: lift(2) (x1.10, the second stinger)');
+  w.step(60); ok(w.st.lifts.join() === '1,2' && w.H.musicLevel() === 2, 'the portal storm begins: lift(2) (x1.10, the second stinger) - gq3 moved it here from the retired crown storm');
   w.step(60 * 4); ok(w.st.lifts.join() === '1,2', 'one step up, no re-fire');
-  console.log('== a parry that breaks the storm does not drop the tension (monotonic)');
-  w.H.test.roof().storm = null; w.step(60); ok(w.H.musicLevel() === 2 && last(w) === 2, 'storm gone, level still 2');
+  console.log('== the storm ending does not drop the tension (monotonic)');
+  w.H.test.roof().pstorm = null; w.step(60); ok(w.H.musicLevel() === 2 && last(w) === 2, 'storm gone, level still 2');
 
   console.log('== her death lets it go');
   w.e.alive = false; w.step(1); ok(last(w) === 0 && w.H.musicLevel() === 0, 'she dies: lift(0)');

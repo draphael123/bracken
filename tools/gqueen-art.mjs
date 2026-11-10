@@ -1,5 +1,5 @@
 // tools/gqueen-art.mjs - THE GOBLIN QUEEN 3's art, rendered and linted in Node (claude/gq2art). No browser.
-//   node tools/gqueen-art.mjs [out-prefix]   -> <prefix>-queen.png (frames 0-27), <prefix>-parts.png (crown, shards, portals, fire, shrine, hatch, geyser, lash), <prefix>-top.png (the tower top: backdrop + deck)
+//   node tools/gqueen-art.mjs [out-prefix]   -> <prefix>-queen.png (frames 0-40), <prefix>-parts.png (crown, shards, portals, fire, shrine, hatch, geyser, lash), <prefix>-top.png (the tower top: backdrop + deck)
 // Lint: every frame drawn and one size; the new poses (17-27) all differ from each other and from 0-16; windup != release for the crown toss and both lashes (B16); the flash silhouette = the sprite;
 // every part draws pixels; the backdrop paints every pixel of the view.
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
@@ -14,7 +14,7 @@ const big = (list, o, s = 2) => { const sh = sheet(list, o), c = newCanvas(sh.wi
 /* 1. the Queen */
 const Q = CH.bakeGoblinQueen(), sigs = Q.R.map(sig);
 Q.R.forEach((c, i) => { n++; if (c.width !== Q.R[0].width || c.height !== Q.R[0].height) bad.push('queen ' + i + ': size'); if (sigs[i].k < 3000) bad.push('queen ' + i + ': barely drawn (' + sigs[i].k + ')'); });
-if (Q.R.length !== 28) bad.push('queen: ' + Q.R.length + ' frames (28 expected)');
+if (Q.R.length !== 43) bad.push('queen: ' + Q.R.length + ' frames (43 expected: 0-27 + the GQ3 poses 28-42)');
 for (let i = 17; i < Q.R.length; i++) for (let j = 0; j < i; j++) if (sigs[i] && sigs[j] && sigs[i].h === sigs[j].h) bad.push('queen ' + i + ' draws the same as ' + j);
 for (const [a, b, what] of [[17, 18, 'crown toss'], [21, 22, 'lash high'], [23, 24, 'lash low']]) if (sigs[a].h === sigs[b].h) bad.push(what + ': windup == release (B16)');
 Q.white.R.forEach((c, i) => { if (sig(c).k !== sigs[i].k) bad.push('queen ' + i + ': flash silhouette differs'); });

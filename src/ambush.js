@@ -1,5 +1,5 @@
 // ONE CAPTAIN HOLDS THE ROOM: the others lose their nerve when that captain falls.
-export const AMBUSH_LEADERS = new Set(['husk','shield','archer','brute','pike','troll','tideguard','boarder','hedgeknight','armour','hopper','goat','cutlass','watch','scarecrow','thorn','gaffer','scorpion','apprentice']);   /* THE GAFFER leads THE SORTING FLOOR: eight feet of boat hook in a room 27 tiles wide is exactly the read the room is for */
+export const AMBUSH_LEADERS = new Set(['husk','shield','archer','brute','pike','troll','tideguard','boarder','hedgeknight','armour','hopper','goat','cutlass','watch','scarecrow','thorn','gaffer','scorpion','apprentice','heavy']);   /* THE GAFFER leads THE SORTING FLOOR: eight feet of boat hook in a room 27 tiles wide is exactly the read the room is for */
 export const AMBUSH_TARGET = { min: 15, max: 35 };
 // Captains must survive the first counter and get to use their own attack loop.
 // Room-specific budgets account for approach distance and supporting enemies; never for the chosen hero.

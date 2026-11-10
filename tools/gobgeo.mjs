@@ -104,9 +104,9 @@ function room(o = {}) {
 
 /* ---------------- LAYOUT ---------------- */
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
-ok(W === 765, 'Highcrown keeps its 765 columns: the Geomancer is laid into rooms that are there (' + W + ')');
-const geos = L.ents.filter(e => e.t === 'gobgeo'); ok(geos.length === 5, 'five Geomancers: teach, shield, chandelier, the secret, the last walk (' + geos.length + ')');
-ok(geos.every(e => e.x < L.arena.x0 / 16), 'every one of them BEFORE the Queen\'s hall');
+ok(W === 841, 'Highcrown is 841 columns (gq3: the Queen Stair +64, the tower top +12); the Geomancer rooms are laid into columns that are there (' + W + ')');
+const geos = L.ents.filter(e => e.t === 'gobgeo'); ok(geos.length === 8, 'eight Geomancers: teach, shield, chandelier, the secret, the last walk (the five of gobgeo) + gq3: the stair grille, the geode store, the burning tower (' + geos.length + ')');
+ok(geos.filter(e => e.x < L.arena.x0 / 16).length === 7 && geos.filter(e => e.x > L.arena.x1 / 16).length === 1, 'seven of them BEFORE the Queen hall (the Captains Hall, the battlements, gq3 the stair), one in the burning tower AFTER it (gq3: the tower is past her flee portal)');
 const TG = GOBGEO.TEACH, seal = L.rocklocks.find(k => k.id === 'gg-teach');
 ok(seal && seal.kind === 'seal', 'the teach gate has its seal');
 for (let y = TG.rows[0]; y <= TG.rows[1]; y++) ok(at(TG.gate, y) === T.PORT, 'the teach gate is down across the hall at row ' + y);

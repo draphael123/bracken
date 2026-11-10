@@ -798,15 +798,20 @@ export function parryShot(BK, h, q, force) {   /* force: the page tool (tools/gq
   P.face = Math.sign(q.x - P.x) || P.face; k.left = k.right = false;
   return parryAt(BK, h, tti);
 }
-/* the escape up her burning hall: the table's route (L.gqEscape.route, tile stand-spots), a jump whenever the next spot is higher or the tile ahead is air; the portal is the last spot */
+/* (gq3) THE BURNING TOWER, as a player climbs it: walk into her portal in the hall, then per storey walk to its stairwell's ladder (L.gqEscape.tower.LADDERS, then the hatch's) and hold UP on it; on the deck walk past the roof shrine.
+   (the hall climb's route table is retired.) */
 function gqEscapeBot(BK, P, k) {
-  const E = BK.L && BK.L.gqEscape; if (!E) return null;
-  let i = P.labGqWp || 0; const R = E.route.concat([[E.portal.x, E.portal.y]]);
-  while (i < R.length - 1 && Math.abs(P.x - (R[i][0] * 16 + 8)) < 12 && Math.abs(P.y - (R[i][1] + 1) * 16) < 16) i++;
-  P.labGqWp = i; const wx = R[i][0] * 16 + 8, wy = (R[i][1] + 1) * 16, dir = Math.sign(wx - P.x) || 1;
-  const aheadAir = BK.L.grid[Math.floor((P.y + 2) / 16) * BK.L.W + Math.floor((P.x + dir * 12) / 16)] === 0;
-  if (P.ground && !(P.labJump > 0) && (wy < P.y - 6 || aheadAir) && Math.abs(P.x - wx) < 70) { BK.press('jump'); P.labJump = 10; }
-  return { goal: wx, strike: false };
+  const E = BK.L && BK.L.gqEscape; if (!E || !E.tower) return null;
+  const Tw = E.tower, rd = BK.gqHands() ? BK.gqHands().read() : null, inT = !!(rd && rd.esc && rd.esc.inTower);
+  if (!inT) { const px = E.portal.x * 16 + 8; k.left = k.right = false; return { goal: px, strike: false }; }
+  /* (gq3fix) ON A LADDER: keep holding UP to the top (the game stands him over the top itself). The old storey bounds flipped at a ladder's top, dropped UP and left him hanging on the rung for up to 90 s (the lab's stall). */
+  for (const [c, top, bot] of [...Tw.LADDERS, [Tw.HATCH.ladder[0], Tw.HATCH.ladder[1], Tw.HATCH.ladder[2]]]) if ((P.climb || !P.ground) && Math.abs(P.x - (c * 16 + 8)) < 9 && P.y > top * 16 - 6 && P.y <= (bot + 1) * 16) { k.left = k.right = false; k.up = true; return { goal: c * 16 + 8, strike: false }; }
+  const py = P.y; let s = -1; if (py <= 20 * 16 + 2) s = 5; else for (let i = 0; i < Tw.FLOORS.length; i++) if (py > (i === 4 ? 20 * 16 + 2 : (Tw.FLOORS[i] - 12) * 16) && py <= Tw.FLOORS[i] * 16 + 2) { s = i; break; }
+  let goal = P.x, up = false;
+  if (s >= 0 && s < 4) { goal = Tw.LADDERS[s][0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
+  else if (s === 4) { goal = Tw.HATCH.ladder[0] * 16 + 8; up = Math.abs(P.x - goal) < 7; }
+  else if (s === 5) goal = (Tw.FOLLOW.begin + 3) * 16;
+  k.up = up; return { goal, strike: false };
 }
 /* her P1 hall and her tower top, as a player reads them. Returns { goal, strike } to take the frame, or null (the rest of the chain: her quake's jump, the open branch, the bell, the hunt) */
 function gqueenReact(BK, boss, P, k, A, h) {
@@ -820,6 +825,8 @@ function gqueenReact(BK, boss, P, k, A, h) {
     return { goal: null, strike: false };
   }
   const R0 = rd && rd.roof;
+  /* (gq3fix) HER BELL CHARGE is told now (a 0.6 s planted wind-up, then the run): a player in her path rolls THROUGH her as she comes (a roll's frames), a parry on a shield hero is the existing tell branch */
+  if (stage === 'hall' && boss.mode === 'lure' && Math.abs(boss.vx || 0) > 100 && P.ground && !(P.dodge > 0)) { const dq = boss.x - P.x; if (Math.abs(dq) < 78 && dq * boss.vx < 0) { k.left = dq < 0; k.right = dq > 0; BK.press('dodge'); return { goal: null, strike: false }; } }
   if (stage === 'roof' && R0) {
     const m = boss.mode;
     if (m === 'lashHighTell') { if (boss.modeT < 0.3) k.down = true; return { goal: null, strike: false }; }
@@ -3065,7 +3072,7 @@ async function runbossLab(BK, opts) {
          tall, so a hop does reach her, and the same is true of the other eight on this list: a jump apex is well under 24 px of
          hang time before it is falling again, so "boss.y>P.y+24" was reading the bot's OWN HOP as a step it had climbed. It asks
          for the ground now, for every boss here, not only her (Daniel, "apply the same fix to the other eight", 2026-09-25). */
-      if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
+      if(!walker&&!P.swim&&boss.y>P.y+24&&P.ground&&!(boss.t==='gqueen'&&BK.gqStage&&BK.gqStage()==='escape')&&['chief','frog','king','ram','windcaller','gqueen','closedhelm','prince','strawking'].includes(boss.t)){const gx=lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;}
       if(boss.t==='windcaller'&&BK.callerWind&&boss.y>P.y+24&&P.ground&&(k.left||k.right)&&boss.mode!=='fallen'){const W=BK.callerWind();if(W&&(W.on||W.tell>=0.15)){k.left=k.right=false;k.down=true;}}   /* (claude/windcaller4: but HE IS DOWN - no thorns now, drop to him whatever the wind) */ /* (claude/windcaller3) OFF A LEDGE IN THE STILL: a hero who steps off in the gust is carried over the thorns - and stood waiting on it he BRACES, or the gust walks him off its end */
       const descending=!P.swim&&boss.y>P.y+24&&(boss.t==='lance'&&!bowT&&!gateDuty||boss.t==='reefmaw'&&strike&&(P.ground||P.vy>=0));
       if(descending){const gx=boss.t==='reefmaw'?boss.x:lowerFooting(BK,boss,T);k.left=P.x>gx+3;k.right=P.x<gx-3;k.block=false;strike=false;P.labJump=0;k.jump=false;if(P.ground&&[T.ONEWAY,T.PLANK,T.SHELF,T.RAIL].includes(P.groundTile)){k.down=true;BK.press('jump');}}

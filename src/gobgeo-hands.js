@@ -9,7 +9,7 @@
 //   struck), and him: STAGGERED, his orbit dropped. Walls stop it. Nothing here writes the grid except a smashed rocklock (as the game's other broken things: kept for the attempt).
 // main.js calls: load, clear, owns, spawn, foeUpdate, take, frame, update, drawWorld, drawOver, read.
 import { GG, GG_SAY, newGeo, geoStep, lob, fan, homeVel, geoTake, geoStruck, sweep, inBox } from './gob-geomancer.js';
-import * as GGA from './redraw/gob_geomancer_art.js';
+import * as GGA from './redraw/gob_geomancer_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the counterweights, the pivot slabs, the geode grille */
 import { BELLGATE } from './bell-gate.js';
 import { LANCE4, bellStrike } from './lance-support.js';
 
@@ -96,6 +96,10 @@ export function makeGobGeoHands(ctx) {
     return null;
   }
   function smashLock(k, why) { const s = st(); if (s.smashed.has(k.id)) return; s.smashed.add(k.id); s.n.seals++;
+    if (k.kind === 'weight') {   /* (gq3 item 3) a GEODE COUNTERWEIGHT: it drops, and its PIVOT SLAB swings level (a 3-col bridge) */
+      if (ctx.layCells) ctx.layCells(k.lay || []); const wx = (k.x + 0.5) * TS, wy = k.y * TS;
+      ctx.burst(wx, wy + 24, 14, ['#9a5ae0', '#d0a8ff', '#ffffff', '#5a2a9a'], 100, 0.7); ctx.shake(5); sfx('golemShatter'); sfx('thud'); s.fx.push({ k: 'weight', x: wx, y: wy, t: 0, id: k.id });
+      ctx.number(wx, wy + 40, why === 'fail' ? 'WITH HIM GONE THE WEIGHT FALLS' : 'THE WEIGHT DROPS: THE SLAB SWINGS LEVEL', '#8fd160'); return; }
     ctx.openCells(k.cells || []);
     const cx0 = (k.x + 0.5) * TS, cy0 = (k.y + 0.5) * TS;
     ctx.burst(cx0, cy0, 16, k.kind === 'crack' ? ['#3e3e4c', '#5c5c6e', '#868698', '#9a5ae0'] : ['#9a5ae0', '#d0a8ff', '#ffffff', '#5a2a9a'], 110, 0.7); ctx.shake(5); sfx('golemShatter'); sfx('crumble');
@@ -152,7 +156,7 @@ export function makeGobGeoHands(ctx) {
     /* A SEAL IS NEVER A SOFT-LOCK: one whose Geomancer is dead (however he died) and that a hero is near fails on its own */
     const P = ctx.hero();
     for (const k of ctx.L.rocklocks || []) { if (s.smashed.has(k.id) || !k.seal) continue;
-      const alive = ctx.enemies().some(e => e.alive && e.t === 'gobgeo' && e.sealId === k.id), near = P && Math.abs(P.x - (k.x + 0.5) * TS) < 260 && Math.abs(P.y - k.y * TS) < 200;
+      const alive = ctx.enemies().some(e => e.alive && e.t === 'gobgeo' && e.sealId === (k.seal || k.id)), near = P && Math.abs(P.x - (k.x + 0.5) * TS) < 260 && Math.abs(P.y - k.y * TS) < 200;
       if (alive || !near) { s.fail.set(k.id, 0); continue; }
       const t = (s.fail.get(k.id) || 0) + dt; s.fail.set(k.id, t); if (t >= GG.sealFail) smashLock(k, 'fail'); }
     /* A CHANDELIER A ROCK KNOCKED DOWN lands on everyone under it (the game's own weight flattens the one in its column; this is the crash round it) */
@@ -166,8 +170,17 @@ export function makeGobGeoHands(ctx) {
 
   /* ---------- DRAWING ---------- */
   /* before the foes: the seals on their gates, the old stone of a secret (until smashed) */
+  let gq3Off = false;
   H.drawWorld = (g, cx, cy, time) => { const s = st(); if (!s) return;
     for (const k of ctx.L.rocklocks || []) { const x = (k.x + 0.5) * TS - cx, y = (k.y + 0.5) * TS - cy; if (x < -60 || x > ctx.VW() + 60) continue;
+      if (k.kind === 'weight' && !gq3Off) { try { const hit = s.smashed.has(k.id), sl = (k.lay || [])[0], ceil = 2 * TS + 22 - cy, bob = k.box[2] * TS + Math.round((k.box[3] - k.box[2] + 1) * TS * 0.6) - 8 - cy;
+        GQ3A.drawWeight(g, x, ceil, bob, 20 * TS - cy, hit, time); if (sl) GQ3A.drawSlab(g, sl[0], sl[1], sl[2], cx, cy, hit, time); continue; } catch (err) { gq3Off = true; console.warn('gq3 weights art off:', err && err.message); } }
+      if (k.kind === 'weight') {   /* GREYBOX (GQ3ART draws the counterweight, its chain, the pivot slab and the shaft): a geode on a chain from the ceiling; its slab hangs vertical at the pivot until the weight drops */
+        const hit = s.smashed.has(k.id), sl = (k.lay || [])[0], wx = Math.round(x), top = Math.round(k.box[2] * TS - cy), len = Math.round((k.box[3] - k.box[2] + 1) * TS * 0.6);
+        if (!hit) { g.fillStyle = '#6a6a7c'; g.fillRect(wx, Math.round(-cy), 1, top + len - 8 + Math.round(cy)); g.fillStyle = '#5a2a9a'; g.fillRect(wx - 6, top + len - 8, 12, 12); g.fillStyle = '#b28cff'; g.fillRect(wx - 4, top + len - 6, 8, 8); g.fillStyle = '#e8dcff'; g.fillRect(wx - 2, top + len - 5, 3, 3); }
+        if (sl) { const sx = Math.round(sl[0] * TS - cx), sy = Math.round(sl[2] * TS - cy); g.fillStyle = '#7a7a8c'; if (hit) g.fillRect(sx, sy, (sl[1] - sl[0] + 1) * TS, 5); else g.fillRect(sx, sy, 5, (sl[1] - sl[0] + 1) * TS); g.fillStyle = '#c9c9d6'; g.fillRect(sx, sy, hit ? (sl[1] - sl[0] + 1) * TS : 5, 1); }
+        continue; }
+      if (k.id === 'qs-grille' && !gq3Off) { try { const hit = s.smashed.has(k.id); if (hit && !k.hitT) k.hitT = time; GQ3A.drawGrille(g, x, y + 8, time, hit, hit ? Math.min(1, (time - k.hitT) / 0.7) : 0); continue; } catch (err) { gq3Off = true; } }
       if (k.kind === 'crack') { if (!s.smashed.has(k.id)) GGA.drawCrackedFace(g, k.box[0] * TS - cx, k.box[2] * TS - cy, (k.box[1] - k.box[0] + 1) * TS, (k.box[3] - k.box[2] + 1) * TS, time); }
       else GGA.drawSeal(g, x, y, time, s.smashed.has(k.id) ? 1 : 0); } };
   /* after the foes: his orbit, his stone in flight, the bursts */

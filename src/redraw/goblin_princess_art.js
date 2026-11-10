@@ -9,13 +9,14 @@
 //   0,1 stand | 2-5 run | 6 lunge told (blade drawn back, glint) | 7 lunge | 8 flurry told (blade up) | 9,10 the pokes | 11 trinket told (hand in the purse) | 12 the toss
 //   13 fan told | 14 fan gust | 15 hop told (crouch) | 16 hop (air) | 17 tiara told (it comes off her head) | 18 tiara thrown (no tiara) | 19 stomp told | 20 stomp
 //   21,22 preen | 23 PINNED (cowering under the grate) | 24 STUNNED (conked, tiara over one eye) | 25 stagger | 26,27 bolt (flee) | 28 hide | 29 perch | 30 escape (MOTHER!)
-//   31 defeat (sat down, crying) | 32 the chase's handbell | 33 hurt
+//   31 defeat (sat down, crying) | 32 the chase's handbell | 33 reel | 34-35 kneel-ringing | 36-37 collapse | 38 hurt | 39 body
 import { canvas, px, rect, line, ellipse, circle, outline, flipX, whiten, fillPoly, shade } from '../px.js';
 import { OUT } from '../art.js';
 
 export const GPF = { stand: 0, stand2: 1, run: 2, lungeTell: 6, lunge: 7, flurryTell: 8, poke: 9, trinketTell: 11, trinket: 12, fanTell: 13, fan: 14, hopTell: 15, hop: 16, tiaraTell: 17, tiara: 18,
-  stompTell: 19, stomp: 20, preen: 21, pinned: 23, stunned: 24, stagger: 25, bolt: 26, hide: 28, perch: 29, escape: 30, defeat: 31, bell: 32, hurt: 33 };
-export const GP_FRAMES = 34;
+  stompTell: 19, stomp: 20, preen: 21, pinned: 23, stunned: 24, stagger: 25, bolt: 26, hide: 28, perch: 29, escape: 30, defeat: 31, bell: 32,
+  reel: 33, kneelRing: 34, collapse: 36, hurt: 38, body: 39 };   /* (gq3art) 33 reel, 34-35 kneel-ringing, 36-37 collapse, 38 hurt (moved up: main.js shows length-2 as the hurt frame), 39 the body (last) */
+export const GP_FRAMES = 40;
 export const GPC = { skin: '#6faa4a', skinL: '#92cf63', skinD: '#4f8236', gown: '#b02a78', gownL: '#d84a9c', gownD: '#7a1f5a', gold: '#e0c04a', goldL: '#fff6c8', goldD: '#a8841c',
   hair: '#241434', hairL: '#5a3a78', purple: '#7a3aa0', shoe: '#f6a8d0', steel: '#c9d1dc', steelL: '#ffffff', fan: '#f6d6e8', fanD: '#d890b8', gem: ['#ff4a6a', '#4ad0ff', '#7aff8a', '#ffd04a', '#c97aff'],
   eye: '#fff6e8', pupil: '#2a1020', blush: '#e86a8a', tear: '#9ad8ff' };
@@ -340,9 +341,22 @@ function pose(f) {
     case 31: return { sit: 1, crouch: 8, slump: 3, lean: 0, legs: [0, 0], fa: [-3, -5], ba: [3, -4], blade: null, eyes: 'cry', mouth: 'wail', ears: 2, tiara: 'off', skirt: 0, flare: 4,
       fx: (g) => { tiaraLying(g, CX + 24, G - 1); rect(g, CX - 18, G - 5, 8, 4, INK2); rect(g, CX - 17, G - 5, 7, 3, PK[2]); rect(g, CX - 17, G - 5, 7, 1, PK[4]); } };
     case 32: return { lean: 1, legs: [1, -1], fa: [5, -9], ba: [-6, 5], blade: null, handbell: 1, eyes: 'wide', mouth: 'shout', ears: 1 };
-    default: return { by: 1, lean: -3, legs: [-2, 3], fa: [-4, -4], ba: [-6, -3], blade: [-2, 0, 4, 6], eyes: 'shut', mouth: 'wail', ears: 2, tilt: -3, skirt: 3, flare: 2, fan: null };
+    /* (gq3art) HER DEATH: she reels, kneels ringing her handbell three weak times, collapses, and lies there with the tiara rolled away */
+    case 33: return { lean: -6, legs: [-4, 5], fa: [-4, -2], ba: [-8, -6], blade: [-4, 2, 2, 12], eyes: 'wide', mouth: 'wail', ears: 2, tilt: -3, skirt: 4, flare: 3, tiara: 'crooked',
+      fx: (g, o) => { rect(g, o.hx - 20, o.hy - 6, 3, 1, '#fff'); rect(g, o.hx - 23, o.hy + 2, 4, 1, '#fff'); rect(g, o.hx - 19, o.hy + 9, 3, 1, '#fff'); } };
+    case 34: return { crouch: 8, slump: 2, lean: 1, legs: [-3, 3], fa: [6, -5], ba: [-3, -6], blade: null, handbell: 1, eyes: 'cry', mouth: 'wail', ears: 2, tiara: 'crooked', skirt: 0, flare: 4 };
+    case 35: return { crouch: 8, slump: 2, lean: 2, legs: [-3, 3], fa: [8, -13], ba: [-3, -6], blade: null, handbell: 1, eyes: 'cry', mouth: 'wail', ears: 2, tiara: 'crooked', skirt: 0, flare: 4,
+      fx: (g, o) => { for (const [dx, dy, w] of [[11, -6, 5], [14, -1, 7], [11, 4, 5]]) rect(g, o.fhx + dx, o.fhy + dy, w, 1, C.goldL); for (const [dx, dy] of [[-10, -4], [-13, 1]]) px(g, o.fhx + dx, o.fhy + dy, C.goldL); } };
+    case 36: return { sit: 1, crouch: 9, slump: 4, lean: 4, legs: [0, 0], fa: [-3, -6], ba: [3, -3], blade: null, handbell: 1, eyes: 'shut', mouth: 'wail', ears: 2, tiara: 'off', skirt: 0, flare: 4,
+      fx: (g) => { tiaraLying(g, CX + 20, G - 1); } };
+    case 37: return { sit: 1, crouch: 9, slump: 6, lean: 6, legs: [0, 0], fa: [-2, 3], ba: [3, 2], blade: null, eyes: 'shut', mouth: 'pout', ears: 2, tiara: 'off', skirt: 0, flare: 4,
+      fx: (g, o) => { tiaraLying(g, CX + 30, G - 1); handbellLying(g, o.fhx + 7, G - 1); } };
+    case 38: return { by: 1, lean: -3, legs: [-2, 3], fa: [-4, -4], ba: [-6, -3], blade: [-2, 0, 4, 6], eyes: 'shut', mouth: 'wail', ears: 2, tilt: -3, skirt: 3, flare: 2, fan: null };   /* HURT */
+    default: return { sit: 1, crouch: 9, slump: 7, lean: 8, legs: [0, 0], fa: [-1, 4], ba: [2, 3], blade: null, eyes: 'shut', mouth: 'pout', ears: 2, tiara: 'off', skirt: 0, flare: 5,   /* 39 THE BODY: face down in the gown, the tiara rolled clear, the handbell on its side */
+      fx: (g, o) => { tiaraLying(g, CX + 38, G - 1); handbellLying(g, CX - 22, G - 1); rect(g, CX + 28, G - 2, 6, 1, GD[1]); } };
   }
 }
+function handbellLying(g, x, y) { blob(g, x, y - 4, 6, 4, GD); rect(g, x - 7, y - 2, 4, 2, GD[0]); rect(g, x - 7, y - 3, 4, 1, GD[3]); px(g, x - 2, y - 7, GD[4]); px(g, x - 3, y - 6, GD[4]); rect(g, x + 5, y - 5, 4, 2, GD[1]); px(g, x + 9, y - 4, GD[2]); }   /* (gq3art) the handbell on its side, its clapper out */
 function tiaraLying(g, x, y) { rect(g, x - 7, y - 4, 15, 4, GD[0]); rect(g, x - 6, y - 4, 13, 3, GD[2]); rect(g, x - 6, y - 4, 13, 1, GD[4]); for (const k of [-5, -2, 1, 4, 6]) { rect(g, x + k, y - 7, 2, 3, GD[2]); px(g, x + k, y - 7, GD[4]); } ruby(g, x, y - 2, 1); }
 
 /* a lit top-left rim and a shaded bottom-right edge on the whole silhouette: the highlight edge and the mass */
@@ -373,7 +387,7 @@ export function gpFrame(e) {
     case 'stompTell': return GPF.stompTell; case 'stomp': return GPF.stomp;
     case 'preen': return GPF.preen + (Math.floor(a * 3) & 1);
     case 'pinned': return GPF.pinned; case 'stunned': return GPF.stunned; case 'stagger': return GPF.stagger;
-    case 'bolt': return GPF.bolt + (A & 1); case 'escape': return GPF.escape; case 'hide': case 'ducked': return GPF.hide; case 'perch': return GPF.perch;
+    case 'bolt': return GPF.bolt + (A & 1); case 'escape': return GPF.escape; case 'dying': { const t = e.dyT || 0; if (t < 0.3) return GPF.reel; if (t < 1.2) return GPF.kneelRing + ((((t - 0.3) % 0.3) < 0.13) ? 1 : 0); return t < 1.5 ? GPF.collapse : GPF.collapse + 1; }   /* (gq3art) reel, kneel-ringing (a ring every 0.3 s: the bell swings out for 0.13 s), collapse */ case 'hide': case 'ducked': return GPF.hide; case 'perch': return GPF.perch;
     case 'walk': case 'recover': return moving ? GPF.run + (A & 3) : (Math.floor(a * 2) & 1 ? 1 : 0);
     default: return moving ? GPF.run + (A & 3) : 0;
   }

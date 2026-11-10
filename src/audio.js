@@ -1343,6 +1343,8 @@ Object.assign(SFX, {
   garFlop() { noise(0.06, 0.2, 900, 0.5); tone('sine', 220, 120, 0.06, 0.08); },
   hareSqueak() { tone('sine', 1800, 2600, 0.06, 0.08); tone('sine', 2400, 1900, 0.07, 0.06, 0.07); },
   wightMoan() { tone('sawtooth', 90, 70, 0.9, 0.12); tone('sine', 140, 95, 0.9, 0.1, 0.05); noise(0.9, 0.08, 600, 0.3); },
+  geodeGrind() { noise(0.9, 0.2, 380, 0.5); tone('sawtooth', 70, 48, 0.9, 0.16); tone('square', 140, 90, 0.8, 0.05, 0.1); tone('sine', 520, 780, 0.5, 0.04, 0.5); },   /* (gq3 item 5) the Queen's geode grinding out of her portal: stone on stone, a glassy rise */
+  portalOpen() { tone('sine', 300, 700, 0.35, 0.08); tone('sine', 450, 900, 0.3, 0.05, 0.1); noise(0.3, 0.06, 1800, 0.4); },   /* (gq3) a portal opening (it was a silent call) */
   callerChant() { tone('sawtooth', 220, 262, 0.35, 0.12); tone('sawtooth', 330, 392, 0.35, 0.08, 0.3); noise(0.7, 0.14, 500, 0.4); tone('sine', 880, 1320, 0.5, 0.05, 0.1); },
   callerBlast() { noise(0.6, 0.5, 300, 0.4); tone('sawtooth', 160, 40, 0.5, 0.25); tone('sine', 1200, 300, 0.4, 0.1); },
   forgeHammer() { file('slam', 0.6, 0.8) || tone('sine', 90, 40, 0.25, 0.4); tone('square', 1900, 1200, 0.08, 0.12, 0.02); noise(0.12, 0.3, 3000, 1.1, 0.02); },
@@ -1730,6 +1732,7 @@ const DIE = {
   shardling() { noise(0.3, 0.3, 3600, 0.7); [2637, 2093, 1568, 1175].forEach((f, i) => bell(f, 0.35, 0.05, i * 0.05)); tone('sawtooth', 160, 60, 0.25, 0.1); },
   fledgling() { tone('sawtooth', 1400, 500, 0.18, 0.1); noise(0.2, 0.16, 2600, 0.5, 0.05); for (let i = 0; i < 3; i++) noise(0.04, 0.08, 3600, 1, 0.1 + i * 0.05); /* a cheep cut short, and down */ },
   gobpriest() { gob(1.05) || tone('sawtooth', 300, 90, 0.4, 0.16); pad('sawtooth', 247, 150, 0.6, 0.04, 0.05, 800); tone('sine', 2093, 1200, 0.5, 0.05, 0.15); SFX.clatter(); /* the chant goes out of its nose, and the bell and the censer hit the flags */ },
+  gobgeo() { gob(0.85) || tone('square', 420, 90, 0.3, 0.16); noise(0.12, 0.12, 900, 1.2, 0.1); SFX.thud(); /* (batch155, voices-check) the court earth-mage: a low goblin cry, and his slate drops */ },
   gobmage() { gob(1.15) || tone('square', 560, 120, 0.3, 0.16); for (let i = 0; i < 5; i++) noise(0.04, 0.1, 4800, 1.4, 0.1 + i * 0.05); tone('sine', 900, 200, 0.4, 0.05, 0.1); SFX.thud(); /* the pages go everywhere, and the book lands */ },
   sentry() { gob(1.05) || tone('square', 500, 110, 0.22, 0.16); bell(988, 0.8, 0.07, 0.12); SFX.clatter(); /* his bell hits the floor */ },
   hearthgob() { gob(0.7, 0.65) || tone('sawtooth', 240, 60, 0.4, 0.22); noise(0.6, 0.18, 2400, 0.5, 0.12); tone('sine', 90, 40, 0.3, 0.25, 0.1); /* the fire goes out with him */ },
@@ -1923,6 +1926,7 @@ const HURT = {
   shardling() { bell(2637, 0.2, 0.05); noise(0.05, 0.12, 5000, 0.8); },
   fledgling() { tone('square', 1600, 1100, 0.08, 0.08); },
   gobpriest() { gobH(1.05) || tone('square', 480, 300, 0.08, 0.13); bell(2093, 0.12, 0.025, 0.02); /* and the bell on its belt */ },
+  gobgeo() { gobH(0.85) || tone('square', 440, 300, 0.08, 0.13); noise(0.05, 0.08, 1200, 1.2, 0.02); /* a slate chips */ },
   gobmage() { gobH(1.15) || tone('square', 620, 380, 0.08, 0.13); noise(0.05, 0.08, 5000, 1.5, 0.02); /* and a page tears */ },
   sentry() { gobH(1.05) || tone('square', 560, 340, 0.08, 0.12); bell(988, 0.25, 0.04, 0.02); },
   hearthgob() { gobH(0.7, 0.5) || tone('sawtooth', 240, 140, 0.14, 0.16); noise(0.12, 0.1, 2400, 0.6); },

@@ -3516,7 +3516,7 @@ function highcrownWhole() {
     block(X + 65, X + 69, 64, BOT); plat(X + 66, 58, 3); plat(X + 66, 54, 3); plat(X + 66, 50, 3);   // its back, and the hoarding down it
     ent('scaffold', X + 66, 50, { x1: X + 68 });
     ent('check', X + 2, 63); ent('sign', X + 4, 63, { text: 'THE CRAG WALK. HER WALL GOES UP THE MOUNTAIN, AND THE WAY ON GOES WITH IT.' });
-    ent('goat', X + 14, 59, { face: -1 }); ent('soldier', X + 27, 53, { face: -1 }); ent('harpy', X + 34, 47);
+    ent('hound', X + 14, 59, { face: -1 });   /* (claude/hcfix1) was a crag goat (the Crags' ram, Daniel 11-09 'why is there a goat'): a castle hound, the bailey's own beast, takes its place */ ent('soldier', X + 27, 53, { face: -1 }); ent('harpy', X + 34, 47);
     ent('check', X + 43, 47); ent('javelin', X + 50, 47, { face: -1 }); ent('soldier', X + 57, 47, { face: -1 }); ent('archer', X + 62, 45, { face: -1 });
     ent('torch', X + 26, 53); ent('torch', X + 47, 47); ent('deco', X + 60, 45, { kind: 'banner', v: 1 }); ent('deco', X + 19, 57, { kind: 'cairn' });
     coins([X + 11, 60], [X + 15, 58], [X + 19, 55], [X + 22, 54], [X + 31, 52], [X + 34, 51], [X + 37, 52], [X + 54, 45], [X + 67, 49], [X + 67, 53], [X + 67, 57]);
@@ -4454,7 +4454,7 @@ function sprinkleCoins(L) {
   return L;
 }
 // ============================================================================================
-// LEVEL 12 - THE LONG WATER. Three days after the Queen fell, the melt off Highcrown began to run salt. The goblins paid
+// LEVEL 12 - THE LONG WATER. Three days after the Queen fled, the melt off Highcrown began to run salt. The goblins paid
 // the deep a tribute for a hundred years to keep it asleep; the tribute has stopped, and the sea is coming inland to
 // collect. Down the mountain's back face on the falls, down the river on the Ferryman's raft with the Bore coming up it,
 // into SALTREACH at the river mouth, where the Tidebound are walking up the streets - and the Tide Herald is waiting in

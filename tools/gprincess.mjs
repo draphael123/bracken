@@ -3,7 +3,7 @@
 //            door; the battlements have no spikes and no death fall (the broken stretch's pit has a ladder out); six murder holes; eight shrines; reachable end to end
 //   FIGHT    resist 0.5x (0.4x hiding) outside openings, never 0; the bell rope (any seat) -> she bolts -> told glow -> the grate -> PINNED 3.5 s x1.35; cooldown;
 //            a missed grate (SHE DUCKED); a parried lunge staggers; a parried tiara stuns (x1.25); the cap a single opening; 'GUARDS!' at 70/35: crank 3 keeps them in,
-//            fail and they come (+1 at 3-4 seats); the tantrum at 50 %; at 10 % she escapes (no death; the mini ends); 1-4 seats
+//            fail and they come (+1 at 3-4 seats); the tantrum at 50 %; at 0 she DIES (gq3: dying 1.8 s, handbell x3, the Great Hall answers; a body; the mini ends); 1-4 seats
 //   CHASE    starts at the walk, runs ahead, rings tower 1 and 2 (their guardroom winches), reaches her tower; once per checkpoint life
 //   REHEARSAL the banquet's Captain storms to the bell rope, the grate pins him; the servery horn and its winch
 //   WIRING   main.js / boss-greed / boss-read / marks / bell-winch / gqueen-hands on the shared code
@@ -23,7 +23,7 @@ const TS = 16;
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
 
 console.log('== LAYOUT');
-ok(W === 765, 'Highcrown is 765 columns (609 + the tower top 56 + 100 for the battlements and the bell tower): ' + W);
+ok(W === 841, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
 ok(L.ents.some(e => e.t === 'sign' && /CAPTAINS HALL/.test(e.text || '')), 'the Captains Hall is kept (Daniel 11-06 22:34: do NOT cut it)');
 ok(L.ents.some(e => e.t === 'sign' && /BAKEHOUSE YARD/.test(e.text || '')) && L.pools.some(p => p.fire), 'the bakehouse yard is kept (its sign and its fire)');
 const M = L.mini; ok(!!M && M.boss === 'gprincess' && M.name === 'THE GOBLIN PRINCESS', 'L.mini is THE GOBLIN PRINCESS');
@@ -35,9 +35,9 @@ let col = true; for (let y = M.grate.gy0; y <= M.grate.gy1; y++) if (at(M.grate.
 let door = true; for (let y = HC3.EXIT_ROWS[0]; y <= HC3.EXIT_ROWS[1]; y++) if (at(M.gate, y) !== T.PORT) door = false; ok(door, 'the inner stair door (the mini\'s gate, col ' + M.gate + ') is shut until she has gone');
 let spikes = 0; for (let x = HC3.AT; x <= HC3.BT[1]; x++) for (let y = 0; y < 40; y++) if (at(x, y) === T.SPIKE) spikes++; ok(spikes === 0, 'no spikes on the battlements or in her tower (no death falls, HCPLAN Q9)');
 let pitOut = false; for (let y = HC3.S + 1; y <= HC3.S + 6; y++) if (at(HC3.GAP[1], y) === T.NET) pitOut = true; ok(pitOut && at(HC3.GAP[0] + 2, HC3.S + 7) === T.SOLID, 'the broken stretch drops six rows onto a lower walk, with a ladder back up (time, not a life)');
-const holes = L.ents.filter(e => e.t === 'murderhole'); ok(holes.length === 6, 'six murder holes (' + holes.map(h => h.x + ',' + h.y).join(' ') + ')');
+const holes = L.ents.filter(e => e.t === 'murderhole'); ok(holes.length === 7, 'seven murder holes - the seventh is the Queen Stair gallery (' + holes.map(h => h.x + ',' + h.y).join(' ') + ')');
 for (const h of holes) { let solidAbove = at(h.x, h.y - 1) === T.SOLID || at(h.x, h.y - 1) === T.ONEWAY; ok(solidAbove && at(h.x, h.y) === T.AIR, 'murder hole #' + h.n + ' at ' + h.x + ',' + h.y + ' is a slot under stone (or boards) with air below'); }
-const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 8, 'eight shrines, as before (' + checks.join(' ') + '): the banquet\'s moved to its east door; the hall balcony\'s stays (tools/checkpoint-gaps: <= 200 route tiles)');
+const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(checks.length === 10, 'ten shrines (gq3: the Queen Stair door 650, the tower top deck 795 - the banquet 524 and her door 717 move) (' + checks.join(' ') + '): the banquet\'s moved to its east door; the hall balcony\'s stays (tools/checkpoint-gaps: <= 200 route tiles)');
 ok(checks.includes(HC3.BANQ_SHRINE[0]) && !checks.includes(478), 'the banquet shrine is at its EAST door (after the rehearsal), not before it');
 ok(!checks.some(x => x > HC3.BANQ_SHRINE[0] && x < M.x1 / TS), 'no shrine on the battlements walk itself (the chase + her fight is one checkpoint)');
 const qShrine = checks.find(x => x > M.x1 / TS); ok(qShrine && qShrine < L.arena.x0 / TS, 'the Queen\'s shrine is past the Princess\'s tower and before her hall (' + qShrine + ')');
@@ -81,7 +81,7 @@ for (const m of ['walk', 'lungeTell', 'lunge', 'flurry', 'fanTell', 'trinketTell
   ok(gpMul({ mode: m }) >= 0.4 && gpMul({ mode: m }) <= 0.5, m + ': ' + gpMul({ mode: m }) + 'x (>= 0.4, never 0)');
 ok(gpMul({ mode: 'walk', hiding: true }) === 0.4, 'hiding behind a guard: 0.4x (the floor)');
 ok(gpMul({ mode: 'pinned' }) === 1.15 && gpMul({ mode: 'stunned' }) === 1.15 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.15, stunned x1.15, preen / stagger x1.0');
-ok(GP.hp <= 1600 && GP.resist >= 0.4 && GP.endAt === 0.1 && GP.bell.pin === 2.5, 'hp ' + GP.hp + ' (<= 1600), resist >= 0.4, she ends at 10 %, the pin is 2.5 s');
+ok(GP.hp <= 1600 && GP.resist >= 0.4 && GP.endAt === 0 && GP.hp === 1000 && GP.bell.pin === 2.5, 'hp ' + GP.hp + ' (<= 1600), resist >= 0.4, she ends at 0 (a death, gq3), the pin is 2.5 s');
 
 console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate BLAZES -> a timed blow on the winch -> PINNED');
 { const w = make(); free(w); const gx = w.A.grate.col * TS + 8;
@@ -129,8 +129,11 @@ console.log('== THE TANTRUM, THE ESCAPE');
 { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); ok(w.H.fight().ph === 2 && w.st.said.some(s => /TANTRUM/.test(s)), 'below half: the tantrum (phase two)');
   const d0 = w.H.take(w.e, 20); ok(d0 > 0, 'the tantrum is not a free invulnerability (' + d0 + ')'); }
 { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.12; const d = w.H.take(w.e, 9999); w.e.hp -= d;
-  ok(Math.abs(w.e.hp - w.e.maxHp * GP.endAt) < 1e-6 && w.e.mode === 'escape' && w.st.said.includes('MOTHER!'), 'a killing blow stops at 10 %: MOTHER! and the escape');
-  ok(w.H.take(w.e, 50) === 0, 'during the escape nothing lands (the finish, not a guard)'); w.step(60 * (GP.escape + 0.2)); ok(w.H.escaped(w.e) && w.e.hp > 0, 'through the hatch: escaped, never killed (main ends the mini)'); }
+  ok(w.e.hp >= 1 && w.e.hp <= 1.0001 && w.e.mode === 'dying' && w.st.said.includes('MOTHER...'), 'a killing blow takes her bar to 0 (1 hp held for the last act): MOTHER... and the dying');
+  ok(w.H.take(w.e, 50) === 0 && !w.H.escaped(w.e), 'while she rings nothing lands (she is dead, not a guard) and she does not escape');
+  w.step(60 * 1.3); ok(w.e.dyRings === 3 && !w.e.dyHeard, 'three weak rings of her handbell, then the hall has not answered yet (0.4 s after the last)');
+  w.step(60 * 0.4); ok(w.e.dyHeard && w.st.said.includes('THE QUEEN HAS HEARD'), 'the Great Hall bell answers: THE QUEEN HAS HEARD');
+  w.step(60 * 0.3); ok(w.H.dead(w.e), 'the collapse is done (1.8 s in all): main hands her to the ordinary death (a body, miniEnd)'); }
 
 console.log('== CO-OP 1-4 seats');
 for (const n of [2, 3, 4]) { const w = make(n); free(w); w.ring(w.heroes[n - 1]); w.step(3); ok(w.e.mode === 'bolt', n + ' seats: the LAST seat rings the bell');
@@ -165,9 +168,9 @@ console.log('== SHARED RULE CODE (src/bell-winch.js)');
 
 console.log('== WIRING');
 { const m = rd('src/main.js'), q = rd('src/gqueen-hands.js'), g = rd('src/boss-greed.js'), r = rd('src/boss-read.js'), mk = rd('src/marks.js');
-  ok(/case 'gprincess': \{ enemies\.push\(GPH\.spawn\(base\)\)/.test(m) && /GPH\.take\(e, dmg, tag\)/.test(m) && /GPH\.escaped\(e\)[^\n]*miniEnd\(e\)/.test(m), 'main.js: her spawn, her take, the escape ending the mini');
+  ok(/case 'gprincess': \{ enemies\.push\(GPH\.spawn\(base\)\)/.test(m) && /GPH\.take\(e, dmg, tag\)/.test(m) && /GPH\.dead\(e\)[^\n]*hurtEnemy\(e, e\.hp \+ 5/.test(m) && !/cameo\(g, cx/.test(rd('src/goblin-princess.js')), 'main.js: her spawn, her take, the dying handing her to the ordinary death (a body); no cameo');
   ok(/case 'murderhole': props\.push\(murderHoleProp\(e\)\)/.test(m) && /function updateMurderHoles/.test(m) && /GPH\.level\(dt\)/.test(m), 'main.js: the murder holes and the level hooks');
-  ok(/gprincess: 'SHE FLEES TO HER MOTHER/.test(m) && /t: 'gprincess', name: 'THE GOBLIN PRINCESS'/.test(m) && /gprincess: GPM\.GP\.hp/.test(m), 'main.js: MINI_DONE, the bestiary, EHP');
+  ok(/gprincess: 'HER BELL IS SILENT/.test(m) && /t: 'gprincess', name: 'THE GOBLIN PRINCESS'/.test(m) && /gprincess: GPM\.GP\.hp/.test(m), 'main.js: MINI_DONE, the bestiary, EHP');
   ok(/from '\.\/bell-winch\.js'/.test(q) && /BW\.ringBell\(/.test(q) && /BW\.crankWinch\(/.test(q), 'the Queen\'s hands use the shared rule code');
   ok(/gprincess: e => gpOpen\(e\)/.test(g) && /'gprincess'\]\)/.test(g) && /gprincess:/.test(r), 'boss-greed opening + own cap, boss-read');
   ok(Object.keys(GPX.GP_MODES).every(k => mk.includes("'gprincess|" + k + "'")), 'marks: every told move'); }
