@@ -12,9 +12,9 @@
 //   FOES             SHADES (`haunt`, skin 'mnshade'; runner): asleep in the walls until the blackout, then through the walls after you; a told lunge (!!) that
 //                    snuffs a carried candelabra. THE POLTERGEIST ('poltergeist', the one new foe; ranged): faint (phased, x0.5) until it LIFTS a piece of
 //                    furniture (told !) and throws it (blockable: a blocked throw breaks); then it is solid a beat (SPENT, x1).
-// Every cell this module changes is kept and put back on a reset. GREYBOX DRAWING (the sonnet art lane draws the final).
+// Every cell this module changes is kept and put back on a reset. DRAWING: src/redraw/manor_art.js (tiles, backdrop, props), src/redraw/manor_foes.js (suit, shade, poltergeist) - claude/manorart.
 // main.js calls (one tagged line each): on, reset, update, strike, mine, foe, takeFoe, draws, drawFoe, drawBack, drawOver, holes.
-import { MN_SAY } from './mn-lines.js';
+import { MN_SAY } from './mn-lines.js'; import * as ART from './redraw/manor_art.js'; import * as FOE from './redraw/manor_foes.js';
 
 export const MOVE = { unwatched: 0.6, range: 260, rangeY: 200, margin: 1 };
 export const LIGHT = { carry: 64, candle: 52, ward: 44, touch: 14, flick: 1.0, every: 1.4, wisp: 18 };
@@ -28,7 +28,6 @@ const SOUND = { shift: s => (s.rumble || s.crash || s.thud)(), key: s => (s.ui |
   rise: s => (s.clank || s.thud)(), thrust: s => (s.throwWhoosh || s.whoosh || s.tell)(), cleave: s => (s.heavy || s.thud)(), stuck: s => (s.clank || s.thud)(),
   lunge: s => (s.whoosh || s.hiss || s.tell)(), lift: s => (s.rattle || s.tell)(), throw: s => (s.throwWhoosh || s.whoosh || s.tell)(), clatter: s => (s.clank || s.crash || s.thud)() };
 const R = Math.round;
-const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
 const GHOST = '#9adfb0';   /* THE ONE ACCENT: ghost-green */
 
 export function makeManorHands(ctx) {
@@ -41,7 +40,7 @@ export function makeManorHands(ctx) {
   H.show = () => S;
   const heroes = () => (ctx.players() || []).filter(p => p && !p.dead);
   const fresh = () => ({ t: 0, cells: new Map(), panel: {}, lit: {}, flick: {}, carry: new Map(), keys: new Set(), doorOpen: false, wisps: [], piles: [], rackUsed: {}, suits: new Set(), throws: [], told: {},
-    bo: { on: false, i: 0, t: 0, list: [] },
+    bo: { on: false, i: 0, t: 0, list: [] }, castSeen: false, exitOpen: false,
     n: { swaps: 0, keys: 0, carried: 0, relit: 0, snuffed: 0, candelSnuffed: 0, knocked: 0, rested: 0, risen: 0, faded: 0, thrusts: 0, cleaves: 0, stuck: 0, lunges: 0, lungeHits: 0, lifts: 0, throwHits: 0, blockedThrows: 0 } });
   const tile = (x, y) => { const L0 = L(); return x < 0 || y < 0 || x >= L0.W || y >= L0.H ? ctx.T.SOLID : L0.grid[y * L0.W + x]; };
   const stand = t => t === ctx.T.SOLID || t === ctx.T.ONEWAY || t === ctx.T.BOUNCER || t === ctx.T.PLANK || t === ctx.T.SHELF;
@@ -111,7 +110,8 @@ export function makeManorHands(ctx) {
   H.update = dt => { if (!H.on()) return; if (!S) H.reset(); S.t += dt;
     for (const e of S.suits) if (!e.alive && !e.mnGone) { e.mnGone = 1; knocked(e); }
     for (const e of [...S.suits]) if (e.mnGone) S.suits.delete(e);
-    stepPanels(dt); stepLight(dt); stepWisps(dt); stepThrows(dt); };
+    stepPanels(dt); stepLight(dt); stepWisps(dt); stepThrows(dt);
+    const cs = (ctx.enemies() || []).find(e => e.t === 'castellan'); if (cs && cs.alive) S.castSeen = true; else if (S.castSeen) S.exitOpen = true; };   /* THE EXIT: the stair to the road is gated until the Castellan has fallen */
   /* ---------------- A HERO'S BLOW: a portrait, a stand, a candle, a wisp ---------------- */
   const hitBox = (hb, x, y, r) => hb.l < x + r && hb.r > x - r && hb.t < y + r && hb.b > y - r;
   H.strike = (hb, by) => { if (!H.on() || !hb) return; if (!S) H.reset(); const G = mn(), once = o => !ctx.hitOnce || ctx.hitOnce(o), who = by || (ctx.hero && ctx.hero());
@@ -121,7 +121,7 @@ export function makeManorHands(ctx) {
     for (const w of S.wisps) if (!w.done && hitBox(hb, w.x, w.y, WISP.r) && once(w)) H.restWisp(w); };
   /* ================= THE FOES ================= */
   H.mine = e => (e.t === 'armour' && e.cnSkin === 'mnsuit') || (e.t === 'haunt' && e.cnSkin === 'mnshade') || e.t === 'poltergeist';
-  H.draws = e => (e.t === 'haunt' && e.cnSkin === 'mnshade') || e.t === 'poltergeist';
+  H.draws = e => (e.t === 'haunt' && e.cnSkin === 'mnshade') || e.t === 'poltergeist' || (e.t === 'armour' && e.cnSkin === 'mnsuit');
   const floorUnder = (x, y) => { const tx = Math.floor(x / TS); for (let ty = Math.floor((y - 4) / TS); ty < L().H; ty++) if (stand(tile(tx, ty))) return ty * TS; return null; };
   H.spawn = (e, base) => { if (e.t !== 'poltergeist') return null; return { ...base, t: 'poltergeist', w: 14, h: 18, hp: POLT.hp, maxHp: POLT.hp, noGrav: true, mode: 'drift', modeT: 0, hx: base.x, hy: base.y - 8, y: base.y - 8, squad: e.squad, cd: 1.2, n: 0 }; };
   H.takeFoe = (e, dmg) => { if (e.t === 'armour' && e.mode === 'stuck') return dmg * SUIT.cleave.mul; if (e.t === 'poltergeist' && e.mode === 'drift') return dmg * POLT.phased; if (e.t === 'haunt' && e.mode === 'hide') return 0; return dmg; };
@@ -135,8 +135,8 @@ export function makeManorHands(ctx) {
   function suit(e, dt) { const p = nearest(e);
     switch (e.mode) {
       case 'rise': if (e.modeT <= 0) { e.mode = 'walk'; e.cd = 0.6; } return;
-      case 'thrustTell': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = SUIT.recover; e.cd = SUIT.thrust.cd; S.n.thrusts++; snd('thrust'); if (p && Math.abs(p.x - e.x) < SUIT.thrust.reach && (Math.sign(p.x - e.x) || 1) === e.face && Math.abs(p.y - e.y) < 24) hitP(p, e, SUIT.thrust.dmg, 'A POSSESSED SUIT'); } return;
-      case 'cleaveTell': if (e.modeT <= 0) { S.n.cleaves++; snd('cleave'); let hit = false; for (const q of heroes()) if (Math.abs(q.x - e.x) < SUIT.cleave.reach && (Math.sign(q.x - e.x) || 1) === e.face && Math.abs(q.y - e.y) < 24) { hit = true; hitP(q, e, SUIT.cleave.dmg, 'A POSSESSED SUIT', { unblockable: true }); }
+      case 'thrustTell': if (e.modeT <= 0) { e.mnWas = 'thrust'; e.mode = 'recover'; e.modeT = SUIT.recover; e.cd = SUIT.thrust.cd; S.n.thrusts++; snd('thrust'); if (p && Math.abs(p.x - e.x) < SUIT.thrust.reach && (Math.sign(p.x - e.x) || 1) === e.face && Math.abs(p.y - e.y) < 24) hitP(p, e, SUIT.thrust.dmg, 'A POSSESSED SUIT'); } return;
+      case 'cleaveTell': if (e.modeT <= 0) { e.mnWas = 'cleave'; S.n.cleaves++; snd('cleave'); let hit = false; for (const q of heroes()) if (Math.abs(q.x - e.x) < SUIT.cleave.reach && (Math.sign(q.x - e.x) || 1) === e.face && Math.abs(q.y - e.y) < 24) { hit = true; hitP(q, e, SUIT.cleave.dmg, 'A POSSESSED SUIT', { unblockable: true }); }
           if (hit) { e.mode = 'recover'; e.modeT = SUIT.recover; } else { e.mode = 'stuck'; e.modeT = SUIT.cleave.stuck; S.n.stuck++; snd('stuck'); say(e.x, e.y - 34, 'STUCK', '#ffd36b'); } e.cd = SUIT.cleave.cd; } return;
       case 'recover': case 'stuck': if (e.modeT <= 0) e.mode = 'walk'; return;
     }
@@ -174,37 +174,33 @@ export function makeManorHands(ctx) {
   H.read = () => S && { t: +S.t.toFixed(2), panels: Object.fromEntries(Object.entries(S.panel).map(([k, v]) => [k, v.st])), keys: S.keys.size, door: S.doorOpen, lit: Object.values(S.lit).filter(Boolean).length, carry: heroes().map(p => S.carry.get(p) || null), wisps: S.wisps.length, n: { ...S.n } };
   /* ================= THE DARK: every lit candle, a carried flame and a wisp is a hole ================= */
   H.holes = (hole, cx, cy) => { if (!S) return; for (const l of H.lightsNow()) hole(l.x - cx, l.y - cy, l.r * 1.25); };
-  /* ================= THE GREYBOX DRAWING ================= */
-  /* behind the tiles: THE GREAT HALL'S TOWER over the roofs (the landmark: its one high window lit ghost-green), a row of gables */
-  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return;
-    const tx = R(((300 * TS - cx) * 0.25) % (VW + 400)) + 120; rect(g, tx, 6, 46, VH * 0.6, 'rgba(40,46,46,0.95)'); rect(g, tx - 6, 0, 58, 10, 'rgba(30,34,34,0.95)');
-    rect(g, tx + 18, 30, 10, 16, 'rgba(154,223,176,' + (0.45 + 0.2 * Math.sin(time * 1.3)).toFixed(2) + ')');
-    for (let i = -1; i < Math.ceil(VW / 70) + 2; i++) { const bx = R(((i * 70 - cx * 0.4) % (VW + 140) + VW + 140) % (VW + 140) - 70); rect(g, bx, 64, 60, VH, 'rgba(34,38,38,0.85)'); rect(g, bx + 10, 52, 40, 12, 'rgba(34,38,38,0.85)'); rect(g, bx + 26, 74, 8, 10, 'rgba(255,176,74,0.10)'); } };
+  /* ================= THE DRAWING (src/redraw/manor_art.js, manor_foes.js: claude/manorart) ================= */
+  const live = (cx, VW, wx, pad = 40) => wx > cx - pad && wx < cx + VW + pad;
+  const otherOf = p => (S.panel[p.id].st === 'A' ? p.b : p.a);
+  /* behind the tiles: the back wall, the windows (the great hall's tower and its lit window: the landmark), the decor, every shifting panel's cells that stand NOW (cellSet clears the baked
+     tile), the open doorways, and the furniture of the house: portraits, wall candles, the candelabra, empty suits on their racks and their heaps, the nursery door, the silvers' cushions, the exit */
+  H.drawBack = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const G = mn(), L0 = L(), x = v => R(v - cx), y = v => R(v - cy), at = (a, b) => tile(a, b), T = ctx.T;
+    ART.drawBackdrop(g, cx, cy, VW, VH, time, L0, at, T);
+    for (const p of G.panels) { const cells = p.a.concat(p.b); if (!cells.some(([a]) => live(cx, VW, a * TS, 24))) continue;
+      for (const [a, b] of cells) if (tile(a, b) === T.SOLID) { const t = ART.manorTile(T.SOLID, a, b, at, T, L0); if (t) g.drawImage(t, a * TS - cx, b * TS - cy); }
+      if (p.kind === 'door') ART.drawDoorway(g, otherOf(p), cx, cy); }
+    for (const e of (S.sv = S.sv || L0.ents.filter(q => q.t === 'silver'))) if (live(cx, VW, e.x * TS)) ART.drawPedestal(g, x(e.x * TS + 8), y((e.y + 1) * TS), time);
+    if (L0.arena && L0.arena.exitStair && live(cx, VW, L0.arena.exitStair.x, 80)) ART.drawExit(g, x(L0.arena.exitStair.x + 8), y(L0.arena.exitStair.y), S.exitOpen, time);
+    for (const p of G.portraits) if (live(cx, VW, p.x)) ART.drawPortrait(g, x(p.x), y(p.y), S.keys.has(p.id), time, +p.id.slice(2) || 0);
+    for (const r of G.racks) { if (S.rackUsed[r.id] || !live(cx, VW, r.x)) continue; ART.drawRack(g, x(r.x), y(r.y), time, r.col & 1 ? -1 : 1); }
+    for (const q of S.piles) if (!q.used && live(cx, VW, q.x)) ART.drawPile(g, x(q.x), y(q.y), time);
+    G.candles.forEach((c, k) => { if (live(cx, VW, c.x)) ART.drawSconce(g, x(c.x), y(c.y), !!S.lit[c.id], !!S.flick[c.id], time, k); });
+    for (const s of G.stands) if (live(cx, VW, s.x)) ART.drawStand(g, x(s.x), y(s.y), time);
+    for (const d of G.doors) { const [dx, dy] = d.cells[0]; if (live(cx, VW, dx * TS)) ART.drawNurseryDoor(g, x(dx * TS), y(dy * TS), d.cells.length, S.keys.size, G.keysNeed, S.doorOpen, time); } };
+  /* over the world: where a panel could be (ticks), its watching eye, the wisps, the thrown furniture, a carried candelabra */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!H.on() || !S) return; const x = v => R(v - cx), y = v => R(v - cy), G = mn(), hs = heroes();
-    for (const p of G.panels) { const st = S.panel[p.id].st, other = st === 'A' ? p.b : p.a, seen = hs.some(h => H.watching(p, h));
-      for (const [cx0, cy0] of other) if ((cx0 + cy0) % 2 === 0) rect(g, x(cx0 * TS) + 4, y(cy0 * TS) + 7, 8, 1, 'rgba(200,216,204,0.28)');   /* where it could be: dotted */
-      const ex = x(p.eye.x), ey = y(p.eye.y); rect(g, ex - 5, ey - 2, 10, 4, 'rgba(20,24,24,0.8)'); rect(g, ex - 4, ey - (seen ? 1 : 0), 8, seen ? 3 : 1, seen ? '#e6eee8' : '#5a6a60'); if (seen) rect(g, ex - 1, ey - 1, 2, 2, '#1a1e1e'); }   /* THE EYE: open while it is watched */
-    for (const c of G.candles) { const px = x(c.x), py = y(c.y); rect(g, px - 3, py - 4, 6, 4, '#4a4440'); rect(g, px - 1, py - 10, 2, 6, '#d8d0c0');
-      if (S.lit[c.id]) { const fl = S.flick[c.id] && (time * 14) % 2 < 1; if (!fl) rect(g, px - 2, py - 15 + Math.sin(time * 9 + c.x) * 1, 4, 5, '#ffb04a'); } else rect(g, px - 1, py - 12, 2, 2, '#6a6a6a'); }
-    for (const s of G.stands) { const px = x(s.x), py = y(s.y); rect(g, px - 1, py - 20, 2, 20, '#5a5048'); rect(g, px - 7, py - 22, 14, 2, '#8a7a5a'); for (const k of [-6, 0, 6]) rect(g, px + k - 1, py - 28, 2, 6, '#d8d0c0'); }
-    for (const r of G.racks.concat(G.arenaRacks || [])) { if (S.rackUsed[r.id]) continue; if (r.set) continue; const px = x(r.x), py = y(r.y); rect(g, px - 8, py - 2, 16, 2, '#3a3a3a'); rect(g, px - 1, py - 30, 2, 28, '#3a3a3a'); rect(g, px - 6, py - 26, 12, 14, '#6a6e70'); rect(g, px - 4, py - 34, 8, 8, '#7a7e80'); rect(g, px - 3, py - 31, 6, 1, '#202424'); }   /* AN EMPTY SUIT on its rack */
-    for (const q of S.piles) if (!q.used) { const px = x(q.x), py = y(q.y); rect(g, px - 9, py - 5, 18, 5, '#5a5e60'); rect(g, px - 4, py - 9, 8, 4, '#6a6e70'); }
-    for (const p of G.portraits) { const px = x(p.x), py = y(p.y), got = S.keys.has(p.id); rect(g, px - 9, py - 11, 18, 22, '#8a6a2a'); rect(g, px - 7, py - 9, 14, 18, got ? '#2a2c2c' : '#4a5a50'); if (!got) { rect(g, px - 3, py - 6, 6, 6, '#c8b8a0'); rect(g, px - 1, py + 3, 2, 4, '#ffd36b'); } }
-    for (const d of G.doors) { const [dx, dy] = d.cells[0], n = d.cells.length; if (S.doorOpen) { rect(g, x(dx * TS), y(dy * TS), 3, n * TS, '#4a3a3a'); continue; }
-      rect(g, x(dx * TS), y(dy * TS), TS, n * TS, '#5a6a8a'); for (let k = 0; k < G.keysNeed; k++) rect(g, x(dx * TS) + 6, y(dy * TS) + 12 + k * 18, 4, 6, k < S.keys.size ? '#ffd36b' : '#1a1e2a'); }   /* the nursery door: a keyhole per portrait */
-    for (const w of S.wisps) if (!w.done) { const px = x(w.x), py = y(w.y); rect(g, px - 4, py - 4, 8, 8, GHOST); rect(g, px - 2 - Math.sign(w.tx - w.x0) * 6, py - 1, 4, 2, 'rgba(154,223,176,0.5)'); g.strokeStyle = 'rgba(154,223,176,0.35)'; g.lineWidth = 1; g.beginPath(); g.moveTo(px + 0.5, py); g.lineTo(x(w.tx) + 0.5, y(w.ty) - 30); g.stroke(); }
-    for (const o of S.throws) rect(g, x(o.x) - 5, y(o.y) - 5, 10, 10, o.item === 'PLATE' ? '#d8d8d0' : o.item === 'BOOK' ? '#6a3a3a' : o.item === 'CANDLESTICK' ? '#c8a050' : '#7a6a5a');
-    for (const e of (ctx.enemies() || [])) { if (!e.alive || e.t !== 'armour' || e.cnSkin !== 'mnsuit') continue; const px = x(e.x), py = y(e.y), rise = e.mode === 'rise';
-      rect(g, px - 3 + (e.face || 1) * 2, py - 24, 6, 2, rise && (time * 10) % 2 < 1 ? '#ffffff' : GHOST);   /* POSSESSED: the visor lit ghost-green */
-      if (e.mode === 'stuck') rect(g, px + (e.face || 1) * 14 - 1, py - 10, 2, 10, '#c8c8c8');
-      if (e.mode === 'cleaveTell') rect(g, px - (e.face || 1) * 4, py - 40, 2, 14, '#c8c8c8'); if (e.mode === 'thrustTell') rect(g, px - (e.face || 1) * 12, py - 14, 10, 2, '#c8c8c8'); }
-    for (const p of hs) { const st = S.carry.get(p); if (!st) continue; const px = x(p.x) + (p.face || 1) * 8, py = y(p.y) - 18; rect(g, px - 1, py, 2, 10, '#8a7a5a'); rect(g, px - 5, py, 10, 2, '#8a7a5a');
-      for (const k of [-4, 0, 4]) { rect(g, px + k - 1, py - 4, 2, 4, '#d8d0c0'); if (st === 'lit') rect(g, px + k - 1, py - 8 + Math.sin(time * 12 + k) * 1, 2, 3, '#ffb04a'); } } };
-  H.drawFoe = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy);
-    if (e.t === 'haunt') { if (e.mode === 'hide') return; const lit = inLight(e.x, e.y, 30) || heroes().some(p => S.carry.get(p) === 'lit' && Math.hypot(p.x - e.x, p.y - 16 - e.y) < LIGHT.carry + 20), tell = e.mode === 'lungeTell';
-      g.globalAlpha = tell ? 0.95 : lit ? 0.75 : 0.32; rect(g, ex - 7, ey - 10, 14, 16, '#1a2220'); rect(g, ex - 5, ey + 6, 3, 4, '#1a2220'); rect(g, ex + 2, ey + 6, 3, 4, '#1a2220');
-      rect(g, ex - 4, ey - 5, 2, 2, tell ? '#ff4a2a' : GHOST); rect(g, ex + 2, ey - 5, 2, 2, tell ? '#ff4a2a' : GHOST); g.globalAlpha = 1; return; }
-    if (e.t === 'poltergeist') { const solid = e.mode !== 'drift'; g.globalAlpha = solid ? 0.9 : 0.35; rect(g, ex - 7, ey - 16, 14, 14, '#c8d8cc'); rect(g, ex - 7, ey - 2, 4, 4, '#c8d8cc'); rect(g, ex + 3, ey - 2, 4, 4, '#c8d8cc'); rect(g, ex - 4, ey - 12, 2, 3, '#1a1e1e'); rect(g, ex + 2, ey - 12, 2, 3, '#1a1e1e'); g.globalAlpha = 1;
-      if (e.mode === 'liftTell') { const k = 1 - Math.max(0, e.modeT) / POLT.lift, ix = ex + (e.face || 1) * 10 + Math.sin(time * 40) * 1.5, iy = ey - 6 - k * 12; rect(g, ix - 5, iy - 5, 10, 10, e.item === 'PLATE' ? '#d8d8d0' : e.item === 'BOOK' ? '#6a3a3a' : e.item === 'CANDLESTICK' ? '#c8a050' : '#7a6a5a'); } } };
+    for (const p of G.panels) { if (!live(cx, VW, p.eye.x, 120)) continue; ART.drawAlt(g, otherOf(p), cx, cy, time); ART.drawEye(g, x(p.eye.x), y(p.eye.y), hs.some(h => H.watching(p, h)), time); }
+    for (const w of S.wisps) if (!w.done) ART.drawWisp(g, x(w.x), y(w.y), Math.sign(w.tx - w.x0) || 1, time);
+    for (const o of S.throws) ART.drawThrown(g, x(o.x), y(o.y), o.item, time);
+    for (const p of hs) { const st = S.carry.get(p); if (st) ART.drawCarried(g, x(p.x), y(p.y), p.face || 1, st, time); } };
+  H.drawFoe = (g, e, cx, cy, time) => { const ex = e.x - cx, ey = e.y - cy;
+    if (e.t === 'armour') return FOE.drawSuitFoe(g, e, ex, ey, time, WISP.rise);
+    if (e.t === 'haunt') { const lit = inLight(e.x, e.y, 30) || heroes().some(p => S.carry.get(p) === 'lit' && Math.hypot(p.x - e.x, p.y - 16 - e.y) < LIGHT.carry + 20); return FOE.drawShade(g, e, ex, ey, time, e.mode === 'lungeTell' ? 0.95 : lit ? 0.75 : 0.32); }
+    if (e.t === 'poltergeist') return FOE.drawPoltergeist(g, e, ex, ey, time, POLT.lift); };
   return H;
 }

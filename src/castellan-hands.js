@@ -1,9 +1,9 @@
 // src/castellan-hands.js - THE CASTELLAN'S GHOST's HANDS (claude/hollowmanor, the OPUS GREYBOX). src/castellan.js is the fight (pure); this binds it to the world:
 // the racks (the live one's visor lit), his told blows on the heroes (keyed once a blow), the wisp a hero strikes in the final (the opening) - and the greybox.
-// GREYBOX (the sonnet art lane draws the final, src/redraw/castellan_art.js to come): every move its own windup pose and release pose (POSE, B16), its own sound.
+// POSE (the art lane's drawing wears it, src/redraw/castellan_art.js, claude/manorart): every move its own windup pose and release pose (POSE, B16), its own sound.
 // main.js calls (one tagged line each): spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, clear.
 import * as CSM from './castellan.js';
-import { CS_SAY } from './mn-lines.js';
+import { CS_SAY } from './mn-lines.js'; import * as CA from './redraw/castellan_art.js';
 const { CS } = CSM;
 
 export const SOUND = { thrustTell: s => (s.clank || s.tell)(), thrust: s => (s.throwWhoosh || s.whoosh || s.tell)(), bashTell: s => (s.charge || s.clank || s.tell)(), bash: s => (s.heavy || s.thud)(),
@@ -76,28 +76,19 @@ export function makeCastellanHands(ctx) {
   H.barName = e => CS_SAY.name + ' - ' + (S && S.final ? 'EVERY SUIT' : CS_SAY.sets[S ? S.set : 'knight']) + (CSM.csOpen(e) ? '  ' + CSM.OPEN_MODES[e.mode] : '');
   H.end = () => { if (S) { S.won = true; S.wisp = null; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, set: CSM.setName(S), si: S.si, final: S.final, sets: [...S.sets], n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
-  /* ================= THE GREYBOX DRAWING ================= */
-  const suit = (g, px, py, f, set, p, lit, time) => {   /* a suit of armour: legs, body, helm, its weapon */
-    const c = SET_COL[set] || '#7a7e80', cr = p.crouch || 0, sl = p.slump || 0, ln = p.lean || 0;
-    rect(g, px - 5, py - 12 + cr, 4, 12 - cr, c); rect(g, px + 1, py - 12 + cr, 4, 12 - cr, c);
-    rect(g, px - 7 + ln * f * 0.5, py - 26 + cr + sl, 14, 14, c); rect(g, px - 5 + ln * f, py - 34 + cr + sl, 10, 8, c);
-    rect(g, px - 3 + ln * f + f * 1, py - 31 + cr + sl, 6, 2, lit ? GHOST : '#202424');   /* THE VISOR: lit ghost-green while he is in it */
-    if (set === 'knight') rect(g, px + f * 8 - 2, py - 26 + cr - (p.shield || 14) + 14, 4, p.shield || 14, '#9a9ea0');
-    const a = (p.arm || 0) * Math.PI / 180, ax = px + f * (6 + ln), ay = py - 20 + cr, rr = (p.reach || 10) + (set === 'halberd' ? 14 : set === 'greatsword' ? 10 : 0);
-    g.strokeStyle = set === 'duelist' ? '#e6e6ee' : '#c8c8c8'; g.lineWidth = set === 'greatsword' ? 4 : set === 'duelist' ? 1 : 2; g.beginPath(); g.moveTo(ax, ay);
-    const sa = p.spin ? time * 20 : a; g.lineTo(ax + f * Math.cos(sa) * rr, ay + Math.sin(sa) * rr); g.stroke();
-    if (set === 'halberd') rect(g, ax + f * Math.cos(sa) * rr - 3, ay + Math.sin(sa) * rr - 3, 6, 6, '#c8c8c8'); };
-  H.drawBoss = (g, e, cx, cy, time) => { const p = CSM.csOpen(e) ? (POSE[e.mode] || POSE.walk) : (POSE[e.mode] || POSE.walk), f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy);
-    if (p.wisp) { rect(g, ex - 6, ey - 6, 12, 12, GHOST); rect(g, ex - 3, ey - 3, 6, 6, '#e6fff0'); rect(g, ex - f * 10, ey - 2, 6, 4, 'rgba(154,223,176,0.5)'); return; }
-    const set = S ? S.set : 'knight'; suit(g, ex, ey, f, set, p, !(e.mode === 'leave' || e.mode === 'swap'), time);
-    if (p.ghost) { g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 10); rect(g, ex - 5, ey - 34 - p.ghost, 10, p.ghost + 4, GHOST); g.globalAlpha = 1; }   /* THE GHOST, half out of the suit: the opening's read */
-    if (CSM.csOpen(e)) rect(g, ex - 12, ey - 44, 24, 2, '#ffd36b'); };
+  /* ================= THE DRAWING (src/redraw/castellan_art.js, claude/manorart) ================= */
+  H.drawBoss = (g, e, cx, cy, time) => { let mode = e.alive ? e.mode : 'dead', t = 0;
+    if (!e.alive) { if (!S) return; if (S.diedAt == null) S.diedAt = time; t = time - S.diedAt; if (t > 4.8) return; }   /* his armour falls in a heap, the ghost rises out of it and is gone */
+    const p = POSE[mode] || POSE.walk, f = e.face || 1, ex = e.x - cx, ey = R(e.y - cy);
+    if (S && mode !== 'leave' && mode !== 'swap' && mode !== 'wisp') S.vset = S.set;   /* the suit he is LEAVING keeps its look while the ghost climbs out of it */
+    const set = S ? ((mode === 'leave' || mode === 'swap') && S.vset ? S.vset : S.set) : 'knight';
+    CA.drawCastellan(g, ex, ey, mode, p, f, time, { set, flash: e.flash > 0, open: CSM.csOpen(e), t }); };
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const x = v => R(v - cx), y = v => R(v - cy), e = live();
-    S.G.racks.forEach((r, i) => { if (e && i === S.rack && !(e.mode === 'leave' || e.mode === 'wisp')) return;   /* the suit he wears walks; the others stand on their racks */
-      const broken = S.sets.includes(r.set) && !S.final, lightUp = e && e.mode === 'swap' && i === S.rack;
-      rect(g, x(r.x) - 9, y(S.G.floorY) - 2, 18, 2, '#3a3a3a'); suit(g, x(r.x), y(S.G.floorY), -Math.sign(r.x - (S.G.x0 + S.G.x1) / 2) || 1, r.set, broken ? { arm: 80, reach: 6, slump: 8 } : POSE.sleep, lightUp && (time * 10) % 2 < 1, time); });
-    if (e && e.mode === 'chopTell') { const cx0 = S.chopAt !== undefined ? S.chopAt : e.x + (e.face || 1) * CS.halberd.chop.at; rect(g, x(cx0) - CS.halberd.chop.w, y(S.G.floorY) - 2, CS.halberd.chop.w * 2, 2, (time * 8) % 2 < 1 ? '#ff4a2a' : '#ff9a5c'); }   /* where the chop lands */
-    if (e && e.mode === 'sweepTell') rect(g, x(e.x) - CS.halberd.sweep.reach, y(S.G.floorY) - 3, CS.halberd.sweep.reach * 2, 2, (time * 8) % 2 < 1 ? '#ff4a2a' : '#ff9a5c');
-    if (e && e.mode === 'wisp' && S.wisp) { g.strokeStyle = 'rgba(154,223,176,0.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x(e.x) + 0.5, y(e.y)); g.lineTo(x(S.wisp.x1) + 0.5, y(S.G.floorY) - 30); g.stroke(); } };
+    S.G.racks.forEach((r, i) => { const away = e && i === S.rack && !(e.mode === 'leave' || e.mode === 'wisp' || e.mode === 'swap'); if (away) return;   /* the suit he wears walks; the others stand on their racks */
+      const broken = S.sets.includes(r.set) && !S.final, lightUp = !!e && e.mode === 'swap' && i === S.rack;
+      CA.drawArenaRack(g, x(r.x), y(S.G.floorY), -Math.sign(r.x - (S.G.x0 + S.G.x1) / 2) || 1, r.set, broken, lightUp && (time * 10) % 2 < 1, time); });
+    if (e && e.mode === 'chopTell') { const cx0 = S.chopAt !== undefined ? S.chopAt : e.x + (e.face || 1) * CS.halberd.chop.at; const hot = (time * 8) % 2 < 1; rect(g, x(cx0) - CS.halberd.chop.w, y(S.G.floorY) - 2, CS.halberd.chop.w * 2, 2, hot ? '#ff4a2a' : '#ff9a5c'); for (let q = -CS.halberd.chop.w; q < CS.halberd.chop.w; q += 4) rect(g, x(cx0) + q, y(S.G.floorY) - 5 - ((q + 40) % 3), 2, 3, hot ? 'rgba(255,74,42,0.6)' : 'rgba(255,154,92,0.5)'); }   /* where the chop lands */
+    if (e && e.mode === 'sweepTell') { const hot = (time * 8) % 2 < 1; rect(g, x(e.x) - CS.halberd.sweep.reach, y(S.G.floorY) - 3, CS.halberd.sweep.reach * 2, 2, hot ? '#ff4a2a' : '#ff9a5c'); }
+    if (e && e.mode === 'wisp' && S.wisp) { const x1 = x(S.wisp.x1), y1 = y(S.G.floorY) - 30; for (let k = 0; k < 14; k++) { const a = k / 14, px0 = x(e.x) + (x1 - x(e.x)) * a, py0 = y(e.y) + (y1 - y(e.y)) * a; if (k % 2 === 0) rect(g, px0, py0, 2, 2, 'rgba(154,223,176,0.45)'); } } };   /* the ghost's course to the next rack */
   return H;
 }
