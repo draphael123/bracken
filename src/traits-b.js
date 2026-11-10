@@ -11,8 +11,8 @@ export const TRAIT_SPLIT_B = {
     folded: { blaze: 'heat:WHITE HEAT', inferno: 'heat:BELLOWED' },   /* the L43 heat-bar fork (FORKS lane) absorbs them; slottable traits until then */
     retired: [],
     shared: [],
-    defaults: ['emberSkin', 'heatShield'],
-    learnAt: { emberSkin: 2, longFlame: 3, twin: 4, scatter: 5, heatShield: 6, brand: 8, jetWalk: 10, blaze: 12, emberHeart: 14, phoenix: 16, wildfire: 17, inferno: 18 },
+    defaults: ['emberSkin', 'phoenix'],   /* (claude/traittune-d) was ['emberSkin', 'heatShield']: TRAITS ON cost the bot pyro 11/12 -> 3/12 at THE DROWNED CAUSEWAY (practiced, L29); a revive in slot 2 gets 8/12 (heatShield+phoenix 10/12) */
+    learnAt: { emberSkin: 2, longFlame: 3, twin: 4, scatter: 5, heatShield: 6, brand: 8, jetWalk: 10, blaze: 12, emberHeart: 14, phoenix: 10, wildfire: 17, inferno: 18 },
     tags: { longFlame: 'JET', jetWalk: 'JET', scatter: 'EMBER', twin: 'EMBER' },
     names: { sunder: 'SCORCHED EARTH' },
   },
