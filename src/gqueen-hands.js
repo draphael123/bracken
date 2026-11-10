@@ -987,7 +987,7 @@ export function makeGQueenHands(ctx) {
     const P4 = S.roof.q4; e.mode = 'bombardTell'; e.modeT = 0.6; e.vx = 0; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('portalOpen'); ctx.burst(e.x, e.y - 24, 10, ['#b28cff', '#e8dcff'], 60, 0.4); P4.bombs = (P4.bombs || 0) + 1;
   }
   function startRage(e) {
-    const P4 = S.roof.q4; P4.rageDone = true; P4.rageT = now(); S.rages = (S.rages || 0) + 1; e.mode = 'rageTell'; e.modeT = Q4N.p2.rage.tell; e.vx = 0; e.crownOut = false; S.crown = null; roofMus(2);
+    const P4 = S.roof.q4; P4.rageDone = true; P4.rage = true; P4.volleyCd = 0.6 + Q4N.p2.rage.tell; P4.mtnCd = 3.0 + Q4N.p2.rage.tell; P4.rageT = now(); S.rages = (S.rages || 0) + 1; e.mode = 'rageTell'; e.modeT = Q4N.p2.rage.tell; e.vx = 0; e.crownOut = false; S.crown = null; roofMus(2);
     ctx.number(e.x, e.y - 76, 'MY CASTLE!', '#ff6b6b'); ctx.ring(e.x, e.y - 40, 50, '#ff6b6b', 0.6); ctx.burst(e.x, e.y - 50, 24, ['#ff6b6b', '#b28cff', '#ffd36b'], 120, 0.9); sfx('bellow'); ctx.shake(8); ctx.zoom(1.12, 0.5);
     if (ctx.hint) ctx.hint('SHE IS ENRAGED: FASTER, AND THE MOUNTAIN FALLS. STRIKE HER SHARDS HOME.');
   }
@@ -1011,7 +1011,7 @@ export function makeGQueenHands(ctx) {
         ctx.burst(e.x, e.y - 22, 14, ['#fff6c8', '#e8dcff', '#b28cff'], 90, 0.5); sfx('callerBlast'); ctx.number(e.x, e.y - 76, 'THE BOMBARDMENT', '#ff6b6b'); } return 0;
       case 'bombard': e.vx = 0; e.face = sign(d) || e.face; if (e.modeT <= 0) { P4.bomb = null; const ex = pickExit(P0, 60, true, true); if (ex) { e.x = ex.p.x; e.y = ex.p.y - 1; e.vy = 0; ctx.burst(e.x, e.y - 22, 14, ['#fff6c8', '#e8dcff', '#b28cff'], 90, 0.5); } e.mode = 'rec'; e.modeT = 0.8; sfx('portalOpen'); } return 0;
       case 'rageTell': e.vx = 0; if (Math.random() < dt * 40) ctx.part({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - 20 - Math.random() * 50, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff6b6b' : '#b28cff', size: 2, grav: 0, glow: true });
-        if (e.modeT <= 0) { P4.rage = true; P4.volleyCd = 0.6; P4.mtnCd = 3.0; e.mode = 'rec'; e.modeT = 0.6; } return 0;
+        if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'mountainTell': e.vx = 0; e.face = sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'mountainWait'; e.modeT = 3.2; sfx('heavy'); } return 0;
       case 'mountainWait': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
     }
@@ -1114,7 +1114,7 @@ export function makeGQueenHands(ctx) {
     if (now() < (P4.ward || 0)) { g.globalAlpha = 0.35 + 0.15 * Math.sin(t * 8); g.strokeStyle = '#e8dcff'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 36 - cy), 30, 40, 0, 0, 6.3); g.stroke(); g.globalAlpha = 0.12; g.fillStyle = '#e8dcff'; g.fill(); g.globalAlpha = 1; }
     if (e.mode === 'dazed') for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.09; g.fillStyle = '#8fd160'; g.fillRect(Math.round(e.x - cx + Math.cos(a) * 16), Math.round(e.y - 64 - cy + Math.sin(a) * 4), 3, 3); }
   }
-  H.rageOn = () => !!(Q4 && S && S.roof && S.roof.q4 && S.roof.q4.rage);
+  H.rageOn = () => !!(Q4 && S && S.roof && S.roof.q4 && S.roof.q4.rage && !(q() && q().mode === 'rageTell'));
   H.rageSave = e => { const P4 = S && S.roof && S.roof.q4; if (!P4) return false; if (e.mode === 'rageTell') return true; if (P4.rageDone || P4.rageSaved) return false; P4.rageSaved = true; return true; };
   H.hearthSlot = e => { if (!Q4 || !S || !inHall(e) || e.hp > e.maxHp * 0.5) return false; const h4 = g4(); if (h4.hearthCd > 0 || now() < h4.gapUntil || S.mech.wave || S.mech.lure || S.geode) return false; hearthStart(e); return true; };
   H.test = H.test || {}; Object.assign(H.test, { q4: () => S && S.roof && S.roof.q4, h4: () => S && S.h4, shards: () => (S ? S.rocks.filter(r => r.p2).map(r => ({ x: r.x, y: r.y, home: r.home, hang: r.hang })) : []), homeTotal: () => (S && S.homeTotal) || 0, knocked: () => (S && S.knockedOut) || 0, spawnShard: o => { if (!S) return false; S.rocks.push({ x: 0, y: 0, vx: 0, vy: 0, t: 0, dead: false, home: false, cast: null, esc: false, id: 'r' + (++S.rid), ...o }); return true; }, geodeLob: () => { const e = q(); if (e && S) { geodeBegin(e); return true; } return false; }, dazes: () => (S && S.dazes) || 0, rages: () => (S && S.rages) || 0,

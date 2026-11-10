@@ -826,6 +826,14 @@ function gqueenReact(BK, boss, P, k, A, h) {
     if (tgt && td < 84) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
     if (hang && !tgt) { const toward = Math.sign(hang.x - P.x) || P.face; P.face = toward; if (hd < 40) { k.left = k.right = false; return { goal: null, strike: true }; } return { goal: hang.x - toward * 14, strike: false }; }
   }
+  /* (claude/gq4q) THE NEW TELLS, as a player answers them: the hearth jet is JUMPED on its release, the sceptre reach DUCKED, a rockfall shadow ROLLED through, a boulder's landing ring left, THE MOUNTAIN's gap stood in. */
+  { const m0 = boss.mode, Hq = BK.gqHands && BK.gqHands(), q4 = Hq && Hq.test && Hq.test.q4 ? Hq.test.q4() : null;
+    if (m0 === 'hearthTell') { if (boss.modeT < 0.12 && P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 12; } return { goal: null, strike: false }; }
+    if (m0 === 'reachTell') { if (boss.modeT < 0.4) k.down = true; return { goal: null, strike: false }; }
+    if (q4) { const tn = BK.time, fl = (q4.fall || []).find(f => !f.done && Math.abs(f.x - P.x) < 20 && f.at - tn < 0.35 && f.at - tn > -0.1);
+      if (fl && P.ground) { k.left = k.right = false; BK.press('dodge'); return { goal: null, strike: false }; }
+      if (q4.mtn && q4.mtn.gapX !== undefined) return { goal: q4.mtn.gapX, strike: false };
+      const Bq = q4.boulder; if (Bq && Bq.tx !== undefined && Math.abs(Bq.tx - P.x) < 36) return { goal: Bq.tx + (P.x >= Bq.tx ? 60 : -60), strike: false }; } }
   let best = null, bt = 9;
   for (const q of shots) { if (q.home || q.hang) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
   if (best && bt < 0.6) {
