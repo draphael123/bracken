@@ -89,6 +89,8 @@ export function buildTourney({ painter, T, TS }) {
   sign(126, G - 1, TY_SAY.stand);
   /* THE STAND: five tiers, three rows apart, each set back three columns; its back wall (151) runs from the top tier to the ground - the road goes over it */
   for (const [k, row] of [[0, 27], [1, 24], [2, 21], [3, 18], [4, 15]]) shelf(128 + 3 * k, 150, row);
+  [[0, 27], [1, 24], [2, 21], [3, 18], [4, 15]].forEach(([k, row]) => props.push({ kind: 'crowd', x0: 128 + 3 * k, x1: 150, top: row, id: k + 1 }));   /* (claude/tourneyart) THE CROWD on the stand's tiers (cosmetic) */
+  [[10, '#2a4ab0'], [30, '#d84a4a'], [52, '#d84a4a'], [76, '#2a4ab0'], [100, '#d84a4a'], [118, '#2a4ab0'], [127, '#2a4ab0'], [153, '#d84a4a'], [182, '#2a4ab0'], [208, '#d84a4a'], [232, '#2a4ab0'], [258, '#d84a4a'], [304, '#2a4ab0'], [335, '#d84a4a'], [367, '#2a4ab0']].forEach(([c, col]) => props.push({ kind: 'banner', x0: c, x1: c, top: G - 5, col }));   /* (claude/tourneyart) heraldic standards along the road (cosmetic) */
   block(151, 151, 12, G - 1); block(151, 152, 12, 12);
   shelf(145, 150, 9); coins([145, 8], [146, 8], [147, 8]); props.push({ kind: 'royalbox', x0: 145, x1: 150, top: 9 });   /* THE ROYAL BOX (secret one): off the road, over the top tier */
   coins([132, 23], [138, 17], [146, 14]);
