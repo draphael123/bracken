@@ -823,7 +823,7 @@ function gqueenReact(BK, boss, P, k, A, h) {
     for (const q of shots) { if (!q.p2 || q.home) continue; const dx = q.x - P.x, dy = q.y - (P.y - 9), d = Math.hypot(dx, dy);
       if (q.hang) { if (d < hd && d < 260) { hd = d; hang = q; } continue; }
       if ((q.vx || 0) * (P.x - q.x) <= 0) continue; if (d < td) { td = d; tgt = q; } }
-    if (tgt && td < 84) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
+    if (tgt && td < 44) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
     if (hang && !tgt) { const toward = Math.sign(hang.x - P.x) || P.face; P.face = toward; if (hd < 40) { k.left = k.right = false; return { goal: null, strike: true }; } return { goal: hang.x - toward * 14, strike: false }; }
   }
   /* (claude/gq4q) THE NEW TELLS, as a player answers them: the hearth jet is JUMPED on its release, the sceptre reach DUCKED, a rockfall shadow ROLLED through, a boulder's landing ring left, THE MOUNTAIN's gap stood in. */
