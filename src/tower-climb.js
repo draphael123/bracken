@@ -13,6 +13,7 @@ export const TC = {
   boardCreak: 1.0, boardBack: 6.0,
   hopEvery: 7, near: 4 * 16, taunt: 1.0, stride: 0.8, open: 0.4, stepIn: 0.35, thread: 0.7, stepOut: 0.35, look: 0.9, actEvery: [3.5, 5.0], actLen: 1.0, brazierTell: 1.0,
 };
+import { Q4 } from "./gq4q.js"; import { heroStrikes } from "./hero-strikes.js";   /* (claude/gq4q) any blow or hero shot sends a boulder back */
 export function makeTowerClimb(env) {
   const { ctx, TS, seats, now, sfx, hit, q, asSeat, gqRed, L, portalDraw } = env;
   const C = TC, H = {};
@@ -72,8 +73,9 @@ export function makeTowerClimb(env) {
       if (B.state === 'fall') {
         const k = Math.min(1, (t - B.t0) / C.boulderAir); B.y = B.py + (B.ty - B.py) * k;
         const box = { l: B.x - C.boulderR, r: B.x + C.boulderR, t: B.y - C.boulderR, b: B.y + C.boulderR };
-        seats(P1 => { if (B.state !== 'fall' || P1.dead) return; if (hit(P1, box, B.key)) sendBack(B, 'blow', e, t); });
-        if (B.state === 'fall') for (const pp of (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || []) for (const ar of pp.rgArrows || []) { if (B.state !== 'fall' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - B.x) < C.boulderR + 10 && Math.abs(ar.y - B.y) < C.boulderR + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(B, 'shot', e, t); } }
+        if (Q4) { if (B.state === 'fall') { const hs = heroStrikes(box, B.key); if (hs) sendBack(B, hs.how === 'blow' ? 'blow' : 'shot', e, t); } }   /* (claude/gq4q) any blow or hero shot */
+        else seats(P1 => { if (B.state !== 'fall' || P1.dead) return; if (hit(P1, box, B.key)) sendBack(B, 'blow', e, t); });
+        if (!Q4 && B.state === 'fall') for (const pp of (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || []) for (const ar of pp.rgArrows || []) { if (B.state !== 'fall' || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - B.x) < C.boulderR + 10 && Math.abs(ar.y - B.y) < C.boulderR + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(B, 'shot', e, t); } }
         if (B.state === 'fall' && k >= 1) { let hurtAny = false; for (const h0 of out) if (Math.abs(h0.p.x - B.x) < 14 && Math.abs(h0.p.y - B.ty) < 26) { hurtAny = true; asSeat(h0.p, () => gqRed(B.x, C.boulderDmg, 'HER BOULDER', {})); }
           ctx.burst(B.x, B.ty - 6, 14, ['#8a8a9c', '#b28cff', '#5a5a6a'], 110, 0.5); ctx.dust(B.x, B.ty, 8); sfx('thud'); if (!hurtAny) ctx.number(B.x, B.ty - 22, 'IT SHATTERS', '#c9c9d6'); tc.boulder = null; tc.boulderT = rnd(C.boulderEvery[0], C.boulderEvery[1]); }
       } else if (B.state === 'back') {

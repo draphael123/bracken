@@ -84,9 +84,9 @@ export function gobgeoLay(R, { T, TS }) {
   ent('sign', 586, 21, { text: 'HIS ROCK RINGS THE TOWER BELL: THE GUARDS RUN UNDER ITS GATE, AND IT DROPS ON THEM.' });
   if (G4) {   // ============ (claude/gq4l) THE EARLY SIGHTINGS: E1 THE ROAD'S CRAG, E2 THE CHAPEL LOFT (optional, gentle: a rock goes back, he is hurt, nothing is sealed) ============
     const E1 = B.E1, E2 = B.E2;
-    ent('gobgeo', E1.geo, E1.row, { face: -1, perch: true, leash: 8, sight: 300 });
+    ent('gobgeo', E1.geo, E1.row, { face: -1, perch: true, early: true, leash: 8, sight: 300 });
     ent('sign', E1.sign[0], E1.sign[1], { text: 'HIS ROCK GOES BACK THE WAY IT CAME. STRIKE IT OR PARRY IT.' });
-    ent('gobgeo', E2.geo, E2.row, { face: -1, perch: true, leash: 6, sight: 300 }); ent('soldier', E2.soldier, 19, { face: -1 });
+    ent('gobgeo', E2.geo, E2.row, { face: -1, perch: true, early: true, leash: 6, sight: 300 }); ent('soldier', E2.soldier, 19, { face: -1 });
     ent('sign', E2.sign[0], E2.sign[1], { text: 'A GEOMANCER IN THE CHOIR LOFT. HIS ROCK GOES BACK THE WAY IT CAME.' });
   }
   return R;
