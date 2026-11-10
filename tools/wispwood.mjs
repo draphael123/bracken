@@ -15,7 +15,7 @@ const ON = process.argv.includes('--on');
 if (ON) globalThis.__WW = true;
 const { install } = await import('./node-canvas.mjs'); install();
 const { LEVELS, T } = await import('../src/level.js');
-const { wwOn, WISPWOOD_SHIPS } = await import('../src/ww-flag.js');
+const { wwOn, WISPWOOD_SHIPS } = await import('../src/ww-flag.js'); const { roadKept } = await import('../src/route-insert.js');
 const TS = 16;
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').split('\r').join('');
@@ -24,7 +24,7 @@ const h = v => createHash('sha1').update(JSON.stringify(v)).digest('hex').slice(
 /* THE OLD-SAVE RULE AND THE GATE CLAUSE, lifted out of src/main.js and run over a fake PROG */
 const mig = /if \(wwOn\(\) && !PROG\.wwRoadMig\) \{[^\n]*?PROG\.witchlightOpen = 1; \}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
 const gateRun = (PROG, on) => { if (mig) new Function('PROG', 'wwOn', mig[0])(PROG, () => on); const q = { get: () => null };
-  const locked = id => new Function('lv', 'PROG', 'q', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q); return { stair: locked('witchlight'), wood: locked('wispwood') }; };
+  const locked = id => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(LEVELS.find(l => l.id === id) || { id, needs: 'burial' }, PROG, q, roadKept); return { stair: locked('witchlight'), wood: locked('wispwood') }; };
 
 if (!ON) {
   console.log('== WISPWOOD, FLAG OFF (WISPWOOD_SHIPS = ' + WISPWOOD_SHIPS + ')');

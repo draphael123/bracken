@@ -72,7 +72,7 @@ if (!lv) process.exit(1);
 ok(LEVELS[LEVELS.length - 1] === lv, 'APPENDED (saves count levels by index): nothing before it moved');
 ok(lv.needs === 'witchlight' && LEVELS.find(l => l.id === 'mage').needs === 'academy', "THE WITCHLIGHT STAIR > THE MAGE ACADEMY > THE MAGE'S FOLLY (the 11-08 seam - nothing between the Folly and the Falling Tower - untouched: " + LEVELS.find(l => l.id === 'fallingtower').needs + ')');
 ok(lv.rule === AC_RULE && /LEARN THE SPELL AT THE LECTERN/.test(lv.rule), 'the rule line: ' + lv.rule);
-ok(/GATE = \['academy'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
+ok(/GATE = \[[^\]]*'academy'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(['aclectern', 'acrail', 'acwell', 'acrune'].every(k => THREAT[k] === 0) && THREAT.acbooks > 0 && THREAT.headmistress > 0, 'the threat table knows its machines (0), its flock and its boss');
 ok(MARK['acbooks|gatherTell'] === '!' && ANSWER['acbooks|gatherTell'] === 'block', "the flock's gather wears a yellow ! answered by a block (src/marks.js)");
 { const mage = { id: 'mage', needs: 'academy' }, ac0 = { id: 'academy', needs: 'witchlight' };
