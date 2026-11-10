@@ -26,7 +26,7 @@ ok(rise.t === 36 && rise.b === 114 - 0 || rise.t === 100 - 64, 'launcher box: to
 ok(slam.l === 60 && slam.r === 140, 'slam: +-40 px (2.5 tiles) both sides'); ok(wUp.t === 32 && wUp.r - wUp.l === 26, 'warden POLE HOIST: tall narrow tip box'); ok(wDn.r === 106 && wDn.l === 42, 'warden HAMSTRING: one side (facing left), the shaft at full reach');
 ok(D.chargeBox('up', 'knight', 0, 0, 1, 0) === null && D.chargeBox('up', 'knight', 0, 0, 1, 0.3) === null, 'the box is live only in its window');
 // rows
-ok(D.chargeName('knight', 'up') === 'HEAVEN CUT' && D.chargeName('knight', 'down') === 'SHIELD DRIVE' && D.chargeName('warden', 'up') === 'POLE HOIST' && D.chargeName('warden', 'down') === 'HAMSTRING' && D.chargeName('pyro', 'up') === 'CHARGED LAUNCH', 'knight / warden rows named, the rest generic');
+ok(D.chargeName('knight', 'up') === 'HEAVEN CUT' && D.chargeName('knight', 'down') === 'SHIELD DRIVE' && D.chargeName('warden', 'up') === 'POLE HOIST' && D.chargeName('warden', 'down') === 'HAMSTRING' && D.chargeName('paladin', 'up') === 'CHARGED LAUNCH' && D.chargeName('pyro', 'up') === 'FIRE PILLAR', 'knight / warden rows named; pyro/geo/berserker rows are dmheroes-b; the rest generic (paladin)');
 ok(D.chargeMove('knight', 'up').vy < 0 && D.chargeMove('warden', 'up').vy === 0, 'the knight hops after his cut, the warden does not');
 // launch weights: any common incl brute, elite 0.6, boss / mini never
 ok(D.launchWeight({ t: 'brute' }) === 1 && D.launchWeight({ t: 'x', elite: true }) === 0.6 && D.launchWeight({ t: 'x', maxHp: 9 }) === 0 && D.launchWeight({ t: 'x', mini: true }) === 0, 'launch weight 1.0 / elite 0.6 / boss + mini 0');

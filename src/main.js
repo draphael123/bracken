@@ -10060,14 +10060,31 @@ function fireCharged(dir) {
   noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = false;
   if (!spend(heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
   const up = dir === 'up', mv = DMX.chargeMove(hero(), dir), c = specialCol();
+  P.dmOx = null; P.dmPlant = null;
   P.atk = 0; P.hitSet.clear(); P.heavy = false; startSwing(); P.swingKind = up ? 'rise' : 'sweep'; P.dmCharged = dir; P.combo = 3; P.heavySwing = false; P.swingRiposte = false;
   P.swingMul = DMX.chargedMul(dir) + 0.15 * Math.max(0, tal('heavy') - 1);   /* (AFTER startSwing, which sets swingMul itself) */
   P.vx = P.face * mv.vx; if (mv.vy) { P.vy = mv.vy; P.ground = false; P.canCut = true; P.airHang = false; }   /* the knight hops after his cut */
   SFX.heavy(); shakeCam(3, P.face * 2); zoomKick(1.03, 0.16); squash(up ? 0.85 : 1.2, up ? 1.15 : 0.8, 0.12);
-  number(P.x, P.y - 30, DMX.chargeName(hero(), dir), '#ffd36b');
+  number(P.x, P.y - 30, DMX.chargeName(hero(), dir), '#ffd36b'); dmHeroRow(dir);
   if (up) { streaks(P.x + P.face * 8, P.y - 10, P.face, c, 140); burst(P.x + P.face * 12, P.y - 14, 12, c, 110, 0.45, -140, 2); if (isPaladin()) motes(P.x + P.face * 12, P.y - 8, 8, 8); }
   else { dust(P.x + P.face * 10, P.y, 6); dust(P.x - P.face * 10, P.y, 6); ringAt(P.x, P.y - 2, 24, c[0] || '#ffd36b', 0.3); SFX.skid(); if (isPyro()) for (let i = 0; i < 8; i++) parts.push({ x: P.x + (i - 3.5) * 9, y: P.y - 1, vx: 0, vy: -20 - Math.random() * 20, life: 0.35, max: 0.35, col: c[i % 2], size: 1, grav: -30 }); } }
+/* (claude/dmheroes-b) the hero rows' world side: PYRO heat + fire line / pillar, GEOMANCER stone fist origin + slab plant, BERSERKER (the rend rides heroCut) */
+function dmHeroRow(dir) {
+  const H = DMX.DM.heroes;
+  if (isPyro()) { gainHeat(DMX.heatOnCharge('pyro'));
+    if (dir === 'down') { DMX.fireLineXs(P.x, P.face).forEach((x, i) => fires.push({ x, y: P.y, life: H.pyro.fireLife, delay: 0.05 * (i + 1), own: true })); }
+    else { const gx = P.x + P.face * (H.pyro.geyserNear + H.pyro.geyserFar) / 2; for (let i = 0; i < 10; i++) parts.push({ x: gx + (Math.random() - 0.5) * 10, y: P.y - 2, vx: 0, vy: -110 - Math.random() * 90, life: 0.45, max: 0.45, col: i % 2 ? '#ff9a5c' : '#ffd36b', size: i % 3 ? 1 : 2, grav: -20 }); ringAt(gx, P.y - 2, 12, '#ff9a5c', 0.3); } }
+  else if (isGeo() && GEO) {
+    if (dir === 'up') { const ox = DMX.geoStoneOrigin(GEO.stoneXs(), P.x, P.face); P.dmOx = ox; const x = ox != null ? ox : P.x + P.face * 22; GEO.fistSpike(x, P.y); if (ox != null) number(ox, P.y - 40, 'FROM THE STONE', '#e8a83a'); }
+    else { P.dmPlant = { x: DMX.slabStopX(P.x, P.face), dir: P.face, at: time + H.geomancer.plantAfter }; for (let i = 0; i < 8; i++) parts.push({ x: P.x + P.face * (8 + i * 5), y: P.y - 1, vx: P.face * 70, vy: -20 - Math.random() * 25, life: 0.3, max: 0.3, col: i % 2 ? '#a8a696' : '#e8a83a', size: 1, grav: 200 }); } }
+  else if (isBz()) { if (dir === 'down') dust(P.x + P.face * 18, P.y, 6); else burst(P.x + P.face * 14, P.y - 14, 8, ['#ff9a5c', '#e8dcc0'], 90, 0.35, -120, 1); }
+}
+function dmHeroTick() {   /* the slab plants its stone a beat after it stops (a foe in the cell gets a column over: plantAtX walks back toward her) */
+  const q = P.dmPlant; if (!q) return; if (P.dead || !DMX.dmOn()) { P.dmPlant = null; return; }
+  if (time < q.at) return; P.dmPlant = null;
+  if (isGeo() && GEO) { if (GEO.plantAtX(q.x, q.dir)) number(q.x, P.y - 24, 'STONE PLANTED', '#e8a83a'); else number(q.x, P.y - 24, 'SLAB CRUMBLES', '#9aa39a'); } }
 function updateCharge(dt) {
+  dmHeroTick();
   if (!tal('heavy') || P.dead || state !== 'play') { P.atkHeld = 0; P.charge = 0; return; }
   if (isPirate() && !P.loaded) { if (keys.atk && !(P.emptySaid > 0)) { P.emptySaid = 1.2; SFX.clank(); number(P.x, P.y - 26, 'EMPTY', '#9aa39a'); } P.atkHeld = 0; P.charge = 0; return; }
   const quick = isPirate() && tal('quickHands'), can = !(isBz() && (P.braceT > 0 || P.pounceT > 0 || P.pounceRec > 0)) && !(isRg() && (P.rgBashT > 0 || P.rgCd > 0)) && (P.ground || P.swim || quick || (isRg() && tal('rgAirDraw'))) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing())) && !(isWarden() && wardJav);   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
@@ -10860,7 +10877,7 @@ function gadgetInKnifeReach(p, reach) { const hit = (x, y, lo, hi) => { const dx
   if (boss && boss.t === 'lance' && boss.lz) for (const sp of boss.lz.spears) if (sp.stuck > 0 && hit(sp.x, sp.y, 0, 26)) return true;
   return false; }
 function attackBox0() {
-  if (P.dmCharged && DMX.dmOn() && P.swingKind) return DMX.chargeBox(P.dmCharged, hero(), P.x, P.y, P.face, P.atk);   /* (claude/dmcharge) THE CHARGED LAUNCHER / SLAM: the rise box +24 tall, or +-2.5 tiles along the floor (the warden's rows: her tip / one-sided shaft) */
+  if (P.dmCharged && DMX.dmOn() && P.swingKind) return DMX.chargeBox(P.dmCharged, hero(), P.x, P.y, P.face, P.atk, { ox: P.dmOx });   /* (claude/dmcharge) THE CHARGED LAUNCHER / SLAM: the rise box +24 tall, or +-2.5 tiles along the floor (the warden's rows: her tip / one-sided shaft) */
   if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */
   if (dashStriking()) { const D = DASH_STRIKE[hero()];   /* THE DASH ATTACK: the blade (or the point) out in front the whole of the run, cut to the art (chars.js dashAtk) */
     if (P.dashAtk < D.t * 0.15) return null;
@@ -31576,7 +31593,7 @@ function wardenLongPost(e) { if (!e || !e.alive || !P.wLong) return; const d = t
   const v = widDrive(d); if (v > 0 && knockFoe(e, P.face, 150, { slide: true })) { e.kvx = P.face * v; stats_wlong.drives++; } }
 const stats_wlong = { hits: 0, drives: 0, recoils: 0 };
 function heroCut(e) { if (P.rallyN > 0 && e && e.alive) { P.rallyN--; poiseLeanK(e, Math.max(3, (poiseMax(e) || 0) * 0.06)); }   /* STANDING ORDERS: the next three cuts of the rallied break poise faster */
-  const crack = isBz() && !!BZK && !P.heavy && BZK.rend(e); if (crack) P.heavy = true; if (HPK) HPK.valiantPre(e); try { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); } finally { if (crack) P.heavy = false; } if (HPK) { HPK.valiantPost(e); HPK.counterPost(e); } if (isRg() && RGK && P.heavySwing && !P.heavy && !P.dashCut && e.alive) RGK.kickHit(e); if (isWarden() && P.wLong && !P.swingKind) wardenLongPost(e); if (isWarden() && P.wReachT > 0) wardenReachPost(e); if (hero() === 'knight') knightRider(e); }   /* (claude/heropassa) VALIANT STRIKE through the guard; THE COUNTER-THRUST drives it back out to the point */
+  const crack = isBz() && !!BZK && !P.heavy && BZK.rend(e, !!(P.dmCharged && DMX.dmOn() && DMX.rendOnCharge(hero()))); if (crack) P.heavy = true; if (HPK) HPK.valiantPre(e); try { hurtAs(meleeBlow(false), e, swingDmg(e), P.x, false); } finally { if (crack) P.heavy = false; } if (HPK) { HPK.valiantPost(e); HPK.counterPost(e); } if (isRg() && RGK && P.heavySwing && !P.heavy && !P.dashCut && e.alive) RGK.kickHit(e); if (isWarden() && P.wLong && !P.swingKind) wardenLongPost(e); if (isWarden() && P.wReachT > 0) wardenReachPost(e); if (hero() === 'knight') knightRider(e); }   /* (claude/heropassa) VALIANT STRIKE through the guard; THE COUNTER-THRUST drives it back out to the point */
 function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT (Daniel 10-02, Q2): the +3 for a landed blow is the third cut's and the heavy's only - it paid mashing */ P.lastStruck = e;   /* (claude/knightid: nothing fills the chain from a cut) */ const lesson = !!e.fat && lessonHint('third');   /* the wood's third-cut lesson, on the first blow that lands on the old fat sprig (and the dash-attack line below waits its turn) */
   if (hero() === 'knight' && tal('unbroken')) P.runHoldT = time + 1.2;   /* UNBROKEN: a blow that lands holds the run open */
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */

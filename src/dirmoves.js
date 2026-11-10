@@ -36,6 +36,12 @@ export const DM = {
   /* shared numbers for the lanes that follow (not read by lane 1 code) */
   foe: { leapSwatFloor: 1.0, leapSwatMul: 1.5, highGuardUp: 1.5, helmCrackLight: 1.0, beastStagger: 0.6, beastPoiseLean: 1.5 },
   charge: { step: 0.45, scale: { pirate: 0.85, ranger: 0.85, knight: 1, warden: 1, pyro: 1, geomancer: 1, berserker: 1, paladin: 1.2, reaper: 1.2 }, launcherMul: 2.0, slamMul: 1.6, launchT: 1.6, slamHalfW: 40, tripBeast: 0.7, guardBreak: 1.4 },
+  /* (claude/dmheroes-b) the PYROMANCER / GEOMANCER / BERSERKER rows (plan section 6): their numbers */
+  heroes: {
+    pyro: { heat: 12, fireTiles: 3, fireLife: 2, geyserNear: 24, geyserFar: 52 },
+    geomancer: { fistRange: 48, slabLen: 48, slabMin: 10, plantAfter: 0.3, fistW: 12 },
+    berserker: { rend: 1, chopFar: 38 },
+  },
 };
 
 /* the one gate every hook asks */
@@ -237,19 +243,27 @@ export const chargedMul = dir => dir === 'up' ? DM.charge.launcherMul : DM.charg
 export const CHARGE_LIVE = [0.02, 0.2];
 /* the box, per hero row (face = +1 / -1). Launcher: the hero's rise box +24 px tall; slam: ground AoE +-slamHalfW both sides.
    WARDEN: POLE HOIST = the tip under the foe (narrow, reach), HAMSTRING = the shaft along the floor, ONE side, full reach. */
-export function chargeBox(dir, heroId, x, y, face, atk) {
+export function chargeBox(dir, heroId, x, y, face, atk, opt) {
   if (atk < CHARGE_LIVE[0] || atk >= CHARGE_LIVE[1]) return null;
   const f = face >= 0 ? 1 : -1, W = DM.charge.slamHalfW, mk = (a, b, t, bt) => f > 0 ? { l: x + a, r: x + b, t: y + t, b: y + bt } : { l: x - b, r: x - a, t: y + t, b: y + bt };
+  const H = DM.heroes;
   if (dir === 'up') {
+    if (heroId === 'pyro') return mk(H.pyro.geyserNear, H.pyro.geyserFar, -64, 14);   /* FIRE PILLAR: the geyser stands at reach, not at her hand */
+    if (heroId === 'geomancer') { const ox = opt && opt.ox; return ox != null ? { l: ox - H.geomancer.fistW, r: ox + H.geomancer.fistW, t: y - 64, b: y + 14 } : mk(8, 36, -64, 14); }   /* STONE FIST: the column over her nearest planted stone (ox), else at the staff */
+    if (heroId === 'berserker') return mk(-6, 30, -64, 14);   /* GUT HEAVE: both axes hooked under */
     if (heroId === 'warden') return mk(-4, 22, -68, 4);                          /* the tip under the foe: tall, narrow */
     const r = heroId === 'paladin' ? 24 : heroId === 'pyro' || heroId === 'reaper' ? 28 : 22;
     return mk(-4, r + 4, -64, 14);                                              /* the rise box (-40) + 24 tall */
   }
+  if (heroId === 'pyro') return mk(-4, H.pyro.fireTiles * 16 + 4, -8, 2);   /* FLOOR FIRE: the 3-tile line, one side */
+  if (heroId === 'geomancer') return mk(0, slabLen(atk), -8, 2);   /* SLAB SLIDE: the slab skids out along the floor, the box rides its front */
+  if (heroId === 'berserker') return mk(-6, H.berserker.chopFar, -10, 2);   /* HAMSTRING CHOP: a low double chop, in front */
   if (heroId === 'warden') return mk(-6, 58, -8, 2);                             /* HAMSTRING: one side, the shaft at full reach */
   return { l: x - W, r: x + W, t: y - 8, b: y + 2 };                             /* both sides, 2.5 tiles */
 }
 export const CHARGE_NAME = {
   knight: { up: 'HEAVEN CUT', down: 'SHIELD DRIVE' }, warden: { up: 'POLE HOIST', down: 'HAMSTRING' },
+  pyro: { up: 'FIRE PILLAR', down: 'FLOOR FIRE' }, geomancer: { up: 'STONE FIST', down: 'SLAB SLIDE' }, berserker: { up: 'GUT HEAVE', down: 'HAMSTRING CHOP' },
   _: { up: 'CHARGED LAUNCH', down: 'CHARGED SWEEP' },
 };
 export const chargeName = (heroId, dir) => (CHARGE_NAME[heroId] || CHARGE_NAME._)[dir];
@@ -257,6 +271,7 @@ export const chargeName = (heroId, dir) => (CHARGE_NAME[heroId] || CHARGE_NAME._
 export const CHARGE_MOVE = {
   knight: { up: { vx: 40, vy: -190 }, down: { vx: 200, vy: 0 } },
   warden: { up: { vx: 20, vy: 0 }, down: { vx: 60, vy: 0 } },
+  pyro: { up: { vx: 10, vy: 0 }, down: { vx: 40, vy: 0 } }, geomancer: { up: { vx: 0, vy: 0 }, down: { vx: 0, vy: 0 } }, berserker: { up: { vx: 50, vy: 0 }, down: { vx: 150, vy: 0 } },   /* (dmheroes-b) the staff stands planted; the axes lunge */
   _: { up: { vx: 30, vy: 0 }, down: { vx: 100, vy: 0 } },
 };
 export const chargeMove = (heroId, dir) => (CHARGE_MOVE[heroId] || CHARGE_MOVE._)[dir];
@@ -265,3 +280,22 @@ export const launchWeight = e => !e || e.maxHp || e.mini ? 0 : e.elite ? 0.6 : 1
 export const tripTime = (e, heavyBody) => heavyBody ? DM.charge.tripBeast : 1.1;
 /* the aim glyph: which way, and whether the one step is there */
 export const aimGlyph = (dir, ready) => ({ dir, ready: !!ready });
+
+/* ==== (claude/dmheroes-b) THE PYROMANCER / GEOMANCER / BERSERKER ROWS (plan section 6) - pure rules; main.js fireCharged / geomancer.js do the world side ====
+   PYRO  UP FIRE PILLAR: a geyser at reach (anti-air, launches, +heat). DOWN FLOOR FIRE: a 3-tile fire line, trips, burning ground 2 s.
+   GEO   UP STONE FIST: erupts from her nearest planted stone within 3 tiles of her front (else at the staff); launches at range, the stone stays as a step.
+         DOWN SLAB SLIDE: a low slab skids along the floor, trips, PLANTS a stone where it stops (3-stone cap; a full board plants nothing; DOWN+C detonate untouched).
+   BERSERKER UP GUT HEAVE / DOWN HAMSTRING CHOP: both axes under / low, +REND (one stack on every foe struck, frenzy or not). */
+/* the slab's reach after `atk` swing-seconds: grows from slabMin to slabLen across the live window */
+export const slabLen = atk => { const G = DM.heroes.geomancer, k = Math.max(0, Math.min(1, ((atk || 0) - CHARGE_LIVE[0]) / (CHARGE_LIVE[1] - CHARGE_LIVE[0]))); return G.slabMin + (G.slabLen - G.slabMin) * k; };
+/* the planted stone a stone fist erupts from: nearest to her front point (x + face x 12), within fistRange px of it; else null (the staff) */
+export function geoStoneOrigin(stoneXs, x, face) {
+  const f = face >= 0 ? 1 : -1, front = x + f * 12; let best = null, bd = DM.heroes.geomancer.fistRange + 1e-6;
+  for (const sx of stoneXs || []) { const d = Math.abs(sx - front); if (d <= bd) { bd = d; best = sx; } }
+  return best;
+}
+/* where the slab stops, and the fire line's tiles */
+export const slabStopX = (x, face) => x + (face >= 0 ? 1 : -1) * DM.heroes.geomancer.slabLen;
+export const fireLineXs = (x, face) => { const f = face >= 0 ? 1 : -1, n = DM.heroes.pyro.fireTiles, out = []; for (let k = 1; k <= n; k++) out.push(x + f * 16 * k); return out; };
+export const rendOnCharge = heroId => heroId === 'berserker' ? DM.heroes.berserker.rend : 0;
+export const heatOnCharge = heroId => heroId === 'pyro' ? DM.heroes.pyro.heat : 0;
