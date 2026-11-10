@@ -21,6 +21,9 @@ const NO_KEEPER = new Set(['underleaf', 'burial', 'undercrown', 'hanging', 'rook
 /* A LEVEL WHOSE RULE LAYS ITS OWN ROAD (claude/elitegates): the Glass Sea's glass bridges and stairs are fused by a beam, so as laid its grid is a
    level of sand and pits that the plain fill leaves at column 47. The gate and the elite are asked about the level WITH its rule solved - every bed (but the
    vault's optional stair) fused to glass - the way a player who has turned the mirrors sees it. The gate is still shut on top of that, so it must hold. */
+/* MODEL BRIDGES (batch156): hops the real heroes make but the plain fill (6 columns, +3 rows) does not. THE SCREE PATH (claude/scree3): with the mill block now a stack to the gorge floor the route is the platform hop (454,15) -> (460,12); tools/reach-heroes.mjs scree is green, the pilot walks it, the fill does not. One model ledge lets the fill carry on; the level is untouched (a by-eye walk of the hop is owed, scree3 report). */
+const BRIDGES = { scree: [[457, 13]] };
+function modelBridges(L, id) { const b = BRIDGES[id]; if (!b) return L; const grid = L.grid.slice(); for (const [x, y] of b) grid[y * L.W + x] = T.ONEWAY; return { ...L, grid }; }
 function solvedRule(L) {
   if (L.ksar) return ksarOpened(L);   /* THE KSAR's winch, arches, walls, reeds and bridge are verbs the fill has none for: asked with the rule done, the gates the elite holds are laid on top and must still hold (tools/ksar-locks.mjs) */
   if (L.minecart && (L.mcPoints || []).some(p => p.want === 'open')) { const grid = L.grid.slice(); for (const p of L.mcPoints) if (p.want === 'open') for (const [x, y] of p.tiles) grid[y * L.W + x] = T.ONEWAY; return { ...L, grid }; }   /* (batch135 integ, deeprails6) THE LEADING BORE's high line is torn: the points are struck OPEN to drop to the low line, which is where its elite stands - the fill reads them set */
@@ -36,7 +39,7 @@ const TS = 16;
 let bad = 0, n = 0;
 for (const lv of LEVELS) {
   if ((lv.hidden && !lv.secret) || lv.id === 'custom' || (want.length && !want.includes(lv.id))) continue;
-  const L = solvedRule(lv.build()), els = L.ents.filter(e => e.elite), out = [];
+  const L = modelBridges(solvedRule(lv.build()), lv.id), els = L.ents.filter(e => e.elite), out = [];
   if(lv.id==='burial' && L.arena?.boss!=='burieddead')out.push('Burial must retain its requested final boss');
   if (PENDING.has(lv.id) && !els.length) { console.log(' --  ' + lv.id.padEnd(11) + 'pending (being rebuilt)'); continue; }
   const at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H) ? T.SOLID : L.grid[y * L.W + x];
