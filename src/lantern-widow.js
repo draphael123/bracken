@@ -19,13 +19,13 @@
    Every move: its own windup pose, release pose, sound (POSE, src/lantern-widow-hands.js). */
 
 export const WD = {
-  hp: 1800, w: 14, h: 30, markH: 46, speed: 70, hover: 12,
-  resist: 0.55, openMul: 2, openCap: 0.22, floorP1: 0.5,
+  hp: 3000, w: 14, h: 30, markH: 46, speed: 70, hover: 12,
+  resist: 0.55, openMul: 2, openCap: 0.18, floorP1: 0.5,
   veil: { tell: 0.6, act: 0.18, reach: 44, dmg: 14, cd: 1.4 },
   wail: { tell: 0.9, act: 0.7, r: 160, band: 20, dmg: 16, cd: 6.5 },
   hands: { tell: 1.0, rise: 0.8, n: 3, spread: 40, w: 12, dmg: 12, hold: 0.5, cd: 7.5 },
-  theft: { tell: 1.2, every: 28, first: 5, drown: 24 },
-  reclaim: { open: 4.5, r: 14, lanternDx: 12, lanternDy: 16 },
+  theft: { tell: 1.2, every: 20, first: 5, drown: 16 },
+  reclaim: { open: 5.0, r: 14, lanternDx: 12, lanternDy: 16 },
   perch: { glide: 1.0, stay: 4.5 },
   lament: 2.0,
   p2: { lit: 14 },
@@ -102,7 +102,9 @@ function takeLight(e, S, W, all) {
 }
 function flyToPerch(e, S, heroes) {
   const ps = S.G.perches; let best = 0, bd = -1;
-  ps.forEach((p, i) => { if (i === S.perchI) return; const d = heroes && heroes.length ? Math.min(...heroes.filter(h => h.alive).map(h => Math.abs(h.x - p.x))) : (i * 37) % 97; if (d > bd) { bd = d; best = i; } });
+  const mA = S.G.mere[0], mB = S.G.mere[1], sideOf = x => x < (mA + mB) / 2 - 60 ? -1 : x > (mA + mB) / 2 + 60 ? 1 : 0, heroSide = x => x < mA + 16 ? -1 : x > mB - 16 ? 1 : 0, hs = heroes && heroes.length ? (heroes.filter(h => h.alive).map(h => heroSide(h.x))[0] || 0) : 0;   /* (claude/nighthands) she flies far, but to a perch on the hero's own bank (or the high middle one): the pale tiers are real only in her glow (120 px), so a perch across the mere (the farthest one, as it was) cannot be climbed to - the bot sat 60 s on the left bank while she cycled the right tiers */
+  ps.forEach((p, i) => { if (i === S.perchI) return; if (hs !== 0 && sideOf(p.x) !== hs) return; const d = heroes && heroes.length ? Math.min(...heroes.filter(h => h.alive).map(h => Math.abs(h.x - p.x))) : (i * 37) % 97; if (d > bd) { bd = d; best = i; } });
+  if (bd < 0) { best = (S.perchI + 1) % ps.length; }   /* (no perch on that bank but the one she is on: the next) */
   S.perchI = best; e.gx0 = e.x; e.gy0 = e.y; setMode(e, 'glide', WD.perch.glide);
 }
 function think(e, S, dt, heroes, tgt, W) {
