@@ -15,7 +15,7 @@
 //                   it drops he is pinned; the servery door horns, and its winch keeps the garrison in. No boss: a puzzle.
 // Resist 0.5x outside openings (0.4x hiding behind a guard: never less, never invulnerable). A single opening takes no more than GP.capK of her bar.
 // main.js calls makeGoblinPrincessHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read, level, drawWorld, clear, load, labDuty.
-import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js';   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
+import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js';   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
 import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
@@ -93,7 +93,8 @@ export function makeGoblinPrincessHands(ctx) {
   const usedShots = new WeakSet();
   const shotOn = box => { for (const q of (ctx.shots ? ctx.shots() : [])) { if (!q || usedShots.has(q) || q.x < box.l - 3 || q.x > box.r + 3 || q.y < box.t - 3 || q.y > box.b + 3) continue;
     usedShots.add(q); if (F) F.n.shots++; if (q.state === 'fly') { q.state = 'drop'; q.vx = (q.vx || 0) * -0.1; q.vy = -40; } else if (q.life > 0 && q.state === undefined) q.life = 0; return true; } return false; };
-  const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any || shotOn(box); };
+  const HSX = { hero: () => ctx.hero(), overlap: ctx.overlap, attackBox: () => null, players: () => ctx.players, embers: ctx.embers, tracers: ctx.tracers, hammers: ctx.hammers, scythe: ctx.scythe, stones: ctx.stones };   /* alt world for tools; main.js's own configure wins */
+  const blowOn = (box, key) => { let any = false; seats(P => { if (BW.struck(ctx.attackBox, ctx.overlap, P, box, key)) any = true; }); return any || shotOn(box) || (P4 && !!heroStrikes(box, key, HSX)); };   /* (claude/gq4art) the shared hero-strikes rule: pirate pistol, axes, hammers count on a pin / rope / gem */
   H.on = () => !!(L() && (L().gpChase || L().gpRehearsal || A()));
   H.owns = e => e.t === 'gprincess';
   H.towersLit = () => new Set(TW.keys());   /* (claude/hc3art) the signal braziers burn on the towers whose alarm she rang */
