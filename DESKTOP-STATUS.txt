@@ -9,3 +9,4 @@
 11-10 10:36 GQ4P-d DONE 8403bb710 gates+key+add phase+pirouette behind GQ4P_SHIPS; n=6 flasks crown:mini 44% (8/18)
 11-10 10:54 GQ4Q-d DONE 369608ef6 Queen P1+P2 behind GQ4Q_SHIPS; proof 9/9 heroes; n=6 knight/warden/pyro 1/6 each (17%, untuned)
 11-10 11:00 traittune-d DONE 3e997ad25 TRAITS on vs off: demo bosses (Gorm/Chieftain/Pyromancer) within noise, old v1 save PASS; pyro default -> emberSkin+phoenix (phoenix L10); knight at Crusader still -40pts (rec riposte to core); flags left OFF; branch claude/traittune-d
+11-10 11:16 GQ4ART-d DONE 507ab028b knight+Princess gates/frames+tower+Queen hall/roof art drawn, 3 flags still OFF, checks green, untold-told/textfit owed
