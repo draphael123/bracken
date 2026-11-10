@@ -15,6 +15,7 @@ import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './
 import { buildAirship, AS_RULE, AS_SHIPS, AS_NAME, asOn } from './airship.js';   /* (claude/airship) THE DESERT AIRSHIP (the greybox, behind its flag) */
 import { buildGreatDune, GD_RULE, GD_SHIPS, gdOn } from './great-dune.js'; import { applyInserts } from './route-insert.js';   /* (claude/greatdune) THE GREAT DUNE (the greybox, behind its flag) and THE ROAD INSERTS' one rule */
 import { buildRookery, RK_RULE } from './rookery.js';   /* THE ROOKERY (claude/rookery, the OPUS GREYBOX): between GALE MOOR and THE SKY ROAD - src/rookery-hands.js its rule, src/shriek-sisters.js its boss */
+import { buildWispwood } from './wispwood.js'; import { WW_RULE } from './ww-lines.js'; import { wwOn } from './ww-flag.js';   /* WISPWOOD (claude/wispwood, the OPUS GREYBOX): behind WISPWOOD_SHIPS */
 import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
 import { buildKitchenGate, KG_RULE } from './kitchen-gate.js';   /* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX): between THE UNDERCROWN and HIGHCROWN - src/kitchen-hands.js its rule, src/grubbag.js its boss */
 import { buildPalisadeWood, PW_RULE } from './palisade-wood.js';   /* THE PALISADE WOOD (claude/palisadewood, the greybox): between THE ROOTWAY and KINGSWOOD - src/palisade-hands.js its rule, src/battering-beast.js its boss */
@@ -8179,6 +8180,9 @@ if (gdOn()) LEVELS.push({ id: 'greatdune', arc: 'the desert', name: 'THE GREAT D
    (THE KING'S PYRAMID once it merges, the Sealed Pyramid until then): ?airship=1&level=airship. THE ROAD INSERT is src/route-insert.js's, live with AS_SHIPS (art before live). */
 if (asOn()) LEVELS.push({ id: 'airship', arc: 'the desert', name: AS_NAME, sub: 'feed the burners, climb into the storm', rule: AS_RULE, build: () => buildAirship({ T, TS }), needs: LEVELS.some(l => l.id === 'kingspyramid') ? 'kingspyramid' : 'sealedpyramid', hidden: !AS_SHIPS });
 applyInserts(LEVELS);   /* (claude/greatdune) the desert's road inserts (src/route-insert.js): rewires `needs` only for an insert that is live - none is on this branch */
+/* WISPWOOD (claude/wispwood, the OPUS GREYBOX; scratch/brief-wispwood-1108.md): APPENDED (saves count levels by index), and ONLY WHILE WISPWOOD_SHIPS / ?ww=1 is on (src/ww-flag.js) -
+   with it off LEVELS is master's. On the road between THE BURIAL CAVERNS and THE WITCHLIGHT STAIR by its needs (the stair needs it; a save that had it open keeps it: src/main.js wwRoadMig). Its boss: THE LANTERN WIDOW */
+if (wwOn()) { LEVELS.push({ id: 'wispwood', name: 'WISPWOOD', sub: 'the dead wood over the barrows', rule: WW_RULE, build: () => buildWispwood({ painter, T, TS }), needs: 'burial' }); LEVELS.find(l => l.id === 'witchlight').needs = 'wispwood'; }
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
