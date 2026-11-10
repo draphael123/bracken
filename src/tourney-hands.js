@@ -12,7 +12,8 @@
 //                    the couched lance puts him over and he fights on foot.
 // GREYBOX DRAWING (the sonnet art lane draws the final). main.js calls (one tagged line each): on, reset, mounted, couch, drive, update, strike, spawn,
 // archer, takeArcher, drawBack, drawHorse, drawLance, drawArcher, drawOver, read. Pure enough for node: tools/tourney.mjs drives it with a fake ctx.
-import { cartSpeed, MC } from './minecart.js';   /* THE SHARED VEHICLE CODE: the horse's trot / gallop / rein is the cart's pace model */
+import { cartSpeed, MC } from './minecart.js';
+import * as ART from './redraw/ty_art.js';   /* (claude/tourneyart) the drawing */   /* THE SHARED VEHICLE CODE: the horse's trot / gallop / rein is the cart's pace model */
 import { TY } from './tourney.js';
 import { TY_SAY } from './ty-lines.js';
 
@@ -149,40 +150,32 @@ export function makeTourneyHands(ctx) {
   H.strike = (hb, pp) => { if (!H.on() || !hb) return; const G = ty(); for (const q of G.quints) { const sx = q.x + (q.face || -1) * 6, sy = q.y - 20;
       if (hb.l < sx + 8 && hb.r > sx - 8 && hb.t < sy + 12 && hb.b > sy - 12 && (!ctx.hitOnce || ctx.hitOnce(q))) spin(q, (pp && pp.face) || (ctx.hero && ctx.hero() ? ctx.hero().face : 1) || 1, pp); } };
   H.read = () => S && { n: { ...S.n }, rings: [...S.rings], targets: [...S.targets], arrows: S.arrows.length, quint: Object.fromEntries(Object.entries(S.quint).map(([k, v]) => [k, v.st])) };
-  /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBack = (g, cx, cy, VW, VH, time) => { const G = ty(); if (!G) return; const x = v => R(v - cx), y = v => R(v - cy), vis = (a, b) => b * TS > cx - 40 && a * TS < cx + VW + 40;
+  /* ================= THE DRAWING (claude/tourneyart: src/redraw/ty_art.js) ================= */
+  H.drawBack = (g, cx, cy, VW, VH, time) => { const G = ty(); if (!G) return; const x = v => R(v - cx), y = v => R(v - cy), vis = (a, b) => b * TS > cx - 60 && a * TS < cx + VW + 60, gY = y(TY.G * TS);
+    for (const r of (G.rides || [])) { if (!vis(r.x0, r.x1)) continue; ART.drawListFence(g, x(r.x0 * TS), x(r.x1 * TS), gY, 0); }
     for (const p of G.props) { if (!vis(p.x0, p.x1)) continue; const X0 = x(p.x0 * TS), Wd = (p.x1 - p.x0 + 1) * TS, top = y(p.top * TS);
-      if (p.kind === 'tent' || p.kind === 'pavilion') { rect(g, X0, top, Wd, y(TY.G * TS) - top, p.col || '#c84a3a'); for (let i = 0; i < Wd; i += 8) rect(g, X0 + i, top, 4, y(TY.G * TS) - top, 'rgba(255,255,255,0.18)'); rect(g, X0 + Wd / 2 - 1, top - 14, 2, 14, '#5a4632'); rect(g, X0 + Wd / 2 + 1, top - 14, 8, 5, '#ffd36b'); }
-      else if (p.kind === 'stall' || p.kind === 'loft') { rect(g, X0, top, Wd, 4, p.kind === 'stall' ? '#d84a4a' : '#8a6a3a'); rect(g, X0, top + 4, 2, y(TY.G * TS) - top - 4, '#6a4a2a'); rect(g, X0 + Wd - 2, top + 4, 2, y(TY.G * TS) - top - 4, '#6a4a2a'); }
-      else if (p.kind === 'royalbox' || p.kind === 'nest') { rect(g, X0, top, Wd, 4, '#6a3a8a'); rect(g, X0, top - 10, Wd, 2, '#ffd36b'); } }
-    for (const rl of G.rails) { if (!vis(rl.x0, rl.x1)) continue; for (let c = rl.x0; c <= rl.x1; c += 3) rect(g, x(c * TS + 7), y(rl.row * TS), 2, 2 * TS, '#8a6a4a'); }
+      if (p.kind === 'tent' || p.kind === 'pavilion') ART.drawPavilion(g, X0, top, Wd, gY, p.col || '#c84a3a', time, p.kind === 'pavilion');
+      else if (p.kind === 'stall') ART.drawStall(g, X0, top, Wd, gY, time); else if (p.kind === 'loft') ART.drawLoft(g, X0, top, Wd, gY, time);
+      else if (p.kind === 'royalbox') ART.drawRoyalBox(g, X0, top, Wd, gY, time); else if (p.kind === 'nest') ART.drawNest(g, X0, top, Wd, gY, time);
+      else if (p.kind === 'crowd') { ART.drawStandFace(g, X0, top, Wd, 8); ART.drawCrowd(g, X0, top, Wd, p.id || 1, time); }
+      else if (p.kind === 'banner') ART.drawBanner(g, X0 + 8, y(p.top * TS), gY, p.col || '#2a4ab0', time, p.x0 * 0.7); }
+    for (const rl of G.rails) { if (!vis(rl.x0, rl.x1)) continue; ART.drawRailBarrier(g, x(rl.x0 * TS), x((rl.x1 + 1) * TS), y(rl.row * TS), time); }
     for (const ln of G.lanes) { if (!vis(ln.x0, ln.x1)) continue; rect(g, x(ln.x0 * TS), y(ln.f * TS) - 2, (ln.x1 - ln.x0 + 1) * TS, 2, 'rgba(200,180,120,0.5)'); }
-    for (const h of G.hurdles) { if (!vis(h.col, h.col)) continue; rect(g, x(h.col * TS) + 2, y((h.f - 2) * TS), 12, 2 * TS, '#a07a40'); rect(g, x(h.col * TS), y((h.f - 2) * TS) + 4, 16, 3, '#6a4a2a'); }
-    for (const r of G.rings) { if (!vis(r.col, r.col)) continue; const taken = S && S.rings.has(r.id); rect(g, x(r.x) - 9, y(r.y) - 4, 2, y(TY.G * TS) - y(r.y), '#6a4a2a'); rect(g, x(r.x) - 9, y(r.y) - 4, 8, 2, '#6a4a2a');
-      if (!taken) { g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x(r.x), y(r.y), 4, 0, Math.PI * 2); g.stroke(); } }
-    for (const t of G.targets) { if (!vis(t.col, t.col)) continue; const done = S && S.targets.has(t.id); rect(g, x(t.x) - 6, y(t.y) - 8, 12, 24, done ? '#8a7a50' : '#d8c070'); if (!done) { rect(g, x(t.x) - 3, y(t.y) - 2, 6, 6, '#d84a4a'); rect(g, x(t.x) - 1, y(t.y), 2, 2, '#fff'); } }
-    for (const q of G.quints) { const qx = x(q.x), qy = y(q.y); if (qx < -60 || qx > VW + 60) continue; const k = S && S.quint[q.id], a = k && k.st !== 'idle' ? (k.st === 'tell' ? time * 6 : time * 18) : 0;
-      rect(g, qx - 2, qy - 36, 4, 36, '#6a4a2a'); rect(g, qx + (q.face || -1) * 8 - 4, qy - 28, 8, 14, '#c8ccd4'); rect(g, qx + (q.face || -1) * 8 - 1, qy - 23, 2, 2, '#ffd36b');
-      const ax = Math.cos(a) * 26 * -(q.face || -1), kk = k && k.st === 'sweep'; rect(g, Math.min(qx, qx + ax), qy - 33, Math.abs(ax) + 1, 2, '#6a4a2a'); rect(g, qx + ax - 4, qy - 36, 8, 8, kk ? '#ff6b4a' : '#a07a40'); }   /* the arm and its sandbag, going round */
+    for (const h of G.hurdles) { if (!vis(h.col, h.col)) continue; ART.drawHurdle(g, x(h.col * TS), y(h.f * TS)); }
+    for (const r of G.rings) { if (!vis(r.col, r.col)) continue; ART.drawRing(g, x(r.x), y(r.y), gY, !!(S && S.rings.has(r.id)), time); }
+    for (const t of G.targets) { if (!vis(t.col, t.col)) continue; ART.drawTarget(g, x(t.x), y(t.y) + 2, gY, !!(S && S.targets.has(t.id))); }
+    for (const q of G.quints) { const qx = x(q.x), qy = y(q.y); if (qx < -60 || qx > VW + 60) continue; const k = S && S.quint[q.id]; ART.drawQuintain(g, qx, qy, q.face || -1, k ? k.st : 'idle', time); }
     for (const e of (L().ents || [])) { if (e.t !== 'tyhorse' && e.t !== 'tygroom') continue; if (!vis(e.x, e.x)) continue; const ex = x(e.x * TS + 8), ey = y((e.y + 1) * TS);
-      if (e.t === 'tyhorse') { rect(g, ex - 12, ey - 18, 24, 10, '#8a5a3a'); rect(g, ex + 10, ey - 24, 6, 10, '#8a5a3a'); for (const lx of [-10, -4, 4, 10]) rect(g, ex + lx, ey - 8, 2, 8, '#5a3a2a'); rect(g, ex - 8, ey - 20, 16, 4, '#3a6ac8'); }
-      else { rect(g, ex - 3, ey - 16, 6, 16, '#4a7a3a'); rect(g, ex - 3, ey - 20, 6, 5, '#e0b090'); } } };
+      if (e.t === 'tyhorse') ART.drawHorse(g, 'hero', ex, ey, 1, 0, time); else ART.drawSquire(g, ex, ey, -1, 'groom', time); } };
   /* THE HORSE under a mounted hero (drawn before the hero) */
-  H.drawHorse = (g, pp, cx, cy, time) => { if (!H.mounted(pp)) return; const f = pp.face || 1, px = R(pp.x - cx), py = R(pp.y - cy), v = Math.abs(H.pace(pp)), gait = v > 170 ? 14 : v > 60 ? 9 : 4, ph = Math.sin(time * gait) * 3;
-    rect(g, px - 14, py - 14, 28, 9, '#8a5a3a'); rect(g, px + f * 12 - 3, py - 22, 7, 10, '#8a5a3a'); rect(g, px + f * 16 - 2, py - 20, 4, 3, '#6a3a2a');
-    for (const [lx, k] of [[-11, 1], [-5, -1], [5, 1], [11, -1]]) rect(g, px + lx, py - 6, 2, 6 + (k * ph > 0 ? 0 : -2), '#5a3a2a');
-    rect(g, px - 12, py - 15, 24, 3, '#3a6ac8'); };
-  /* THE LANCE over a mounted hero: upright, lowering, couched (gold tip), tired (sagging) */
-  H.drawLance = (g, pp, cx, cy, time) => { if (!H.mounted(pp)) return; const c = lanceOf(pp), f = pp.face || 1, px = R(pp.x - cx), py = R(pp.y - cy);
-    if (c.down) { const lit = Math.abs(H.pace(pp)) >= LANCE.pace; rect(g, px + (f > 0 ? 2 : -LANCE.reach - 2), py - LANCE.height - 1, LANCE.reach, 2, '#d8c8a0'); rect(g, px + f * LANCE.reach - 2, py - LANCE.height - 2, 4, 4, lit ? '#ffd36b' : '#a8a090'); }
-    else if (c.tired > 0) rect(g, px + f * 4, py - 30, 2, 22, '#a8a090');
-    else { const k = c.held ? Math.min(1, c.heldT / LANCE.lower) : 0; rect(g, px + f * (4 + k * 8), py - 34 + k * 10, 2, 26, '#d8c8a0'); } };
-  H.drawArcher = (g, e, cx, cy, time) => { const ex = R(e.x - cx), ey = R(e.y - cy), f = e.face || 1, a = e.aim || f;
-    if (e.mounted) { rect(g, ex - 11, ey - 14, 22, 9, '#6a4a3a'); rect(g, ex + f * 10 - 3, ey - 21, 6, 9, '#6a4a3a'); for (const lx of [-9, -4, 4, 9]) rect(g, ex + lx, ey - 6, 2, 6, '#4a2a1a');
-      rect(g, ex - 4, ey - 28, 8, 14, '#2a8a6a'); rect(g, ex - 3, ey - 33, 6, 5, '#e0b090'); }
-    else { if (e.mode === 'down') { rect(g, ex - 8, ey - 5, 16, 5, '#2a8a6a'); return; } rect(g, ex - 4, ey - 14, 8, 14, '#2a8a6a'); rect(g, ex - 3, ey - 19, 6, 5, '#e0b090'); }
-    const by = ey - (e.mounted ? 24 : 10), drawn = /Tell$/.test(e.mode); rect(g, ex + a * 6, by - 7, 2, 14, '#8a6a3a'); if (drawn) rect(g, ex + a * (drawn ? 1 : 6), by, 6, 1, '#fff'); };
-  H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; for (const a of S.arrows) { const ax = R(a.x - cx), ay = R(a.y - cy), k = Math.atan2(a.vy, a.vx); rect(g, ax - Math.cos(k) * 6, ay - Math.sin(k) * 6, 2, 2, '#c8c0a0'); rect(g, ax - 1, ay - 1, 3, 3, '#e8e0c0'); }
+  H.drawHorse = (g, pp, cx, cy, time) => { if (!H.mounted(pp)) return; const c = pp.tyHorse; ART.drawHorse(g, 'hero', R(pp.x - cx), R(pp.y - cy), pp.face || 1, H.pace(pp), time, c && c.bounce > 0 ? 'rear' : null); };
+  /* THE SEAT and THE LANCE over a mounted hero: upright, lowering, couched (gold tip lit at pace), tired (sagging) */
+  H.drawLance = (g, pp, cx, cy, time) => { if (!H.mounted(pp)) return; const c = lanceOf(pp), f = pp.face || 1, px = R(pp.x - cx), py = R(pp.y - cy); ART.drawRiderOver(g, 'hero', px, py, f, H.pace(pp), time);
+    if (c.down) ART.drawLance(g, px - f * 6, py - LANCE.height, 0.02, LANCE.reach + 2, f, { hot: Math.abs(H.pace(pp)) >= LANCE.pace, time });
+    else if (c.tired > 0) ART.drawLance(g, px + f * 4, py - 22, 0.95, 26, f, { time, pennon: false });
+    else { const k = c.held ? Math.min(1, c.heldT / LANCE.lower) : 0; ART.drawLance(g, px + f * (4 + k * 3), py - 22 + k * 4, 1.35 - k * 1.25, 34, f, { time }); } };
+  H.drawArcher = (g, e, cx, cy, time) => ART.drawArcher(g, e, cx, cy, time);
+  H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; for (const a of S.arrows) ART.drawArrow(g, R(a.x - cx), R(a.y - cy), a.vx, a.vy);
     const G = ty(); for (const q of G.quints) { const k = S.quint[q.id]; if (k && k.st === 'tell') { const qx = R(q.x - cx), qy = R(q.y - cy); rect(g, qx - QUINT.reach, qy - QUINT.top, QUINT.reach * 2, 2, (time * 10) % 2 < 1 ? '#ff4a2a' : '#ffd36b'); } } };
   return H;
 }

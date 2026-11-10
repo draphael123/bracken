@@ -6,6 +6,7 @@
 // main.js calls (one tagged line each): spawnBoss, owns, on, update, take, strike, drawBoss, drawOver, barName, end, read, mountedPhase.
 import * as TCM from './ty-champion.js';
 import { CH_SAY } from './ty-lines.js';
+import * as ART from './redraw/ty_art.js';   /* (claude/tourneyart) */
 const { TC } = TCM;
 
 export const SOUND = { charge: s => { (s.snort || s.tell)(); (s.roar || s.tell)(); }, drop: s => (s.charge || s.tell)(), feint: s => (s.tell)(), shatter: s => { (s.crack || s.thud)(); (s.clank || s.thud)(); },
@@ -94,23 +95,9 @@ export function makeChampionHands(ctx) {
   H.end = () => { if (S) { S.squire = null; S.won = true; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, passes: S.passes, shatters: S.shatters, squire: S.squire && S.squire.st, n: { ...S.n }, hurt: { ...S.hurt }, won: S.won };
   /* ================= THE GREYBOX DRAWING ================= */
-  H.drawBoss = (g, e, cx, cy, time) => { const m = e.mode === 'pass' && e.lanceDown ? 'passDown' : e.mode, p = POSE[m] || POSE.walk, f = e.face || 1, ex = R(e.x - cx), ey = R(e.y - cy);
-    if (p.flat) { rect(g, ex - 18, ey - 8, 34, 8, '#c8ccd4'); rect(g, ex + 12 * f, ey - 10, 7, 7, '#a8acb4'); rect(g, ex - 6, ey - 10, 10, 3, '#ffd36b'); return; }
-    const up = p.mounted ? 14 : 0, lean = p.lean * f;
-    if (p.mounted) { const gait = Math.abs(e.vx || 0) > 120 ? 16 : 6, ph = Math.sin(time * gait) * 3;   /* THE BARDED CHARGER: gold and blue */
-      rect(g, ex - 16, ey - 18, 32, 11, '#e8e0d0'); rect(g, ex + f * 14 - 4, ey - 28, 9, 12, '#e8e0d0'); rect(g, ex - 16, ey - 16, 32, 5, '#2a4ab0'); rect(g, ex - 16, ey - 11, 32, 2, '#ffd36b');
-      for (const [lx, k] of [[-13, 1], [-6, -1], [6, 1], [13, -1]]) rect(g, ex + lx, ey - 7, 3, 7 + (k * ph > 0 ? 0 : -2), '#c8c0b0'); }
-    const by = ey - up; rect(g, ex - 7 + lean * 0.3, by - 28, 14, 22, '#c8ccd4'); rect(g, ex - 6 + lean * 0.4, by - 38, 12, 10, '#a8acb4');   /* plate; the great helm */
-    rect(g, ex - 4 + lean * 0.4 + (f > 0 ? 3 : 0), by - 34, 5, p.visor ? 1 : 2, '#1a1a24'); rect(g, ex - 1 + lean * 0.4, by - 44, 3, 6, '#d84a4a');   /* the visor slit; the plume */
-    const sx = ex + p.shield[0] * f, sy = by + p.shield[1]; rect(g, sx - 6, sy - 9, 12, 18, '#2a4ab0'); const glint = p.boss ? 0.6 + 0.4 * Math.sin(time * 30) : 1; g.globalAlpha = glint; rect(g, sx - 2, sy - 2, 5, 5, '#ffd36b'); g.globalAlpha = 1;   /* THE GOLD BOSS */
-    const hx = ex + p.hand[0] * f, hy = by + p.hand[1];
-    if (p.lance >= 0) { const L0 = 46, ang = p.lance * Math.PI / 2, lx = Math.cos(ang) * L0 * f, ly = -Math.sin(ang) * L0; g.strokeStyle = '#e0d4b0'; g.lineWidth = 3; g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx + lx, hy + ly); g.stroke(); rect(g, hx + lx - 2, hy + ly - 2, 4, 4, p.lance === 0 ? '#ff6b4a' : '#e0d4b0'); }
-    else if (p.stub) rect(g, hx, hy - 2, 10 * f, 3, '#8a7a5a');
-    if (p.flail) { const fx = ex + p.flail[0] * f, fy = by + p.flail[1]; g.strokeStyle = '#6a6a72'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx, hy); g.lineTo(fx, fy); g.stroke(); rect(g, fx - 4, fy - 4, 8, 8, p.stuck ? '#8a8a92' : '#4a4a52'); }
-    if (p.horn) rect(g, ex + 10 * f, by - 32, 6, 4, '#ffd36b');
-    rect(g, hx - 2, hy - 2, 4, 4, '#a8acb4'); };
+  H.drawBoss = (g, e, cx, cy, time) => ART.drawChampion(g, e, cx, cy, time, POSE);   /* (claude/tourneyart) src/redraw/ty_art.js */
   H.drawOver = (g, cx, cy, VW, VH, time) => { if (!S) return; const q = S.squire; if (q && q.st !== 'gone') { const qx = R(q.x - cx), qy = R(S.G.floorY - cy), f = q.face || -1;
-      rect(g, qx - 4, qy - 14, 8, 14, '#d8b030'); rect(g, qx - 3, qy - 19, 6, 5, '#e0b090'); if (q.st === 'run' || q.st === 'wait') { rect(g, qx - f * 20, qy - 16, 40, 2, '#e0d4b0'); if ((time * 6) % 2 < 1) ctx.number && 0; } }
+      ART.drawSquire(g, qx, qy, f, q.st, time); }
     const e = live(); if (e && e.mode === 'pass' && !e.lanceDown) { const ex = R(e.x - cx), ey = R(e.y - cy); rect(g, ex - 1, ey - TC.markH - 4, 3, 3, 'rgba(255,211,107,0.6)'); } };
   return H;
 }
