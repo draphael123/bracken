@@ -60,9 +60,9 @@ export function buildHollowManor({ painter, T, TS }) {
   const rack = (x, y, o = {}) => { const r = { id: 'rk' + racks.length, x: x * TS + 8, y: (y + 1) * TS, col: x, row: y, ...o }; racks.push(r); ent('mnrack', x, y, { id: r.id }); return r; };
   const portrait = (x, y) => { const p = { id: 'pt' + portraits.length, x: x * TS + 8, y: y * TS + 8, col: x, row: y }; portraits.push(p); ent('mnportrait', x, y, { id: p.id }); return p; };
   const suit = (x, y, squad) => ent('armour', x, y, { squad, cnSkin: 'mnsuit' });
-  const shade = (x, y, squad) => ent('haunt', x, y, { squad, cnSkin: 'mnshade' });
+  const shade = (x, y, squad, perch) => ent('haunt', x, y, { squad, cnSkin: 'mnshade', ...(perch ? { perch: true } : {}) });   /* perch: stands above its squad on purpose (tools/sprinkle-cap.mjs; data only) */
   const polter = (x, y, squad) => ent('poltergeist', x, y, { squad });
-  const boo = (x, y, squad) => ent('boo', x, y, { squad });
+  const boo = (x, y, squad, perch) => ent('boo', x, y, { squad, ...(perch ? { perch: true } : {}) });
 
   // ================= 1. THE SERVANTS' HALL (0-59): TEACH =================
   fill(0, 0, 0, H - 1, T.SOLID); roof(0, 59, 10);
@@ -89,7 +89,7 @@ export function buildHollowManor({ painter, T, TS }) {
   const stair1 = panel('stair', [], stairCells, { stair: true });
   shelf(96, 131, 20);                                                                /* THE BALCONY: ten rows over the gallery floor */
   fill(120, 121, 21, 29, T.SOLID);                                                   /* the gallery's far wall under the balcony: the low floor ends here */
-  boo(104, 26, 'galleryBoos'); boo(112, 25, 'galleryBoos'); sign(99, 19, MN_SAY.boo);
+  boo(104, 26, 'galleryBoos'); boo(112, 25, 'galleryBoos', 1); sign(99, 19, MN_SAY.boo);
   suit(108, 29, 'lowSuit'); rack(115, 29); coins([111, 29], [113, 29], [117, 29], [118, 29]);   /* the low hall under the balcony: a suit, its rack, coins (a pocket that pays) */
   suit(104, 19, 'balconySuit'); rack(99, 19);
   /* SECRET ONE: the bookcase alcove hangs from the roof over the balcony; its bookcase swaps when nobody faces it */
@@ -105,7 +105,7 @@ export function buildHollowManor({ painter, T, TS }) {
   candle(147, 28); sign(149, 29, MN_SAY.candle);
   shelf(152, 156, 27); shelf(155, 159, 25); shelf(158, 169, 22); shelf(173, 185, 22); shelf(189, 200, 22);   /* THE HIGH WAY: the gallery's upper walk, two gaps in it */
   candle(158, 28); candle(166, 20); candle(168, 28); candle(178, 28); candle(180, 20); candle(190, 28); candle(194, 20); candle(204, 26);
-  shade(162, 26, 'blackShades'); shade(174, 18, 'blackShades'); shade(184, 26, 'blackShades'); shade(192, 17, 'blackShades'); shade(198, 26, 'blackShades');
+  shade(162, 26, 'blackShades'); shade(174, 18, 'blackShades', 1); shade(184, 26, 'blackShades'); shade(192, 17, 'blackShades', 1); shade(198, 26, 'blackShades');
   polter(185, 15, 'galleryPolter2');
   coins([162, 21], [164, 21], [176, 21], [180, 21], [192, 21], [196, 21], [175, 29]);
   ground(196, 209, 28); ent('check', 198, 27); stand(201, 27);                        /* SHRINE ONE, at the gallery's far door (a second stand to relight from) */
@@ -115,7 +115,7 @@ export function buildHollowManor({ painter, T, TS }) {
   ground(210, 273, 30); fill(210, 213, 28, 29, T.SOLID); sign(211, 27, MN_SAY.nursery);
   suit(218, 29, 'wingSuit'); rack(222, 29); polter(220, 22, 'wingPolter');
   const door3 = movingDoor(226, 9, 30, 14);                                          /* the wing's MOVING DOOR: among the foes this time */
-  boo(232, 24, 'wingBoos'); boo(236, 22, 'wingBoos');
+  boo(232, 24, 'wingBoos'); boo(236, 22, 'wingBoos', 1);
   portrait(234, 28); coins([230, 29], [231, 29]);
   ground(240, 246, 28); suit(244, 27, 'wingSuit2'); rack(241, 27); shelf(247, 252, 25); polter(250, 18, 'wingPolter2'); coins([248, 24], [250, 24]);
   /* THE SEALED NURSERY: a room hung from the roof, its door shut until three portraits give three keys (SECRET TWO) */

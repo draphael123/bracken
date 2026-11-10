@@ -1121,3 +1121,5 @@ GROUND_KITS.sealedpyramid={density:0,kinds:[]};   /* THE SEALED PYRAMID (claude/
 ALLOWED_DECORATIONS.sealedpyramid=[];
 GROUND_KITS.palisadewood={density:0,kinds:[]};   /* THE PALISADE WOOD (claude/palisadewood; BATCH120 integ): nothing is sprinkled - the level's own deco rows dress it by hand */
 ALLOWED_DECORATIONS.palisadewood=['mushroom','fern','stump','timber','fruitTree','gobPennant','spearRack','stakeFence','cart','siege','batteringRam','barrels','plantedSpears','moss','rock'];   /* the level's own dressing: the goblins' stake line, siege gear and carts among the wood's stumps and fruit trees */
+/* THE NIGHT ROAD'S FOUR (claude/fix157; they shipped with batch157, so LEVELS holds them now): WISPWOOD, THE SILK UNDERCROFT, THE HOLLOW MANOR and THE MAGE ACADEMY sprinkle nothing and place no hand decorations - their dressing is their own tiles and kits (src/lab-night.js is not involved) */
+for(const id of ['wispwood','silk','manor','academy']){GROUND_KITS[id]={density:0,kinds:[]};ALLOWED_DECORATIONS[id]=[];}
