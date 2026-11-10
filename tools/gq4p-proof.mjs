@@ -31,7 +31,7 @@ try {
           row[k] = r; }
       } catch (err) { row.err = String(err && err.message || err); } rows.push(row); }
     info.rows = rows; return { shots, info }; })()` : `(async () => { ${PRE}
-    const H = fresh('knight'); const F = H.fight(), G = H.test.gates(), e = () => BK.boss; const st = () => H.read();
+    const H = fresh('knight'); const F = H.fight(), G = H.test.gates(), e = () => BK.enemies().find(q => q.t === 'gprincess'); const st = () => H.read();
     info.start = st().gates; snap('01-room-west'); BK.tp(Math.round(G.E.pinX / 16) + 2, 21); run(60); snap('02-room-east');
     BK.tp(Math.round(G.W.pinX / 16) - 4, 21); run(20);
     // GUARDS!
@@ -43,9 +43,9 @@ try {
     const hp0 = e().hp; BK.tp(Math.round(e().x / 16) - 1, 21); BK.P.face = 1; BK.press('atk'); run(30); info.hpAfterBlowShim = Math.round(e().hp - hp0);
     run(60 * 2); for (const g of BK.enemies ? BK.enemies() : []) if (g.gpGuard && g.alive) { g.hp = 1; BKT.hurtEnemy(g, 999, g.x - 5, false); } run(40); info.afterKill = { mode: e().mode, add: st().add }; snap('07-dazed'); run(60 * 3); info.phase = H.fight().ph; info.gatesAfter = st().gates;
     // failsafe, fresh
-    const H2 = fresh('knight'); const F2 = H2.fight(); F2.callAt = 1e9; const e2 = BK.boss; e2.hp = e2.maxHp * 0.49; run(60 * 2); info.add2 = H2.read().add; BK.tp(Math.round(BK.L.mini.x0 / 16) + 2, 21); run(60 * 38.5); info.at38 = H2.read().add; run(60 * 2.5); info.at40 = { add: H2.read().add, shim: !!e2.shimmer, ph: H2.fight().ph, adsAlive: H2.read().ads, fs: H2.fight().n.failsafes };
+    const H2 = fresh('knight'); const F2 = H2.fight(); F2.callAt = 1e9; const e2 = BK.enemies().find(q => q.t === 'gprincess'); e2.hp = e2.maxHp * 0.49; run(60 * 2); info.add2 = H2.read().add; BK.tp(Math.round(BK.L.mini.x0 / 16) + 2, 21); run(60 * 38.5); info.at38 = H2.read().add; run(60 * 2.5); info.at40 = { add: H2.read().add, shim: !!e2.shimmer, ph: H2.fight().ph, adsAlive: H2.read().ads, fs: H2.fight().n.failsafes };
     // the pirouette
-    const H3 = fresh('knight'); const F3 = H3.fight(); F3.callAt = 1e9; F3.ph = 2; const e3 = BK.boss; e3.phase = 2; BK.god = false;
+    const H3 = fresh('knight'); const F3 = H3.fight(); F3.callAt = 1e9; F3.ph = 2; const e3 = BK.enemies().find(q => q.t === 'gprincess'); e3.phase = 2; BK.god = false;
     const trial = jump => { F3.chain = ['pirouette']; F3.step = 0; F3.pirAt = 0; e3.mode = 'walk'; e3.modeT = 0.01; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; BK.tp(Math.round(e3.x / 16) + (jump ? -3 : -2), 21); run(6, false); const hp1 = BK.P.hp; let told = false, snapped = false;
       for (let i = 0; i < 60 * 6 && e3.mode !== 'dizzy'; i++) { if (e3.mode === 'pirouetteTell') { told = true; if (!jump && !snapped) { snap('08-pirouette-tell-skid'); snapped = true; } }
         if (jump && e3.mode === 'pirouette' && BK.P.ground && Math.abs(e3.x - BK.P.x) < 60) BK.press('jump'); if (!jump && e3.mode === 'pirouette' && !jump && !F3._s) { F3._s = 1; snap('09-pirouette-spin'); } BK.step(1); }

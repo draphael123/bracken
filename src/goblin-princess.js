@@ -516,11 +516,12 @@ export function makeGoblinPrincessHands(ctx) {
   function drawGate(g, G, cx, cy, time) {
     if (!G) return; const x = R(G.x - cx), top = R(G.top - cy), bot = R(G.bot - cy), px = R(G.pinX - cx), fy = R(fl() - cy), live = G.lit > 0, pulse = 0.55 + 0.45 * Math.sin(time * 12);
     if (x < -30 || x > 350) return;
-    g.fillStyle = '#3a3a48'; g.fillRect(x - 9, top - 3, 3, bot - top + 3); g.fillRect(x + 6, top - 3, 3, bot - top + 3); g.fillRect(x - 9, top - 4, 18, 3);
+    g.fillStyle = '#0c0c14'; g.fillRect(x - 6, top - 1, 12, bot - top + 1);   /* the doorway: a dark mouth in the wall, so an open (raised) gate still reads */
+    g.fillStyle = '#7a7a92'; g.fillRect(x - 9, top - 3, 3, bot - top + 3); g.fillRect(x + 6, top - 3, 3, bot - top + 3); g.fillRect(x - 9, top - 4, 18, 3); g.fillStyle = '#a8a8c0'; g.fillRect(x - 9, top - 4, 18, 1);
     const drop = G.open ? 9 : bot - top;   /* raised: only the tips show under the lintel */
-    g.fillStyle = G.lock ? '#7a3a3a' : '#8a8aa0'; for (let xx = x - 6; xx <= x + 4; xx += 3) g.fillRect(xx, top - 1, 1, drop); if (!G.open) { g.fillRect(x - 6, top + Math.floor(drop / 3), 11, 1); g.fillRect(x - 6, top + Math.floor(drop * 2 / 3), 11, 1); }
+    g.fillStyle = G.lock ? '#b04a4a' : '#b4b4cc'; for (let xx = x - 6; xx <= x + 4; xx += 3) g.fillRect(xx, top - 1, 1, drop); if (!G.open) { g.fillRect(x - 6, top + Math.floor(drop / 3), 11, 1); g.fillRect(x - 6, top + Math.floor(drop * 2 / 3), 11, 1); }
     if (G.lock) { g.fillStyle = '#ff6b6b'; g.fillRect(x - 7, top - 2, 2, 2); g.fillRect(x + 5, top - 2, 2, 2); }
-    g.fillStyle = '#4a3a28'; g.fillRect(x - 3, top - 12, 7, 7); g.fillStyle = live ? G.col : '#5a4a30'; g.fillRect(x - 2, top - 11, 5, 5); if (live) { g.save(); g.globalAlpha = 0.25 * pulse; g.fillStyle = G.col; g.fillRect(x - 7, top - 16, 15, 15); g.restore(); }
+    g.fillStyle = '#2a2018'; g.fillRect(x - 4, top - 14, 9, 9); g.fillStyle = live ? G.col : '#7a6a48'; g.fillRect(x - 3, top - 13, 7, 7); g.fillStyle = G.col; g.fillRect(x - 3, top - 6, 7, 1); if (live) { g.save(); g.globalAlpha = 0.25 * pulse; g.fillStyle = G.col; g.fillRect(x - 7, top - 16, 15, 15); g.restore(); }
     g.fillStyle = '#6a6a7a'; for (let yy = R(G.box.t - cy); yy < fy; yy += 4) g.fillRect(px, yy, 1, 2);
     g.fillStyle = G.open && !G.lock ? (live ? G.col : '#a0a0b0') : '#555560'; g.fillRect(px - 2, R(G.pinY - cy) - 3, 5, 7); if (live && G.open) { g.save(); g.globalAlpha = 0.4 * pulse; g.fillStyle = G.col; g.fillRect(px - 5, R(G.pinY - cy) - 6, 11, 13); g.restore(); }
   }
