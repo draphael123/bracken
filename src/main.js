@@ -6669,8 +6669,8 @@ function drawBestiary() {
   const subL = wrap(seen ? b.sub : 'not yet met', pw - 68, 6);
   subL.forEach((ln, i) => text(ln, px + 62, py + 20 + i * BODY_LH, '#b8c0b8', 'left', 6));
   if (seen) { text('slain ' + (r.slain || 0), px + 62, py + 21 + subL.length * BODY_LH, '#c9d1dc', 'left', 6);
-    let lines = wrap(b.desc, pw - 12), sz = 8, lh = 9;
-    if (lines.length > 8) { lines = wrap(b.desc, pw - 12, 6); sz = 6; lh = BODY_LH; }
+    const bdesc = DMX.codex(b.t, b.desc); let lines = wrap(bdesc, pw - 12), sz = 8, lh = 9;
+    if (lines.length > 8) { lines = wrap(bdesc, pw - 12, 6); sz = 6; lh = BODY_LH; }
     const top2 = py + 46, per = Math.max(4, Math.floor((ph - (top2 - py) - 13) / lh));   /* (the bottom row is the page tag's) */
     bestPages = Math.max(1, Math.ceil(lines.length / per));
     if (bestPage >= bestPages) bestPage = 0;
@@ -8829,7 +8829,7 @@ const meleeBlow0 = plunge => plunge || P.plunge ? 'plunge' : P.heavy ? 'heavy' :
 /* (claude/keyscore, B14) A CUT OUT OF A PARRY says so: the swing a perfect guard or a parry opened (P.swingRiposte) is [verb, 'riposte'] - the verb first, so every
    reader that takes one verb (src/elite-kit.js kindOf, the family table) reads it as before, and a boss keyed to the parry (src/boss-read.js KEYS.riposte) can tell */
 const meleeBlow = plunge => { const v = meleeBlow0(plunge); return v !== 'plunge' && P.swingRiposte && P.atk >= 0 ? [v, 'riposte'] : v; };
-const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[FAMILY_OF[e.t]] || null;   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
+const familyOf = e => (e.xpRole || e.mini || e.elite || e.big || e.trainer || e.turncoat || e === boss) ? null : FAMILY[DMX.famNameOf(FAMILY_OF, e.t)] || null;   /* (claude/dmfoes: under DM.on the desert kinds join a family: DMX.FAMILY_ADD) */   /* (not maxHp: Waymeet's sworn swords and hedge knights carry one, and are the common roster all the same) */
 const foeOpen0 = e => (e.disarmOpenT || 0) > time || e.broken > 0 || e.open > 0 || e.parried > 0 || (e.stagger || 0) >= 0.5 || e.knock > 0 || e.frozen > 0 || (e.launchedT || 0) > time;
 /* OPEN BEFORE THE BLOW, not because of it: the swing pass works out a cut's damage (swingDmg, which staggers on a third cut) before
    the cut lands, so it looks first (openBefore) and the blow is judged on what it found */
@@ -8863,7 +8863,7 @@ function addPoise(e, dmg, fromX, plunge, verb = null) {
     if (n && isBz() && BZK && !P.jetHit && P.heavy && P.atk >= 0) { n += BZ_K.poise.heavy * (e.maxHp || e.mini ? BZ_K.poise.bossMul : 1) * (P.bzAxe ? BZ_K.poise.one : 1) * (BZ_K.tiers.poise[P.bzTier || 1] || 1); if (BZK.raging()) n *= BZ_K.poise.rage; }   /* (berserkerport: THE CROSS-CHOP still leans HARD where the bar takes heavies only - he is the poise-breaker, Daniel's kept call; a tap still adds nothing) */
     if (fbv) n += FBR.lightAdd(fbv, verb, lightTier);   /* (claude/foepass) a VARIED light blow leans on a goblin's light bar: mix your blows and it breaks without a heavy */
     if (!n) return; }
-  if (fbv) n *= fbv.k;   /* (claude/foepass) varied x FB.varied, stale x FB.stale[n] */
+  if (fbv) n *= fbv.k; if (e.dmLeanAt === time) n *= DMX.DM.foe.beastPoiseLean;   /* (claude/dmfoes) */   /* (claude/foepass) varied x FB.varied, stale x FB.stale[n] */
   if (thr('m', 0) && !P.jetHit && ((P.heavySwing && P.atk >= 0) || blowHas(e.blowNow, 'heavy'))) n *= 1.25;   /* MIGHT 10: HEAVY HAND - weight only, so a tap on a boss still fills nothing */
   if (!P.jetHit) n *= RP.chainMul(P);   /* (claude/riposte) THE MIX-UP CHAIN: its pips wear the bar faster by the same factor */
   if (P.hammerHit && hammerGuarded(e)) n = Math.max(n, m);   /* (claude/plunges) a GUARDED common foe's guard is broken by the slam: its bar goes at once */
@@ -9465,18 +9465,19 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (e.sacHits >= FROGK.bellow.hits) frogBurst(e); else number(e.x + (e.face || 1) * 16, e.y - e.h - 4, 'THE SAC ' + e.sacHits, '#ffe68a'); }
   /* THE FAMILY TABLE (above POISE_HEAVY): the right tool bites, the wrong one glances. After every boss's own gate, and never on one */
   let glance = false, wheel = false; e.blowNow = blow;   /* (what addPoise reads for the small tier's bar) */
-  { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
-    if (fam) { const keyed = fam.key.some(v => blowHas(blow, v));
-      if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time;
+  { const fam = blow && dmg > 0 && !e.slamming && e.alive && !ONE_HIT.has(e.t) ? familyOf(e) : null, famName = fam ? DMX.famNameOf(FAMILY_OF, e.t) : null;   /* (a thing one blow of anything brings down is not asked which blow) */
+    if (fam) { const keyed = (DMX.dmOn() ? DMX.familyKey(famName, fam.key) : fam.key).some(v => blowHas(blow, v));
+      if (keyed) { dmg = Math.round(dmg * VERB_KEY_MUL); e.keyHit = time; { const bp = DMX.beastPlunge(famName, blow); if (bp) { e.stagger = Math.max(e.stagger || 0, bp.stagger); e.dmLeanAt = time; } }   /* (claude/dmfoes) a plunge on a beast: STAGGER 0.6 s, poise lean x1.5, never a launch */
         /* OFF BALANCE: the family's head-on answer (a guard met by a dash) does not just bite, it throws the guard wide - open, as a
            trip or a break is, for OFF_BALANCE seconds. Judged on what the blow found, so it never re-opens what is already open */
         if (famHas(fam.unbalance, blow) && !foeOpen(e)) { e.broken = Math.max(e.broken || 0, OFF_BALANCE); e.offBalAt = time; e.vx = 0; e.guardT = 0; number(e.x, e.y - (e.h || 16) - 20, 'OFF BALANCE', '#ffd36b'); breakBeat(e); lessonHint('dashatk'); } }
-      else if (famHas(fam.glance, blow) && !foeOpen(e)) { glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); }
+      else if (((famHas(fam.glance, blow) && !DMX.helmGone(e)) || DMX.highGuardGlances(e, blow, !!e.face && Math.sign(fromX - e.x) === e.face, time)) && !foeOpen(e)) {   /* (claude/dmfoes) a cracked helm takes light cuts full; a raised high guard glances the rise */ glance = true; e.glancedAt = time; dmg = Math.max(1, Math.round(dmg * GLANCE_TAKE)); glanceBeat(e, fromX); }
       /* THE WHEEL. A guard cut from behind used to be a guard that never turned: every cut staggered it, and a staggered shield
          does not come round, so walking behind one was a free kill and the heavy blow was never needed. Now a plain cut from behind
          LANDS - and it wheels on you, guard up, and shoulders you off. Going round buys one cut; going through (a heavy blow, or a
          sweep under it, until its bar breaks) buys all of them. */
       if (fam === FAMILY.guard && !keyed && !e.disarmed && blowHas(blow, 'light') && e.t !== 'heavy' && e.face && Math.sign(fromX - e.x) === -e.face && !foeOpen(e) && !windingUp(e)) wheel = true; } }   /* (never mid-windup: turning a blow already coming would aim it at you) */
+  if (DMX.dmOn() && blow && dmg > 0 && e.alive && !glance) dmg = Math.round(dmg * dmFoeBlow(e, blow, famName));   /* (claude/dmfoes) HELM CRACK, LEAP-SWAT, GROUNDED, GUARD BROKEN */
   /* (claude/riposteart) MIXED UP is FOLDED INTO THE MIX-UP CHAIN (src/riposte.js MIX.word): the old parallel bonus - three verbs in 4 s, the next blow x1.5 and a break - is gone; the chain's third pip says the word */
   /* HERO COMBOS: each hero's own two moves, used in the right order, land harder than either alone */
   dmg = RP.payoff(e, dmg, blow);   /* (claude/riposte) THE RIPOSTE: x2 into a parried foe or elite (the knight's OPENED UP folded in - his cut is heavy on top), x1.5 into a boss's riposte opening */
@@ -10795,9 +10796,24 @@ function lessonHint(kind) {
   hintSay('mechanic', 5, hintMsg); return true;
 }
 // A GUARD TURNED IT. Say what gets through - the first few times, and only while it is true.
+/* ==== (claude/dmfoes) DIRMOVES FOES: the hooks DMX (src/dirmoves.js) asks main.js for, all behind DM.on ==== */
+function dmHint(kind) { const m = DMX.hintTake(PROG, kind); if (!m) return; saveProgress(); hintSay('mechanic', 4.5, m); }
+function dmHighSay(e) { SFX.clank(); sparks(e.x, e.y - (e.h || 14), e.face || 1, 4); number(e.x, e.y - (e.h || 14) - 14, 'GUARD HIGH', '#c9d1dc'); if (Math.abs(P.x - e.x) < 160) dmHint('highguard'); }
+function dmFoeFrame(dt) { const hs = players || [P]; for (const e of enemies) { if (!e.alive || !DMX.guardsHighKind(e)) continue; if (DMX.highGuardTick(e, hs, time, dt, windingUp(e)) === 'lift') dmHighSay(e); } }
+function dmHighTurn(e, stomp) { P.vy = stomp && keys.jump ? -260 : -220; P.plunge = false; P.ground = false; P.canCut = false; P.hitSet.clear(); SFX.clank(); sparks(P.x, P.y + 4, P.face, 6); number(e.x, e.y - (e.h || 14) - 14, 'GUARD HIGH', '#c9d1dc'); squash(0.85, 1.2, 0.1); dmHint('highguard'); }
+/* the blow-side rules: HELM CRACK (a real plunge on a helmed foe), LEAP-SWAT (a rise on a leaper), GROUNDED (a charged rise on a flier), GUARD BROKEN (a charged sweep on a high guard).
+   Returns a damage multiplier (1: floor / break states set e.broken, and the broken x1.5 that follows IS the swat's x1.5 - DM.foe.leapSwatMul) */
+function dmFoeBlow(e, blow, famName) {
+  const F = DMX.DM.foe;
+  if (DMX.helmCrack(e, blow, !!P.plunge)) { SFX.clank(); sparks(e.x, e.y - (e.h || 14), P.face, 8); number(e.x, e.y - (e.h || 14) - 14, 'HELM CRACKED', '#ffd36b'); parts.push({ x: e.x, y: e.y - (e.h || 14), vx: -P.face * 70, vy: -140, life: 0.7, max: 0.7, col: '#9aa4b0', size: 2, grav: 520 }); dmHint('helm'); }
+  if (DMX.swatHit(e, blow, time)) { e.broken = Math.max(e.broken || 0, F.leapSwatFloor); e.stagger = Math.max(e.stagger || 0, F.leapSwatFloor); e.vx = 0; e.vy = Math.max(e.vy || 0, 220); e.hit = true; e.hitP = true; e.leapHit = true; hitstop(0.05); number(e.x, e.y - (e.h || 14) - 14, 'SWATTED', '#ffd36b'); dmHint('swat'); }
+  if (DMX.wingGrounded(famName, blow)) { e.broken = Math.max(e.broken || 0, F.wingGroundT); e.stagger = Math.max(e.stagger || 0, F.wingGroundT); e.knock = 0; e.vy = Math.max(e.vy || 0, 200); number(e.x, e.y - (e.h || 14) - 14, 'GROUNDED', '#ffd36b'); dmHint('grounded'); }
+  const gb = DMX.highGuardBreak(e, blow, time); if (gb) { e.dmHighUntil = 0; e.broken = Math.max(e.broken || 0, gb); e.stagger = Math.max(e.stagger || 0, gb); number(e.x, e.y - (e.h || 14) - 14, 'GUARD BROKEN', '#ffd36b'); }
+  return 1;
+}
 function guardTurned(e) {
   if (dashStriking()) endDashStrike(true);   /* a guard the table does not let a dash through stops it dead */
-  if (e) glanceSay(e);   /* a guard turning a light cut is a wrong-verb hit too: the same sound and word as a glance */
+  if (e) glanceSay(e); if (e && DMX.noteTurn(e, time, windingUp(e))) dmHighSay(e);   /* (claude/dmfoes) two front blows turned in 2 s: the shield goes high */   /* a guard turning a light cut is a wrong-verb hit too: the same sound and word as a glance */
   if (lessonHint('heavyblow') || lessonHint('sweep') || lessonHint('dashatk')) return;   /* in one of the wood's lesson stretches the moment has its own line, said once */
   if ((PROG.guardSeen || 0) < 3) { PROG.guardSeen = (PROG.guardSeen || 0) + 1; hintSay('mechanic', 4.5, hero() === 'knight' ? 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING, LET GO: CUT THROUGH IT. DOWN+SWING: UNDER.' : 'A GUARD TURNS A LIGHT BLOW. HOLD THE SWING TO GO THROUGH, OR DOWN+SWING TO GO UNDER.'); return; }   /* its own call: the line under it used to overwrite it at once */
   if ((PROG.guardHeavy || 0) >= 4) return;
@@ -11961,6 +11977,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
         let hdGuard = false; if (isPaladin()) { if (e.t === 'oathblade' && (e.raHigh || 0) >= 1 && !(e.broken > 0)) { e.raHigh = 0; hdGuard = true; } }   /* (claude/plunges) HAMMER OF DAWN comes down THROUGH a raised guard: it is broken, not bounced off */
         else if (OK.plunge(e, P)) { P.hitSet.clear(); sparks(P.x, P.y + 4, P.face, 6); continue; }   /* (claude/order, rule a) THE DUELIST GUARDS HIGH: his shield over his helm turns a plunge - clank, bounced, no damage either way (src/foe-react.js guardsHigh) */
+        if (DMX.highGuardTurns(e, time)) { dmHighTurn(e, false); continue; }   /* (claude/dmfoes) HIGH GUARD: the plunge is turned, no damage */
         const spikedFoe = AP.thornSpiked(e) || (e.elite && e.affix === 'THORNED' && AP.thornedBristle(e, time, EK.K) > 0);
         if (spikedFoe) {   /* (PALADIN 4: DAWNFALL drops HAMMER OF DAWN's safe landing - the spines bite the paladin as they bite anyone) */   /* (claude/knockinto, rule e) SPIKED only while the spines are UP - drawn and told: the Spike Goblin's back bristles as you come over him (AP.thornTick), a THORNED elite's rise with a mash; down, it is plunged like anyone */
       if (e.mode === 'charge' && Math.random() < dt * 9) SFX.clatter();
@@ -12054,6 +12071,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (e.elite) { P.vy = -210; P.vx = (Math.sign(P.x - e.x) || P.face) * 150; P.plunge = false; SFX.clank(); dust(P.x, P.y, 4); continue; }   /* (ELITES2) AN ELITE IS NOT A STEP: he shrugs you off his shoulders - a PLUNGE (down + swing in the air) is the blow that comes over his guard */
       if (e.t === 'mother' || e.t === 'gill' || e.t === 'heart' || e.t === 'folk') { continue; }
       if (e.t === 'master' && e.mounted && (e.stagger > 0 || e.open > 0)) { hurtEnemy(e, 20, P.x, true); e.stagger = Math.max(e.stagger, 0.7); number(e.x, e.y - 24, 'STUNNED', '#8fd160'); SFX.gobHurtLow(); SFX.thud(); P.vy = -260; P.plunge = false; P.ground = false; P.canCut = false; burst(e.x, e.y - 8, 12, COLS.master, 80, 0.6); continue; }
+      if (DMX.highGuardTurns(e, time)) { dmHighTurn(e, true); continue; }   /* (claude/dmfoes) HIGH GUARD: a stomp is turned too */
       if (e.t === 'crab' && e.mode !== 'flipped') { e.mode = 'flipped'; e.modeT = 3; e.vy = -140; SFX.clank(); number(e.x, e.y - 18, 'OVER IT GOES', '#8fd160'); P.vy = keys.jump ? -260 : -190; P.canCut = false; P.ground = false; continue; }
       if (e.t === 'shield' || e.t === 'soldier' || e.t === 'heavy' || e.t === 'turtle' || e.t === 'tideguard' || e.t === 'herald' || e.t === 'sailor' || e.t === 'reefmaw' || e.t === 'bosun' || e.t === 'boarder' || e.t === 'champion' || e.t === 'admiral' || e.t === 'queen' || e.t === 'brute' || e.t === 'chief' || e.t === 'king' || e.t === 'merrowbrute' || (e.t === 'master' && e.mounted) || (e.t === 'ram' && !ramOpen(e))) { P.vy = keys.jump ? -260 : -190; SFX.clank(); sparks(e.x, e.y - e.h, P.face, 6); e.stagger = Math.max(e.stagger, 0.3); number(e.x, e.y - e.h - 6, 'HELM', '#c9d1dc'); squash(0.85, 1.2, 0.1); continue; }
       if (e.t === 'queen') { e.headHits = (e.headHits || 0) + 1; e.headT = 4; if (e.headHits >= 3 && e.mode !== 'winded' && e.mode !== 'stuck') { e.headHits = 0; e.mode = 'buck'; e.modeT = 0.3; e.vx = (Math.sign(e.x - P.x) || 1) * 320; e.vy = -60; P.vx = -e.vx * 0.7; P.vy = -170; P.hurt = 0.3; P.ground = false; number(e.x, e.y - 20, 'BUCKS', '#ff6b6b'); SFX.roar(); shakeCam(4); continue; } }
@@ -29241,7 +29259,7 @@ const FIN_API = { hero: () => hero(), number: (x, y, t, c) => number(x, y, t, c)
   kill: e => { if (!e.alive) return; e.hp = 0; hurtEnemy(e, 0, P.x, false); if (e.alive) { e.alive = false; kills++; } } };
 /* THE POGO'S WORLD (src/pogo-chain.js): the rebound is POGO's, and the chain is the one the landing resets */
 POGO_CHAIN.plunge = POGO;
-const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => number(x, y, t, c), squash: (a, b, c) => squash(a, b, c), bump: () => ++pogoChain, after: (kind, head) => { if (kind === 'plunge' && head && DMX.refreshAirDash(P, true)) number(P.x, P.y - 34, 'AIR DASH BACK', '#bfe6f5'); }, spare: e => { for (const b of embers) if (b.plunge) b.hit.add(e); } };
+const POGO_API = { get P() { return P; }, keys, SFX, number: (x, y, t, c) => number(x, y, t, c), squash: (a, b, c) => squash(a, b, c), bump: () => ++pogoChain, after: (kind, head) => { if (kind === 'plunge' && head && DMX.refreshAirDash(P, true)) number(P.x, P.y - 34, 'AIR DASH BACK', '#bfe6f5'), dmHint('airdash'); }, spare: e => { for (const b of embers) if (b.plunge) b.hit.add(e); } };
 installTempo(TK, TOKENS);   /* TIGHTER, STILL TOLD (claude/combat3, src/foe-tempo.js): first on the grant, so a held wind-up adds its beat to the tightened tell */
 const TAC_HOOK = installTactics(TK, TOKENS, { turned: () => SFX.shieldScrape() });
 const RX = installReact(TK, TOKENS, { levelId: () => curId(), depth: id => LEVEL_DEPTH[id], claim: tokenClaim, windingUp: e => windingUp(e), walker: e => tkApi.walker(e), safeStep: (x, y) => tkApi.safeStep(x, y), move: (e, dx) => moveBody(e, dx, 0, false), fall: (e, dy) => moveBody(e, 0, dy, false),
@@ -29261,7 +29279,7 @@ const GLU_API = { act: () => RX.act().act, safeStep: (x, y) => tkApi.safeStep(x,
 function updateEnemies(dt) {
   const DT_FRAME = dt, bpAct = bpActOf(curId(), ((bpDepths || (bpDepths = depthsOf(LEVELS)))[curId()]) || 1).act;   /* (claude/flasklever) a boss's gaps run the act's pressure dial; dt is put back for every other creature */
   OK.world(dt);   /* (claude/order) the knights' bolts in flight, mud, rust and the felled pine on the floor, the snare's hold, the dark that re-plates the ore (src/order-knights.js world) */
-  updatePack(dt); eliteWatch(); tkApi.dt = dt; RX.frame(players || [P], enemies, dt);   /* (src/foe-react.js: the act, the ring's sides, a whiff punished, a squad's pincer) */
+  updatePack(dt); eliteWatch(); tkApi.dt = dt; RX.frame(players || [P], enemies, dt); if (DMX.dmOn()) dmFoeFrame(dt);   /* (src/foe-react.js: the act, the ring's sides, a whiff punished, a squad's pincer) */
   GLU.frame({ heroes: players || [P], enemies, seeds, dt, time, api: GLU_API });   /* (claude/lategameb) PACK GLUE: who starts a plate-step / a brace / a recall line / a pin shot this frame (src/foe-glue.js) */
   if (WMH) WMH.tick(dt, time);   /* (claude/fairfix6) THE WICKER MAN's fire in flight and the swing clock it is struck back by: once a frame, whoever threw it */
   if (L.witch) updateHedgeRoots(dt);   /* THE HEDGE WARDEN's roots and THE ROOTED GARDEN's */
@@ -35256,7 +35274,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.alive && (e.poise > 0 || e.broken > 0 || e.dmgPct >= 1) && !(e === boss || e.xpRole === 'mini' || (e.elite && Math.abs(P.x - e.x) < EL.near && Math.abs(P.y - e.y) < 110))) drawPoise(e, cx, cy);   /* the stagger bar over its head (claude/riposte: a boss's, a mini's and a near elite's is under their health instead) */
     if (e.alive && (e === boss || e.xpRole === 'mini')) RP.drawRead(g, e, cx, cy);   /* (claude/riposte) THE SHARED B10 READ for a riposte opening, a poise break, and the B3 ward after */
     if (e.alive && (e === boss || e.xpRole === 'mini') && BR.keyOf(e)) BR.drawKey(g, e, cx, cy, time);   /* B14 (claude/keyscore): HIS KEY, SHOWN - the per-key glyph over a keyed boss or mini (src/boss-read.js KEY_ROWS; none yet: the per-act key lanes add them) */
-    if (e.alive && e.glS && e.x > cx - 40 && e.x < cx + VW + 40) GLU.draw(g, e, cx, cy, time);   /* (claude/lategameb) the planted plate / braced shield, drawn (src/foe-glue.js) */
+    if (e.alive && e.glS && e.x > cx - 40 && e.x < cx + VW + 40) GLU.draw(g, e, cx, cy, time); if (e.alive && e.dmHighUntil > time && DMX.dmOn()) DMX.drawHigh(g, e, cx, cy, time);   /* (claude/lategameb) the planted plate / braced shield, drawn (src/foe-glue.js) */
     if (e.alive && (e.rxGuard > 0 || e.rxVary || e.rxFlash > 0 || e.rxStamp > 0) && e.x > cx - 40 && e.x < cx + VW + 40) RX.draw(g, e, cx, cy, time);   /* told: a raised guard, a held or quick swing, a feint's stamp (src/foe-react.js) */
     if (e.t === 'kraken') { drawKraken(e, cx, cy); continue; }   /* most of it is off the screen and in the sea: it draws itself, dead or alive */
     if (e.t === 'krakenarm') continue;

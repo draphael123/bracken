@@ -84,3 +84,139 @@ export const duckTwistSuspended = s => dmOn() && ((s.charge || 0) > 0 || (s.atkH
 export const upGrabIgnored = s => dmOn() && ((s.charge || 0) > 0 || (s.atkHeld || 0) >= DM.clash.heldAtk);
 /* drop-through stays DOWN+JUMP: a held DOWN while winding never drops the hero through a one-way floor */
 export const dropThroughAllowed = s => !dmOn() || (!!s.jump && !!s.down);
+
+/* ==== FOES (lane DMFOES, plan section 8 items 1-5): HIGH GUARD, HELM CRACK, LEAP-SWAT, the family edits, the codex lines, the first-meet hints ====
+   Everything below is a no-op while DM.on is false. State lives on the foe (e.dm*), never on e.mode (no new tell-table rows). */
+import { heroAbove } from './foe-react.js';
+const blowHas = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
+
+/* the guard family (shield, soldier, heavy, watch, pike, turtle, tideguard, merrowbrute; NOT the crab: its job is the plunge, item 5) and the shield uniques
+   (they are skins of 'shield': e.cnSkin, or their own type) */
+export const HIGH_GUARD = new Set(['shield', 'soldier', 'heavy', 'watch', 'pike', 'turtle', 'tideguard', 'merrowbrute', 'glasssentinel', 'kingsshield', 'myconidguard', 'herbwarden', 'shieldguard']);
+/* the helmed (a plunge cracks it): the plate family that wears a helm, plus the helmed goblin (shield) and the king's household shield */
+export const HELM = new Set(['shield', 'bellguard', 'sentry', 'armour', 'swornsword', 'hedgeknight', 'boarder', 'bosun', 'kingsshield']);
+export const guardsHighKind = e => !!e && (HIGH_GUARD.has(e.t) || HIGH_GUARD.has(e.cnSkin));
+export const helmedKind = e => !!e && (HELM.has(e.t) || HELM.has(e.cnSkin));
+const bossLike = e => !!(e.maxHp || e.mini || e.elite || e.xpRole || e.big || e.trainer || e.turncoat);   /* (the family table's own exclusions: those have gates of their own) */
+
+/* ---- HIGH GUARD (item 2) ---- */
+DM.foe.highGuardAbove = 0.35;   /* s a hero must hang above within highGuardNear before the shield goes up (told) */
+DM.foe.highGuardNear = 48;      /* px = 3 tiles each side */
+DM.foe.highGuardCd = 0.6;       /* s between one high guard and the next */
+DM.foe.highGuardTurns = 2;      /* front blows turned ... */
+DM.foe.highGuardTurnWin = 2;    /* ... inside this many s raise it too */
+const raiseHigh = (e, now) => { e.dmHighUntil = now + DM.foe.highGuardUp; e.dmHighCd = now + DM.foe.highGuardUp + DM.foe.highGuardCd; e.dmAbove = 0; e.dmTurns = null; };
+export const highGuardUp = (e, now) => dmOn() && (e.dmHighUntil || 0) > now && !(e.broken > 0);
+/* once a frame per foe: heroes = the party. busy = the foe is mid-windup / mid-attack (it cannot raise its shield). Returns 'lift' on the frame it goes up. */
+export function highGuardTick(e, heroes, now, dt, busy = false) {
+  if (!dmOn() || !e.alive || !guardsHighKind(e) || bossLike(e)) return null;
+  if (e.broken > 0 || e.stagger > 0.3 || e.disarmed || busy) { e.dmAbove = 0; return null; }
+  if ((e.dmHighUntil || 0) > now || now < (e.dmHighCd || 0)) return null;
+  let above = false; for (const h of heroes || []) if (h && heroAbove(e, h, { dx: DM.foe.highGuardNear, dy: 130 })) { above = true; break; }
+  e.dmAbove = above ? (e.dmAbove || 0) + dt : 0;
+  if (e.dmAbove >= DM.foe.highGuardAbove) { raiseHigh(e, now); return 'lift'; }
+  return null;
+}
+/* a FRONT blow was turned (guardTurned): two inside the window raise the shield too. true = it went up on this turn */
+export function noteTurn(e, now, busy = false) {
+  if (!dmOn() || !guardsHighKind(e) || bossLike(e) || busy || e.broken > 0 || (e.dmHighUntil || 0) > now || now < (e.dmHighCd || 0)) return false;
+  const t = (e.dmTurns || []).filter(x => now - x <= DM.foe.highGuardTurnWin); t.push(now); e.dmTurns = t;
+  if (t.length >= DM.foe.highGuardTurns) { raiseHigh(e, now); return true; }
+  return false;
+}
+/* a PLUNGE or a STOMP landing on him: turned (clank, the hero pogoes off, NO damage). */
+export const highGuardTurns = (e, now) => highGuardUp(e, now) && guardsHighKind(e);
+/* what the raised shield does to the other verbs: a rising cut (and a plain cut) from the front glances off; the SWEEP from the front goes under it (the family key) */
+export const highGuardGlances = (e, blow, fromFront, now) => highGuardUp(e, now) && !!fromFront && !blowHas(blow, 'sweep') && !blowHas(blow, 'heavy') && (blowHas(blow, 'rise') || blowHas(blow, 'light'));
+/* a charged sweep (DMCHARGE tags it ['sweep','heavy']) on a raised guard BREAKS it (guardBreak s); a plain sweep trips as today */
+export const highGuardBreak = (e, blow, now) => highGuardUp(e, now) && blowHas(blow, 'sweep') && blowHas(blow, 'heavy') ? DM.charge.guardBreak : 0;
+/* a little steel plate over the head while it is up (v1 placeholder for the shield-lift pose; the art lane draws the real one) */
+export function drawHigh(g, e, cx, cy, now) {
+  if (!(e.dmHighUntil > now)) return;
+  const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 14) - 4 - cy), k = Math.min(1, (e.dmHighUntil - now) / 0.15);
+  g.fillStyle = '#2a3038'; g.fillRect(x - 8, y - 1, 16, 5); g.fillStyle = k < 1 ? '#8a94a0' : '#c9d1dc'; g.fillRect(x - 7, y - 2, 14, 3); g.fillStyle = '#eef4fa'; g.fillRect(x - 5, y - 2, 4, 1);
+}
+
+/* ---- HELM CRACK (item 3) ---- */
+/* a real PLUNGE (down+swing: realPlunge = the hero's P.plunge, NOT a stomp) cracks the helm of a helmed common foe. true on the cracking blow. */
+export function helmCrack(e, blow, realPlunge) {
+  if (!dmOn() || !realPlunge || !blowHas(blow, 'plunge') || !helmedKind(e) || bossLike(e) || e.dmHelmGone) return false;
+  e.dmHelmGone = true; return true;
+}
+/* a cracked helm: light cuts land full (the family glance no longer applies) */
+export const helmGone = e => dmOn() && !!e.dmHelmGone;
+
+/* ---- FAMILY EDITS (item 1) ---- */
+/* shell gains 'plunge' as a key; beast gains it too (plus the stagger below). Other keys unchanged. */
+export function familyKey(famName, key) {
+  if (!dmOn() || (famName !== 'shell' && famName !== 'beast')) return key;
+  const k = [].concat(key); return k.includes('plunge') ? k : k.concat('plunge');
+}
+/* beast + plunge: STAGGER 0.6 s and a lean x1.5 on the poise bar - never a launch. null = not this case. */
+export const beastPlunge = (famName, blow) => dmOn() && famName === 'beast' && blowHas(blow, 'plunge') ? { stagger: DM.foe.beastStagger, poiseMul: DM.foe.beastPoiseLean } : null;
+/* wing + a CHARGED rise (DMCHARGE tags it ['rise','heavy']) = GROUNDED: knocked down, not launched */
+export const wingGrounded = (famName, blow) => dmOn() && famName === 'wing' && blowHas(blow, 'rise') && blowHas(blow, 'heavy');
+DM.foe.wingGroundT = 1.2;
+
+/* ---- LEAP-SWAT (item 4) ----
+   the common foes that LEAP / POUNCE / DIVE / HOP / DROP, and how to tell it is in the air right now:
+   { air: true } = e.air (the ground goblin dogs and frogs), { modes } = e.mode is one of them. Wing-family foes are NOT here: a rise is already their KEY. */
+export const LEAP_SWAT = {
+  hound: { air: true }, hopper: { air: true },
+  spider: { modes: ['drop'] }, clinger: { modes: ['drop'] },
+  gar: { modes: ['lunge'] }, lurker: { modes: ['lunge'] },
+  puffer: { modes: ['dive'] }, urchin: { modes: ['dive'] }, netter: { modes: ['dive'] }, sailor: { modes: ['dive'] }, jelly: { modes: ['dive'] },
+  hedgeknight: { modes: ['leap'] }, swornsword: { modes: ['leap'] }, crossbow: { modes: ['leap'] }, runner: { modes: ['leap'] },
+};
+/* the four reasons a marks.js row the regex finds is NOT a swat target (tools/dirmoves-foes.mjs asserts every such row is a target or has one) */
+export const LEAP_EXEMPT = {
+  wing: 'wing family: a rise is already its key (x1.5)',
+  boss: 'a boss, mini or arena foe: its own gate',
+  tell: 'a windup, not the leap itself (the Tell row is the warning)',
+  module: 'moves in its own module (mummy, raptor, marionette...): no shared e.mode to read; listed in the lane report',
+};
+export const LEAP_RE = /leap|pounce|dive|hop|jump|drop/i;
+export function leapActive(e) {
+  const r = LEAP_SWAT[e.t]; if (!r || e.stagger > 0.3) return false;
+  return r.air ? !!e.air : r.modes.includes(e.mode);
+}
+/* a RISE hits a common foe in an active leap: SWATTED. Returns true the first time per leap (1 s). The caller applies x leapSwatMul, floors it, cancels its bite. */
+export function swatHit(e, blow, now) {
+  if (!dmOn() || !blowHas(blow, 'rise') || bossLike(e) || !leapActive(e) || now - (e.dmSwatAt ?? -9) < 1) return false;
+  e.dmSwatAt = now; return true;
+}
+
+/* ---- CODEX (the bestiary page): the lines that change with this lane. codex(t, desc) = the description as it reads under DM.on ---- */
+export const CODEX_ADD = {};
+const addLine = (t, s) => { CODEX_ADD[t] = (CODEX_ADD[t] || '') + s; };
+for (const t of HIGH_GUARD) addLine(t, ' He lifts his guard high when you hang over him: a plunge bounces off. Go low (down+swing) to trip him.');
+for (const t of HELM) addLine(t, ' A plunge cracks the helm; after that light cuts land full.');
+for (const t of Object.keys(LEAP_SWAT)) addLine(t, ' A rising cut swats it out of the leap.');
+for (const t of ['urchin', 'prise', 'holdfast', 'clinger', 'mimic']) addLine(t, ' A plunge is a key to the shell too.');
+for (const t of ['brute', 'troll', 'berserker', 'goat', 'hearthgob', 'scarecrow', 'farmhand', 'topiary', 'propman', 'miner', 'fledgling', 'thorn', 'temperer', 'scalder']) addLine(t, ' A plunge staggers it (it never launches).');
+export const CODEX_FIX = { shield: [['or plunge from above. Stomps clank off the helm.', '. Hang over him and he lifts his shield: go low. A plunge cracks the helm when the shield is down.']] };
+export function codex(t, desc) {
+  if (!dmOn()) return desc;
+  let d = desc; for (const [a, b] of CODEX_FIX[t] || []) d = d.replace(a, b);
+  return d + (CODEX_ADD[t] || '');
+}
+
+/* ---- FIRST-MEET HINTS (twice per save, plan section 10) ---- */
+export const HINTS = {
+  highguard: 'HE GUARDS HIGH: GO LOW. DOWN+SWING GOES UNDER THE SHIELD.',
+  helm: 'HELM CRACKED. LIGHT CUTS LAND FULL NOW.',
+  swat: 'SWATTED. A RISING CUT KNOCKS A LEAPER OUT OF THE AIR.',
+  grounded: 'GROUNDED. A CHARGED RISE DRAGS A FLIER DOWN.',
+  airdash: 'AIR DASH BACK. A BOUNCE OFF A HEAD GIVES YOUR DASH BACK.',
+};
+export const hintDue = (PROG, kind) => dmOn() && !!HINTS[kind] && ((PROG.dmHints = PROG.dmHints || {})[kind] || 0) < 2;
+export function hintTake(PROG, kind) { if (!hintDue(PROG, kind)) return null; PROG.dmHints[kind] = (PROG.dmHints[kind] || 0) + 1; return HINTS[kind]; }
+
+/* ---- THE DESERT KINDS THAT SIT IN NO FAMILY (coordinator add-on from DMLINT): classified only while DM.on, so the three jobs reach acts IV-V ---- */
+export const FAMILY_ADD = {
+  scorpion: 'small', skitter: 'small', stray: 'small',   /* low: DOWN (sweep) or come down on it */
+  vulture: 'wing', raptor: 'wing',                        /* in the air: UP (rise) or throw */
+  mummy: 'beast', sandworm: 'beast',                      /* weight: rock it; a plunge staggers it (PLUNGE) */
+  cutthroat: 'crew', ambusher: 'crew', slinger: 'shooter',
+};
+export const famNameOf = (famOf, t) => famOf[t] || (dmOn() ? FAMILY_ADD[t] : undefined);
