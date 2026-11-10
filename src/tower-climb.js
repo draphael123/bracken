@@ -48,7 +48,7 @@ export function makeTowerClimb(env) {
     const hd = O.hoard, tile = hoardTile(esc, Tw);
     for (const b of tc.boards) {
       if (b.state === 'ok') { const on = out.some(h0 => h0.p.ground !== false && Math.abs(h0.p.y - hd.row * TS) < 4 && h0.p.x >= b.x * TS - 2 && h0.p.x <= (b.x + hd.seg) * TS + 2);
-        if (on) { b.state = 'creak'; b.t0 = t; sfx('crumble'); ctx.number(b.x * TS + 8, hd.row * TS - 20, 'CREAK', '#c9a070'); } }
+        if (on) { b.state = 'creak'; b.t0 = t; sfx('crumble'); } }
       else if (b.state === 'creak' && t - b.t0 >= C.boardCreak) { b.state = 'gone'; b.until = t + C.boardBack; for (let i = 0; i < hd.seg; i++) setTile(b.x + i, hd.row, AIR); ctx.dust(b.x * TS + 8, hd.row * TS, 8); ctx.burst(b.x * TS + 8, hd.row * TS, 10, ['#5a3a1a', '#ff9a5c', '#2a1a12'], 90, 0.5); sfx('thud'); }
       else if (b.state === 'gone' && t >= b.until) { b.state = 'ok'; for (let i = 0; i < hd.seg; i++) setTile(b.x + i, hd.row, tile); }
     }
@@ -87,7 +87,7 @@ export function makeTowerClimb(env) {
   }
   function sendBack(B, how, e, t) {
     B.state = 'back'; ctx.ring(B.x, B.y, 14, '#c8f08a', 0.25); sfx('parry'); ctx.number(B.x, B.y - 14, 'SENT BACK', '#8fd160');
-    if (e) { e.flash = 0.25; ctx.number(e.x, e.y - 60, 'HER FLINCH', '#ffd36b'); }   /* she flinches: no damage - the verb rehearsed */
+    if (e) e.flash = 0.25;   /* she flinches: no damage - the verb rehearsed */
   }
   /* ---- HER, in view: the perches, the hop, the acts ---- */
   const perchOf = (Tw, k) => { const nS = Tw.FLOORS.length;
@@ -111,7 +111,7 @@ export function makeTowerClimb(env) {
       const act = tc.act;
       if (act) {
         e.mode = act.mode;
-        if (act.kind === 'brazier' && !act.done && t >= act.at) { act.done = true; const kk = Math.min(top + 1, nS - 1), f = esc.fl[kk]; if (f && !f.burning) { f.burning = true; ctx.number((Tw.SHAFT[0] + Tw.SHAFT[1]) / 2 * TS, F[kk] * TS - 30, 'SHE LIGHTS THE FLOOR', '#ff9a5c'); sfx('crack'); } }
+        if (act.kind === 'brazier' && !act.done && t >= act.at) { act.done = true; const kk = Math.min(top + 1, nS - 1), f = esc.fl[kk]; if (f && !f.burning) { f.burning = true; ctx.number((Tw.SHAFT[0] + Tw.SHAFT[1]) / 2 * TS, F[kk] * TS - 30, 'THE FLOOR CATCHES', '#ff9a5c'); sfx('crack'); } }
         if (t >= act.end) tc.act = null;
       } else {
         e.mode = qq.k <= top + 1 && qq.k >= 0 ? (qq.hopAt - t < 0.7 ? 'towerCrouch' : 'towerWatch') : 'towerWatch';
@@ -128,7 +128,7 @@ export function makeTowerClimb(env) {
     else if (ph === 'stride') { const k = Math.min(1, el / C.stride); e.mode = 'towerStride'; e.x = hop.fx + d * 26 * k; e.vx = d * 60; e.face = d; qq.x = e.x; hop.entry = { x: hop.fx + d * 30, y: qq.cur.y }; if (el >= C.stride) { hop.ph = 'open'; hop.t0 = t; e.vx = 0; } }
     else if (ph === 'open') { e.mode = 'towerOpen'; e.vx = 0; qq.entry = { x: hop.entry.x, y: hop.entry.y, until: t + 9, exit: hop.exit, open: Math.min(1, el / C.open) }; if (el >= C.open) { hop.ph = 'stepIn'; hop.t0 = t; } }
     else if (ph === 'stepIn') { e.mode = 'towerStepIn'; const k = Math.min(1, el / C.stepIn); e.x = hop.fx + d * (26 + 6 * k); if (el >= C.stepIn) { hop.ph = 'thread'; hop.t0 = t; e.hidden = true; ctx.burst(hop.entry.x, hop.entry.y - 16, 14, ['#b28cff', '#e8dcff', '#2a1a3a'], 80, 0.5); sfx('portalOpen'); } }
-    else if (ph === 'thread') { e.hidden = true; if (el >= C.thread) { hop.ph = 'stepOut'; hop.t0 = t; e.hidden = false; qq.k = hop.toK; qq.x = hop.exit.x; qq.cur = { x: hop.exit.x, y: hop.exit.y }; e.x = hop.exit.x; e.y = hop.exit.y; qq.flash = { x: hop.exit.x, y: hop.exit.y, until: t + 0.6 }; ctx.burst(hop.exit.x, hop.exit.y - 16, 14, ['#b28cff', '#e8dcff', '#2a1a3a'], 80, 0.5); sfx('portalOpen'); qq.entry = null; if (hop.deck) { qq.done = true; e.hidden = true; tc.hop = null; ctx.number(hop.exit.x, hop.exit.y - 44, 'SHE WAITS ON THE ROOF', '#b28cff'); } } }
+    else if (ph === 'thread') { e.hidden = true; if (el >= C.thread) { hop.ph = 'stepOut'; hop.t0 = t; e.hidden = false; qq.k = hop.toK; qq.x = hop.exit.x; qq.cur = { x: hop.exit.x, y: hop.exit.y }; e.x = hop.exit.x; e.y = hop.exit.y; qq.flash = { x: hop.exit.x, y: hop.exit.y, until: t + 0.6 }; ctx.burst(hop.exit.x, hop.exit.y - 16, 14, ['#b28cff', '#e8dcff', '#2a1a3a'], 80, 0.5); sfx('portalOpen'); qq.entry = null; if (hop.deck) { qq.done = true; e.hidden = true; tc.hop = null; } } }
     else if (ph === 'stepOut') { e.mode = 'towerStepOut'; e.x = qq.x; e.y = qq.cur.y; e.face = -1; if (el >= C.stepOut) { hop.ph = 'look'; hop.t0 = t; } }
     else if (ph === 'look') { e.mode = 'towerLook'; e.x = qq.x; e.y = qq.cur.y; e.face = face; if (el >= C.look) { tc.hop = null; qq.entry = null; qq.hopAt = t + C.hopEvery; tc.actT = rnd(1.0, 2.0); } }
     return true;
@@ -136,7 +136,7 @@ export function makeTowerClimb(env) {
   function startHop(esc, tc, Tw, qq, e, hs, t, face, deck) {
     const nS = Tw.FLOORS.length, toK = qq.k + 1, ex = deck ? { x: qq.x + 4, y: qq.cur.y - 6 * TS, out: true } : perchOf(Tw, Math.min(toK, nS + Tw.OUT.perches.length - 1));
     const d = ex.x >= qq.x ? 1 : -1;
-    tc.hop = { ph: 'taunt', t0: t, dir: d, fx: qq.x, exit: ex, toK, deck: !!deck }; ctx.number(qq.x, qq.cur.y - 44, 'HA!', '#b28cff');
+    tc.hop = { ph: 'taunt', t0: t, dir: d, fx: qq.x, exit: ex, toK, deck: !!deck };
   }
   function startAct(esc, tc, Tw, qq, e, top, t) {
     const nS = Tw.FLOORS.length, outside = top >= nS - 0 && qq.k >= nS; let kind;
@@ -145,8 +145,8 @@ export function makeTowerClimb(env) {
     if (kind === 'brazier') { tc.act = { kind, mode: 'towerAct', at: t + C.brazierTell, end: t + C.brazierTell + 0.4, done: false }; ctx.number(qq.x, qq.cur.y - 54, '!', '#ffd36b'); }
     else if (kind === 'call') { tc.act = { kind, mode: 'towerAct', at: t, end: t + C.actLen, done: true }; ctx.number(qq.x, qq.cur.y - 54, 'UP THERE!', '#ff9a5c'); sfx('stomp');
       for (const q2 of (ctx.enemies ? ctx.enemies() : [])) if (q2.alive && !q2.boss && Math.abs(q2.y - qq.cur.y) < 14 * TS) { q2.awake = true; q2.alert = 1; } }
-    else if (kind === 'boulder') { tc.act = { kind, mode: 'towerCast', at: t, end: t + C.actLen, done: true }; if (!tc.boulder) { tc.boulderT = 0.2; } ctx.number(qq.x, qq.cur.y - 54, 'LOOK OUT', '#b28cff'); }
-    else { tc.act = { kind, mode: 'towerCast', at: t, end: t + C.actLen, done: true }; tc.debrisT = Math.min(tc.debrisT, 0.2); ctx.number(qq.x, qq.cur.y - 54, 'DOWN!', '#ff9a5c'); }
+    else if (kind === 'boulder') { tc.act = { kind, mode: 'towerCast', at: t, end: t + C.actLen, done: true }; if (!tc.boulder) { tc.boulderT = 0.2; } }
+    else { tc.act = { kind, mode: 'towerCast', at: t, end: t + C.actLen, done: true }; tc.debrisT = Math.min(tc.debrisT, 0.2); }
   }
   /* ---- the picture (greybox): hanging fire, the red ceilings, the boards, debris shadows, the boulder, her portals' thread ---- */
   H.draw = (g, cx, cy, t, esc, E) => {

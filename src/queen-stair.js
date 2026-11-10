@@ -85,14 +85,14 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
     for (const [x0, x1, st] of [K.f1, K.f2, K.land, K.up1, K.up2]) block(x0, x1, st + 1, 19);          // two stone flights down to a landing, two short steps up out of it: all solid stone
     for (const x of K.niches) { ent('torch', x, 10); R.hcDeco.push({ k: 'armrack', x, y: 11 }); }       // racks of royal arms in stone niches (no timber)
     ent('hedgeknight', K.land[0] + 2, 11, { face: -1, cnSkin: 'gobknight' }); ent('shield', K.land[0] + 5, 11, { face: -1 }); ent('hedgeknight', K.land[1] - 1, 11, { face: -1, cnSkin: 'gobknight' });
-    ent('sign', K.x0, 8, { text: 'THE LANDING OF ROYAL ARMS. HER KNIGHTS: ONE MARK AROUND THE SIDE, ROLL IT OR TAKE IT ON THE BEAT.' });
+    ent('sign', K.x0, 8, { text: 'HER KNIGHTS: ONE MARK ROUND THE SIDE. ROLL IT OR TAKE THE BEAT.' });
     coins([K.land[0] + 1, 10], [K.land[0] + 4, 10], [K.land[1] - 3, 10]);
     air(C.x0, C.x1, 0, C.row); block(C.x0, C.x1, C.row + 1, 19);                                          // the open lead roof over the hall (stand row 8, sky above)
     block(C.stack[0], C.stack[1], C.stack[2], C.stack[3]);                                                // ONE chimney stack: three rows high, a jump (a hearth behind a grate)
     R.hcDeco.push({ k: 'chimney', x0: C.stack[0], x1: C.stack[1], y: C.stack[2] });
     ent('gobmage', C.hearth, C.top, { face: -1, cnSkin: 'firemage' });                                    // the fire mage on the stack: his fire hurts (told); the hearth under him is grated and only smokes
     ent('stiltwalker', C.x0 + 4, C.row, { face: -1, beat: 3 }); ent('stiltwalker', C.x1 - 5, C.row, { face: -1, beat: 3 });
-    ent('sign', C.x0, C.row, { text: 'THE ROOF LEADS. THE CHIMNEY IS A HEARTH BEHIND A GRATE: ITS FIRE STAYS IN. THE FIRE MAGE FIRE DOES NOT.' });
+    ent('sign', C.x0, C.row, { text: 'THE ROOF LEADS. THE GRATED HEARTH STAYS IN. THE MAGE FIRE DOES NOT.' });
     ent('torch', C.x0 + 2, C.row); ent('torch', C.x1 - 2, C.row); coins([C.x0 + 8, C.row], [C.x0 + 12, C.row - 1], [C.x1 - 2, C.row]);
     (R.gusts = R.gusts || []).push({ x0: C.x0 * TS, x1: (C.x1 + 1) * TS, y0: 0, y1: (C.row + 1) * TS, dir: -1, period: 5.0, on: 1.6, phase: 2, told: true });
     R.hcDeco.push({ k: 'corbel', x: K.land[0], y: 12 + 7 / 16, n: 2 });

@@ -63,8 +63,8 @@ function gq4Outside(R, TW, { T, TS, fill, air, block, plat, rungs, ent, coins })
   for (const [a, b, row] of O.corbels) R.hcDeco = (R.hcDeco || []).concat([{ k: 'corbel', x: a, y: row + 7 / 16, n: 2 }]);
   for (const [t, x, y] of O.foes) { if (t === 'gobknight') ent('hedgeknight', x, y, { face: -1, cnSkin: 'gobknight' }); else ent(t, x, y, { face: -1 }); }
   ent('torch', O.x0 + 2, 55); ent('torch', O.x1 - 1, 22);
-  ent('sign', O.x0 + 1, 55, { text: 'THE BREACH, AND THE WIND. CLIMB THE OUTSIDE OF THE TOWER: STONE FLIGHTS, CORBELS, A HOARDING THAT CRUMBLES.' });
-  ent('sign', O.x0 + 22, 46, { text: 'SHE DROPS BOULDERS FROM THE PARAPET. STRIKE ONE AND IT FLIES BACK UP.' });
+  ent('sign', O.x0 + 1, 55, { text: 'THE BREACH. CLIMB THE OUTSIDE: THE BOARDS CRUMBLE, THE WIND PUSHES.' });
+  ent('sign', O.x0 + 22, 46, { text: 'HER BOULDERS: STRIKE ONE AND IT FLIES BACK UP.' });
   coins([O.x0 + 8, 53], [O.x0 + 22, 45], [O.x0 + 14, 41], [O.x0 + 8, 36], [O.x0 + 16, 27]);
   (R.gusts = R.gusts || []).push({ x0: O.x0 * TS, x1: (O.x1 + 1) * TS, y0: O.top * TS, y1: O.floor * TS, dir: -1, period: 5.5, on: 1.6, phase: 0.5, told: true });
   (R.interiors = R.interiors || []);
@@ -73,7 +73,9 @@ export function towerLay(R, { T, TS }) {
   const D = TW.DECK, A = R.arenaRoof; if (!A) return R;
   // ---- grow the island east: 60 columns, wall to wall (the old deck was 48) ----
   const W0 = R.W, add = (D.x1 + 5) - W0, W2 = W0 + Math.max(0, add), H0 = R.H, H = G4 ? Math.max(H0, TW.FLOORS[0] + 5) : H0;   /* (gq4l) the tower body grows DOWN: seven storeys under the outside stretch */
-  if (add > 0 || H > H0) { const g2 = new Uint8Array(W2 * H).fill(T.SOLID); for (let y = 0; y < H0; y++) g2.set(R.grid.subarray(y * W0, y * W0 + W0), y * W2); R.grid = g2; R.W = W2; R.H = H; }
+  if (add > 0 || H > H0) { const g2 = new Uint8Array(W2 * H).fill(T.SOLID); for (let y = 0; y < H0; y++) g2.set(R.grid.subarray(y * W0, y * W0 + W0), y * W2);
+    for (let y = H0; y < H; y++) for (let x = 0; x < Math.min(W0, D.x0 - 2); x++) g2[y * W2 + x] = R.grid[(H0 - 1) * W0 + x];   /* (gq4l) the new rows under the old world keep its bottom row (a pit stays a pit to the void); only the tower's own columns are rock */
+    R.grid = g2; R.W = W2; R.H = H; }
   const W = R.W, g = R.grid;
   const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
   const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };
@@ -120,7 +122,7 @@ export function towerLay(R, { T, TS }) {
   (R.masonry = R.masonry || []).push([s0 - 1, s1 + 1, shaftTop, F[0]]); (R.interiors = R.interiors || []).push([s0, s1, shaftTop, F[0] - 1, 'gq3shaft']);
   (R.calm = R.calm || []).push([s0 - 2, s1 + 2, 22, G4 ? F[0] + 2 : 82], [D.x0, D.x1, 0, 19]);
   ent('sign', hallPortal.x - 3, 19, { text: 'SHE HAS GONE THROUGH HER PORTAL AND THE TOWER IS ON FIRE. FOLLOW HER UP.' });
-  ent('sign', (786 + d), G4 ? F[0] - 1 : 80, { text: G4 ? 'THE FLOORS BEHIND YOU CATCH, AND THE UPPER STOREYS BURN. UP THE LADDERS: MIND THE BEAMS AND THE HANGINGS.' : 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });
+  ent('sign', (786 + d), G4 ? F[0] - 1 : 80, { text: G4 ? 'THE UPPER STOREYS BURN. MIND THE BEAMS AND THE HANGINGS.' : 'THE FLOORS BEHIND YOU CATCH. UP THE LADDERS, AND MIND THE BEAMS.' });
   R.ents = R.ents.filter(e => !(e.t === 'sign' && /THE FIRE HAS TAKEN HER HALL/.test(e.text || '')));   /* the burning-hall climb's sign goes with it */
   R.gq3Tower = true;
   return R;
