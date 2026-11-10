@@ -172,7 +172,7 @@ const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 const EG_QUIET = { light: () => {}, open: () => {} };   /* (claude/maker) the START gate makes no sound */
 import * as NDSP from './num-display.js'; const numTxt = n => NDSP.shownLabel(n.txt, n.col);   /* (claude/hpdisplay, Daniel 11-07) every HEALTH / DAMAGE number the player reads is the internal number / 10: src/num-display.js, the one helper */
 import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';   /* (claude/airmotion) the air frame leans and stretches with the arc - art only */ import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
-import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
+import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf, JUICE2, JUICE2_SHIPS, setJuice2, j2row, stopFor2, weaponStopMul, landShakeShare, recoilEase, glanceStop, jitterFor, starSize, starAlpha, starCols, capParts, hitBudget, makeDuty, coopStop } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
@@ -2398,7 +2398,16 @@ let clouds2 = [], roots = [], vines = [], shelfT = {}, mother = null;
 let throneBlock = null, talkTo = null, talk = null; // talk: the open dialogue { lines, i, who, name }; the world stands still while it is up // talkTo: the person you pressed UP beside; their words show while you stand there // the King's thrown litter, once it lands: solid tiles you can stand on
 let glassPatches = [];   /* THE DRUNK'S BOTTLES: where one broke, glass on the ground for a breath */
 let impacts = [], rings = [], critters = [], escape = null, stormT = 0, thrown = null, deco = [], pwaves = [], rain = [], bolts = [], rocks = [], straysGot = new Set(), strayLast = null;
+function drawStar(i, cx, cy) {   /* (claude/juice1) 4 rays + a white core, fillRect only (no gradient, no allocation); alpha = flashK so the Flashes slider scales it */
+  const a = starAlpha(i.t, stop > 0) * flashK(); if (!(a > 0)) return;
+  const sz = starSize(i.cls), c = starCols(i.mat), x = Math.round(i.x - cx), y = Math.round(i.y - cy), h = sz >> 1, lx = Math.round(h * 1.5), t = sz >= 18 ? 3 : 2;
+  const al = g.globalAlpha; g.globalAlpha = al * Math.min(1, a);
+  g.fillStyle = c.ray; g.fillRect(x - lx, y - 1, lx * 2, 2); g.fillRect(x - 1, y - h, 2, h * 2);   /* the long cross: the horizontal arm 1.5x */
+  g.fillRect(x - (i.dir > 0 ? 0 : lx), y - 2, lx, 4); g.fillStyle = c.core; g.fillRect(x - t, y - t, t * 2, t * 2); g.fillRect(x - h + 1, y, h * 2 - 2, 1);
+  g.globalAlpha = al; }
 function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 0, kind }); }
+/* (claude/juice1) THE CONTACT STAR at the blade's edge (flag on): held full through the freeze (world time does not run in it), then two frames of fade. cls sets its size; dir = the swing's way (the horizontal rays run longer along it). */
+function starAt(x, y, cls, dir = 1, mat = 'hit') { if (!JUICE2_SHIPS || !SET.impact || !starSize(cls)) return; impacts.push({ x, y, t: 0, kind: 'star', cls, dir, mat, life: JUICE2.starFade }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
 let hushT = 0, slowT = 0, bossFx = [], bossBodies = [], lastTellT = -9, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
 const CLOUD = ART.bakeClouds(), MAPCLOUD = ART.bakeMapClouds(), MAPSIGN = ART.bakeMapSign(), FISH = ART.bakeFish();
@@ -7995,7 +8004,8 @@ function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
   n = Math.max(1, Math.round(n * partScale()));
   for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = spd * (0.4 + Math.random() * 0.8); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * 0.3, life: life * (0.6 + Math.random() * 0.6), max: life, col: cols[(Math.random() * cols.length) | 0], size, grav }); }
 }
-function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ streak: true,  x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
+let hitSpawned = 0;   /* (claude/juice1) what this hit / frame has spawned so far: JUICE2.hitSpawnCap */
+function sparks(x, y, dir, n = 8, cols = null) { const J2 = JUICE2_SHIPS, R = J2 ? fxRand : Math.random;   /* flag on: through the Particles setting, within the per-hit cap, and from the FX stream (the game's dice are not touched) */ if (J2) { n = hitBudget(Math.max(1, Math.round(n * partScale())), hitSpawned); hitSpawned += n; } for (let i = 0; i < n; i++) { const a = (R() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + R() * 120; parts.push({ streak: true,  x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + R() * 0.2, max: 0.4, col: cols ? cols[i % cols.length] : i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 // FIRE, LIGHT AND SPARKS. Particles with a life of their own: drawParts() ramps a flame from white-hot through orange
 // and red to a puff of smoke, draws a spark as a streak along its flight, and lays a soft glow over anything hot.
 function flame(x, y, n = 4, spread = 5, up = 50, size = 3) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.3 + Math.random() * 0.35; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 24, vy: -up * (0.5 + Math.random() * 0.7), life: l, max: l, col: '#ffd36b', size, grav: -30, fire: true, drag: 1.5 }); } }
@@ -8231,23 +8241,27 @@ function drawRiposteGlint(cx, cy) {
 function parryBurst() { const x = P.x + P.face * 10, y = P.y - 9;
   streaks(x, y, 12, ['#ffffff', '#fff6e0', '#ffd36b'], 240); ringAt(x, y, 34, '#ffd36b', 0.42);
   if (SET.flashes) killFlash = Math.max(killFlash, 0.025); }
-function hitstop(t) { if (SET.hitstop) stop = Math.max(stop, t); }
+const juiceDuty = makeDuty();
+function hitstop(t, cls) { if (SET.hitstop) { if (JUICE2_SHIPS && cls) t = coopStop(juiceDuty, performance.now() / 1000, cls, t, (players || []).filter(p => p && !p.dead).length); const was = stop > 0; stop = Math.max(stop, t); if (!was && stop > 0) jitStamp++; } }   /* (claude/juice1) cls given only by the landed-blow callers: local co-op shortens / skips a light stop (src/juice.js coopStop); the stop stays ONE global */
 // every blow used to hold the frame for the same three hundredths of a second, whatever it was. Weight it:
 // a tap is a tap, a heavy blow leans on it, and the blow that kills something leans hardest of all.
 function blowStop(e, dmg, tag) {
   /* THE FREEZE IS THE TABLE'S (src/juice.js): ~40 ms for a tap, ~90 ms for a heavy blow, a third cut, a dash cut or a break, and a boss opening a little more. Only ever asked on a LANDED blow (hurtEnemy0's hit branch), and 0 for a blow that did nothing. The same for every hero. */
   const cls = blowKind(e, dmg, tag), open = !!(e && e.maxHp && (e.open > 0 || e.broken > 0));
-  const wpn = weaponOf(hero()); hitstop(stopFor(cls, { boss: !!(e && e.maxHp), opening: open, dmg }) * (wpn ? wpn.stop : 1));   /* (claude/foepass) WEAPON WEIGHT: a greatsword lands heavier (src/juice.js WEAPON) */
+  const wpn = weaponOf(hero()); hitstop(stopFor2(cls, { boss: !!(e && e.maxHp), opening: open, dmg }) * (wpn ? wpn.stop : 1) * weaponStopMul(hero()), cls);   /* (claude/foepass) WEAPON WEIGHT: a greatsword lands heavier (src/juice.js WEAPON) */
   if (wpn && dmg > 0 && !SET.reduceMotion) shakeCam(cls === 'light' ? 0.8 : 1.6, (P.face || 1) * wpn.kick);
 }
 /* WHICH WEIGHT A BLOW IS: a held heavy blow, the run's third cut, a dash cut, a poise-break or a big number is heavy; anything else a tap */
 const blowKind = (e, dmg, tag) => IMPACT === 'heavy' ? 'heavy' : IMPACT === 'light' ? (dmg >= JUICE.heavyDamage ? 'heavy' : 'light') : blowClass({ dmg, heavy: !!(P.heavy || P.combo === 3 || P.dash > 0 || P.dashAtk > 0 || (e && e.broken > 0) || (!!tag && HEAVY_TAGS.some(t => blowHas(tag, t)))) });   /* (claude/demoimpact) THE BLOW'S OWN TAG: hurtAs('heavy'|'dash') - a skill's heavy land - is the heavy class whatever the hero is doing; 'shot' stays light */ /* (claude/pyrokit) IMPACT: a cast that names its own class (hurtFire) is that class, whatever she is doing with the staff */
 /* the foe's recoil on the SCREEN only (it moves nothing): thrown out the frame it is hit, eased back over a seventh of a second */
-const recoilX = e => e.rec > 0 ? (e.recD || 1) * (e.recA || 0) * (e.rec / 0.14) * (e.rec / 0.14) : 0;
+const recoilX = e => { if (!(e.rec > 0)) return 0; const k = e.rec / (e.recT0 || 0.14); return (e.recD || 1) * (e.recA || 0) * k * k; };   /* (claude/juice1) recT0 = the ease length the blow set (0.16 flag on; unset = the old 0.14) */
+/* the foe's shake in the freeze (draw only, flag on): the blow's class was stored on the foe when it was hit; none outside a freeze, with Hit stop off or Reduce motion on */
+const juiceJit = e => (JUICE2_SHIPS && stop > 0 && SET.hitstop && e.jitCls && e.jitAt === jitStamp) ? jitterFor(e.jitCls, { stopping: true, boss: !!e.maxHp, reduce: !!SET.reduceMotion, frame: Math.floor(performance.now() / 16), axis: e.recD || 1 }) : { dx: 0, dy: 0 };
+let jitStamp = 0;   /* bumped each time a stop begins, so only the foes struck in THIS freeze shake */
 function shakeCam(n, k = 0, tag = '') { const a = SET.reduceMotion || SET.shakeMode === 'off' || (SET.shakeMode !== 'full' && tag !== 'hurt' && tag !== 'land') ? 0 : SET.shakeAmt >= 0 ? SET.shakeAmt : 1; if (a > 0) { shake = shakeAdd(shake, n, { amount: a }); kick = Math.max(-8, Math.min(8, kick + k * a)); } }   /* SHAKE MODE (SET.shakeMode, tools/shake-mode.mjs): ON HIT (the default) lets through only a shake tagged 'hurt' - the hero taking a blow, going down or dying - FULL lets every one through; ONE SHAKE BUDGET (src/juice.js SHAKE_CAP): shakes top each other up, never stack past the cap; reduce-motion is none at all */
 /* (claude/demoimpact) A LANDED HEAVY / FINISH BLOWS SHAKE: FULL mode gives the whole row (as before); the default ON HIT gives JUICE.landShake of it, tagged land (a light blow gives none); OFF and reduce-motion give none (shakeCam) */
 
-function landShake(cls, n, k) { if (SET.shakeMode === 'full') shakeCam(n, k); else if (cls !== 'light') shakeCam(n * JUICE.landShake, k * JUICE.landShake, 'land'); }
+function landShake(cls, n, k) { if (SET.shakeMode === 'full') shakeCam(n, k); else if (cls !== 'light') shakeCam(n * landShakeShare(), k * landShakeShare(), 'land'); }
 /* and a short weak pad buzz on it (JUICE.landRumble; none on a light blow; SET.rumble gates it inside rumble()); a DOT or a volley does not buzz the pad every tick */
 let landRumbleAt = -9;
 function landRumble(cls) { const r = JUICE.landRumble[cls]; if (!r || time - landRumbleAt < JUICE.landRumbleGap) return; landRumbleAt = time; rumble(r.ms, r.mag); }
@@ -9107,7 +9121,11 @@ function addPoise(e, dmg, fromX, plunge, verb = null) {
    over the creature, so the player learns a single signal for "not with that". */
 function glanceSay(e) { SFX.glance(); number(e.x, e.y - (e.h || 16) - 18, 'GLANCES', '#9aa39a'); }
 function glanceBeat(e, fromX) { const d = Math.sign(fromX - e.x) || 1;
-  glanceSay(e); hitstop(0.02); sparks(e.x + d * ((e.w || 12) / 2), e.y - (e.h || 16) / 2, d, 4); }
+  glanceSay(e);
+  if (JUICE2_SHIPS) { const gx = e.x + d * ((e.w || 12) / 2), gy = e.y - (e.h || 16) / 2; hitSpawned = 0;   /* (claude/juice1) THE CLINK: a longer freeze, white sparks and a steel star at the guard, a 1 px camera kick back toward the hero, and the hero rebounds a step (ground only, never over a ledge) */
+    hitstop(glanceStop(), 'light'); sparks(gx, gy, d, JUICE2.glanceSparks, ['#ffffff', '#e8f0ff']); starAt(gx, gy, 'light', -d, 'steel'); shakeCam(0, d * JUICE2.clinkKick, 'land');
+    if (!P.dead && P.ground && Math.abs(P.x - e.x) < 48) { const v = safeKnock(d * JUICE2.clinkVx, dx => knockLandsSafe(P.x + dx, P.y)); if (v) { P.clinkVx = v; P.clinkT = JUICE2.clinkT; P.vx = v; } } return; }
+  hitstop(0.02); sparks(e.x + d * ((e.w || 12) / 2), e.y - (e.h || 16) / 2, d, 4); }
 /* THE WHEEL (the family table): a guard cut from behind comes round at once, its guard up, and shoulders off a hero standing in
    its back. No damage and no mark - it is not a blow, it is a guard being put back where it belongs. */
 function guardWheel(e, fromX) {
@@ -9773,9 +9791,9 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
     e.alive = false; if (e.t === 'swarm' && e.onHero) { SWX.drainOff(e, e.onHero); e.onHero = null; }   /* (claude/hornetsnest) a swarm cut down while it was on him takes its sting with it (the drain was left running) */ if(e.ambushLeader)e.defeated=true; kills++; xpKill(e); startle(e); pirateSpoils(e); reaperRites(e); leaveBody(e); if (L.hush && !e.quiet) noiseAt(e.x, e.y, e.maxHp ? 200 : HEAVY.has(e.t) ? 150 : 116, null); if (isPyro() && (tal('conflagration') || prk('pspread')) && e.burn > 0) { const spr = Math.max(tal('conflagration') ? 46 : 0, prk('pspread') ? 30 + 10 * prk('pspread') : 0); for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - e.x) < spr && Math.abs(q.y - e.y) < 34) { q.burn = Math.max(q.burn || 0, 2.4); flame(q.x, q.y - q.h / 2, 4, 4, 40, 2); } ringAt(e.x, e.y - e.h / 2, 30, '#ff9a5c', 0.3); } // CONFLAGRATION
     if (!P.ground && !P.plunge && !P.dead && !e.maxHp) { P.vy = Math.min(P.vy, -210); P.canCut = true; squash(0.88, 1.18, 0.1); } // KILLED IT IN THE AIR: up you go (never DOWN from a pogo already thrown this frame: her fire finishing a head she just came up off cut the 330 to 210)
     if (isPaladin() && tal('wrath')) gainLight(10);   /* WRATH */ killFlash = 0.05; rumble(70, 0.35); ringAt(e.x, e.y - e.h / 2, e.t === 'queen' || e.t === 'frog' || e.t === 'chief' ? 40 : 16, COLS[e.t] ? COLS[e.t][0] : '#fff6e0'); { const cry = SFX.dieOf(voiceOf(e)); if (cry) cry(); else SFX.kill(); } if (e.t === 'shield' || e.t === 'queen' || e.t === 'frog' || e.t === 'chief') SFX.heavy(); // every creature dies in its own voice
-    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor('finish')); SFX.hitFinish(); landShake('finish', big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); landRumble('finish'); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
+    { const big = e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'king' || e.t === 'ram' || e.t === 'master'; hitstop(big ? 0.25 : stopFor2('finish'), big ? undefined : 'finish'); SFX.hitFinish(); if (JUICE2_SHIPS) { hitSpawned = 0; starAt(e.x - dir * Math.min((e.w || 12) / 2, 8), e.y - e.h / 2, 'finish', dir, MAT[e.t] === 'steel' || MAT[e.t] === 'stone' ? 'steel' : 'hit'); ringAt(e.x, e.y - e.h / 2, JUICE2.killRing, '#fff6e0', 0.2); chips(e.x, e.y - e.h / 2, dir, JUICE2.killChips, ['#fff6e0', '#ffd36b', ...(COLS[e.t] || [])], 150, 520, 1); }   /* (claude/juice1) THE KILL POP: a finish-size star, a 22 px ring, 8 more chips */ landShake('finish', big ? 8 : JUICE.finish.shake, dir * JUICE.finish.kick); landRumble('finish'); zoomKick(big ? 1.18 : 1.07, big ? 0.5 : 0.14); if (big) killFlash = 0.09; }
     burst(e.x, e.y - e.h / 2, e.t === 'queen' ? 40 : 12, COLS[e.t], 100, 0.6);
-    sparks(e.x, e.y - e.h / 2, dir, 6);
+    sparks(e.x, e.y - e.h / 2, dir, JUICE2_SHIPS ? JUICE2.finish.sparks : 6);
     spawnCorpse(e, dir); beastSlain(e.cnSkin || e.t);
     /* THE KILL HEALS (claude/survival, Daniel 10-07): the HEART CHARM, VIGOR 10's BLOOD DRAWN and the BLOODLETTER perk, halved (3/1/2) and capped at 5 a kill (src/survival.js KILL_HEAL) */
     { const kh = !e.harmless && P.hp > 0 && P.hp < P.maxHp ? SV.killHeal({ charm: PROG.charm === 'heart', bloodDrawn: !!thr('v', 0), bloodletter: !!perk('leech') }) : 0; if (kh > 0) { P.hp = Math.min(P.maxHp, P.hp + kh); number(P.x, P.y - 30, '+' + kh, '#8fd160'); } }
@@ -9809,8 +9827,10 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
     const voice = SFX.hurtOf(voiceOf(e)), staleNow = e.amStaleAt === time; if (staleNow && SFX.hitDull) SFX.hitDull(); else if (voice) voice(); else SFX.hit();   /* (claude/difficulty) A STALE BLOW is heard duller (no word) */ // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    if (!P.jetHit) { const jc = blowKind(e, dmg, tag), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, tag); landShake(jc, JR.shake, dir * JR.kick); landRumble(jc); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
-    sparks(e.x - dir * 2, e.y - e.h / 2, dir, Math.max(1, Math.round((P.heavy ? 9 : 5) * (staleNow ? AM.STALE.dimSparks : 1))));   /* (claude/difficulty) and seen dimmer */
+    if (!P.jetHit) { const jc = blowKind(e, dmg, tag), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, tag); landShake(jc, JR.shake, dir * JR.kick); landRumble(jc); const J2R = j2row(jc) || JR; e.flash = Math.max(e.flash, J2R.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = recoilEase(); e.recT0 = e.rec; e.recD = dir; e.recA = J2R.recoil;
+      if (JUICE2_SHIPS) { hitSpawned = 0; e.jitCls = jc; e.jitAt = jitStamp; starAt(e.x - dir * Math.min((e.w || 12) / 2, 8), e.y - e.h / 2, jc, dir, MAT[e.t] === 'steel' || MAT[e.t] === 'stone' ? 'steel' : 'hit');   /* (claude/juice1) the foe shakes in the freeze (juiceJit) and a star sits at the contact edge */
+        const cl = Math.min(4, hitBudget(4, 0)); for (let i = 0; i < cl; i++) { const sp = 220, a = (fxRand() - 0.5) * 0.35; parts.push({ streak: true, x: e.x - dir * 2, y: e.y - e.h / 2 + (fxRand() - 0.5) * 8, vx: Math.cos(a) * sp * dir, vy: Math.sin(a) * sp, life: 0.12, max: 0.12, col: '#fff6c8', size: 1, grav: 0 }); hitSpawned++; } } }   /* a flame ticking over them does not stop the world ten times a second */
+    sparks(e.x - dir * 2, e.y - e.h / 2, dir, Math.max(1, Math.round((JUICE2_SHIPS ? JUICE2[blowKind(e, dmg, tag)].sparks : P.heavy ? 9 : 5) * (staleNow ? AM.STALE.dimSparks : 1))));   /* (claude/difficulty) and seen dimmer */
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;
     if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !e.elite && !POISE_HEAVY.has(e.t) && !(WCH && WCH.surging(e)) && (DFM.df('flinch') || P.heavy || !windingUp(e))) { flinch(e);   /* (claude/difficulty) MASTER: a light blow no longer flinches a foe out of its swing */ e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
@@ -11425,7 +11445,8 @@ function updatePlayer(dt) {
   hushT = Math.max(0, hushT - dt);
   for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired', 'dipT']) P[k] = Math.max(0, P[k] - dt);
   if (P.jfPend) { const jp = P.jfPend; squash(jp.sx, jp.sy, 0.1); }   /* (claude/jumpfeel) the frame after the press squash: the stretch */
-  for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT', 'clinkT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
+  if (P.clinkT > 0 && P.ground && !P.dead) P.vx = P.clinkVx;   /* (claude/juice1) the clink's bounce-back holds its 0.08 s (flag on only: clinkT is set only by glanceBeat's J2 branch) */
   P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
@@ -33187,11 +33208,11 @@ function updateThrown(dt) {
 }
 function updateParticles(dt) {
   updateThrown(dt); updatePwaves(dt);
-  for (const i of impacts) i.t += dt; impacts = impacts.filter(i => i.t < 0.16);
+  hitSpawned = 0; for (const i of impacts) i.t += dt; impacts = impacts.filter(i => i.t < (i.life || 0.16));
   for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < r.life);
   updateCritters(dt);
   for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; if (p.drag) { const k = 1 - p.drag * dt; p.vx *= k; p.vy *= k; } if (p.fire) p.vx += (Math.random() - 0.5) * 90 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
-  parts = parts.filter(p => p.life > 0);
+  parts = parts.filter(p => p.life > 0); if (JUICE2_SHIPS && parts.length > JUICE2.partCap) parts = capParts(parts);   /* (claude/juice1) 450 live particles, the oldest non-fire go first */
   for (const n of nums) { n.life -= dt; n.y += n.vy * dt; n.vy *= Math.pow(0.05, dt); }
   settleNums(); nums = nums.filter(n => n.life > 0);
   for (const gh of ghosts) gh.life -= dt; ghosts = ghosts.filter(gh => gh.life > 0);
@@ -36023,7 +36044,7 @@ function drawWorld(cx, cy, showPlayer) {
  const rx = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx, ry = e.y - cy + bob + ps.dy; g.globalAlpha = 0.5;
       for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawSet(sprSet, null, frame, rx + ox, ry + oy, ps.face, true, pSX, pSY, 1, pRot);
       g.globalAlpha = 1; }
-    { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx + Math.round(recoilX(e)), dy0 = e.y - cy + bob + ps.dy;
+    { const dx0 = e.x - cx + (wind ? Math.round(Math.sin(e.anim * 60)) : 0) + ps.dx + Math.round(recoilX(e)) + (e.jitCls ? juiceJit(e).dx : 0), dy0 = e.y - cy + bob + ps.dy + (e.jitCls ? juiceJit(e).dy : 0);
       /* REMEMBERED FOR THE PASSES THAT COME AFTER THE WATER AND THE DARK (drawSwimmers, drawDarkRims): a creature in the water is
          painted over by the water, and one in the dark by the dark, and both used to vanish into what was over them */
       if (sprSet && e.alive && !e.harmless && (inWater || inGloom)) { const q = { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot, white: e.flash > 0, a: g.globalAlpha }; if (inWater) swimQ.push(q); if (inGloom) darkQ.push(q); }   /* (claude/jenny2: not JENNY GREENTEETH - she is half out of her own water, and the swimmers' pale wash over the whole of her made her a ghost; her lower half reads under the lock's green) */
@@ -36342,7 +36363,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
   for (const r of rings) { const k = r.t / r.life; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = k < 0.5 ? 2 : 1; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 2 + r.r * Math.pow(k, 0.6), 0, 7); g.stroke(); }
   g.globalAlpha = 1; g.lineWidth = 1;
-  for (const i of impacts) { const set = i.kind === 'steel' ? PROP.impactSteel : i.kind === 'red' ? PROP.impactRed : PROP.impact; const c = set[i.t < 0.07 ? 0 : 1]; const sc = i.kind === 'plunge' ? 1.5 : 1; g.drawImage(c, Math.round(i.x - cx - 8 * sc), Math.round(i.y - cy - 8 * sc), 16 * sc, 16 * sc); }
+  for (const i of impacts) { if (i.kind === 'star') { drawStar(i, cx, cy); continue; } const set = i.kind === 'steel' ? PROP.impactSteel : i.kind === 'red' ? PROP.impactRed : PROP.impact; const c = set[i.t < 0.07 ? 0 : 1]; const sc = i.kind === 'plunge' ? 1.5 : 1; g.drawImage(c, Math.round(i.x - cx - 8 * sc), Math.round(i.y - cy - 8 * sc), 16 * sc, 16 * sc); }
   drawParts(cx, cy);
   g.globalAlpha = 1;
   for (const pl of pollen) { if (pl.glitter) { const k = 0.5 + 0.5 * Math.sin(pl.t * 6); if (k > 0.55) { g.globalAlpha = (k - 0.55) * 2; g.fillStyle = k > 0.92 ? '#eefaff' : '#bfe6f5'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); if (k > 0.9) { g.fillRect(Math.round(pl.x - cx) - 1, Math.round(pl.y - cy), 3, 1); g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy) - 1, 1, 3); } g.globalAlpha = 1; } } else if (pl.wind) { g.globalAlpha = 0.35; g.fillStyle = '#fff6e0'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 6, 1); g.globalAlpha = 1; } else if (pl.bee) { g.fillStyle = Math.floor(pl.t * 20) % 2 ? '#e0b040' : '#1b1626'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 2, 1); } else if (pl.ember) { g.globalAlpha = Math.min(1, pl.life); g.fillStyle = Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); g.globalAlpha = 1; } else if (pl.mote) { g.globalAlpha = 0.4 + 0.3 * Math.sin(pl.t * 2); g.fillStyle = '#ffd0dc'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); g.globalAlpha = 1; } else if (pl.spore) { g.globalAlpha = 0.35 + 0.35 * Math.sin(pl.t * 2); g.drawImage(L.violet ? PROP.moteV : PROP.moteT, Math.round(pl.x - cx), Math.round(pl.y - cy)); } else if (pl.smoke) { g.globalAlpha = 0.18 * Math.min(1, pl.life); g.fillStyle = '#9aa39a'; g.fillRect(Math.round(pl.x - cx) - 2, Math.round(pl.y - cy) - 1, 4, 3); } else { g.globalAlpha = 0.35 + 0.35 * Math.sin(pl.t * 3); g.fillStyle = '#fff6c8'; g.fillRect(Math.round(pl.x - cx), Math.round(pl.y - cy), 1, 1); } }
