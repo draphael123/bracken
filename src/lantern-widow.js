@@ -20,7 +20,7 @@
 
 export const WD = {
   hp: 1800, w: 14, h: 30, markH: 46, speed: 70, hover: 12,
-  resist: 0.55, openMul: 2, openCap: 0.16, floorP1: 0.5,
+  resist: 0.55, openMul: 2, openCap: 0.22, floorP1: 0.5,
   veil: { tell: 0.6, act: 0.18, reach: 44, dmg: 14, cd: 1.4 },
   wail: { tell: 0.9, act: 0.7, r: 160, band: 20, dmg: 16, cd: 6.5 },
   hands: { tell: 1.0, rise: 0.8, n: 3, spread: 40, w: 12, dmg: 12, hold: 0.5, cd: 7.5 },

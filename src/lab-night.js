@@ -128,7 +128,7 @@ export function cryptMotherHands(c) {
     go(e.x + side * 18); if (P.atk < 0 && !tired) swing = true; return done();
   }
   if (m === 'lament' || m === 'wake' || m === 'sleep' || m === 'fallen') return done();
-  /* ---- THE KNOT SHE HANGS FROM: stand under it and cut (it sits 24 px over a hero's feet: a jump and a cut at the top) ---- */
+  /* ---- THE KNOT SHE HANGS FROM: stand under it and cut (it sits 24 px over a hero's feet: a standing cut reaches it) ---- */
   const plats = platformsOf(BK, T, Math.floor(G.x0 / TS), Math.ceil(G.x1 / TS), Math.floor((G.hangY + 20) / TS), Math.floor(floorY / TS));
   const perch = plats.filter(p => !p.web && p.y > kn.y + 10 && p.y < kn.y + 40 && kn.x >= p.px0 - 2 && kn.x <= p.px1 + 2).sort((a, b) => a.y - b.y)[0];
   if (!perch) { go(kn.x); return done(); }
@@ -300,7 +300,7 @@ export function lanternWidowHands(c) {
   dbg = 'lit'; const myL = WWH && WWH.lantern ? WWH.lantern(P) : null, litLamp = lamps.filter(l => WWH && WWH.lampOn(l.id)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   const hubLamp = lamps.slice().sort((a, b) => a.x - b.x)[1] || lamps[0], hubX = hubLamp ? hubLamp.x - 24 : A.x0 + 200;
   if (myL && myL.st !== 'lit' && litLamp) { dbg = 'relight'; const r = nv(litLamp.x, litLamp.y, { tol: 4 }); return done(); }
-  if (m === 'theftTell' || (S.cd && S.cd.theft < 4)) { dbg = 'to-left-tier'; const tier = G.perches[2]; nv(tier.x, tier.y, { tol: 3 }); return done(); }   /* (the first perch she takes is the left tier: be standing on it) */
+  if (m === 'theftTell') { dbg = 'to-left-tier'; const tier = G.perches[2]; nv(tier.x, tier.y, { tol: 3 }); return done(); }   /* (the first perch she takes is the left tier: be standing on it) */
   nv(hubX, floorY, { tol: 3 }); return done();
 }
 
