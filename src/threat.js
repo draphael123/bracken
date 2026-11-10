@@ -250,3 +250,4 @@ export function worstGap(ents, W, H, arena) {
   for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   return Math.max(gap, end - (cx[cx.length - 1] || 0));
 }
+Object.assign(THREAT, { aclectern: 0, acrail: 0, acwell: 0, acrune: 0, acflock: 2, headmistress: 6 });   /* (claude/academy) THE MAGE ACADEMY: its lecterns, ward rails, pits and shortcut runes are machines; a spellbook flock; its boss */
