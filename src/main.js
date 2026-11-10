@@ -8207,7 +8207,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
       const f = RP.parried(rpFoe(fromX, who));   /* (claude/riposte) THE CUTLASS BIND: the same shared parry reaction (the riposte window) */
       if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * HC.snag.push;
       hookCatchPerfect(f);
-      if (tal('parryCut') && f && !f.harmless) counterCut(f, 'RIPOSTE');   /* RIPOSTE: and the cutlass answers */
+      if (tal('parryCut') && f && !f.harmless) counterCut(f, 'RIPOSTE', trk('parryCut'));   /* RIPOSTE: and the cutlass answers (rank 70% / 85% / 100% of a swing, same counterLand as COUNTERSTROKE; flag off trk = 1 = today) */
       return 'blocked';
     }
     if (hv === 'block') {

@@ -176,8 +176,34 @@ try {
     assert.equal(T.nameOf('berserker', 'bzPrice'), 'RED FEAST'); assert.equal(T.nameOf('pyro', 'brand'), 'BRAND');
     /* RANK SITES: each trait/merged/folded id of the four heroes has a trk('id') / K('id') / rk('id') in the source, bar the documented rankless riders */
     const src = ['main.js', 'berserker.js', 'crouch-c.js'].map(f => fs.readFileSync(new URL('../src/' + f, import.meta.url), 'utf8')).join('');
-    const rankless = new Set(['phoenixTrail', 'skip', 'sunder', 'ossuary', 'graveProvides', 'bzSpinChop', 'parryCut']);   /* boolean riders / owed (parryCut shares counterLand with COUNTERSTROKE: scale after TRAITDATA-A merges) */
+    const rankless = new Set(['phoenixTrail', 'skip', 'sunder', 'ossuary', 'graveProvides', 'bzSpinChop']);   /* boolean riders / owed (parryCut shares counterLand with COUNTERSTROKE: scale after TRAITDATA-A merges) */
     for (const h of Object.keys(want)) { const s = T.TRAIT_SPLIT[h]; for (const id of [...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat()]) if (!rankless.has(id)) assert(new RegExp("(trk|K|rk)[(]'" + id + "'[)]").test(src), h + '/' + id + ' has no rank site'); } }
+    /* TRAITMERGE: ALL EIGHT split heroes (paladin stays null: his split rides the paladin rework) */
+    { const SPLIT8 = ['knight', 'pyro', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker', 'ranger'];
+      assert.deepEqual(HERO_IDS.filter(T.hasSplit).sort(), SPLIT8.slice().sort(), 'exactly the 8 heroes are split'); assert.equal(T.hasSplit('paladin'), false, 'paladin unsplit until his rework');
+      const sharedIds = new Set(T.SHARED_TRAITS.map(s => s.id));
+      for (const h of SPLIT8) { const s = T.TRAIT_SPLIT[h];
+        assert.equal(s.defaults.length, 2, h + ' two defaults'); assert.notEqual(s.defaults[0], s.defaults[1], h + ' distinct defaults');
+        for (const d of s.defaults) { assert(!sharedIds.has(d), h + ': default ' + d + ' is a shared trait'); assert(s.traits.includes(d), h + ': default ' + d + ' is one of his own traits'); }
+        assert(!s.defaults.every(d => sharedIds.has(d)), h + ': no default pair is two shared traits');
+        /* a fresh L20 hero wearing his defaults has core + both traits on, and shared traits are off until worn */
+        const pair = { traits: { [h]: s.defaults.slice() } }; for (const d of s.defaults) assert.equal(passiveOn(pair, h, d, 20), true, h + '/' + d + ' on at L20');
+        for (const sh of T.SHARED_TRAITS) assert.equal(passiveOn(pair, h, sh.id, 20), false, h + ' does not get ' + sh.id + ' unworn');
+        /* every catalog passive is accounted for (core/trait/merged/folded/shared/retired/cut) */
+        for (const n of SKILLS.filter(x => x.hero === h && !x.active)) assert.notEqual(T.kindOf(h, n.id), null, h + '/' + n.id + ' accounted');
+        /* rank scales on the hero's own ids, 1.0 at L20 */
+        for (const id of s.traits) { assert.equal(T.traitScale({}, h, id, 5), 0.7, h + '/' + id); assert.equal(T.traitScale({}, h, id, 20), 1); } }
+      /* swash (Freebooter) and winnow (Blood Knight) ride the shared AIR ROLL / EXECUTIONER rows: the shared id works on their hero, the old id is off */
+      const air = T.SHARED_TRAITS.find(s => s.id === 'airRoll'), exe = T.SHARED_TRAITS.find(s => s.id === 'execute');
+      assert.equal(air.legacy.pirate, 'swash'); assert.equal(exe.legacy.reaper, 'winnow');
+      assert.equal(T.sharedOn({ traits: { pirate: ['airRoll'] }, done: { pirate: { [air.needs]: 1 } } }, 'pirate', 'airRoll', 20), true, 'pirate wears the shared AIR ROLL');
+      assert.equal(T.sharedOn({ traits: { reaper: ['execute'] }, done: { reaper: { [exe.needs]: 1 } } }, 'reaper', 'execute', 20), true, 'reaper wears the shared EXECUTIONER');
+      const mj2 = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+      assert.ok(/tal\('airRoll'\) \|\| \(isPirate\(\) && tal\('swash'\)\)/.test(mj2), 'flag-off swash path kept'); assert.ok(/counterCut\(f, 'RIPOSTE', trk\('parryCut'\)\)/.test(mj2), 'parryCut scales per wearer'); }
 } finally { T.setTraitsShip(false); }
+/* FLAG OFF = TODAY'S ARITHMETIC for all 8 split heroes: rank scale is exactly 1 for every id at every level, names are the catalog's, no hero has a split */
+for (const h of ['knight', 'pyro', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker', 'ranger']) { const s = T.TRAIT_SPLIT[h];
+  for (const id of [...s.traits, ...Object.keys(s.folded || {}), ...Object.values(s.merged || {}).flat()]) for (const lv of [1, 10, 20, 40]) assert.equal(T.traitScale({}, h, id, lv), 1, 'flag off: ' + h + '/' + id + ' scale 1 at L' + lv);
+  for (const n of SKILLS.filter(x => x.hero === h && !x.active)) assert.equal(T.nameOf(h, n.id), n.name, 'flag off: catalog name for ' + h + '/' + n.id); }
 assert.equal(T.traitsShip(), false);
-console.log('traits ok: flag-off identical for ' + HERO_IDS.length + ' heroes; knight/warden/ranger/geomancer core/traits/merged/folded/new/slots/ranks/rank sites/migrate/round-trip/shared (6, region ids vs level.js)/pvp/lab pass');
+console.log('traits ok: flag-off identical for ' + HERO_IDS.length + ' heroes; all 8 split heroes (paladin null) core/traits/merged/folded/new/slots/ranks/rank sites/migrate/round-trip/shared (6, region ids vs level.js)/pvp/lab pass');
