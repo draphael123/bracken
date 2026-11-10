@@ -19,3 +19,4 @@
 11-10 13:04 HOLD juiceproof-d re-merge (Daniel 11-10): desktop lane ARC2-d drops the doubled old arc on geomancer/berserker/ranger light cuts too; wait for its DONE line. traittune-d (0a10c8de4) + feedbackform-d are free to merge now.
 11-10 13:04 QUEUED after demo (Daniel 11-10 accepted): knight-at-Crusader trait bisect (traits on: built 7/12 vs 11/12 off; riposte core did not fix it) - probe each knight trait cut at waymeet n=12.
 11-10 13:12 ARC2-d DONE juiceproof-d=17a58adf6 arc dropped on geomancer+berserker (ranger has no arc: light is a shot); releases the hold - laptop re-merge juiceproof-d
+11-10 13:17 GQ4TUNE-d DONE 0e69d1aff Princess 56% Queen 42% n=36 each (12/hero kn/wa/py, flasks, 4 rounds; not yet 60-70; report claude/gq4tune-d work/claude/lane-done/claude-gq4tune-d.md)
