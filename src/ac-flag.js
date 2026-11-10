@@ -5,7 +5,7 @@
      globalThis.__AC = true                (a node tool, BEFORE it imports src/level.js: node --import ./tools/ac-on.mjs tools/<check>.mjs academy)
    acOn() is read when src/level.js and src/main.js are imported (the LEVELS row and the road are built once), so tools/academy.mjs runs its flag-on half
    in a child process. Pattern: src/ww-flag.js (claude/wispwood). */
-export const ACADEMY_SHIPS = false;   /* THE ONE LINE TO FLIP (the shipping batch, after the art lane, the tune and the browser walk) */
+export const ACADEMY_SHIPS = true;   /* THE ONE LINE TO FLIP (the shipping batch, after the art lane, the tune and the browser walk) */
 export function acOn() {
   if (ACADEMY_SHIPS) return true;
   const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false;

@@ -4,7 +4,7 @@
      ?mn=1 in the page's address           (a browser walk / the art lane: ?mn=1&dev=1, ?mn=1&dev=1&mnboss=1, ?mn=1&boss=castellan)
      globalThis.__MN = true                (a node tool, BEFORE it imports src/level.js: node --import ./tools/mn-on.mjs tools/<check>.mjs manor)
    mnOn() is read when src/level.js and src/main.js are imported. Pattern: src/sk-flag.js (claude/silk). */
-export const MANOR_SHIPS = false;   /* THE ONE LINE TO FLIP (the shipping batch, after the art lane, the tune and the browser walk) */
+export const MANOR_SHIPS = true;   /* THE ONE LINE TO FLIP (the shipping batch, after the art lane, the tune and the browser walk) */
 export function mnOn() {
   if (MANOR_SHIPS) return true;
   const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false;
