@@ -14,47 +14,42 @@ export const CAST_SWAPS = {
     { from: 'cutthroat', to: 'scorpion', every: 4, min: 2 },                                          /* the first desert level has only the seven base foes: a claw for every fourth blade, threat 3 for 3 */
   ],
   underwell: [
-    { from: 'scorpion', fromSkin: 'venomscorpion', to: 'waterthief', every: 3, min: 4 },             /* scorpion 42%: the wells' own thief (blue, Well Town) for every third venom scorpion */
+    { from: 'scorpion', fromSkin: 'venomscorpion', to: 'scorpion', skin: 'firescorpion', every: 3, min: 3 },     /* scorpion 42%: the cisterns' own skins (fire and thirst already live here) for every third venom scorpion; no new kind, so the curve index holds (foevar3) */
+    { from: 'scorpion', fromSkin: 'venomscorpion', to: 'scorpion', skin: 'thirstscorpion', every: 3, min: 2 },
   ],
   glasssea: [
     { from: 'scorpion', fromSkin: 'glassscorpion', to: 'scorpion', skin: 'firescorpion', every: 4, min: 3 },   /* heat glare: the fire scorpion (its hiss and its burning patch tell it) */
-    { from: 'cutthroat', fromSkin: 'nighthunter', to: 'waterthief', every: 4, min: 2 },
-    { from: 'vulture', to: 'raptor', every: 3, min: 2 },                                              /* the cliff bird over the glass: the vulture's machine, dmg 12 */
+    { from: 'scorpion', fromSkin: 'glassscorpion', to: 'scorpion', skin: 'oilscorpion', every: 3, min: 2 },    /* and the oil scorpion (Well Town): skins of the one kind, so the curve index holds (foevar3) */
   ],
   ksar: [
-    { from: 'slinger', fromSkin: 'wallslinger', to: 'raptor', every: 4, allow: ['ks'], min: 3 },     /* the falcons' bigger kin keep the walls */
-    { from: 'cutthroat', fromSkin: 'ksarblade', to: 'waterthief', every: 4, allow: ['ks'], min: 3 },
-    { from: 'cutthroat', fromSkin: 'ksarblade', to: 'scorpion', skin: 'firescorpion', every: 5, allow: ['ks'], min: 2 },   /* fire at the gates */
+    { from: 'slinger', fromSkin: 'wallslinger', to: 'raptor', every: 3, allow: ['ks'], min: 3 },     /* the falcons' bigger kin keep the walls (the one new kind here) */
+    { from: 'cutthroat', fromSkin: 'ksarblade', to: 'shield', skin: 'shieldsentry', every: 4, allow: ['ks'], min: 3 },   /* a door-warden for a blade (threat 2 for 3): pays the raptor's kind term so the curve index holds (foevar3) */
   ],
   buriedcity: [
-    { from: 'slinger', fromSkin: 'sandslinger', to: 'raptor', every: 5, min: 2 },                    /* circling over the streets */
-    { from: 'slinger', fromSkin: 'sandslinger', to: 'vulture', every: 4, min: 2 },
-    { from: 'ambusher', fromSkin: 'sanddrowned', to: 'scorpion', skin: 'firescorpion', every: 4, min: 2 },
+    { from: 'slinger', fromSkin: 'sandslinger', to: 'scorpion', skin: 'firescorpion', every: 3, x0: 225, min: 2 },     /* heat shimmer: fire scorpions on the sand (no new kind: the brass scorpion already lives here) */
+    { from: 'ambusher', fromSkin: 'sanddrowned', to: 'scorpion', skin: 'brassscorpion', every: 3, min: 2 },
   ],
   sealedpyramid: [
     { from: 'mummy', to: 'construct', every: 3, min: 2 },                                            /* mummy 49%: the tomb's clockwork wardens */
     { from: 'mummy', to: 'ambusher', skin: 'sanddrowned', every: 2, min: 2 },                        /* the drowned under the tomb sand */
-    { from: 'mummy', to: 'cutthroat', every: 2, min: 1 },                                            /* a tomb robber */
     { from: 'hound', fromSkin: 'jackal', to: 'vulture', every: 4, x1: 300, min: 2 },                 /* the outer court's carrion bird */
+    { from: 'mummy', to: 'scorpion', skin: 'venomscorpion', every: 4, min: 2 },                      /* a tomb scorpion (the kind already lives here) */
   ],
   /* (claude/foevar2) THE WATER ROAD AND THE SHOW (foe-variety audit 11-10, lane F2): only foes the road has already introduced (one-new-foe stays green). Water-bound foes (eel, turtle, heron, feeler) are NOT placed: the
      cast pass cannot give them water (they want a builder), and the grindylow stays in its water. The crossbow is the archer's own slot (it is a perched shooter), the sworn sword a bargee's weight (3.5 for 3.5). */
   towpath: [
-    { from: "archer", fromSkin: "watchman", drop: ["tp"], to: "crossbow", every: 3, min: 2 },        /* the watch's own bolt on two of the six watchman perches (Waymeet's crossbow, a perched shooter) */
-    { from: "fogwraith", x0: 120, x1: 150, to: "runner", every: 1, min: 1 },                                  /* a squire in the yard: his shout fetches the sworn swords already on this bank (the other wraiths float over gaps and a runner needs floor, so they stay) */
-    { from: "fogwraith", x0: 300, to: "lanternshade", every: 3, min: 1 },                            /* a light without a keeper under the arches (tools/towpath.mjs wants >= 5 wraiths left: 7 - 2 = 5) */
+    { from: "archer", fromSkin: "watchman", drop: ["tp"], to: "crossbow", every: 6, min: 1 },        /* the watch's own bolt on one of the six watchman perches (Waymeet's crossbow, a perched shooter) */
+    { from: "gaffer", fromSkin: "bargeman", drop: ["tp"], to: "runner", every: 2, min: 2 },        /* two squires for two bargemen (threat 1.5 for 3.5: pays the kind term so the curve index holds): his shout fetches the sworn swords already on this bank (the lesson of Waymeet) */
+    { from: "gaffer", fromSkin: "bargeman", drop: ["tp"], to: "gaffer", skin: "riverrat", every: 3, min: 1 },   /* and a river rat for a bargeman: a skin of the one kind */
   ],
   canal: [
-    { from: "archer", fromSkin: "watchman", drop: ["canal"], to: "crossbow", every: 4, x0: 50, min: 3 },   /* the harbour watch's bolt on a bridge or a roof */
-    { from: "gaffer", fromSkin: "bargeman", drop: ["canal"], to: "swornsword", every: 2, x0: 55, x1: 130, min: 2 },   /* hired steel on the first wharves (the boarding gang and the island garrison stay bargees) */
-    { from: "gaffer", fromSkin: "bargeman", drop: ["canal"], to: "swornsword", every: 3, x0: 180, x1: 300, min: 2 },
-    { from: "snuffer", fromSkin: "lamplighter", drop: ["canal"], to: "lanternshade", every: 2, min: 2 },     /* the lamplit canal's ghost with a lantern for two of the three lamplighters */
+    { from: "gaffer", fromSkin: "bargeman", drop: ["canal"], to: "runner", every: 4, min: 2 },   /* three squires for three bargemen (1.5 for 3.5: pays the kind term so the curve holds): their shout fetches the rivermen already on the wharves */
+    { from: "gaffer", fromSkin: "bargeman", drop: ["canal"], to: "gaffer", skin: "riverrat", every: 2, min: 3 },   /* a river rat for every other bargeman: skins of the one kind */
+    { from: "snuffer", fromSkin: "lamplighter", drop: ["canal"], to: "lanternshade", every: 1, min: 3 },     /* the lamplit canal's ghost with a lantern for all three lamplighters (kind for kind: the curve index holds) */
   ],
   fair: [
-    { from: "mummer", x0: 200, to: "stagehand", every: 4, min: 2 },                                    /* the fair's hired crew from the Theatre: the same 5 for 5 */
-    { from: "mummer", x0: 300, to: "armour", every: 6, min: 1 },                                      /* a tin-man in the hall of mirrors */
-    { from: "mummer", x0: 400, to: "haunt", every: 4, min: 1 },                                       /* the house of horrors */
-    { from: "mummer", x0: 500, to: "boo", every: 3, min: 1 },
+    { from: "mummer", to: "haunt", every: 2, min: 3 },                                                /* the house of horrors */
+    { from: "mummer", to: "armour", every: 3, min: 2 },                                      /* a tin-man in the hall of mirrors (3.5 for a mummer's 5: with the haunt, this pays the two kind terms so the curve index holds) */
     { from: "brute", fromSkin: "strongman", to: "armour", every: 3, min: 2 },                         /* a suit of armour for the strongman's act: 3.5 for 3.5 */
   ],
   kitchengate: [
