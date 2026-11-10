@@ -16,7 +16,7 @@ export const BL = { dist: 80, min: 20, cd: 0.45, inv: 0.18, hang: 0.12 };
 export const CJ = { life: 2.2, warn: 0.6, max: 2, cd: 0.22, w: 3, grace: 0.5 };
 export const PIT = { dmg: 14 };
 export const TOUCH = { dx: 14, dy: 26 };
-export const FLOCK = { hp: 30, books: 5, orbit: 26, sense: 190, up: 150, down: 64, tell: 0.7, speed: 300, run: 0.75, dmg: 8, scatter: 1.5, cd: 2.2, regroup: 1.4 };
+export const FLOCK = { hp: 30, books: 5, orbit: 26, sense: 190, up: 150, down: 84, tell: 0.7, speed: 300, run: 0.75, dmg: 8, scatter: 1.5, cd: 2.2, regroup: 1.4 };
 const SOUND = { learn: s => (s.ui || s.tell)(), ends: s => (s.puff || s.tell)(), float: s => (s.whoosh || s.tell)(), blink: s => (s.whoosh || s.tell)(), fizzle: s => (s.clank || s.thud || s.tell)(),
   step: s => (s.ui || s.tell)(), stepGone: s => (s.puff || s.tell)(), filed: s => (s.thud)(), rune: s => (s.clank || s.thud)(), gather: s => (s.tell)(), stream: s => (s.whoosh || s.tell)(), scatter: s => (s.puff || s.thud)() };
 const R = Math.round;
@@ -66,10 +66,10 @@ export function makeAcademyHands(ctx) {
       if (can) { if (!p.acFloat) { S.n.floats++; snd('float'); } p.vy = -LEV.rise; s.floatT += dt; s.floated = true; p.acFloat = true; p.canCut = false; }
       else p.acFloat = false; }
     if (s.spell === 'conjure' && free && p.jbuf > 0 && !(p.coyote > 0) && s.stepCd <= 0) { p.jbuf = 0; conjure(p, s); } };
-  function conjure(p, s) { const ty = Math.floor(p.y / TS) + 1, tx = Math.floor(p.x / TS), cells = [];
+  function conjure(p, s) { const ty = Math.floor((p.y + 6) / TS), tx = Math.floor(p.x / TS), cells = [];
     for (let x = tx - 1; x <= tx + 1; x++) if (cellAt(x, ty) === ctx.T.AIR && cellAt(x, ty - 1) === ctx.T.AIR) cells.push([x, ty]);
     if (!cells.length) { say(p.x, p.y - 30, AC_SAY.fizzle, '#8aa0c0'); snd('fizzle'); return; }
-    const mine = S.steps.filter(q => q.p === p); if (mine.length >= CJ.max) killStep(mine[0]);
+    const mine = S.steps.filter(q => q.p === p); if (mine.length >= CJ.max) { killStep(mine[0]); S.steps = S.steps.filter(q => q.t > 0); }
     for (const [x, y] of cells) H.setCell(x, y, ctx.T.ONEWAY);
     S.steps.push({ p, cells, t: CJ.life, x: tx, y: ty, key: 'st' + (++S.n.steps) }); s.stepCd = CJ.cd;
     p.y = ty * TS; p.vy = 0; snd('step'); }

@@ -68,7 +68,7 @@ export function correct(e, S, used) {
 /* A BLOW ON HER: [damage, word]. Open x2 (capped per opening), x0.4 otherwise; a CORRECT blow opens her (and lands x2 itself); a phase holds at its floor */
 export function takeBlow(e, S, dmg, used, W) {
   let d, word = null;
-  if (!hmOpen(e) && e.mode !== 'bell' && e.mode !== 'callTell' && e.mode !== 'wake' && correct(e, S, used)) open(e, S, W);
+  if (!hmOpen(e) && !/^(bell|callTell|wake|recover|stagger|glide|crumbleTell)$/.test(e.mode) && correct(e, S, used)) open(e, S, W);   /* (no answer while she is between questions: the bell, a call, her recovery) */
   if (hmOpen(e)) { const cap = S.cap * e.maxHp, room = cap - S.openDealt; d = dmg * HM.openMul <= room ? dmg * HM.openMul : Math.max(dmg * HM.resist, room); S.openDealt = Math.min(cap, S.openDealt + d); S.n.openHits++; }
   else { d = dmg * HM.resist; word = 'WORK'; S.n.work++; }
   const fl = S.ph <= 3 ? HM.floors[S.ph - 1] : 0;
