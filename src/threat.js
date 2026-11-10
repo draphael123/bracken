@@ -250,3 +250,4 @@ export function worstGap(ents, W, H, arena) {
   for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   return Math.max(gap, end - (cx[cx.length - 1] || 0));
 }
+Object.assign(THREAT, { mnshift: 0, mncandle: 0, mncandelabra: 0, mnrack: 0, mnportrait: 0, mndoor: 0, poltergeist: 3, castellan: 6 });   /* (claude/hollowmanor) THE HOLLOW MANOR: its shifting panels, candles, candelabra stands, empty suits, portraits and the nursery door are machines; THE POLTERGEIST; its boss */
