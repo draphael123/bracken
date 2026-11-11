@@ -164,6 +164,8 @@ try {
   ck('FEAT purseback: a purse a foe carried, taken back after the carrier falls (a plain spot purse does not count)', H.pb_where === 'foe' && H.pb_done === 1 && H.spot_counts === 0, H);
 
   }
+  /* a FRESH PAGE for section 4: run after sections 1-3 in one page, the INK and TELL probes read 0 (they pass alone): some state the earlier sections leave behind (not co-op: checked) starves their draws; isolating the sections is the fix, not a looser assert */
+  await pg.evalp('localStorage.clear()'); await pg.reload(); await pg.evalp('BK.manualSimulation=true;' + SETUP);
   /* ===== 4. THE PIXEL CHARMS, THE MINI-BOSS FEAT, THE REVIVE FEAT ===== */
   const X = await pg.evalp(`(async()=>{ const o={}, LV=await import('/src/level.js'); const f=()=>JSON.parse(JSON.stringify((BKT.PROG.c3&&BKT.PROG.c3.f)||{})); const camp=LV.LEVELS.map((l,i)=>[l,i]).filter(([l])=>!l.hidden);
     const red=()=>{BK.step(1);const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]<110&&d[i+2]<110)n++;return n;};
@@ -175,8 +177,6 @@ try {
     /* CARTOGRAPHER'S INK: pips on the map for a wood with silver and a medal */
     { const cnt=()=>{BK.step(30);const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]===234&&d[i+1]===240&&d[i+2]===255)n++;return n;};
       __setup('ink'); BKT.PROG.wood=Object.assign(BKT.PROG.wood||{},{cleared:true,silver:5,medal:3}); BK.state='map'; BK.step(40); const a=Math.max(cnt(),cnt(),cnt()); BKT.PROG.charm='quiet'; const b=Math.max(cnt(),cnt(),cnt()); o.ink=[a,b]; }
-    /* TELL-LENS: a foe winding up is ringed: with the charm worn, the SAME frame with the foe winding up vs not differs in a box round it (BK.look puts the camera on the hero at the level's left edge, so the foe is at screen x ~96) */
-    { __setup('tell'); BK.P.inv=99; const f=BK.spawnFoe({t:'vulture',x:Math.round(BK.P.x/16)+2,y:Math.round(BK.P.y/16)-1}); const e=Array.isArray(f)?f[0]:f; if (e) { const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16); const box=(mode,ch='tell')=>{ BKT.PROG.charm=ch; e.mode=mode; e.modeT=99; BK.look(tx,ty); e.x=BK.P.x+40; e.y=BK.P.y-4; const cam=BK.look(tx,ty); const bx=Math.max(0,Math.min(280,Math.round(e.x-cam.cx)-20)), by=Math.max(0,Math.min(140,Math.round(e.y-cam.cy)-24)); return BK.view.buf.getContext('2d').getImageData(bx,by,44,40).data; }; const dif=(A,B)=>{let n=0;for(let i=0;i<A.length;i+=4)if(Math.abs(A[i]-B[i])+Math.abs(A[i+1]-B[i+1])+Math.abs(A[i+2]-B[i+2])>24)n++;return n;}; const a=box('watch'), b=box('circle'), c=box('watch','quiet'), d=box('circle','quiet'); o.tell_ring=[dif(a,b),dif(c,d)]; } else o.tell_ring=[0,99]; }
     /* MINI-BOSS no-hit feat: a wood with a mini; kill it without being struck */
     let mi=null; for (const [l,i] of camp.slice(0,40)) { BK.setHero('knight'); BK.reset({fresh:true}); __wipe(); BK.load(i); BK.start(); if (BK.L.mini) { mi={id:l.id,i}; break; } }
     o.miniLevel=mi&&mi.id;
@@ -190,7 +190,13 @@ try {
   ck('RED THREAD: a red outline round the spikes within 3 tiles, far less at 12 tiles, none without the charm', X.thread_redthread_3 - X.thread_quiet_3 > 60 && (X.thread_redthread_3 - X.thread_quiet_3) - (X.thread_redthread_12 - X.thread_quiet_12) > 40, { level: X.spikeLevel, near: [X.thread_redthread_3, X.thread_quiet_3], far: [X.thread_redthread_12, X.thread_quiet_12] });
   ck('BREADCRUMBS: a trail of crumbs is laid while you walk; none without the charm', X.crumbs_crumbs >= 5 && X.crumbs_null === 0, { crumbs: X.crumbs_crumbs, none: X.crumbs_null });
   ck("CARTOGRAPHER'S INK: silver pips + medal on the world map for a won wood", X.ink[0] > X.ink[1], X.ink);
-  ck('TELL-LENS: a winding-up foe is ringed in red (the same frame with the foe winding up vs not, minus a control charm)', X.tell_ring[0] - X.tell_ring[1] >= 20, X.tell_ring);
+  /* TELL-LENS in its own fresh page (after the map probes above the same code reads 0: the foe's frame is not drawn; passes first in a page, so the page is made first) */
+  await pg.evalp('localStorage.clear()'); await pg.reload(); await pg.evalp('BK.manualSimulation=true;' + SETUP);
+  const T = await pg.evalp(`(async()=>{ const o={};
+    /* TELL-LENS: a foe winding up is ringed: with the charm worn, the SAME frame with the foe winding up vs not differs in a box round it (BK.look puts the camera on the hero at the level's left edge, so the foe is at screen x ~96) */
+    { __setup('tell'); BK.P.inv=99; const f=BK.spawnFoe({t:'vulture',x:Math.round(BK.P.x/16)+2,y:Math.round(BK.P.y/16)-1}); const e=Array.isArray(f)?f[0]:f; if (e) { const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16); const box=(mode,ch='tell')=>{ BKT.PROG.charm=ch; e.mode=mode; e.modeT=99; BK.look(tx,ty); e.x=BK.P.x+40; e.y=BK.P.y-4; const cam=BK.look(tx,ty); const bx=Math.max(0,Math.min(280,Math.round(e.x-cam.cx)-20)), by=Math.max(0,Math.min(140,Math.round(e.y-cam.cy)-24)); return BK.view.buf.getContext('2d').getImageData(bx,by,44,40).data; }; const dif=(A,B)=>{let n=0;for(let i=0;i<A.length;i+=4)if(Math.abs(A[i]-B[i])+Math.abs(A[i+1]-B[i+1])+Math.abs(A[i+2]-B[i+2])>24)n++;return n;}; const a=box('watch'), b=box('circle'), c=box('watch','quiet'), d=box('circle','quiet'); o.tell_ring=[dif(a,b),dif(c,d)]; } else o.tell_ring=[0,99]; }
+    return o; })()`);
+  ck('TELL-LENS: a winding-up foe is ringed in red (the same frame with the foe winding up vs not, minus a control charm)', T.tell_ring[0] - T.tell_ring[1] >= 20, T.tell_ring);
   ck('FEAT minino: a mini-boss killed with no blow taken counts; a blow taken spoils it', !!X.miniLevel && X.mini_on_false && X.mini_done_false === 1 && X.mini_done_true === 0, { level: X.miniLevel, on: X.mini_on_false, clean: X.mini_done_false, hit: X.mini_done_true });
   ck('FEAT bossrevive: player one lifts a downed ally while a fight is on', !!X.miniLevel && X.rev_fight === true && X.rev_down > 0 && X.rev_up === 0 && X.rev_done === 1, { fight: X.rev_fight, down: X.rev_down, up: X.rev_up, done: X.rev_done });
 } catch (e) { fails++; console.log('TOOL ERROR', e.stack || e); } finally { pg.close(); }
