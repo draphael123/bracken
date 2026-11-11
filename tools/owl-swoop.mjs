@@ -1,3 +1,4 @@
+// PAGE TOOL: opens a headless Chrome (imports cdp.mjs / boss-level.mjs). NOT a node-only check - never run it beside a suite, and never while scratch/GATE-RUNNING.flag or BROWSER-HOLD.flag exists without the RAM gate. (claude/owl4b)
 // tools/owl-swoop.mjs - THE OWL REEVE 2's PAIRS AND HER NEW MOVES, IN THE PAGE (claude/owl2, Daniel 2026-10-08).
 //
 // Daniel: "duck under the swoop". Her SWOOP runs at head height along a told HIGH line: a crouched hero is under her talons (not

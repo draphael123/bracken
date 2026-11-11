@@ -1,3 +1,4 @@
+// PAGE TOOL: opens a headless Chrome (imports cdp.mjs / boss-level.mjs). NOT a node-only check - never run it beside a suite, and never while scratch/GATE-RUNNING.flag or BROWSER-HOLD.flag exists without the RAM gate. (claude/owl4b)
 // tools/owl-gust.mjs - THE OWL REEVE 3, IN THE PAGE (claude/owl3, Daniel 2026-10-15: "too easy - lit lanterns last 14 s and each crash opens her").
 //
 // Daniel's calls, each held here:

@@ -1,3 +1,4 @@
+// PAGE TOOL: opens a headless Chrome (imports cdp.mjs / boss-level.mjs). NOT a node-only check - never run it beside a suite, and never while scratch/GATE-RUNNING.flag or BROWSER-HOLD.flag exists without the RAM gate. (claude/owl4b)
 /* tools/hanging-pilots.mjs [passes=2] - THE HANGING VILLAGE's two fights through BK.bossLab (src/lab.js): THE OWL REEVE (the
    crown) all six heroes, dice pinned per row, one salt per pass so pass two is not
    pass one again (docs/INTEGRATOR.md). Refill health (the danger number) and a 150 s cap, as the ranking measured them.

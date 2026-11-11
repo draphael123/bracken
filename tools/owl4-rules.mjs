@@ -196,4 +196,10 @@ process.env.BRACKEN_OWL4 = '1';
   sum.push('H walk bot lamp lesson (src/owl4-bot.js): ' + rows.join('; ') + '; strike a dark lamp, lure through the light, cut the rookery cord onto the goblin, never a swing at it unlit, skip when no lamp');
 }
 
+/* I. THE BOTS ARE WIRED (source level: lab.js and playtest.js load in node but need the page to run) */
+{ const lab = readFileSync(new URL('../src/lab.js', import.meta.url), 'utf8'), pt = readFileSync(new URL('../src/playtest.js', import.meta.url), 'utf8');
+  for (const re of [/boss\.mode === 'stoopTell'/, /boss\.mode === 'stoop' && P\.ground && boss\.stLock && SHIELDED\(h\)/, /boss\.mode === 'netTell'/, /'slammed','stoopDown','netted'/]) assert(re.test(lab), 'lab.js owl bot: ' + re);
+  for (const re of [/import \{ shadowGobPlan, planKeys \} from '\.\/owl4-bot\.js'/, /e\.t === 'shadowgob' && !\(e\.shadow && e\.shadow\.lit\)/, /shadowGobPlan\(view\)/, /if \(foe && !fighting\)/]) assert(re.test(pt), 'playtest.js walk bot: ' + re);
+  sum.push('I bots wired: lab.js owl bot (stoop: shield heroes meet it and guard the last 0.12 s, others leave the line; net: out from under; new open modes) + playtest.js walk bot (the lamp lesson, never swings at an unlit Shadow Goblin)'); }
+
 console.log('OWL4 RULES: all green.\n  ' + sum.join('\n  '));
