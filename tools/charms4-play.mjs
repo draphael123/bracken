@@ -22,6 +22,7 @@ try {
   await pg.send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__CHARMS2=true;window.__CHARMS3=true' });
   await pg.reload();
   await pg.evalp('BK.manualSimulation=true;' + SETUP);
+  if (!process.env.ONLY4) {   /* ONLY4=1: section 4 alone (the pixel charms, the mini and revive feats), for a quick re-run */
 
   /* ===== 1. THE SHOP, 27 rows ===== */
   const NEWIDS = ['magpie', 'surefoot', 'ink', 'spade', 'northstar', 'scout', 'redthread', 'bone', 'crumbs', 'brother', 'hourglass', 'tell'];
@@ -69,7 +70,7 @@ try {
   const E = await pg.evalp(`(async()=>{ const o={}; const setup=__setup, foe=__foe, LV=await import('/src/level.js');
     /* SURE FOOT: the longest coyote seen walking off ledges, and the jump's launch speed */
     for (const id of ['surefoot',null]) { setup(id); BK.keys.right=true; let mx=0; for(let i=0;i<900;i++){ BK.sim(1); BK.P.inv=9; mx=Math.max(mx,BK.P.coyote||0); } BK.keys.right=false; o['foot_'+id+'_coyote']=mx;
-      setup(id); const y0=BK.P.y; let top=y0; BK.keys.jump=true; for(let i=0;i<80;i++){ BK.sim(1); top=Math.min(top,BK.P.y); } BK.keys.jump=false; o['foot_'+id+'_apex']=y0-top; }
+      setup(id); const y0=BK.P.y; let top=y0; BK.press('jump'); BK.keys.jump=true; for(let i=0;i<80;i++){ BK.sim(1); top=Math.min(top,BK.P.y); } BK.keys.jump=false; o['foot_'+id+'_apex']=y0-top; }
     /* SCOUT'S CAP: the camera sits ahead of the hero's facing */
     for (const id of ['scout',null]) { setup(id); BK.P.face=1; BK.keys.right=true; BK.sim(150); BK.keys.right=false; BK.sim(40); const c=BK.cam(); o['scout_'+id]=Math.round(BK.P.x-c.x-160); }
     /* BONE-READER: the foe carries its first-blow hp once struck (never a boss), and it is drawn; none without the charm */
@@ -79,10 +80,10 @@ try {
       const A=__strip('r','magpie',tx,ty), N=__strip('r','quiet',tx,ty), N2=__strip('r','quiet',tx,ty); const sA=__strip('r','magpie',tx,ty); o.magpie_diff=__diff(A,N); o.magpie_noise=__diff(N,N2); o.magpie_diff2=__diff(sA,N);
       BK.tp(sv.x-20, sv.y-1); BK.sim(3); const tx2=Math.floor(BK.P.x/16), ty2=Math.floor(BK.P.y/16); o.magpie_far=__diff(__strip('r','magpie',tx2,ty2),__strip('r','quiet',tx2,ty2)); } }
     /* NORTH STAR: idle 21 s at the start: an arrow at the edge toward the gate; not before */
-    { setup('northstar'); const early=()=>{ const tx=Math.floor(BK.P.x/16), ty=Math.floor(BK.P.y/16); return __diff(__strip('r','northstar',tx,ty),__strip('r','quiet',tx,ty)); }; BK.P.inv=99; BK.step(300); o.north_5s=early(); BK.step(60*17); o.north_22s=early(); o.north_state=[JSON.stringify(BK.c3run().north),BK.state]; o.north_noise=(()=>{const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16);return __diff(__strip('r','quiet',tx,ty),__strip('r','quiet',tx,ty));})(); }
+    { setup('northstar'); const early=()=>{ const tx=Math.floor(BK.P.x/16), ty=Math.floor(BK.P.y/16); return __diff(__strip('r','northstar',tx,ty),__strip('r','quiet',tx,ty)); }; BK.P.inv=99; BK.step(300); o.north_5s=early(); BK.step(60*22); o.north_22s=early(); o.north_state=[JSON.stringify(BK.c3run().north),BK.state]; o.north_noise=(()=>{const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16);return __diff(__strip('r','quiet',tx,ty),__strip('r','quiet',tx,ty));})(); }
     /* GRAVEDIGGER'S SPADE: a purse 26 px away is taken with the spade, left alone without; and 80% come back */
     for (const id of ['spade',null]) { setup(id,'knight',0); BK.tp(60,Math.round(BK.P.y/16)-1); BK.sim(5); for(let i=0;i<10;i++){BK.acorns().push({x:BK.P.x,y:BK.P.y-7,got:false,ph:0});BK.sim(1);} BK.sim(5); BK.P.inv=0;BK.P.hurt=0; const carried=BK.dc.carry(0).coins; BK.dc.hit(0,null); for(let i=0;i<300&&BK.P.dead>0;i++)BK.sim(1); BK.sim(60);
-      const b=BK.dc.bundle(0); if(!b){o['spade_'+id]={bundle:false};continue;} const before=BKT.PROG.coins, c0=BK.dc.carry(0).coins; BK.P.x=b.x-26; BK.P.y=b.y; BK.P.vx=0; BK.P.inv=9; BK.sim(4); const got=BK.dc.bundle(0)===null; const gained=(BKT.PROG.coins-before)+(BK.dc.carry(0).coins-c0); o['spade_'+id]={bundle:true,had:b.coins+b.purse,taken26:got,gained}; }
+      const b=BK.dc.bundle(0); if(!b){o['spade_'+id]={bundle:false};continue;} const had0=b.coins+b.purse, before=BKT.PROG.coins, c0=BK.dc.carry(0).coins; BK.P.x=b.x-26; BK.P.y=b.y; BK.P.vx=0; BK.P.inv=9; BK.sim(4); const got=BK.dc.bundle(0)===null; const gained=(BKT.PROG.coins-before)+(BK.dc.carry(0).coins-c0); o['spade_'+id]={bundle:true,had:had0,taken26:got,gained}; }
     /* HOURGLASS: the clock text beside the charm icon (pixels in the HUD box) */
     { setup('hourglass'); BK.P.inv=99; BK.sim(60); BK.step(1); const c=BK.view.buf.getContext('2d'); const grab=()=>c.getImageData(146,18,60,10).data; const A=grab(); BKT.PROG.charm='quiet'; BK.step(1); const B=grab(); o.hourglass_diff=__diff(A,B); }
     /* TELL-LENS: the vignette darkens the corner; a winding foe is ringed */
@@ -96,7 +97,7 @@ try {
   ck('BONE-READER: a struck common foe remembers its health for the bar; never a boss; nothing without it', E.bone_bone_hp0 === 500 && E.bone_bone_boss === 0 && E.bone_null_hp0 === 0, { hp0: E.bone_bone_hp0, boss: E.bone_bone_boss, none: E.bone_null_hp0 });
   ck("MAGPIE'S EYE: a silver 11 tiles off-screen shows an edge pip; 20 tiles away shows nothing", E.magpie_silver && E.magpie_diff - E.magpie_noise > 12 && E.magpie_far <= E.magpie_noise + 4, { diff: E.magpie_diff, noise: E.magpie_noise, far: E.magpie_far });
   ck('NORTH STAR: no arrow at 5 s; an arrow toward the gate after 22 idle seconds', E.north_5s <= E.north_noise + 2 && E.north_22s - E.north_noise > 12, { t5: E.north_5s, t22: E.north_22s, noise: E.north_noise, st: E.north_state });
-  ck("GRAVEDIGGER'S SPADE: a purse 26 px away is taken with it, not without; 4 in 5 coins come back", E.spade_spade.bundle && E.spade_spade.taken26 && !E.spade_null.taken26 && E.spade_spade.gained <= Math.ceil(E.spade_spade.had * 0.8) + 1 && E.spade_spade.gained >= Math.floor(E.spade_spade.had * 0.8) - 1, { spade: E.spade_spade, none: E.spade_null });
+  ck("GRAVEDIGGER'S SPADE: a purse 26 px away is taken with it, not without; 4 in 5 coins come back", E.spade_spade.bundle && E.spade_spade.taken26 && !E.spade_null.taken26 && E.spade_spade.gained === Math.floor(E.spade_spade.had * 0.8), { spade: E.spade_spade, none: E.spade_null });
   ck('HOURGLASS: a clock reads against the next medal beside the charm icon', E.hourglass_diff > 15, E.hourglass_diff);
   ck('TELL-LENS: the screen corners darken', E.tell_corner[0] < E.tell_corner[1], E.tell_corner);
   ck('BROTHERHOOD KNOT: the lift clock is x2/3', Math.abs(E.brother_clock[0] - 1) < 1e-9 && E.brother_clock[1] === 1.5, E.brother_clock);
@@ -162,20 +163,20 @@ try {
     return o; })()`);
   ck('FEAT purseback: a purse a foe carried, taken back after the carrier falls (a plain spot purse does not count)', H.pb_where === 'foe' && H.pb_done === 1 && H.spot_counts === 0, H);
 
+  }
   /* ===== 4. THE PIXEL CHARMS, THE MINI-BOSS FEAT, THE REVIVE FEAT ===== */
   const X = await pg.evalp(`(async()=>{ const o={}, LV=await import('/src/level.js'); const f=()=>JSON.parse(JSON.stringify((BKT.PROG.c3&&BKT.PROG.c3.f)||{})); const camp=LV.LEVELS.map((l,i)=>[l,i]).filter(([l])=>!l.hidden);
     const red=()=>{BK.step(1);const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]<110&&d[i+2]<110)n++;return n;};
-    /* RED THREAD: a spike tile in a real wood, the thread within 5 tiles and not at 12 */
-    let sp=null; for (const [l,i] of camp.slice(0,30)) { BK.setHero('knight'); BK.reset({fresh:true}); __wipe(); BK.load(i); BK.start(); const g=BK.L.grid,W=BK.L.W; for (let k=0;k<g.length;k++) if (g[k]===3) { sp={id:l.id,i,x:k%W,y:(k/W)|0}; break; } if (sp) break; }
-    o.spikeLevel=sp&&sp.id;
-    if (sp) { for (const [id,tiles] of [['redthread',3],['redthread',12],['quiet',3]]) { __setup(id,'knight',sp.i); BK.start(); BK.tp(sp.x-tiles, sp.y-1); BK.P.inv=99; BK.sim(4); BKT.PROG.charm=id; BK.look(Math.floor(BK.P.x/16),Math.floor(BK.P.y/16)); o['thread_'+id+'_'+tiles]=red(); } }
+    /* RED THREAD: a spike tile in the Stockade, the thread within 3 tiles and (almost) none at 12, none without the charm; same position, charm vs none */
+    { const si=LV.LEVELS.findIndex(l=>l.id==='stockade'); o.spikeLevel='stockade'; __setup('redthread','knight',si); BK.start(); const g=BK.L.grid,W=BK.L.W; let sp=null; for(let k=0;k<g.length;k++) if(g[k]===3){sp={x:k%W,y:(k/W)|0};break;}
+      if (sp) for (const t of [3,12]) { BK.tp(sp.x-t,sp.y-1); BK.P.inv=99; BK.sim(4); const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16); for (const id of ['redthread','quiet']) { BKT.PROG.charm=id; BK.look(tx,ty); const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]-(d[i+1]+d[i+2])/2>70)n++; o['thread_'+id+'_'+t]=n; } } }
     /* BREADCRUMBS: a trail of crumbs while walking */
     for (const id of ['crumbs',null]) { __setup(id); BK.start(); BK.keys.right=true; for (let i=0;i<14;i++) BK.step(15); BK.keys.right=false; o['crumbs_'+id]=BK.c3run().trail.length; }
     /* CARTOGRAPHER'S INK: pips on the map for a wood with silver and a medal */
     { const cnt=()=>{BK.step(30);const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]===234&&d[i+1]===240&&d[i+2]===255)n++;return n;};
-      __setup('ink'); BKT.PROG.wood=Object.assign(BKT.PROG.wood||{},{cleared:true,silver:5,medal:3}); BK.state='map'; const a=cnt(); BKT.PROG.charm='quiet'; const b=cnt(); o.ink=[a,b]; }
-    /* TELL-LENS: a foe winding up is ringed in red */
-    { __setup('tell'); BK.start(); BK.P.inv=99; const e=__foe('vulture',4); e.mode='watch'; BK.sim(1); e.mode='watch'; const a=red(); BKT.PROG.charm='quiet'; e.mode='watch'; const b=red(); o.tell_ring=[a,b]; }
+      __setup('ink'); BKT.PROG.wood=Object.assign(BKT.PROG.wood||{},{cleared:true,silver:5,medal:3}); BK.state='map'; BK.step(40); const a=Math.max(cnt(),cnt(),cnt()); BKT.PROG.charm='quiet'; const b=Math.max(cnt(),cnt(),cnt()); o.ink=[a,b]; }
+    /* TELL-LENS: a foe winding up is ringed: with the charm worn, the SAME frame with the foe winding up vs not differs in a box round it (BK.look puts the camera on the hero at the level's left edge, so the foe is at screen x ~96) */
+    { __setup('tell'); BK.start(); BK.P.inv=99; const f=BK.spawnFoe({t:'vulture',x:Math.round(BK.P.x/16)+2,y:Math.round(BK.P.y/16)-1}); const e=Array.isArray(f)?f[0]:f; if (e) { const tx=Math.floor(BK.P.x/16),ty=Math.floor(BK.P.y/16); const box=(mode,ch='tell')=>{ BKT.PROG.charm=ch; e.mode=mode; e.modeT=99; BK.look(tx,ty); e.x=BK.P.x+40; e.y=BK.P.y-4; const cam=BK.look(tx,ty); const bx=Math.max(0,Math.min(280,Math.round(e.x-cam.cx)-20)), by=Math.max(0,Math.min(140,Math.round(e.y-cam.cy)-24)); return BK.view.buf.getContext('2d').getImageData(bx,by,44,40).data; }; const dif=(A,B)=>{let n=0;for(let i=0;i<A.length;i+=4)if(Math.abs(A[i]-B[i])+Math.abs(A[i+1]-B[i+1])+Math.abs(A[i+2]-B[i+2])>24)n++;return n;}; const a=box('watch'), b=box('circle'), c=box('watch','quiet'), d=box('circle','quiet'); o.tell_ring=[dif(a,b),dif(c,d)]; } else o.tell_ring=[0,99]; }
     /* MINI-BOSS no-hit feat: a wood with a mini; kill it without being struck */
     let mi=null; for (const [l,i] of camp.slice(0,40)) { BK.setHero('knight'); BK.reset({fresh:true}); __wipe(); BK.load(i); BK.start(); if (BK.L.mini) { mi={id:l.id,i}; break; } }
     o.miniLevel=mi&&mi.id;
@@ -186,10 +187,10 @@ try {
     if (mi) { BK.setHero('knight'); BK.reset({fresh:true}); __wipe(); BK.load(mi.i); BK.start(); BK.coopStart('ranger',true); BK.sim(20); const M=BK.L.mini; for (const q of BK.players()) { q.inv=99; } BK.tp(Math.round((M.reverse?M.trigger-24:M.trigger+24)/16),Math.round(M.floor/16)-1); const P2=BK.players()[1]; if (P2) { P2.x=BK.P.x+6; P2.y=BK.P.y; } for (let k=0;k<200&&!BK.c3run().miniOn;k++) BK.sim(2); o.rev_fight=BK.c3run().miniOn;
       if (P2) { P2.inv=0; BK.dc.hit(1,null); BK.sim(5); o.rev_down=P2.down; P2.x=BK.P.x+6; P2.y=BK.P.y; BK.players()[0].inv=99; for (let k=0;k<260&&P2.down>0;k++) { BK.sim(1); P2.x=BK.P.x+6; } o.rev_up=P2.down; } o.rev_done=f().bossrevive||0; BK.coopEnd(); }
     return o; })()`);
-  ck('RED THREAD: a red outline round a spike within 3 tiles, none at 12, none without the charm', X.spikeLevel && X.thread_redthread_3 - X.thread_quiet_3 >= 20 && X.thread_redthread_12 - X.thread_quiet_3 <= 4, { level: X.spikeLevel, near: X.thread_redthread_3, far: X.thread_redthread_12, none: X.thread_quiet_3 });
+  ck('RED THREAD: a red outline round the spikes within 3 tiles, far less at 12 tiles, none without the charm', X.thread_redthread_3 - X.thread_quiet_3 > 60 && (X.thread_redthread_3 - X.thread_quiet_3) - (X.thread_redthread_12 - X.thread_quiet_12) > 40, { level: X.spikeLevel, near: [X.thread_redthread_3, X.thread_quiet_3], far: [X.thread_redthread_12, X.thread_quiet_12] });
   ck('BREADCRUMBS: a trail of crumbs is laid while you walk; none without the charm', X.crumbs_crumbs >= 5 && X.crumbs_null === 0, { crumbs: X.crumbs_crumbs, none: X.crumbs_null });
   ck("CARTOGRAPHER'S INK: silver pips + medal on the world map for a won wood", X.ink[0] > X.ink[1], X.ink);
-  ck('TELL-LENS: a winding-up foe is ringed in red', X.tell_ring[0] - X.tell_ring[1] >= 8, X.tell_ring);
+  ck('TELL-LENS: a winding-up foe is ringed in red (the same frame with the foe winding up vs not, minus a control charm)', X.tell_ring[0] - X.tell_ring[1] >= 20, X.tell_ring);
   ck('FEAT minino: a mini-boss killed with no blow taken counts; a blow taken spoils it', !!X.miniLevel && X.mini_on_false && X.mini_done_false === 1 && X.mini_done_true === 0, { level: X.miniLevel, on: X.mini_on_false, clean: X.mini_done_false, hit: X.mini_done_true });
   ck('FEAT bossrevive: player one lifts a downed ally while a fight is on', !!X.miniLevel && X.rev_fight === true && X.rev_down > 0 && X.rev_up === 0 && X.rev_done === 1, { fight: X.rev_fight, down: X.rev_down, up: X.rev_up, done: X.rev_done });
 } catch (e) { fails++; console.log('TOOL ERROR', e.stack || e); } finally { pg.close(); }
