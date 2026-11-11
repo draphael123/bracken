@@ -7,6 +7,8 @@ import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save s
 import * as TRT from './traits.js';   /* CORE PASSIVES AND EQUIPPABLE TRAITS (claude/traitframe): dark behind TRAITS_SHIP, see src/traits.js */
 export {LEGACY_NODES, SKILLS};
 export { TRT };
+import * as FRK from './forks.js';   /* THE POST-L20 A/B FORKS (claude/forkframe): dark behind FORKS_SHIP, see src/forks.js */
+export { FRK };
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
    or slotted: it is on from the hero level the catalog gives it. Version 1 saves are migrated by passivesToLevels below. */
 export const PROGRESSION_VERSION = 2;
@@ -95,7 +97,7 @@ export const UPGRADE_LEVELS = [27, 29, 32, 34, 37, 39, 42, 44, 47, 49];
 export const UPGRADE_MAX = 2;
 export const TECHNIQUES = { knight: KNIGHT_TECH };
 export const UPGRADES = { knight: KNIGHT_UPGRADES };
-export const hasKit = h => !!TECHNIQUES[h];
+export const hasKit = h => !!TECHNIQUES[h] && !(FRK.forksShip() && FRK.hasForks(h));   /* (claude/forkframe) FORKS_SHIP on: a hero with forks has NO technique / upgrade cards (they are cut: forkplan sec 1), his L25-L50 levels are stat cards + major perks. Off: exactly as before. */
 /* ==== PICK-1-OF-2 FORKS (claude/ltfork, brief-lategame2-1104 sec 1) ====
    At FORK_LEVELS (30, 40, 50) a TECHNIQUES entry may be {fork: [A, B]} instead of one technique: the card shows both, takes one, the other is LOCKED until
    a respec. techniqueFor keeps returning A (a fork's first), so everything that reads one technique per level is unchanged; techniquesAt gives the pair.
@@ -314,7 +316,7 @@ export function validateProgress(p){
   }
  }
  for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);if(c.up!==undefined&&(!object(c.up)||Object.values(c.up).some(r=>!Number.isInteger(r)||r<0||r>UPGRADE_MAX)))throw Error('Invalid card upgrades: '+h);}
- dropForkClash(p);
+ dropForkClash(p);FRK.validateForks(p);   /* (claude/forkframe) a bad p.fork entry is dropped, never an error */
  for(const v of Object.values(p.xp||{}))if(!Number.isFinite(v)||v<0)throw Error('Invalid XP. Original save retained.');
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
  for(const [h,v] of Object.entries(p.loadouts||{}))if(!Array.isArray(v)||v.length>MAX_SLOTS||v.some(id=>id!==null&&(!skillFor(h,id)||!p.skillOwned?.[h]?.[id]))||new Set(v.filter(Boolean)).size!==v.filter(Boolean).length)throw Error('Invalid loadout: '+h);
@@ -362,9 +364,9 @@ export function grantStarters(p){let n=0;for(const h of HERO_IDS)if(grantStarter
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);FRK.migrateForks(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);grantForkRepick(p);FRK.migrateForks(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */
