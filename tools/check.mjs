@@ -300,7 +300,7 @@ const runSync = (name, cmd, args, env) => {
   const ms = Date.now() - t0; live(name, r.status === 0, ms);
   return { name, ok: r.status === 0, ms, last: out[out.length - 1] || '', out };
 };
-const run = (name, cmd, args, env) => JOBS === 1 ? runSync(name, cmd, args, env) : { name, cmd, args, env };
+const run = (name, cmd, args, env) => JOBS === 1 || DRY ? runSync(name, cmd, args, env) : { name, cmd, args, env };
 const files = [];
 const walk = d => { for (const f of readdirSync(join(ROOT, d))) { const p = join(d, f); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else if (/\.(m?js)$/.test(f)) files.push(p); } };
 walk('src'); walk('tools');
