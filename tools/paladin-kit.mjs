@@ -34,7 +34,7 @@ try {
   R = await pg.evalp(`(async()=>{
     if (!BK.holy) return { err: 'no BK.holy: there is no holy ground' };
     BK.SET.speed = 1;
-    const { LEVELS } = await import('/src/level.js'); const { HG } = await import('/src/holy-ground.js');
+    const { LEVELS } = await import('/src/level.js'); const { HG, PAL_MACE } = await import('/src/holy-ground.js'); const out0 = { mace: PAL_MACE };
     BK.setHero('paladin'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'stockade')); BK.start(); BK.god = false; BK.sim(5);
     const L0 = BK.L, W = L0.W, at = (x, y) => L0.grid[y * W + x];
     let spot = null;
@@ -61,7 +61,8 @@ try {
     /* 4. RADIANCE (3 pips) */
     home(); { const f = foe(2); BK.P.light = 3 * HG.conv.pip; const h0 = f.hp; tap({ after: 10 }); out.radiance = { light: Math.round(BK.P.light), dmg: h0 - f.hp, life: aura() && +aura().life.toFixed(2) }; }
     /* 5. SUNFALL (5 pips) */
-    home(); { const f = foe(3); BK.P.light = 100; const h0 = f.hp; tap({ after: 4 }); out.sunfall = { light: Math.round(BK.P.light), blast: BK.P.blastT > 0, dmg: 0 }; BK.sim(30); out.sunfall.dmg = h0 - f.hp; }
+    home(); { const f = foe(3); BK.P.light = 100; const h0 = f.hp; tap({ after: 4, up: PAL_MACE }); out.sunfall = { light: Math.round(BK.P.light), blast: BK.P.blastT > 0, dmg: 0 }; BK.sim(30); out.sunfall.dmg = h0 - f.hp; }   /* (claude/palrework-d) PAL_MACE: SUNFALL is UP+C at five */
+    if (PAL_MACE) { home(); BK.P.light = 100; tap({ after: 4 }); out.tap5 = { light: Math.round(BK.P.light), blast: BK.P.blastT > 0 }; BK.sim(30); }   /* PAL_MACE: a tap at five is RADIANCE+ (four spent) */
     /* 6. THE HAMMER THROW (UP + C, 3 pips); with 2 nothing */
     home(); { const P = BK.P, f = foe(5); const h0 = f.hp; P.light = 3 * HG.conv.pip; tap({ up: true, after: 2 }); const lAfter = P.light; for (let k = 0; k < 90; k++) { hold(f, 5); BK.sim(1); }
       out.throw = { light: Math.round(lAfter), dmg: h0 - f.hp }; P.light = 2 * HG.conv.pip; tap({ up: true, after: 4 }); out.throw.poor = Math.round(P.light); }
@@ -109,7 +110,7 @@ try {
       none(); K.block = true; BK.sim(20); out.coop = { aegis: !!a.aegis, aura: !!aura() };
       place(20); out.coop.inside = hit(); BK.sim(20);
       place(20); out.coop.red = hit({ unblockable: true }); BK.coopEnd(); }
-    none(); return out; })()`, 120000);
+    none(); out.mace = out0.mace; return out; })()`, 120000);
 } catch (e) { console.log('FAIL the page: ' + e.message); pg.close(); process.exit(1); }
 const errs = pg.errors.slice(); pg.close();
 if (R.err) { console.log('FAIL ' + R.err); process.exit(1); }
@@ -121,9 +122,10 @@ ok(Math.abs(R.follow.x1 - R.follow.want) < 3 && Math.abs(R.follow.x1 - R.follow.
 ok(R.mend > 0.1 && R.burn > 0, 'his aura mends him and burns a foe in it: mend +' + R.mend + ', burn ' + R.burn);
 ok(R.goneAfter, 'the aura goes out after its life (' + HG.aura.base + ' + ' + HG.aura.perPip + ' a pip)');
 ok(R.radiance.light === 0 && R.radiance.dmg > 0 && R.radiance.life >= HG.aura.base + 3 * HG.aura.perPip - 0.3, 'three pips: a tap is RADIANCE - three spent, the foe beside him struck, a longer aura: ' + JSON.stringify(R.radiance));
-ok(R.sunfall.light === 0 && R.sunfall.blast && R.sunfall.dmg > 0, 'five pips: a tap is SUNFALL - all spent, the blast, the foe struck: ' + JSON.stringify(R.sunfall));
+if (R.mace) ok(R.tap5 && R.tap5.light === pip && !R.tap5.blast, '(PAL_MACE) five pips: a TAP is RADIANCE+ - four spent, no blast: ' + JSON.stringify(R.tap5));
+ok(R.sunfall.light === 0 && R.sunfall.blast && R.sunfall.dmg > 0, (R.mace ? '(PAL_MACE) five pips: UP+C' : 'five pips: a tap') + ' is SUNFALL - all spent, the blast, the foe struck: ' + JSON.stringify(R.sunfall));
 ok(R.throw.light === 0 && R.throw.dmg > 0 && R.throw.poor === 2 * pip, 'UP + C: three pips throw the hammer (a foe ahead struck), two throw nothing: ' + JSON.stringify(R.throw));
-ok(R.block.r === 'blocked' && R.block.r2 === 'blocked' && R.block.gain1 === 0 && R.block.gain === pip, 'THE LIGHT-WARD: +1 pip every SECOND block: ' + JSON.stringify(R.block));
+ok(R.block.r === 'blocked' && R.block.r2 === 'blocked' && (R.mace ? R.block.gain1 === HG.conv.block && R.block.gain === 2 * HG.conv.block : R.block.gain1 === 0 && R.block.gain === pip), (R.mace ? '(PAL_MACE) THE LIGHT-WARD: +1 pip EVERY blow absorbed: ' : 'THE LIGHT-WARD: +1 pip every SECOND block: ') + JSON.stringify(R.block));
 ok(R.block.paid < 1, 'THE LIGHT-WARD: a block costs no wind of its own (the drain is per second): ' + JSON.stringify(R.block));
 ok(R.block.behind === 'blocked', 'THE LIGHT-WARD turns a blow from BEHIND (all round): ' + JSON.stringify(R.block));
 ok(R.block.pierce !== 'blocked', 'THE LIGHT-WARD: a PIERCING blow goes through: ' + JSON.stringify(R.block));
@@ -138,8 +140,9 @@ ok(R.dawn.landed && R.dawn.side > 0 && R.dawn.light >= pip && R.dawn.aura, 'DAWN
 ok(R.v3.n60 > R.v0.n60 && R.v3.light === 3 * pip && R.v3.patches >= 1 && R.v0.patches === 0, 'VERDICT SCALES: at 3 pips a sigil faster and a patch under the struck, nothing spent: ' + JSON.stringify([R.v3, R.v0]));
 ok(R.judged.broken > 0 && !(R.judged.guard > 0) && R.judged.light === 100 && R.judged.elite >= 0.5, 'VERDICT JUDGED (5 pips): a raised guard broken, an elite staggered, nothing spent: ' + JSON.stringify(R.judged));
 ok(R.spear.wind > 0 && R.spear.first >= Math.round(HG.lance.wind * 60) - 2 && R.spear.dmgA > 0 && R.spear.dmgB === 0, 'SPEAR OF LIGHT: a wind-up, then the spear strikes the FIRST foe only: ' + JSON.stringify(R.spear));
-ok(R.perfect.r === 'blocked' && R.perfect.gain === 2 * pip && R.perfect.stagger >= HG.flash.stagger - 0.05, 'a PERFECT GUARD is +2 pips and a holy flash that staggers the attacker: ' + JSON.stringify(R.perfect));
-ok(R.bulwark.aegis && R.bulwark.walked > 8 && R.bulwark.speed <= 30 && R.bulwark.shoved > 12, 'BULWARK ADVANCE: behind the aegis he walks slowly forward and shoves the foe back: ' + JSON.stringify(R.bulwark));
+ok(R.perfect.r === 'blocked' && R.perfect.gain === (R.mace ? HG.conv.parryMace : 2 * pip) && R.perfect.stagger >= HG.flash.stagger - 0.05, 'a PERFECT GUARD is +2 pips and a holy flash that staggers the attacker: ' + JSON.stringify(R.perfect));
+if (R.mace) ok(R.bulwark.aegis && R.bulwark.walked > 4 && R.bulwark.speed <= 30 && R.bulwark.shoved < 12, '(PAL_MACE) NO BULWARK ADVANCE: behind the ward he only shuffles (<= 30 px/s) and shoves nothing: ' + JSON.stringify(R.bulwark));
+else ok(R.bulwark.aegis && R.bulwark.walked > 8 && R.bulwark.speed <= 30 && R.bulwark.shoved > 12, 'BULWARK ADVANCE: behind the aegis he walks slowly forward and shoves the foe back: ' + JSON.stringify(R.bulwark));
 ok(R.verdict.early >= 1 && R.verdict.early < 3 && R.verdict.marked === 3 && R.verdict.struck === 3 && !R.verdict.swung, 'VERDICT: a sigil a beat on the foes ahead (3), the release strikes all three, no hammer swing: ' + JSON.stringify(R.verdict));
 ok(R.arc.hits >= 2, "HEAVEN'S ARC: up + X in the air hits a foe over him twice: " + JSON.stringify(R.arc));
 ok(R.coop.aegis && R.coop.aura, 'the paladin raised the aegis in his aura for the co-op test: ' + JSON.stringify(R.coop));

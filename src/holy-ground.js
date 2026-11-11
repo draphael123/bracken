@@ -13,7 +13,10 @@
 // main.js binds it (makeHolyGround) and calls update (updateHoly), draw (drawHoly) and clear (a level load); BK.holy() reads it.
 /* (claude/palrework, Daniel 11-06 11:38 + 21:19) THE PALADIN REWORK: PAL_MACE is the one switch. ON = a one-hand flanged MACE and a SUN SHIELD (art: src/chars.js), the HOLY HAMMER thrown on UP+C at 3-4 pips
    (SUNFALL moves to UP+C at 5, a tap at 5 is RADIANCE+), pips earned by ABSORBING blows, no Bulwark Advance. OFF = the master paladin (the war maul, the out-and-back hammer, tap-SUNFALL). scratch/lane-reports/paladinplan.md */
-export const PAL_MACE = true;
+const PAL_MACE_SHIP = true;   /* THE SWITCH: false ships the rework dark (the master paladin for everyone) */
+/* (claude/palrework-d) a lab/test override for old-vs-new runs on one server: ?palmace=0 (or =1) in the page, BRACKEN_PALMACE=0/1 in a node tool. No override = PAL_MACE_SHIP. */
+export const PAL_MACE = (() => { try { const q = typeof location !== 'undefined' && /[?&]palmace=([01])(?:&|#|$)/.exec(location.search || ''); if (q) return q[1] === '1';
+  const e = typeof process !== 'undefined' && process.env && process.env.BRACKEN_PALMACE; if (e === '0' || e === '1') return e === '1'; } catch { /* no page */ } return PAL_MACE_SHIP; })();
 export const HG = {
   r: 44,              // px either side of the middle: about five and a half tiles across
   dy: 30,             // a body this far above or below the circle's floor still stands in it

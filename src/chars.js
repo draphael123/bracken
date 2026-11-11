@@ -214,7 +214,14 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   if (maul && MACE_ON && BODY_REF === PAL_BODY) { // THE PALADIN'S MACE (claude/palrework): ONE hand, a short flanged head. The pose's segment gives the grip and the direction; the haft is short (at most 14 px out), the head a flanged ball seven across
     // (a steel core, four flanges, a gold stud) on a leather-wound oak haft with a gold pommel. ONLY the head takes a weapon skin (WT); the haft, wrap, pommel and gauntlet keep their own colours. The off hand is on the SHIELD, never the haft.
     const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
-    const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, L = Math.min(len0, 14), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay, qy = ax;
+    const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay, qy = ax;
+    /* (claude/palrework-d, the stills) THE HEAD MUST NOT SIT ON HIS FACE OR OFF THE CANVAS. The maul's poses were drawn for a long haft: a wind-up (verdict, twin smite,
+       the leap, the dances) put its grip at his shoulder and its head behind his helm, so a 14 px mace laid the head over his face; a far blow (THE OVERHEAD, the low
+       mace, the riposte) ran it past the frame's edge and cut it in half. The head goes the shortest step from 14 px - out to 20, in to 6 - to a place clear of the helm
+       and inside the frame (head radius 5 with its outline); if there is none it stays at 14. */
+    const helm = [BX + dx - 1, BY + dy + hy - 2, BX + dx + 11, BY + dy + hy + 7], fits = l => { const X = x0 + ax * l, Y = y0 + ay * l;
+      return X - 5 >= 0 && X + 5 <= W + wide - 1 && Y - 5 >= -top && Y + 5 <= H - 1 && !(X + 4 > helm[0] && X - 4 < helm[2] && Y + 4 > helm[1] && Y - 4 < helm[3]); };
+    let L = Math.min(len0, 14); if (!fits(L)) { const tries = [15, 13, 16, 12, 17, 11, 18, 10, 19, 9, 20, 8, 7, 6].filter(l => l !== L); const ok = tries.find(fits); if (ok !== undefined) L = ok; }
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
     line(g, ...at(-3), ...at(L - 2), '#6a4428', 2);
     for (let t = -2; t <= 3; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap

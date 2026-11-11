@@ -1,3 +1,4 @@
+import { PAL_MACE } from './holy-ground.js';   /* (claude/palrework-d) the paladin's TUNE row follows the rework switch */
 // src/flotilla-boss.js (was admiral.js: ad blockers block that filename) - THE ADMIRAL, THE FLOTILLA's boss (claude/flotilla3, the OPUS greybox, 2026-10-25; scratch/brief-flotilla3-1018.md part C, folded with the
 // APPROVED review scratch/review-flotilla-1018.md - Daniel 10-18 10:18 'all recs'). He replaces THE ADMIRAL'S CHAMPION in the Flotilla's boss slot; the Champion
 // stays registered (src/fleetlord-champion.js) for THE UNDERWATER KEEP's mini slot (brief part B, with KEEP 2).
@@ -31,7 +32,9 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/fleetlord-hands.js binds it). adPlan is the boss lab's HUMAN bot (src/lab.js).
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. Heroes not listed are 1 / 1. */
-export const TUNE = { knight: { in: 1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, pirate: { in: 1.1, out: 1.0 }, paladin: { in: 1.45, out: 0.42 }, reaper: { in: 1.1, out: 0.8 }, geomancer: { in: 1, out: 1 }, ranger: { in: 1, out: 1 }, berserker: { in: 1.3, out: 0.8 } };   /* (claude/flotilla4) re-tuned for the doubled openings + hp 5200 (r3 n=12: knight/paladin/berserker/reaper 12/12, warden 2/12) */
+/* (claude/palrework-d) THE PALADIN'S ROW: 1.45 / 0.42 was measured on the war maul (PAL_MACE off, unchanged). The mace paladin starts from 1 / 1 (palrework Q10) and is set by the old-vs-new run (lane report) */
+const PAL_ADM = { in: 1, out: 1 };
+export const TUNE = { knight: { in: 1, out: 1 }, pyro: { in: 1.3, out: 0.85 }, pirate: { in: 1.1, out: 1.0 }, paladin: PAL_MACE ? PAL_ADM : { in: 1.45, out: 0.42 }, reaper: { in: 1.1, out: 0.8 }, geomancer: { in: 1, out: 1 }, ranger: { in: 1, out: 1 }, berserker: { in: 1.3, out: 0.8 } };   /* (claude/flotilla4) re-tuned for the doubled openings + hp 5200 (r3 n=12: knight/paladin/berserker/reaper 12/12, warden 2/12) */
 export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const AD = {
   hp: 4250, w: 22,   /* (claude/flotilla4) 3250 -> 4250 (+31%, the coordinator's cap: a LITTLE more health) with the openings doubled (3250: 98% wins, 77 s); the rest is pressure: AD.dmg x1.2 and the per-hero TUNE */
