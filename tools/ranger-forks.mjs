@@ -1,4 +1,4 @@
-// tools/ranger-forks.mjs - NODE-ONLY checks for the Ranger's fork road (claude/rangerfork). No browser, no cdp, no puppeteer. Run: node tools/ranger-forks.mjs
+// tools/ranger-forks.mjs - NODE-ONLY checks for the Ranger's fork road (claude/rangerfork). Pure node, no page. Run: node tools/ranger-forks.mjs
 // 1. data: 11 rungs on the ladder, 10 trait pairs for her 10 traits, ids unique (and apart from the Knight's and the Geomancer's), text limits, sides differ
 // 2. wiring: every side id is read by src/ranger.js / src/main.js / src/ranger-forks.js (fk('id') / rb('id')); no ad-block filename; kit words (no stone, shield advance, hammer, sword cut, beam)
 // 3. flag off = the base: legacyTech null, no p.fork read; flag on: reads respect pick + level + slot (skill) / worn (trait); PvP EVEN L1 turns every side off; folded ids retire only with the flag
