@@ -152,6 +152,7 @@ import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import * as GLU from './foe-glue.js'; import { installTactics, braceHit } from './foe-tactics.js';   /* (claude/lategameb) PACK GLUE (src/foe-glue.js) */  import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg, capBoost as bpCap, kiteBoost as bpKite } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
+import * as CF3 from './cf-foe.js'; import { duckBeat as cfDuck } from './audio.js';   /* (claude/cf3, flag CF3_SHIPS false) THE FOE FEEL: flash curve, hurt pose, stagger read, tell glint, kill pop, boss star + death slow-mo (src/cf-foe.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
 import { roleOf as rxRoleOf } from './foe-react.js'; import * as FBR from './foe-break.js'; import * as FOA from './foe-affix.js'; import * as FP from './foe-pursuit.js'; import * as FPL from './foe-pass.js';   /* (claude/foepass) LEVER 3 affixes from act II; LEVER 1 pursuit + the archer's lead and LEVER 4a squad roles; where they are live (src/foe-pass.js) */ import * as TA from './told-attacks.js';   /* (claude/foepass) LEVER 4b: every family's ONE told attack - its own windup shape, the answer read beside the mark, a jumped / ducked one OVERREACHES */   /* (claude/foepass) THE FOE PASS, LEVER 2: varied blows fill a common foe's bar, the same one spammed goes stale; a finisher refunds wind + a sliver of health */
 import * as AM from './anti-mash.js'; import * as DFM from './difficulty.js'; import * as LV from './lives.js';   /* (claude/lives) THE LIVES OPTION: PROG.lives 'off'|'on', chosen at NEW SAVE, locked at the first level */   /* (claude/difficulty) ANTI-MASH INSIDE OPENINGS (stale blows, the universal break bar + finisher, varied hits refill abilities) and THE DIFFICULTY MODES' table */
@@ -353,6 +354,7 @@ function resize() {
 }
 addEventListener('resize', () => { if (viewMode === 'zoom' || viewMode === 'coop') setView(viewMode); resize(); }); resize();
 const q = new URLSearchParams(location.search);
+{ const cq = q.get('cf3'); if (cq) CF3.setCF3(cq !== 'off'); }   /* (claude/cf3) lab only: ?cf3=on|off (CF3_SHIPS stays false in the file) */
 { const tq = q.get('traits'); if (tq) { TRT.setTraitsShip(tq !== 'off'); TRT.setLabTraits(tq === 'on' || tq === 'off' ? null : tq === 'core' || tq === 'def' ? tq : tq.split(',').filter(Boolean)); } }   /* (claude/traitframe) lab only: ?traits=on|off|core|def|<id>,<id> (TRAITS_SHIP stays false for everyone else) */
 
 // ---------- settings + progress ----------
@@ -2417,6 +2419,7 @@ function impactAt(x, y, kind = 'hit') { if (SET.impact) impacts.push({ x, y, t: 
 /* (claude/juice1) THE CONTACT STAR at the blade's edge (flag on): held full through the freeze (world time does not run in it), then two frames of fade. cls sets its size; dir = the swing's way (the horizontal rays run longer along it). */
 function starAt(x, y, cls, dir = 1, mat = 'hit') { if (!JUICE2_SHIPS || !SET.impact || !starSize(cls)) return; impacts.push({ x, y, t: 0, kind: 'star', cls, dir, mat, life: JUICE2.starFade }); }
 function ringAt(x, y, r = 18, col = '#fff6e0', life = 0.28) { if (SET.impact) rings.push({ x, y, r, col, t: 0, life }); }
+let cfSlowT = 0, cfSlowK = 1;   /* (claude/cf3) CF3 boss-death slow-mo: seconds left, factor */
 let hushT = 0, slowT = 0, bossFx = [], bossBodies = [], lastTellT = -9, flyCoins = [], coinCombo = 0, coinComboT = 0, heartT = 0, cricketT = 0, dripT = 0, fish = [], fishT = 3, clouds = [], mapClouds = [], mapBirds = [];
 const CLOUD = ART.bakeClouds(), MAPCLOUD = ART.bakeMapClouds(), MAPSIGN = ART.bakeMapSign(), FISH = ART.bakeFish();
 for (let i = 0; i < 6; i++) clouds.push({ x: Math.random() * 900, y: 8 + Math.random() * 50, k: i % 3, sp: 4 + Math.random() * 5 });
@@ -8999,7 +9002,8 @@ function spawnCorpse(e, dir) {
      - for 1.65 s, and for as long as a reaper's harvest body lies (DK2.linger, 24 s). Whoever or whatever killed it, it now goes over: thrown a little off the blow and tipped onto
      its back (c.tip), and lies there. A foe with its own case or its own death frame is untouched; tools/room-kills.mjs asserts every common body has a c.fall. */
   if (!c.fall && c.max > 0.05) { c.fall = 'tip'; c.tip = true; c.face = c.face > 0 ? 1 : c.face < 0 ? -1 : (dir > 0 ? -1 : 1); c.vx = (dir || 1) * 45; c.vy = Math.min(c.vy, -120); c.sq = 0.1; }
-  else if (!c.fall) c.fall = 'gone'; c.body = true;   /* (the foe's own body, for tools/room-kills.mjs: a cap, a horse or a part pushed beside it is not) */
+  else if (!c.fall) c.fall = 'gone'; c.body = true;
+  if (CF3.CF3_SHIPS) { const isB = e === boss || (!!e.maxHp && !e.mini && e.t === L.arena?.boss), k = CF3.onKill(e, dir, { boss: isB, mini: !!e.mini, flashK: SET.flashes ? flashK() : 0, hitstop: !!SET.hitstop, reduce: !!SET.reduceMotion, final: true }); if (k.chips) burst(e.x, e.y - (e.h || 16) / 2, k.chips, COLS[e.t] || ['#e8e0f0', '#9aa39a'], 90, 0.5); if (k.slow) { cfSlowT = Math.max(cfSlowT, k.slow.t); cfSlowK = k.slow.k; } if (k.duck) cfDuck(k.duck); }   /* (claude/cf3) KILL POP + BOSS DEATH SLOW-MO (src/cf-foe.js onKill) */   /* (the foe's own body, for tools/room-kills.mjs: a cap, a horse or a part pushed beside it is not) */
 }
 // what the blade does besides cut
 function swordEffect(e) {
@@ -9510,7 +9514,8 @@ function hurtEnemy(e, dmg, fromX, plunge) { if (e && e.pvpSeat) { BLOW = null; i
      but they are the ROOM's blow (src/boss-read.js ROOM_TAGS) - never chipped, never greed, never turned - exactly as they were before they had a name */
   if (!(e.broken > 0)) e.mighted = false; else if (thr('m', 1) && !e.mighted && dmg > 0 && e.alive) { e.mighted = true; dmg = Math.round(dmg * 1.25); number(e.x, e.y - (e.h || 16) - 14, 'FINISHER', '#ffd36b'); }   /* MIGHT 20: the first blow into a broken foe lands a quarter harder */   /* taken at once, so nothing this blow sets off inherits it */
   const was = emitNow(); emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); try { const hp0 = e.hp, po0 = e.poise || 0, alive0 = e.alive, mode0 = e.mode, br0 = e.broken || 0, r = hurtEnemy0(e, dmg, fromX, plunge, blow, tag);
-  if (alive0 && blow && dmg > 0 && (e === boss || e.xpRole === 'mini')) BR.auto(e, fromX, { hp: hp0, mode: mode0, broken: br0 });   /* B10: never a silent no-damage hit (src/boss-read.js) */
+  if (alive0 && blow && dmg > 0 && (e === boss || e.xpRole === 'mini')) BR.auto(e, fromX, { hp: hp0, mode: mode0, broken: br0 });
+  if (CF3.CF3_SHIPS && alive0 && dmg > 0 && SET.impact) CF3.bossStar(e, CF3.bossHitKind(e, hp0 - e.hp, dmg, time), e.recD || 1);   /* (claude/cf3) a resisted blow = a grey-white star, an opening = a gold one (feel only; the wrapper, never hurtEnemy0's branch) */   /* B10: never a silent no-damage hit (src/boss-read.js) */
   /* WHOSE BLOW IT WAS. During a hero's pass P is that hero, so the damage and the kill go on HIS tally; outside a
      pass there is only ever one hero to mean. A burn or a bleed is booked to whoever lit it, which is right, and a
      creature killed by the room while a hero stands near it pays him the compliment, which is a friendly tally. */
@@ -29475,15 +29480,16 @@ function poseOf(e, wind) {
   if (e.ceiling && !(e.gs > 0)) { o.sy = -1; o.dy = -e.h; }   /* THE MAGE'S FOLLY: a turret hung under a ceiling is drawn feet up from its root (and THE WITCHLIGHT STAIR's roof armour, while it walks the roof: e.gs) */
   if (!e.alive) return o;
   const fly = FLYERS.has(e.t), mv = Math.abs(e.vx || 0) > 4, seed = ((e.hx || e.x0 || 0) * 0.37) % 6;
-  if (wind && !TA.toldPose(o, e, tellClock(e), time)) windKeys(o, e);   /* (claude/foepass: a family's SIGNATURE windup has its own shape by its answer - src/told-attacks.js toldPose) */   /* THE WIND-UP IS KEYFRAMED (claude/tellposes): rise, lean back, coil - held poses, not a squash */
-  else { e._twAt = undefined; }
+  if (wind && !TA.toldPose(o, e, tellClock(e), time)) { windKeys(o, e); if (CF3.CF3_SHIPS) CF3.tellRise(o, e, time, !!SET.reduceMotion); }   /* (claude/foepass: a family's SIGNATURE windup has its own shape by its answer - src/told-attacks.js toldPose) */   /* THE WIND-UP IS KEYFRAMED (claude/tellposes): rise, lean back, coil - held poses, not a squash */
+  else { e._twAt = undefined; if (CF3.CF3_SHIPS) CF3.tellEnd(e); }
   if (wind) { /* (the keys above own the pose) */ }
   else if (e.relT > 0) { const k = e.relT / 0.18; o.sy *= 1 + 0.12 * k; o.sx *= 1 - 0.08 * k; }
   else if (!mv && !fly) { const b = Math.sin(e.anim * 2.8 + seed); o.sy *= 1 + 0.03 * b; o.sx *= 1 - 0.015 * b; }
   if (mv && !fly) o.dy -= Math.round(Math.abs(Math.sin(e.anim * 9 + seed)) * 1.2);
   // STRUCK: it goes with the blow, not with its own facing, and it leans off the line of it
   if (e.flash > 0) { const k = Math.min(1, e.flash / 0.12), d = e.hitDir || -(e.face || 1);
-    o.dx += d * 3.4 * k; o.dy -= Math.round(1.5 * k); o.sy *= 1 - 0.11 * k; o.sx *= 1 + 0.13 * k; o.rot = d * 0.16 * k; }
+    o.dx += d * 3.4 * k; o.dy -= Math.round(1.5 * k); o.sy *= 1 - 0.11 * k; o.sx *= 1 + 0.13 * k; o.rot = d * 0.16 * k; if (CF3.CF3_SHIPS) CF3.hurtPose(o, e, !!SET.reduceMotion, HAS_HURT.has(e.t)); }   /* (claude/cf3) the generic hurt pose for a foe with no hurt frame */
+  if (CF3.CF3_SHIPS) o.dx += CF3.swayDx(e, time, !!SET.reduceMotion);   /* (claude/cf3) STAGGERED: +-1 px at 6 Hz */
   // TURNED: something that whips round at speed skids a moment before it goes the other way
   if (e.turnT > 0) { const k = e.turnT / 0.18; o.rot = (o.rot || 0) - (e.face || 1) * 0.2 * k; o.dx -= (e.face || 1) * 2.4 * k; o.sy *= 1 - 0.05 * k; }
   if (e.popT > 0) o.dy -= Math.round(Math.sin(Math.PI * (1 - e.popT / 0.35)) * 5);
@@ -30403,6 +30409,7 @@ function updateCorpses(dt) {
     ringAt(f.x, f.y, f.big ? 60 : 22, f.big ? '#ffffff' : '#ffd36b', f.big ? 0.55 : 0.3); shakeCam(f.big ? 7 : 3);
     if (f.big) { killFlash = Math.max(killFlash, 0.1); SFX.boom(); } else SFX.crack(); } }
   bossFx = bossFx.filter(f => !f.done);
+  if (CF3.CF3_SHIPS) CF3.tick(dt); else if (CF3.FX.length) CF3.clearFx();
   deathFx = deathFx.filter(fx => { const was = fx.parts.reduce((n, p) => n + (p.clack ? 1 : 0), 0);
     const on = stepDeathFx(fx, dt, x => { const tx = Math.floor(x / TS); for (let ty = Math.max(0, Math.floor(fx.y0 / TS)); ty < Math.min(LH, Math.floor(fx.y0 / TS) + 16); ty++) if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) return ty * TS; return null; });
     if (fx.parts.some(p => p.clack) && fx.parts.reduce((n, p) => n + (p.clack ? 1 : 0), 0) > was && !fx.clacked) { fx.clacked = true; SFX.clatter(); }
@@ -33734,7 +33741,7 @@ function update(dt) {
     updateCharge(STEP); if (ptSaved) keysWrite(ptSaved); });
   levelHealTick();   /* a level-up's heal waits for the fight to end (levelUp); ahead of the hitstop, so the killing blow's own freeze does not hold it back */
   if (stop > 0) { stop -= dt; return; }
-  slowT = Math.max(0, slowT - dt); const wdtAll = (slowT > 0 ? dt * 0.3 : dt) * (SET.speed || 1);
+  slowT = Math.max(0, slowT - dt); if (cfSlowT > 0) cfSlowT = Math.max(0, cfSlowT - dt); const wdtAll = (slowT > 0 ? dt * 0.3 : cfSlowT > 0 ? dt * cfSlowK : dt) * (SET.speed || 1);   /* (claude/cf3) a boss body's own slow-mo (0.35x, 0.6 s) when no older slowT is running */
   // THE CLOCK RUNS ON WORLD TIME, NOT WALL TIME. Every medal in the game was set against a world running at
   // full tilt; if the world slows and the stopwatch does not, every medal quietly becomes two-thirds as
   // reachable. The timer measures how much of the LEVEL'S time you took, which is what a medal is about.
@@ -35681,7 +35688,7 @@ function drawWorld(cx, cy, showPlayer) {
       const cs = c.set || (c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t]); c.shown = cs;   /* (c.shown: what was drawn, for tools/corpses.mjs) */ drawRot(cs, c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
   if (FKH && FKH.drawDead && L.arena && L.arena.boss === 'fogknight') FKH.drawDead(g, cx, cy, time); if (CHH && L.arena && L.arena.boss === 'champion') CHH.drawDead(g, cx, cy, time); if (ADH && L.arena && L.arena.boss === 'admiral') ADH.drawDead(g, cx, cy, time);   /* the Fog Knight's plate, fallen (src/redraw/fog_knight_art.js) */
-  for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   GLU.drawLines(g, cx, cy, time);   /* (claude/lategameb) a scout's taut RECALL LINE (src/foe-glue.js) */   /* what they were made of, after the bodies and before the living */
+  for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   if (CF3.CF3_SHIPS) CF3.drawFx(g, cx, cy, drawSet);   /* (claude/cf3) kill pops, break rings, boss stars */   GLU.drawLines(g, cx, cy, time);   /* (claude/lategameb) a scout's taut RECALL LINE (src/foe-glue.js) */   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.lz) drawLanceBridge(cx, cy);   /* (claude/stormhold3) the cracks, the spears' shadows, the ballista's line, the oil's strip, the main gate: drawn where YOU are */
   for (const e of enemies) {
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
@@ -36106,7 +36113,10 @@ function drawWorld(cx, cy, showPlayer) {
          from the thin white of a hit - unless the Flashes option is off (Reduce motion turns it off with the rest) */
       if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
       const pupQ = PUPH && e.alive && PM.isPuppet(e) ? { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot } : null; if (pupQ) PUPH.under(e, pupQ);   /* (claude/theatre4) HIS PUPPETS' READ: a gold outline when it can be hit (src/puppeteer-hands.js under/over) */
-      drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
+      const cfFl = CF3.CF3_SHIPS && e.flash > 0 ? CF3.flashPhase(e, SET.flashes ? flashK() : 0) : null;   /* (claude/cf3) white silhouette 0.05 s, then a 40% tint */
+      drawSet(sprSet, null, frame, dx0, dy0, ps.face, cfFl ? cfFl.mode === 'white' || (e.breakFlash > 0 && SET.flashes) : e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
+      if (cfFl && cfFl.mode === 'tint' && cfFl.a > 0) drawTinted(sprSet, null, frame, dx0, dy0, ps.face, pSX, pSY, pRot, '#ffffff', cfFl.a);
+      if (CF3.CF3_SHIPS) { CF3.breakRing(e, SET.flashes ? flashK() : 0); if (wind && CF3.glintOn(e, time)) CF3.drawGlint(g, Math.round(dx0 + (ps.face || 1) * 8 * bigF), Math.round(dy0 - (e.h || 16) * 0.6 * bigF)); }   /* (claude/cf3) the tell glint + the break ring */
       if (e.kwRole && KWH && KWH.on()) KWH.marchOver(g, e, cx, cy, time);
       if (e.pwSetter && PWH && PWH.on()) PWH.setterOver(g, e, cx, cy, time);
       if (e.torch && GMH) GMH.drawFoe(g, e, cx, cy, time);   /* (claude/gorm2) a torch goblin's torch */   /* (claude/kingswood2art) THE COURT'S banner bearers and drummer, over the marcher */
@@ -36123,7 +36133,7 @@ function drawWorld(cx, cy, showPlayer) {
       /* HEAVY FEET: the big ones put a little of the road up every time a foot comes down */
       if (e.alive && (HEAVY.has(e.t) || e.t === 'closedhelm' || e.t === 'hedgeknight' || e.t === 'golem' || e.t === 'forgemaster') && Math.abs(e.vx) > 6) { if (e.lastF !== undefined && frame !== e.lastF && Math.random() < 0.8) dust(e.x - (e.face || 1) * 4, e.y, e.maxHp ? 3 : 2); e.lastF = frame; } }
     g.globalAlpha = 1; if (sinkClip) g.restore();
-    { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl)); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
+    { const bl = e === boss || bossActive || miniActive; if (openCommon(e, bl)) drawOpen(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 6, time, finishReady(e, P, bl), CF3.CF3_SHIPS && !SET.reduceMotion); else if (CF3.CF3_SHIPS && e.alive && e.stagger > 0 && !(e.broken > 0)) CF3.drawPips(g, CF3.pipPoints(Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 7, time, !!SET.reduceMotion), false); }   /* OPEN: the stars over a broken foe, closing in and going white when the next blow will finish it (src/poise-break.js, src/finishers.js) */
     if (e.rpOpenT > 0 && e.alive) RP.drawParried(g, e, Math.round(e.x - cx), Math.round(e.y - e.h * bigF / (e.bodyK || 1) - cy) - 7);   /* (claude/riposteart) a parried foe's riposte window, over its head */
     if (e.t === 'windcaller' && e.alive && e.mode !== 'sleep' && (e.mode === 'howlTell' || e.mode === 'howl' || e.mode === 'galeTell')) { const k = 0.5 + 0.5 * Math.sin(time * 12); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#bfe6f5'; g.lineWidth = 1; for (let q = 0; q < 3; q++) { g.beginPath(); g.arc(Math.round(e.x - cx), Math.round(e.y - cy) - 14, 14 + q * 8 + k * 4, 0, 7); g.stroke(); } g.globalAlpha = 1; }
     const windMark = wind ? markOf(e) : '';

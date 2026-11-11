@@ -36,11 +36,14 @@ export function staggerPose(o, e, now) {
 }
 
 /* THE STARS OVER IT: three gold stars round its head. ready: a hero is close enough to finish it - they close in and go white */
-export function drawOpen(g, e, x, y, now, ready) {
+/* (claude/cf3) pulse: the gold stars breathe at 2 Hz while the window is open (alpha only; CF3_SHIPS and not Reduce motion) */
+export function drawOpen(g, e, x, y, now, ready, pulse = false) {
+  const ga = g.globalAlpha; if (pulse && !ready) g.globalAlpha = ga * (0.65 + 0.35 * (0.5 + 0.5 * Math.sin(now * Math.PI * 4)));
   const n = OPEN.stars, r = ready ? OPEN.starR - 2 : OPEN.starR, sp = ready ? 9 : 5;
   for (let i = 0; i < n; i++) {
     const a = now * sp + i * (Math.PI * 2 / n), sx = Math.round(x + Math.cos(a) * r), sy = Math.round(y - 3 + Math.sin(a) * r * 0.35);
     g.fillStyle = ready ? '#ffffff' : '#ffd36b'; g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3);
     if (ready) { g.fillStyle = '#ffd36b'; g.fillRect(sx, sy, 1, 1); }
   }
+  g.globalAlpha = ga;
 }
