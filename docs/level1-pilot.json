@@ -198,14 +198,14 @@
   "seed": 1
  },
  "underleaf": {
-  "hash": "20dbccff0101",
+  "hash": "3aece68e2c9d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
+  "hits": 25,
   "deaths": 0,
-  "kills": 41,
-  "lifts": 91,
+  "kills": 37,
+  "lifts": 89,
   "walked": 100,
   "bare": true,
   "seed": 1

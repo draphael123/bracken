@@ -3222,7 +3222,7 @@
   }
  },
  "underleaf": {
-  "hash": "20dbccff0101",
+  "hash": "3aece68e2c9d",
   "boss": {
    "boss": "grandmother",
    "wins": 0,
@@ -3323,16 +3323,16 @@
    ]
   },
   "carried": {
-   "from": "3aece68e2c9d",
+   "from": "20dbccff0101",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 1,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 184,
+    "hpLostPct": 199,
     "hits": 15,
     "walked": 100,
     "lifts": 49,
@@ -3343,7 +3343,7 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 12335,
+    "frames": 12381,
     "kills": 7,
     "heroLevel": 7
    },
@@ -3351,7 +3351,7 @@
     "deaths": 2,
     "minHpPct": 0,
     "hpLostPct": 212,
-    "hits": 12,
+    "hits": 11,
     "walked": 100,
     "lifts": 48,
     "held": 0,
@@ -3361,15 +3361,15 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 12284,
-    "kills": 8,
+    "frames": 12280,
+    "kills": 9,
     "heroLevel": 7
    },
    "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 166,
-    "hits": 9,
+    "hpLostPct": 189,
+    "hits": 12,
     "walked": 100,
     "lifts": 45,
     "held": 0,
@@ -3379,8 +3379,8 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 11977,
-    "kills": 5,
+    "frames": 11856,
+    "kills": 4,
     "heroLevel": 7
    }
   }

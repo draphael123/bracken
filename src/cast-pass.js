@@ -98,7 +98,6 @@ export const CAST_SWAPS = {
   underleaf: [
     { from: 'archer', to: 'archer', skin: 'venomarcher', every: 1, min: 3 },
     { from: 'sprig', to: 'thief', every: 3, min: 5 },                                         /* the village's herb-thieves (its reskin gives them the village's look); snuffer stays the Hanging Village's own foe */
-    { from: 'sprig', to: 'sprig', skin: 'clubsprig', every: 2, min: 3 },               /* the crew with a stick: skins of one kind (foevar3) */
     { from: 'archer', to: 'archer', skin: 'rockarcher', every: 1, allow: ['perch'], min: 1 },   /* a sling for the bow that is left (fire archers are off-theme in a wooden village) */
   ],
   palisadewood: [
