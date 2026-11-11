@@ -103,7 +103,7 @@ import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, 
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import * as SF from './screenfit.js'; import * as SETUI from './settings-ui.js'; import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; import * as HINTS from './hints.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
-import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js';   /* (claude/pyroboss2) THE PYROMANCER 2's numbers and pure rules */   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
+import * as PA from './pyro-art.js'; import * as PYB from './pyro-boss.js'; import { PF, showerPlan as pyShowerPlan, shortStagger as pyShortStagger } from './forks-pyro.js';   /* (claude/pyrofork) the Pyromancer's fork numbers */   /* (claude/pyroboss2) THE PYROMANCER 2's numbers and pure rules */   /* (claude/pyroarttune) THE PYRO KIT'S ART: the ward dome, the fireball sizes, the blast, the stoke crown, the burn-mark brand, the eruption and its word */
 import { makeFlameWard, WARD as FW_K } from './flame-ward.js';   /* THE FLAME WARD (claude/pyrokit): tap C, a 0.45 s dome of fire - a parry in its first 0.15 s, a block after, it burns what touches it (it replaced the down-held EMBER FLARE) */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import * as BKIT from './blood-kit.js';   /* (claude/bloodknight) THE BLOOD KNIGHT's BLOOD KIT: BLOOD DEBT, BLOOD PRICE, the five-tier heavy, BLOOD SPIKE (scratch/brief-bloodknight-1017.md 2-5) */
@@ -8232,7 +8232,7 @@ function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
   { const u = (state === 'play' || state === 'talk') ? ultCue(hero(), blink) : null; if (u) return u; }   /* (claude/ults) ONE cue for every hero: ULT READY: UP+C */
   if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: (tech('kwheel') ? 'BREAKING WHEEL: UP+C' : 'SHIELD CHARGE: UP+C'), col: blink ? '#ffd36b' : '#fff6c8' } : null; }
-  if (isPyro()) return P.full ? { s: 'METEOR FALL: UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
+  if (isPyro()) return P.full ? { s: (pb('pyshower') ? 'METEOR SHOWER' : pb('pystar') ? 'STAR FALL' : 'METEOR FALL') + ': UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
   if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
     if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
     if (p >= 4) return { s: 'RADIANCE+: C  THROW: UP+C', col: '#fff6c8' }; if (p >= 3) return { s: 'RADIANCE: C  THROW: UP+C', col: '#ffd36b' }; if (p >= 2) return { s: 'TWIN SMITE: C', col: '#ffe6a0' }; if (p >= 1) return { s: 'SMITE: C', col: '#e8c870' };
@@ -8561,7 +8561,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (yardSafe()) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
   if (!pvpBlow) dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake()));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   /* (claude/lategamea) THE PERMANENT MITIGATION CHAIN passes through SV.mitigationMul's soft floor (x0.6): IRON HIDE, IRON CHARM, RINGMAIL, PLATE, WARDED PLATE */
-  dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 1 - 0.25 * trk('heatShield') : 1)));
+  dmg = Math.max(1, Math.round(dmg * SV.mitigationMul([perk('iron') ? 0.9 : 1, PROG.charm === 'iron' ? 0.8 : 1, PROG.items.mail ? 0.9 : 1, PROG.items.plate ? 0.9 : 1, PROG.items.mail2 ? 0.9 : 1]) * (isPyro() && tal('heatShield') && (P.heat || 0) >= (pb('pyshielda') ? PF.trait.shieldAheat : pb('pyshieldb') ? PF.trait.shieldBheat : 50) ? 1 - (pb('pyshieldb') ? PF.trait.shieldBcut : 0.25) * trk('heatShield') : 1)));
   if (C2.takeMul(PROG.charm) !== 1 && !(pct > 0)) dmg = Math.max(1, Math.round(dmg * C2.takeMul(PROG.charm)));   /* (claude/charms2) GAMBLER'S COIN: a tenth more taken (a hazard's share is not a blow) */
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
   { const cloak = tal('ashCloak'); if (cloak && (P.ashT || 0) > 0) dmg = Math.max(1, Math.round(dmg * (1 - 0.12 * cloak))); } // ASH CLOAK / THE SHROUD, for a moment after a roll
@@ -8603,8 +8603,8 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   burst(P.x, P.y - 8, 8, ['#e04848', '#ffd36b'], 60, 0.4);
   if (!pvpBlow) number(P.x, P.y - 20, '-' + dmg, '#ff6b6b'); hitsTaken++;
   { const tw = who || updFoe; if (tw && tw.alive && !tw.maxHp && !tw.harmless && !tw.pvpSeat && C2.thornHits(PROG.charm, { who: tw, pct, geo, dist: Math.abs(tw.x - P.x) })) { if (tw.hp > C2.thornDamage()) { tw.hp -= C2.thornDamage(); tw.flash = 0.1; number(tw.x, tw.y - (tw.h || 16) - 6, '-' + C2.thornDamage(), '#8fd160'); } else hurtEnemy(tw, C2.thornDamage(), P.x, false); } }   /* (claude/charms2) THORN CHARM: the blade that landed takes one back */
-  if (isPyro() && tal('emberSkin')) { const f = nearFoe(fromX); if (f) { f.burn = Math.max(f.burn || 0, 2.4 * trk('emberSkin')); flame(f.x, f.y - f.h / 2, 4, 4, 40, 2); } }
-  if (P.hp <= 0 && isPyro() && (tal('phoenix') || tal('phoenixTrail')) && !P.phoenixUsed) { P.phoenixUsed = true; P.hp = Math.min(P.maxHp, Math.round(20 * trk('phoenix'))); P.inv = 2; phoenixBurst(); }
+  if (isPyro() && tal('emberSkin')) { const f = nearFoe(fromX); if (f) { f.burn = Math.max(f.burn || 0, (pb('pyskina') ? PF.trait.skinA : pb('pyskinb') ? PF.trait.skinB : 2.4) * trk('emberSkin')); if (pb('pyskinb') && !f.maxHp && !f.mini) f.vx = (Math.sign(f.x - P.x) || 1) * PF.trait.skinShove; flame(f.x, f.y - f.h / 2, 4, 4, 40, 2); } }
+  if (P.hp <= 0 && isPyro() && (tal('phoenix') || tal('phoenixTrail')) && !P.phoenixUsed) { P.phoenixUsed = true; P.hp = Math.min(P.maxHp, Math.round(20 * (pb('pyphxa') ? PF.trait.phxAhp : pb('pyphxb') ? PF.trait.phxBhp : 1) * trk('phoenix'))); P.inv = 2; phoenixBurst(); }
   /* (the RED TONIC drunk at once under a quarter is gone: it is a FLASK the player drinks, drinkTick - claude/survival) */
   if (isPaladin() && tal('martyr') && !P.martyrUsed && P.hp > 0 && P.hp < P.maxHp * 0.25) { P.martyrUsed = true; P.light = 99; gainLight(1); motes(P.x, P.y - 12, 14, 10); }
   if (P.hp > 0) crowdJeer(false);
@@ -9669,8 +9669,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   if (dmg > 0 && isReaper() && tal('coldComfort') && P.bkEdgeT > 0) dmg = Math.round(dmg * (1 + 0.25 * trk('coldComfort')));   /* (claude/bkkit2) KEEN PRICE (id coldComfort; it read the summon): while BLOOD PRICE's edge is on the blade, a quarter harder again */
   if (dmg > 0 && isPirate() && (e.spot || 0) > 0) dmg = Math.round(dmg * 1.33);
   if (dmg > 0 && isPirate() && tal('turncoat') && P.riposteT > 0) { dmg = dmg * (1 + trk('turncoat')); P.riposteT = 0; number(e.x, e.y - e.h - 16, 'TURNCOAT', '#ffd36b'); }
-  if (dmg > 0 && isPyro() && tal('brand') && e.burn > 0) dmg = Math.round(dmg * (1 + 0.5 * trk('brand'))); // BRAND
-  if (dmg > 0 && isPyro() && tal('emberHeart') && P.hp > 0 && P.hp < P.maxHp / 3) dmg = Math.round(dmg * (1 + 0.5 * trk('emberHeart'))); // EMBER HEART: cornered, the fire answers
+  if (dmg > 0 && isPyro() && tal('brand') && (e.burn > 0 || (pb('pybranda') && pyStacks(e) > 0))) dmg = Math.round(dmg * (1 + (pb('pybrandb') ? PF.trait.brandBmul : 0.5) * trk('brand'))); // BRAND
+  if (dmg > 0 && isPyro() && tal('emberHeart') && P.hp > 0 && P.hp < (pb('pyhearta') ? P.maxHp * PF.trait.heartAhp : pb('pyheartb') ? P.maxHp * PF.trait.heartBhp : P.maxHp / 3)) dmg = Math.round(dmg * (1 + (pb('pyhearta') ? PF.trait.heartAmul : pb('pyheartb') ? PF.trait.heartBmul : 0.5) * trk('emberHeart'))); // EMBER HEART: cornered, the fire answers
   if (dmg > 0 && (TRT.traitsShip() ? (P.heavySwing || P.heavy) && !e.mini : !isPyro() && !isPaladin() && P.heavySwing) && tal('execute') && !e.maxHp && e.alive && e.hp - dmg <= fullHp(e) * 0.25 && e.hp - dmg > 0) {   /* EXECUTIONER (shared, SHARED lane 11-09): flag on = any hero's heavy/finisher, commons + elites only, never a boss or a mini; flag off = the knight's line as it was */ dmg = e.hp; number(e.x, e.y - e.h - 16, 'EXECUTION', '#ffd36b'); SFX.heavy(); } // EXECUTION
   if (isPaladin() && e.t === 'wight') dmg *= 2; // the light is hard on the dead
   if (e.t === 'bale') { if (e.gone > 0) return; e.gone = 3; e.vx = 0; burst(e.x, e.y - 6, 14, COLS.bale, 70, 0.6); SFX.baleBurst(); return; } // a bale bursts, and another comes tumbling after
@@ -9956,7 +9956,7 @@ function surface() { // what is underfoot, for the step and the landing
   if (dress === 'canal') return 'stone';
   return 'grass';
 }
-const JET_BASE = 56; const jetLen = () => Math.round(JET_BASE * (1 + 0.11 * tal('longFlame') * trk('longFlame')) * (P.infernoT > 0 ? 1.5 : 1)); // (LONG FLAME) // three and a half tiles of flame: a staff's reach, not a hose
+const JET_BASE = 56; const jetLen = () => Math.round(JET_BASE * (1 + 0.11 * tal('longFlame') * trk('longFlame')) * (P.infernoT > 0 ? 1.5 : 1) * (pb('pylonga') ? PF.trait.longA : pb('pylongb') ? PF.trait.longBlen : 1)); // (LONG FLAME) // three and a half tiles of flame: a staff's reach, not a hose
 // HEAT IS THE PYROMANCER'S DAMAGE. Everything she throws hits harder the hotter she is running,
 // A full bar no longer overheats her: it banks, and the next press of C spends it all as CONFLAGRATION (claude/pyrokit; it was THE PYRE).
 const heatMul = () => 1 + (P.heat || 0) / 100 * 0.4; // up to +40% at a full bar: a bit, not half again
@@ -11263,7 +11263,7 @@ function updatePlayer(dt) {
       if (P.danceMax > 0 && P.dance >= P.danceMax) { P.dance = 0; P.danceMax = 0; }
       else if (lp !== P.danceLoop) { P.danceLoop = lp; if (lp > 0) SFX.dance(hero(), P.danceKey === 'dance2' ? 1 : P.danceKey === 'dance3' ? 2 : 0); } } } }
   if (P.ground && ((keys.left && P.vx > 55) || (keys.right && P.vx < -55)) && !(P.skidT > 0) && !P.block) { P.skidT = 0.3; dust(P.x + Math.sign(P.vx) * 4, P.y, 6); SFX.land(); }
-  if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(38)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) fires.push({ x: P.x + P.face * i * 14, y: P.y, life: 2.5, delay: i * 0.08, own: true });   /* (claude/herokit) 31 stamina, 3 s -> 38, 2.5 s: the highest damage a second in the game */ SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
+  if (isPyro() && skillPress('fireWall') && (P.ground || P.swim) && cdReady('fireWall') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(38)) { cdSet('fireWall'); kitPose(P, 'wall', 0.4); P.atk = -1; for (let i = 1; i <= 5; i++) { const wf = { x: P.x + P.face * i * 14, y: P.y, life: pb('pyrampart') ? PF.wall.rampLife : pb('pyrolling') ? PF.wall.rollLife : 2.5, delay: i * 0.08, own: true }; if (pb('pyrolling')) { wf.vx = P.face * PF.wall.rollV; wf.gen = 3; } fires.push(wf); if (pb('pyrampart')) fires.push({ ...wf, y: P.y - 14, gen: 3 }); }   /* (claude/pyrofork) RAMPART: two rows, 4 s | ROLLING WALL: it walks */   /* (claude/herokit) 31 stamina, 3 s -> 38, 2.5 s: the highest damage a second in the game */ SFX.heavy(); SFX.puff(); number(P.x, P.y - 24, 'FIRE WALL', '#ff9a5c'); shakeCam(2); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (isPyro() && skillPress('cinderStep') && cdReady('cinderStep') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(CM.dashCost('pyro', 25))) { cdSet('cinderStep');  P.dodge = 0.3; P.dodgeInv = CM.dashInv(0.3); P.vx = P.face * 320; P.inv = Math.max(P.inv, CM.dashInv(0.3));   /* WEIGHT (10-03): 25 -> 28, grace 0.4 -> 0.2 s */ P.cinderT = 0.3; kitPose(P, 'cinder', 0.3); streaks(P.x, P.y - 8, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 160); SFX.throwWhoosh();   /* (claude/pyrokit) PLAIN: the untouchable dash, no fires left behind (it burned what stood in the three) */ number(P.x, P.y - 24, 'CINDER STEP', '#ff9a5c'); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); }
   if (skillPress('risingCut') && cdReady('risingCut') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0) && !P.plunge && !(P.riseUsed && !P.ground)) { if (spend(25)) { cdSet('risingCut'); P.riseT = 0.3; P.riseUsed = true; P.vy = kb('kdriving') ? -90 : kb('khigh') ? -380 : -335; P.ground = false; P.coyote = 0; P.onMover = null; P.canCut = kb('khigh');   /* HIGH CUT: higher and one free air cut; DRIVING CUT: no lift */ P.block = false; P.atk = -1; P.hitSet.clear(); P.riseCarry = null; SFX.riseCut(); squash(0.9, 1.12, 0.1); riseSparks(10); } else number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   /* RISING CUT, THE BOUGHT ONE. UP+X is already a free rising cut, so this one has to be more than a taller jump: THE FIRST
@@ -11272,7 +11272,7 @@ function updatePlayer(dt) {
      frames are the upward cut from hip to overhead (key 'rise'), a tall crescent is drawn on the arc above him
      (drawRiseCrescent), the sparks go up the blade, the sound is steel rising, and a catch lands with weight. */
   if (isPyro() && skillPress('vent') && cdReady('vent') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if ((P.heat || 0) < 15) { SFX.buzz(); number(P.x, P.y - 22, 'COLD', '#9aa39a'); } else if (spend(19)) { const heat = P.heat; cdSet('vent'); const dmg = Math.round((10 + heat * 0.5)*amul('vent')), R = 30 + heat * 0.25; P.heat = 0; P.overheat = 0; P.light = 0; P.atk = -1; kitPose(P, 'vent', 0.45); ringAt(P.x, P.y - 8, R, '#ff9a5c', 0.35); for (let a = 0; a < 18; a++) { const an = a / 18 * Math.PI * 2, sp = 70 + heat * 1.2; parts.push({ x: P.x, y: P.y - 8, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, life: 0.45, max: 0.45, col: '#ffd36b', size: 3, grav: -20, fire: true, drag: 2.5 }); } smoke(P.x, P.y - 10, 5, 8); burst(P.x, P.y - 8, 18 + Math.round(heat / 6), ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + heat, 0.5, 0, 2); shakeCam(3 + heat / 25); zoomKick(1.06, 0.15); SFX.heavy(); SFX.puff(); for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < R && Math.abs(e.y - 6 - (P.y - 8)) < R) { const big = !!e.maxHp; hurtEnemy(e, big ? Math.round(dmg * 0.5) : dmg, P.x, false); if (!big) { e.burn = Math.max(e.burn || 0, 1.5); flinch(e); } } for (const s2 of seeds) if (!s2.dead && Math.abs(s2.x - P.x) < R && Math.abs(s2.y - P.y + 8) < R) { s2.dead = true; burst(s2.x, s2.y, 4, ['#ff9a5c'], 40, 0.3, 0, 1); } for (const pr of props) { if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - P.x) < R + 10 && Math.abs(pr.y - P.y) < R + 10) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); } } } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // VENT: the heat bar is the ammunition
-  if (isPyro() && skillPress('wisp') && cdReady('wisp') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('wisp'); kitPose(P, 'wisp', 0.4); wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
+  if (isPyro() && skillPress('wisp') && cdReady('wisp') && !P.dead && !(P.hurt > 0) && !(P.asleep > 0) && !(P.dodge > 0)) { if (spend(25)) { cdSet('wisp'); kitPose(P, 'wisp', 0.4); wisp = { x: P.x, y: P.y - 14, t: 0, life: 8, cd: 0, target: null }; wispX = pb('pythreewisp') ? [1, 2].map(i => ({ x: P.x, y: P.y - 14, a: i * 2.09, cd: i * 0.5, target: null })) : []; SFX.spark(); SFX.puff(); burst(P.x, P.y - 14, 8, ['#ffd36b', '#fff6c8'], 40, 0.4, 0, 1); } else number(P.x, P.y - 22, 'TIRED', '#9aa39a'); } // WISP: a flame that keeps you company
   // THE PASSING: he goes thin, and what is left behind him is a line of him going out. Six after-images over
   // a third of a second, each one dimmer, with the green of the harvest on its shoulders.
   if ((P.passT || 0) > 0) { P.passT -= dt;
@@ -11320,13 +11320,13 @@ function updatePlayer(dt) {
   const lateFoes = (r, ry = 60) => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat && Math.abs(e.x - P.x) <= r && Math.abs(e.y - P.y) <= ry);
   // FLASHOVER (pyromancer, L14): every flame within reach goes up at once - a burning foe is DETONATED for a heavy hit, the rest are set alight
   if (isPyro() && skillPress('flashover') && cdReady('flashover') && canAct()) { if (spend(28)) { cdSet('flashover'); P.castT = 0.3; kitPose(P, 'flash', 0.4); let n = 0;
-    for (const e of lateFoes(120)) { if (e.burn > 0) { e.burn = 0; hurtEnemy(e, Math.round(34 * amul('flashover')), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = (Math.sign(e.x - P.x) || 1) * 200; } 0; n++; }
+    for (const e of lateFoes(pb('pysearing') ? PF.flash.searingReach : 120)) { if (e.burn > 0 && e.chainLit !== time) { e.burn = 0; hurtEnemy(e, Math.round(34 * (pb('pysearing') ? PF.flash.searingMul : pb('pychainflash') ? PF.flash.chainMul : 1) * amul('flashover')), P.x, false); if (pb('pychainflash')) pyChainFlash(e); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = (Math.sign(e.x - P.x) || 1) * 200; } 0; n++; }
       else { hurtEnemy(e, Math.round(8 * amul('flashover')), P.x, false); if (e.alive) e.burn = Math.max(e.burn || 0, 2.4); } flame(e.x, e.y - (e.h || 16) / 2, 5, 6, 60, 3); }
     gainHeat(10 + 8 * n); ringAt(P.x, P.y - 8, 70, '#ff9a5c', 0.4); shakeCam(3 + n); SFX.heavy(); } else tired(); }
   // FIRESTORM (pyromancer, L20): everything in reach is set alight at once, and her heat is stoked
   if (isPyro() && skillPress('firestorm') && cdReady('firestorm') && canAct()) { if (spend(36)) { cdSet('firestorm'); P.castT = 0.4; kitPose(P, 'storm', 0.45);
     for (const e of lateFoes(220, 90)) { hurtEnemy(e, Math.round(6 * amul('firestorm')), P.x, false); if (e.alive) { e.burn = Math.max(e.burn || 0, e.maxHp ? 3 : 5); flame(e.x, e.y - (e.h || 16) / 2, 4, 5, 60, 3); } }
-    gainHeat(60); ringAt(P.x, P.y - 8, 110, '#ff6b2c', 0.5); ringAt(P.x, P.y - 8, 60, '#ffd36b', 0.4); shakeCam(5); SFX.heavy(); SFX.puff(); } else tired(); }
+    pyStormCast(); gainHeat(60); ringAt(P.x, P.y - 8, 110, '#ff6b2c', 0.5); ringAt(P.x, P.y - 8, 60, '#ffd36b', 0.4); shakeCam(5); SFX.heavy(); SFX.puff(); } else tired(); }
   // DAWNBURST (paladin, L14): a flare of light - everything near is rocked and staggered, and the light bar fills for what it caught
   if (isPaladin() && skillPress('dawnburst') && cdReady('dawnburst') && canAct()) { if (spend(27)) { cdSet('dawnburst'); P.castT = 0.3; kitPose(P, 'dawn', 0.32); let n = 0;
     for (const e of lateFoes(100)) { hurtEnemy(e, Math.round(swordDmg() * SKK.K.dawnburst * amul('dawnburst')), P.x, false); if (e.alive) { e.stagger = Math.max(e.stagger || 0, e.maxHp ? 0.3 : 1.4); if (!e.maxHp) e.vx = (Math.sign(e.x - P.x) || 1) * 110; } n++; }
@@ -11719,11 +11719,11 @@ function updatePlayer(dt) {
   }
   P.block = !!keys.block && (P.ground || P.swim) && !attacking && !P.plunge && !dodging && !stunned && P.guardTired <= 0 && P.st > 0 && CM.guardOk(P) && !thrown && !rushing() && hero() === 'knight' && !knightWinding() && !(P.kBashT > 0) && !P.ultHold;   /* (claude/heropassa: not while the shield is punched out in THE SHIELD BASH) */   /* WEIGHT: not while EXHAUSTED (a bar of 1 used to raise it) */   /* THE HEAVY CUT's price: no shield while the sword is up */
   P.blockT = P.block ? (P.blockT || 0) + dt : 0; P.riposteT = Math.max(0, (P.riposteT || 0) - dt); P.rpPoseT = Math.max(0, (P.rpPoseT || 0) - dt); P.rpTintT = Math.max(0, (P.rpTintT || 0) - dt); if (P.ground) P.airRolled = false;
-  if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, 45 / trk('updraft')); // UPDRAFT: the jet holds her up
+  if (isPyro() && P.jet && !P.ground && tal('updraft')) P.vy = Math.min(P.vy, (pb('pyjwb') ? PF.trait.hoverFall : 45) / trk('updraft')); // UPDRAFT: the jet holds her up
   if (isPyro() && P.jet) { // the jet: a held tongue of flame five tiles long. It burns what stands in it and what flies through it. Heat is the cost.
     const j = jetBox();
     for (let i = 0; i < 3; i++) if (Math.random() < dt * 70) { const k = Math.random(); parts.push({ fire: true, drag: 1, x: P.x + P.face * (8 + k * jetLen()), y: P.y - 9 + (Math.random() - 0.5) * (4 + k * 14), vx: P.face * (60 + Math.random() * 60), vy: -20 - Math.random() * 30, life: 0.25 + k * 0.2, max: 0.45, col: k < 0.3 ? '#fff6c8' : Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: k < 0.5 ? 1 : 2, grav: -60 }); }
-    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = 0.4; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { P.jetHit = true; burnMark(e); hurtAs('shot', e, Math.max(1, Math.round(swordDmg() * 0.15 * heatMul() * (P.infernoT > 0 ? 1.5 : 1))), P.x - P.face * 10, false); P.jetHit = false; if (e.alive) { e.flash = Math.max(e.flash || 0, 0.08); flame(e.x, e.y - e.h / 2, 3, 4, 40, 2); } if (!P.jetFxAt || time - P.jetFxAt > 0.35) { P.jetFxAt = time; hitstop(0.02); SFX.fbStep(1); }   /* (claude/pyrokit) THE JET (now a card) scales with the staff (x0.15 x heat a tick; it was heatDmg(1), flat) and it is FELT: a flash, a lick of flame and a short crackle-stop per tick (impact-matrix #3) - it still leans on no poise */ e.burn = Math.max(e.burn || 0, (tal('searing') ? 2.4 * trk('searing') : 0.8) * (P.infernoT > 0 ? 1.5 : 1)); } }
+    P.jetTick = (P.jetTick || 0) - dt; if (P.jetTick <= 0) { P.jetTick = pb('pylongb') ? PF.trait.longBtick : 0.4; for (const e of enemies) if (e.alive && !e.harmless && e.x + e.w / 2 > j.l && e.x - e.w / 2 < j.r && e.y > j.t && e.y - e.h < j.b) { P.jetHit = true; burnMark(e); hurtAs('shot', e, Math.max(1, Math.round(swordDmg() * 0.15 * heatMul() * (P.infernoT > 0 ? 1.5 : 1))), P.x - P.face * 10, false); P.jetHit = false; if (e.alive) { e.flash = Math.max(e.flash || 0, 0.08); flame(e.x, e.y - e.h / 2, 3, 4, 40, 2); } if (!P.jetFxAt || time - P.jetFxAt > 0.35) { P.jetFxAt = time; hitstop(0.02); SFX.fbStep(1); }   /* (claude/pyrokit) THE JET (now a card) scales with the staff (x0.15 x heat a tick; it was heatDmg(1), flat) and it is FELT: a flash, a lick of flame and a short crackle-stop per tick (impact-matrix #3) - it still leans on no poise */ e.burn = Math.max(e.burn || 0, (tal('searing') ? 2.4 * trk('searing') : 0.8) * (P.infernoT > 0 ? 1.5 : 1)); } }
     for (const s of seeds) if (!s.dead && s.x > j.l - 6 && s.x < j.r + 6 && s.y > j.t - 6 && s.y < j.b + 6) { s.dead = true; parries++; burst(s.x, s.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.3, 0, 1); }
     for (const c of clouds2) if (c.x + c.r > j.l && c.x - c.r < j.r && Math.abs(c.y - (P.y - 8)) < 24) c.life = Math.min(c.life, 0.2);
   }
@@ -11733,7 +11733,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  if (isPyro() && P.jet && (P.ground || P.swim) && tal('jetWalk') && trk('jetWalk') < 1) P.vx *= Math.pow(trk('jetWalk'), dt * 20);   /* (claude/traitdata-b) WALKING FLAME ranks I/II: a slower walk with the jet lit; rank III = today */
+  if (isPyro() && P.jet && (P.ground || P.swim) && tal('jetWalk') && jwK() < 1) P.vx *= Math.pow(jwK(), dt * 20);   /* (claude/traitdata-b) WALKING FLAME ranks I/II: a slower walk with the jet lit; rank III = today */
   const move = (stunned || dodging || (P.aegis && !tal('fortress') && !P.bulwark) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || P.rgRecall || (isPyro() && P.fwUp && P.ground) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || P.rgGreat || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   /* THE UNIVERSAL DUCK (claude/duck): DOWN held on the ground with nothing else asked of it - no walk, no swing, no guard, no roll - and
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
@@ -11800,11 +11800,11 @@ function updatePlayer(dt) {
         P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; if (CM.STAM.stepFree) P.stDelay = Math.min(P.stDelay, CM.STAM.stepDelay); }   /* WEIGHT: her step is SPACING, not a roll - it does not stop the bar coming back (src/commit.js STAM.stepFree) */
       /* THE DASH IN IT: for as long as it lasts, X early is the DASH ATTACK and a jump is a running jump (dashCutNow, the jump).
          Not in her step back - that one gives ground and nothing else, as it always did - and not under the floor. */
-      if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; if (hero() === 'knight' && !P.swim) { if (kb('kshoulder')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.8; P.kShove = new Set(); } else if (kb('ksidestep')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.75; P.kSide = true; } } }   /* (claude/knightfork) SHOULDER IN / SIDESTEP: a shorter dodge (chainTick does the rest) */
+      if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; if (hero() === 'knight' && !P.swim) { if (kb('kshoulder')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.8; P.kShove = new Set(); } else if (kb('ksidestep')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.75; P.kSide = true; } } }   if (isPyro()) pySmokeStart();   /* (claude/pyrofork) SMOKE STEP */   /* (claude/knightfork) SHOULDER IN / SIDESTEP: a shorter dodge (chainTick does the rest) */
       P.dashCd = P.dodgeCd;   /* (one cooldown: the lab's hands still read the dash's name for it) */
       /* THE WARDEN STEPS. She does not roll through a blow, she gives ground with the point still up - so whatever she just left
          is back at the end of the spear by the time she lands. Tapped forward, the same step goes in, and a jump out of it vaults. */
-      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1 + 0.5 * trk('longPassing') : 1) : isWarden() ? (back ? (P.stepHeld ? STEP_PACE : 175) : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 255 : isGeo() ? (airDodge ? 215 : 265) : isBz() ? BZ_K.roll.speed : 265);   /* (THE BERSERKER's shoulder roll: short, and it knocks the small aside - berserker.js rollStep) */   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
+      P.vx = dir * (perk('stride') ? 1.12 : 1) * (isPaladin() ? 230 : isPyro() ? 300 * (pb('pyphoenix') ? PF.step.far : 1) : isPirate() ? (285 + ((P.rum || 0) > 0 ? 90 : 0)) : isReaper() ? 265 * (tal('longPassing') ? 1 + 0.5 * trk('longPassing') : 1) : isWarden() ? (back ? (P.stepHeld ? STEP_PACE : 175) : 265) * (1 + 0.15 * tal('lightFoot')) : burrow ? 255 : isGeo() ? (airDodge ? 215 : 265) : isBz() ? BZ_K.roll.speed : 265);   /* (THE BERSERKER's shoulder roll: short, and it knocks the small aside - berserker.js rollStep) */   /* the dash's pace (RUM: longer; LONG PASSING: half again; LIGHT FOOT: her step either way) */
       if (flipB && RGK) { P.vx = dir * RGK.flip(dir); P.dash = 0; P.dashDur = 0; }   /* THE BACKFLIP: up and over, facing what she left - X in it is a shot, not a dash attack */
       P.block = false; dodges++; noteVerb('dodge');
       if (!back && !burrow && !P.swim) { streaks(P.x, P.y - 9, -dir, isPyro() ? ['#ffd36b', '#ff9a5c'] : isPaladin() ? ['#ffe6a0', '#c9d1dc'] : ['#fff6e0', '#c9d1dc'], 110); dust(P.x - dir * 6, P.y, 3); }
@@ -11826,7 +11826,7 @@ function updatePlayer(dt) {
       if (isPyro()) { flame(P.x, P.y - 8, 4, 5, 50, 3); }   /* (claude/pyrokit) A PLAIN DODGE: the CINDER ROLL is gone - no alight, no touch damage, no heat cost, in the air too (Daniel 10-30: dodges that deal damage made the heroes the same). A puff of flame is all, a look */
       if (isPaladin()) sanctuaryStep(dir, airDodge);   /* (PALADIN 4) SANCTUARY STEP: not the shoulder roll - a quick step, a patch of holy light left where he stood */ dust(P.x, P.y, 5); squash(1.2, 0.8, 0.1); }
   }
-  if (dodging && isPyro() && tal('phoenixTrail') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
+  if (dodging && isPyro() && tal('phoenixTrail') && !pb('pyphxa') && Math.abs(P.x - (P.trailX ?? -99)) > 12) { P.trailX = P.x; fires.push({ x: P.x, y: P.y, life: 1.4, delay: 0, own: true }); }   /* PHOENIX TRAIL: the roll leaves its fire behind */
   /* (TUMBLING CUT used to set dashLate here, which the dash strike never read after it came to him: it is in dashCutNow now) */
   if (dodging) { P.dodge -= dt; P.dodgeInv = Math.max(0, (P.dodgeInv ?? P.dodge) - dt); if (!isReaper() && !P.geoBurrow) ghosts.push({ x: P.x, y: P.y, face: P.face, life: isWarden() ? 0.3 : 0.22, frame: Math.floor(Math.max(0, P.dodge) * 14) % 2, step: isWarden() }); }   /* HER STEP IS NOT A ROLL AND MUST NOT LOOK LIKE ONE: see the draw */
   if (P.geoBurrow) geoBurrowStep(dt);   /* (and the Geomancer's is under the floor: no after-images, a trail in the dirt) */
@@ -30498,9 +30498,9 @@ const HEAT = { hit: 12, jet: 4, burn: 1.5, grace: 4, drain: 3, varietyFloor: 0.8
 function coolHeat(dt) {
   P.heatGrace = Math.max(0, (P.heatGrace || 0) - dt); P.fullT = Math.max(0, (P.fullT || 0) - dt);
   if (P.heatGrace > 0 || (P.full && P.fullT > 0)) return;
-  const floor = tal('pilot') ? Math.min(P.heat, 33) : 0; P.heat = Math.max(floor, P.heat - HEAT.drain * (1 - 0.12 * prk('pheat')) * dt);
+  const floor = tal('pilot') ? Math.min(P.heat, 33) : 0; P.heat = Math.max(floor, P.heat - HEAT.drain * (1 - 0.12 * prk('pheat')) * (pb('pybellowed') ? PF.heat.fall : 1) * dt);
 }
-function gainHeat(n) { if (!isPyro() || P.dead || PY_NOHEAT) return; P.heatGrace = HEAT.grace; if (P.full || P.infernoT > 0) return; P.heat = Math.min(100, (P.heat || 0) + n * Math.max(HEAT.varietyFloor, varietyMul())); if (P.heat >= 100) bankHeat(); }
+function gainHeat(n) { if (!isPyro() || P.dead || PY_NOHEAT) return; P.heatGrace = HEAT.grace; if (P.full || P.infernoT > 0) return; P.heat = Math.min(100, (P.heat || 0) + n * Math.max(HEAT.varietyFloor, varietyMul()) * (pb('pybellowed') ? PF.heat.fill : 1)); if (P.heat >= 100) bankHeat(); }
 /* THE RISING CUT and THE LOW SWEEP. Up with the swing carries the blade from the floor to over the head and throws a small
    creature into the air for the air cut or the plunge to finish; down with it runs along the ground, under a raised shield,
    and takes the feet from whatever stands there. Each hero does it with what they carry. */
@@ -30644,7 +30644,7 @@ FWARD = makeFlameWard({ burnHome: s => burnBoltHome(s), get P() { return P; }, g
   hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), shakeCam: (n, k) => shakeCam(n, k), flash: t => { if (SET.flashes) killFlash = Math.max(killFlash, t); },
   swordDmg: () => swordDmg(), heatMul: () => heatMul(), fire: (e, d, x, o) => hurtFire(e, d, x, o), mark: e => burnMark(e),
   blockCost: d => CM.blockCost(d, false), get stDelay() { return ST.delay; },
-  gainHeat: n => gainHeat(n), noteParry: () => { noteVerb('parry'); parries++; P.parryT = 0.22; trialEvent('parry'); }, parried: f => RP.parried(f) });   /* (claude/riposte: her FLAME-CATCH, now the ward's beat, is the shared parry; P.parryT as the knight's, so the parry yards read it) */
+  gainHeat: n => gainHeat(n), noteParry: () => { noteVerb('parry'); parries++; P.parryT = 0.22; trialEvent('parry'); }, parried: f => { RP.parried(f); if (isPyro()) pyParryFork(f); } });   /* (claude/riposte: her FLAME-CATCH, now the ward's beat, is the shared parry; P.parryT as the knight's, so the parry yards read it) */
 /* THE CROUCH TWISTS, PART A (src/crouch-a.js): the knight's low guard and shield trip, the warden's set spear and low poke, the
    freebooter's duck and reload. main.js owns the world; the module owns what the crouch adds. Called from updatePlayer (update),
    damagePlayer0 (takes), lowSweep (lowSwing), attackBox (box), swingKindHit (trip, poke), firePistol (steady), a windup's first frame
@@ -31961,7 +31961,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isReaper() && tal('bloodMark')) markFoe(e);   /* a blow that lands buys back a little wind, so a string of hits is not all spent stamina */
   if (e.t === 'dummy') trialEvent(P.heavy ? 'heavyblow' : 'hit'); if (L.trial) { if (P.dashCut) trialEvent('dashatk'); if (P.heavySwing && !P.heavy) trialEvent('third'); }
   else if (P.dashCut && e.t !== 'dummy' && !lesson && (PROG.dashAtkSeen || 0) < 2) { PROG.dashAtkSeen = (PROG.dashAtkSeen || 0) + 1; hintSay('mechanic', 4, DASH_STRIKE[hero()] ? 'DASH ATTACK: SWING EARLY IN A DODGE. IT RUNS THROUGH THE SMALL AND OPENS A GUARD.' : 'A DASH ATTACK: THE DODGE CARRIES THE CUT THROUGH HARDER, AND IT THROWS THEM BACK.'); }
-  let extra = 0, mul = 1; if (hero() === 'knight') { if (P.kStepCut) mul *= 1.2; if (kb('kunbrb') && (P.combo || 0) >= 6) mul *= 1.15; }   /* SIDESTEP: the cut out of the slip; GATHERING: past six cuts */
+  let extra = 0, mul = 1; if (isPyro()) { if (pb('pyspark')) mul *= PF.chain.sparkMul; if (pb('pybellows') && P.heavySwing && !P.heavy) pyHeatRaw(PF.chain.bellows); }   /* (claude/pyrofork) SPARK STAFF lighter cuts; BELLOWS: the third cut pays heat */ if (hero() === 'knight') { if (P.kStepCut) mul *= 1.2; if (kb('kunbrb') && (P.combo || 0) >= 6) mul *= 1.15; }   /* SIDESTEP: the cut out of the slip; GATHERING: past six cuts */
   if (tal('momentum') && (P.runT || 0) > 1) { mul *= 1 + 0.12 * tal('momentum') * trk('momentum'); P.runT = 0; streaks(P.x + P.face * 8, P.y - 10, 5, ['#fff6e0', '#c9b27c'], 150); } // MOMENTUM
   if (tal('vengeance') && (P.venge || 0) > 0) { extra = P.venge; if (!(kb('kvengeb') && !P.heavySwing && !P.heavy)) P.venge = 0; number(e.x, e.y - e.h - 14, 'VENGEANCE', '#c9d1dc'); }   /* TITHE pays on every cut and is spent on the third */ if (P.heavySwing) { if (!e.maxHp || tal('concuss')) { e.stagger = Math.max(e.stagger || 0, isPaladin() ? 1.2 : 0.6); if (!e.maxHp && !(P.bashing && e.mini) && !P.wLong) e.vx = P.face * 170; }   /* (claude/wardenid: the long thrust DRIVES them to the point instead: wardenLongPost) */ sparks(e.x, e.y - e.h / 2, P.face, 8); shakeCam(2.5, P.face * 2); }
   if (isPirate() && bossActive && (e.maxHp || e.mini) && time - (P.bossPurseAt || -9) > 1.2) { P.bossPurseAt = time; piratePurse(false); }   /* his coin passives still pay in a coinless arena (piratePurse) */
@@ -31985,7 +31985,8 @@ function castEmber(dir) { noteVerb('cast');
   if (!dir) P.castT = 0.2;
   if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); }
   embers.push(dir ? { x: P.x, y: P.y - 4, vx: 0, vy: 160, life: 1, hit: new Set() } : { x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 120, vy: -45, life: tal('skip') ? 3 : 1.8, hit: new Set() });   /* slower: a thing you throw, not a bullet */ // (a skipping ember lives long enough to come down and skip)
-  if (!dir && tal('twin')) embers.push({ x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 105, vy: -150, life: tal('skip') ? 2.4 : 1.2, hit: new Set(), tk: trk('twin') }); // TWIN EMBER: a high one after the low
+  if (!dir && tal('twin')) embers.push({ x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 105, vy: -150, life: tal('skip') ? 2.4 : 1.2, hit: new Set(), tk: trk('twin') * (pb('pytwina') ? PF.trait.twinAk : pb('pytwinb') ? PF.trait.twinBk : 1) }); // TWIN EMBER: a high one after the low
+  if (!dir && tal('twin') && pb('pytwinb')) embers.push({ x: P.x + P.face * 8, y: P.y - 12, vx: P.face * 112, vy: -100, life: tal('skip') ? 2.7 : 1.5, hit: new Set(), tk: trk('twin') * PF.trait.twinBk });   /* (claude/pyrofork) THREE EMBERS: the middle one */
   P.atk = -1; SFX.ember(); burst(P.x + P.face * 8, P.y - 10, 5, ['#ff9a5c', '#ffd36b'], 40, 0.25, 0, 1);
 }
 // THE PYRE. The whole bar, all at once: one great ball of it that burns straight through the small
@@ -32132,9 +32133,10 @@ function judgementFall() { SFX.judgement(); shakeCam(9); zoomKick(1.12, 0.35); k
   for (let k = -2; k <= 2; k++) { bolts.push({ x: P.x + k * 44, y: P.y, life: 0.45, storm: true, holy: true }); ringAt(P.x + k * 44, P.y - 2, 14, '#fff6c8', 0.4); motes(P.x + k * 44, P.y - 4, 5, 6); } streaks(P.x, P.y - 12, 14, ['#fff6c8', '#ffd36b'], 220);
   for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 110 && Math.abs(e.y - P.y) < 80) { bolts.push({ x: e.x, y: e.y, life: 0.45, storm: true, holy: true }); hurtEnemy(e, Math.round((e.maxHp ? 20 : 30) * (1 + 0.1 * prk('ljudge'))), P.x, true); if (!e.maxHp && e.alive) e.stagger = Math.max(e.stagger || 0, 1.2); if (tal('smite') && e.alive) e.burn = Math.max(e.burn || 0, 3); if (tal('zeal') && P.hp > 0) { P.hp = Math.min(P.maxHp, P.hp + 8); number(P.x, P.y - 30, '+8', '#8fd160'); } } // ZEAL
 }
+function pyHeatRaw(n) { if (!isPyro() || P.dead || P.full || P.infernoT > 0 || !(n > 0)) return; P.heatGrace = HEAT.grace; P.heat = Math.min(100, (P.heat || 0) + n); if (P.heat >= 100) bankHeat(); }   /* (claude/pyrofork) a fork's own heat (BELLOWS): never through the variety floor */
 function bankHeat() { if (P.full || P.infernoT > 0) return; meterReady('#ff9a5c'); trialEvent('heat'); if (tal('backdraft')) { fireRings.push({ x: P.x, y: P.y - 8, r: 6, hit: new Set() }); SFX.puff(); shakeCam(3); } // BACKDRAFT
   if (tal('inferno')) { P.infernoT = 6 * trk('inferno'); P.heat = 100; number(P.x, P.y - 34, 'INFERNO', '#ff9a5c'); SFX.heatFull(); shakeCam(4); ringAt(P.x, P.y - 10, 30, '#ff6b2c', 0.45); return; }   /* INFERNO: no pyre to bank - six seconds of fire instead */
-  P.full = true; P.fullT = tal('blaze') ? 5 + 5 * trk('blaze') : 5; SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
+  P.full = true; P.fullT = (tal('blaze') ? 5 + 5 * trk('blaze') : 5) + (pb('pywhite') ? PF.heat.whiteHold : 0); SFX.heatFull(); ringAt(P.x, P.y - 10, 18, '#ffd36b', 0.3); burst(P.x, P.y - 10, 10, ['#ffd36b', '#fff6c8'], 50, 0.4, -40, 1); }
 /* ==== THE PYRO KIT (claude/pyrokit, Daniel 10-30 20:50-20:52 + 10-31; scratch/brief-pyrokit-1101.md) ====
    THE PYRE is gone. Her C: TAP = THE FLAME WARD (src/flame-ward.js), HOLD = THE HELD FIREBALL (five steps, the ward folds into it), a FULL bar's UP + C
    = METEOR FALL (claude/pyrokit2; it was CONFLAGRATION). LIVING BOMB (pips over a foe, the third bursts it) is her passive from level 1. DOWN held still = STOKE (the bar fills). THE JET and THE EMBER SHOT left the base kit:
@@ -32171,6 +32173,13 @@ const PYRO_KIT = {
         capPct: 0.04, capMini: 0.10,   // a BOSS takes at most 4% of him (the knight's LAST CHARGE is 3 sword blows on a boss; the old Conflagration 5%), a mini 10%
         burn: 3 },
 };
+/* ==== THE PYROMANCER'S FORKS (claude/pyrofork; src/forks-pyro.js has the data and numbers; FORKS_SHIP off = pb() is false everywhere = the base) ==== */
+function pb(id) { return isPyro() && FRK.forksShip() && FRK.forkOn(PROG, 'pyro', id, heroLevel(), fkCtx('pyro', heroLevel())); }   /* a Pyromancer fork SIDE is picked and live (level, slotted skill, worn trait; false in an EVEN-L1 duel) */
+const lbNeed = () => pb('pyshortfuse') ? PF.fuse.shortNeed : PYRO_KIT.lb.need;   /* SHORT FUSE: a burst on the second pip */
+const lbLife = () => pb('pyslowfuse') ? PF.fuse.slowLife : PYRO_KIT.lb.life;   /* SLOW FUSE: pips last ten seconds */
+const wispK = () => pb('pygreatwisp') ? PF.wisp.greatK : pb('pythreewisp') ? PF.wisp.threeK : 1;
+const jwK = () => pb('pyjwa') ? 1 : pb('pyjwb') ? Math.min(PF.trait.jetwB, trk('jetWalk')) : trk('jetWalk');   /* WALKING FLAME: SURE FOOT walks at full pace, HOVER slower */
+let pyTrail = null, pyShower = [], wispX = [], pyStorm = null;   /* TRAILING EMBER waiting, METEOR SHOWER's meteors, THREE WISPS' extra two, a FIRESTORM still standing */
 let IMPACT = null;   /* an explicit hit-stop class for the blow being dealt (blowKind reads it) - set only around one hurtAs by hurtFire */
 const pyroCard = id => isPyro() && (PROG.pyroBoth === true || perkOn(PROG, 'pyro', id === 'jet' ? 'pjet' : 'pember'));   /* THE L10 CARDS (src/progression.js PYRO_CARDS): taken, or a pre-kit save's both */
 /* ==== LIVING BOMB (claude/pyrokit2, Daniel 11-01 11:17): HER CORE PASSIVE FROM LEVEL 1. Her blows add PIPS (e.pyStk, three small flames over the foe): a staff cut, a tapped ball, a ward's contact or a
@@ -32178,7 +32187,7 @@ const pyroCard = id => isPyro() && (PROG.pyroBoth === true || perkOn(PROG, 'pyro
    (two from L40) - so a pack goes up one after another. A foe that just burst builds no pips for 2 s. A boss or mini takes a smaller, CAPPED burst, and only every 3rd one staggers him. Pips replace the
    old BURN MARKS (pyMarkAt, the CONFLAGRATION eruption); the meter's spender is METEOR FALL, which gives everything in its blast THREE pips. Growth by level: L14 CINDER SPREAD (the L14 passive, same id) = a wider
    spread, L25 a bigger blast, L40 two pips to each neighbour and a stronger boss blast. */
-const pyStacks = e => (!!e && e.pyStk > 0 && time - (e.pyStkAt ?? -99) < PYRO_KIT.lb.life) ? e.pyStk : 0;
+const pyStacks = e => (!!e && e.pyStk > 0 && time - (e.pyStkAt ?? -99) < lbLife()) ? e.pyStk : 0;
 const pyroMarked = e => pyStacks(e) > 0;   /* (the old name: tools and the old call sites read "marked" = has a pip) */
 const lbTier = () => { const lv = heroLevel(); return lv >= 40 ? 3 : lv >= 25 ? 2 : (lv >= 14 || tal('conflagration')) ? 1 : 0; };
 let FIRE_BLOW = false, PY_NOHEAT = false;   /* FIRE_BLOW: hurtFire is dealing the blow (it gives its own pips); PY_NOHEAT: a burst or a meteor is dealing it (they never refill the bar) */
@@ -32186,34 +32195,36 @@ function pyStack(e, n = 1, src = 'hit') {
   const L = PYRO_KIT.lb; if (!e || !e.alive || e.harmless || n <= 0 || e.pyFuse !== undefined || time < (e.pyNoStk || 0)) return;
   const bypass = src === 'spread' || src === 'meteor';
   if (!bypass && time - (e.pyGapAt ?? -99) < (src === 'skill' ? L.gapSkill : L.gap)) return;
-  if (time - (e.pyStkAt ?? -99) > L.life) e.pyStk = 0;
-  e.pyGapAt = time; e.pyStkAt = time; e.pyStk = Math.min(L.need, (e.pyStk || 0) + n);
+  if (time - (e.pyStkAt ?? -99) > lbLife()) e.pyStk = 0;
+  e.pyGapAt = time; e.pyStkAt = time; e.pyStk = Math.min(lbNeed(), (e.pyStk || 0) + n);
   SFX.bombPip(e.pyStk); { const cy = e.y - (e.h || 16) / 2; burst(e.x, cy - (e.h || 16) / 2, 3, ['#ffd36b', '#ff9a5c'], 30, 0.25, -20, 1); }
-  if (e.pyStk >= L.need) e.pyFuse = time + (bypass ? L.fuseChain : L.fuse);
+  if (e.pyStk >= lbNeed()) e.pyFuse = time + (bypass ? L.fuseChain : L.fuse);
 }
 const burnMark = e => pyStack(e, 1, 'mark');   /* (not markFoe: that is the Blood Knight's) the ward's parry and the card's ember/jet still call this: it is one pip now */
 /* the generic hook (hurtEnemy): a blow of hers that took health and was not a fireball/ward/burst gives a pip - the staff (untagged or a swing tag) is a melee pip, a shot is a skill's */
 function pyBlowStack(e, tag) { if (FIRE_BLOW || BURN_TICK || PY_NOHEAT || !HERO_HAND || !isPyro() || P.dead) return; const t = Array.isArray(tag) ? tag : [tag];
-  if (t.includes('throw') || t.includes('reflect')) return; pyStack(e, 1, t.includes('shot') ? 'skill' : 'melee'); }
+  if (t.includes('throw') || t.includes('reflect')) return; pyStack(e, (!t.includes('shot') && pb('pyspark')) ? PF.chain.sparkPips : 1, t.includes('shot') ? 'skill' : 'melee'); }
 /* THE BURST: the pips go (and pass on to the neighbours first, so even a kill carries the fire), then the blow - capped on a boss or a mini, every 3rd one staggers him */
 function pyDetonate(e) {
   const L = PYRO_KIT.lb, t = lbTier(), big = !!e.maxHp, h = e.h || 16, cy = e.y - h / 2;
   e.pyFuse = undefined; e.pyStk = 0; e.pyNoStk = time + L.noStack;
-  for (const q of enemies) if (q !== e && q.alive && !q.harmless && Math.abs(q.x - e.x) < L.R[t] + (q.w || 12) / 2 && Math.abs((q.y - (q.h || 16) / 2) - cy) < L.R[t]) pyStack(q, L.spread[t], 'spread');
+  const Rb = L.R[t] + (pb('pyslowfuse') ? PF.fuse.slowReach : 0) + (pb('pyshortfuse') ? PF.fuse.shortReach : 0);   /* (claude/pyrofork) SLOW FUSE reaches further, SHORT FUSE less */
+  for (const q of enemies) if (q !== e && q.alive && !q.harmless && Math.abs(q.x - e.x) < Rb + (q.w || 12) / 2 && Math.abs((q.y - (q.h || 16) / 2) - cy) < Rb) pyStack(q, L.spread[t], 'spread');
   PA.fx('erupt', e.x, e.y + 2, time, { v: big ? 2 : h > 22 ? 1 : 0 }); ringAt(e.x, cy, 18 + t * 8, '#ff6b2c', 0.25); ringAt(e.x, cy, 10 + t * 5, '#fff6c8', 0.18); flame(e.x, cy, 10 + 2 * t, 10, 80, 3); burst(e.x, cy, 14, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 100, 0.45, 40, 2);
   SFX.bombBoom(); hitstop(big ? 0.06 : 0.04); shakeCam(big ? 4 : 2.5);
   if (!e.alive) return;
   const sw = swordDmg(), hm = heatMul();
-  let dmg = Math.round(sw * (big ? SKK.K.livingBombBig : SKK.K.livingBomb) * amul('livingBomb') * hm);
-  if (big) { dmg = Math.min(dmg, Math.max(1, Math.round(L.capPct[t] * e.maxHp))); e.pyBombN = (e.pyBombN || 0) + 1; }
+  let dmg = Math.round(sw * (big ? SKK.K.livingBombBig : SKK.K.livingBomb) * amul('livingBomb') * hm * (pb('pyshortfuse') ? PF.fuse.shortMul : 1));
+  if (big) { dmg = Math.min(dmg, Math.max(1, Math.round(L.capPct[t] * (pb('pyshortfuse') ? PF.fuse.shortMul : 1) * e.maxHp))); e.pyBombN = (e.pyBombN || 0) + 1; }
   PY_NOHEAT = true; try { hurtFire(e, dmg, P.x, { burn: big ? 0 : L.burn, cls: 'heavy', tag: ['heavy', 'shot'], stacks: 0 }); } finally { PY_NOHEAT = false; }
+  { const ss = pb('pyshortfuse') ? pyShortStagger(big) : 0; if (ss > 0 && e.alive && !(e.rpWardT > 0) && !(e.broken > 0)) { e.stagger = Math.max(e.stagger || 0, ss); e.flash = Math.max(e.flash || 0, 0.15); } }   /* SHORT FUSE: a common foe reels (a boss/mini: nothing) */
   if (big && e.alive && e.pyBombN % L.staggerEvery === 0 && !(e.rpWardT > 0) && !(e.broken > 0)) { e.stagger = Math.max(e.stagger || 0, L.stagger); e.flash = 0.2; ringAt(e.x, cy, 26, '#ffd36b', 0.3); }   /* only the 3rd, 6th... burst on a boss/mini staggers him (not in a ward or a break) */
 }
 /* every frame (the pyro block of updatePlayer): the fuses that have burned down, and the meteor in the air */
 function pyBombTick(dt) {
   if (P.dead) { pyMeteor = null; return; }
   for (const e of enemies) if (e.pyFuse !== undefined && time >= e.pyFuse) pyDetonate(e);
-  meteorTick(dt);
+  meteorTick(dt); pyTechTick(dt);
 }
 /* HER FIRE LANDS: marked first (a kill still counts as fire), the blow at its class, the burn */
 function hurtFire(e, dmg, fromX, { burn = 0, cls = null, tag = 'shot', burnOnly = false, stacks = 1 } = {}) { if (!e || !e.alive) return;
@@ -32242,7 +32253,7 @@ function fbFizzle() { SFX.emberFizzle(); const tip = fbTip(); smoke(tip.x, tip.y
 function castFireball(step) { noteVerb('cast'); const heldR = fbRadius(P.cHeld || 0);
   const F = PYRO_KIT.fb; if (P.dead || P.asleep > 0) return;
   if (embers.filter(b => b.fb).length >= F.inFlight) { SFX.buzz(); number(P.x, P.y - 22, 'ONE IN THE AIR', '#9aa39a'); return; }
-  if (!spend(F.cost[step])) { SFX.buzz(); P.stFlash = 0.3; fbFizzle(); return; }
+  if (!spend(F.cost[pb('pygreatball') && step >= 1 && step <= 4 ? step + 1 : step])) { SFX.buzz(); P.stFlash = 0.3; fbFizzle(); return; }   /* (claude/pyrofork) GREAT BALL pays for the bigger step */
   P.castT = 0.2 + 0.05 * step; P.atk = -1;
   if (inGas() && !P.gasCd) { P.gasCd = 2; gasBlast(P.x, P.y); }
   const tip = fbTip();
@@ -32254,6 +32265,7 @@ function castFireball(step) { noteVerb('cast'); const heldR = fbRadius(P.cHeld |
     : { fb: 6, r: F.rSun, x: tip.x + P.face * 10, y: P.y - 24, vx: P.face * F.sunV, vy: 0, grav: 0, life: F.sunLife, hit: new Set() });   /* (claude/pyrocharge) THE LITTLE SUN: it crawls */
   { const nb = embers.find(q => q.fb === step && !q.sized); if (nb) { nb.sized = true; if (step >= 2 && step <= 5) nb.r = Math.max(nb.r, Math.round(heldR)); if (step === 6) { SFX.sunCast(); shakeCam(7); zoomKick(1.08, 0.3); ringAt(tip.x, tip.y, 50, '#fff6c8', 0.45); number(P.x, P.y - 34, 'LITTLE SUN', '#fff6c8'); P.vx -= P.face * 60; } } }
   if (step === 1 && tal('twin')) embers.push({ fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 105, vy: -150, grav: 110, life: tal('skip') ? 2.4 : 1.2, hit: new Set(), tk: trk('twin') });   /* TWIN EMBER: a high one after the low */
+  pyBallForks(step);
   SFX.fbCast(step); burst(tip.x, tip.y, 4 + 4 * step, ['#ff9a5c', '#ffd36b', '#fff6c8'], 40 + 20 * step, 0.3, 0, 1);
   if (step >= 3 && step < 6) { P.vx -= P.face * (40 + 15 * step); hitstop(0.03 + 0.01 * step); streaks(tip.x, tip.y, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 200); }
 }
@@ -32282,7 +32294,7 @@ function stokeTick(dt, keys, ok) {
   const on = ok && keys.down && P.ground && !P.swim && !P.climb && !keys.left && !keys.right && !keys.jump && !keys.atk && !keys.block && !keys.up && !P.cMode && !P.fwUp && !(P.fwRec > 0) && !(P.stokeLock > 0) && !(P.hurt > 0) && !P.full && !(P.infernoT > 0) && Math.abs(P.vx) < 20;
   P.stokeT = on ? (P.stokeT || 0) + dt : 0; P.stoking = on && P.stokeT >= PYRO_KIT.stokeIn;
   if (!P.stoking) return;
-  P.heat = Math.min(100, (P.heat || 0) + PYRO_KIT.stoke * dt); P.heatGrace = HEAT.grace; SFX.stoke();
+  P.heat = Math.min(100, (P.heat || 0) + PYRO_KIT.stoke * dt * (pb('pybellowed') ? PF.heat.fill : 1)); P.heatGrace = HEAT.grace; SFX.stoke();
   if (Math.random() < dt * 22) { const tip = fbTip(); parts.push({ fire: true, x: tip.x + (Math.random() - 0.5) * 6, y: P.y - 10 + (Math.random() - 0.5) * 4, vx: (Math.random() - 0.5) * 10, vy: -30 - Math.random() * 30, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a5c', size: 1, grav: -30 }); }
   if (P.heat >= 100) { bankHeat(); P.stokeT = 0; }
 }
@@ -32297,8 +32309,10 @@ function castMeteorFall() { trialEvent('meter'); noteVerb('cast');
   for (const e of enemies) { if (!e.alive || e.harmless) continue; const dx = (e.x - P.x) * P.face; if (dx < -6 || dx > M.range || Math.abs(e.y - P.y) > 90) continue;
     if (!best || pyStacks(e) > pyStacks(best) || (pyStacks(e) === pyStacks(best) && Math.abs(e.x - P.x) < Math.abs(best.x - P.x))) best = e; }
   if (best) { bx = best.x; by = best.y; }
-  pyMeteor = { x: bx, y: by, t0: time, hm, tell: M.tell };
-  SFX.meteorWhistle(); if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: 'METEOR FALL' });
+  if (pb('pyshower')) { pyShower = pyShowerPlan(P.face, P.x, enemies.filter(e => e.alive && !e.harmless && (e.x - P.x) * P.face > 0 && Math.abs(e.y - P.y) <= 90).map(e => e.x)).map(o => ({ ...o, y: P.y, t0: time + o.at, hm })); SFX.meteorWhistle(); if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: 'METEOR SHOWER' }); ringAt(P.x, P.y - 10, 22, '#ffd36b', 0.3); flame(P.x, P.y - 10, 8, 8, 60, 3); shakeCam(2); return 1; }   /* (claude/pyrofork) the L50 B pick replaces the meteor with a shower */
+  const star = pb('pystar');   /* A reshapes it: a longer tell, a wider ring, a heavier blow */
+  pyMeteor = { x: bx, y: by, t0: time, hm, tell: star ? PF.star.tell : M.tell, R: star ? PF.star.R : M.R, mul: star ? PF.star.mul : 1, capPct: star ? PF.star.capPct : M.capPct, capMini: star ? PF.star.capMini : M.capMini };
+  SFX.meteorWhistle(); if (SET.numbers) PA.fx('word', P.x, P.y - 34, time, { txt: pb('pystar') ? 'STAR FALL' : 'METEOR FALL' });
   ringAt(P.x, P.y - 10, 22, '#ffd36b', 0.3); flame(P.x, P.y - 10, 8, 8, 60, 3); shakeCam(2);
   return best ? 1 : 0;
 }
@@ -32306,14 +32320,14 @@ function meteorTick(dt) { const m = pyMeteor; if (!m) return; const age = time -
   if (age < 0) { pyMeteor = null; return; }
   if (age < m.tell) return;
   pyMeteor = null;
-  const M = PYRO_KIT.mf, sw = swordDmg(), cy = m.y - 10;
-  PA.fx('bigblast', m.x, m.y - 8, time, { sc: 1.9 }); PA.fx('blast', m.x, m.y - 8, time); ringAt(m.x, m.y - 8, M.R, '#ff6b2c', 0.4); ringAt(m.x, m.y - 8, M.R * 0.6, '#fff6c8', 0.25);
+  const M = { ...PYRO_KIT.mf, R: m.R || PYRO_KIT.mf.R, capPct: m.capPct || PYRO_KIT.mf.capPct, capMini: m.capMini || PYRO_KIT.mf.capMini }, sw = swordDmg(), cy = m.y - 10;
+  PA.fx('bigblast', m.x, m.y - 8, time, { sc: 1.9 * (M.R / PYRO_KIT.mf.R) }); PA.fx('blast', m.x, m.y - 8, time); ringAt(m.x, m.y - 8, M.R, '#ff6b2c', 0.4); ringAt(m.x, m.y - 8, M.R * 0.6, '#fff6c8', 0.25);
   burst(m.x, m.y - 8, 34, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 150, 0.7, 70, 3); flame(m.x, m.y - 8, 18, 14, 100, 4); streaks(m.x, m.y - 8, 14, ['#fff6c8', '#ffd36b', '#ff9a5c'], 260); smoke(m.x, m.y - 12, 8, 12);
   SFX.meteorBoom(); hitstop(0.12); zoomKick(1.1, 0.28); shakeCam(8); if (SET.flashes) killFlash = Math.max(killFlash, 0.05);
   const hits = enemies.filter(e => e.alive && !e.harmless && Math.abs(e.x - m.x) < M.R + (e.w || 12) / 2 && Math.abs((e.y - (e.h || 16) / 2) - cy) < M.R + (e.h || 16) / 2);
   PY_NOHEAT = true;
   try { for (const e of hits) { const big = !!e.maxHp, isBoss = e === boss;
-      let dmg = Math.round(sw * SKK.K.meteorFall * amul('meteorFall') * m.hm);
+      let dmg = Math.round(sw * SKK.K.meteorFall * (m.mul || 1) * amul('meteorFall') * m.hm);
       if (big) dmg = Math.min(dmg, Math.max(1, Math.round((isBoss ? M.capPct : M.capMini) * e.maxHp)));
       hurtFire(e, dmg, m.x, { burn: big ? 0 : M.burn, cls: 'heavy', tag: ['heavy', 'shot'], stacks: 0 });
       if (e.alive) pyStack(e, PYRO_KIT.lb.need, 'meteor'); } }
@@ -32334,16 +32348,76 @@ function drawFbMeter(g, cx, cy) {
   g.fillStyle = 'rgba(160,170,190,0.35)'; g.fillRect(sx, by, 10, 3); g.fillStyle = sk >= 1 ? (Math.floor(time * 10) % 2 ? '#ffffff' : '#ffd36b') : '#ff6b2c'; g.fillRect(sx, by, Math.round(10 * sk), 3);
   if (h >= F.steps[4]) { g.strokeStyle = sk >= 1 ? '#ffffff' : '#ffd36b'; g.lineWidth = 1; g.strokeRect(bx - 1.5, by - 1.5, 5 * 6 + 13, 6); }
 }
+/* ==== THE PYROMANCER'S FORK HANDS (claude/pyrofork; numbers in src/forks-pyro.js PF) ==== */
+/* SMOKE STEP: the dodge just began - a shorter slip, untouchable a beat longer, and a puff left where she started that eats the first shot to cross it */
+function pySmokeStart() { if (!pb('pysmoke') || P.swim) return;
+  P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * PF.step.shortLen; P.dodgeInv = Math.min(P.dodge, (P.dodgeInv || 0) + PF.step.shortInv); P.dashCd = P.dodgeCd;
+  P.smoke = { x: P.x, y: P.y - 8, t: 1.2 }; smoke(P.x, P.y - 8, 7, 10); }
+/* the ward just parried (f = the foe turned, or null for a shot): WARD NOVA rings the fire out; WARD SWALLOW eats a shot and feeds the next ball */
+function pyParryFork(f) {
+  if (pb('pyswallow') && !f) { P.swallowT = time + PF.ward.swallowT; number(P.x, P.y - 40, 'SWALLOWED', '#ffd36b'); burst(P.x, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 50, 0.35, -20, 1); }
+  if (!pb('pynova')) return;
+  const sw = swordDmg(), hm = heatMul(); ringAt(P.x, P.y - 10, 30, '#ff6b2c', 0.3); ringAt(P.x, P.y - 10, 50, '#ffd36b', 0.22); burst(P.x, P.y - 10, 16, ['#fff6c8', '#ffd36b', '#ff9a5c'], 120, 0.4, 20, 2); flame(P.x, P.y - 10, 10, 10, 90, 3);
+  for (const e of enemies.slice()) { if (!e.alive || e.harmless) continue; const big = !!e.maxHp || !!e.mini; if (Math.hypot(e.x - P.x, (e.y - (e.h || 16) / 2) - (P.y - 10)) > PF.ward.nova.R) continue;
+    if (!big) { PY_NOHEAT = true; try { hurtFire(e, Math.round(sw * PF.ward.nova.k * amul('livingBomb') * hm), P.x, { burn: 1.5, cls: 'light', tag: 'shot', stacks: PF.ward.nova.pips }); } finally { PY_NOHEAT = false; } } else pyStack(e, PF.ward.nova.pips, 'spread'); } }
+/* a ball was just thrown (castFireball): GREAT BALL and a swallowed shot grow it a step; TRAILING EMBER queues the free small one */
+function pyBallForks(step) {
+  const b = [...embers].reverse().find(q => q.fb === step && !q.forked); if (!b) return; b.forked = true; const R = [0, 3, 5, 8, 10, 13];
+  const grow = () => { if (b.fb >= 1 && b.fb <= 4) { b.fb++; b.r = Math.max(b.r, R[b.fb]); return true; } return false; };
+  if (pb('pygreatball') && grow()) b.vx *= PF.ball.greatSlow;
+  if (P.swallowT > time && pb('pyswallow') && grow()) { P.swallowT = 0; number(P.x, P.y - 30, 'FED', '#ffd36b'); }
+  if (pb('pytrail') && step >= PF.ball.trailMinStep && step <= PF.ball.trailMaxStep) pyTrail = { t: time + PF.ball.trailWait }; }
+/* FIRESTORM: ANCHORED stands where it was cast, WALKING follows her at less weight (three seconds) */
+function pyStormCast() { pyStorm = null; if (pb('pyanchor')) pyStorm = { x: P.x, y: P.y, t: PF.storm.life, tk: 0, k: PF.storm.anchorK, follow: false }; else if (pb('pywalking')) pyStorm = { x: P.x, y: P.y, t: PF.storm.life, tk: 0, k: PF.storm.walkK, follow: true }; }
+/* CHAIN FLASH: a foe that popped lights the ones beside it (a boss is not lit; a lit foe is not popped in the same flash) */
+function pyChainFlash(e) { for (const q of enemies) { if (q === e || !q.alive || q.harmless || q.maxHp || Math.hypot(q.x - e.x, q.y - e.y) > PF.flash.chainR) continue; q.burn = Math.max(q.burn || 0, PF.flash.chainBurn); q.heatOwner = P; q.chainLit = time; pyStack(q, 1, 'spread'); flame(q.x, q.y - (q.h || 16) / 2, 4, 4, 50, 2); }
+  ringAt(e.x, e.y - (e.h || 16) / 2, PF.flash.chainR, '#ffd36b', 0.3); }
+/* THREE WISPS: the two extra wisps circle her and dive on their own */
+function pyWispX(dt) { const lead = wisp; if (!lead) { wispX = []; return; }
+  for (const w of wispX) { w.cd = Math.max(0, w.cd - dt); if (w.target && (!w.target.alive || Math.hypot(w.target.x - P.x, w.target.y - P.y) > 140)) w.target = null;
+    if (!w.target && w.cd <= 0) { let best = null, bd = 90; for (const e of enemies) if (e.alive && !e.harmless && e.t !== 'folk') { const dd = Math.hypot(e.x - P.x, e.y - 8 - (P.y - 8)); if (dd < bd) { bd = dd; best = e; } } w.target = best; }
+    let tx = P.x + Math.cos(lead.t * 3 + w.a) * 18, ty = P.y - 16 + Math.sin(lead.t * 3 + w.a) * 7; if (w.target) { tx = w.target.x; ty = w.target.y - w.target.h / 2; }
+    const dx = tx - w.x, dy = ty - w.y, dd = Math.hypot(dx, dy) || 1, st = Math.min(dd, (w.target ? 240 : 160) * dt); w.x += dx / dd * st; w.y += dy / dd * st;
+    if (w.target && dd < 8) { const e = w.target, big = !!e.maxHp; hurtAs('shot', e, Math.round((big ? 4 : 8) * wispK() * amul('wisp')), w.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1); burst(w.x, w.y, 4, ['#ffd36b', '#ff9a5c'], 40, 0.3, 0, 1); SFX.spark(); w.target = null; w.cd = 1.4; }
+    if (Math.random() < dt * 20) parts.push({ x: w.x + (Math.random() - 0.5) * 3, y: w.y, vx: 0, vy: -20, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0 }); } }
+/* every frame beside the bombs: TRAILING EMBER's wait, PHOENIX STEP's wake, SMOKE STEP's puff, the standing FIRESTORM, METEOR SHOWER's falling meteors */
+function pyTechTick(dt) {
+  if (P.dead) { pyShower = []; pyStorm = null; pyTrail = null; P.smoke = null; wispX = []; return; }
+  if (pyTrail && time >= pyTrail.t) { const tip = fbTip(); pyTrail = null;
+    if (embers.filter(b => b.fb).length < PYRO_KIT.fb.inFlight) { embers.push({ fb: 1, r: 3, x: tip.x, y: P.y - 12, vx: P.face * 170, vy: -30, grav: 110, life: 1.5, hit: new Set(), sized: true, forked: true }); SFX.fbCast(1); burst(tip.x, tip.y, 4, ['#ff9a5c', '#ffd36b'], 40, 0.25, 0, 1); } }
+  if (pb('pyphoenix') && P.dodge > 0) for (const e of enemies) { if (!e.alive || e.harmless || e.maxHp || e.mini) continue; if (Math.abs(e.x - P.x) > PF.step.near + 6 || Math.abs((e.y - (e.h || 16) / 2) - (P.y - 9)) > 24) continue; pyStack(e, 1, 'spread'); e.burn = Math.max(e.burn || 0, PF.step.burn); e.heatOwner = P; }
+  if (P.smoke) { P.smoke.t -= dt; if (P.smoke.t <= 0) P.smoke = null; else for (const s of seeds) if (!s.dead && Math.hypot(s.x - P.smoke.x, s.y - P.smoke.y) < 20) { s.dead = true; number(P.smoke.x, P.smoke.y - 14, 'SMOTHERED', '#9aa39a'); smoke(P.smoke.x, P.smoke.y, 5, 8); P.smoke = null; break; } }
+  if (pyStorm) { const S = pyStorm; S.t -= dt; if (S.follow) { S.x = P.x; S.y = P.y; } S.tk -= dt;
+    if (S.tk <= 0) { S.tk = PF.storm.tick; for (const e of enemies) { if (!e.alive || e.harmless || Math.abs(e.x - S.x) > PF.storm.R || Math.abs(e.y - S.y) > 60) continue; hurtAs('shot', e, Math.max(1, Math.round(3 * S.k * amul('firestorm'))), S.x, false); if (e.alive) { if (!e.maxHp) e.burn = Math.max(e.burn || 0, 2.5); flame(e.x, e.y - (e.h || 16) / 2, 3, 4, 50, 2); } } ringAt(S.x, S.y - 6, PF.storm.R * 0.7, '#ff6b2c', 0.3); }
+    if (Math.random() < dt * 40) parts.push({ fire: true, x: S.x + (Math.random() - 0.5) * PF.storm.R * 1.6, y: S.y - 2, vx: 0, vy: -50 - Math.random() * 50, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b', size: 1, grav: -40 });
+    if (S.t <= 0) pyStorm = null; }
+  if (pyShower.length) { for (const m of pyShower) { if (m.done || time < m.t0 + PF.shower.tell) continue; m.done = true; showerLand(m); } pyShower = pyShower.filter(m => !m.done); } }
+/* one small meteor of the SHOWER lands: its own ring, x1.0 on everything in R, a boss/mini a small capped share, two pips each */
+function showerLand(m) {
+  const S = PF.shower, sw = swordDmg(), cy = m.y - 10;
+  PA.fx('blast', m.x, m.y - 8, time); ringAt(m.x, m.y - 8, S.R, '#ff6b2c', 0.3); burst(m.x, m.y - 8, 14, ['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c'], 110, 0.45, 50, 2); flame(m.x, m.y - 8, 8, 8, 80, 3); SFX.meteorBoom(); hitstop(0.05); shakeCam(3.5);
+  const hits = enemies.filter(e => e.alive && !e.harmless && Math.abs(e.x - m.x) < S.R + (e.w || 12) / 2 && Math.abs((e.y - (e.h || 16) / 2) - cy) < S.R + (e.h || 16) / 2);
+  PY_NOHEAT = true;
+  try { for (const e of hits) { const big = !!e.maxHp, isBoss = e === boss; let dmg = Math.round(sw * S.k * amul('meteorFall') * m.hm);
+      if (big) dmg = Math.min(dmg, Math.max(1, Math.round((isBoss ? S.capPct : S.capMini) * e.maxHp)));
+      hurtFire(e, dmg, m.x, { burn: big ? 0 : PYRO_KIT.mf.burn, cls: 'heavy', tag: ['heavy', 'shot'], stacks: 0 }); if (e.alive) pyStack(e, S.pips, 'meteor'); } }
+  finally { PY_NOHEAT = false; }
+  P.heat = 0; }
 function drawPyroKit(g, cx, cy) {   /* (claude/pyroarttune) the art pass: src/pyro-art.js draws the ball, the crown, the brand and the effects below */
   PA.drawFx(g, cx, cy, time, SET.flashes && !SET.reduceMotion);
   if (P.dead) return;
   if (P.cMode === 'fb' && P.fbHold > 0) { const tip = fbTip(), st = P.fbHold, F = PYRO_KIT.fb, lo = F.steps[st - 1], hi = st < 5 ? F.steps[st] : lo, prog = st < 5 ? Math.max(0, Math.min(1, ((P.cHeld || 0) - lo) / (hi - lo))) : 0;
     PA.held(g, Math.round(tip.x - cx) + (st === 6 ? P.face * 26 : 0), Math.round(tip.y - cy) - (st === 6 ? 14 : 0), st, prog, time, Math.max(3, Math.round(fbRadius(P.cHeld || 0)))); drawFbMeter(g, cx, cy); }
+  for (const m of pyShower) { const age = time - m.t0; if (age < 0 || m.done) continue; const p = Math.max(0, Math.min(1, age / PF.shower.tell)); PA.meteorRing(g, Math.round(m.x - cx), Math.round(m.y - cy), PF.shower.R, p, time);
+    const fall = (age - (PF.shower.tell - 0.3)) / 0.3; if (fall > 0) { const k = Math.min(1, fall); PA.meteorBody(g, Math.round(m.x - cx + 24 * (1 - k * k)), Math.round(m.y - cy - 6 - 150 * (1 - k * k)), time); } }   /* (claude/pyrofork) METEOR SHOWER: placeholder art - the same ring and body, smaller fall */
+  if (pyStorm) { g.strokeStyle = 'rgba(255,154,92,0.55)'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(pyStorm.x - cx), Math.round(pyStorm.y - cy) - 4, PF.storm.R, 10, 0, 0, 7); g.stroke(); }   /* FIRESTORM's standing ring (greybox) */
+  if (P.smoke) { g.globalAlpha = Math.min(0.6, P.smoke.t); g.fillStyle = '#8a8480'; g.beginPath(); g.arc(Math.round(P.smoke.x - cx), Math.round(P.smoke.y - cy), 9, 0, 7); g.fill(); g.globalAlpha = 1; }   /* SMOKE STEP's puff (greybox) */
+  if (wisp) for (const w of wispX) { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(w.x - cx), Math.round(w.y - cy), 5, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#fff6c8'; g.fillRect(Math.round(w.x - cx) - 1, Math.round(w.y - cy) - 1, 3, 3); }   /* THREE WISPS' extras (greybox) */
   if (P.stoking) PA.stoke(g, Math.round(P.x + P.face * PA.TIP.stoke[0] - cx), Math.round(P.y + PA.TIP.stoke[1] - cy), P.heat || 0, time);
-  for (const e of enemies) { if (!e.alive) continue; const n = pyStacks(e); if (!n) continue; const left = PYRO_KIT.lb.life - (time - e.pyStkAt);
+  for (const e of enemies) { if (!e.alive) continue; const n = pyStacks(e); if (!n) continue; const left = lbLife() - (time - e.pyStkAt);
     PA.pips(g, Math.round(e.x - cx), Math.round(e.y - (e.h || 16) - cy) - 3, n, time, e.pyFuse !== undefined, left); }
   if (pyMeteor) { const m = pyMeteor, age = time - m.t0, p = Math.max(0, Math.min(1, age / m.tell)), gx = Math.round(m.x - cx), gy = Math.round(m.y - cy);
-    PA.meteorRing(g, gx, gy, PYRO_KIT.mf.R, p, time);
+    PA.meteorRing(g, gx, gy, m.R || PYRO_KIT.mf.R, p, time);
     const fall = (age - (m.tell - 0.45)) / 0.45; if (fall > 0) { const k = Math.min(1, fall); PA.meteorBody(g, Math.round(gx + 34 * (1 - k * k)), Math.round(gy - 6 - 210 * (1 - k * k)), time); } }
 }
 function pyreBurst(b) {
@@ -32379,21 +32453,21 @@ function flinch(e) { // a foe struck by an ember in the middle of a tell loses t
   return true;
 }
 function updateWisp(dt) {
-  if (!wisp) return; const w = wisp; w.t += dt; w.life -= dt; w.cd = Math.max(0, w.cd - dt); if (Math.random() < dt * 30) flame(w.x, w.y + 2, 1, 2, 20, 2);
-  if (w.life <= 0 || P.dead || !isPyro()) { burst(w.x, w.y, 8, ['#ffd36b', '#ff9a5c'], 40, 0.4, 0, 1); wisp = null; return; }
+  if (!wisp) return; if (wispX.length) pyWispX(dt); const w = wisp; w.t += dt; w.life -= dt; w.cd = Math.max(0, w.cd - dt); if (Math.random() < dt * 30) flame(w.x, w.y + 2, 1, 2, 20, 2);
+  if (w.life <= 0 || P.dead || !isPyro()) { burst(w.x, w.y, 8, ['#ffd36b', '#ff9a5c'], 40, 0.4, 0, 1); wisp = null; wispX = []; return; }
   if (w.target && (!w.target.alive || Math.hypot(w.target.x - P.x, w.target.y - P.y) > 140)) w.target = null;
-  if (!w.target && w.cd <= 0) { let best = null, bd = 90; for (const e of enemies) if (e.alive && !e.harmless && e.t !== 'folk') { const dd = Math.hypot(e.x - P.x, e.y - 8 - (P.y - 8)); if (dd < bd) { bd = dd; best = e; } } w.target = best; }
+  if (!w.target && w.cd <= 0) { let best = null, bd = pb('pygreatwisp') ? PF.wisp.greatReach : 90; for (const e of enemies) if (e.alive && !e.harmless && e.t !== 'folk') { const dd = Math.hypot(e.x - P.x, e.y - 8 - (P.y - 8)); if (dd < bd) { bd = dd; best = e; } } w.target = best; }
   let tx = P.x + Math.cos(w.t * 3) * 14, ty = P.y - 16 + Math.sin(w.t * 3) * 5;
   if (w.target) { tx = w.target.x; ty = w.target.y - w.target.h / 2; }
-  const dx = tx - w.x, dy = ty - w.y, dd = Math.hypot(dx, dy) || 1, sp = w.target ? 240 : 160; const st = Math.min(dd, sp * dt); w.x += dx / dd * st; w.y += dy / dd * st;
-  if (w.target && dd < 8) { const e = w.target; const big = !!e.maxHp; hurtAs('shot', e, Math.round((big ? 4 : 8)*amul('wisp')), w.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1); burst(w.x, w.y, 6, ['#ffd36b', '#ff9a5c'], 50, 0.3, 0, 1); SFX.spark(); w.target = null; w.cd = 1.4; }
+  const dx = tx - w.x, dy = ty - w.y, dd = Math.hypot(dx, dy) || 1, sp = (w.target ? 240 : 160) * (pb('pygreatwisp') ? PF.wisp.greatSpeed : 1); const st = Math.min(dd, sp * dt); w.x += dx / dd * st; w.y += dy / dd * st;
+  if (w.target && dd < 8) { const e = w.target; const big = !!e.maxHp; hurtAs('shot', e, Math.round((big ? 4 : 8) * wispK() * amul('wisp')), w.x, false); if (!big) e.burn = Math.max(e.burn || 0, 1); burst(w.x, w.y, 6, ['#ffd36b', '#ff9a5c'], 50, 0.3, 0, 1); SFX.spark(); w.target = null; w.cd = 1.4; }
   if (Math.random() < dt * 30) parts.push({ x: w.x + (Math.random() - 0.5) * 4, y: w.y, vx: (Math.random() - 0.5) * 10, vy: -25, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 });
   for (const pr of props) if ((pr.t === 'minerlamp' || pr.t === 'lantern') && !pr.lit && Math.abs(pr.x - w.x) < 18 && Math.abs(pr.y - 14 - w.y) < 24) { pr.lit = true; pr.hits = 0; burst(pr.x, pr.y - 8, 8, ['#ffd36b', '#fff6c8'], 50, 0.5); SFX.spark(); }
 }
 /* WILDFIRE: an ember that finds a burning foe does not stop there. It goes on to the nearest other one that is burning, once */
-function wildfireLeap(b, e) { let q = null, qd = 90 * trk('wildfire'); for (const o of enemies) { if (!o.alive || o.harmless || o === e || !((o.burn || 0) > 0) || b.hit.has(o)) continue; const d = Math.hypot(o.x - e.x, (o.y - o.h / 2) - (e.y - e.h / 2)); if (d < qd) { qd = d; q = o; } }
+function wildfireLeap(b, e) { let q = null, qd = 90 * trk('wildfire') * (pb('pywilda') ? PF.trait.wildAreach : 1); for (const o of enemies) { if (!o.alive || o.harmless || o === e || !((o.burn || 0) > 0) || b.hit.has(o)) continue; const d = Math.hypot(o.x - e.x, (o.y - o.h / 2) - (e.y - e.h / 2)); if (d < qd) { qd = d; q = o; } }
   if (!q) return; const sx = e.x, sy = e.y - e.h / 2, dx = q.x - sx, dy = (q.y - q.h / 2) - sy, d = Math.hypot(dx, dy) || 1;
-  embers.push({ x: sx, y: sy, vx: dx / d * 240, vy: dy / d * 240 - 25, life: 0.9, hit: new Set([e]), leapt: true }); flame(sx, sy, 5, 4, 50, 2); number(e.x, e.y - e.h - 16, 'WILDFIRE', '#ff9a5c'); }
+  embers.push({ x: sx, y: sy, vx: dx / d * 240, vy: dy / d * 240 - 25, life: 0.9, hit: new Set([e]), leapt: (b.leapt | 0) + 1 }); flame(sx, sy, 5, 4, 50, 2); number(e.x, e.y - e.h - 16, 'WILDFIRE', '#ff9a5c'); }
 function updateEmbers(dt) {
   for (const b of embers) { b.life -= dt; b.vy += (b.grav ?? 110) * dt; b.x += b.vx * dt; b.y += b.vy * dt;
     if (Math.random() < dt * 50) flame(b.x - b.vx * 0.01, b.y, 1, 2, 22, 2); if (b.fb > 1 && Math.random() < dt * 30 * b.fb) flame(b.x - b.vx * 0.02, b.y + (Math.random() - 0.5) * b.r, b.fb, b.fb + 1, 30, 2);   /* (claude/pyrokit) the bigger balls burn bigger */
@@ -32402,9 +32476,9 @@ function updateEmbers(dt) {
     for (const pr of props) if (pr.t === 'puffball' && !pr.popped && Math.abs(pr.x - b.x) < 9 && Math.abs(pr.y - 6 - b.y) < 9) { pr.popped = true; clouds2.push({ x: pr.x, y: pr.y - 6, r: 12, life: 1.5 }); burst(pr.x, pr.y - 6, 10, ['#e8e0d0', '#c8bcb0'], 60, 0.5); b.life = 0; }
     for (const e of enemies) { if (!e.alive || e.harmless || b.hit.has(e)) continue; if (b.plunge && isPyro() && firedropSpares(e, P)) continue;   /* the head she is coming down on: her boots, not her fire (src/pogo-chain.js) */
       if (Math.abs(e.x - b.x) < e.w / 2 + 5 + (b.r || 0) && b.y > e.y - e.h - 5 - (b.r || 0) && b.y < e.y + 5 + (b.r || 0)) { b.hit.add(e); const big = !!e.maxHp, lit = (e.burn || 0) > 0;
-        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb >= 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17 * trk('stoke')); gainHeat(6 * trk('stoke')); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
-        if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else {   /* (claude/sporewood2: THE MOTHER CAP 2 takes her fire at her hide's share) */ const rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } if (!b.plunge && !b.cone) burnMark(e); hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, b.plunge || b.cone ? Math.max(1, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1) * rk)) : Math.max(1, Math.round(swordDmg() * (big ? 0.3 : 0.45) * heatMul() * rk * (b.tk ?? 1))), b.x, false);   /* (claude/pyrokit) THE EMBER SHOT (card) scales with the staff: x0.45 (x0.3 on a big one) x heat - it was heatDmg(3)/(2), flat */   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { CM.refund(P, 17 * trk('stoke')); gainHeat(6 * trk('stoke')); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && !b.leapt) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
-      if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < 30 && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, Math.max(1, Math.round(6 * trk('scatter'))), b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
+        if (b.fb) { if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); if (b.fb >= 3) fbBoom(b, null); } else { fbHit(b, e); if (tal('stoke') && lit) { CM.refund(P, 17 * trk('stoke')); gainHeat(6 * trk('stoke')); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && (!b.leapt || (pb('pywildb') && b.leapt < 2))) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 6 + 4 * b.fb, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60 + 20 * b.fb, 0.4, 100, 2); break; }   /* (claude/pyrokit) THE HELD FIREBALL: fbHit (scaled, classed, marked); the big one explodes */
+        if (e.t === 'gill' || e.t === 'heart' || e.t === 'drone') { SFX.clank(); } else {   /* (claude/sporewood2: THE MOTHER CAP 2 takes her fire at her hide's share) */ const rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1; if (rk < 1) { SFX.clank(); number(e.x, e.y - e.h - 8, 'HIS HIDE TURNS IT', '#9aa39a'); } if (!b.plunge && !b.cone) burnMark(e); hurtAs(b.plunge ? 'plunge' : b.cone ? ['heavy', 'shot'] : 'shot', e, b.plunge || b.cone ? Math.max(1, Math.round(heatDmg(b.plunge ? (big ? 3 : 4) : (big ? 2 : 3)) * (b.plunge ? 1 + 0.075 * LV_GROW() : 1) * rk)) : Math.max(1, Math.round(swordDmg() * (big ? 0.3 : 0.45) * heatMul() * rk * (b.tk ?? 1))), b.x, false);   /* (claude/pyrokit) THE EMBER SHOT (card) scales with the staff: x0.45 (x0.3 on a big one) x heat - it was heatDmg(3)/(2), flat */   /* the firedrop is her plunge, the bellows her held blow */ if (!big) e.burn = Math.max(e.burn || 0, 1.4); flinch(e); if (e.t === 'dummy') trialEvent(b.plunge ? 'firedrop' : b.cone ? 'heavyblow' : 'ember'); if (tal('stoke') && lit && !b.plunge && !b.cone) { CM.refund(P, 17 * trk('stoke')); gainHeat(6 * trk('stoke')); number(P.x, P.y - 26, 'STOKED', '#ffd36b'); } if (tal('wildfire') && lit && (!b.leapt || (pb('pywildb') && b.leapt < 2))) wildfireLeap(b, e); } b.life = 0; burst(b.x, b.y, 8, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4, 100, 2);
+      if (tal('scatter')) { for (const q of enemies) if (q.alive && q !== e && !q.harmless && Math.abs(q.x - b.x) < (pb('pyscata') ? PF.trait.scatAr : 30) && Math.abs(q.y - b.y) < 26) { hurtEnemy(q, Math.max(1, Math.round(6 * (pb('pyscatb') ? PF.trait.scatBk : 1) * trk('scatter'))), b.x, false); flame(q.x, q.y - q.h / 2, 3, 3, 30, 1); } ringAt(b.x, b.y, 22, '#ff9a5c', 0.25); } // SCATTER
       break; } }
     const tx = Math.floor(b.x / TS), ty = Math.floor(b.y / TS);
     if (b.life > 0 && isSolid(tx, ty) && b.fb >= 3) fbBoom(b, null);   /* (claude/pyrokit) the big one goes off on stone */
@@ -32796,7 +32870,7 @@ function updateProps(dt) {
     if (b.dyn && b.vy > 0) { const ty = Math.floor((b.y + b.vy * dt) / TS); if (ty > Math.floor(b.y / TS) && isOneWay(tileAt(Math.floor(b.x / TS), ty))) { b.y = ty * TS; b.vy = 0; b.vx *= 0.3; } }   /* a stick lands on a rope bridge's planks, not through them */
     b.fuse -= dt; b.vy += 700 * dt; b.x += b.vx * dt; b.y += b.vy * dt; if (isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { b.y = Math.floor(b.y / TS) * TS; b.vy = 0; b.vx *= 0.6; } if (Math.random() < dt * 20) parts.push({ x: b.x, y: b.y - 6, vx: 0, vy: -30, life: 0.25, max: 0.25, col: '#ffd36b', size: 1, grav: 0 }); if (b.fuse <= 0) { b.dead = true; explode(b.x, b.y - 2, 36, DMG.bomb); } }
   bombs = bombs.filter(b => !b.dead);
-  for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt; f.age = (f.age || 0) + dt;
+  for (const f of fires) { if (f.delay > 0) { f.delay -= dt; continue; } f.life -= dt; f.age = (f.age || 0) + dt; if (f.vx) f.x += f.vx * dt;
     /* THE GRASS CATCHES: her own fire on open grassy ground runs along it a tile each way, three hops at most - never indoors, never over water */
     if (f.own && isPyro() && !f.spread && f.age > 0.5 && (f.gen || 0) < 3 && GRASSY.has((L.palette && L.palette.dress) || 'wood')) { f.spread = true;
       for (const d of [-1, 1]) { const nx = f.x + d * TS, tx = Math.floor(nx / TS), gy = Math.floor(f.y / TS);
