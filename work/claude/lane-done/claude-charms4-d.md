@@ -78,3 +78,17 @@ node: charms2, charms4 (new), unlocks, shop-gates, traits, talents, coop-progres
 1. Flip CHARMS3_SHIP after CHARMS2_SHIP ships? REC: yes, together or next, after Daniel looks at the sheet; keep the hidden SPADE riddle.
 2. Raise or lower the veteran credits (firstgold at 40 cleared woods; silver1life at 3 full-silver woods)? REC: keep.
 3. bossnoflask is the one feat I could not show is winnable; REC: keep as the capstone but run the no-flask boss bot before shipping, and swap it for "beat a boss without being hit" if the bot fails.
+
+# FOLLOW-UP (three owed items)
+## 1. One green pass
+`PORT=<free> node tools/charms4-play.mjs` end to end (no ONLY4): **exit 0, "charms4-play: ok"** on the pushed tip 8c5f3fcae. Two probes were order-dependent, not flaky by chance: after sections 1-3 in the same page, the CARTOGRAPHER'S INK map probe and the TELL-LENS ring probe read 0 (both pass in a fresh page and in section 4 alone; a co-op session was ruled out as the cause; the exact leftover state was not pinned down). Fix: section 4 starts on a fresh page (`localStorage.clear()` + reload with the flags) and the TELL probe gets its own fresh page. The asserts are unchanged (INK pips 7 vs 0; ring +56 px over a control charm).
+## 2. TELL-LENS "beat a boss without drinking a flask": winnable, KEPT
+New mode `--flasks=none` in tools/boss-run.mjs (`P.flasks = 0`; there was only `bare` = one flask at 35%). `PORT=.. node tools/boss-rates.mjs wood,marsh,stockade --ways=practiced --seeds=6 --heroes=knight,warden --flasks=none --jobs=1`; all 36 fights drank 0 flasks.
+| boss (wood id, hero level) | knight | warden |
+|---|---|---|
+| wood (Lumber Trail boss, L3) | 6/6 | 4/6 |
+| marsh (Marsh boss, L3) | 2/6 | 2/6 |
+| stockade (Stockade boss, L4) | 6/6 | 1/6 |
+The practiced bot beats the first-wood boss and the Stockade boss flaskless with the knight every time, and Marsh a third of the time with both heroes: well over 1 in 3 for an early boss, so the feat stays. The first wood is excluded from every feat (accident rule), so the first eligible bosses are Marsh (hard-ish, ~33%) and Stockade (easy with the knight, hard with the warden): tier mid-to-hard, which fits TELL-LENS as the last of the hard three. (The practiced bot knows the fight; a first-time human will fare worse: that is why it is a 100-gold capstone.) Not measured: the "without being hit" alternative (not needed).
+## 3. The three icons on charms3-d
+`git merge-base --is-ancestor origin/claude/charms3-d origin/master` = UNMERGED at the time. Re-applied ONLY the THORN / SALT / PILGRIM'S KNOT rows of art.js bakeCharms to claude/charms3-d (commit eaa84a5f1, 3 lines). Re-ran there: tools/charms2.mjs ok, tools/charms3.mjs ok (33 checks, exit 0), textfit store scope with CHARMS2 on: 900 screens, every counter 0. charms4-d carries the identical rows, so merging both has no conflict.
