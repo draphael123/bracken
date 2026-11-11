@@ -54,7 +54,7 @@ check('trait row: every catalog passive of his is listed once; the folded five a
   for (const on of [false, true]) withFlag(on, () => { const listed = [...s.core, ...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat(), ...s.retired, ...(s.cut || []), ...(s.shared || [])];
     for (const id of cat) assert.equal(listed.filter(x => x === id).length + (s.retired.includes(id) && Object.keys(s.folded).includes(id) ? 1 : 0), 1, (on ? 'forks on ' : 'forks off ') + id + ' listed once'); });
   withFlag(false, () => { assert.deepEqual(Object.keys(s.folded).sort(), FOLD.slice().sort()); assert.deepEqual(s.retired, ['fortress']); assert.equal(T.traitIds('paladin').length, 15); for (const id of FOLD) assert(T.isSlottable('paladin', id), id + ' still slottable with the sides dark'); });
-  withFlag(true, () => { assert.deepEqual(s.folded, {}); for (const id of [...FOLD, 'fortress']) assert(s.retired.includes(id), id + ' retired'); assert.equal(T.traitIds('paladin').length, 10); for (const id of FOLD) assert(!T.isSlottable('paladin', id)); });
+  withFlag(true, () => { assert.equal(s.foldRetire, true); for (const id of [...FOLD, 'fortress']) assert.equal(T.kindOf('paladin', id), 'retired', id + ' retired'); assert.equal(T.traitIds('paladin').length, 10); for (const id of FOLD) assert(!T.isSlottable('paladin', id)); });
   assert.deepEqual(s.core, ['consecrate', 'unwavering', 'reflect', 'mercy', 'wrath']); assert.deepEqual(s.merged, { shockwave: ['sunder', 'aftershock'] }); assert.deepEqual(s.defaults, ['litany', 'sanctuary']);
   for (const id of [...s.traits, ...FOLD]) { const lv = T.learnLevel('paladin', id); assert(lv >= 2 && lv <= 18, id + ' learned L' + lv); } });
 check('TRAITS off: the new row changes nothing (every Paladin passive reads as today at every level)', () => withTraits(false, () => {
@@ -67,7 +67,7 @@ check('TRAITS on: ten traits worn two at a time, core always on, the folded five
 check('the effect sites exist (source scan): every rung, the trait sites, the capstone helpers', () => {
   for (const frag of ['const plb = id =>', 'const shockLife =', 'const shockMul =', 'function dawnStrike()', 'function palForkBlow(', 'function radiantTurn()', 'function lanceFall()', 'function judgeHit(', 'function judgementFall(m = 1, reach = 110)',
     'P.aegisStepUntil', 'P.mirrorT', 'P.bastionT', 'P.dawnPend', 'P.wrathStore', 'P.steelUntil', 'spiral: plb(', 'home: plb(', "plb('pquick') && P.wrathT > 0 ? 1.25 : 1", 'P.judgeQ', 'plb(\'pjudge\') ? { ...HG.verdict', "plb('pswift') ? 1.6 : 1", "plb('pzeal') ? 1.25 : 1", "plb('ppillar') ?", "plb('parc') ? 0.4 : 0", "plb('pearlya') ? 0.65 : 1"]) assert(main.includes(frag), 'missing ' + frag);
-  assert(/\|\| pb\('psunstep'\)/.test(main) && /!pb\('paegisstep'\)/.test(main), 'SUNSTEP / AEGIS STEP sites'); });
+  assert(/\|\| plb\('psunstep'\)/.test(main) && /!plb\('paegisstep'\)/.test(main), 'SUNSTEP / AEGIS STEP sites'); });
 check('boss law: no side promises an invulnerable foe, a freeze or a pin; stagger / shove sides name the small', () => {
   for (const [k, e] of Object.entries(PALADIN_FORKS)) for (const s of ['A', 'B']) assert(!/INVULNERAB|FREEZE|PIN\b|IMMUNE|UNTOUCHABLE/i.test(e[s].what + ' ' + e[s].teach), 'boss law: ' + e[s].id);
   const mainLines = main.split('\n'); const bash = mainLines.find(l => l.includes("if (plb('pbash') && third)")); assert(bash && /!e\.maxHp && !e\.mini && !e\.elite/.test(bash), 'SHIELD BASH shoves only the small');

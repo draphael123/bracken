@@ -53,7 +53,7 @@ check('flag ON: the Knight has no technique / upgrade cards (they are cut), thos
 check('owed queue: a rung reached with no pick, in ladder order; the stat card is not touched', () => withFlag(true, () => {
   const p = mk(26); assert.deepEqual(F.forksOwed(p, 'knight', 26).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain']); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block']);
   assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender']); assert.deepEqual(F.forksOwed(p, 'knight', 50).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender', 'skill:groundSlam', 'sig', 'skill:ironclad', 'ult']);
-  assert.equal(F.owedCount(p, 'knight', 50, []), 11); assert.deepEqual(F.forksOwed(p, 'warden', 50), [], 'a hero without fork data owes nothing');
+  assert.equal(F.owedCount(p, 'knight', 50, []), 11); assert.deepEqual(F.forksOwed(p, 'nobody', 50), [], 'a hero without fork data owes nothing');
   assert.equal(F.setFork(p, 'knight', 'block', 'B', 27), null); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'skill:risingCut', 'heavy', 'spender']);
 }));
 
@@ -113,7 +113,7 @@ check('migration is flag-gated (off: no change at all)', () => withFlag(false, (
 check('legacy reads: tech() / upg() are answered from the forks (flag on) and the Knight only', () => withFlag(true, () => {
   const { p } = migrate(50, { 25: 'kcounter', 35: 'kpunish', 36: 'ukeep:1', 45: 'korders', 50: 'kcharge2' }, { ukeep: 1 });   /* heavy A, spender B, ult A */
   const T = id => F.legacyTech(p, 'knight', 50, id); assert.equal(T('kpunish'), true); assert.equal(T('klinkcut'), false); assert.equal(T('korders'), true); assert.equal(T('kcharge2'), true); assert.equal(T('kwheel'), false);
-  assert.equal(T('kcounter'), false, 'riposte is core, not a tech'); assert.equal(T('kshook'), false); assert.equal(F.legacyTech(p, 'pyro', 50, 'kpunish'), false);
+  assert.equal(T('kcounter'), false, 'riposte is core, not a tech'); assert.equal(T('kshook'), false); assert.equal(F.legacyTech(p, 'nobody', 50, 'kpunish'), false);
   assert.equal(F.legacyUpg(p, 'knight', 50, 'ukeep'), 0, 'spender is B: IRON LINKS off'); assert.equal(F.legacyUpg(p, 'knight', 50, 'usunder'), 0, 'the cut upgrades read 0');
   F.setFork(p, 'knight', 'spender', 'A', 50); assert.equal(F.legacyUpg(p, 'knight', 50, 'ukeep'), 2); assert.equal(F.legacyUpg(p, 'knight', 50, 'uwind'), 2); assert.equal(F.legacyUpg(p, 'knight', 50, 'ukeep') && F.legacyTech(p, 'knight', 50, 'korders'), false);
   assert.equal(F.legacyTech(p, 'knight', 35, 'kpunish'), true, 'heavy rung is 32: open at 35'); assert.equal(F.legacyTech(p, 'knight', 30, 'kpunish'), false, 'below the rung: base'); }));

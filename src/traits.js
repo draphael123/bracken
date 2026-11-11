@@ -86,7 +86,8 @@ export const TRAIT_SPLIT = {
     traits: ['rgKeen', 'rgLongMark', 'rgBashBack', 'rgToothed', 'rgSoftStep', 'rgBodkin', 'rgCover', 'rgKill', 'rgEagle', 'rgLast'],
     merged: { rgLongMark: ['rgTrail'] },
     folded: { rgSnares: 'L29:SNARE B', rgHighFlip: 'L21:HIGH FLIP B', rgAirDraw: 'L21:HIGH FLIP B', rgTwin: 'L32:SPLIT SHOT A' },
-    get retired() { return forksShip() ? ['rgApex', 'rgSnares', 'rgHighFlip', 'rgAirDraw', 'rgTwin'] : ['rgApex']; },   /* rgApex CUT (mark stacking); (claude/rangerfork) with FORKS_SHIP on the four folded ids retire (SNARE B, HIGH FLIP B, SPLIT SHOT A carry them): kept in the catalog, never slot; flag off they stay slottable traits (FOLD RULE, no gap) */
+    foldRetire: true,   /* (claude/forkmerge) the four folded ids retire through the one foldGone hook while FORKS_SHIP is on */
+    retired: ['rgApex'],
     shared: [],
     defaults: ['rgKill', 'rgCover'],
     /* the two DEFAULTS arrive early (rgKill 2, rgCover 10); the rest follow today's order */

@@ -3,14 +3,14 @@
 // Dark behind TRAITS_SHIP like everything in traits.js. Every catalog passive of each hero is listed once (tools/traits.mjs fails on an unlisted id: unlisted = a CUT).
 //   learnAt: every slottable trait arrives by L18 (spread L2..18 in today's order, the slot-1 DEFAULT first so it exists from L2 and every default by L10); core keeps its catalog level.
 //   names:   card names that differ from the catalog (shown only while the flag is on).   tags: a requirement shown on the row ('NEEDS THE JET' / 'NEEDS BLOODWORMS'; display hook owed to the menu lane).
-import { forksShip } from './forks.js';   /* (claude/pyrofork) a flag-aware retired list for the Pyromancer */
 export const TRAIT_SPLIT_B = {
   pyro: {   /* identity: heat, stand in fire */
     core: ['pilot', 'conflagration', 'smoulder', 'kindle', 'backdraft'],
     traits: ['emberSkin', 'heatShield', 'brand', 'emberHeart', 'wildfire', 'phoenix', 'longFlame', 'jetWalk', 'scatter', 'twin'],
     merged: { phoenix: ['phoenixTrail'], longFlame: ['searing', 'sunder'], jetWalk: ['updraft'], scatter: ['skip'], twin: ['stoke'] },
     folded: { blaze: 'sig:WHITE HEAT', inferno: 'sig:BELLOWED' },   /* the L43 heat-bar fork absorbs them: slottable traits until FORKS_SHIP is on */
-    get retired() { return forksShip() ? ['blaze', 'inferno'] : []; },   /* (claude/pyrofork) the L43 sig fork ships WHITE HEAT / BELLOWED: with FORKS_SHIP on the two old traits retire (kept in the catalog, never slot) */
+    foldRetire: true,   /* (claude/forkmerge) blaze / inferno retire through the one foldGone hook (src/traits.js) while FORKS_SHIP is on */
+    retired: [],
     shared: [],
     defaults: ['emberSkin', 'phoenix'],   /* (claude/traittune-d) was ['emberSkin', 'heatShield']: TRAITS ON cost the bot pyro 11/12 -> 3/12 at THE DROWNED CAUSEWAY (practiced, L29); a revive in slot 2 gets 8/12 (heatShield+phoenix 10/12) */
     learnAt: { emberSkin: 2, longFlame: 3, twin: 4, scatter: 5, heatShield: 6, brand: 8, jetWalk: 10, blaze: 12, emberHeart: 14, phoenix: 10, wildfire: 17, inferno: 18 },
@@ -22,7 +22,8 @@ export const TRAIT_SPLIT_B = {
     traits: ['longBarrel', 'powderBurn', 'looter', 'shareOut', 'deadEye', 'ransom', 'pieces', 'runThrough', 'secondBarrel', 'hotBarrel'],
     merged: {},
     folded: { longLine: 'hook:LONG LINE', turncoat: 'block:TURNCOAT B', parryCut: 'block:SLIPKNOT A', noQuarter: 'spender:FULL PURSE' },
-    get retired() { return forksShip() ? ['longLine', 'turncoat', 'parryCut', 'noQuarter'] : []; },   /* (claude/freefork) with FORKS_SHIP on the four folded ids retire (THE HOOK B, THE HOOK CATCH A + B, THE PURSE A carry them): kept in the catalog, never slot; flag off they stay slottable traits (FOLD RULE, no gap) */
+    foldRetire: true,   /* (claude/forkmerge) the four folded ids retire through the one foldGone hook while FORKS_SHIP is on */
+    retired: [],
     shared: ['swash'],   /* SWASHBUCKLE -> the shared AIR ROLL (SHARED lane: add pirate:'swash' to the airRoll legacy row and make the roll hero-agnostic) */
     cut: ['sunder', 'rollCut', 'paidInGold'],   /* HOLED (2nd mark), TUMBLING CUT (dash-strike spam), PAID IN GOLD (gold skips cooldowns): deliberate cuts, off while the flag is on */
     defaults: ['longBarrel', 'secondBarrel'],
@@ -46,7 +47,8 @@ export const TRAIT_SPLIT_B = {
     traits: ['bzLong', 'bzBraceLong', 'bzBraceBack', 'bzHot', 'bzScar', 'bzWide', 'bzPrice', 'bzIronBrace', 'bzHaft', 'bzUnbowed'],
     merged: { bzLong: ['bzMist'], bzHot: ['bzBurn'], bzWide: ['bzSpinChop'], bzHaft: ['bzStagger'] },
     folded: { bzHide: 'spender:SHORT FUSE', bzSplit: 'skill:bzCleave:OVERHEAD' },   /* (claude/bersfork) THICK HIDE is baked into the L36 SHORT FUSE side, SPLITTER into the L38 OVERHEAD side: slottable traits until FORKS_SHIP is on */
-    get retired() { return forksShip() ? ['bzHide', 'bzSplit'] : []; },   /* (claude/bersfork) with FORKS_SHIP on the two folded traits retire (kept in the catalog, never slot) */
+    foldRetire: true,   /* (claude/forkmerge) bzHide / bzSplit retire through the one foldGone hook while FORKS_SHIP is on */
+    retired: [],
     shared: [],
     defaults: ['bzHot', 'bzIronBrace'],
     learnAt: { bzHot: 2, bzLong: 3, bzBraceLong: 4, bzBraceBack: 5, bzScar: 6, bzIronBrace: 7, bzWide: 8, bzPrice: 10, bzHide: 12, bzHaft: 14, bzSplit: 16, bzUnbowed: 18 },

@@ -4,7 +4,6 @@
 // off (TRAITS on alone, the playtest window) the five are still ordinary slottable traits; with it on they are retired because their effect now rides the side that absorbed them:
 //   warded + heavyTread -> L21 SUNSTEP (A)   blessedHammer -> L22 HOMECOMING (B)   concuss -> L24 SHIELD BASH (B)   zeal -> L36 ZEAL (A)
 //   fortress CUT always (walking aegis = the Knight's SHIELD ADVANCE; forkplan Q5). `names` cover the card names.
-import { forksShip } from './forks.js';
 const FOLDED = { warded: 'dash:SUNSTEP', heavyTread: 'dash:SUNSTEP', blessedHammer: 'hammer:HOMECOMING', concuss: 'chain:SHIELD BASH', zeal: 'spender:ZEAL' };
 export const PALADIN_FOLDED_IDS = Object.keys(FOLDED);
 export const TRAIT_SPLIT_PALADIN = {
@@ -12,8 +11,9 @@ export const TRAIT_SPLIT_PALADIN = {
     core: ['consecrate', 'unwavering', 'reflect', 'mercy', 'wrath'],
     traits: ['litany', 'shockwave', 'smite', 'beacon', 'retribution', 'crusade', 'earthshaker', 'martyr', 'sanctuary', 'doubleJudge'],
     merged: { shockwave: ['sunder', 'aftershock'] },   /* the overhead's SHATTER and the third blow's AFTERSHOCK ride the host: on exactly when SHOCKWAVE is worn */
-    get folded() { return forksShip() ? {} : FOLDED; },
-    get retired() { return forksShip() ? [...PALADIN_FOLDED_IDS, 'fortress'] : ['fortress']; },
+    folded: FOLDED,
+    foldRetire: true,   /* (claude/forkmerge) the ONE flag-aware hook (foldGone, src/traits.js): FORKS_SHIP on retires the five folded ids, off keeps them slottable */
+    retired: ['fortress'],
     shared: [],
     coreAt: { wrath: 19 },   /* WRATH L21 -> L19 (passiveplan: core must be on by L20; src/traits.js coreLevel) */
     defaults: ['litany', 'sanctuary'],

@@ -62,7 +62,7 @@ check('folded ids: slottable traits with the flag off, retired (never slot, neve
 check('the effect sites exist (source scan)', () => {
   for (const frag of ['function seekSteer(', 'function harryNext(', 'const puff =', 'const bbK =', 'const snareHk =', 'function softK(', 'const sweetBand =', 'RFK.cloud(', 'RFK.stormStart(', 'RFK.step(dt)', 'export const RGF']) assert(rgSrc.includes(frag), 'ranger.js lacks ' + frag);
   for (const frag of ["rb('rhighflip')", "rb('rlightbow')", "rb('rtoneleft')", "rb('rtbareknife')", 'fork: id => rb(id)', 'RGK.softK(P.vx)']) assert(main.includes(frag), 'main.js lacks ' + frag);
-  assert(traitsSrc.includes("get retired() { return forksShip()")); });
+  assert(traitsSrc.includes('foldRetire: true') && traitsSrc.includes("retired: ['rgApex']")); });
 check('flag off: every side id is read only through fk() / rb() (no raw use outside them)', () => {
   for (const { x } of sides()) { const re = new RegExp("(?<!fk\\()(?<!rb\\()'" + x.id + "'", 'g'); const strays = (rgSrc.match(re) || []).length + (main.match(re) || []).length + (bodies.match(re) || []).length; assert.equal(strays, 0, x.id + ' used outside fk / rb'); } });
 check('rank scale: every trait side delta scales with the trait rank (mulK / T() rank), a discrete side does not', () => {
