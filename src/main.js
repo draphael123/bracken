@@ -1214,7 +1214,11 @@ function retireBakes() { if (!BAKE_OLD.length) return;
   const old = new Set(BAKE_OLD); for (const k in TITLE_LAYERS) { const T = TITLE_LAYERS[k]; if ([T.sky, T.far, T.near].some(c => c && old.has(c) && !keep.has(c))) delete TITLE_LAYERS[k]; }   /* (batch98 integ: a title layer that borrows a retired sheet - BG.skyDusk - was drawn empty on the way back to the title; it is rebuilt on its next draw) */
   const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */
   for (const c of BAKE_OLD) if (!keep.has(c)) { c.width = 0; c.height = 0; if (audit) audit.push({ w: new WeakRef(c), at: BAKE_PATH.get(c) || 'not under TILE/PROP/BG' }); }
-  BAKE_OLD = []; }
+  BAKE_OLD = [];
+  /* TEST BROWSERS ONLY (claude/leakfix 11-10): tools/cdp.mjs sets window.__gcOnLoad on its pages and starts Chrome with --expose-gc; every Nth load then ends in a full collection, because the ~14 MB of native garbage a load leaves is otherwise
+     kept until V8 happens to collect, and a check doing a hundred loads in one evaluation passed memguard's 3 GB cap. A player's page has neither, so this line does nothing there. */
+  if (window.__gcOnLoad && typeof globalThis.gc === 'function' && (GC_LOADS = (GC_LOADS || 0) + 1) % window.__gcOnLoad === 0) globalThis.gc(); }
+let GC_LOADS = 0;
 function* bakeAllG0(pal = {}) {   /* the same bake as a generator: it yields a step after the tiles, the props and the sky, and the loading screen drives it */
   Object.assign(ART.C, PAL0, pal);
   TILE = {
