@@ -171,7 +171,7 @@ function itemIcon(g, c, cat, i, x, y) {
   if (cat === 0) tileIcon(g, TILES[i][1], x, y);
   else if (cat === 1) { const sp = c.SPR[FOES[i]]; if (sp) fitSprite(g, c, sp, x, y); }
   else if (cat === 2) { if (THINGS[i] === 'warp') { g.fillStyle = '#ffd36b'; g.fillRect(x + 3, y + 1, 10, 15); g.fillStyle = '#07060c'; g.fillRect(x + 5, y + 3, 6, 13); g.fillStyle = 'rgba(255,211,107,0.5)'; g.fillRect(x + 6, y + 4, 4, 12); } else if (THINGS[i] === 'arrow') drawArrowSign(g, x + 8, y + 18, 0); else thingIcon(g, THINGS[i], x, y, c.time, c); }
-  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px monospace'; c.text(n === 'LINK' ? 'LNK' : n === 'TRACK' ? 'TRK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
+  else { const n = c.tools[i]; g.fillStyle = n === 'LINK' ? '#ffd36b' : '#8fd160'; g.font = '6px "Silkscreen"'; c.text(n === 'LINK' ? 'LNK' : n === 'TRACK' ? 'TRK' : n === 'EDIT' ? 'SET' : n === 'SELECT' ? 'SEL' : 'GO', x + 8, y + 5, g.fillStyle, 'center', 6); }
 }
 const itemName = (c, cat, i) => cat === 0 ? TILES[i][0] : cat === 1 ? nameOf(FOES[i]) + (WATER_FOES.includes(FOES[i]) ? ' (put it in water)' : '') : cat === 2 ? thingName(THINGS[i]) : (TOOL_NAMES[c.tools[i]] || c.tools[i]);
 function groupIdx(c, gi) { const gr = GROUPS[gi]; return gr.cat === 3 ? c.tools.map((n, i) => [n, i]).filter(([n]) => TOOL_SHOWN.includes(n)).map(([, i]) => ({ cat: 3, i })) : gr.items; }

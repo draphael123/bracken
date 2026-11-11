@@ -14,7 +14,7 @@ export const NOTHING = 'NOTHING HERE YET';
 export const gormProgress = ({ kingsCleared, burningOpen }) => burningOpen ? 'DONE' : kingsCleared ? 'BEATEN, BUT YOU DIED - TRY AGAIN' : 'NOT BEATEN YET';
 
 /* THE LEVEL A FEAT NAMES (for the demo filter): 'boss:warcairn' -> 'warcairn', a level id -> itself, medals / iron / flask -> null */
-export const featLevel = feat => { const f = String(feat || ''); if (!f) return null; if (f.startsWith('boss:')) return f.slice(5) || null; if (f === 'iron' || f.startsWith('medals:') || f.startsWith('flask:')) return null; return f; };
+export const featLevel = feat => { const f = String(feat || ''); if (!f) return null; if (f.startsWith('boss:')) return f.slice(5) || null; if (f === 'iron' || f.startsWith('medals:') || f.startsWith('flask:') || /^(deaths|secrets|heroes):/.test(f)) return null; return f; };
 
 /* ===== LEVELS: what a level asks, as data (levelReq), then the words (reqText / reqProgress) ===== */
 /* lv: a LEVELS entry. prog: the save. h: { nameOf(id), fmt(secs), medalsFor(id) -> [bronze, silver, gold] secs, killPct(lv) -> 0..1 } (main.js) */
@@ -87,6 +87,7 @@ export function featHow(words) { return String(words || '').toUpperCase(); }
 export function featProgress(feat, s) {
   const f = String(feat || '');
   if (f.startsWith('medals:')) return Math.min(s.medals | 0, +f.slice(7)) + ' OF ' + +f.slice(7) + ' MEDALS';
+  if (s.c2) return s.done ? 'DONE' : s.c2;   /* (claude/charms2) deaths:N / secrets:N / heroes:N: the counter, in words */
   return s.done ? 'DONE' : f.startsWith('boss:') ? 'NOT BEATEN YET' : f === 'iron' ? 'NOT DONE YET' : 'NOT CLEARED YET';
 }
 /* a row of the SKINS / OTHER tabs: level = a level id the demo filter checks; demoHide = never in the demo */

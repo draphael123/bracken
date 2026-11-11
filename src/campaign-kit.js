@@ -33,6 +33,7 @@ export function campaignLevelIn(levels, id, xpRows) {
 export function kitPre(BKT, BK, c) {
   const h = c.hero, lvl = c.lvl, P0 = BKT.PROG;
   BKT.setHeroLevel(h, lvl); P0.skillOwned = P0.skillOwned || {}; P0.loadouts = P0.loadouts || {}; P0.skillOwned[h] = {}; P0.loadouts[h] = []; if (P0.talents) P0.talents[h] = {};
+  P0.traits = P0.traits || {}; P0.traits[h] = B.traitsFor(h, lvl, c.traits).slice();   /* (claude/traitframe) bots wear the hero's defaults (c.traits: 'core' | [ids] for a tune lane); inert while TRAITS_SHIP is off */
   P0.card[h] = B.typicalWalkCard(h, lvl, n => (PR.heroPerkAt(h, n) || {}).id);
   const kit = (B.TYPICAL_SKILLS[h] || []).filter(id => { const n = PR.skillFor(h, id); return n && n.active && n.level <= lvl; }).slice(0, PR.slotsAt(lvl)); for (const id of kit) P0.skillOwned[h][id] = true; P0.loadouts[h] = kit.slice();
   P0.items = P0.items || {}; for (const u of BK.UPGRADES) { if (u.consumable) continue; P0.items[u.id] = u.needs ? c.beaten.includes(u.needs) : c.depth >= 2; }

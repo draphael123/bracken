@@ -878,7 +878,7 @@ export function drawWarps(g, ents, cx, cy, t, P) {
     g.fillStyle = '#07060c'; g.fillRect(x + 3, y - 24, 10, 24);
     g.globalAlpha = ok ? 0.45 + 0.25 * Math.sin(t * 3 + e.x) : 0.2; g.fillStyle = col; g.fillRect(x + 4, y - 23, 8, 23); g.globalAlpha = 1;
     g.fillStyle = col; g.fillRect(x + 1, y - 26, 2, 26); g.fillRect(x + 13, y - 26, 2, 26); g.fillRect(x + 3, y - 28, 10, 2);
-    if (P && ok && Math.abs(P.x - (e.x * TS + 8)) < 10 && Math.abs(P.y - (e.y + 1) * TS) < 14) { g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x - 8, y - 42, 32, 10); g.fillStyle = col; g.font = '6px monospace'; g.fillText('UP: GO', x - 5, y - 35); } }
+    if (P && ok && Math.abs(P.x - (e.x * TS + 8)) < 10 && Math.abs(P.y - (e.y + 1) * TS) < 14) { g.fillStyle = 'rgba(12,10,18,0.8)'; g.fillRect(x - 8, y - 42, 32, 10); g.fillStyle = col; g.font = '6px "Silkscreen"'; g.fillText('UP: GO', x - 5, y - 35); } }
 }
 
 /* (claude/maker) A SET OF LEVELS in one link (#S=): its name, its one hero, and every level, in order */

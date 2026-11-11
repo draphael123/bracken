@@ -80,7 +80,7 @@ export function buildWispwood({ painter, T, TS }) {
   coins([92, 17], [98, 20]);
   lamp(104, 23); pool(103, 23, 14);
   spectral(106, 125, 20); coins([107, 19], [109, 19], [111, 19], [121, 19]);
-  foe('husk', 99, 20, 'bankDead', { face: -1 }); foe('zombie', 108, 23, 'bankDead', { face: -1 });
+  foe('husk', 99, 20, 'bankDead', { face: -1, perch: true }); foe('zombie', 108, 23, 'bankDead', { face: -1 });
   foe('wight', 113, 23, 'bankWight', { face: -1 }); foe('haunt', 117, 20, 'bankHaunt');
 
   // ================= 3. THE WISP ROAD (120-179): TWIST =================

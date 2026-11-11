@@ -44,10 +44,15 @@ async function main() {
     pending.set(i, Object.assign(m => { clearTimeout(t); res(m); }, { rej: e => { clearTimeout(t); rej(e); } })); ws.send(JSON.stringify({ id: i, method, params })); });   /* (claude/harnessstall) a Runtime.evaluate that never answers FAILS naming its expression, not 900 s later via the guard */
   const evalp = async (expr, timeout = 900000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    const val = r.result && r.result.result ? r.result.result.value : undefined;
+    /* (claude/leakfix 11-10) a full collection between evaluations, at most every 15 s once the page is up (pixels' floatLab loads every level in chunks of six in ONE page: it was killed over memguard's cap in both gates). BRACKEN_PAGE_GC=0 turns it off. */
+    if (gcLive && process.env.BRACKEN_PAGE_GC !== '0' && Date.now() - gcAt >= 15000) { gcAt = Date.now(); try { await send('HeapProfiler.enable', {}, 10000).catch(() => {}); await send('HeapProfiler.collectGarbage', {}, 30000); } catch {} gcAt = Date.now(); }
+    return val; };
+  let gcLive = false, gcAt = Date.now();
   await send('Runtime.enable'); await send('Page.enable'); await send('Inspector.enable').catch(() => {});
   await send('Page.navigate', { url: URL0 });
   for (let i = 0; i < 80; i++) { if (await evalp('typeof window.BK === "object" && !!window.BK.bossLab').catch(() => false)) break; await sleep(250); }
+  gcLive = true;
   let code = 0;
   try {
     if (mode === 'expr') { console.log(JSON.stringify(await evalp('(async () => JSON.parse(JSON.stringify(await (' + arg + '))))()'), null, 1)); }

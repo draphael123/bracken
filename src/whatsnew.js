@@ -21,10 +21,12 @@ export const newestDate = () => (updates[0] ? updates[0].date : '');
 export const shortDate = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)); return m ? (+m[3]) + ' ' + (MON[+m[2] - 1] || '') : ''; };
 export const longDate = shortDate;
 export const readSeen = () => { try { return localStorage.getItem(SEEN_KEY) || ''; } catch { return ''; } };
-export const markSeen = () => { try { if (newestDate()) localStorage.setItem(SEEN_KEY, newestDate()); } catch {} };
+/* the seen value is date#batch (11-11): two deploys can share a date, and a future-dated entry must not hide a later batch; a legacy plain date counts as unseen */
+export const newestKey = () => (updates[0] ? updates[0].date + '#' + updates[0].batch : '');
+export const markSeen = () => { try { if (newestKey()) localStorage.setItem(SEEN_KEY, newestKey()); } catch {} };
 /* THE BUILD, SMALL ON THE TITLE (and in a bug report): 'BATCH 86 - 11 OCT', plus the short sha when the release stamped src/build.js */
 export const versionLine = (sha = '') => { const u = updates[0]; return u ? (u.batch ? 'BATCH ' + u.batch + ' - ' : '') + shortDate(u.date) + (sha ? ' ' + String(sha).slice(0, 7) : '') : ''; };
-export const hasNew = () => !!newestDate() && readSeen() < newestDate();
+export const hasNew = () => { try { return !!newestKey() && readSeen() !== newestKey(); } catch { return false; } };
 /* the list as drawable rows: { kind:'head', s } for a date, { kind:'line', s } for a line; wrapFn(s, maxW) splits a long line */
 export const rows = (wrapFn, maxW) => {
   const out = [];

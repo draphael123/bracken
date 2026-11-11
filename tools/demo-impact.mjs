@@ -7,7 +7,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const bad = [], must = (c, m) => { if (!c) bad.push(m); };
-const { JUICE, HEAVY_TAGS, stopFor } = await import('../src/juice.js');
+const { JUICE, HEAVY_TAGS, stopFor, JUICE2_SHIPS: ON, landShakeShare } = await import('../src/juice.js');
+const LS = ON ? 0.065 : 0.04, HS = ON ? 0.11 : 0.09;   /* JUICE2 ships ON (11-10): light 65 / heavy 110 ms; OFF = the old 40 / 90 */
 must(JUICE.parryStop >= 0.08 && JUICE.parryStop <= 0.1, 'parryStop should sit in the mid pack (80-100 ms): ' + JUICE.parryStop);
 must(JUICE.landRumble.heavy.ms <= 90 && JUICE.landRumble.heavy.mag <= 0.4 && JUICE.landRumble.finish.ms <= 90 && JUICE.landRumble.finish.mag <= 0.4 && !JUICE.landRumble.light, 'landed-blow rumble is short and weak, none on light');
 must(HEAVY_TAGS.includes('heavy') && HEAVY_TAGS.includes('dash') && !HEAVY_TAGS.includes('shot'), 'HEAVY_TAGS');
@@ -43,9 +44,9 @@ try {
 } finally { pg.close(); }
 console.log(JSON.stringify(r));
 if (r.err) bad.push(r.err); else {
-  must(Math.abs(r.light.stop - 0.04) < 0.005 && r.light.shake === 0 && r.light.buzz === 0, 'light: 40 ms, no shake, no rumble: ' + JSON.stringify(r.light));
-  must(Math.abs(r.shot.stop - 0.04) < 0.005 && r.shot.buzz === 0, "'shot' stays light: " + JSON.stringify(r.shot));
-  for (const k of ['heavy', 'dash']) must(Math.abs(r[k].stop - 0.09) < 0.005 && r[k].shake > 0 && r[k].shake <= JUICE.heavy.shake * JUICE.landShake + 0.01 && r[k].buzz === 1 && r[k].ms === JUICE.landRumble.heavy.ms, k + ' tag: 90 ms, small shake, one buzz: ' + JSON.stringify(r[k]));
+  must(Math.abs(r.light.stop - LS) < 0.005 && r.light.shake === 0 && r.light.buzz === 0, 'light: ' + LS * 1000 + ' ms, no shake, no rumble: ' + JSON.stringify(r.light));
+  must(Math.abs(r.shot.stop - LS) < 0.005 && r.shot.buzz === 0, "'shot' stays light: " + JSON.stringify(r.shot));
+  for (const k of ['heavy', 'dash']) must(Math.abs(r[k].stop - HS) < 0.005 && r[k].shake > 0 && r[k].shake <= JUICE.heavy.shake * landShakeShare() + 0.01 && r[k].buzz === 1 && r[k].ms === JUICE.landRumble.heavy.ms, k + ' tag: ' + HS * 1000 + ' ms, small shake, one buzz: ' + JSON.stringify(r[k]));
   must(r.heavyNoRumble.buzz === 0, 'Rumble OFF still buzzed');
   must(r.heavyReduce.shake === 0 && r.heavyOff.shake === 0, 'reduce-motion / shake OFF still shook');
 }
