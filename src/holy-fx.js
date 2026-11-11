@@ -44,6 +44,9 @@ export function bakeLightHammer() {
   for (let k = 0; k < 4; k++) { const c = document.createElement('canvas'); c.width = c.height = N + 4; const g = c.getContext('2d'); const a = k * Math.PI / 2, ca = Math.cos(a), sa = Math.sin(a), ctr = (N + 4) / 2 - 0.5;
     for (let y = 0; y < N + 4; y++) for (let x = 0; x < N + 4; x++) { const dx = x - ctr, dy = y - ctr, sx = Math.round(ca * dx + sa * dy + mid), sy = Math.round(-sa * dx + ca * dy + 4);
       if (sx < 0 || sy < 0 || sx >= N || sy >= N) continue; const v = base[sy][sx]; if (!v) continue; g.fillStyle = col[v]; g.fillRect(x, y, 1, 1); }
+    /* (claude/palart-d) A DARK EDGE: all light on a light bloom read as a glow, not a hammer, at game scale - a one-pixel burnt-gold outline gives it its shape (art only: the hitbox is main.js's) */
+    { const S = N + 4, d = g.getImageData(0, 0, S, S).data, on = (x, y) => x >= 0 && y >= 0 && x < S && y < S && d[(y * S + x) * 4 + 3] > 0; g.fillStyle = '#4a2c08';
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) if (!on(x, y) && (on(x + 1, y) || on(x - 1, y) || on(x, y + 1) || on(x, y - 1))) g.fillRect(x, y, 1, 1); }
     out.push(c); }
   return out;
 }
@@ -56,7 +59,7 @@ export function makeHolyFx(api) {
   /* THE HOLY HAMMER IN FLIGHT (PAL_MACE). m: main.js's { x, y, t, dir, trail: [[x,y]...] (newest last) }. A white-gold trail runs back along the loop it has drawn, four spin frames, a bloom; returns nothing */
   function holyHammer(g, m, cx, cy, now) {
     const f = lframes(), turn = Math.floor(m.t * 20) & 3, tr = m.trail || [];
-    for (let i = 0; i < tr.length; i++) { const k = (i + 1) / (tr.length + 1); g.globalAlpha = 0.5 * k * k; g.fillStyle = k > 0.7 ? C : G; g.fillRect(Math.round(tr[i][0] - cx) - 1, Math.round(tr[i][1] - cy) - 1, k > 0.5 ? 2 : 1, k > 0.5 ? 2 : 1); }
+    for (let i = 0; i < tr.length; i++) { const k = (i + 1) / (tr.length + 1); g.globalAlpha = 0.65 * k * k; g.fillStyle = k > 0.7 ? C : G; g.fillRect(Math.round(tr[i][0] - cx) - 1, Math.round(tr[i][1] - cy) - 1, k > 0.4 ? 3 : 2, k > 0.4 ? 3 : 2); }   /* (palart-d) a fatter, brighter trail */
     g.globalAlpha = 1; g.drawImage(f[turn], Math.round(m.x - cx - 6.5), Math.round(m.y - cy - 6.5));
     B(g, m.x - cx, m.y - cy, 9, 0.5, 'gold'); B(g, m.x - cx, m.y - cy, 4, 0.45, 'gold'); }
   /* WHERE IT ENDS (a wall, or its life spent): a flare and a puff of motes, FX only */
