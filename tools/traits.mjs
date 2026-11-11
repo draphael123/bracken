@@ -166,7 +166,7 @@ try {
   assert.equal(T.traitUpText('nosuchhero', 1, 24), '', 'unsplit hero: the old line');
   assert.deepEqual(T.traitRows('knight').slice(0, 5).map(r => r.tkind), ['core', 'core', 'core', 'core', 'core']);
   /* TRAITDATA-B (pyro, pirate, reaper, berserker): rows as planned, a rank number at every effect site, cards rename only while the flag is on */
-  { const want = { pyro: [5, 10, 6, 2], pirate: [5, 10, 0, 4], reaper: [5, 10, 2, 1], berserker: [5, 10, 4, 2] };   /* core, traits, merged ids, folded */
+  { const want = { pyro: [5, 10, 6, 2], pirate: [5, 10, 0, 4], reaper: [5, 9, 2, 1], berserker: [5, 10, 4, 2] };   /* core, traits, merged ids, folded */
     const shared = { pyro: 0, pirate: 1, reaper: 1, berserker: 0 };
     for (const h of Object.keys(want)) { const s = T.TRAIT_SPLIT[h]; assert(T.hasSplit(h), h + ' is split');
       assert.equal(s.core.length, want[h][0], h + ' core'); assert.equal(s.traits.length, want[h][1], h + ' traits');

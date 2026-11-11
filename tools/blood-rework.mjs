@@ -73,7 +73,7 @@ const strip = s => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
   ok(/WARD_PRICE = 0\.25, NOVA_HEAL = 0/.test(main), 'WARD_PRICE 0.25 / NOVA_HEAL 0 not set');
   ok(!/NOVA_HEAL \* \(1 \+ 0\.1 \* prk/.test(main) && /bloodletter: !!perk\('leech'\) && !isReaper\(\)/.test(main), 'the nova still heals, or BLOODLETTER still heals the Blood Knight');
   ok(/\(P\.bkReqT \|\| 0\) > 0 \|\| \(P\.wardHeld > 0\) \|\| P\.warding/.test(main), 'debtStep is not frozen by the held ward / HEMORRHAGE');
-  ok(/\(e\.hem \|\| 0\) > 0\) mul \*= BKIT\.BLOOD\.requiem\.hemMul/.test(main) && /if \(e\.hem > 0\) e\.hem -= dt/.test(main), 'HEMORRHAGE x1.25 / the foe brand timer are not wired');
+  ok(/\(e\.hem \|\| 0\) > 0\) mul \*= bkReqMod\(\)\.mul/.test(main) && /if \(e\.hem > 0\) e\.hem -= dt/.test(main), 'HEMORRHAGE x1.25 / the foe brand timer are not wired');
   ok(/bkUnf = isReaper\(\) && \(P\.bkReqT \|\| 0\) > 0/.test(main) && /else if \(armoured0\) \{ dmg = Math\.max\(1, Math\.round\(dmg \* 0\.75\)\)/.test(main), 'UNFLINCHING is not wired, or it carries the x0.75 resist (it must not)');
   ok(/bkAnswerT \|\| 0\) > 0 && !P\.heavy && !stunned\) \{ P\.bkAnswerT -= dt; P\.vx = P\.face \* BKIT\.BLOOD\.answer\.px/.test(main) && /function bkSwingStart\(\)/.test(main) && /startSwing\(\) \{[^\n]*P\.bkAnswerT = 0/.test(main), 'THE ANSWER is not wired into the swing');
   ok(/'DEBT DRAIN'/.test(mainRaw) && /bkLashHit\(e\)/.test(main) && /SFX\.bkDebtDrain/.test(main) && /bkReclaim\(swordDmg\(\) \* \(P\.swingMul \|\| 1\), e, third \? 'third' : 'light'\)/.test(main), 'the DEBT DRAIN third cut is not wired (name / weight / sound)');
