@@ -45,6 +45,15 @@ ok(empty === 0, frames + ' frames baked, ' + empty + ' empty');
 // the mace differs from the maul (head and off hand) on the attack and the ward
 const hash = f => { const d = f.getContext('2d').getImageData(0, 0, f.width, f.height).data; let h = 0; for (let i = 0; i < d.length; i++) h = (h * 31 + d[i]) | 0; return h; };
 for (const k of ['idle', 'atk', 'block', 'heavy', 'hurlH', 'dashAtk']) ok(hash(flat(mace.R[k])[0]) !== hash(flat(maul.R[k])[0]), 'pose ' + k + ' differs from the maul');
+// (claude/palpose-d, Daniel 11-11 'clips with his body a lot') THE MACE IS HELD, NOT LAID OVER HIM: in the carried poses not one haft or grip-wrap pixel may sit on his torso
+// (the tabard: body columns 11-20 (the front arm included), rows 12-16 of the 34x32 rig + the attack headroom, with a row's slack for the breath). Before this lane the haft crossed it in every one.
+{ const HAFT = new Set(['122,78,44', '74,46,24', '138,90,52', '58,36,18']), carriedKeys = ['idle', 'run', 'jump', 'fall', 'land', 'takeoff', 'apex', 'hurt'];
+  for (const k of carriedKeys) { let worst = 0; for (const f of flat(mace.R[k] || [])) { const top = f.height - 32, d = f.getContext('2d').getImageData(0, 0, f.width, f.height).data; let n = 0;
+      for (let y = top + 11; y <= top + 17; y++) for (let x = 11; x <= 20; x++) { const i = (y * f.width + x) * 4; if (d[i + 3] && HAFT.has(d[i] + ',' + d[i + 1] + ',' + d[i + 2])) n++; } worst = Math.max(worst, n); }
+    ok(worst <= 1, k + ': no haft across the torso (worst frame ' + worst + ' px)'); } }
+// THE HEAD LANDS WHERE THE BLOW DOES: each forward strike frame's drawn head centre (chars.js c.maceHead) within ~3 px of main.js attackBox reach - 3 (light 22, heavy 25, sweep 26)
+{ const ax = mace.ax, want = { atk: [22, [2, 3]], atkB: [22, [1]], atkC: [22, [2]], heavy: [25, [1]], sweep: [26, [1, 2]] };
+  for (const [k, [reach, idx]] of Object.entries(want)) for (const i of idx) { const f = flat(mace.R[k])[i], h = f && f.maceHead, front = h ? h[0] - ax + 3 : -99; ok(Math.abs(front - reach) <= 3, k + ' ' + i + ': drawn head front ' + front + ' vs reach ' + reach); } }
 // contact sheet: for each pose key the first frame, mace row over maul row
 const out = process.argv[2], pick = ['idle', 'run', 'jump', 'atk', 'atkB', 'atkC', 'air', 'heavy', 'block', 'cast', 'hurlH', 'smiteQ', 'radiance', 'sunfall', 'dashAtk', 'plunge', 'hurt', 'kneel', 'sanctify', 'wrath'].filter(k => mace.R[k]);
 if (out) { const S = 3, cw = 34, ch = 56, W = pick.length * cw * S, H = ch * S * 2 + 8, px = new Uint8Array(W * H * 4); for (let i = 0; i < px.length; i += 4) { px[i] = 58; px[i + 1] = 66; px[i + 2] = 82; px[i + 3] = 255; }

@@ -5,10 +5,11 @@ import { canvas, px, rect, line, circle, ellipse, fillPoly, fromGrid, outline, f
 import { OUT } from './art.js';
 import { PAL_MACE } from './holy-ground.js';   /* (claude/palrework) the paladin's one-hand MACE and SUN SHIELD (art below: maceAt / SUNSHIELD) */
 let MACE_ON = false;
-const MACE_L = 12;
+let MACE_STRIKE = 0; const strikeAt = (r, f) => { const o = MACE_STRIKE; MACE_STRIKE = r; try { return f(); } finally { MACE_STRIKE = o; } };   /* (palpose-d) the swing's hit reach (main.js attackBox) while its frames bake: the drawn head is taken out to it */
+const MACE_L = 11;   /* (palpose-d) a one-hand haft: 8 px from the fist to the head (it was 12, a maul's) */
 /* the flanged head upright, cap first (row 0 = 3 px past the head's centre, down to the neck): three flanges a side, notched between, a dark core line */
 const MACE_HEAD = ['..y..', 'LMDML', '.MDM.', 'LMDML', '.MDM.', 'LMDML', '..M..'];   /* (claude/palart-d) grip to head centre, every pose */
-const SHX = 6, SHY = 8;   /* (claude/palart-d) the lowered sun shield: on the front hip, the tabard still showing above it (chosen at 1x/3x over 4,7 and 5,9) */
+const SHX = 7, SHY = 4;   /* (claude/palart-d) the lowered sun shield: on the front hip, the tabard still showing above it (chosen at 1x/3x over 4,7 and 5,9) */
 
 const KP0 = { // knight palette
   s: '#c9d1dc', S: '#7c8797', b: '#3d5aa8', B: '#243a78', r: '#c9463d', k: '#f1c9a0',
@@ -159,11 +160,13 @@ const SUNSHIELD_C = { O: OUT, R: '#5a6272', L: '#d2d8e2', F: '#a4adbb', D: '#848
 let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, shx = 0, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null, butt = 8 }) {   /* (butt: how far the war hammer's haft runs past the hand - 8, or less where the butt stands on the floor: batch97 integ, crouch-feet) */
+  if (MACE_ON && MACE_STRIKE && maul && arm && BODY_REF === PAL_BODY) wide = Math.max(wide, MACE_STRIKE - 12);   /* (palpose-d) room on the right for a head at the blow's reach */
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
+  if (maul && MACE_ON && BODY_REF === PAL_BODY && !arm) paintMace();   /* (claude/palpose-d) the carried mace: behind the body */
   if (BODY_REF === RG_BODY) { if (stave && stave[4] === 'back') rgBowAt(g, stave, dx, dy, null); rgCloakAt(g, BX + dx, BY + dy, legs, plume); rgQuiverAt(g, BX + dx, BY + dy + hy); }   /* (claude/ranger) THE QUIVER on her back, fletchings over her shoulder: behind everything */
   if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
   if (!hy && !sho) draw(body, BX + dx, BY + dy);
@@ -218,10 +221,18 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
-  if (maul && MACE_ON && BODY_REF === PAL_BODY) { // THE PALADIN'S MACE (claude/palrework): ONE hand, a short flanged head. The pose's segment gives the grip and the direction; the haft is short (at most 14 px out), the head a flanged ball seven across
+  if (maul && MACE_ON && BODY_REF === PAL_BODY) { if (arm) paintMace(); } else if (false) {}
+  function paintMace() { // THE PALADIN'S MACE (claude/palrework): ONE hand, a short flanged head. The pose's segment gives the grip and the direction; the haft is short (at most 14 px out), the head a flanged ball seven across
     // (a steel core, four flanges, a gold stud) on a leather-wound oak haft with a gold pommel. ONLY the head takes a weapon skin (WT); the haft, wrap, pommel and gauntlet keep their own colours. The off hand is on the SHIELD, never the haft.
-    const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
+    /* (claude/palpose-d, Daniel 11-11 'clips with his body a lot') ONE HAND, CARRIED: a pose that does not work the weapon arm (no `arm`: idle, run, jump, fall, land, skid,
+       hurt, the swing's rest) ignores the maul's two-handed segment - it was gripped mid-chest and laid across him - and hangs the mace from his BACK hand at the hip, haft
+       down and back, drawn BEFORE the body (behind the torso; only the head and the hand show past his back). A swing (an `arm`) grips at the arm's end, in front. */
+    const carried = !arm, cb = [BX + dx, BY + dy + hy + 11]; let [x0, y0, x1, y1] = carried ? [cb[0], cb[1], cb[0] - 5, cb[1] + 6] : maul.map((v, i) => v + (i & 1 ? dy : dx));
+    if (carried) { line(g, BX + dx + 1, BY + dy + hy + 7, x0 + 1, y0, KP.S, 2); }   /* the back arm down to the grip (behind the torso: its forearm shows below it) */
     const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay, qy = ax;
+    /* (palpose-d) THE HEAD GOES WHERE THE BLOW LANDS: a forward strike frame whose head falls short of the swing's reach (the maul poses were drawn for a longer weapon) is
+       reached out - the fist and forearm carried forward along x, up to 10 px - so the drawn head's front meets main.js's box (head centre = ax + reach - 3) */
+    if (!carried && MACE_STRIKE && ax > 0.25) { const want = KNIGHT_ANCHOR.ax + MACE_STRIKE - 3 - ax * 3, ext = Math.max(0, Math.min(10, Math.round(want - (x0 + ax * MACE_L)))); if (ext) { line(g, x0, y0, x0 + ext, y0, KP.S, 2); x0 += ext; } }
     /* (claude/palrework-d, the stills) THE HEAD MUST NOT SIT ON HIS FACE OR OFF THE CANVAS. The maul's poses were drawn for a long haft: a wind-up (verdict, twin smite,
        the leap, the dances) put its grip at his shoulder and its head behind his helm, so a 14 px mace laid the head over his face; a far blow (THE OVERHEAD, the low
        mace, the riposte) ran it past the frame's edge and cut it in half. The head goes the shortest step from 14 px - out to 20, in to 3 - to a place clear of the helm
@@ -233,10 +244,11 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const behind = !fits(L), hd = behind && g.getImageData ? g.getImageData(0, 0, c.width, c.height) : null, cw0 = c.width, tY = top;
     const hp = (X, Y, c) => { if (hd && X >= helm[0] && X <= helm[2] && Y >= helm[1] && Y <= helm[3]) { const iy = Math.round(Y + tY); if (iy >= 0 && X >= 0 && X < cw0 && hd.data[(iy * cw0 + X) * 4 + 3] > 0) return; } px(g, X, Y, c); };
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    line(g, ...at(-3), ...at(L - 3), '#7a4e2c', 2); line(g, ...at(-1, 1), ...at(L - 3, 1), '#4a2e18', 1);   /* the haft, two wide, its shadow side darker */
-    for (let t = -2; t <= 3; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
-    px(g, ...at(-3), KP.y); px(g, ...at(-3, 1), KP.y); px(g, ...at(-4), KP.y);                                                         // the gold pommel
+    line(g, ...at(-1), ...at(L - 3), '#7a4e2c', 2); line(g, ...at(0, 1), ...at(L - 3, 1), '#4a2e18', 1);   /* the haft, two wide, its shadow side darker - it starts AT the hand (one-handed: nothing behind the fist but the pommel) */
+    for (let t = 0; t <= 2; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
+    px(g, ...at(-1), KP.y); px(g, ...at(-1, 1), KP.y); px(g, ...at(-2), KP.y);                                                         // the gold pommel
     const hx = x0 + ax * L, hy2 = y0 + ay * L, inside = new Map(), key = (X, Y) => X + ',' + Y;
+    c.maceHead = [Math.round(hx), Math.round(hy2 + top)];   /* (palpose-d) where the head was drawn, canvas px - tools/palrework-bake.mjs reads it against the swing's reach */
     /* (claude/palart-d, Daniel 11-11) A FLANGED HEAD, NOT A BALL: seven long down the haft, a three-wide body with a dark core line, and three flanges each side standing out
        to five across with notches between - the notched silhouette is what reads as a mace at 1x. Lit on one side, shaded on the other; a gold cap at the top. */
     for (let X = Math.floor(hx) - 6; X <= Math.ceil(hx) + 6; X++) for (let Y = Math.floor(hy2) - 6; Y <= Math.ceil(hy2) + 6; Y++) {
@@ -247,7 +259,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     for (const k of [...inside.keys()]) { const [X, Y] = k.split(',').map(Number); for (const [u, v] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!inside.has(key(X + u, Y + v))) hp(X + u, Y + v, KP.o); }
     for (const [k, c] of inside) { const [X, Y] = k.split(',').map(Number); hp(X, Y, c); }
     { const [gx, gy] = at(0); px(g, gx, gy, KP.S); px(g, gx + 1, gy, KP.S); px(g, gx, gy + 1, KP.S); px(g, gx + 1, gy + 1, KP.s); }   // the one gauntlet
-  } else if (maul) { // THE PALADIN'S WAR HAMMER (claude/paladin3art, was the flanged maul): ~70% of the old maul. The long oak haft wound with leather stays; the head is now a COMPACT
+  }
+  if (!(maul && MACE_ON && BODY_REF === PAL_BODY) && maul) { // THE PALADIN'S WAR HAMMER (claude/paladin3art, was the flanged maul): ~70% of the old maul. The long oak haft wound with leather stays; the head is now a COMPACT
     // SQUARE BLOCK - a flat strike face with a bright rim, a narrower back with a gold collar behind it, a rivet band - read by its square silhouette at game scale. BOTH hands are on the haft in every pose (the sword
     // arm at the grip, the off hand a stride up the haft, or wherever an ability's own off arm lands). ONLY the head (core, flanges, stud, spike) takes a weapon
     // skin (WT); the haft, wrap, socket and gauntlets keep their own colours.
@@ -454,7 +467,7 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.rgo) out.rgo = c.rgo.map(([x, y, col]) => [x, y + ATTACK_HEADROOM, col]); if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.maceHead) out.maceHead = [c.maceHead[0], c.maceHead[1] + ATTACK_HEADROOM]; if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.rgo) out.rgo = c.rgo.map(([x, y, col]) => [x, y + ATTACK_HEADROOM, col]); if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
 /* THE SMEAR (claude/herokeys, Daniel 10-09 art direction: "a rotated sprite, not drawn frames"). A swing is a blade at one angle in one beat and another in the
@@ -3619,16 +3632,16 @@ function bakePaladin0(skin = {}, previewOnly = false) {
     apex: knightFrame({ legs: 'jump2', dy: -1, maul: [sh[0] + 1, sh[1], sh[0] + 6, sh[1] - 6], plume: 0 }),
     skid: knightFrame({ dx: -2, legs: 'wide', maul: [sh[0] - 1, sh[1] + 3, sh[0] - 6, sh[1] + 8], plume: 2 }),
     // HOLD THE MAUL: up in both hands, and down into the planking, and the ground carries it
-    heavy: [
+    heavy: strikeAt(25, () => [
       knightFrame({ dx: -1, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 6], maul: [sh[0] - 1, sh[1] - 1, sh[0] + 1, sh[1] - 7], plume: 2 }),
       knightFrame({ dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 4, sh[1] - 2], maul: [sh[0] + 3, sh[1] - 1, sh[0] + 8, sh[1] + 5], plume: 2 }),
       knightFrame({ dx: 2, legs: 'wide', dy: 2, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 2, sh[1] + 4, sh[0] + 7, sh[1] + 11], plume: 0 }),
-    ],
+    ]),
     climb: [
       knightFrame({ legs: 'climbA', arm: [sh[0], sh[1], sh[0] + 2, sh[1] - 7], maul: carry(), plume: 0 }),
       knightFrame({ legs: 'climbB', dy: 1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 3], maul: carry(1), plume: 1 }),
     ],
-    atk: card.atk(),
+    atk: strikeAt(22, () => card.atk()),
     /* THE MAUL SLAM: the knight's tuck again - both knees drawn up, nothing left under him - with the maul driven
        straight down past his boots on the way to HAMMERFALL (main.js). His overhead swing still winds through an
        arc (atk, heavy); this is a plumb line, and that is the whole of the difference at a glance. */
@@ -3636,11 +3649,11 @@ function bakePaladin0(skin = {}, previewOnly = false) {
     /* THE SHIELDLESS CHARGE: the maul carried level like a ram instead of over the shoulder - he has no shield to
        get in behind, so the whole of him leans into the head of it. Slowest hero in the wood, so the widest stance
        and the longest reach into the charge, not the fastest one. */
-    dashAtk: [
+    dashAtk: strikeAt(22, () => [
       knightFrame({ wide: 3, dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 3], maul: [sh[0] + 3, sh[1] + 3, sh[0] + 12, sh[1] + 6], plume: 2 }),
       knightFrame({ wide: 4, dx: 4, dy: 1, legs: 'run1', arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 4], maul: [sh[0] + 5, sh[1] + 4, sh[0] + 16, sh[1] + 6], plume: 2 }),
       knightFrame({ dx: 1, dy: 2, legs: 'land', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 5], maul: [sh[0] + 3, sh[1] + 5, sh[0] + 8, sh[1] + 10], plume: 0 }),
-    ],
+    ]),
     hurt: [knightFrame({ dx: -1, dy: 1, legs: 'fall', maul: [sh[0] + 1, sh[1] + 2, sh[0] + 7, sh[1] + 5], plume: 2 }), knightFrame({ dx: -2, dy: 2, legs: 'land', maul: [sh[0], sh[1] + 3, sh[0] + 5, sh[1] + 8], plume: 1 })],
     crouch: knightFrame({ dy: 3, legs: 'crouch', legsDy: 3, maul: rest(-6) }),
     /* THE BUTT-SLIDE (src/slide.js): sat back on the ground with the legs run out in front, leaning away from the hill, the weapon tucked behind (a second frame for the cloth) */
@@ -3659,7 +3672,7 @@ function bakePaladin0(skin = {}, previewOnly = false) {
   };
   // the dodge is a heavy step: a lean and a stride, not a tumble
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
-  { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the maul coming up from below, and a jab with the head */
+  { const arcs = strikeAt(22, () => comboArcs(sh, 'maul', 8)); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the maul coming up from below, and a jab with the head */
   /* HIS FIDGET: the maul up off the ground and across him, a gauntlet wiped over the head of it - once, twice, his helm
      bent to it - until the steel catches the light, and down again with a thud */
   { const across = o => knightFrame({ arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 3], maul: [sh[0] + 1, sh[1] + 3, sh[0] + 7, sh[1] - 1], ...o });
@@ -3715,10 +3728,10 @@ function bakePaladin0(skin = {}, previewOnly = false) {
   { const S = swimRig(knightFrame, sh, { carry: { maul: [sh[0] - 3, sh[1] + 6, sh[0] - 7, sh[1] - 5] }, tread: i => ({ maul: carry(TREAD_DY[i]) }) });
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
-  directionalPoses(F, 'maul', {});
+  strikeAt(26, () => directionalPoses(F, 'maul', {}));   /* (palpose-d) sweep 26 (rise 23: its frames point up, the reach-out only touches the forward ones) */
   /* (claude/palart-d, Daniel 11-11) THE OVERHEAD, a real one, for the mace: hauled up and back over the helm, brought over the top and DOWN in front, into the floor.
      The wind-up lives in the attack headroom (top; built AFTER directionalPoses pads every frame, so it is not padded twice), so the head goes up and behind without clipping; four beats like the jab it replaces, then the same recovery. */
-  if (MACE_ON) { const T0 = ATTACK_HEADROOM, OH = o => knightFrame({ top: T0, wide: 8, legs: 'wide', ...o });
+  if (MACE_ON) { const T0 = ATTACK_HEADROOM, OH = o => strikeAt(22, () => knightFrame({ top: T0, wide: 8, legs: 'wide', ...o }));
     F.atkC = [OH({ dx: -2, dy: 1, arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 7], maul: [sh[0] - 2, sh[1] - 7, sh[0] - 7, sh[1] - 14], plume: 1 }),   /* up and back: the head behind the helm */
       OH({ dx: 0, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 9], maul: [sh[0] + 1, sh[1] - 9, sh[0] + 3, sh[1] - 20], plume: 2 }),                  /* over the top */
       OH({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], maul: [sh[0] + 5, sh[1] - 2, sh[0] + 14, sh[1] + 2], plume: 2 }),   /* coming down in front */
