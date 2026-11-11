@@ -119,7 +119,7 @@ try {
    BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp),call:call()};
    /* up again on the green root: a blow on the open lawn chips a quarter and does not fell him; the same blow at a brazier fells him there, burning */
    w.x=143*16;w.cd=99;BK.P.x=w.x-150;grew.upBite=bite();grew.upMode=w.mode;
-   w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(2);const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(20);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
+   w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(14);/* (juice2tune) JUICE2: the up-bite blow before this froze the world (65-110 ms) - let it pass, then the blow beside the brazier; and a longer look after it */const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(32);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};burning.bite=bite();
    out.hedgeWarden={lawn,grew,fire,burning};
    /* claude/hedgewarden4: HIS TOLD OPENING IS ANSWERED, NOT WAITED OUT (B13). Left alone he is never open; a move answered (hedgeAnswered) sticks his sword, open 3 s,
