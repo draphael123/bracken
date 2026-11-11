@@ -23,7 +23,7 @@
 import { SKILLS } from './progression-catalog.js';
 import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
 
-export const TRAITS_SHIP = true;
+export const TRAITS_SHIP = false;
 let ship = TRAITS_SHIP;
 export const traitsShip = () => ship;
 export const setTraitsShip = v => { ship = !!v; return ship; };   /* tools and the lab only: the shipped value is TRAITS_SHIP */
