@@ -113,7 +113,7 @@ export function makeHangingRopes(ctx) {
     dt0 = dt;
     if (!S) return;
     for (const s of S.r.values()) { const d = s.d;
-      if (s.glint > 0) s.glint -= dt;
+      if (s.glint > 0) s.glint -= dt; if (s.spent > 0) s.spent -= dt;
       if (d.kind === 'counter' && d.arena && owl4On()) { const m = moverOf(d.id), up = m && (m.rs === 'top' || m.rs === 'back');
         if (s.rsPrev === 'rise' && m && m.rs !== 'rise') s.settle = 0.45;   /* the bag has just stopped at the top of its fall: still a weight for a beat */
         s.rsPrev = m ? m.rs : null; if (s.settle > 0) s.settle -= dt;
@@ -175,9 +175,9 @@ export function makeHangingRopes(ctx) {
   H.owlTarget = id => H.owlTargets().find(t => t.id === id) || null;
   /* every arena sandbag: where it hangs, and whether it is ARMED (falling with its deck, or swinging after a blow) - src/main.js owl4Tick slams her with an armed one */
   H.bags = () => { if (!S || !owl4On()) return []; const out = [];
-    for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena) continue; const bb = bagBoxOf(d, s); if (!bb) continue; out.push({ id: d.id, x: bb.x, l: bb.l, r: bb.r, t: bb.t, b: bb.b, armed: bb.m.rs === 'rise' || s.settle > 0 || !!(s.sw && s.sw.t > OWL4.swing.pull), swinging: !!s.sw }); }
+    for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena) continue; const bb = bagBoxOf(d, s); if (!bb) continue; out.push({ id: d.id, x: bb.x, l: bb.l, r: bb.r, t: bb.t, b: bb.b, armed: !(s.spent > 0) && (bb.m.rs === 'rise' || s.settle > 0 || !!(s.sw && s.sw.t > OWL4.swing.pull)), swinging: !!s.sw }); }
     return out; };
-  H.bagSpent = id => { const s = S && S.r.get(id); if (s && s.sw) s.sw.hit = 9; };
+  H.bagSpent = id => { const s = S && S.r.get(id); if (s) { s.spent = 1.8; if (s.sw) s.sw.hit = 9; } };   /* one slam per fall / swing: a spent bag is not armed again for a beat */
   H.glint = id => { const s = S && S.r.get(id); if (s) s.glint = 3; };
   H.pools = () => S ? [...S.r.values()].filter(s => s.pool).map(s => ({ x: (s.pool.x0 + s.pool.x1) / 2, y: (s.d.floor + 1) * TS - 8, r: (s.pool.x1 - s.pool.x0) / 2 + 10 })) : [];
 
