@@ -62,7 +62,7 @@ export const TRAIT_SPLIT = {
     folded: {},   /* (riposte moved to core, RECS158-d; the L27 block fork's A side no longer folds it) */
     retired: [],
     shared: ['airRoll', 'airDash', 'lightStep', 'momentum', 'hangCut', 'execute'],   /* the knight's ids that left his list for the shared six */
-    defaults: ['vengeance', 'bash'],
+    defaults: ['vengeance', 'bleed'],   /* KNBISECT-d: bleed (a damage-over-time on every hit = kill speed) was the cut that lost the Crusader duel; bash was the old 2nd default. learnAt bleed 8 < slot 2 at L20 */
     /* today's order, spread to L18; the DEFAULT trait is learned FIRST (the plan's slot-1 default must exist at L1-2). TRAITDATA-A may re-level. */
     learnAt: { vengeance: 2, bounding: 4, plated: 5, evasion: 7, bleed: 8, bash: 10, flurry: 12, unbroken: 14, counterstroke: 16, endlessSky: 18 },
   },
@@ -156,9 +156,11 @@ let pvpEven = false;   /* a PvP duel at EVEN L1 (pvp-duel.js): core only, no tra
 export const setPvpEvenTraits = v => { pvpEven = !!v; };
 let labSpec = null;   /* the boss lab's ?traits=core|def|<id>,<id> (main.js): overrides what every hero wears, for tune lanes */
 export const setLabTraits = spec => { labSpec = spec; };
+let labSlots = 0;   /* (claude/knbisect-d) measuring only: > 0 lifts the lab spec's slot cap (default + one trait on top) */
+export const setLabSlots = n => { labSlots = n | 0; };
 export const wornOf = (p, h, lv) => {
   if (pvpEven) return [];
-  if (labSpec) return (labSpec === 'core' ? [] : labSpec === 'def' ? defaultsAt(h, lv) : labSpec.filter(id => isSlottable(h, id))).slice(0, traitSlotsAt(lv));
+  if (labSpec) return (labSpec === 'core' ? [] : labSpec === 'def' ? defaultsAt(h, lv) : labSpec.filter(id => isSlottable(h, id))).slice(0, labSlots || traitSlotsAt(lv));
   const slots = traitSlotsAt(lv), t = p && p.traits && Array.isArray(p.traits[h]) ? p.traits[h] : null;
   return (t || defaultsAt(h, lv)).slice(0, slots).filter(id => typeof id === 'string');
 };
