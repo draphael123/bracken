@@ -15,11 +15,13 @@
 //   LEDGE (the side climbs hang too: in her second phase SHE cuts them, told). Every perch/ledge is hauled back up after a while.
 // Every capital line it says is in HR_SAY (src/hint-lines.js routes them).
 
+import { owl4On, OWL4, bagSwingX, LAMP_DROP } from './owl4.js';   /* (claude/owl4) the flag and the numbers: the sandbag swing, the village lamp's drop, the Reeve's live grip */
 export const HR = { netG: 900, netDmg: 60, netStun: 2.4, bridgeT: 0.5, cwUp: 165, cwDown: 60, cwHold: 1.4, cwDrop: 170, lineV: 150, lineBack: 90, lineWait: 1.2,
   perchG: 900, perchDown: 12, ledgeDown: 7, haulV: 60, near: 150 };
 export const HR_SAY = {
   net: 'THE NET DROPS ON HIM', netStep: 'THE NET LANDS: A STEP', bridge: 'THE BRIDGE SWINGS DOWN: A WAY ACROSS', counter: 'THE SANDBAG FALLS: UP YOU GO',
   line: 'THE LINE RUNS: HOLD ON', perch: 'HER PERCH FALLS', perchEmpty: 'THE PERCH FALLS', retied: 'RE-TIED', back: 'HAULED BACK UP',
+  lampDrop: 'THE LAMP FALLS', lampOil: 'THE OIL BURNS', lampShatter: 'THE LAMP SHATTERS', lampRehung: 'RE-HUNG',   /* (claude/owl4) the village lamps' cords */
   owlGo: 'SHE GOES FOR THE ROPES', owlCut: 'SHE CUTS THE ROPE', owlDown: 'DOWN WITH HER PERCH: HIT HER',   /* (said in src/main.js updateOwl) */
 };
 const GOLD = '#ffd36b', GOLD_D = '#c9a83a', RED = '#c8323a', RED_D = '#7a1a20', HEMP = '#e0c68a', HEMP_D = '#9a7e48', OUT = '#2a1c0c';
@@ -34,6 +36,14 @@ export function makeHangingRopes(ctx) {
   const knotPx = d => ({ x: d.knot[0] * TS + 8, y: (d.knot[1] + 1) * TS });
   const said = new Set(); const once = k => { if (said.has(k)) return false; said.add(k); return true; };
   const moverOf = id => ctx.movers().find(m => m.rope === id);
+  /* (claude/owl4) THE VILLAGE LAMPS' CORDS and THE SANDBAGS: a lamp prop is found by its cord id; a bag is where its deck's travel puts it (the same line the art draws) */
+  const lampOf = id => (ctx.props ? ctx.props() : []).find(q => q.t === 'lantern' && q.cord === id);
+  const syncLight = pr => { for (const l of (ctx.lights ? ctx.lights() : [])) if (l.lantern === pr) l.y = pr.y - 30; };
+  const hungLamp = pr => { pr.y = pr.y0 !== undefined ? pr.y0 : pr.y; pr.gone = false; pr.lit = false; pr.cool = 0; pr.wasBurning = false; pr.lampT = 0; pr.cordState = 'hung'; syncLight(pr); };
+  const bagGeo = d => { const m = moverOf(d.id); if (!m) return null; const wy = d.wheelRow * TS + 8, bx = d.bag * TS + 8, travel = m.y0 - m.y, by = wy + 12 + travel; return { m, wy, bx, by, travel }; };
+  const bagBoxOf = (d, s) => { const g = bagGeo(d); if (!g) return null; const off = s && s.sw ? (bagSwingX(s.sw.t, s.sw.dir) || 0) : 0; return { x: g.bx + off, l: g.bx + off - OWL4.slam.bagW, r: g.bx + off + OWL4.slam.bagW, t: g.by - 4, b: g.by + 18, m: g.m }; };
+  const startSwing = (s, fromX) => { if (s.sw || !owl4On()) return; const g = bagGeo(s.d); if (!g) return; s.sw = { t: 0, dir: (g.bx - fromX) >= 0 ? 1 : -1, hit: 0 }; ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(g.bx, g.by - 4, 4, [HEMP, HEMP_D], 30, 0.4); };
+  const heroX = () => { const p = ctx.players()[0]; return p ? p.x : 0; };
 
   /* ---------- RESET: everything tied, every cut thing back where it hangs (the grid is the level as built again: spawnEntitiesTail) ---------- */
   H.reset = () => {
@@ -44,6 +54,7 @@ export function makeHangingRopes(ctx) {
       if (d.kind === 'net') s.yb = d.hang * TS + 20;
       if (d.kind === 'bridge') s.a = 0;
       if (d.kind === 'perch' || d.kind === 'ledge') s.y = d.row * TS;
+      if (d.kind === 'lampcord') { s.pool = null; const pr = lampOf(d.id); if (pr) hungLamp(pr); }
       S.r.set(d.id, s);
     }
     for (const m of ctx.movers()) if (m.rope) { m.x = m.x0r; m.y = m.y0; m.rs = 'tied'; m.t = 0; }
@@ -57,6 +68,7 @@ export function makeHangingRopes(ctx) {
     ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(k.x, k.y - 8, 8, [HEMP, HEMP_D, GOLD], 60, 0.5);
     if (d.kind === 'net') { s.state = 'fall'; s.vy = 0; }
     else if (d.kind === 'bridge') { s.state = 'swing'; s.a = 0; }
+    else if (d.kind === 'lampcord') { const pr = lampOf(d.id); s.state = 'fall'; s.vy = 0; s.lampLit = !!(pr && pr.lit); if (pr) pr.cordState = 'fall'; if (once('cut:lamp')) ctx.number(k.x, k.y - 26, HR_SAY.lampDrop, GOLD); }
     else if (d.kind === 'counter') { const m = moverOf(d.id); s.state = 'rise'; if (m) m.rs = 'rise'; if (once('cut:counter')) ctx.number(k.x, k.y - 26, HR_SAY.counter, GOLD); }
     else if (d.kind === 'line') { const m = moverOf(d.id); s.state = 'run'; if (m) { m.rs = 'run'; m.t = 0; } if (once('cut:line')) ctx.number(k.x, k.y - 26, HR_SAY.line, GOLD); }
     else if (d.kind === 'perch' || d.kind === 'ledge') { s.state = 'fall'; s.vy = 0; s.y = d.row * TS;
@@ -74,7 +86,9 @@ export function makeHangingRopes(ctx) {
 
   /* ---------- A BLOW (main.js: the attack box) ---------- */
   H.strike = hb => { if (!S || !hb) return; for (const s of S.r.values()) { const d = s.d; if (!d.knot || s.state !== 'tied') continue;
-    if (ctx.overlap(hb, knotBox(d)) && !ctx.hitSet().has(s)) { ctx.hitSet().add(s); cut(s, 'hand'); } } };
+    if (ctx.overlap(hb, knotBox(d)) && !ctx.hitSet().has(s)) { ctx.hitSet().add(s); cut(s, 'hand'); } }
+    if (owl4On()) for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena || s.sw) continue; const m = moverOf(d.id), bb = m && (m.rs === 'top' || m.rs === 'back') ? bagBoxOf(d, s) : null;
+      if (bb && ctx.overlap(hb, bb) && !ctx.hitSet().has(bb.m)) { ctx.hitSet().add(bb.m); startSwing(s, heroX()); } } };   /* (claude/owl4) ANY blow on a bag whose deck is up swings it */
 
   /* ---------- THE RIDES (main.js's mover loop hands every m.rope here) ---------- */
   H.mover = (m, dt) => {
@@ -96,8 +110,22 @@ export function makeHangingRopes(ctx) {
 
   /* ---------- UPDATE: what falls, what swings, what is hauled back, and the cuts no blow box carries (bolts, embers, a plunge) ---------- */
   H.update = dt => {
+    dt0 = dt;
     if (!S) return;
     for (const s of S.r.values()) { const d = s.d;
+      if (s.glint > 0) s.glint -= dt;
+      if (d.kind === 'counter' && d.arena && owl4On()) { const m = moverOf(d.id), up = m && (m.rs === 'top' || m.rs === 'back');
+        if (s.sw && !up) s.sw = null;
+        if (up && !s.sw) { const bb = bagBoxOf(d, s); if (bb && ctx.struck && ctx.struck(bb)) startSwing(s, heroX()); }   /* a bolt, a shot, an ember on the bag swings it as well */
+        if (s.sw) { s.sw.t += dt; s.sw.hit = Math.max(0, s.sw.hit - dt); const off = bagSwingX(s.sw.t, s.sw.dir);
+          if (off === null) s.sw = null;
+          else if (s.sw.t > OWL4.swing.pull) { const bb = bagBoxOf(d, s);   /* a swinging bag shoves a hero, nothing more (Q4) */
+            if (bb) for (const p of ctx.players()) if (p && !p.dead && s.sw.hit <= 0 && ctx.overlap(ctx.box(p), bb)) { s.sw.hit = 0.5; p.vx = (Math.sign(p.x - bb.x) || s.sw.dir) * OWL4.swing.knock; ctx.sfx.thud && ctx.sfx.thud(); } } } }
+      if (d.kind === 'lampcord') { const pr = lampOf(d.id), fy = (d.floor + 1) * TS;
+        if (s.state === 'fall' && pr) { s.vy += LAMP_DROP.g * dt; pr.y += s.vy * dt; syncLight(pr); if (pr.y >= fy) { pr.y = fy; syncLight(pr); landLamp(s, pr, d, fy); } }
+        else if (s.state === 'down') { s.t -= dt; if (s.t <= 0) { s.state = 'tied'; if (pr) { hungLamp(pr); ctx.sfx.clank && ctx.sfx.clank(); if (once('lamp:rehung')) ctx.number(pr.x, pr.y - 50, HR_SAY.lampRehung, '#8fd160'); } } }
+        else if (s.state === 'fall' && !pr) s.state = 'tied';
+        if (s.pool) tickPool(s, fy); }
       if (s.state === 'tied' && d.knot && ctx.struck && ctx.struck(knotBox(d))) cut(s, 'shot');
       if (d.kind === 'net' && s.state === 'fall') { s.vy += HR.netG * dt; s.yb += s.vy * dt; const ly = (d.land + 1) * TS;
         if (s.yb >= ly) { s.yb = ly; s.state = 'down'; landNet(s); } }
@@ -113,6 +141,14 @@ export function makeHangingRopes(ctx) {
             if (!inIt) { for (let x = d.x0; x <= d.x1; x++) ctx.cellSet(x, d.row, ctx.T.ONEWAY); s.state = 'tied'; ctx.sfx.clank && ctx.sfx.clank(); } } } }
     }
   };
+  /* THE DROPPED LAMP: lit, its oil is a pool of light on the boards - it burns every foe in it (never the hero) and it lights them; dark, it shatters. The cord is re-hung after a while. */
+  function landLamp(s, pr, d, fy) { const lit = s.lampLit || pr.lit; pr.lit = false; pr.gone = true; pr.cordState = 'down'; s.state = 'down'; s.t = LAMP_DROP.rehang; ctx.shake(3); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(pr.x, fy, 8);
+    if (lit) { s.pool = { x0: pr.x - LAMP_DROP.w / 2, x1: pr.x + LAMP_DROP.w / 2, t: LAMP_DROP.pool, hit: 0 }; ctx.burst(pr.x, fy - 4, 16, ['#ff9a5c', '#ffd36b', '#fff6c8'], 80, 0.6); ctx.number(pr.x, fy - 40, HR_SAY.lampOil, '#ff9a5c'); }
+    else { ctx.burst(pr.x, fy - 6, 12, ['#8a8490', '#3a3444', '#ffd36b'], 60, 0.5); ctx.number(pr.x, fy - 40, HR_SAY.lampShatter, '#9a9aa2'); } }
+  function tickPool(s, fy) { const q = s.pool; q.t -= dt0; q.hit -= dt0; if (q.t <= 0) { s.pool = null; return; }
+    if (Math.random() < dt0 * 40) ctx.burst(q.x0 + Math.random() * (q.x1 - q.x0), fy - 2, 1, ['#ff9a5c', '#ffd36b'], 24, 0.35);
+    if (q.hit <= 0) { q.hit = LAMP_DROP.tick; for (const e of ctx.enemies()) if (e.alive && !e.harmless && !e.maxHp && e.x > q.x0 - 4 && e.x < q.x1 + 4 && Math.abs(e.y - fy) < 24) ctx.hurt(e, LAMP_DROP.dmg, (q.x0 + q.x1) / 2); } }
+  let dt0 = 0.016;
   function landNet(s) {
     const d = s.d, x0 = d.x * TS, x1 = (d.x + d.w) * TS, ly = (d.land + 1) * TS, box = { l: x0 - 2, r: x1 + 2, t: ly - 30, b: ly };
     ctx.shake(4); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust((x0 + x1) / 2, ly, 12);
@@ -129,10 +165,19 @@ export function makeHangingRopes(ctx) {
   H.owlTargets = () => { if (!S) return []; const out = [];
     for (const s of S.r.values()) { const d = s.d;
       if (d.kind === 'counter' && d.arena) { const m = moverOf(d.id); if (m && (m.rs === 'top' || m.rs === 'rise')) out.push({ id: d.id, kind: 'counter', x: m.x + 16, y: m.y, top: d.wheelRow * TS, ridden: ctx.players().some(p => p && p.onMover === m) }); }
-      if ((d.kind === 'ledge' || d.kind === 'perch') && s.state === 'tied') out.push({ id: d.id, kind: d.kind, k: d.k, x: (d.x0 + d.x1 + 1) * TS / 2, y: d.row * TS, x0: d.x0 * TS, x1: (d.x1 + 1) * TS, top: d.top * TS,
+      if ((d.kind === 'ledge' || d.kind === 'perch') && s.state === 'tied') out.push({ id: d.id, kind: d.kind, k: d.k, x: (d.x0 + d.x1 + 1) * TS / 2, y: d.row * TS, x0: d.x0 * TS, x1: (d.x1 + 1) * TS, top: d.top * TS, rx: [d.x0 * TS + 3, (d.x1 + 1) * TS - 4],   /* (claude/owl4: the two drawn ropes) */
         stood: ctx.players().some(p => p && p.ground && !p.dead && p.x > d.x0 * TS - 4 && p.x < (d.x1 + 1) * TS + 4 && Math.abs(p.y - d.row * TS) < 4) }); }
     return out; };
   H.ropeOf = id => S && S.r.get(id);
+  /* (claude/owl4, R2) the LIVE target: a deck is where it is NOW (owlTargets read it once), a ledge or perch where it hangs - null once it is no longer hung / up */
+  H.owlTarget = id => H.owlTargets().find(t => t.id === id) || null;
+  /* every arena sandbag: where it hangs, and whether it is ARMED (falling with its deck, or swinging after a blow) - src/main.js owl4Tick slams her with an armed one */
+  H.bags = () => { if (!S || !owl4On()) return []; const out = [];
+    for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena) continue; const bb = bagBoxOf(d, s); if (!bb) continue; out.push({ id: d.id, x: bb.x, l: bb.l, r: bb.r, t: bb.t, b: bb.b, armed: bb.m.rs === 'rise' || !!(s.sw && s.sw.t > OWL4.swing.pull), swinging: !!s.sw }); }
+    return out; };
+  H.bagSpent = id => { const s = S && S.r.get(id); if (s && s.sw) s.sw.hit = 9; };
+  H.glint = id => { const s = S && S.r.get(id); if (s) s.glint = 3; };
+  H.pools = () => S ? [...S.r.values()].filter(s => s.pool).map(s => ({ x: (s.pool.x0 + s.pool.x1) / 2, y: (s.d.floor + 1) * TS - 8, r: (s.pool.x1 - s.pool.x0) / 2 + 10 })) : [];
 
   /* ---------- THE GUIDE (src/stuck-spots.js: done ['hvrope', col, row, 'cut']) and the tools ---------- */
   H.props = () => { if (!S) return []; const out = []; for (const s of S.r.values()) if (s.d.knot) out.push({ t: 'hvrope', id: s.id, kind: s.d.kind, x: s.d.knot[0] * TS + 8, y: (s.d.knot[1] + 1) * TS, cut: s.state !== 'tied' }); return out; };
@@ -297,20 +342,21 @@ export function makeHangingRopes(ctx) {
           for (let x = e0 + 12; x < e1 - 6; x += 12) { const u = (x - e0) / (e1 - e0), sg = Math.min(10, (e1 - e0) * 0.06) * Math.sin(u * Math.PI); rect(g, HEMP_D, x - cx, hy - 8 + sg - cy, 1, 8 - sg + 1); } }   /* the ties from rail to boards */
         knot(g, kp.x - cx, kp.y - cy, hot, time, d.high, s.state !== 'tied'); }
       else if (d.kind === 'counter') { const m = moverOf(d.id); if (!m) continue; const wy = d.wheelRow * TS + 8, bx = d.bag * TS + 8, dx = m.x + 16, wx = (dx + bx) / 2; if (!vis(Math.min(m.x, bx, kp.x), wy - 16, Math.max(m.x + 32, bx, kp.x), m.y0 + 16)) continue;
-        const travel = m.y0 - m.y, by = wy + 12 + travel;   /* the bag goes down as far as the deck goes up */
+        const travel = m.y0 - m.y, by = wy + 12 + travel, bsw = owl4On() && s.sw ? (bagSwingX(s.sw.t, s.sw.dir) || 0) : 0;   /* the bag goes down as far as the deck goes up (and swings, when struck: claude/owl4) */
         /* the frame: a beam across the top, a post on each side, the wheel in the middle with a guide wheel over each rope */
         const lo = Math.min(dx, bx) - 6, hi = Math.max(dx, bx) + 6;
         rect(g, OUT, lo - cx, wy - 15 - cy, hi - lo, 5); rect(g, PLANK.mid, lo + 1 - cx, wy - 14 - cy, hi - lo - 2, 3); rect(g, PLANK.top, lo + 1 - cx, wy - 14 - cy, hi - lo - 2, 1);
         for (const px0 of [dx, bx]) { rect(g, OUT, px0 - 2 - cx, wy - 11 - cy, 5, 6); rect(g, '#6a6a72', px0 - 1 - cx, wy - 10 - cy, 3, 3); }
-        ropeLine(g, dx - cx, m.y - 18 - cy, dx - cx, wy - 8 - cy); ropeLine(g, bx - cx, wy - 8 - cy, bx - cx, by - 6 - cy); ropeLine(g, dx - cx, wy - 8 - cy, bx - cx, wy - 8 - cy, true);
+        ropeLine(g, dx - cx, m.y - 18 - cy, dx - cx, wy - 8 - cy); ropeLine(g, bx - cx, wy - 8 - cy, bx + bsw - cx, by - 6 - cy); ropeLine(g, dx - cx, wy - 8 - cy, bx - cx, wy - 8 - cy, true);
         wheel(g, wx - cx, wy - cy, 6, travel * 0.09); wheel(g, dx - cx, wy - 6 - cy, 2.5, travel * 0.2); wheel(g, bx - cx, wy - 6 - cy, 2.5, -travel * 0.2);
         rect(g, OUT, wx - 2 - cx, wy - 10 - cy, 5, 3); rect(g, '#7a5a34', wx - 1 - cx, wy - 9 - cy, 3, 1);   /* the wheel's yoke up to the beam */
-        blit(g, baked('sandbag', 20, 28, 10, 8, (g2, ax, ay) => sandbag(g2, ax, ay)), bx - cx, by - cy); blit(g, baked('deck', 44, 46, 6, 24, (g2, ax, ay) => deck(g2, { x: ax, y: ay }, 0, 0)), m.x - cx, m.y - cy);
+        blit(g, baked('sandbag', 20, 28, 10, 8, (g2, ax, ay) => sandbag(g2, ax, ay)), bx + bsw - cx, by - cy);
+        if (owl4On() && s.sw && s.sw.t < OWL4.swing.pull + 0.3) { g.globalAlpha = 0.6; for (let i = -OWL4.swing.amp; i <= OWL4.swing.amp; i += 6) rect(g, GOLD, bx + i * s.sw.dir - cx, by + 14 + (i * i) / 900 - cy, 2, 1); g.globalAlpha = 1; }   /* the swing, told: a dotted arc over where the bag will go (claude/owl4) */ blit(g, baked('deck', 44, 46, 6, 24, (g2, ax, ay) => deck(g2, { x: ax, y: ay }, 0, 0)), m.x - cx, m.y - cy);
         if (s.fray > 0) { const p = 1 - Math.min(1, s.fray / 0.8), fx = R(dx - cx), fy = R(m.y - 26 - cy); g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 30); g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(fx, fy, 10, 0, 7); g.stroke(); g.globalAlpha = 1;
           for (let i = 0; i < 2 + R(p * 5); i++) { const sd = i % 2 ? 1 : -1; rect(g, i % 3 ? HEMP : CUTFACE, fx + sd * (1 + ((i * 5 + R(time * 40)) % 5)), fy - 3 + ((i * 3 + R(time * 25)) % 7), 2, 1); } rect(g, OUT, fx - 1, fy, 3, 1 + R(p * 2)); }   /* (her beak on the deck's rope: it thins, and the fibres fly) */
         if (m.rs === 'tied') { ropeLine(g, m.x + (kp.x > m.x ? 30 : 2) - cx, m.y + 4 - cy, kp.x - cx, kp.y - 10 - cy, false); ghostRect(g, m.x - cx, m.y1 - cy, 32, 6, time); ghostArrow(g, m.x + 16 - cx, m.y - 20 - cy, m.x + 16 - cx, m.y1 + 10 - cy, time); }
         else { const sd = kp.x > m.x ? 30 : 2; ropeLine(g, m.x + sd - cx, m.y + 4 - cy, m.x + sd - cx, m.y + 12 - cy); frayEnd(g, m.x + sd - cx, m.y + 12 - cy, 1); }   /* the cut tie still hangs from the deck */
-        knot(g, kp.x - cx, kp.y - cy, hot && m.rs === 'tied', time, d.high, m.rs !== 'tied'); }
+        knot(g, kp.x - cx, kp.y - cy, (hot && m.rs === 'tied') || s.glint > 0, time, d.high, m.rs !== 'tied'); }
       else if (d.kind === 'line') { const m = moverOf(d.id); if (!m) continue; const ax = d.a[0] * TS + 16, ay = (d.a[1] + 1) * TS - 22, bx = d.b[0] * TS + 16, by = (d.b[1] + 1) * TS - 22; if (!vis(Math.min(ax, bx) - 20, Math.min(ay, by) - 30, Math.max(ax, bx) + 20, Math.max(ay, by) + 30)) continue;
         for (const [px0, py0, sd] of [[ax, ay, 1], [bx, by, -1]]) { rect(g, OUT, px0 - cx - 2, py0 - cy - 8, 5, 30); rect(g, '#7a5a34', px0 - cx - 1, py0 - cy - 7, 3, 28); rect(g, '#9a7448', px0 - cx - 1, py0 - cy - 7, 1, 28);
           rect(g, OUT, px0 - cx - 5, py0 - cy - 10, 11, 4); rect(g, PLANK.top, px0 - cx - 4, py0 - cy - 9, 9, 1); rect(g, PLANK.mid, px0 - cx - 4, py0 - cy - 8, 9, 1);   /* the cap */
@@ -328,6 +374,19 @@ export function makeHangingRopes(ctx) {
         if (m.rs === 'tied') { ropeLine(g, m.x + 2 - cx, m.y + 3 - cy, kp.x - cx, kp.y - 10 - cy, false); ghostRect(g, d.b[0] * TS - cx, (d.b[1] + 1) * TS - cy, 32, 6, time); ghostArrow(g, ax + (bx - ax) * 0.15 - cx, ay + (by - ay) * 0.15 + 14 - cy, bx - (bx - ax) * 0.1 - cx, by - (by - ay) * 0.1 + 14 - cy, time); }
         else { ropeLine(g, m.x + 2 - cx, m.y + 3 - cy, m.x + 2 - cx, m.y + 11 - cy); frayEnd(g, m.x + 2 - cx, m.y + 11 - cy, 1); }
         knot(g, kp.x - cx, kp.y - cy, hot && m.rs === 'tied', time, d.high, m.rs !== 'tied'); }
+      else if (d.kind === 'lampcord') { const pr = lampOf(d.id), lx = d.x * TS + 8, ay = d.anchor * TS, fy = (d.floor + 1) * TS, ppx = (d.x - 2) * TS + 8; if (!vis(ppx - 10, ay - 10, Math.max(lx, kp.x) + 10, fy)) continue;
+        /* THE GALLOWS LAMP-POST (greybox): a post off the floor and an arm over the lamp, the cord hanging from the arm and tied off at the red-and-gold knot */
+        rect(g, OUT, ppx - 3 - cx, ay - 4 - cy, 7, fy - ay + 4); rect(g, PLANK.mid, ppx - 2 - cx, ay - 3 - cy, 5, fy - ay + 3); rect(g, PLANK.top, ppx - 2 - cx, ay - 3 - cy, 1, fy - ay + 3);
+        rect(g, OUT, ppx - 3 - cx, ay - 4 - cy, lx - ppx + 8, 6); rect(g, PLANK.mid, ppx - 2 - cx, ay - 3 - cy, lx - ppx + 6, 3); rect(g, PLANK.top, ppx - 2 - cx, ay - 3 - cy, lx - ppx + 6, 1);
+        const lampTop = (pr && pr.y0 !== undefined ? pr.y0 : ay + 30) - 36;
+        if (s.state === 'tied') { ropeLine(g, lx - cx, ay + 2 - cy, lx - cx, lampTop - cy); ropeLine(g, lx - cx, ay + 2 - cy, kp.x - cx, kp.y - 12 - cy, false);
+          if (pr && pr.lit) ghostRect(g, lx - LAMP_DROP.w / 2 - cx, fy - 6 - cy, LAMP_DROP.w, 6, time); }
+        else { ropeLine(g, lx - cx, ay + 2 - cy, lx - cx, ay + 10 - cy); frayEnd(g, lx - cx, ay + 10 - cy, 1); }
+        if (s.pool) { const q = s.pool, k = 0.5 + 0.5 * Math.sin(time * 14), qc = (q.x0 + q.x1) / 2 - cx;
+          g.globalAlpha = 0.3 + 0.2 * k; g.fillStyle = '#ff9a5c'; g.beginPath(); g.ellipse(R(qc), R(fy - 2 - cy), (q.x1 - q.x0) / 2, 4, 0, 0, 7); g.fill();
+          g.globalAlpha = 0.55; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(R(qc), R(fy - 2 - cy), (q.x1 - q.x0) / 3, 2.5, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+          for (let i = 0; i < 7; i++) rect(g, i % 2 ? '#ffd36b' : '#ff9a5c', qc - 24 + i * 8 + R(Math.sin(time * 9 + i) * 2), fy - 7 - R(2 + 3 * Math.abs(Math.sin(time * 11 + i * 2))) - cy, 2, 4); }
+        knot(g, kp.x - cx, kp.y - cy, hot || s.glint > 0, time, false, s.state !== 'tied'); }
       else if (d.kind === 'perch' || d.kind === 'ledge') { const x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS, top = d.top * TS + 4; if (!vis(x0 - 20, top, x1 + 20, d.floor * TS + 10)) continue;
         const y = s.state === 'tied' ? d.row * TS : s.y, cut = s.state === 'fall' || s.state === 'down', sw = s.state === 'tied' ? Math.sin(time * 1.1 + d.x0) * 0.5 : 0;
         for (const rx of [x0 + 3, x1 - 4]) { rect(g, OUT, rx - 3 - cx, top - 3 - cy, 7, 4); rect(g, '#6a6a72', rx - 2 - cx, top - 2 - cy, 5, 2);   /* the iron eye each rope hangs from */
@@ -342,6 +401,13 @@ export function makeHangingRopes(ctx) {
             for (let i = 0; i < 2 + R(p * 4); i++) { const sd = i % 2 ? 1 : -1; rect(g, i % 3 ? HEMP : CUTFACE, gx + sd * (1 + ((i * 5 + R(time * 40)) % 5)), gy - 2 + ((i * 3 + R(time * 25)) % 7), 2, 1); }
             rect(g, OUT, gx - 1, gy + 2, 3, 1 + R(p * 2)); rect(g, '#ff6b6b', gx - 1, gy - 6 + R(Math.sin(time * 40) * 1), 3, 2); } } }
     }
+    /* (claude/owl4) THE REEVE'S NET BUNDLES: two cargo nets hang off the dead pine's bough, a red-and-gold tie on each ring; she pulls one off in phase two, the other waits (hauled back after a while) */
+    if (owl4On() && ctx.owlNets) { const nets = ctx.owlNets(); if (nets) for (const n of nets) { if (!vis(n.x - 20, 40, n.x + 20, n.y + 30)) continue;
+      rect(g, OUT, n.x - 3 - cx, 50 - cy, 7, 4); rect(g, '#6a6a72', n.x - 2 - cx, 51 - cy, 5, 2);   /* the iron eye on the bough */
+      if (!n.taken) { ropeLine(g, n.x - cx, 53 - cy, n.x - cx, n.y - 6 - cy); blit(g, baked('owlnet', 44, 52, 10, 20, (g2, ax, ay) => netBundle(g2, ax, ay, 24, 0, false)), n.x - 12 - cx, n.y - cy);
+        rect(g, OUT, n.x - 4 - cx, n.y - 10 - cy, 9, 5); rect(g, RED, n.x - 3 - cx, n.y - 9 - cy, 7, 3); rect(g, GOLD, n.x - 3 - cx, n.y - 8 - cy, 7, 1); }
+      else { ropeLine(g, n.x - cx, 53 - cy, n.x - cx, 64 - cy); frayEnd(g, n.x - cx, 64 - cy, 1); } } }
   };
+  H.netSprite = (g, x, y, falling) => blit(g, baked('owlnet' + (falling ? 'f' : ''), 44, 52, 10, 20, (g2, ax, ay) => netBundle(g2, ax, ay, 24, 0, !!falling)), x - 12, y);   /* (claude/owl4) the net in her talons / falling: src/main.js drawOwlReads */
   return H;
 }

@@ -20679,6 +20679,28 @@ function drawOwlReads(e, cx, cy) { const A = L.arena, fl = A.floor, R = Math.rou
   for (const p of e.pel || []) { if (p.done) { OWA.drawBurst(g, p, p.x1, fl, cx, cy, time); continue; } if (p.t < 0) continue; const k = Math.min(1, p.t / OWL_PELLET.fly), at = kk => [R(p.x0 + (p.x1 - p.x0) * kk - cx), R(p.y0 + (fl - 4 - p.y0) * kk - OWL_PELLET.arc * 4 * kk * (1 - kk) - cy)], [x, y] = at(k);
     OWA.drawPelletTrail(g, [0.05, 0.1, 0.15].filter(d => k - d > 0).map(d => at(k - d))); OWA.drawPellet(g, x, y, time, k, R(fl - cy) - 1); }
   OWA.drawScuffs(g, fl, cx, cy, time);   /* what the pellets left in the boards */
+  if (owl4()) owl4Reads(e, cx, cy);   /* (claude/owl4) the stoop's eyes and lock, the net, its shadow */
+}
+/* (claude/owl4, GREYBOX: Daniel playtests before the art pass) THE STOOP's eyes-in-the-dark and its line, THE NET's carry, mesh shadow, knot and heap */
+function owl4Reads(e, cx, cy) { const A = L.arena, fl = A.floor, R = Math.round, N = O4.OWL4;
+  if ((e.mode === 'stoopUp' || e.mode === 'stoopTell') && e.alive) { const x = R(e.x - cx), y = R(e.y - cy) - 8, k = 0.5 + 0.5 * Math.sin(time * 8);
+    g.globalAlpha = 0.92; g.fillStyle = '#0a0612'; g.beginPath(); g.ellipse(x, y, 25, 17, 0, 0, 7); g.fill();   /* the silhouette swallows her: only the eyes show */
+    g.globalAlpha = 0.5 + 0.4 * k; g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 3, 4, 4); g.fillRect(x + 4, y - 3, 4, 4); g.globalAlpha = 0.2; g.beginPath(); g.arc(x - 6, y - 1, 8, 0, 7); g.arc(x + 6, y - 1, 8, 0, 7); g.fill(); g.globalAlpha = 1;
+    if (e.mode === 'stoopTell') { const lk = e.stLock, tx = lk ? lk.x : P.x, ty = lk ? lk.y : Math.min(P.y, fl);
+      g.globalAlpha = lk ? 0.85 : 0.45; g.strokeStyle = lk ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 1; g.setLineDash([2, 4]); g.beginPath(); g.moveTo(R(e.x - cx), R(e.y - cy)); g.lineTo(R(tx - cx), R(ty - cy)); g.stroke(); g.setLineDash([]);
+      if (lk) { g.beginPath(); g.arc(R(tx - cx), R(ty - cy) - 2, 9 + 2 * k, 0, 7); g.stroke(); } g.globalAlpha = 1; } }
+  const mesh = (x, w, locked) => { const y = R(fl - cy) - 1, x0 = R(x - cx - w / 2), k = 0.5 + 0.5 * Math.sin(time * 16); g.save(); g.beginPath(); g.ellipse(R(x - cx), y, w / 2, 6, 0, 0, 7); g.clip();
+    g.globalAlpha = 0.4 + (locked ? 0.25 : 0.05) * k; g.fillStyle = '#0c0614'; g.fillRect(x0, y - 7, w, 14); g.globalAlpha = 0.8; g.strokeStyle = locked ? '#ff6b6b' : '#e0c68a'; g.lineWidth = 1; g.beginPath();
+    for (let i = -8; i <= w; i += 8) { g.moveTo(x0 + i, y - 6); g.lineTo(x0 + i + 8, y + 6); g.moveTo(x0 + i + 8, y - 6); g.lineTo(x0 + i, y + 6); } g.stroke(); g.restore(); g.globalAlpha = 1; };
+  const hv = typeof HVR !== 'undefined' && HVR && HVR.netSprite ? HVR : null;
+  if (e.mode === 'netGo' && e.netPh === 1 && hv) hv.netSprite(g, R(e.x - cx), R(e.y + 12 - cy), false);
+  if (e.mode === 'netTell' && e.alive) { const locked = e.modeT <= e.netT0 - N.net.follow; if (hv) hv.netSprite(g, R(e.x - cx), R(e.y + 12 - cy), false); mesh(e.x, N.net.w, locked);
+    const kx = R(e.x - cx), ky = R(e.y + 12 - cy), k = 0.5 + 0.5 * Math.sin(time * 10); g.fillStyle = ART.OUT; g.fillRect(kx - 5, ky - 6, 10, 6); g.fillStyle = '#c8323a'; g.fillRect(kx - 4, ky - 5, 8, 4); g.fillStyle = '#ffd36b'; g.fillRect(kx - 4, ky - 3, 8, 1);   /* THE KNOT at her talons: hit it */
+    g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.arc(kx, ky - 3, 9 + 2 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
+  if (e.netObj && hv) hv.netSprite(g, R(e.netObj.x - cx), R(e.netObj.y - 6 - cy), true);
+  if (e.netHeap) { const h = e.netHeap, x = R(h.x - cx), y = R(fl - cy); g.globalAlpha = Math.min(1, h.t / 0.6) * 0.8; g.fillStyle = '#6a4e2c'; g.beginPath(); g.ellipse(x, y - 3, 34, 5, 0, 0, 7); g.fill(); g.strokeStyle = '#e0c68a'; g.beginPath(); for (let i = -30; i < 30; i += 8) { g.moveTo(x + i, y - 7); g.lineTo(x + i + 8, y); g.moveTo(x + i + 8, y - 7); g.lineTo(x + i, y); } g.stroke(); g.globalAlpha = 1; }
+  if (e.mode === 'netted' && e.netOnHer && e.alive && hv) hv.netSprite(g, R(e.x - cx), R(e.y - 22 - cy), false);
+  if (P.caged > 0 && e.heroNet) { const x = R(P.x - cx), y = R(P.y - cy); g.globalAlpha = 0.85; g.strokeStyle = '#e0c68a'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 8, 13, 11, 0, 0, 7); for (let i = -10; i <= 10; i += 5) { g.moveTo(x + i, y - 18); g.lineTo(x + i + 4, y + 2); g.moveTo(x + i + 4, y - 18); g.lineTo(x + i, y + 2); } g.stroke(); g.globalAlpha = 1; }   /* the net over the hero */
 }
 // The Forgemaster. Layers: the hammer stamps on a rhythm, carts roll through on the rail, slag drips at marked spots. Moves: piston lunge, steam spray, a kicked cart. Window: burst his boiler.
 // THE PROPMAN. Everything else in the Undercrown wants to kill you; he wants to keep the roof on. That
