@@ -721,6 +721,7 @@ let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the ro
    (ADD_DUTY: the per-boss duties; with the switch on they are left exactly as they were).
    opts.addsLog (or opts.adds) also writes a census on the row: adds seen, killed, seconds with one up, damage taken with an add the nearest foe. It only watches. ==== */
 const ADD_DUTY = new Set(['gprincess', 'gqueen', 'gravewarden', 'hedgewarden', 'burieddead', 'bloodknight', 'matriarch', 'hornetqueen', 'hawkmistress', 'wickerqueen', 'bellcrab', 'grandmother', 'abbot', 'lance', 'queen']);
+const ADD_SKIP = new Set(['batteringbeast']);   /* (r2, measured) the beast's room: turning to his sprigs put the hands under the timbers and the wall run - palisadewood 39% -> 28% at n=12 (14/36 -> 10/36); a player keeps on the beast */
 const ADD_PART = new Set(['krakenarm']);   /* the boss's own body pushed as a foe (the Kraken's arms, krakenInit): counted by the census, never hunted as an add */
 const ADD_AWAY = new Set(['hide', 'hidden', 'away', 'gone', 'sunk', 'submerged', 'burrow', 'burrowed', 'flee', 'fled', 'retreat', 'offstage']);   /* (r2) modes in which the boss is NOT THERE to be cut - a flight, a perch or a high cap is not one: the boss's own plan reaches those */
 const isAddOf = (AC, boss) => e => e && e.alive && e !== boss && !e.harmless && !AC.pre.has(e) && !(e.hp <= 0) && !e.mini && e.xpRole !== 'mini' && !e.boss;
@@ -1012,7 +1013,7 @@ async function runbossLab(BK, opts) {
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
-    const AC = opts.adds || opts.addsLog ? { on: !!opts.adds && !ADD_DUTY.has(boss.t), pre: new Set(BK.enemies().filter(e => e.alive)), seen: new Set(), done: new Set(), kinds: {}, killed: 0, gone: 0, fr: 0, max: 0, dmg: 0, dF: { threat: 0, gate: 0, route: 0 }, cur: null, skip: new Map() } : null;   /* (claude/labadds-d) the adds' census and duty state; null (the default): not one line below reads it */
+    const AC = opts.adds || opts.addsLog ? { on: !!opts.adds && !ADD_DUTY.has(boss.t) && !ADD_SKIP.has(boss.t), pre: new Set(BK.enemies().filter(e => e.alive)), seen: new Set(), done: new Set(), kinds: {}, killed: 0, gone: 0, fr: 0, max: 0, dmg: 0, dF: { threat: 0, gate: 0, route: 0 }, cur: null, skip: new Map() } : null;   /* (claude/labadds-d) the adds' census and duty state; null (the default): not one line below reads it */
     if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
     else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1);   /* A.start: a room whose floor is no place to stand (the Gate Gargoyle's spikes) says where the fight begins */ if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
