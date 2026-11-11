@@ -134,4 +134,34 @@ process.env.BRACKEN_OWL4 = '1';
 /* F5 FLAG OFF: the same slice behaves as master (no new modes, ward x0) */
 { process.env.BRACKEN_OWL4 = '0'; const w = world(); w.e.bag = ['stoop', 'net']; w.e.bagPh = 1; w.step(1); assert(!['stoopUp', 'netGo'].includes(w.e.mode), 'flag off: no new move even with one in the bag (' + w.e.mode + ')'); assert.equal(vm.runInContext('owl4()', w.ctx), null); process.env.BRACKEN_OWL4 = '1'; }
 
+/* G. THE SHADOW GOBLIN AS ITS OWN FOE TYPE (OWL4B): t:'shadowgob' in the registries, the real lit/unlit slice (owl4Lights / owlShadowLit / owl4Shadow) and the real hurtEnemy0 gate run in a vm */
+{ const T = await import('../src/threat.js'), TA = await import('../src/told-attacks.js'), PU = await import('../src/foe-pursuit.js'), CB = await import('../src/combat.js');
+  assert(T.THREAT.shadowgob >= T.THREAT.shield, 'threat row: at least a shield goblin'); assert(TA.SIG.shadowgob && TA.SIG.shadowgob.mode === 'biteTell', 'SIG row: the sprig bite, told'); assert.equal(PU.PURSUE.shadowgob, 'walk', 'pursuit row'); assert(CB.COMMON_BLOWS.includes('shadowgob'), 'combat blows row');
+  assert(/case 'shadowgob': enemies\.push\(\{ \.\.\.base, t: 'shadowgob'/.test(src), 'the ent spawns t:shadowgob, not a sprig'); assert(!/t: 'sprig', w: 8, h: 10, hp: EHP\.shield/.test(src), 'no sprig-with-a-flag left');
+  for (const re of [/EHP\.shadowgob = EHP\.shield/, /SPR\.shadowgob = SPR\.sprig/, /t: 'shadowgob', name: 'SHADOW GOBLIN'/, /e\.t === 'sprig' \|\| e\.t === 'shadowgob'\) && !e\.ringer/, /case 'sprig': case 'shadowgob':/, /kinds: \['sprig', 'shadowgob'/, /'sprig', 'shadowgob',\n?/]) assert(re.test(src), 'main.js wires ' + re);
+  const a = src.indexOf('function owl4Lights'), z = src.indexOf('function drawShadowGob'), lightSlice = src.slice(a, z);
+  const gs = src.indexOf('if (e.shadow && dmg > 0 && !owlShadowLit(e))'), ge = src.indexOf('return; }', gs) + 9, gate = src.slice(gs, ge); assert(gs > 0 && gate.includes('O4.SHADOW.hint'), 'the gate is in hurtEnemy0');
+  const hurtEnemy0Start = src.lastIndexOf('function hurtEnemy0', gs); assert(hurtEnemy0Start > 0 && !src.slice(hurtEnemy0Start + 10, gs).includes(String.fromCharCode(10) + 'function '), 'the gate sits inside hurtEnemy0 (every melee / bolt / skill / burn blow passes it)');
+  const say = [], hints = []; let now = 10, clanks = 0, spk = 0;
+  const mk = (lights = [], props = []) => { const ctx = vm.createContext({ O4, props, fires: [], HVR: { pools: () => lights.filter(l => l.pool) }, number: (x, y, t) => say.push(t), SFX: { clank: () => clanks++, spark: () => spk++ }, sparks: () => {}, ringAt: () => {}, owl4Said: {}, P: { x: 0, y: 0 }, get time() { return now; } });
+    vm.runInContext(lightSlice + '\nthis.shadowGate = function (e, dmg, fromX) { ' + gate.replace(/\breturn;/g, 'return "glanced";') + ' return "through"; };', ctx); return ctx; };
+  const gob = (x = 100) => ({ t: 'shadowgob', alive: true, x, y: 200, hp: 20, bleed: 3, stagger: 0, flash: 0, burn: 0, shadow: { lit: false, revealCd: 0, seen: false } });
+  /* unlit: every blow of every size glances, no hp change, bleed cleared, a hint ONCE */
+  { const c = mk(), e = gob(); for (const d of [1, 3, 12, 500]) { e.bleed = 2; assert.equal(c.shadowGate(e, d, 90), 'glanced', 'unlit: ' + d + ' glances'); assert.equal(e.hp, 20); assert.equal(e.bleed, 0); }
+    assert.equal(say.filter(t => t === SHADOW.hint).length, 1, 'BRING IT INTO THE LIGHT said once'); assert(say.includes(SHADOW.glance) && clanks === 4, 'every blow glances with a clank'); assert.equal(c.shadowGate(e, 0, 90), 'through', 'a zero blow (a bleed finishing) is not gated'); }
+  /* lit: a village lamp r 64, a plain lantern r 56, a pool, a fire, burning itself: full damage; just out of range: glances */
+  const lamp = (x, hv) => ({ t: 'lantern', x, y: 230, lit: true, hv }), E = () => gob(100);
+  { assert.equal(mk([], [lamp(100 + 63, true)]).shadowGate(E(), 5, 0), 'through', 'village lamp at 63 px lights it'); assert.equal(mk([], [lamp(100 + 66, true)]).shadowGate(E(), 5, 0), 'glanced', 'and not at 66');
+    assert.equal(mk([], [lamp(100 + 55, false)]).shadowGate(E(), 5, 0), 'through', 'a plain lit lantern lights at 55'); assert.equal(mk([], [lamp(100 + 58, false)]).shadowGate(E(), 5, 0), 'glanced', 'but not at 58 (r 56 < 64)');
+    assert.equal(mk([], [{ ...lamp(100, true), lit: false }]).shadowGate(E(), 5, 0), 'glanced', 'a snuffed lamp is no light'); assert.equal(mk([], [{ ...lamp(100, true), gone: true }]).shadowGate(E(), 5, 0), 'glanced', 'a lamp that has dropped is no light');
+    assert.equal(mk([{ x: 100, y: 200, r: 28, pool: true }]).shadowGate(E(), 5, 0), 'through', 'the oil pool lights it'); const burning = E(); burning.burn = 1; assert.equal(mk().shadowGate(burning, 5, 0), 'through', 'burning itself (the pyromancer)'); }
+  /* REVEALED: the first time a light reaches it, 0.6 s stagger, 3 s cooldown; the gate follows lit state live */
+  { const props = [lamp(100, true)], c = mk([], props), e = E(); props[0].lit = false; vm.runInContext('1', c); const tick = dt => { now += dt; vm.runInContext('owl4Shadow', c)(e, dt); };
+    tick(0.1); assert(!e.shadow.lit && !(e.stagger > 0), 'in the dark: nothing'); props[0].lit = true; tick(0.1); assert(e.shadow.lit && Math.abs(e.stagger - SHADOW.reveal) < 1e-9, 'the light reaches it: REVEALED stagger ' + SHADOW.reveal); assert(say.includes('REVEALED'), 'and says so');
+    let sp = spk; e.stagger = 0; props[0].lit = false; tick(0.1); props[0].lit = true; tick(0.1); assert.equal(spk, sp, 'a second light inside the cooldown does not stagger again'); assert.equal(e.stagger, 0);
+    props[0].lit = false; for (let i = 0; i < 40; i++) tick(0.1); props[0].lit = true; tick(0.1); assert(e.stagger > 0, 'after ' + SHADOW.revealCd + ' s it is staggered again'); e.bleed = 3; props[0].lit = false; tick(0.1); assert.equal(e.bleed, 0, 'a bleed does not outlive the light'); }
+  /* every Shadow Goblin ent in the flagged level is the runtime type the spawn builds (ent t = runtime t) */
+  process.env.BRACKEN_OWL4 = '1'; const LON = hang(); delete process.env.BRACKEN_OWL4; const ents = LON.ents.filter(e => e.t === 'shadowgob'); assert.equal(ents.length, 4); const bust = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/case 'shadowgob': enemies\.push\(\{ \.\.\.base, t: '(\w+)'/); assert(bust && bust[1] === 'shadowgob');
+  sum.push('G shadow goblin = own foe type: registry rows (threat / told / pursuit / blows / bestiary / cast-lint kinds), gate in hurtEnemy0, unlit glances x4 sizes + hint once, lit by village lamp r64 / lantern r56 / pool / burning, snuffed or dropped lamp = dark, REVEALED stagger ' + SHADOW.reveal + ' s with a ' + SHADOW.revealCd + ' s cooldown'); }
+
 console.log('OWL4 RULES: all green.\n  ' + sum.join('\n  '));
