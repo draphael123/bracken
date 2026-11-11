@@ -721,6 +721,7 @@ let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the ro
    (ADD_DUTY: the per-boss duties; with the switch on they are left exactly as they were).
    opts.addsLog (or opts.adds) also writes a census on the row: adds seen, killed, seconds with one up, damage taken with an add the nearest foe. It only watches. ==== */
 const ADD_DUTY = new Set(['gprincess', 'gqueen', 'gravewarden', 'hedgewarden', 'burieddead', 'bloodknight', 'matriarch', 'hornetqueen', 'hawkmistress', 'wickerqueen', 'bellcrab', 'grandmother', 'abbot', 'lance', 'queen']);
+const ADD_PART = new Set(['krakenarm']);   /* the boss's own body pushed as a foe (the Kraken's arms, krakenInit): counted by the census, never hunted as an add */
 const ADD_AWAY = new Set(['hide', 'hidden', 'away', 'gone', 'sunk', 'submerged', 'burrow', 'burrowed', 'under', 'flee', 'fled', 'retreat', 'aloft', 'hover', 'perch', 'offstage', 'roost']);
 const isAddOf = (AC, boss) => e => e && e.alive && e !== boss && !e.harmless && !AC.pre.has(e) && !(e.hp <= 0) && !e.mini && e.xpRole !== 'mini' && !e.boss;
 function addCensus(AC, BK, boss, P, before, n) {
@@ -737,7 +738,7 @@ const acRow = (AC, spf) => ({ n: AC.seen.size, kinds: AC.kinds, killed: AC.kille
 /* which add, if any, the hands turn to this frame (null: the boss plan plays) */
 function addPick(AC, BK, boss, A, open, f) {
   const P = BK.P; if (P.dead || P.swim || P.carry || P.galeRide || P.plunge || open || !boss.alive) { AC.cur = null; return null; }
-  const adds = BK.enemies().filter(isAddOf(AC, boss)).filter(e => e.x > A.x0 - 40 && e.x < A.x1 + 40 && Math.abs(e.y - P.y) < 220 && !(AC.skip.get(e) > f));
+  const adds = BK.enemies().filter(isAddOf(AC, boss)).filter(e => !ADD_PART.has(e.t) && e.x > A.x0 - 40 && e.x < A.x1 + 40 && Math.abs(e.y - P.y) < 220 && !(AC.skip.get(e) > f));
   if (!adds.length) { AC.cur = null; return null; }
   const bdx = Math.abs(boss.x - P.x) - (boss.w || 20) / 2, bdy = Math.abs(boss.y - P.y);
   if (/Tell$/.test(boss.mode || '') && bdx < 140 && bdy < 60) return null;   /* his blow first: the boss plan answers it */
