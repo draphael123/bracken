@@ -244,7 +244,7 @@ export function makeRanger(api) {
       const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far) * (kn ? kn.vx : 1), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy * (kn ? kn.vy : 1) + (sh ? (Math.random() * 2 - 1) * sh.vy : 0), g: RG.draw.g / Math.sqrt(far) * (kn ? kn.g : 1), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k) * (sh ? sh.dmg : 1), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) * (kn ? kn.focus : 1), low: !!kn });
       if (kn) a.kneel = true;
       a.full = full;
-      const splitF = fk('rsplit'); if (full && (splitF || (T().twin && takeArrow(p)))) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8 * (splitF ? 1 : T().twin), tag: a.tag, focus: 0, free: splitF }); b.full = true; b.y += 3; }   /* SPLIT SHOT: the second arrow is free (not hers to pick up) */
+      const splitF = fk('rsplit'); if (full && (splitF || (T().twin && takeArrow(p)))) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * (splitF ? 0.6 : 0.8 * T().twin), tag: a.tag, focus: 0, free: splitF }); b.full = true; b.y += 3; }   /* SPLIT SHOT: the second arrow is free (not hers to pick up) */
       if (full) { api.shakeCam(2, p.face * 2); api.zoomKick(1.03, 0.14); }
     }
     if (tier >= 2 && p.rgKneel) { const a = p.rgArrows.at(-1); if (a) a.kneel = true; }   /* (the knee's trial counts any drawn tier) */
