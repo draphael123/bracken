@@ -217,11 +217,11 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay, qy = ax;
     /* (claude/palrework-d, the stills) THE HEAD MUST NOT SIT ON HIS FACE OR OFF THE CANVAS. The maul's poses were drawn for a long haft: a wind-up (verdict, twin smite,
        the leap, the dances) put its grip at his shoulder and its head behind his helm, so a 14 px mace laid the head over his face; a far blow (THE OVERHEAD, the low
-       mace, the riposte) ran it past the frame's edge and cut it in half. The head goes the shortest step from 14 px - out to 20, in to 6 - to a place clear of the helm
+       mace, the riposte) ran it past the frame's edge and cut it in half. The head goes the shortest step from 14 px - out to 20, in to 3 - to a place clear of the helm
        and inside the frame (head radius 4 with its outline); if there is none it stays at 14. */
     const helm = [BX + dx - 1, BY + dy + hy - 2, BX + dx + 11, BY + dy + hy + 7], fits = l => { const X = x0 + ax * l, Y = y0 + ay * l;
       return X - 4 >= 0 && X + 4 <= W + wide - 1 && Y - 4 >= -top && Y + 4 <= H - 1 && !(X + 4 > helm[0] && X - 4 < helm[2] && Y + 4 > helm[1] && Y - 4 < helm[3]); };
-    let L = Math.min(len0, 14); if (!fits(L)) { const tries = [15, 13, 16, 12, 17, 11, 18, 10, 19, 9, 20, 8, 7, 6].filter(l => l !== L); const ok = tries.find(fits); if (ok !== undefined) L = ok; }
+    let L = Math.min(len0, 14); if (!fits(L)) { const tries = [15, 13, 16, 12, 17, 11, 18, 10, 19, 9, 20, 8, 7, 6, 5, 4, 3].filter(l => l !== L); const ok = tries.find(fits); if (ok !== undefined) L = ok; }
     /* no clear place (a small canvas: the dances have no headroom): the head goes BEHIND the helm - none of its pixels over what is already drawn in the helm's box */
     const behind = !fits(L), hd = behind && g.getImageData ? g.getImageData(0, 0, c.width, c.height) : null, cw0 = c.width, tY = top;
     const hp = (X, Y, c) => { if (hd && X >= helm[0] && X <= helm[2] && Y >= helm[1] && Y <= helm[3]) { const iy = Math.round(Y + tY); if (iy >= 0 && X >= 0 && X < cw0 && hd.data[(iy * cw0 + X) * 4 + 3] > 0) return; } px(g, X, Y, c); };
