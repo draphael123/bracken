@@ -24,7 +24,9 @@ try {
     const rows = [], missing = [], extra = [], wrong = [];
     for (const n of SKILLS.filter(n => !n.active)) { const k = PASSIVE_GLYPH[n.hero] && PASSIVE_GLYPH[n.hero][n.id]; if (!k) { missing.push(n.hero + ':' + n.id); continue; }
       if (BKT.TAL_KIND(n.id, n.hero) !== k) wrong.push(n.id); if (!BKT.talIcon(n.id, n.hero)) wrong.push(n.id + ' (no canvas)'); rows.push([n.hero, n.id, k]); }
-    for (const h in PASSIVE_GLYPH) for (const id in PASSIVE_GLYPH[h]) if (!SKILLS.some(n => n.hero === h && n.id === id && !n.active)) extra.push(h + ':' + id);
+    /* (FIX158B) a NEW TRAIT (src/traits.js NEW_TRAITS: geoGravel, geoLode...) is not a catalog skill but owns a glyph row on purpose; it must still draw a canvas */
+    const { isNewTrait } = await import('/src/traits.js');
+    for (const h in PASSIVE_GLYPH) for (const id in PASSIVE_GLYPH[h]) if (isNewTrait(h, id)) { if (!BKT.talIcon(id, h)) wrong.push(id + ' (no canvas)'); } else if (!SKILLS.some(n => n.hero === h && n.id === id && !n.active)) extra.push(h + ':' + id);
     // THE PIRATE'S C, driven: a tap parries, a hold throws the hook
     const prep = () => { for (const k in BK.keys) BK.keys[k] = false; BK.setHero('pirate'); BK.reset({ fresh: true }); BK.load(0); BK.state = 'play'; BK.god = true; BK.enemies().forEach(e => e.alive = false); BK.sim(200); };
     prep(); BK.keys.block = true; BK.sim(4); BK.keys.block = false; BK.sim(1); const tapParry = BK.P.parryW > 0, tapHook = !!BK.P.hookT || BK.P.hookCd > 0;

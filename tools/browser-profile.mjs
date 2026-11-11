@@ -92,7 +92,7 @@ export function launchBrowser(exe, args, kind = 'look') {
   const heapMb = process.env.BRACKEN_HEAP_MB === undefined ? 2048 : +process.env.BRACKEN_HEAP_MB;
   /* --expose-gc (claude/leakfix 11-10): puts a gc() in the page and does nothing until something calls it: tools/cdp.mjs sets window.__gcOnLoad so the game collects every few level loads (src/main.js retireBakes).
      BRACKEN_EXPOSE_GC=0 leaves it out. */
-  { const jf = []; if (heapMb > 0) jf.push('--max-old-space-size=' + heapMb); if (process.env.BRACKEN_EXPOSE_GC !== '0') jf.push('--expose-gc');
+  { const jf = []; if (heapMb > 0) jf.push('--max-old-space-size=' + heapMb); if (process.env.BRACKEN_EXPOSE_GC === '1') jf.push('--expose-gc');
     if (jf.length && !args.some(a => /^--js-flags/.test(a))) args = [...args, '--js-flags=' + jf.join(' ')]; }
   /* NO TIMER THROTTLING (claude/harnessstall, 10-30): a headless page no one is looking at counts as hidden, and Chrome's intensive wake-up throttling then lets a
      page's chained timers (setTimeout in a loop, the pattern every tool evaluation uses to yield) fire once a MINUTE after ~5 minutes hidden. load-leak's audit (46

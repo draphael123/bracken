@@ -119,7 +119,7 @@ try {
    BK.P.x=w.x-150;BK.sim(330);const grew={mode:w.mode,hp:Math.round(w.hp),full:Math.round(w.maxHp),call:call()};
    /* up again on the green root: a blow on the open lawn chips a quarter and does not fell him; the same blow at a brazier fells him there, burning */
    w.x=143*16;w.cd=99;BK.P.x=w.x-150;grew.upBite=bite();grew.upMode=w.mode;
-   w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(2);const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(20);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
+   w.mode='stalk';w.cd=99;w.x=BK.L.witch.braziers[0][0]*16+20;BK.P.x=w.x-150;BK.sim(14);/* (juice2tune) JUICE2: the up-bite blow before this froze the world (65-110 ms) - let it pass, then the blow beside the brazier; and a longer look after it */const h1=w.hp;BKT.hurtEnemy(w,30,w.x-20,false);BK.sim(32);grew.atFire={mode:w.mode,open:+(w.open||0).toFixed(1),hp:Math.round(w.hp),was:Math.round(h1)};
    const fire=fell(BK.L.witch.braziers[0][0]*16+20);BK.P.x=w.x-150;BK.sim(120);const burning={mode:w.mode,open:+(w.open||0).toFixed(1)};burning.bite=bite();
    out.hedgeWarden={lawn,grew,fire,burning};
    /* claude/hedgewarden4: HIS TOLD OPENING IS ANSWERED, NOT WAITED OUT (B13). Left alone he is never open; a move answered (hedgeAnswered) sticks his sword, open 3 s,
@@ -127,7 +127,7 @@ try {
    {const hurt=d=>{const h0=w.hp;BKT.hurtAs('light',w,d,w.x-12,false);const t=h0-w.hp;w.hp=h0;return t;};
     w.mode='stalk';w.cd=99;w.burnT=0;w.stuckT=0;w.reopenCd=0;w.greenUp=false;w.growth=0;w.hp=w.maxHp;w.x=143*16;BK.P.x=w.x-150;BK.sim(2);
     const ans={};BK.sim(600);ans.alone=+(w.open||0).toFixed(1);ans.outside=hurt(40);
-    ans.did=HW.hedgeAnswered(w,'cut');BK.sim(3);ans.mode=w.mode;ans.open=+(w.open||0).toFixed(1);ans.inside=hurt(40);ans.again=HW.hedgeAnswered(w,'cut');
+    ans.did=HW.hedgeAnswered(w,'cut');BK.sim(12);/* (FIX158B) JUICE2: the blow just above freezes the world 65 ms (4 frames), and an enemy is not updated in a freeze - 3 frames read open = 0. 12 frames is past the freeze and still inside the 3 s (open > 2.5) */ans.mode=w.mode;ans.open=+(w.open||0).toFixed(1);ans.inside=hurt(40);ans.again=HW.hedgeAnswered(w,'cut');
     BK.sim(260);ans.after=w.mode;ans.afterOpen=+(w.open||0).toFixed(1);ans.reopen=w.reopenCd>0;ans.tooSoon=HW.hedgeAnswered(w,'cut');
     out.hedgeAnswer=ans;}}
   /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */

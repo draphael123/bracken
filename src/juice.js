@@ -90,7 +90,7 @@ export const weaponOf = hero => WEAPON[WEAPON_OF[hero]] || null;
    ONE FLAG. JUICE2_SHIPS false = today's rows and today's code paths, byte for byte (the JUICE table above is never edited; the J2 rows below are read
    only when the flag is on). On = a longer freeze, the struck foe shaking in it, a contact star at the blade's edge, a stronger blocked clink, a kill pop,
    a particle cap and a co-op freeze cap. Feel only: no damage, hp, window, AI or real-knock change. Every accessibility toggle still gates it. */
-export let JUICE2_SHIPS = false;                                /* the one-line rollback / switch. 11-11: OFF in the rel158off safety-net build (flags-on 158 follows) */
+export let JUICE2_SHIPS = true;                                /* the one-line rollback / switch. 11-11: OFF in the rel158off safety-net build (flags-on 158 follows) */
 export const setJuice2 = on => { JUICE2_SHIPS = !!on; };
 export const JUICE2 = {
   /* per weight class: stop = real seconds of freeze; flash = the foe's white breath; recoil = draw-only px; star = contact star size px; sparks = hit sparks;

@@ -1,6 +1,33 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 161,
+    "lines": [
+      { "s": "Store Skills tab: your core passives and worn traits show under your abilities", "lv": [] },
+      { "s": "Trait slots show their level, an open slot reads EMPTY, the 2nd opens at level 20", "lv": [] },
+      { "s": "The abilities list shows 4 rows a page to make room", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
+    "batch": 160,
+    "lines": [
+      { "s": "HIT FEEL: every blow has a short freeze, longer on heavy hits and kills", "lv": [] },
+      { "s": "Heavier weapons hit heavier", "lv": [] },
+      { "s": "Light melee cuts lose the old swing arc", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
+    "batch": 159,
+    "lines": [
+      { "s": "HERO TRAITS: heroes keep core passives and wear the rest as traits", "lv": [] },
+      { "s": "Traits grow with your level (I, II, III); a second slot opens at level 20", "lv": [] },
+      { "s": "Clear a region once to unlock a shared trait any hero can wear", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 158,
     "lines": [
       { "s": "A feedback form in the game: tell us what you think without leaving it", "lv": [] },
