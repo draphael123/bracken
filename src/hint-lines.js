@@ -329,7 +329,7 @@ export const CALL_LINES = new Set(['BOULDER: JUMP IT', /* (claude/scree3, routed
   /* claude/paladin2 + claude/palart (batch92 integ): the Paladin's holy-ground feedback - plant, empower, smite, aegis on a partner, the circle following a leap, the empty Light bar - routed so the player can see them */
   'HIS AEGIS', 'SMITE', 'THE GROUND FOLLOWS', 'CONSECRATED', 'SANCTIFIED',
   /* claude/paladin3 + claude/rangerfeel (batch94 integ): CONVICTION replaced the Light bar ('NO LIGHT' is 'NO CONVICTION' now), its spends, the held VERDICT, and the Ranger's focus / stance feedback - routed so the player can see them */
-  'CONVICTION', 'SUNFALL', 'NO CONVICTION', 'RADIANCE', 'VERDICT', 'VERDICT x', 'THROW: 3 CONVICTION', 'FOCUS ', '%: SWEET-SPOT HITS FILL IT', 'KNIFE', 'BOW',
+  'CONVICTION', 'SUNFALL', 'NO CONVICTION', 'RADIANCE', 'VERDICT', 'VERDICT x', 'THROW: 3 CONVICTION', 'HOLY HAMMER: 3 CONVICTION', 'HAMMER READY', 'FOCUS ', '%: SWEET-SPOT HITS FILL IT', 'KNIFE', 'BOW',
   /* claude/paladin4: the empowered tiers, the prayer, the Light-ward's break and pierce, VERDICT judged, the spear lost to a hit */
   'TWIN SMITE', 'RADIANCE+', 'PRAY', 'JUDGED', 'WARD BROKEN', 'THROUGH THE WARD', 'SPEAR LOST',
   /* batch125 integ 10-28: THE HURRICANE 3 (claude/hurricane3), THE FORGEMASTER (claude/forgemaster) and THE QUEEN'S LANCE 3 (claude/stormhold3) mid-fight calls - teaching lines, routed as hint-shown requires */

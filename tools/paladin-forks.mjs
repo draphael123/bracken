@@ -11,6 +11,8 @@ import * as PR from '../src/progression.js';
 import { PALADIN_FORKS, PALADIN_RUNG_FORKS, PALADIN_TRAIT_FORKS } from '../src/forks-paladin.js';
 import { SKILLS } from '../src/progression-catalog.js';
 import * as T from '../src/traits.js';
+import { hammerPath } from '../src/holy-hammer.js';
+import { HG } from '../src/holy-ground.js';
 const bad = []; const check = (n, fn) => { try { fn(); } catch (e) { bad.push(n + ': ' + String(e.message).split('\n')[0]); } };
 const main = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const withFlag = (v, fn) => { const was = F.forksShip(); F.setForksShip(v); try { return fn(); } finally { F.setForksShip(was); } };
@@ -72,5 +74,12 @@ check('boss law: no side promises an invulnerable foe, a freeze or a pin; stagge
   for (const [k, e] of Object.entries(PALADIN_FORKS)) for (const s of ['A', 'B']) assert(!/INVULNERAB|FREEZE|PIN\b|IMMUNE|UNTOUCHABLE/i.test(e[s].what + ' ' + e[s].teach), 'boss law: ' + e[s].id);
   const mainLines = main.split('\n'); const bash = mainLines.find(l => l.includes("if (plb('pbash') && third)")); assert(bash && /!e\.maxHp && !e\.mini && !e\.elite/.test(bash), 'SHIELD BASH shoves only the small');
   const wide = mainLines.find(l => l.includes("e.vy = Math.max(e.vy || 0, 240)")); assert(wide && /!e\.maxHp && !e\.mini/.test(wide), 'HIGH ARC drives down only the small'); });
+check('(repoint) the L22 forks ride the holy hammer: SPIRAL stays round him, HOMECOMING goes out and back, the base corkscrew only advances', () => {
+  const o = { x: 100, y: 50 }, S = HG.hammerSpiral, H = HG.hammerHome, C = HG.hammer;
+  let maxR = 0; for (let t = 0; t <= S.life; t += 0.02) { const p = hammerPath('spiral', t, o, 1, S); maxR = Math.max(maxR, Math.abs(p.x - o.x)); assert(Math.abs(p.x - o.x) <= S.r + 0.01 && Math.abs(p.y - o.y) <= S.r / 2 + 0.01, 'spiral within r of him'); } assert(maxR > S.r * 0.9, 'spiral reaches r');
+  let far = 0; for (let t = 0; t <= H.life; t += 0.02) far = Math.max(far, hammerPath('homecoming', t, o, 1, H).cx - o.x); assert(far > H.reach * 0.95 && far <= H.reach + 0.01, 'homecoming out to its reach'); assert(Math.abs(hammerPath('homecoming', H.life, o, 1, H).cx - o.x) < 0.01, 'homecoming ends at his hand'); assert(Math.abs(hammerPath('homecoming', H.life / 2, o, -1, H).cx - (o.x - H.reach)) < 0.01, 'homecoming faces left');
+  assert(hammerPath('corkscrew', C.life, o, 1, C).cx > o.x + 100, 'base corkscrew keeps advancing');
+  assert(H.retMul === 1.3 && S.mul === 0.8 && S.rehit === 0.35, 'card numbers: x0.8 a pass, rehit 0.35, return x1.3');
+  assert(main.includes("mode: sp ? 'spiral' : hm ? 'homecoming' : 'corkscrew'") && main.includes('m.home && !m.pipped'), 'main.js casts the mode and pays the catch pip'); });
 if (bad.length) { console.log('PALADIN FORKS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Paladin forks: 11 rungs + 10 trait pairs (42 side ids), every side read by main.js, flag off = base, PvP EVEN off, trait row (23 passives listed once; 5 folded follow the fork flag), boss law kept.');

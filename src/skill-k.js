@@ -8,7 +8,8 @@
 //   K_LINEAR - the linear AoE skills that were trimmed (cap: one L35 cast takes <= ~60% of a brute hp): the old multiplier is kept in WAS.
 //   PYRO_TODO - the Pyromancer skills are EXCLUDED here: the PYRO KIT lane (claude/pyrokit) is rewriting them; convert them to swordDmg x k AFTER it merges.
 export const K_FLAT = {
-  hammerLeap: 0.7,        // paladin  was FLAT 24
+  hammerLeap: 0.7,        // paladin  was FLAT 24 (renamed MACEFALL, claude/palrework)
+  holyHammer: 0.6,        // paladin  (claude/palrework, PAL_MACE) THE HOLY HAMMER: swordDmg x 0.6 a hit, 2-3 hits a foe on its corkscrew (HG.hammer.k carries the same number; tools/paladin-hammer.mjs asserts they agree)
   lightLance: 1.0,        // paladin  was FLAT 34 (HG.lance.dmg)
   holyCharge: 0.4,        // paladin  was FLAT 12
   dawnburst: 0.4,         // paladin  was FLAT 12
