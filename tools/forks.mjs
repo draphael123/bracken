@@ -8,6 +8,7 @@ import * as F from '../src/forks.js';
 import { KNIGHT_FORKS } from '../src/forks-knight.js';
 import { makeCrossroads } from '../src/crossroads.js';
 import { STATIONS, TAVERN_ART } from '../src/tavern.js';
+import { RANK_AT, traitMul } from '../src/traits.js';
 import { xpFloor } from '../src/xp.js';
 import { PER_HERO } from '../src/coop-save.js';
 const bad = []; const check = (n, f) => { try { f(); } catch (e) { bad.push(n + ': ' + e.message); } };
@@ -149,5 +150,12 @@ check('flag ON: the inn station + art are dealt (module load flag is the lab/shi
 check('bots, AI partners and the lab take side A; the co-op snapshot carries the map', () => withFlag(true, () => {
   assert.deepEqual(F.botForks('knight'), Object.fromEntries([['v', 1], ...F.forkList('knight').map(r => [r.key, 'A'])])); assert.equal(F.botForks('knight', 'B').ult, 'B'); assert.deepEqual(F.botForks('knight', { heavy: 'B', nope: 'A' }), { v: 1, heavy: 'B' }); assert.deepEqual(F.botForks('nobody'), { v: 1 });
   assert(PER_HERO.includes('fork'), 'fork joins the hero snapshot'); }));
+/* (claude/forkmerge) ALL NINE HEROES FILLED: the registry, the ladder and the ids hold across heroes; trait pairs open at rank III so rank scaling is exact (1.0) */
+check('all nine heroes: 11 ladder rungs each, side ids unique across heroes, trait pairs open at rank III', () => {
+  const HEROES = ['knight', 'paladin', 'pyro', 'geomancer', 'berserker', 'ranger', 'warden', 'pirate', 'reaper']; const seen = new Map();
+  for (const h of HEROES) { assert(F.hasForks(h), h + ' has fork data'); const rungs = F.forkList(h, false); assert.equal(rungs.length, 11, h + ' rungs'); assert.deepEqual(rungs.map(r => r.level).sort((a, b) => a - b), F.FORK_LADDER.map(x => x.lv), h + ' ladder levels');
+    for (const r of F.forkList(h)) for (const sd of ['A', 'B']) { const id = r.e[sd].id; assert(!seen.has(id), 'side id ' + id + ' used by ' + seen.get(id) + ' and ' + h); seen.set(id, h); } }
+  assert(!F.hasForks('nobody'), 'the empty-hero asserts use a hero id nobody has');
+  assert(F.TRAIT_FORK_LEVEL >= RANK_AT[2] && traitMul(F.TRAIT_FORK_LEVEL) === 1, 'a trait fork opens at rank III: its rank scale is exactly 1 (if TRAIT_FORK_LEVEL is ever lowered, every trait side must scale through trk/trm)'); });
 if (bad.length) { console.log('FORKS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Forks: flag off is the base (no read, no write, no station); data shape, rungs off the milestones, owed queue, pick/swap free, skill/trait conditions, bad saves dropped, Knight migration (L24/L27/L35/L50, idempotent), legacy tech()/upg() reads, flag-on round trip + rollback load, card/strip/board shapes, THE CROSSROADS screen all hold.');
