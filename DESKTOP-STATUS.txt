@@ -21,3 +21,4 @@
 11-10 13:12 ARC2-d DONE juiceproof-d=17a58adf6 arc dropped on geomancer+berserker (ranger has no arc: light is a shot); releases the hold - laptop re-merge juiceproof-d
 11-10 13:17 GQ4TUNE-d DONE 0e69d1aff Princess 56% Queen 42% n=36 each (12/hero kn/wa/py, flasks, 4 rounds; not yet 60-70; report claude/gq4tune-d work/claude/lane-done/claude-gq4tune-d.md)
 11-10 14:49 CROWNFIX-d READY claude/crownfix-d 75e818598 (on master 9f29067e9, 1 line src/gqueen-hands.js fetchStep): Goblin Queen P2 crown-fetch soft-lock (live, all builds) - she gives the crown up ~6.5 s. Daniel: YES hotfix into batch158. gqueen3/gq2mech/gqueen3-page green; full suite not run (laptop gate). gq4tune-d carries the same line - expect a trivial merge.
+11-10 19:23 FOEVAR QUEUED after demo (Daniel 11-10): claude/foevar3 45c83aa58 (contains foevar1+2) stays OUT of batch158. After the demo: pilot+mash --write for the 15 levels in its report + the owed stills walk, then merge in batch159.
