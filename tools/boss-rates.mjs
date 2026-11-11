@@ -45,6 +45,10 @@ export function summarize(rows) {
     const H = W[x.hero] = W[x.hero] || { w: 0, n: 0 }; H.n++; if (won(x)) H.w++; }
   return Object.values(by);
 }
+if (flasks === 'none') { /* (claude/charms4-d) NONE MUST MEAN NONE: a row that started with a flask or drank one invalidates the run (the first version of this mode lied) */
+  const bad = out.filter(x => !x.err && !(x.flasks0 === 0 && x.dr && x.dr.ok === 0 && x.dr.maxFl === 0)); const cells = {}; for (const x of out) { const k = x.row + ' ' + x.hero; cells[k] = cells[k] || { n: 0, wins: 0, drinkAttempts: 0, drinksDone: 0, maxFlasksHeld: 0, startFlasks: 0 }; cells[k].n++; cells[k].wins += won(x) ? 1 : 0; cells[k].drinkAttempts += x.dr ? x.dr.att : NaN; cells[k].drinksDone += x.dr ? x.dr.ok : NaN; cells[k].maxFlasksHeld = Math.max(cells[k].maxFlasksHeld, x.dr ? x.dr.maxFl : 99); cells[k].startFlasks += x.flasks0 || 0; }
+  console.log('\nFLASKS NONE  per cell (wins/n, drink attempts through BK.drinkFlask, drinks done, most flasks ever held at an attempt, starting flasks): ' + JSON.stringify(cells));
+  if (bad.length) { console.error('FLASKS=NONE INVALID: ' + bad.length + ' fight(s) carried a flask or drank (flasks0/drank): ' + bad.slice(0, 4).map(x => x.row + ' ' + x.hero + ' s' + x.seed + ' ' + x.flasks0 + '/' + JSON.stringify(x.dr)).join(', ')); process.exit(2); } }
 console.log('\nBOSS RATES  profile ' + prof + '  flasks ' + flasks + '  difficulty ' + (process.env.DIFFICULTY || 'normal') + '  (' + out.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
 const gapSeen = new Set(); for (const x of out) if (x.gaps && (x.gaps.noRange.length || x.gaps.empty)) gapSeen.add(x.hero + (x.gaps.empty ? ': no typical skills (casts nothing but its ultimate)' : '') + (x.gaps.noRange.length ? ': no SKILL_RANGE for ' + x.gaps.noRange.join(',') : ''));
 console.log('row'.padEnd(18) + 'L'.padStart(3) + '  ' + ways.map(w => (w + ' ' + heroes.map(h => h.slice(0, 2)).join('/') + ' (rate [95%] n)').padEnd(46)).join('') + 'band');
