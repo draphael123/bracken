@@ -22,7 +22,7 @@ export const TRAIT_SPLIT_B = {
     traits: ['longBarrel', 'powderBurn', 'looter', 'shareOut', 'deadEye', 'ransom', 'pieces', 'runThrough', 'secondBarrel', 'hotBarrel'],
     merged: {},
     folded: { longLine: 'hook:LONG LINE', turncoat: 'block:TURNCOAT B', parryCut: 'block:SLIPKNOT A', noQuarter: 'spender:FULL PURSE' },
-    retired: [],
+    get retired() { return forksShip() ? ['longLine', 'turncoat', 'parryCut', 'noQuarter'] : []; },   /* (claude/freefork) with FORKS_SHIP on the four folded ids retire (THE HOOK B, THE HOOK CATCH A + B, THE PURSE A carry them): kept in the catalog, never slot; flag off they stay slottable traits (FOLD RULE, no gap) */
     shared: ['swash'],   /* SWASHBUCKLE -> the shared AIR ROLL (SHARED lane: add pirate:'swash' to the airRoll legacy row and make the roll hero-agnostic) */
     cut: ['sunder', 'rollCut', 'paidInGold'],   /* HOLED (2nd mark), TUMBLING CUT (dash-strike spam), PAID IN GOLD (gold skips cooldowns): deliberate cuts, off while the flag is on */
     defaults: ['longBarrel', 'secondBarrel'],

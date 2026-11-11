@@ -40,6 +40,7 @@ const LADDER_LV = Object.fromEntries(FORK_LADDER.map(r => [r.slot, r.lv]));
 import { GEO_FORKS } from './forks-geomancer.js';   /* (claude/geofork) the Geomancer's 11 rungs + 9 trait pairs */
 import { RG_FORKS } from './forks-ranger.js';   /* (claude/rangerfork) the Ranger's 11 rungs + 10 trait pairs */
 import { WARDEN_FORKS } from './forks-warden.js';   /* (claude/wardenfork) the Warden's 11 rungs + 10 trait pairs */
+import { FB_FORKS } from './forks-freebooter.js';   /* (claude/freefork) the Freebooter's 11 rungs + 10 trait pairs */
 
 /* THE REGISTRY: hero -> { key: entry }. Hero lanes add their file here; tools may register a synthetic fork (registerFork / unregisterFork) for the framework checks. */
 const REG = { knight: KNIGHT_FORKS, paladin: PALADIN_FORKS };
@@ -50,6 +51,7 @@ export const unregisterFork = (h, key) => { if (REG[h]) delete REG[h][key]; };
 REG.geomancer = GEO_FORKS;   /* (claude/geofork) */
 REG.ranger = RG_FORKS;   /* (claude/rangerfork) */
 REG.warden = WARDEN_FORKS;   /* (claude/wardenfork) */
+REG.pirate = FB_FORKS;   /* (claude/freefork) */
 export const forksOf = h => REG[h] || {};
 export const hasForks = h => Object.keys(forksOf(h)).length > 0;
 const entryOf = (h, key) => forksOf(h)[key] || null;
