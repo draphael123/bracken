@@ -121,6 +121,6 @@ assert.ok(LD(1, 2).v > LD(1, 0).v && LD(1, 2).dur > LD(1, 0).dur, 'a bigger drop
 assert.ok(1 / JUMP_FEEL.paladin.w < 1 / JUMP_FEEL.pyro.w, 'jump pitch = 1/w: paladin lower than pyro');
 for (const h of HEROES) assert.ok(JUMP_FEEL[h] && JUMP_FEEL[h].w > 0, 'weight row ' + h);
 /* main.js wiring for J2 + J3 */
-for (const [re, why] of [[/import \{ smearOf, followFrame, swingHit \} from '\.\/swing-smear\.js'/, 'smear import'], [/function drawLightSmear\(/, 'smear drawer'], [/if \(JUICE2_SHIPS\) drawLightSmear\(cx, cy\);/, 'smear call, flagged'], [/SFX\.thwack\(blowKind\(e, dmg, tag\)\)/, 'thwack on a landed blow'], [/SFX\.thwack\('finish'\)/, 'thwack on a kill'],
+for (const [re, why] of [[/import \{ smearOf, followFrame, swingHit \} from '\.\/swing-smear\.js'/, 'smear import'], [/function drawLightSmear\(/, 'smear drawer'], [/if \(JUICE2_SHIPS\) drawLightSmear\(cx, cy\);/, 'smear call, flagged'], [/SFX\.thwack\(blowKind\(e, dmg, tag\)[,)]/, 'thwack on a landed blow'], [/SFX\.thwack\('finish'[,)]/, 'thwack on a kill'],
   [/\(JUICE2_SHIPS && SFX\.clink \? SFX\.clink : SFX\.glance\)\(\)/, 'clink on a guard'], [/JUICE2_SHIPS \? followFrame\(/, 'follow hold flagged'], [/LAND FEEL BY WEIGHT/, 'land feel by weight'], [/P\.smearHitT = time/, 'hit stamp']]) assert.ok(re.test(m), 'main.js: ' + why);
 console.log('juice2 J2+J3: OK (ranger/berserker beats, third-cut +.02, smear on 9 heroes snaps on a hit, thwack/clink/jump/land weight; flag off = old exactly)');
