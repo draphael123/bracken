@@ -1,7 +1,7 @@
 // src/forks-berserker.js - THE BERSERKER'S COMPLETE FORK ROAD (claude/bersfork; forkplan sec 4 BERSERKER table + passiveplan sec 4 + sec 7 row 8). Pure data + the numbers the effect code reads.
 // 11 rungs: dash L21 (the barge), THE SPIN L22, chain L24, take-it L27, BATTLE ROAR L29, hold-X wind-up L32, frenzy L36, GREAT CLEAVE L38, hatchet L43, LAST STAND L48, capstone L50
 // (the ultimate: UP+C at a FULL rage bar), and ten trait pairs (open at L20 while the trait is WORN). His identity word: MOMENTUM COSTS (rage is earned by staying in it and spent on it).
-// Built on MASTER'S Berserker (claude/berserkerid is NOT merged): card words say CHOP / AXE / BAR / RAGE, never name the old three-tier ladder or the cross-chop, so berserkerid needs no text change.
+// Built on MASTER'S Berserker, then re-pointed (claude/repoint) to claude/berserkerid's identity: the L32 fork scales the WIND-UP COMMIT (when it commits / fills, and the chop's weight); WIDE CROSS rides the wind-up chop.
 // A skill fork's key is 'skill:<catalog id>' (it applies while the skill is slotted); a trait fork's key is 'trait:<id>'. Effect code: src/berserker.js (reads F('<side id>') = tal().fk(id)) and a few
 // one-line sites in src/main.js; main.js answers fk() from forks.js forkOn (false while FORKS_SHIP is off, for another hero, and in an EVEN-L1 duel).
 // BOSS LAW: no side pins or immunes a boss; reel / stagger / push sides skip bosses and minis (smallFoe); every blow is swordDmg x k x amul; no heal above 3% of max hp from one trigger.
@@ -12,7 +12,7 @@ export const BF = {
   chain: { scentMul: 1.2, scentT: 4, veinsAt: 50 },                                                        /* L24 A BLOOD SCENT: a kill, the next chop x1.2 within 4 s | B OPEN VEINS: REND stacks from half a bar */
   take:  { roarR: 60, roarReel: 0.8, spiteShare: 0.5, spiteCap: 0.8, spiteT: 6 },                          /* L27 A BRACED ROAR: a parry reels small foes within 60 | B SPITE: a parry banks half the blow for the next chop (cap 0.8 of a chop, 6 s) */
   roar:  { wide: { r: 100, rage: 15, small: 1.2, push: 200 }, gut: { r: 40, rage: 45, small: 0.3, push: 0 }, base: { r: 70, rage: 25, small: 0.6, push: 110 } },   /* L29 A WIDE ROAR | B GUT ROAR */
-  wind:  { deepQ: 1.25, deepMul: 1.15, shallowQ: 0.7, shallowMul: 0.9 },                                   /* L32 A DEEP WIND: tiers arrive 25% later, blow x1.15 | B SHALLOW WIND: 30% sooner, x0.9 */
+  wind:  { deepQ: 1.25, deepMul: 1.15, shallowQ: 0.7, shallowMul: 0.9 },                                   /* L32 A DEEP WIND: the wind-up commits and fills 25% later (x bzQuick), chop x1.15 | B SHALLOW WIND: 30% sooner, x0.9 (claude/repoint: re-pointed from the tier ladder to berserkerid's wind-up commit) */
   frenzy:{ chainT: 0.5, chainCap: 6, fuseAt: 67, fuseT: 5, hide: 1.1 },                                   /* L36 A CHAINED RAGE: a kill in a frenzy +0.5 s (cap 6 s) | B SHORT FUSE: frenzy at 2/3 bar, 5 s, takes x1.1 (THICK HIDE baked) */
   cleave:{ overR: 40, overMul: 2.2, overPoise: 50, brokenMul: 2, sweepR: 80, sweepBack: 36, sweepMul: 1.0, sweepGap: 0.17, baseR: 62, baseMul: 1.8, basePoise: 30 },   /* L38 A OVERHEAD (SPLITTER baked) | B SIDE SWEEP: two passes x1.0 */
   axe:   { armMul: 1.4, armFar: 1.25, armRage: 12, splN: 2, splK: 0.25, splLife: 0.5 },                    /* L43 A AXE ARM: x1.4, flies further, pick-up pays 12 rage | B SPLINTERING: two chips x0.25 fly on from the first hit */
@@ -66,11 +66,11 @@ export const BERSERKER_RUNG_FORKS = {
       teach: 'THE ROAR REACHES 40 PIXELS AND ONLY SHAKES SMALL FOES FOR 0.3 S. IT GIVES 45 RAGE NOT 25. YOUR PARTNERS STILL QUICKEN' } },
   heavy: { slot: 'heavy', ability: 'heavy', name: 'THE WIND-UP', trade: 'DEEP OR SHALLOW',
     A: { id: 'bfdeep', name: 'DEEP WIND', input: 'HOLD X',
-      what: 'EVERY STEP OF THE WIND-UP COMES A QUARTER LATER, AND THE BLOW LANDS 15% HARDER',
-      teach: 'THE HELD BLOW REACHES EACH OF ITS STEPS 25% LATER AND LANDS 15% HARDER AT EVERY STEP' },
+      what: 'THE WIND-UP COMMITS AND FILLS A QUARTER LATER, AND THE CHOP LANDS 15% HARDER AT EVERY SIZE',
+      teach: 'THE HELD CHOP COMMITS AND REACHES FULL SIZE 25% LATER, AND LANDS 15% HARDER AT EVERY SIZE: A LONGER WAIT IN THE OPEN FOR A HEAVIER BLOW' },
     B: { id: 'bfshallow', name: 'SHALLOW WIND', input: 'HOLD X',
-      what: 'EVERY STEP COMES 30% SOONER, AND THE BLOW LANDS 10% LIGHTER',
-      teach: 'THE HELD BLOW REACHES EACH OF ITS STEPS 30% SOONER AND LANDS 10% LIGHTER AT EVERY STEP, SO YOU CAN WIND IT BETWEEN THREATS' } },
+      what: 'THE WIND-UP COMMITS AND FILLS 30% SOONER, AND THE CHOP LANDS 10% LIGHTER AT EVERY SIZE',
+      teach: 'THE HELD CHOP COMMITS AND REACHES FULL SIZE 30% SOONER AND LANDS 10% LIGHTER AT EVERY SIZE, SO YOU CAN WIND IT BETWEEN THREATS' } },
   spender: { slot: 'spender', ability: 'frenzy', name: 'THE FRENZY', trade: 'FEED IT OR LIGHT IT EARLY',
     A: { id: 'bfchained', name: 'CHAINED RAGE', input: 'DOWN+C AT A FULL BAR',
       what: 'EVERY KILL IN A FRENZY ADDS HALF A SECOND TO IT, UP TO SIX SECONDS A FRENZY',
@@ -128,8 +128,8 @@ export const BERSERKER_TRAIT_FORKS = {
     { id: 'bfscara', name: 'EARLY SCAR', what: 'BELOW HALF YOUR HEALTH EVERY BLOW LANDS A TENTH LIGHTER', teach: 'BELOW HALF YOUR HEALTH EVERY BLOW ON YOU LANDS 10% LIGHTER' },
     { id: 'bfscarb', name: 'DEEP SCAR', what: 'BELOW A QUARTER YOUR HEALTH EVERY BLOW LANDS A QUARTER LIGHTER', teach: 'BELOW A QUARTER OF YOUR HEALTH EVERY BLOW ON YOU LANDS 28% LIGHTER' }),
   'trait:bzWide': TF('bzWide', 'WIDE CROSS', 'FAR OR ALL ROUND',
-    { id: 'bfwidea', name: 'FAR REACH', what: 'THE DOUBLE CHOP REACHES SIXTEEN PIXELS FURTHER, NOTHING BEHIND YOU', teach: 'THE HELD DOUBLE CHOP REACHES 16 PIXELS FURTHER AHEAD AND NO LONGER REACHES BEHIND YOU' },
-    { id: 'bfwideb', name: 'ALL ROUND', what: 'A LITTLE FURTHER AHEAD AND A LONG WAY BEHIND: THE DOUBLE CHOP CUTS BOTH SIDES', teach: 'THE HELD DOUBLE CHOP REACHES 4 PIXELS FURTHER AHEAD AND 22 PIXELS BEHIND YOU' }),
+    { id: 'bfwidea', name: 'FAR REACH', what: 'THE WIND-UP CHOP REACHES SIXTEEN PIXELS FURTHER, NOTHING BEHIND YOU', teach: 'THE HELD WIND-UP CHOP REACHES 16 PIXELS FURTHER AHEAD AND NO LONGER REACHES BEHIND YOU' },
+    { id: 'bfwideb', name: 'ALL ROUND', what: 'A LITTLE FURTHER AHEAD AND A LONG WAY BEHIND: THE WIND-UP CHOP CUTS BOTH SIDES', teach: 'THE HELD WIND-UP CHOP REACHES 4 PIXELS FURTHER AHEAD AND 22 PIXELS BEHIND YOU' }),
   'trait:bzPrice': TF('bzPrice', 'RED FEAST', 'RICH BLOWS OR RICH KILLS',
     { id: 'bfpricea', name: 'FEAST', what: 'IN A FRENZY EVERY BLOW HEALS YOU SIX PERCENT OF WHAT IT DEALT', teach: 'IN A FRENZY EVERY BLOW HEALS YOU 6% OF THE DAMAGE IT DEALT, NOT 5%' },
     { id: 'bfpriceb', name: 'THIRST', what: 'BLOWS HEAL LESS, BUT EVERY KILL IN A FRENZY HEALS YOU A LITTLE EXTRA', teach: 'IN A FRENZY BLOWS HEAL 3% OF THEIR DAMAGE, AND EVERY KILL HEALS YOU 1.5% OF YOUR HEALTH' }),
