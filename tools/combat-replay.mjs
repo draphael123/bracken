@@ -7,7 +7,7 @@ try {
     rows.push(await pg.evalp(`(async()=>{
       BK.manualSimulation=true;
       let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-      return (await BK.bossLab({bosses:['marsh'],heroes:['knight'],maxSecs:180})).rows[0];
+      /* (FIX158B) JUICE2 freezes the world 55-130 ms on every landed blow, so the same fight takes ~182 s of game time (was 128): 240 s is the budget; the replay is still identical run to run */return (await BK.bossLab({bosses:['marsh'],heroes:['knight'],maxSecs:240})).rows[0];
     })()`));
   }
   assert(rows[0].killed,'reference encounter must finish');
