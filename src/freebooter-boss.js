@@ -25,7 +25,7 @@
 //     THE BOARDING PLUNGE (!! off the red mark)  he springs to the yard; a red mark follows you along the deck and LOCKS; he plunges onto it. Missed: STUCK IN THE
 //                                                DECK = OPEN (1.25x). He also BOARDS across the gap to whichever deck you are on (a hop, told by a whistle).
 export const FB = {
-  hp: 7000, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
+  hp: 8200, w: 14, h: 30, markH: 44, walk: 62, keep: 46,   /* he likes cutlass range (keep px) */
   p2: 0.55,
   pistol: { tell: 0.95, lock: 0.3, dmg: 30, reload: 3.6, y: 18, range: 360 },   /* aim at chest height (y px over the feet): jump it, or roll it */
   cuts: { tell: 0.6, n: 5, gap: 0.17, reach: 30, step: 9, dmg: 11, rec: 0.75 },
@@ -204,7 +204,7 @@ export function fbLabPlan(s) {
   /* 4. HIS GUARD IS BACK: off him */
   if (S.ward > 0 && !s.rest) { out.gx = clamp(kx + side * 90); out.face = face; out.why = 'his ward: wait'; return out; }
   /* 5. HIS RECOVERIES: committed, a blow from anywhere is 0.6x - in and cut */
-  if (m === 'cutsRec' || m === 'bootRec' || m === 'riposteRec' || m === 'plungeRec' || m === 'boot') { out.gx = clamp(kx + side * (s.tip ? 30 : 14)); out.face = face; if (dx < hitR + 4) swing(); out.why = 'cut him: recovering'; return out; }
+  if (m === 'cutsRec' || m === 'bootRec' || m === 'riposteRec' || m === 'plungeRec' || m === 'boot') { out.gx = clamp(kx + side * (s.tip ? 30 : 14)); out.face = face; if (dx < hitR + 4 && (P.atk >= 0 || e.modeT > (s.tip ? 0.3 : 0.18))) swing(); out.why = 'cut him: recovering'; return out; }
   /* 6. BAIT HIS PISTOL from a step out; never poke the guard */
   const stand = s.rest ? FB_PLAN.bait + 30 : FB_PLAN.bait;
   out.gx = clamp(kx + side * stand); out.face = face; out.why = 'bait the pistol'; return out;
