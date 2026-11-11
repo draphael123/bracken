@@ -96,7 +96,7 @@ export function makeBerserker(api) {
 
   /* ---- A BLOW HE DEALT (main.js hurtEnemy, after it landed): rage, and in a frenzy HEAL ON HIT (what is under a whole point is kept for the next) ---- */
   function dealt(e, dmg, killed) { const p = P(); if (!e || e.harmless || !(dmg > 0)) return; fight(p);
-    gain(p, Math.min(BZ.rage.hitCap, dmg * BZ.rage.dealt * (T().hot ? (F('bfhota') ? BF.trait.hotA : F('bfhotb') ? BF.trait.hotB : lerp(1, 4 / 3, K('bzHot'))) : 1) * (p.standT > 0 && F('bfroarstand') ? BF.stand.roarRageMul : 1)), 'dealt');
+    gain(p, Math.min(BZ.rage.hitCap, dmg * BZ.rage.dealt * (T().hot ? (F('bfhota') ? BF.trait.hotA : F('bfhotb') ? BF.trait.hotB : lerp(1, 4 / 3, K('bzHot'))) : 1)) * (p.standT > 0 && F('bfroarstand') ? BF.stand.roarRageMul : 1), 'dealt');   /* (bersfork) ROARING STAND: x2 AFTER the per-blow cap */
     if (killed) { stats.kills++; if (F('bfscent')) p.bfScentT = api.time + BF.chain.scentT;   /* (bersfork) BLOOD SCENT */
       if (F('bfchained') && p.frenzyT > 0 && (p.bfChainAdd || 0) < BF.frenzy.chainCap) { const a = Math.min(BF.frenzy.chainT, BF.frenzy.chainCap - (p.bfChainAdd || 0)); p.bfChainAdd = (p.bfChainAdd || 0) + a; p.frenzyT += a; p.frenzyMax = (p.frenzyMax || BZ.frenzy.t) + a; api.number(p.x, p.y - 30, '+' + a + 'S', '#ff9a5c'); }   /* CHAINED RAGE */
       if (F('bfpriceb') && p.frenzyT > 0 && p.hp > 0 && p.hp < p.maxHp) { const h0 = p.hp; p.hp = Math.min(p.maxHp, p.hp + Math.max(1, Math.round(p.maxHp * BF.trait.priceBkill))); stats.healed += p.hp - h0; } }   /* THIRST: a kill in a frenzy heals 1.5% */
