@@ -32222,7 +32222,7 @@ function pyDetonate(e) {
 }
 /* every frame (the pyro block of updatePlayer): the fuses that have burned down, and the meteor in the air */
 function pyBombTick(dt) {
-  if (P.dead) { pyMeteor = null; return; }
+  if (P.dead) { pyMeteor = null; pyShower = []; pyStorm = null; pyTrail = null; P.smoke = null; wispX = []; return; }
   for (const e of enemies) if (e.pyFuse !== undefined && time >= e.pyFuse) pyDetonate(e);
   meteorTick(dt); pyTechTick(dt);
 }
@@ -32362,7 +32362,7 @@ function pyParryFork(f) {
     if (!big) { PY_NOHEAT = true; try { hurtFire(e, Math.round(sw * PF.ward.nova.k * amul('livingBomb') * hm), P.x, { burn: 1.5, cls: 'light', tag: 'shot', stacks: PF.ward.nova.pips }); } finally { PY_NOHEAT = false; } } else pyStack(e, PF.ward.nova.pips, 'spread'); } }
 /* a ball was just thrown (castFireball): GREAT BALL and a swallowed shot grow it a step; TRAILING EMBER queues the free small one */
 function pyBallForks(step) {
-  const b = [...embers].reverse().find(q => q.fb === step && !q.forked); if (!b) return; b.forked = true; const R = [0, 3, 5, 8, 10, 13];
+  const b = embers.find(q => q.fb === step && q.sized && !q.forked); if (!b) return; b.forked = true; const R = [0, 3, 5, 8, 10, 13];
   const grow = () => { if (b.fb >= 1 && b.fb <= 4) { b.fb++; b.r = Math.max(b.r, R[b.fb]); return true; } return false; };
   if (pb('pygreatball') && grow()) b.vx *= PF.ball.greatSlow;
   if (P.swallowT > time && pb('pyswallow') && grow()) { P.swallowT = 0; number(P.x, P.y - 30, 'FED', '#ffd36b'); }
