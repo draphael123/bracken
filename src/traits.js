@@ -21,6 +21,7 @@
 //   learnAt: { id: level }   re-levels a trait's arrival (<= L18 so every trait reaches rank III at L20); core keeps its catalog level
 // An id a split hero's catalog has but this table lists NOWHERE is OFF while the flag is on (the cuts), so list every passive.
 import { SKILLS } from './progression-catalog.js';
+import { forksShip } from './forks.js';   /* (claude/rangerfork) a flag-aware retired list for the Ranger */
 import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
 
 export const TRAITS_SHIP = false;
@@ -83,7 +84,7 @@ export const TRAIT_SPLIT = {
     traits: ['rgKeen', 'rgLongMark', 'rgBashBack', 'rgToothed', 'rgSoftStep', 'rgBodkin', 'rgCover', 'rgKill', 'rgEagle', 'rgLast'],
     merged: { rgLongMark: ['rgTrail'] },
     folded: { rgSnares: 'L29:SNARE B', rgHighFlip: 'L21:HIGH FLIP B', rgAirDraw: 'L21:HIGH FLIP B', rgTwin: 'L32:SPLIT SHOT A' },
-    retired: ['rgApex'],   /* CUT (mark stacking) */
+    get retired() { return forksShip() ? ['rgApex', 'rgSnares', 'rgHighFlip', 'rgAirDraw', 'rgTwin'] : ['rgApex']; },   /* rgApex CUT (mark stacking); (claude/rangerfork) with FORKS_SHIP on the four folded ids retire (SNARE B, HIGH FLIP B, SPLIT SHOT A carry them): kept in the catalog, never slot; flag off they stay slottable traits (FOLD RULE, no gap) */
     shared: [],
     defaults: ['rgKill', 'rgCover'],
     /* the two DEFAULTS arrive early (rgKill 2, rgCover 10); the rest follow today's order */

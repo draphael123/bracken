@@ -34,11 +34,13 @@ export const TRAIT_FORK_LEVEL = 20;
 export const CAPSTONE_LEVEL = 50;
 export const NAME_MAX = 14;   /* a fork name on a card (textfit) */
 const LADDER_LV = Object.fromEntries(FORK_LADDER.map(r => [r.slot, r.lv]));
+import { RG_FORKS } from './forks-ranger.js';   /* (claude/rangerfork) the Ranger's 11 rungs + 10 trait pairs */
 
 /* THE REGISTRY: hero -> { key: entry }. Hero lanes add their file here; tools may register a synthetic fork (registerFork / unregisterFork) for the framework checks. */
 const REG = { knight: KNIGHT_FORKS };
 export const registerFork = (h, key, entry) => { (REG[h] = REG[h] || {})[key] = entry; };
 export const unregisterFork = (h, key) => { if (REG[h]) delete REG[h][key]; };
+REG.ranger = RG_FORKS;   /* (claude/rangerfork) */
 export const forksOf = h => REG[h] || {};
 export const hasForks = h => Object.keys(forksOf(h)).length > 0;
 const entryOf = (h, key) => forksOf(h)[key] || null;
@@ -130,5 +132,5 @@ export function migrateForks(p) {
   m.v = 1; out.done = true; return out; }
 
 /* THE LEGACY READS (main.js tech() / upg() while the flag is on): the Knight's effect sites still ask for technique and upgrade ids. They are answered from the forks. */
-export function legacyTech(p, h, lv, id, ctx) { if (!ship) return null; if (h !== 'knight') return false; if (id === 'kcounter' || id === 'kshook') return false; return forkOn(p, h, id, lv, ctx); }
+export function legacyTech(p, h, lv, id, ctx) { if (!ship) return null; if (h !== 'knight' && !hasForks(h)) return false; if (id === 'kcounter' || id === 'kshook') return false; return forkOn(p, h, id, lv, ctx); }
 export function legacyUpg(p, h, lv, id, ctx) { if (!ship) return null; if (h === 'knight' && (id === 'ukeep' || id === 'uwind')) return forkOn(p, h, 'kironlinks', lv, ctx) ? 2 : 0; return 0; }
