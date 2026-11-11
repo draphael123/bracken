@@ -90,7 +90,8 @@ export async function openPage(opts = {}) {
      added ~100 MB each). A full collection (HeapProfiler.collectGarbage, what DevTools' bin button does) is asked for after every pg.reload() and, at most every BRACKEN_PAGE_GC_MS (15 s), after an
      evaluation. The game itself asks for one every third level load inside an evaluation (src/main.js retireBakes, only while window.__gcOnLoad is set - which only this file sets). Nothing a check
      reads changes; only RSS does. opts.gc === false or BRACKEN_PAGE_GC=0 turns all of it off (tools/load-leak.mjs measures growth WITHOUT a collection and opts out). */
-  const gcOn = opts.gc !== false && process.env.BRACKEN_PAGE_GC !== '0', GC_EVERY_MS = +(process.env.BRACKEN_PAGE_GC_MS || 15000);
+  /* (FIX158B 11-11) OPT-IN: with the collection on by default boss-openings page-CRASHED on batch158 (Inspector.targetCrashed) in 3 of 5 runs here and flags-off in REL158OFF; it passes with BRACKEN_PAGE_GC=0. Set BRACKEN_PAGE_GC=1 (or opts.gc === true) to get the leakfix collection back for a memory-bound gate */
+  const gcOn = (opts.gc === true || process.env.BRACKEN_PAGE_GC === '1') && opts.gc !== false, GC_EVERY_MS = +(process.env.BRACKEN_PAGE_GC_MS || 15000);
   let gcLive = false, gcBusy = false, gcOk = true, gcAt = Date.now(), gcEnabled = false;
   const collectGc = async force => { if (!gcOn || !gcOk || gcBusy || deadWhy || (!force && Date.now() - gcAt < GC_EVERY_MS)) return; gcBusy = true;
     try { if (!gcEnabled) { await send('HeapProfiler.enable', {}, 10000).catch(() => {}); gcEnabled = true; } await send('HeapProfiler.collectGarbage', {}, 30000); }
