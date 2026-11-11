@@ -14,7 +14,7 @@ export const NOTHING = 'NOTHING HERE YET';
 export const gormProgress = ({ kingsCleared, burningOpen }) => burningOpen ? 'DONE' : kingsCleared ? 'BEATEN, BUT YOU DIED - TRY AGAIN' : 'NOT BEATEN YET';
 
 /* THE LEVEL A FEAT NAMES (for the demo filter): 'boss:warcairn' -> 'warcairn', a level id -> itself, medals / iron / flask -> null */
-export const featLevel = feat => { const f = String(feat || ''); if (!f) return null; if (f.startsWith('boss:')) return f.slice(5) || null; if (f === 'iron' || f.startsWith('medals:') || f.startsWith('flask:') || /^(deaths|silver|heroes):/.test(f)) return null; return f; };
+export const featLevel = feat => { const f = String(feat || ''); if (!f) return null; if (f.startsWith('boss:')) return f.slice(5) || null; if (f === 'iron' || f.startsWith('medals:') || f.startsWith('flask:') || /^(deaths|silver|heroes|silverin|clean|silver1life|purseback|firstgold|swiftgold|cleanspikes|minino|heroclear|bossrevive|ribbongold|bossnoflask):/.test(f)) return null; return f; };
 
 /* ===== LEVELS: what a level asks, as data (levelReq), then the words (reqText / reqProgress) ===== */
 /* lv: a LEVELS entry. prog: the save. h: { nameOf(id), fmt(secs), medalsFor(id) -> [bronze, silver, gold] secs, killPct(lv) -> 0..1 } (main.js) */

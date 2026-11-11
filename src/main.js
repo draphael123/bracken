@@ -276,7 +276,7 @@ import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { hasTrackFile, initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
-import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js'; import * as C2 from './charms2.js';   /* (claude/charms2) EIGHT NEW CHARMS, dark behind CHARMS2_SHIP */   /* THE ONE STORE's rules (claude/onestore) */
+import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js'; import * as C2 from './charms2.js'; import * as C3 from './charms3.js';   /* (claude/charms4-d) TWELVE MORE CHARMS earned by feats, dark behind CHARMS3_SHIP */   /* (claude/charms2) EIGHT NEW CHARMS, dark behind CHARMS2_SHIP */   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
 import * as FC from './first-cards.js';   /* FIRST-TIME EXPLAINER + BOSS STUCK-HINT CARDS (claude/onboard2) */ import * as SCARD from './salt-card.js';   /* THE FIRST-DEATH CARD (claude/onboard1) */
@@ -714,7 +714,7 @@ const CHARMS = [
   { id: 'swift', name: 'SWIFT CHARM', price: 80, desc: 'run a little faster' },
   { id: 'ribbon', name: "RUNNER'S RIBBON", price: 90, desc: 'the medal clock runs a tenth slower for you', feat: 'medals:45', featName: 'win 45 medals' },
 ];
-CHARMS.push(...C2.rows());   /* (claude/charms2) the eight new charms: [] while CHARMS2_SHIP is false, so the shop is today's six */
+CHARMS.push(...C2.rows()); CHARMS.push(...C3.rows()); C3.setCampaign(LEVELS.filter(l => !l.hidden).map(l => l.id));   /* (claude/charms4-d) twelve more: [] while CHARMS3_SHIP is false */   /* (claude/charms2) the eight new charms: [] while CHARMS2_SHIP is false, so the shop is today's six */
 const ABILITIES = [
   { id: 'shieldThrow', name: 'SHIELD THROW', price: 80, desc: 'F: hurl the shield through them: it stuns what it hits, drops a guard, and cuts again on the way home. 25 stamina, 4s', needs: 'stockade', needsName: 'the Stockade', hero: 'knight' },
   { id: 'groundSlam', name: 'GROUND SLAM', price: 90, desc: 'F: quake the floor both ways. 31 stamina, 3s', needs: 'kings', needsName: 'Kingswood', hero: 'knight' },
@@ -883,7 +883,7 @@ const FLASK_ROWS = F2.FLASK_ITEMS.map(k => ({ ...k, desc: k.group + ': ' + k.des
 const STORE_TABS = [{ id: 'heroes', name: 'HEROES', items: DS.DEMO ? HEROES.filter(h => DS.DEMO_HEROES.has(h.id)) : HEROES, key: 'hero', owned: 'heroes' }, { id: 'skins', name: 'SKINS', items: SKINS, key: 'skin', owned: 'skins' }, { id: 'weapons', name: 'WEAPONS', items: SWORDS, key: 'sword', owned: 'swords' }, { id: 'charms', name: 'CHARMS', items: CHARMS, key: 'charm', owned: 'charms' }, { id: 'skills', name: 'SKILLS', items: [], key: null, owned: 'talents', talent: true }, { id: 'smith', name: 'SMITH', items: UPGRADES, key: null, owned: 'items' }, { id: 'flasks', name: 'FLASKS', items: FLASK_ROWS, key: null, owned: 'flaskItems', flasks: true }, { id: 'music', name: 'MUSIC', items: MENU_MUSIC, key: 'menu', owned: 'music' }];   /* THE ONE STORE's tabs, in src/store.js's order (tools/store.mjs holds the two together) */
 function setEquip(key, id) { if (key === 'hero') adoptHero(id); PROG[key] = id; if (key === 'charm') { PROG.charmOf = PROG.charmOf || {}; PROG.charmOf[hero()] = id; } }   /* a charm is worn by a hero: the next hero starts bare */
 const NO_CHARM = { id: 'none', name: 'NONE', desc: 'nothing worn', price: 0 };   /* the first line of CHARMS: take the charm off */
-const storeItems = tab => tab.flasks ? tab.items.map(k => F2.shownAsHidden(k, PROG) && !godMode() ? { ...k, name: '???', desc: k.group + ': ???', hiddenRow: true } : k) : (tab.key === 'charm' ? [NO_CHARM].concat(tab.items) : tab.items).filter(k => !k.hero || k.hero === hero());
+const storeItems = tab => tab.flasks ? tab.items.map(k => F2.shownAsHidden(k, PROG) && !godMode() ? { ...k, name: '???', desc: k.group + ': ???', hiddenRow: true } : k) : (tab.key === 'charm' ? [NO_CHARM].concat(C3.sortRows(tab.items.map(k => C3.hideRiddle(k, !!(k.feat && lockOfK(k)))), k => !!lockOfK(k))) : tab.items).filter(k => !k.hero || k.hero === hero());
 const SKILLS_TAB = STORE_TABS.findIndex(t => t.talent);
 /* WHAT A LINE OF THE STORE IS TO YOU RIGHT NOW: equipped, owned, locked (by its own gate: src/store.js lockOf), buyable, or an entrance */
 const storeRowState = (tab, k) => tab.talent ? 'skills' : k.consumable ? ((PROG.flaskUp || 0) >= k.max ? 'owned' : 'buy')
@@ -915,7 +915,7 @@ const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge
 const sliceLv = lv => !DS.demoLocked(lv);
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
-const featDone = f => C2.isFeat(f) ? C2.featDone(f, PROG, { heroes: HEROES.filter(k => heroOwned(k.id)).length, silvers: silverTotal() }) : String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
+const featDone = f => C3.isFeat(f) ? C3.featDone(f, PROG) : C2.isFeat(f) ? C2.featDone(f, PROG, { heroes: HEROES.filter(k => heroOwned(k.id)).length, silvers: silverTotal() }) : String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
 let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sprite bakes below (it used to be a plain knight here and the real hero at the end) */
 // TESTING (for now): UNLOCK EVERYTHING (SET.godmode, the old GOD MODE) owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; GOD MODE (SET.invincible, the old INVINCIBLE; claude/godmode) takes no damage, never tires, jumps in the air and holds JUMP to rise,
@@ -1821,14 +1821,14 @@ function downedPlayer(dt) {
   P.ground = !!(r && r.ground); if (P.ground) P.vy = 0;
   if (P.y > LH * TS + 30) { P.x = checkpoint.x; P.y = checkpoint.y; P.vy = 0; }   /* crawling off the edge is not a second death: he is put back on the floor */
   const helper = !(DUELO && DUELO.on()) && players.find(q => q !== P && upright(q) && Math.abs(q.x - P.x) < REVIVE_D && Math.abs(q.y - P.y) < 24);   /* (claude/pvpduel: nobody lifts a K.O. in the duel pit) */
-  if (helper) { P.reviveT = Math.min(REVIVE_T, P.reviveT + dt * (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 1.5 : 1));   /* VIGOR 20, the one who lifts: STEADY HANDS */ if (P.reviveT >= REVIVE_T) reviveBy(helper); }
+  if (helper) { P.reviveT = Math.min(REVIVE_T, P.reviveT + dt * (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 1.5 : 1) * (helper === players[0] ? 1 / C3.reviveTime(PROG.charm, 1) : 1));   /* VIGOR 20, the one who lifts: STEADY HANDS */ if (P.reviveT >= REVIVE_T) reviveBy(helper); }
   else P.reviveT = Math.max(0, P.reviveT - dt * 0.7);
   P.anim += dt;
 }
 function reviveBy(helper) {
   PINGS.drop(P.n); P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
   P.st = P.maxSt; P.inv = 2; P.killer = null;
-  helper.score.revives++; if (TAVO) TAVO.revived(helper, P);   /* (claude/tavern) the REVIVE drill */
+  helper.score.revives++; C3.noteRevive(PROG, helper === players[0] && !assistOn() && !isDev() && !bossJumpOn && !rushOn(), bossActive || miniActive); if (TAVO) TAVO.revived(helper, P);   /* (claude/tavern) the REVIVE drill */
   SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
   number(P.x, P.y - 32, 'UP', '#8fd160');
   if (coopTipDue(PROG, 'revive')) { hintSay('mechanic', 4.5, 'UP AGAIN AT A THIRD OF YOUR HEALTH, BRIEFLY SAFE. A REVIVE SCORES BEST.'); saveProgress(); }   /* (the first two lifts of a save say it) */
@@ -4948,7 +4948,7 @@ function startGame() { mapSpurLit = null; trnChoice = null;
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
   if (TAVO) TAVO.reset(); if (YARD) YARD.st.board = null;
   dcStart(); for (const p of players) { p.score = freshScore(); if (p.prof) p.prof.woodBase = CS.earnedOf(p.prof.led); }   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
-  state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; livesCoins = 0; lives = LV.startLives(PROG) !== Infinity && livesWood() ? LV.startLives(PROG) : SET.iron ? 3 : Infinity; if (livesWood() && !PROG.livesLocked) { LV.lockIn(PROG); saveProgress(); }   /* (claude/lives) ON: 5 a campaign level, shared by the party; the pick locks at the first entry */ pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
+  C3.reset(); state = 'play'; levelTime = 0; deaths = 0; gormFell = false; P.phoenixUsed = false; kills = 0; got = 0; livesCoins = 0; lives = LV.startLives(PROG) !== Infinity && livesWood() ? LV.startLives(PROG) : SET.iron ? 3 : Infinity; if (livesWood() && !PROG.livesLocked) { LV.lockIn(PROG); saveProgress(); }   /* (claude/lives) ON: 5 a campaign level, shared by the party; the pick locks at the first entry */ pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
@@ -5177,6 +5177,7 @@ function winLevel0() {
   { const was = p.medal || 0, now = SET.invincible ? 0 : medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
     for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && (o.time ? (PROG[id].best <= o.time && !(winPrevBest !== null && winPrevBest <= o.time)) : (o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal))) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
   PROG[id].mode = LV.lowestMode(PROG[id].mode, DFM.mode());   /* (claude/diff3) a level's record keeps the LOWEST mode it was played on (a save lowered mid-run says so) */ if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0 && !SET.invincible) PROG[id].noHit = true; if (SET.iron && !SET.invincible) PROG[id].iron = true; dcBankAll();
+  C3.onWin(PROG, { id, hero: hero(), charm: PROG.charm, medal: SET.invincible ? 0 : medalFor(id, medalTime()), wasCleared: !!p.cleared, deaths, hits: hitsTaken, drinks: flaskHud.levelDrinks, boss: !!L.arena, spikes: c3Spikes(), clean: c3Clean() });   /* (claude/charms4-d) the feats of the twelve: inert while the flag is off */
   seatsWin(id);   /* (claude/coopprogress) every seat on his own save: the clear on his road, the wood's share, his coins */
   saveProgress();
 }
@@ -5763,7 +5764,9 @@ function drawMap() {
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
     for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
-  { const sb = C2.worn(PROG.charm) === 'salt' ? bundleOf(players[0]) : null; if (sb && sb.lv) { const sn = NODES.find(n => n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].id === sb.lv); if (sn) { g.globalAlpha = 0.85 + 0.15 * Math.sin(time * 4); dcBag(Math.round(sn.x - 13), Math.round(sn.y - 8), '#d9a441'); g.globalAlpha = 1; } } }   /* (claude/charms2) SALT CHARM: the dropped purse sits by the wood it was lost in (charms3-d: left of the node and near opaque: at +8,-6 and 55-80% it hid behind the hero's token) */
+  { const sb = C2.worn(PROG.charm) === 'salt' ? bundleOf(players[0]) : null; if (sb && sb.lv) { const sn = NODES.find(n => n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].id === sb.lv); if (sn) { g.globalAlpha = 0.85 + 0.15 * Math.sin(time * 4); dcBag(Math.round(sn.x - 13), Math.round(sn.y - 8), '#d9a441'); g.globalAlpha = 1; } } }
+  if (C3.worn(PROG.charm) === 'ink') for (const n of NODES) { const lv = n.kind === 'level' && LEVELS[n.level], r = lv && PROG[lv.id]; if (!r || !(r.cleared || r.silver)) continue; const nx = Math.round(n.x), ny = Math.round(n.y);   /* (claude/charms4-d) CARTOGRAPHER'S INK: the silver found (three pips) and the medal on every wood */
+    for (let i = 0; i < 3; i++) { g.fillStyle = ((r.silver | 0) >> i) & 1 ? '#eaf0ff' : '#2a2a38'; g.fillRect(nx - 4 + i * 3, ny + 10, 2, 2); } g.fillStyle = MEDAL_COL[r.medal || 0]; g.fillRect(nx + 6, ny + 10, 2, 2); }   /* (claude/charms2) SALT CHARM: the dropped purse sits by the wood it was lost in (charms3-d: left of the node and near opaque: at +8,-6 and 55-80% it hid behind the hero's token) */
   /* THE UNBURIED FIELD, A SECRET (claude/unburiedsecret): before its three banners it is a DIM UNMARKED SPOT in the hills - no path, no node, no lock, no tip, nothing to press.
      Once it is open a faint GHOST-PATH draws itself from the Witchlight Stair to it (once; PROG.fieldPathDrawn remembers) and it is a node like any spur. */
   for (const nd of NODES) { if (!nd.ghost) continue;
@@ -6233,7 +6236,7 @@ const heroFacts = k => { const sec = SC.forHero(k.id), lv = k.coinNeeds && LEVEL
 const unlockLevelRows = () => NODES.filter(n => n.kind === 'level' && n.level >= 0 && LEVELS[n.level] && !LEVELS[n.level].retired && (!LEVELS[n.level].hidden || LEVELS[n.level].secret)).map(n => { const lv = LEVELS[n.level], r = unlockReq(lv);
   return UL.levelRow(lv, r.kind === 'pieces' && r.hidden ? '? ? ?' : n.name, r, !levelLocked(lv)); });
 const unlockFeatRow = (k, tabId) => { const words = typeof k.featName === 'function' ? k.featName(PROG) : k.featName, fd = !!featDone(k.feat), done = fd || owns(STORE_TABS.find(t => t.id === tabId), k.id);
-  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd, c2: C2.isFeat(k.feat) ? C2.featProgress(k.feat, PROG, { heroes: HEROES.filter(q => heroOwned(q.id)).length, silvers: silverTotal() }) : null }), done, { level: UL.featLevel(k.feat) }); };
+  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd, c2: C3.isFeat(k.feat) ? C3.featProgress(k.feat, PROG) : C2.isFeat(k.feat) ? C2.featProgress(k.feat, PROG, { heroes: HEROES.filter(q => heroOwned(q.id)).length, silvers: silverTotal() }) : null }), done, { level: UL.featLevel(k.feat) }); };
 const unlockForSale = (list, tabId, what) => { const tab = STORE_TABS.find(t => t.id === tabId), free = list.filter(k => !k.feat), have = free.filter(k => k.price === 0 || owns(tab, k.id)).length;
   return UL.perk(what + ' FOR SALE', 'BUY THEM AT THE STORE, WITH GOLD OR SILVER', have + ' OF ' + free.length + ' OWNED', have >= free.length); };
 const unlockOtherRows = () => { const out = [], cl = id => !!(PROG[id] && PROG[id].cleared), lvl = heroLevel();
@@ -6241,7 +6244,7 @@ const unlockOtherRows = () => { const out = [], cl = id => !!(PROG[id] && PROG[i
   if (!MODES_PARKED) {   /* the title's BOSS RUSH row and the MASTER difficulty are parked until ?modes ships them (src/main.js MODES_PARKED): no row for what the player cannot reach */
     out.push(UL.perk('BOSS RUSH', 'CLEAR ' + unlockNameOf('crown'), rushUnlocked() ? 'UNLOCKED' : 'NOT CLEARED YET', rushUnlocked(), { demoHide: true }));
     out.push(UL.perk('MASTER DIFFICULTY', 'BEAT ' + unlockNameOf(CAMPAIGN_END) + ' ON NORMAL. THEN PICK MASTER WHEN YOU START A NEW SAVE', DFM.masterUnlocked() ? 'UNLOCKED' : 'NOT BEATEN YET', DFM.masterUnlocked(), { demoHide: true })); }
-  for (const k of CHARMS) if (k.feat) out.push(unlockFeatRow(k, 'charms'));
+  for (const k of CHARMS) if (k.feat) out.push(unlockFeatRow(C3.hideRiddle(k, !!lockOfK(k)), 'charms'));
   for (const k of UPGRADES) if (k.needs) out.push(UL.perk('THE SMITH: ' + k.name, 'CLEAR ' + String(k.needsName).toUpperCase(), cl(k.needs) ? 'UNLOCKED' : 'NOT CLEARED YET', cl(k.needs), { level: k.needs }));
   return out; };
 const unlockDemo = () => DS.DEMO;
@@ -8843,8 +8846,10 @@ function dcTick(dt) {
 function dcTouch() {
   if (P.dead || !dcOn()) return;
   for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { dcBank(); break; }
-  const b = dcHid(bundleOf(P)); if (!dcMine(b) || b.mode !== 'spot' || Math.abs(b.x - P.x) > 12 || Math.abs(b.y - P.y) > 20) return;
+  const b = dcHid(bundleOf(P)); if (!dcMine(b) || b.mode !== 'spot' || Math.abs(b.x - P.x) > 12 * C3.spadeReach(PROG.charm) || Math.abs(b.y - P.y) > 20 * C3.spadeReach(PROG.charm)) return;
   const c = carryOf(P);
+  if (C3.worn(PROG.charm) === 'spade') { b.coins = C3.spadeKeep(PROG.charm, b.coins || 0); b.purse = C3.spadeKeep(PROG.charm, b.purse || 0); }   /* (claude/charms4-d) GRAVEDIGGER'S SPADE: found from further off, four in five coins back */
+  if (!assistOn() && !isDev() && !bossJumpOn && !rushOn()) C3.notePurse(PROG, b.where);
   if (b.coins) { if (b.sess === dcSess) { got += b.coins; c.coins += b.coins; } else { PROG.coins = (PROG.coins || 0) + b.coins; c.purse += b.coins; } }
   if (b.purse) { PROG.coins = (PROG.coins || 0) + b.purse; c.purse += b.purse; }
   if (b.xp && P === players[0]) dcGiveXp(b.xp);
@@ -8857,6 +8862,28 @@ function dcBag(x, y, col) { g.fillStyle = '#2a1608'; g.fillRect(x - 4, y - 8, 9,
 function saltEdge(sx, sy) { if (C2.worn(PROG.charm) !== 'salt') return; const left = sx < 0, x = left ? 12 : VW - 12, y = Math.max(16, Math.min(VH - 16, Math.round(sy))), a = 0.6 + 0.3 * Math.sin(time * 5);
   g.globalAlpha = a; dcBag(x, y, '#d9a441'); g.fillStyle = '#ffd36b'; for (let i = 0; i < 3; i++) g.fillRect(left ? 2 + i : VW - 3 - i, y - 3 - i, 1, 3 + 2 * i); g.globalAlpha = 1; }
 const dcDraws = { foe: 0, spot: 0 };   /* what the last frames drew (tools/death-cost.mjs asks that a carrier is MARKED, not just flagged) */
+/* (claude/charms4-d) THE TWELVE'S HELPERS. A feat counts only on a real, solo, unaided run: not under assist / god mode / dev / the maker / the rush / a boss jump / co-op. */
+const c3Clean = () => !assistOn() && !isDev() && !rushOn() && !bossJumpOn && !edTesting && !coop() && !(window.BK && window.BK.god) && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
+const c3Spikes = () => { for (let ty = 0; ty < LH; ty++) for (let tx = 0; tx < LW; tx++) if (tileAt(tx, ty) === T.SPIKE) return true; return false; };
+let c3Vig = null;
+function drawC3(cx, cy) {
+  const w = C3.worn(PROG.charm); if (!w || state !== 'play' || P.dead) return;
+  if (w === 'magpie') for (const sv of silvers) { if (sv.got) continue; const dx = sv.x - P.x, dy = sv.y - P.y; if (!C3.silverNear(PROG.charm, dx, dy, TS)) continue; const sx = sv.x - cx, sy = sv.y - cy;
+    if (sx > 3 && sx < VW - 3 && sy > 3 && sy < VH - 3) { if (Math.floor(time * 6 + sv.i) % 2) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(sx) - 5, Math.round(sy) - 4, 1, 1); g.fillRect(Math.round(sx) + 5, Math.round(sy) + 2, 1, 1); g.fillRect(Math.round(sx) + 1, Math.round(sy) - 7, 1, 1); } }
+    else { const ex = Math.max(4, Math.min(VW - 5, sx)), ey = Math.max(18, Math.min(VH - 5, sy)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 6); g.fillStyle = '#2a2a38'; g.fillRect(Math.round(ex) - 2, Math.round(ey) - 2, 5, 5); g.fillStyle = '#eaf0ff'; g.fillRect(Math.round(ex) - 1, Math.round(ey) - 1, 3, 3); g.globalAlpha = 1; } }
+  if (w === 'redthread') { const t0x = Math.floor(P.x / TS), t0y = Math.floor(P.y / TS), R = C3.THREAD_TILES; g.globalAlpha = 0.55 + 0.3 * Math.sin(time * 5);
+    for (let ty = t0y - R; ty <= t0y + R; ty++) for (let tx = t0x - R; tx <= t0x + R; tx++) { if (tileAt(tx, ty) !== T.SPIKE || !C3.threadNear(PROG.charm, tx * TS + 8 - P.x, ty * TS + 8 - P.y, TS)) continue; const sx = Math.round(tx * TS - cx), sy = Math.round(ty * TS - cy); g.fillStyle = '#ff3a3a'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy + TS - 1, TS, 1); g.fillRect(sx, sy, 1, TS); g.fillRect(sx + TS - 1, sy, 1, TS); }
+    g.globalAlpha = 1; }
+  if (w === 'crumbs') { const tr = C3.run.trail, last = tr[tr.length - 1]; if (!last || Math.hypot(last[0] - P.x, last[1] - P.y) >= 24) { tr.push([P.x, P.y - 2]); if (tr.length > 400) tr.shift(); }
+    g.fillStyle = '#f0d890'; g.globalAlpha = 0.55; for (const [x, y] of tr) { const sx = x - cx, sy = y - cy; if (sx > 0 && sx < VW && sy > 0 && sy < VH) g.fillRect(Math.round(sx) - 1, Math.round(sy) - 1, 2, 2); } g.globalAlpha = 1; }
+  if (w === 'northstar' && gate && !(L.arena && !L.gateOpen && !L.sandWalk)) { if (C3.northStep(C3.run.north, Math.hypot(gate.x - P.x, gate.y - P.y), time)) { const sx = gate.x - cx, sy = gate.y - cy;
+    if (!(sx > 8 && sx < VW - 8 && sy > 8 && sy < VH - 8)) { const ex = Math.max(8, Math.min(VW - 9, sx)), ey = Math.max(20, Math.min(VH - 9, sy)); g.globalAlpha = 0.65 + 0.3 * Math.sin(time * 4); g.fillStyle = '#2a2a38'; g.fillRect(Math.round(ex) - 4, Math.round(ey) - 4, 9, 9); g.fillStyle = '#ffd36b'; g.fillRect(Math.round(ex) - 3, Math.round(ey) - 3, 7, 7); g.fillStyle = '#2a2a38'; g.fillRect(Math.round(ex) - 1, Math.round(ey) - 1, 3, 3); g.globalAlpha = 1; } } }
+  if (w === 'bone') for (const e of enemies) { if (!e.alive || !e.c3Hp0 || e.maxHp || e.harmless) continue; const sx = Math.round(e.x - cx), sy = Math.round(e.y - cy - (e.h || 16) - 7); if (sx < -10 || sx > VW + 10) continue; const f = Math.max(0, Math.min(1, e.hp / e.c3Hp0));
+    g.fillStyle = '#12101a'; g.fillRect(sx - 7, sy, 14, 4); g.fillStyle = '#4a1a1a'; g.fillRect(sx - 6, sy + 1, 12, 2); g.fillStyle = f > 0.5 ? '#8fd160' : f > 0.25 ? '#ffd36b' : '#e04848'; g.fillRect(sx - 6, sy + 1, Math.max(1, Math.round(12 * f)), 2); }
+  if (w === 'tell') { const list = boss && boss.alive ? enemies.concat([boss]) : enemies; g.globalAlpha = 0.6 + 0.35 * Math.sin(time * 14); g.strokeStyle = '#ff3a3a'; g.lineWidth = 1;
+    for (const e of list) { if (!e.alive || e.harmless || !windingUp(e)) continue; const ew = e.w || 14, eh = e.h || 16, sx = e.x - cx - ew / 2, sy = e.y - cy - eh; if (sx < -40 || sx > VW + 40) continue; g.strokeRect(Math.round(sx) - 1.5, Math.round(sy) - 1.5, ew + 3, eh + 3); }
+    g.globalAlpha = 1; if (!c3Vig) { c3Vig = g.createRadialGradient(VW / 2, VH / 2, VH * 0.45, VW / 2, VH / 2, VW * 0.62); c3Vig.addColorStop(0, 'rgba(0,0,0,0)'); c3Vig.addColorStop(1, 'rgba(0,0,0,0.5)'); } g.fillStyle = c3Vig; g.fillRect(0, 0, VW, VH); }
+}
 function drawBundles(cx, cy) {
   if (!players) return;
   for (const p of players) { const b = bundleOf(p); if (!dcMine(b, p)) continue;
@@ -8870,7 +8897,7 @@ function drawBundles(cx, cy) {
 function dcRespawn() { for (const q of players) q.dcDone = false; P.dcSafe = null; P.dcGT = 0; for (const q of players) { const b = dcHid(bundleOf(q)); if (b && b.mode === 'foe') b.carrier = null; } dcTick(0); }
 function die(killer) {
   if (P.dead) return;
-  C2.noteDeath(PROG);   /* (claude/charms2) the count behind SALT CHARM's feat: nothing is written while CHARMS2_SHIP is false */
+  C3.noteDeath(PROG); C2.noteDeath(PROG);   /* (claude/charms2) the count behind SALT CHARM's feat: nothing is written while CHARMS2_SHIP is false */
   if (window.BK && BK.hitLog) BK.hitLog.push([Math.round(time * 10) / 10, 'DIED', killer && killer.name || '?', Math.round(P.hp), 0]);   /* (claude/marsh2) the lab's hit log names what killed him */
   /* IN CO-OP HE GOES DOWN, NOT OUT - as long as somebody is still standing to come and get him (goDown) */
   if (DUELO && DUELO.on()) { if (!(P.down > 0)) goDown(killer); return; }   /* (claude/pvpduel) NOBODY DIES IN THE DUEL PIT: a K.O. lies down until the round is called - no shrine, no death cost */
@@ -9806,6 +9833,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
   if (e.fa === 'shielded' && e.faShell > 0 && blow && dmg > 0 && !glance && !P.jetHit) dmg = FOA.shellTake(e, dmg, amV, e.keyHit === time, FA_API);   /* (claude/foepass) THE SHELL: x0.4 into it (never immune), a heavy / plunge / riposte / ability / the right tool shatters it (src/foe-affix.js) */
+  if (C3.worn(PROG.charm) === 'bone' && !e.c3Hp0 && !e.maxHp) e.c3Hp0 = e.hp;   /* (claude/charms4-d) BONE-READER: the foe's health before the first blow */
   if (blow && dmg > 0 && !glance && !P.jetHit && C2.worn(PROG.charm) === 'hound') { const hm = C2.houndMul(PROG.charm, e); e.c2Bit = true; if (hm !== 1) { dmg = Math.round(dmg * hm); number(e.x, e.y - (e.h || 16) - 8, 'FIRST BITE', '#ffd36b'); } }   /* (claude/charms2) HOUND'S TOOTH */
   e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy) * DFM.df('stagger');   /* (claude/difficulty) x the mode's stagger */   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
@@ -11947,7 +11975,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   else if (P.jbuf > 0 && !P.rgRecall && (P.ground || P.coyote > 0) && !stunned && !P.plunge && (!dodging || P.dash > 0) && !P.block && !P.aegis && !rushing() && !(P.braceT > 0)) {   /* a jump out of the dodge is a running jump, as out of the dash: it ends the dodge and keeps the pace */
     if (P.dash > 0 && dodging) { P.dodge = 0; P.dodgeInv = 0; P.dash = 0; }
     if (keys.down && P.ground && isOneWay(P.groundTile)) { P.drop = 0.2; P.jbuf = 0; }
-    else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1); P.ground = false; P.coyote = 0; P.jbuf = 0;
+    else { P.vy = JUMPV * (PROG.charm === 'feather' ? 1.09 : 1) * C3.jumpMul(PROG.charm); P.ground = false; P.coyote = 0; P.jbuf = 0;
       // WHAT THE ROPE GAVE YOU, YOU KEEP: leaving a swing or a raft at speed used to drop you to a walking pace
       if (P.onMover && P.onMover.dx) { const carry = P.onMover.dx * 60; P.vx += Math.max(-190, Math.min(190, carry)); if (Math.abs(carry) > 60) streaks(P.x, P.y - 10, -Math.sign(carry), ['#fff6e0', '#c9d1dc'], 80); }
       P.onMover = null; P.canCut = true; P.jumpT = time; SFX.pJump(); dust(P.x, P.y, 3); jfLaunch(); jfPuff(P.x, P.y, JF.takeoffDust(hero(), P.vx), P.vx > 40 ? -1 : P.vx < -40 ? 1 : 0); }
@@ -12128,9 +12156,9 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     for (const dx of [-3, 3, -5, 5]) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
       if (!isSolid(hx, hy) && !isSolid(hx, hy + 1)) { P.x += dx; P.vy = Math.min(P.vy, -120); break; } }
   }
-  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; P.kicked = false; }
+  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = C3.sureFootCoyote(PROG.charm, SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE); P.kicked = false; }
   else if (r.hitY) P.vy = 0;
-  if (!P.ground && wasGround) P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; // (a mover counts: walking off a raft used to give no grace at all)
+  if (!P.ground && wasGround) P.coyote = C3.sureFootCoyote(PROG.charm, SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE); // (a mover counts: walking off a raft used to give no grace at all)
   if (HPK) HPK.footLand(prevY);   /* (claude/heropassa) THE WALL PLANT's shaft is footing, as a mover is */
   /* (claude/flotilla2) A RISING MOVER CATCHES A FALLING HERO: its top swept up through his feet this frame (m.dy < 0), so he was over where it WAS - the old test allowed
      only a falling mover's travel (max(0, dy)), and a hero landing on THE GALLEY HULL's rising benches fell through them (tools/flotilla-route.mjs) */
@@ -12403,7 +12431,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
-    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; arenaHeal(); miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { if (L.mini.hound2) { mb.mode = 'wake'; mb.modeT = GHD.GH.wake; mb.wokeUp = false; } else { mb.mode = 'idle'; mb.modeT = 1.2; } }   /* (claude/greathound) Kingswood's hound lies by the gate and RISES (a told beat) before his first move */ if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
+    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; C3.noteMiniStart(hitsTaken); arenaHeal(); miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { if (L.mini.hound2) { mb.mode = 'wake'; mb.modeT = GHD.GH.wake; mb.wokeUp = false; } else { mb.mode = 'idle'; mb.modeT = 1.2; } }   /* (claude/greathound) Kingswood's hound lies by the gate and RISES (a told beat) before his first move */ if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
   if (L.arena && boss && boss.alive && !bossActive && !(GQH && GQH.hold()) && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
@@ -12792,7 +12820,7 @@ const DEAD_SWIM = p => !p.swim && !p.shallow && !p.dry && !p.fire && !p.mud && !
 function inPoolAt(p, x, y) { if (p.bottom !== undefined) return y <= p.bottom + 4; if (p.depth) return y <= p.y + p.depth + 6;
   let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return y <= ty * TS + 4; }
 function hazardBack() { const s = P.safe; if (!s || s.L !== L || (MG && P.flip)) return; P.x = s.x; P.y = s.y; if (bossActive && boss && boss.t === 'windcaller' && L.arena && L.arena.safe && P.x > L.arena.x0 && P.x < L.arena.x1) { P.x = callerFallX(P.x); P.y = L.arena.floor; }   /* (claude/windcaller3) HIS THORNS HAND YOU BACK TO A FLOOR, never to a ledge's end with the gust still blowing off it - that was a second thorn, and a third */ P.vx = 0; P.vy = 0; P.onMover = null; P.ground = true; hazardSay(); }
-const spikeBite = (tx, name) => { if (!P.dead && lanceLiftHere()) { if (!P.stormLift) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: name || 'THE TEETH', pct: L.arena.fallPct || 0.12, spare: true }); if (!P.dead) { P.stormLift = { t: 0, floor: L.arena.floor, out: false }; number(P.x, P.y - 34, LANCE_SAY.lifted, '#9fd0ff'); SFX.throwWhoosh(); } } return; }   /* (claude/lance5) THE QUEEN'S LANCE's gaps: the teeth bite, the UPDRAFT lifts you out - never a death on its own */
+const spikeBite = (tx, name) => { C3.noteHazard(); if (!P.dead && lanceLiftHere()) { if (!P.stormLift) { damagePlayer(tx * TS + 8, DMG.spike, { up: true, unblockable: true, name: name || 'THE TEETH', pct: L.arena.fallPct || 0.12, spare: true }); if (!P.dead) { P.stormLift = { t: 0, floor: L.arena.floor, out: false }; number(P.x, P.y - 34, LANCE_SAY.lifted, '#9fd0ff'); SFX.throwWhoosh(); } } return; }   /* (claude/lance5) THE QUEEN'S LANCE's gaps: the teeth bite, the UPDRAFT lifts you out - never a death on its own */
   const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   if (!t && !P.dead && SV.spikeRule(L, P.x, TS) === 'death' && !SET.invincible && !(window.BK && window.BK.god)) { die({ name: name || 'THE SPIKES', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; return; }   /* IN AN EXAM THE SPIKES KILL (src/survival.js; told as you walk in) */
   const bit = damagePlayer(tx * TS + 8, t ? SEXTON.dmg.pit : DMG.spike, { up: true, unblockable: true, name: t ? 'THE BELL PIT' : name, pct: t ? 0 : (bossActive && L.arena && L.arena.fallPct && P.x > L.arena.x0 && P.x < L.arena.x1 ? L.arena.fallPct : SV.HAZARD.pct) });   /* (claude/stormhold3) L.arena.fallPct: THE LONG BRIDGE's gorge, under planks HE tears out, bites less than a pit you walked into */ if (!t && bit === 'hit' && !P.dead && P.hp > 0) hazardBack(); if (P.dead || !t) return;   /* the pit bites like one of his blows, not like a gear pit's spikes */ if (t) { P.vy = t.vy; P.vx = t.vx; P.ground = false; P.onMover = null; P.canCut = false; P.plunge = false; P.pitCarry = { vx: t.vx, t: bellLock(0.7) }; } };
@@ -12805,7 +12833,7 @@ function miniEnd(e) {
   if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
   if (!L.unburied) openGate(L.mini.gate, 0, LH - 1, true);   /* (the Unburied Field's gate stays shut: the standing tower's drawbridge is the way into the chapel, Daniel 10-03) */
-  setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null;
+  setWallAt(L.mini.wallL, false, L.mini.floor); miniActive = false; miniDone = true; camLock = null; C3.noteMiniEnd(PROG, hitsTaken, c3Clean());
   const second = !!(L.mini2 && L.mini === L.mini2);
   if (!rushOn()) { const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; if (second) PROG[id].mini2 = true; else PROG[id].mini = true; saveProgress(); }
   number(e.x, e.y - 30, MINI_DONE[e.t] || 'THE WAY OPENS', '#8fd160'); SFX.heavy(); music.play(L.music || 'theme');
@@ -32498,7 +32526,7 @@ function updateProps(dt) {
   if (embers.length) updateEmbers(dt);
   if (meteors.length || fireRings.length || lanceBeams.length || moons.length) { HERO_HAND = true; try { updateSkillFx(dt); } finally { HERO_HAND = false; } }
   for (const s of silvers) if (s.y0 !== undefined && !s.hung && s.y < s.y0) s.y = Math.min(s.y0, s.y + 140 * dt);   /* the offering comes down on its rope */
-  for (const s of silvers) if (!s.got && !s.hung && !P.dead && !SET.invincible && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
+  for (const s of silvers) if (!s.got && !s.hung && !P.dead && !SET.invincible && Math.abs(s.x - P.x) < 13 && Math.abs(s.y - (P.y - 7)) < 15) { s.got = true; C3.noteSilver(); const id = LEVELS[levelIndex].id; PROG[id] = PROG[id] || {}; PROG[id].silver = (PROG[id].silver || 0) | (1 << s.i); saveProgress(); const n = silvers.filter(q => q.got).length; SFX.medal(); SFX.sting(); number(s.x, s.y - 18, 'SILVER ' + n + '/' + silvers.length, '#dfe8ff'); burst(s.x, s.y, 12, ['#dfe8ff', '#ffffff'], 60, 0.6, -30, 1); ringAt(s.x, s.y, 20, '#dfe8ff', 0.4); slowT = 0.3; }
   for (const b of lostBanners) if (!b.got && !P.dead && Math.abs(b.x - P.x) < 14 && Math.abs(b.y - (P.y - 7)) < 20) takeLostBanner(b);   /* THE THREE LOST BANNERS (claude/unburiedsecret) */
   for (const f of flaskFinds) if (!f.got && !P.dead && Math.abs(f.px - P.x) < 13 && Math.abs(f.py - (P.y - 7)) < 15) { f.got = true; PROG.flaskFinds = PROG.flaskFinds || {}; PROG.flaskFinds[f.id] = true; saveProgress(); SFX.medal(); SFX.sting(); burst(f.px, f.py, 14, ['#ffd36b', '#fff6c8', '#ff9a9a'], 60, 0.6, -30, 1); ringAt(f.px, f.py, 22, '#ffd36b', 0.45); toastNow(f.line, 6); }   /* (claude/flasks2) A HIDDEN FIND: its line opens on the FLASKS tab */
   for (const z of (L.gusts || [])) { if (z.arena && (!bossActive || (!z.galeArena && callerCalm()))) continue; const G = gustNow(z), on = G.on, soon = G.tell >= 0, zd = G.dir;
@@ -33481,6 +33509,7 @@ function updateCamera(dt) {
   /* (claude/bc4fix, Daniel 10-15 "what does the hourglass do?" - A3: draw the state where the player stands) THE BURIED CITY: for a moment after a hero strikes an hourglass the camera leans
      toward what it moves (src/buried-city-flip.js F.cam), never losing the hero off the frame */
   if (BCH && BCH.on() && !bossActive && !coop() && BCH.cam) { const c = BCH.cam(); if (c) { const k = 0.75 * c.k; tx += (Math.max(P.x - VW + 56, Math.min(P.x - 56, c.x - VW / 2)) - tx) * k; ty += (Math.max(P.y - VH + 28, Math.min(P.y - 48, c.y - VH / 2)) - ty) * k; } }
+  if (C3.worn(PROG.charm) === 'scout' && !bossActive && !camLock) tx = Math.max(0, Math.min(LW * TS - VW, tx + C3.camLead(PROG.charm, P.face)));   /* (claude/charms4-d) SCOUT'S CAP */
   camX += (tx - camX) * Math.min(1, dt * 5); camY += (ty - camY) * Math.min(1, dt * 4);
   // A ZOOMED VIEW CAN BE WIDER THAN A SMALL ARENA (every boss fight zooms out now, src/boss-view.js, and VW can run
   // to 640px): pinning the clamp to the west wall then ran the east edge of a narrow arena hundreds of pixels past
@@ -35319,7 +35348,7 @@ function drawWorld(cx, cy, showPlayer) {
         g.fillStyle = '#c9b27c'; g.fillRect(hx + 7, hy, 1, drop); g.fillRect(hx + 12, hy, 1, drop); for (let yy = 4; yy < drop; yy += 6) g.fillRect(hx + 7, hy + yy, 6, 1); } }
     g.drawImage(PROP.treehouse[pr.v], hx - 20, hy - 30); }
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) if (tx >= 0 && ty > 0 && tx < LW && ty < LH && L.grid[ty * LW + tx] === T.PALISADE && L.grid[(ty - 1) * LW + tx] !== T.PALISADE) { const pt = L.stkKit ? STB3.palTop(tx) : TILE.palisadeTop; g.drawImage(pt, tx * TS - cx, ty * TS - pt.height - cy); }   /* (claude/stockade3) the Stockade's wall tips: a back row of taller dark stakes behind the pale front row */
-  drawGateFx(cx, cy); drawHoly(cx, cy); drawPhalanx(cx, cy); drawHealths(cx, cy); drawBundles(cx, cy);
+  drawGateFx(cx, cy); drawHoly(cx, cy); drawPhalanx(cx, cy); drawHealths(cx, cy); drawBundles(cx, cy); drawC3(cx, cy);
   // SCAFFOLDING: poles from the top deck down to the bottom of the pit, braced in an X between each pair, lashed where
   // they cross the planks; the crane on the last tower reaches out over the hoist
   for (const pr of props) if (pr.t === 'scaffold' && pr.x1 > cx - 20 && pr.x0 < cx + VW + 20) { const bot = LH * TS - cy, top = Math.round(pr.top - cy) - 4;
@@ -38223,6 +38252,7 @@ function render() {
     if (rgRow && RGK) { const ry = HY + 9 + xpRow, gw = g; if (hudIdle) { g = gShown; g.globalAlpha = 0.6; } if (hudMin) hudStrip(2, ry - 2, RG_ROW_W - 3, 11); hudRects.push([0, ry - 3, RG_ROW_W + 2, 13]); drawRgRow(5, ry, RG_ROW_W - 8, RGK.hud()); g.globalAlpha = 1; g = gw; }   /* (the quiver row stays on even when the MINIMAL HUD's bars are waiting out of sight: the count is what she asked for) */   /* (claude/rangerhud, Daniel 10-23) THE QUIVER ROW: directly BELOW the XP bar */
     hudShow(); g.globalAlpha = 1;
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], 146, 6); g.globalAlpha = 1; }
+    if (C3.worn(PROG.charm) === 'hourglass' && state === 'play' && !L.openYard) { const m = MEDALS[curId()] || [300, 450, 660], t = medalTime(), k = t <= m[0] ? 0 : t <= m[1] ? 1 : t <= m[2] ? 2 : -1; if (k >= 0) { const d = Math.round(m[k] - t); text((k === 0 ? 'GOLD ' : k === 1 ? 'SILVER ' : 'BRONZE ') + (d >= 0 ? '+' : '-') + Math.abs(d) + 'S', 146, 20, k === 0 ? '#ffd34a' : k === 1 ? '#c9d1dc' : '#b87333', 'left', 6); } }   /* (claude/charms4-d) HOURGLASS: seconds in hand against the next medal */
     // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
     { const slot0 = (sk, x, key, col) => { if (!sk || !skillFor(hero(),sk)?.active) return;
         const meta=skillFor(hero(),sk),cd = meta&&!meta.active?0:skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0, k = busy ? (cd > 0 ? cd / max : 1) : 0;
@@ -38745,7 +38775,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
   callerWind() { const z = callerZone(), G = callerGustNow(); if (!z || !L.arena) return null; const nx = gustDir(z, time + Math.max(0.05, z.period - ((time + (z.phase || 0)) % z.period + z.period) % z.period) + 0.01);   /* THE WINDCALLER 3's summit as a player reads it (the bots): the told gust (blowing / its build-up / the way the next one blows, as the flags show it), the updrafts, the ledges (claude/windcaller3) */
     return { live: !!G, on: !!(G && G.on), tell: G ? G.tell : -1, dir: G ? G.dir : z.dir, next: nx, period: z.period, onT: z.on, ph: ((time + (z.phase || 0)) % z.period + z.period) % z.period, vents: props.filter(p => p.t === 'vent' && p.gale).map(p => ({ x: p.x, y: p.y, w: p.w, h: p.h, active: p.active })), ledges: (L.arena.ledges || []).filter((_, i) => !(L.galeFell && i === L.arena.crumble)), safe: L.arena.safe, home: L.arena.home, floor: L.arena.floor, fell: !!L.galeFell }; },
   bossOpen(e) { const g0 = GB.openOf(e); if (g0 !== null) return g0; return e && (e.t === 'lampreeve' || e.t === 'homunculus') ? e.open > 0 : e && e.t === 'puppeteer' ? PM.pupOpen(e) : e && e.t === 'lanterneater' ? LEM.leOpen(e) : e && e.t === 'cisternqueen' ? CQG.qOpen(e) : e && e.t === 'gangleader' ? GLM.glOpen(e) : e && e.t === 'gqueen' ? gqOpen(e) : e && e.t === 'reefmaw' ? ['stuck', 'reel', 'beached'].includes(e.mode) : e && e.t === 'duneworm' ? !!(e.st && DWM.wormOpen(e.st)) : e && e.t === 'gargoyle' ? gargOpen(e) : e && e.t === 'lance' ? lanceOpen(e) : e && e.t === 'pyromancer' ? e.open > 0 : e && e.t === 'abbot' ? abbotOpen(e) : e && e.t === 'wickerqueen' ? WQN.wqOpen(e) : e && e.t === 'winchmaster' ? winchOpen(e) : e && e.t === 'herald' ? (e.mode === 'mired' || e.mode === 'reel') : null; }, heavyCost: () => heavyCost(), windingUp: e => windingUp(e), stepCost: () => (CM.SWING_COST[hero()] ?? sword().cost),
-  healths: () => healths, acorns: () => acorns,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
+  healths: () => healths, acorns: () => acorns, cam: () => ({ x: camX, y: camY }), c3run: () => C3.run,   /* the hearts and coins lying about, the dead-end stashes among them: BK.collectLab({ stash: true }) goes for those */
   /* THE AUDITS (tools/audit-hitboxes.mjs, audit-feel.mjs, audit-input.mjs, audit-contact.mjs, audit-audio.mjs): read-only. log is an array while a
      tool listens (damagePlayer and hurtEnemy write to it), else null; the rest are the numbers a blow leaves behind, the hero's live reach, his set, the particles */
   log: null, blowRec: null, shakeCam: (n, k, tag) => shakeCam(n, k, tag), get shake() { return shake; }, get kick() { return kick; }, attackBox: () => attackBox(), boxOf: q => box(q), get hurtKnock() { return hurtKnock; }, get heroSet() { return K; }, swap: SWAPUI, unlocks: UNLUI, unlockTabs: () => unlockTabs(), shopLife: SHOPLIFE,   /* (claude/hubpolish) tools/hero-swap.mjs, tools/hero-swap.mjs, tools/textfit.mjs */
