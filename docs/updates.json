@@ -18,7 +18,6 @@
       { "s": "NEW LEVEL: THE SILK UNDERCROFT, the web beneath the manor", "lv": ["silk"] },
       { "s": "NEW LEVEL: THE HOLLOW MANOR, the house above the undercroft", "lv": ["manor"] },
       { "s": "NEW LEVEL: THE MAGE ACADEMY, with the Headmistress waiting at the end", "lv": ["academy"] },
-      { "s": "The maker's hint words and font are tidied", "lv": [] },
       { "s": "Heroes move better in the air: new jump, fall, hit, skid, slide and crouch animations", "lv": [] }
     ]
   },
