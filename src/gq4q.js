@@ -18,7 +18,7 @@ export const Q4N = {
   p1: { dmgK: 0.65, knockChip: 0.02 },   /* r4: dmgK 0.7 -> 0.65 */   /* (GQ4TUNE r3) x on every hall blow she throws through gqHit */
   shardHurt: 9,                                            // blow hurtbox r for a shard (was 6)
   p2: { dmgK: 0.6, hp: 1200 /* r3: 1500 -> 1200 */, chip: 0.4, shardPct: 0.05 /* r4: 0.03 -> 0.05; r3 crown P2 bars 50-85% at death: her bar drained ~5 hp/s, a standard bot homes ~1 shard in 6 s */, flinch: 0.4, dazeN: 4 /* r4: 6 -> 4 in 10 s */, dazeWin: 10, daze: 2.5, dazeMul: 1.25, dazeCap: 0.08, ward: 3.0, capLive: 9, home: 320,
-    volley: { tell: 0.6, v: 240, dmg: 4, cd: 2.5 /* r3: back to the plan (4 / 2.5 s): fewer shards = fewer homes = a slower kill; the P2 dmgK carries the easing */, cdRage: 1.9, n: 3, vSlow: 160 },
+    volley: { tell: 0.6, v: 240, dmg: 3, cd: 2.5 /* r3: back to the plan (4 / 2.5 s): fewer shards = fewer homes = a slower kill; the P2 dmgK carries the easing */, cdRage: 1.9, n: 4 /* (GQ5TUNE-d: n 3 -> 4, dmg 4 -> 3 - a shard still hurts 2 after dmgK 0.6, one more shard a ring to send home; crown n=12/hero 21/36 = 58% -> 24/36 = 67%. shardPct 6% alone: 19/36; n 4 dmg 2 (a shard hurts 1): 27/36 = 75%) */, vSlow: 160 },
     boulder: { tell: 0.8, air: 0.75, dmg: 9, cd: 7, hang: 1.0, r: 18 },
     rockfall: { tell: 0.8, n: 6, shadow: 1.0, dmg: 6, cd: 10, r: 12 },
     bombard: { at: [0.7, 0.45], dur: 6.0 },
