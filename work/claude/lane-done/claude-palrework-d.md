@@ -47,3 +47,30 @@ As palfork's report says, all in src/main.js: (1) castHammer -> castHolyHammer/h
 4. Shield merges with the tabard at 1x. REC: give the sun shield a steel-grey face (keep the gold sun) so it reads apart from the blue tabard - NOT built (art call).
 5. Mace head reads as a ball. REC: flatten to 5x7 with visible flanges, thicken the haft to 2 px - NOT built (art call).
 6. Bot: hammer only from range. REC: keep (built) - otherwise the measured paladin never uses his ultimate.
+
+# PALART-d - the Paladin art pass (11-11, same branch)
+Merged origin/master 7699a5ffb (batches 159-161; TRAITS_SHIP and JUICE2_SHIPS true): no conflicts. After the merge, switch ON: paladin-kit, paladin-hammer, pal-smite, hero-trials, hint-shown, mash-gate, ability-poses, attack-animation, palrework-bake all PASS.
+
+## Art (src/chars.js, src/holy-fx.js)
+- SUN SHIELD: 8x8 steel - dark outline, darker steel rim, grey face lit upper-left, gold sun boss - in its own colours (skins do not repaint it). Lowered, it sits on the FRONT HIP (SHX 6, SHY 8; picked over 4,7 / 5,9 at 1x and 3x) so the blue tabard and its gold cross still show above it; raised poses keep the off-hand spot.
+- MACE: a flanged head from an upright template (5 across, 7 down the haft: three flanges a side with notches between, dark core line, gold cap), looked up per pixel so a slanted head stays clean; skins colour only the head. Haft 2 px with a dark shadow side and ONE length (12 px grip to head centre, MACE_L) in every pose; the clear-of-helm / inside-frame placement rule kept (tries 11-20, then down to 3).
+- THE OVERHEAD (atkC): four new beats for the mace - up and back over the helm, over the top, down in front, into the floor - in the attack headroom (built after the headroom pad; a first try was padded twice and drew 24 px low - caught in the live stills and fixed). Same frame count and recovery as before.
+- HAMMER IN FLIGHT: a 1-px burnt-gold outline on the light hammer's four spin frames, a fatter, brighter trail. Hitbox and damage untouched (main.js).
+- DANCES: with the fixed haft and placement the head now sits beside/above the helm in dance2 27-30 / dance3 1-3, helm visible; no clipped frame seen. Good enough for an emote.
+
+## What the 1x stills show (v3/: BEFORE-AFTER-1x/4x, live-moves-R/L, strip, frames x 4 skins, hammer x3)
+Reads at 1x: the shield is a grey disc with a gold dot on his front hip, plainly apart from the blue tabard in idle/walk/run/hurt/jump; raised in the ward it is a grey disc by the helm. The mace reads as a spiked/flanged head on a brown haft, smaller than the old ball, and the haft length no longer jumps between idle and rise/sweep. THE OVERHEAD reads as an overhead (head high behind, then down in front). Skins: head only, as before.
+Still weak: at 1x the flanges are 1-pixel notches - it reads "spiked mace", not crisply "flanged"; on slanted hafts the head is a little ragged. The hammer in flight is now a small outlined gold hammer, readable when it is clear of the bloom, still easy to lose against bright sunfall/radiance FX. The shield at 8x8 covers the lower torso on the hip in some run frames.
+
+## textfit (run ALONE, 31 min, exit 0)
+No Paladin findings. The 10 findings are all elsewhere: OFFSCREEN 7 (co-op lock line, fallingtower 'E', rookery sister names x3, palisadewood '1'/'2'), TRUNCATED 1 (credits page 29), COLLIDE 1 + OVERDRAWN 1 (rookery arena). Not mine to fix in this lane.
+
+## Strength, n=12 per boss, same seeds, practiced bot, kit flasks, master flags
+Traits: TRAITS_SHIP is on, but the Paladin has no trait row on master (`traits.js: paladin: null`, his rework lane owns it), so both arms wear the same thing - every Paladin passive as before, no trait slots. No BOSS_TRAITS override.
+| boss | old (?palmace=0) | new (mace) |
+|---|---|---|
+| church (Lit Church Paladin) | 11/12 | 7/12 |
+| warcairn (Chieftain) | 9/12 | 9/12 |
+| crown (Goblin Queen) | 2/12 | 4/12 |
+| pooled | 22/36 | 20/36 |
+Pooled gap 2 (< 5) and it does not hold across the three (church -4, warcairn 0, crown +2): HG.mace.mul stays 0.8; no numbers changed. Church is the one real lean: the new bot reaches SUNFALL there 0.3 times a fight vs the old 2.4 (he spends at three pips on RADIANCE/hammer before five).
