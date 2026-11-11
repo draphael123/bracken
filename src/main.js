@@ -871,6 +871,7 @@ const kb = id => hero() === 'knight' && tech(id);
 const plb = id => hero() === 'paladin' && tech(id);   /* (claude/palfork) a PALADIN fork SIDE (src/forks-paladin.js): false while FORKS_SHIP is off, for another hero, and in an EVEN-L1 duel */
 const shockLife = (base, ext) => !tal('shockwave') ? base : plb('pshockb') ? base : ext * (plb('pshocka') ? 1.5 : 1);   /* SHOCKWAVE's wave life: FAR WAVE half again, HEAVY WAVE none (its mul is shockMul) */
 const shockMul = () => tal('shockwave') && plb('pshockb') ? 1.4 : 1;
+const gb = id => hero() === 'geomancer' && tech(id);   /* (claude/geofork) a GEOMANCER fork SIDE (src/forks-geomancer.js): false while FORKS_SHIP is off, for another hero, and in an EVEN-L1 duel */
 const kRun = () => kb('kquick') ? 4 : 3;   /* QUICK STEEL: the run is four cuts, the shield bash is the fourth */
 const backCover = () => tal('plated') && (!kb('kplateb') || Math.abs(P.vx) > 20);   /* PLATED: LIGHT PLATE covers the back only while he moves */
 const bashD = () => tal('bash') ? (kb('kbashb') ? 0 : kb('kbasha') ? 1.5 : 1) * trk('bash') : 0, bashS = () => kb('kbashb') ? 1.5 : 1;   /* BULL RUSH: TRAMPLE = reach x1.5, HALT = no reach, stagger x1.5 */
@@ -10400,7 +10401,7 @@ function updateCharge(dt) {
       if (st > (P.geoShown || 0)) { P.geoShown = st; P.geoTierAt = time; const T = GEO_K.tiers, col = T.cols[st], tip = (GEO.staffTip && GEO.staffTip()) || { x: P.x + P.face * 6, y: P.y - 30 };
         if (SFX.geoTier) SFX.geoTier(st); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tip.x, tip.y, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tip.x, tip.y, 2 + 3 * st, [col, '#e8a83a'], 50, 0.3, -30, 1); dust(P.x, P.y, 2 + st); if (st === 3) shakeCam(1.5); }
-      if (P.atkHeld >= geoTierAt(3, geoQuick(), HEAVY_START) + GEO_K.tiers.hold) { P.geoTierWant = 3; P.geoShown = 0; fireHeavy(); }   /* held at T3 long enough, the pillar comes by itself */
+      if (!gb('gonestave') && P.atkHeld >= geoTierAt(3, geoQuick(), HEAVY_START) + GEO_K.tiers.hold) { P.geoTierWant = 3; P.geoShown = 0; fireHeavy(); }   /* held at T3 long enough, the pillar comes by itself */
       return; }
     if (isReaper()) { const st = bkTier();   /* (claude/bloodknight) THE FIVE TIERS: a deeper glow and a tick at the blade as each arrives; T4/T5 only on a debt */
       if (st > (P.bkShown || 0)) { P.bkShown = st; const T = BKIT.BLOOD.tiers, tip = bkTip(st), fed = st >= 4 && bkFed(); P.bkTierAt = time;   /* (claude/bkfeel) EACH TIER ARRIVES: its own rising note (SFX.bkTier), a crimson flash on his body, the meter's segment and label pop (drawBkMeter) */
@@ -11801,7 +11802,8 @@ function updatePlayer(dt) {
       P.dodge = CM.ROLL_LEN[hero()] || 0.3; P.dodgeCd = 0.5; P.stepHeld = back && !P.swim && !airDodge ? P.dodge : 0;   /* WEIGHT: heavy heroes roll heavier - the paladin 0.30 s (it was 0.26) */   /* (her back-step on her feet holds its pace: STEP_PACE) */
       P.dodgeMax = P.dodge; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv);   /* WEIGHT (Daniel 10-02, Q3): the first 0.20 s is untouchable, the TAIL is not */
       const burrow = isGeo() && P.ground && !P.swim && !(GS < 0);   /* (batch82 integ: witchfix turned the hero over on the real updatePlayer, so the ceiling dodge is this one: the ordinary roll - there is no floor above her head to dig down into) */
-      if (burrow) { P.geoBurrow = { dir }; P.dodge = P.dodgeMax = 0.24; P.dodgeInv = Math.min(0.14, CM.STAM.rollInv); burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud(); }   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
+      if (burrow) { P.geoBurrow = { dir }; P.dodge = P.dodgeMax = 0.24; P.dodgeInv = Math.min(0.14, CM.STAM.rollInv); burst(P.x, P.y - 2, 10, ['#5e4e38', '#8a7a5e', '#8c8a7e'], 70, 0.4, 120, 1); SFX.geoThud && SFX.geoThud();
+        if (gb('gdeep')) { P.dodge = P.dodgeMax = 0.168; P.dodgeInv = Math.min(P.dodge, CM.STAM.rollInv); } }   /* (claude/geofork) DEEP DIVE: 30% shorter, the whole dive untouchable */   /* HER DODGE IS BURROW: down into the floor (geoBurrowStep) */
       /* TWO SMALL STEPS, THEN THE WAIT: the second comes the moment the first is over, and only the third is made to wait */
       if (isWarden()) { const quick = time - (P.stepAt || -9) < STEP_PAIR && (P.stepN || 0) < 2;
         P.stepN = quick ? (P.stepN || 0) + 1 : 1; P.stepAt = time;
@@ -28973,7 +28975,7 @@ const bzTierNow = () => bzTierFor(P.atkHeld || 0, bzQuick(), HEAVY_START);
 const bzWinding = () => isBz() && (P.charge || 0) > 0;
 /* (claude/chargetiers) THE GEOMANCER'S THREE-TIER STAVE (src/geomancer.js GEO.tiers): her wind's quickness, the tier the hold has reached, and whether she is winding */
 const geoQuick = () => heavyWind() / GEO_K.wind;
-const geoTierNow = () => geoTierFor(P.atkHeld || 0, geoQuick(), HEAVY_START);
+const geoTierNow = () => { const t = geoTierFor(P.atkHeld || 0, geoQuick(), HEAVY_START); return gb('gonestave') ? (t >= 1 ? 2 : 0) : t; };   /* (claude/geofork) ONE STAVE: the first tier reached IS the fault line; no shard, no pillar */
 const geoWinding = () => isGeo() && !!GEO && (P.charge || 0) > 0;
 function bzHeavyStart(tier) { const T = BZ_K.tiers; P.bzTierWant = 0; P.bzShown = 0; P.bzSplit = false;
   if (tier >= 2 && T.st[tier] && !spend(T.st[tier])) tier = 1;   /* (no wind for the extra: the overhead chop) */
@@ -30641,7 +30643,7 @@ GEO = makeGeomancer({ teach: k => geoTeach(k), get boss() { return boss; }, get 
   shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), burst: (...a) => burst(...a), squash: (a, b, c) => squash(a, b, c), reflectSeed: s => reflectSeed(s),
   yardSay: (t, col) => { if (L && L.arenaYard) nums.push({ x: P.x, y: P.y - 46, txt: t, col, life: 1.3, vy: -30 }); if (L && L.arenaYard && YARD && /^DETONATED/.test(t)) YARD.st.stats.detonated = (YARD.st.stats.detonated || 0) + 1; },   /* (claude/geopop d) the yard's STONES n/3 and DETONATED xN, floated like its grade words */
   dustRing: (x, y, r) => geoDustRing(x, y, r), staffTip: () => { const c = K && P.lastKey ? pickFrame(K, P.lastKey, P.lastFrame || 0, 1) : null; return c && c.tip ? { x: P.x + P.face * (c.tip[0] - K.ax), y: P.y - K.ay + c.tip[1] } : null; },   /* HER GEODE, in the world: where the frame last drawn put it (chars.js keeps it on the canvas) */
-  kitPose: (p, k, t) => kitPose(p, k, t), blockedAt: (tx, fy) => earthBlocked(tx, fy), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
+  kitPose: (p, k, t) => kitPose(p, k, t), blockedAt: (tx, fy) => earthBlocked(tx, fy), fork: id => gb(id), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
   meterFull: () => { meterReady('#e8a83a'); SFX.vigilFull(); }, trialEvent: k => trialEvent(k), noteParry: () => { noteVerb('parry'); parries++; }, parried: f => RP.parried(f) });   /* (claude/riposte: her STONE-SKIN on the beat is the shared parry) */
 /* THE FLAME WARD (src/flame-ward.js, claude/pyrokit): the pyromancer's tap of C. main.js owns the world and the keys (the pyro block of updatePlayer:
    raise on the press, fold when the hold becomes the fireball); the module owns the dome, the parry/block, the contact burn and the mistime. Called from
@@ -31229,7 +31231,8 @@ function geoSurface() {
     return enemies.some(e => e.alive && !e.harmless && !(e.gone > 0) && overlap(b, box(e))); };
   if (taken(P.x)) { const d = P.face; for (let k = 2; k <= 48; k += 2) { if (!taken(P.x + d * k)) { P.x += d * k; break; } if (!taken(P.x - d * k)) { P.x -= d * k; break; } } }
   burst(P.x + P.face * 4, P.y - 4, 14, ['#8c8a7e', '#5e5c54', '#8a7a5e', '#a8a696'], 110, 0.45, 160, 2); dust(P.x - 6, P.y, 4); dust(P.x + 6, P.y, 4); shakeCam(2); SFX.geoRise && SFX.geoRise();
-  P.geoSurfT = time; P.vx *= 0.3; squash(0.8, 1.25, 0.1); }
+  P.geoSurfT = time; P.vx *= 0.3; squash(0.8, 1.25, 0.1);
+  if (GEO && GEO.forkBodies) GEO.forkBodies.surface(); }   /* (claude/geofork) RUBBLE ROLL: a pebble mine where she comes up (reads gb('grubble') itself) */
 function geomancerKit(dt, canAct, tired) {
   if (!isGeo()) return;
   GEO.update(dt);
