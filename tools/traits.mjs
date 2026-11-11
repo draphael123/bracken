@@ -41,10 +41,10 @@ try {
     for (const n of SKILLS.filter(x => x.hero === h && !x.active)) { const k = T.kindOf(h, n.id); assert(['core', 'trait', 'merged', 'folded', 'shared', 'retired'].includes(k) || (k === 'cut' && (s.cut || []).includes(n.id)), h + '/' + n.id + ' is ' + k + ' (list it in the split, or in cut:[] if it is a deliberate cut)'); }
     assert(s.defaults.every(id => T.slottable(h).includes(id)), h + ' defaults are slottable');
     for (const id of T.traitIds(h)) assert(T.learnLevel(h, id) <= 18, h + '/' + id + ' arrives by L18 (so it reaches rank III at L20)');
-    for (const id of s.core) { const n = SKILLS.find(x => x.hero === h && x.id === id); assert(n.level <= 20, h + ' core ' + id + ' by L20'); }
+    for (const id of s.core) { const n = SKILLS.find(x => x.hero === h && x.id === id); assert((T.coreLevel ? T.coreLevel(h, id) : n.level) <= 20, h + ' core ' + id + ' by L20'); }
     /* core is on at its level, whatever is worn */
     const bare = { traits: { [h]: [] } };
-    for (const id of s.core) { const n = SKILLS.find(x => x.hero === h && x.id === id); assert.equal(passiveOn(bare, h, id, n.level), true); assert.equal(passiveOn(bare, h, id, n.level - 1), false); }
+    for (const id of s.core) { const cl = T.coreLevel(h, id); assert.equal(passiveOn(bare, h, id, cl), true); assert.equal(passiveOn(bare, h, id, cl - 1), false); }
     /* a trait is on ONLY while worn in a slot the level has, and learned */
     const [a, b] = s.defaults, lv24 = 24, lv10 = 10;
     const p = { traits: { [h]: [a] } };
@@ -163,7 +163,7 @@ try {
     const rt = migrateProgress(JSON.stringify(keep), []).progress; assert.deepEqual(rt, migrateProgress(JSON.stringify(rt), []).progress, 'round trip stable'); }
   /* level-up words */
   assert.match(T.traitUpText('knight', 1, 2), /TRAIT LEARNED/); assert.match(T.traitUpText('knight', 9, 10), /RANK II/); assert.match(T.traitUpText('knight', 19, 20), /RANK III.*SECOND TRAIT SLOT/);
-  assert.equal(T.traitUpText('paladin', 1, 24), '', 'unsplit hero: the old line');
+  assert.equal(T.traitUpText('nosuchhero', 1, 24), '', 'unsplit hero: the old line');
   assert.deepEqual(T.traitRows('knight').slice(0, 5).map(r => r.tkind), ['core', 'core', 'core', 'core', 'core']);
   /* TRAITDATA-B (pyro, pirate, reaper, berserker): rows as planned, a rank number at every effect site, cards rename only while the flag is on */
   { const want = { pyro: [5, 10, 6, 2], pirate: [5, 10, 0, 4], reaper: [5, 10, 2, 1], berserker: [5, 10, 4, 2] };   /* core, traits, merged ids, folded */
@@ -183,7 +183,7 @@ try {
     for (const h of Object.keys(want)) { const s = T.TRAIT_SPLIT[h]; for (const id of [...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat()]) if (!rankless.has(id)) assert(new RegExp("(trk|K|rk)[(]'" + id + "'[)]").test(src), h + '/' + id + ' has no rank site'); } }
     /* TRAITMERGE: ALL EIGHT split heroes (paladin stays null: his split rides the paladin rework) */
     { const SPLIT8 = ['knight', 'pyro', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker', 'ranger'];
-      assert.deepEqual(HERO_IDS.filter(T.hasSplit).sort(), SPLIT8.slice().sort(), 'exactly the 8 heroes are split'); assert.equal(T.hasSplit('paladin'), false, 'paladin unsplit until his rework');
+      assert.deepEqual(HERO_IDS.filter(T.hasSplit).sort(), SPLIT8.concat(['paladin']).sort(), 'exactly the 8 heroes + the Paladin (claude/palfork, src/traits-paladin.js) are split'); assert.equal(T.hasSplit('paladin'), true);
       const sharedIds = new Set(T.SHARED_TRAITS.map(s => s.id));
       for (const h of SPLIT8) { const s = T.TRAIT_SPLIT[h];
         assert.equal(s.defaults.length, 2, h + ' two defaults'); assert.notEqual(s.defaults[0], s.defaults[1], h + ' distinct defaults');

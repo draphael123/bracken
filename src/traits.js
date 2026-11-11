@@ -22,6 +22,7 @@
 // An id a split hero's catalog has but this table lists NOWHERE is OFF while the flag is on (the cuts), so list every passive.
 import { SKILLS } from './progression-catalog.js';
 import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
+import { TRAIT_SPLIT_PALADIN } from './traits-paladin.js';   /* (claude/palfork) the Paladin's row */
 
 export const TRAITS_SHIP = false;
 let ship = TRAITS_SHIP;
@@ -100,7 +101,7 @@ export const TRAIT_SPLIT = {
     words: { geoBulwark: { name: 'DEEP ROOTS' } },   /* the knight owns BULWARK */
     learnAt: { geoAftershock: 2, geoRumble: 4, geoShrapnel: 5, geoGravel: 7, geoMoss: 8, geoLode: 10, geoScree: 12, geoBulwark: 14, geoFourth: 16 },
   },
-  pyro: null, paladin: null, pirate: null, reaper: null, berserker: null,   /* TRAITDATA-B (pyro, pirate, reaper, berserker); paladin rides his rework lane */
+  pyro: null, paladin: null, pirate: null, reaper: null, berserker: null,   /* (paladin: claude/palfork, src/traits-paladin.js) */   /* TRAITDATA-B (pyro, pirate, reaper, berserker); paladin rides his rework lane */
 };
 
 /* NEW TRAITS (TRAITDATA-A): passives that never existed in the catalog. They live HERE, not in SKILLS, so with TRAITS_SHIP off nothing in the game can see them (no level-up line, no tree row, never on).
@@ -113,7 +114,7 @@ export const NEW_TRAITS = [
 ];
 export const isNewTrait = (h, id) => NEW_TRAITS.some(n => n.hero === h && n.id === id);
 
-Object.assign(TRAIT_SPLIT, TRAIT_SPLIT_B);   /* claude/traitdata-b: its four heroes' rows live in traits-b.js */
+Object.assign(TRAIT_SPLIT, TRAIT_SPLIT_B, TRAIT_SPLIT_PALADIN);   /* claude/traitdata-b: its four heroes' rows live in traits-b.js */
 
 const NODE = {};   /* hero -> id -> catalog node (own lookup: no import of progression.js) */
 for (const n of SKILLS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
@@ -141,6 +142,8 @@ export const mergedHost = (h, id) => { const s = splitOf(h); if (s && s.merged) 
 /* ids a hero may WEAR in a slot: his traits and folded ones, and the shared six */
 export const slottable = h => { const s = splitOf(h); return s ? [...(s.traits || []), ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id)), ...SHARED_TRAITS.map(x => x.id)] : []; };
 export const isSlottable = (h, id) => slottable(h).includes(id);
+/* (claude/palfork) a CORE passive's arrival under TRAITS: split.coreAt[id] when the row re-levels it (the Paladin's WRATH L21 -> L19: core must be on by L20), else the catalog level */
+export const coreLevel = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return s && s.coreAt && s.coreAt[id] != null ? s.coreAt[id] : (n ? n.level : 99); };
 export const learnLevel = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return s && s.learnAt && s.learnAt[id] != null ? s.learnAt[id] : (n ? n.level : 99); };
 export const coreIds = h => (splitOf(h) || { core: [] }).core.slice();
 export const traitIds = h => { const s = splitOf(h); return s ? [...s.traits, ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id))] : []; };
@@ -166,7 +169,7 @@ export const wornOf = (p, h, lv) => {
 export function traitGate(p, h, id, lv) {
   const k = kindOf(h, id); if (k === null) return false;
   const n = NODE[h][id];
-  if (k === 'core') return (lv || 0) >= n.level || !!(p && p.skillOwned && p.skillOwned[h] && p.skillOwned[h][id]);
+  if (k === 'core') return (lv || 0) >= coreLevel(h, id) || !!(p && p.skillOwned && p.skillOwned[h] && p.skillOwned[h][id]);
   if (k === 'retired' || k === 'cut') return false;
   const worn = wornOf(p, h, lv);
   if (k === 'merged') { const host = mergedHost(h, id); return worn.includes(host) && learned(p, h, host, lv); }
@@ -232,7 +235,7 @@ export function wearTrait(p, h, id, index, lv) {
 /* THE MENU ROWS (main.js skills TRAITS tab): core, then traits, then shared. tkind drives the label; level is the arrival level shown as 'LV n'. */
 export function traitRows(h) {
   const s = splitOf(h); if (!s) return [];
-  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, traitWord(h, id), { name: nameOf(h, id), tag: tagOf(h, id), tkind, level: tkind === 'core' ? n.level : learnLevel(h, id), baseLevel: n.level }) : null; };
+  const row = (id, tkind) => { const n = NODE[h] && NODE[h][id]; return n ? Object.assign({}, traitWord(h, id), { name: nameOf(h, id), tag: tagOf(h, id), tkind, level: tkind === 'core' ? coreLevel(h, id) : learnLevel(h, id), baseLevel: n.level }) : null; };
   const out = [];
   for (const id of s.core) out.push(row(id, 'core'));
   for (const id of traitIds(h)) out.push(row(id, 'trait'));
@@ -253,7 +256,7 @@ export function traitUpText(h, from, to) {
   if (!ship || !hasSplit(h)) return '';
   const s = splitOf(h), bits = [];
   const got = [...(s.traits || []), ...Object.keys(s.folded || {})].filter(id => learnLevel(h, id) > from && learnLevel(h, id) <= to && NODE[h][id]).sort((a, b) => learnLevel(h, a) - learnLevel(h, b));
-  const core = (s.core || []).filter(id => NODE[h][id] && NODE[h][id].level > from && NODE[h][id].level <= to);
+  const core = (s.core || []).filter(id => NODE[h][id] && coreLevel(h, id) > from && coreLevel(h, id) <= to);
   if (core.length) bits.push(core.length > 1 ? 'CORE: ' + nameOf(h, core[0]) + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + nameOf(h, core[0]) + '.');
   if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + nameOf(h, got[0]) + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + nameOf(h, got[0]) + '.');
   const grow = RANK_AT.slice(1).filter(n => from < n && to >= n);
