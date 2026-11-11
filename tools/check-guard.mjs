@@ -12,7 +12,7 @@ import { resolve } from 'node:path';
 
 export const DEFAULT_BUDGET_MS = 15 * 60 * 1000;
 /* checks that are allowed longer (or held shorter) than the default; the values come from the batch128 gate log (largest passing check: 253 s) */
-export const OVERRIDES = { 'textfit-full': 10 * 60 * 1000 /* its own long-standing ten-minute budget */ };
+export const OVERRIDES = { 'textfit-full': 30 * 60 * 1000 /* was 10 min: with two pages and a fresh browser per batch the unscoped run needs ~20 min (it hit 600.0 s in every gate since batch150); claude/leakfix 11-10 */ };
 export const budgetFor = name => { const env = +process.env.BRACKEN_CHECK_TIMEOUT_MS; return env > 0 ? env : OVERRIDES[name] || DEFAULT_BUDGET_MS; };
 
 /* Kill one process and everything it started, by PID. Windows: taskkill /PID n /T /F (a PID, never /IM). Elsewhere: the child leads its own group. */

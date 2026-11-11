@@ -371,11 +371,10 @@ if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textf
    own step and its own 10 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
    when it is NAMED exactly ('textfit-full'), never because 'textfit' matched (Daniel, 2026-10-03: the strict run found what the scoped one cannot) */
 if ((!WANT.length || WANT.includes('textfit-full')) && take('textfit-full')) {
-  if (JOBS > 1) results.push({ name: 'textfit-full', cmd: process.execPath, args: ['tools/textfit.mjs', '--strict'], env: { PORT: String(portFor(5)) }, timeout: 600000 });
-  else { const t0 = Date.now(), r = spawnSync(process.execPath, ['tools/textfit.mjs', '--strict'], { cwd: ROOT, encoding: 'utf8', timeout: 600000, env: { ...process.env, PORT: String(portFor(5)) } });
-    const out = ((r.stdout || '') + (r.stderr || '')).trim().split(String.fromCharCode(10)), timedOut = r.error && r.error.code === 'ETIMEDOUT';
-    live('textfit-full', r.status === 0 && !timedOut, Date.now() - t0);
-    results.push({ name: 'textfit-full', ok: r.status === 0 && !timedOut, ms: Date.now() - t0, last: timedOut ? 'TIMED OUT after 10 min' : out[out.length - 1] || '', out }); }
+  /* (claude/leakfix 11-10) UNDER THE GUARD LIKE EVERY OTHER CHECK. It used to be a bare spawnSync with a 600 s timeout, which on Windows kills only the node process: the two or three
+     textfit browsers (2.4-2.8 GB each) kept running through the next checks (map-footer read total=4096 MB beside a 1.7 GB browser) until the end-of-suite sweep, and the run was
+     cut at 600.0 s in all seven gates since batch150 (it now runs two pages with smaller batches and a fresh browser per batch: ~20 min). check-guard kills the whole tree. */
+  results.push(run('textfit-full', process.execPath, ['tools/textfit.mjs', '--strict'], { PORT: String(portFor(5)) }));
 } else if (WANT.length && !WANT.includes('textfit-full')) skipped++;
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
    sound effects are always open): tools/soundtest.mjs */
