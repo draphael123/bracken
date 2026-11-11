@@ -3660,14 +3660,6 @@ function bakePaladin0(skin = {}, previewOnly = false) {
   // the dodge is a heavy step: a lean and a stride, not a tumble
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dx: i < 2 ? i : 3 - i, dy: 1, legs: i % 2 ? 'wide' : 'runC', maul: carry(1) }));
   { const arcs = comboArcs(sh, 'maul', 8); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the maul coming up from below, and a jab with the head */
-  /* (claude/palart-d, Daniel 11-11) THE OVERHEAD, a real one, for the mace: hauled up and back over the helm, brought over the top and DOWN in front, into the floor.
-     The wind-up lives in the attack headroom (top), so the head goes up and behind without clipping; four beats like the jab it replaces, then the same recovery. */
-  if (MACE_ON) { const T0 = ATTACK_HEADROOM, OH = o => knightFrame({ top: T0, wide: 8, legs: 'wide', ...o });
-    F.atkC = [OH({ dx: -2, dy: 1, arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 7], maul: [sh[0] - 2, sh[1] - 7, sh[0] - 7, sh[1] - 14], plume: 1 }),   /* up and back: the head behind the helm */
-      OH({ dx: 0, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 9], maul: [sh[0] + 1, sh[1] - 9, sh[0] + 3, sh[1] - 20], plume: 2 }),                  /* over the top */
-      OH({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], maul: [sh[0] + 5, sh[1] - 2, sh[0] + 14, sh[1] + 2], plume: 2 }),   /* coming down in front */
-      OH({ dx: 2, dy: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], maul: [sh[0] + 5, sh[1] + 3, sh[0] + 11, sh[1] + 12], plume: 0 }),            /* into the floor */
-      F.atk[4]]; }
   /* HIS FIDGET: the maul up off the ground and across him, a gauntlet wiped over the head of it - once, twice, his helm
      bent to it - until the steel catches the light, and down again with a thud */
   { const across = o => knightFrame({ arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 3], maul: [sh[0] + 1, sh[1] + 3, sh[0] + 7, sh[1] - 1], ...o });
@@ -3724,6 +3716,14 @@ function bakePaladin0(skin = {}, previewOnly = false) {
     F.swim = S.swim; F.tread = S.tread; }
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'maul', {});
+  /* (claude/palart-d, Daniel 11-11) THE OVERHEAD, a real one, for the mace: hauled up and back over the helm, brought over the top and DOWN in front, into the floor.
+     The wind-up lives in the attack headroom (top; built AFTER directionalPoses pads every frame, so it is not padded twice), so the head goes up and behind without clipping; four beats like the jab it replaces, then the same recovery. */
+  if (MACE_ON) { const T0 = ATTACK_HEADROOM, OH = o => knightFrame({ top: T0, wide: 8, legs: 'wide', ...o });
+    F.atkC = [OH({ dx: -2, dy: 1, arm: [sh[0], sh[1], sh[0] - 2, sh[1] - 7], maul: [sh[0] - 2, sh[1] - 7, sh[0] - 7, sh[1] - 14], plume: 1 }),   /* up and back: the head behind the helm */
+      OH({ dx: 0, arm: [sh[0], sh[1], sh[0] + 1, sh[1] - 9], maul: [sh[0] + 1, sh[1] - 9, sh[0] + 3, sh[1] - 20], plume: 2 }),                  /* over the top */
+      OH({ dx: 2, dy: 1, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 2], maul: [sh[0] + 5, sh[1] - 2, sh[0] + 14, sh[1] + 2], plume: 2 }),   /* coming down in front */
+      OH({ dx: 2, dy: 2, arm: [sh[0], sh[1], sh[0] + 5, sh[1] + 3], maul: [sh[0] + 5, sh[1] + 3, sh[0] + 11, sh[1] + 12], plume: 0 }),            /* into the floor */
+      F.atk[F.atk.length - 1]]; }
   paladinKitPoses(F, sh);
   smearPass(F, SMEAR_COL.gold);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
