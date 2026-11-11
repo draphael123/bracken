@@ -16,6 +16,7 @@
 //   A / B   the two sides. `id` is what main.js reads (forkOn(p, h, id, lv, ctx)); name <= 14 chars (text fit), what <= 2 lines, teach = the unlock line
 // SAVE: p.fork = { hero: { key: 'A' | 'B', v: 1 } } - no PROGRESSION_VERSION bump (a v2 build must still load it: a rollback build just ignores p.fork).
 import { KNIGHT_FORKS } from './forks-knight.js';
+import { BERSERKER_FORKS } from './forks-berserker.js';   /* (claude/bersfork) the Berserker's 11 rungs + 10 trait pairs */
 
 export const FORKS_SHIP = false;
 const labOn = () => { try { return typeof location !== 'undefined' && /[?&]forks=on(&|$)/.test(location.search || ''); } catch { return false; } };   /* the lab's ?forks=on, read at load so the inn station (src/tavern.js) can see it */
@@ -37,6 +38,7 @@ const LADDER_LV = Object.fromEntries(FORK_LADDER.map(r => [r.slot, r.lv]));
 
 /* THE REGISTRY: hero -> { key: entry }. Hero lanes add their file here; tools may register a synthetic fork (registerFork / unregisterFork) for the framework checks. */
 const REG = { knight: KNIGHT_FORKS };
+REG.berserker = BERSERKER_FORKS;   /* (claude/bersfork) */
 export const registerFork = (h, key, entry) => { (REG[h] = REG[h] || {})[key] = entry; };
 export const unregisterFork = (h, key) => { if (REG[h]) delete REG[h][key]; };
 export const forksOf = h => REG[h] || {};

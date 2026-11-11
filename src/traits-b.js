@@ -3,6 +3,7 @@
 // Dark behind TRAITS_SHIP like everything in traits.js. Every catalog passive of each hero is listed once (tools/traits.mjs fails on an unlisted id: unlisted = a CUT).
 //   learnAt: every slottable trait arrives by L18 (spread L2..18 in today's order, the slot-1 DEFAULT first so it exists from L2 and every default by L10); core keeps its catalog level.
 //   names:   card names that differ from the catalog (shown only while the flag is on).   tags: a requirement shown on the row ('NEEDS THE JET' / 'NEEDS BLOODWORMS'; display hook owed to the menu lane).
+import { forksShip } from './forks.js';   /* (claude/bersfork) a flag-aware retired list for the Berserker */
 export const TRAIT_SPLIT_B = {
   pyro: {   /* identity: heat, stand in fire */
     core: ['pilot', 'conflagration', 'smoulder', 'kindle', 'backdraft'],
@@ -43,8 +44,8 @@ export const TRAIT_SPLIT_B = {
     core: ['bzBite', 'bzCool', 'bzReturn', 'bzChain', 'bzUnflinch'],
     traits: ['bzLong', 'bzBraceLong', 'bzBraceBack', 'bzHot', 'bzScar', 'bzWide', 'bzPrice', 'bzIronBrace', 'bzHaft', 'bzUnbowed'],
     merged: { bzLong: ['bzMist'], bzHot: ['bzBurn'], bzWide: ['bzSpinChop'], bzHaft: ['bzStagger'] },
-    folded: { bzHide: 'frenzy:THICK HIDE', bzSplit: 'cleave:GREAT CLEAVE A' },
-    retired: [],
+    folded: { bzHide: 'spender:SHORT FUSE', bzSplit: 'skill:bzCleave:OVERHEAD' },   /* (claude/bersfork) THICK HIDE is baked into the L36 SHORT FUSE side, SPLITTER into the L38 OVERHEAD side: slottable traits until FORKS_SHIP is on */
+    get retired() { return forksShip() ? ['bzHide', 'bzSplit'] : []; },   /* (claude/bersfork) with FORKS_SHIP on the two folded traits retire (kept in the catalog, never slot) */
     shared: [],
     defaults: ['bzHot', 'bzIronBrace'],
     learnAt: { bzHot: 2, bzLong: 3, bzBraceLong: 4, bzBraceBack: 5, bzScar: 6, bzIronBrace: 7, bzWide: 8, bzPrice: 10, bzHide: 12, bzHaft: 14, bzSplit: 16, bzUnbowed: 18 },
