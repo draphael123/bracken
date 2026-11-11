@@ -911,6 +911,14 @@ export function makeGQueenHands(ctx) {
   H.mechDraw = mechDraw;
   /* the LAB BOT's duty (src/lab.js): crank the winch while a wave is up, ring the bell when it is ready and she is free, then stand clear of the grate's column while she storms. null = no duty. */
   H.labDuty = P0 => {
+    /* (GQ5TUNE-d, a LAB fix under GQ4Q only, not a boss change) HER SOLDIERS: the lab bot never answered a goblin soldier in her fight - it swung at her with one at its back, and the soldiers' slashes were
+       the largest unnamed damage of the crown row ('?' 91 a fight, 140-290 in a lost hall). A player turns and kills the soldier at his heels: bait his slash (his front guard drops in its tell),
+       cut him in the tell, block the slash when the cut is late. Not while she is open (cut her). */
+    if (Q4) { const e0 = q(); if (e0 && !(e0.open > 0)) { const near = ctx.enemies().filter(g => g.alive && g !== e0 && !g.mini && g.t === 'soldier' && Math.abs(g.x - P0.x) < 64 && Math.abs(g.y - P0.y) < 24).sort((a, c) => Math.abs(a.x - P0.x) - Math.abs(c.x - P0.x))[0];
+      if (near) { const s0 = P0.x < near.x ? -1 : 1;
+        if (near.mode === 'slashTell') return near.modeT > 0.2 ? { x: P0.x, face: -s0, swing: true, why: 'cut the soldier in his tell' } : { x: P0.x, face: -s0, swing: false, block: true, why: 'block the soldier' };
+        if (near.mode === 'slash') return { x: P0.x, face: -s0, swing: false, block: true, why: 'block the soldier' };
+        return { x: near.x + s0 * 22, face: -s0, swing: near.stagger > 0 || sign(P0.x - near.x) !== near.face, why: 'bait the soldier' }; } } }
     const e = q(), M = S && S.mech, b = bellProp(); if (!e || !M || !inHall(e) || !b) return null;
     const A = L().arena, w = winchAt(), gx = b.gate * TS + 8;
     if (M.wave && M.wave.state === 'open') return { x: w.x, face: sign(w.x - P0.x), swing: true, why: 'winch' };

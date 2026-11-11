@@ -559,7 +559,23 @@ export function makeGoblinPrincessHands(ctx) {
     const e = live(); if (!F || !e) return null; const Ar = F.A;
     if (F.G) {   /* (gq4p-d) the gates: in the add phase she cannot be hurt - the ads go first; a call is live - knock its glowing pin shut */
       const ranged0 = !!P0.rgArrows && P0.rgStance !== 'knife' && P0.rgQ > 0, go = (tx, why) => { const s0 = P0.x < tx ? -1 : 1, x = tx + s0 * (ranged0 ? 70 : 8); return { x, face: -s0, swing: Math.abs(P0.x - x) < 14, why }; };
-      if (F.add && F.add.state !== 'dazed') { const ads = F.guards.filter(g => g.alive).sort((a, b) => Math.abs(a.x - P0.x) - Math.abs(b.x - P0.x)); if (ads.length) { const a = ads[0], s0 = P0.x < a.x ? -1 : 1, x = a.x + s0 * (ranged0 ? 70 : 10); return { x, face: -s0, swing: Math.abs(P0.x - x) < 14 || Math.abs(P0.x - a.x) < (ranged0 ? 90 : 16), why: 'kill her guards' }; } }
+      if (F.add && F.add.state !== 'dazed') { const ads = F.guards.filter(g => g.alive);
+        /* (GQ5TUNE-d, a LAB fix, not a boss change) THE GALLERY GOBLINS: G-U lets its goblin out on the east gallery (row 14, 8 tiles over the floor), out of a blade's reach from the floor.
+           The duty sent the bot to the nearest goblin by x alone, so it stood under the gallery jumping for 20+ s and the 30 s failsafe ended 17 of 18 add phases (crown:mini r0).
+           A player climbs the gallery's ladder; so does the bot now: goblins on its own level first, then up the ladder (hold UP on the rungs) or off the gallery's end. */
+        const Rm = L() && L().gq4Room, gy = Rm && Rm.galleries ? Rm.galleries.row * TS : null, upOf = y => gy !== null && y < fl() - 48, meUp = upOf(P0.y) && P0.ground;
+        const galOf = x => { if (gy === null) return null; for (const [k, i] of [['W', 0], ['E', 1]]) { const gl = Rm.galleries[k]; if (x >= gl[0] * TS - 8 && x <= (gl[1] + 1) * TS + 8) return { x0: gl[0] * TS, x1: (gl[1] + 1) * TS, lad: Rm.galleries.ladders[i] * TS + 8 }; } return null; };
+        ads.sort((a, b) => ((upOf(a.y) !== meUp) - (upOf(b.y) !== meUp)) || Math.abs(a.x - P0.x) - Math.abs(b.x - P0.x));
+        if (ads.length) { const a = ads[0];
+          if (gy !== null && !ranged0) {
+            if (P0.climb) { const gl = galOf(P0.x); return { x: gl ? gl.lad : P0.x, face: P0.face, swing: false, up: upOf(a.y), why: 'climb to her guards' }; }
+            if (upOf(a.y) && !meUp) { const gl = galOf(a.x); if (gl) return { x: gl.lad, face: sign(gl.lad - P0.x) || 1, swing: false, up: Math.abs(P0.x - gl.lad) < 7, why: 'to the gallery ladder' }; }
+            if (!upOf(a.y) && meUp) { const gl = galOf(P0.x); if (gl) { const off = Math.abs(a.x - gl.x0) < Math.abs(a.x - gl.x1) ? gl.x0 - 12 : gl.x1 + 12; return { x: off, face: sign(off - P0.x) || 1, swing: false, why: 'down off the gallery' }; } } }
+          const s0 = P0.x < a.x ? -1 : 1;
+          /* (GQ5TUNE-d, lab) THE PIKE holds a guard a blade glances off from the front and thrusts when you come inside 46 px; a blocked thrust staggers it 0.9 s. The duty swung into the guard
+             (13 s and ~120 hp a pike, knight s1) - a player baits the thrust, blocks it and cuts the stagger. */
+          if (a.t === 'pike' && !ranged0 && !(a.stagger > 0) && Math.abs(P0.y - a.y) < 24) { if (a.mode === 'tell' || a.mode === 'thrust') return { x: P0.x, face: -s0, swing: false, block: true, why: 'block the pike' }; return { x: a.x + s0 * 34, face: -s0, swing: false, why: 'bait the pike' }; }
+          const x = a.x + s0 * (ranged0 ? 70 : 10); return { x, face: -s0, swing: Math.abs(P0.x - x) < 14 || Math.abs(P0.x - a.x) < (ranged0 ? 90 : 16), why: 'kill her guards' }; } }
       if (F.call && !F.add && (F.call.phase === 'tell' || F.call.phase === 'lit')) { const og = Object.values(F.G).filter(G => G.open && !G.lock).sort((a, b) => Math.abs(a.pinX - P0.x) - Math.abs(b.pinX - P0.x))[0]; if (og && Math.abs(og.pinX - P0.x) < 260) return go(og.pinX, 'knock the gate shut'); }
     }
     if (F.wave && F.wave.state === 'open' && Ar.winch) return { x: Ar.winch, face: sign(Ar.winch - P0.x), swing: true, why: 'winch' };
