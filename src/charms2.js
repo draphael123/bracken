@@ -4,7 +4,7 @@
 // own gate like every other line of the store (src/store.js lockOf): `needs` (a level cleared) or `feat` (main.js featDone).
 //
 // THE WHOLE THING SHIPS DARK: CHARMS2_SHIP is false, and while it is false rows() is [] (the shop is exactly today's six), worn() answers
-// null for every new id (so a stray 'thorn' in a save does nothing), the multipliers are exactly 1 and noteDeath / noteSecret write nothing.
+// null for every new id (so a stray 'thorn' in a save does nothing), the multipliers are exactly 1 and noteDeath writes nothing.
 // It flips only after the icon pass merges (art before live: the icons are art.js bakeCharms, thorn..pilgrim).
 //
 // RULE (plan sec 5): no charm adds damage or mitigation beyond the existing IRON CHARM tier (a fifth less taken); no flask charms (bosses are
@@ -14,7 +14,8 @@
 // for anyone, a sidegrade, and those traits stay as they are. PILGRIM'S KNOT is an XP charm next to the roster catch-up (xp.js xpGrant x2 below the
 // best hero): it adds +15% only inside the same 5-level gap and never stacks past the cap, so it is the sidegrade to the roster rule.
 export const CHARMS2_SHIP = false;
-let ship = CHARMS2_SHIP;
+/* (claude/charms3-d) TOOLS ONLY: a page that sets window.__CHARMS2 = true before its scripts (Page.addScriptToEvaluateOnNewDocument, tools/charms3.mjs) boots with the charms ON, so main.js's CHARMS.push(...rows()) sees them. The shipped constant stays false; nothing a player can reach sets it. */
+let ship = CHARMS2_SHIP || (typeof window !== 'undefined' && window.__CHARMS2 === true);
 export const setCharms2Ship = v => { ship = !!v; return ship; };   /* tools and the lab only: the shipped value is CHARMS2_SHIP */
 export const charms2Ship = () => ship;
 
@@ -26,7 +27,7 @@ export const CHARMS2 = [
   { id: 'gambler', name: "GAMBLER'S COIN",  price: 70,  desc: 'a quarter more gold, and a tenth more damage taken',                       needs: 'moor',       needsName: 'Gale Moor' },
   { id: 'salt',    name: 'SALT CHARM',      price: 40,  desc: 'your dropped purse shows on the map and the edge of the screen, and glows. a comfort, not a buff', feat: 'deaths:10', featName: 'fall 10 times' },
   { id: 'quiet',   name: 'QUIET BOOTS',     price: 90,  desc: 'foes notice you 30% later: ambushes, sleepers',                            needs: 'spire',      needsName: 'the Monastery' },
-  { id: 'lantern', name: 'LANTERN CHARM',   price: 80,  desc: 'breakable walls and secrets glint within 6 tiles',                         feat: 'secrets:10', featName: 'find 10 secrets' },
+  { id: 'lantern', name: 'LANTERN CHARM',   price: 80,  desc: 'breakable walls and secrets glint within 6 tiles',                         feat: 'silver:12', featName: 'find 12 silver' },
   { id: 'pilgrim', name: "PILGRIM'S KNOT",  price: 100, desc: '15% more XP while this hero is 5 or more levels below your best hero',     feat: 'heroes:3',   featName: 'own 3 heroes' },
 ];
 export const CHARM2_IDS = CHARMS2.map(c => c.id);
@@ -56,17 +57,23 @@ export const thornDamage = () => THORN_BACK;
 /* LANTERN: is a wall / secret at (dx, dy) pixels inside the glint range */
 export const lanternNear = (charm, dx, dy, ts = 16) => worn(charm) === 'lantern' && Math.hypot(dx, dy) <= LANTERN_TILES * ts;
 
-/* ---- THE FEATS the new charms add to main.js's featDone (kind:N), and the counters behind them (PROG.c2, written only with the flag on) ---- */
-export const featKinds = ['deaths', 'secrets', 'heroes'];
+/* ---- THE FEATS the new charms add to main.js's featDone (kind:N). deaths:N counts falls (PROG.c2.deaths, written only with the flag on); silver:N and heroes:N READ the save (facts) ---- */
+/* (claude/charms3-d) LANTERN's gate was secrets:10 = ten breakable 'secret' walls, and the game has TWO of those (src/harvest-fair.js cellar x2): it could never be earned. It is now silver:12, the silver coins hidden off the route (3 in every wood, a
+   persisted bitmask), so it is reachable, says what to do, and a veteran's silver already counts. */
+export const featKinds = ['deaths', 'silver', 'heroes'];
 export const isFeat = f => featKinds.includes(String(f || '').split(':')[0]);
 export const featNeed = f => +String(f).split(':')[1] || 0;
-export const c2 = prog => { if (!prog.c2 || typeof prog.c2 !== 'object' || Array.isArray(prog.c2)) prog.c2 = { deaths: 0, secrets: {} }; if (!prog.c2.secrets || typeof prog.c2.secrets !== 'object') prog.c2.secrets = {}; if (!Number.isFinite(prog.c2.deaths)) prog.c2.deaths = 0; return prog.c2; };
-export const deathsOf = prog => Number.isFinite(prog && prog.c2 && prog.c2.deaths) ? prog.c2.deaths : 0;
-export const secretsOf = prog => prog && prog.c2 && prog.c2.secrets && typeof prog.c2.secrets === 'object' ? Object.keys(prog.c2.secrets).length : 0;
+/* (claude/charms3-d) A VETERAN GETS CREDIT for falls. The counter only starts the first time the flag is on, so a save with fifty cleared woods would read "0 OF 10 FALLS". Until the counter exists (and when it is first written) the save is credited from what it
+   already did: one fall per cleared level, capped at CREDIT_CAP = 9, so the charm always still wants one real fall and a new save (0 cleared) is credited nothing. The credit is written once and never grows after. */
+export const CREDIT_CAP = 9;
+export const clearedCount = prog => Object.values(prog || {}).filter(v => v && typeof v === 'object' && !Array.isArray(v) && v.cleared).length;
+export const creditDeaths = prog => Math.min(CREDIT_CAP, clearedCount(prog));
+const hasC2 = prog => !!(prog && prog.c2 && typeof prog.c2 === 'object' && !Array.isArray(prog.c2));
+export const c2 = prog => { if (!hasC2(prog)) prog.c2 = { deaths: creditDeaths(prog) }; if (!Number.isFinite(prog.c2.deaths)) prog.c2.deaths = 0; return prog.c2; };
+export const deathsOf = prog => hasC2(prog) ? (Number.isFinite(prog.c2.deaths) ? prog.c2.deaths : 0) : creditDeaths(prog);
 export const noteDeath = prog => { if (!ship) return false; c2(prog).deaths = Math.min(9999, deathsOf(prog) + 1); return true; };
-export const noteSecret = (prog, key) => { if (!ship || !key) return false; const s = c2(prog).secrets; if (s[key]) return false; if (Object.keys(s).length >= 200) return false; s[key] = 1; return true; };
-/* facts: { heroes: how many heroes the player owns } */
-export const featDone = (f, prog, facts = {}) => { const k = String(f).split(':')[0], n = featNeed(f);
-  return k === 'deaths' ? deathsOf(prog) >= n : k === 'secrets' ? secretsOf(prog) >= n : k === 'heroes' ? (facts.heroes | 0) >= n : false; };
-export const featProgress = (f, prog, facts = {}) => { const k = String(f).split(':')[0], n = featNeed(f), have = k === 'deaths' ? deathsOf(prog) : k === 'secrets' ? secretsOf(prog) : (facts.heroes | 0);
-  return Math.min(have, n) + ' OF ' + n + ' ' + (k === 'deaths' ? 'FALLS' : k === 'secrets' ? 'SECRETS' : 'HEROES'); };
+/* facts: { heroes: how many heroes the player owns, silvers: silver coins found (main.js silverTotal) } */
+const haveOf = (k, prog, facts) => k === 'deaths' ? deathsOf(prog) : k === 'silver' ? (facts.silvers | 0) : (facts.heroes | 0);
+export const featDone = (f, prog, facts = {}) => { const k = String(f).split(':')[0]; return featKinds.includes(k) && haveOf(k, prog, facts) >= featNeed(f); };
+export const featProgress = (f, prog, facts = {}) => { const k = String(f).split(':')[0], n = featNeed(f);
+  return Math.min(haveOf(k, prog, facts), n) + ' OF ' + n + ' ' + (k === 'deaths' ? 'FALLS' : k === 'silver' ? 'SILVER' : 'HEROES'); };

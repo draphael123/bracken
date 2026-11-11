@@ -915,7 +915,7 @@ const TAP_TWICE = 0.26;   /* s between the two taps of a way that make the dodge
 const sliceLv = lv => !DS.demoLocked(lv);
 const medalCount = () => LEVELS.filter(lv => !lv.hidden || (lv.secret && PROG[lv.id])).reduce((n, lv) => n + ((PROG[lv.id] && PROG[lv.id].medal) || 0), 0);
 /* 'boss:<level id>': the boss of that level has been beaten (PROG.bossDown, set when he dies - not when the level is cleared) */
-const featDone = f => C2.isFeat(f) ? C2.featDone(f, PROG, { heroes: HEROES.filter(k => heroOwned(k.id)).length }) : String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
+const featDone = f => C2.isFeat(f) ? C2.featDone(f, PROG, { heroes: HEROES.filter(k => heroOwned(k.id)).length, silvers: silverTotal() }) : String(f).startsWith('flask:') ? F2.reqDone(F2.itemOf(String(f).slice(6)), PROG) : String(f).startsWith('boss:') ? !!(PROG.bossDown && PROG.bossDown[String(f).slice(5)]) : f === 'iron' ? LEVELS.some(l => PROG[l.id] && PROG[l.id].iron) : String(f).startsWith('medals:') ? medalCount() >= +String(f).slice(7) : !!(PROG[f] && PROG[f].cleared);
 let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sprite bakes below (it used to be a plain knight here and the real hero at the end) */
 // TESTING (for now): UNLOCK EVERYTHING (SET.godmode, the old GOD MODE) owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; GOD MODE (SET.invincible, the old INVINCIBLE; claude/godmode) takes no damage, never tires, jumps in the air and holds JUMP to rise,
@@ -5763,7 +5763,7 @@ function drawMap() {
        chimney and Waymeet's rooftops are the only fires on the map worth a wisp, so this is three or four
        particle spawns a frame at most, using the same drifting-puff particle the store already had. */
     for (const id of ['store', 'highstore', 'chandler', 'waymeet']) { const sn = nd(id); if (sn && Math.random() < (id === 'waymeet' ? 0.35 : 0.5)) parts.push({ x: sn.x + (id === 'waymeet' ? -6 : 3) + camX, y: sn.y - (id === 'waymeet' ? 14 : 22) + camY, vx: 4 + Math.random() * 4, vy: -12, life: 1.6, max: 1.6, col: 'rgba(230,230,230,0.7)', size: 2, grav: -6 }); } }
-  { const sb = C2.worn(PROG.charm) === 'salt' ? bundleOf(players[0]) : null; if (sb && sb.lv) { const sn = NODES.find(n => n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].id === sb.lv); if (sn) { g.globalAlpha = 0.55 + 0.25 * Math.sin(time * 4); dcBag(Math.round(sn.x + 8), Math.round(sn.y - 6), '#d9a441'); g.globalAlpha = 1; } } }   /* (claude/charms2) SALT CHARM: the dropped purse sits by the wood it was lost in */
+  { const sb = C2.worn(PROG.charm) === 'salt' ? bundleOf(players[0]) : null; if (sb && sb.lv) { const sn = NODES.find(n => n.kind === 'level' && LEVELS[n.level] && LEVELS[n.level].id === sb.lv); if (sn) { g.globalAlpha = 0.85 + 0.15 * Math.sin(time * 4); dcBag(Math.round(sn.x - 13), Math.round(sn.y - 8), '#d9a441'); g.globalAlpha = 1; } } }   /* (claude/charms2) SALT CHARM: the dropped purse sits by the wood it was lost in (charms3-d: left of the node and near opaque: at +8,-6 and 55-80% it hid behind the hero's token) */
   /* THE UNBURIED FIELD, A SECRET (claude/unburiedsecret): before its three banners it is a DIM UNMARKED SPOT in the hills - no path, no node, no lock, no tip, nothing to press.
      Once it is open a faint GHOST-PATH draws itself from the Witchlight Stair to it (once; PROG.fieldPathDrawn remembers) and it is a node like any spur. */
   for (const nd of NODES) { if (!nd.ghost) continue;
@@ -6233,7 +6233,7 @@ const heroFacts = k => { const sec = SC.forHero(k.id), lv = k.coinNeeds && LEVEL
 const unlockLevelRows = () => NODES.filter(n => n.kind === 'level' && n.level >= 0 && LEVELS[n.level] && !LEVELS[n.level].retired && (!LEVELS[n.level].hidden || LEVELS[n.level].secret)).map(n => { const lv = LEVELS[n.level], r = unlockReq(lv);
   return UL.levelRow(lv, r.kind === 'pieces' && r.hidden ? '? ? ?' : n.name, r, !levelLocked(lv)); });
 const unlockFeatRow = (k, tabId) => { const words = typeof k.featName === 'function' ? k.featName(PROG) : k.featName, fd = !!featDone(k.feat), done = fd || owns(STORE_TABS.find(t => t.id === tabId), k.id);
-  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd, c2: C2.isFeat(k.feat) ? C2.featProgress(k.feat, PROG, { heroes: HEROES.filter(q => heroOwned(q.id)).length }) : null }), done, { level: UL.featLevel(k.feat) }); };
+  return UL.perk(k.name, UL.featHow(words), done ? 'UNLOCKED' : UL.featProgress(k.feat, { medals: medalCount(), done: fd, c2: C2.isFeat(k.feat) ? C2.featProgress(k.feat, PROG, { heroes: HEROES.filter(q => heroOwned(q.id)).length, silvers: silverTotal() }) : null }), done, { level: UL.featLevel(k.feat) }); };
 const unlockForSale = (list, tabId, what) => { const tab = STORE_TABS.find(t => t.id === tabId), free = list.filter(k => !k.feat), have = free.filter(k => k.price === 0 || owns(tab, k.id)).length;
   return UL.perk(what + ' FOR SALE', 'BUY THEM AT THE STORE, WITH GOLD OR SILVER', have + ' OF ' + free.length + ' OWNED', have >= free.length); };
 const unlockOtherRows = () => { const out = [], cl = id => !!(PROG[id] && PROG[id].cleared), lvl = heroLevel();
@@ -22029,7 +22029,6 @@ function wallsStep(dt) {
     parts.push({ x: r.l + Math.random() * (r.r - r.l), y: r.t + Math.random() * (r.b - r.t), vx: 0, vy: -6, life: 0.55, max: 0.55, col: '#fff6c8', size: 1, grav: 0 }); }
 }
 function breakWall(w) {
-  if (w.kind === 'secret') C2.noteSecret(PROG, curId() + ':' + w.x0 + ',' + w.y0);   /* (claude/charms2) the count behind LANTERN CHARM's feat */
   w.broken = true; SFX.stone(); shakeCam(2); hitstop(0.03);
   const [cx0, cy0] = wallCentre(w, TS), col = w.colour || ['#3a3a42', '#9aa0ac', '#eef0f6'];
   burst(cx0, cy0, 16, [col[1], col[2], '#fff6e0'], 100, 0.6);

@@ -23,12 +23,12 @@ for (const id of NEW.concat(BASE, [null, undefined, 'none'])) assert.equal(C2.wo
 { const e = { hp: 10 }, st = {};
   for (const id of NEW) { assert.equal(C2.houndMul(id, e), 1); assert.equal(C2.takeMul(id), 1); assert.equal(C2.sightMul(id), 1); assert.equal(C2.pilgrimMul(id, 1, 30), 1); assert.equal(C2.goldExtra(id, st, 10), 0); assert.equal(C2.thornHits(id, { who: e, dist: 5 }), false); assert.equal(C2.lanternNear(id, 1, 1), false); }
   assert.deepEqual(st, {}, 'flag off: no gold fraction kept'); }
-{ const p = { coins: 5 }; assert.equal(C2.noteDeath(p), false); assert.equal(C2.noteSecret(p, 'wood:1,2'), false); assert.deepEqual(p, { coins: 5 }, 'flag off: a save is not touched'); }
+{ const p = { coins: 5 }; assert.equal(C2.noteDeath(p), false); assert.deepEqual(p, { coins: 5 }, 'flag off: a save is not touched'); }
 /* the shop today: the store-stock fixture lists the six and only the six */
 { const t = stock.find(x => x.id === 'charms'); assert.ok(t, 'a CHARMS tab in the stock fixture'); assert.deepEqual(t.rows.map(r => r.id).filter(i => i !== 'none'), BASE, 'the shop today is the six'); }
 /* main.js adds the rows through the flag-gated list only, and every hook is behind a C2.* call that is inert off */
 assert.ok(main.includes('CHARMS.push(...C2.rows())'), 'CHARMS gets its new rows only from C2.rows()');
-for (const hook of ["C2.thornHits(PROG.charm", "C2.worn(PROG.charm) === 'stone' && C2.smallBlow(", "C2.houndMul(PROG.charm, e)", 'C2.goldExtra(PROG.charm, c2Gold, n)', 'C2.takeMul(PROG.charm)', 'C2.pilgrimMul(PROG.charm', 'qm = () => C2.sightMul(PROG.charm)', "C2.worn(PROG.charm) === 'lantern'", "C2.worn(PROG.charm) === 'salt'", 'C2.noteDeath(PROG)', 'C2.noteSecret(PROG', 'C2.isFeat(f) ? C2.featDone('])
+for (const hook of ["C2.thornHits(PROG.charm", "C2.worn(PROG.charm) === 'stone' && C2.smallBlow(", "C2.houndMul(PROG.charm, e)", 'C2.goldExtra(PROG.charm, c2Gold, n)', 'C2.takeMul(PROG.charm)', 'C2.pilgrimMul(PROG.charm', 'qm = () => C2.sightMul(PROG.charm)', "C2.worn(PROG.charm) === 'lantern'", "C2.worn(PROG.charm) === 'salt'", 'C2.noteDeath(PROG)', 'C2.isFeat(f) ? C2.featDone('])
   assert.ok(main.includes(hook), 'main.js hook missing: ' + hook);
 assert.ok((main.match(/\* qm\(\)/g) || []).length >= 8, 'QUIET BOOTS scales the foes\' notice radii (7 chase checks + the sleeper wake)');
 
@@ -51,7 +51,7 @@ try {
   /* the unlocks as the plan's table says */
   const by = Object.fromEntries(rows.map(r => [r.id, r]));
   assert.equal(by.thorn.feat, 'wood'); assert.equal(by.stone.needs, 'stockade'); assert.equal(by.hound.feat, 'medals:15'); assert.equal(by.gambler.needs, 'moor');
-  assert.equal(by.salt.feat, 'deaths:10'); assert.equal(by.quiet.needs, 'spire'); assert.equal(by.lantern.feat, 'secrets:10'); assert.equal(by.pilgrim.feat, 'heroes:3');
+  assert.equal(by.salt.feat, 'deaths:10'); assert.equal(by.quiet.needs, 'spire'); assert.equal(by.lantern.feat, 'silver:12'); assert.equal(by.pilgrim.feat, 'heroes:3');
   /* the gates lock and open through the store's own lockOf */
   const fd = (prog, facts) => f => C2.isFeat(f) ? C2.featDone(f, prog, facts) : f === 'wood' ? !!(prog.wood && prog.wood.cleared) : f.startsWith('medals:') ? (facts.medals | 0) >= +f.slice(7) : false;
   { const p = { coins: 0 }, facts = { heroes: 1, medals: 0 };
@@ -59,8 +59,8 @@ try {
     p.stockade = { cleared: true }; p.moor = { cleared: true }; p.spire = { cleared: true }; p.wood = { cleared: true }; facts.medals = 15; facts.heroes = 3;
     for (const id of ['thorn', 'stone', 'hound', 'gambler', 'quiet', 'pilgrim']) assert.equal(lockOf(by[id], p, fd(p, facts)), null, id + ' opens when its gate is met');
     assert.ok(lockOf(by.salt, p, fd(p, facts)) && lockOf(by.lantern, p, fd(p, facts)), 'salt / lantern need their counters');
-    p.c2 = { deaths: 0, secrets: {} }; for (let i = 0; i < 9; i++) C2.noteDeath(p); assert.ok(lockOf(by.salt, p, fd(p, facts))); C2.noteDeath(p); assert.equal(p.c2.deaths, 10); assert.equal(lockOf(by.salt, p, fd(p, facts)), null, 'ten falls open SALT');
-    for (let i = 0; i < 9; i++) assert.ok(C2.noteSecret(p, 'w:' + i)); assert.ok(lockOf(by.lantern, p, fd(p, facts))); assert.equal(C2.noteSecret(p, 'w:3'), false, 'the same secret is not counted twice (walls mend)'); C2.noteSecret(p, 'w:9'); assert.equal(lockOf(by.lantern, p, fd(p, facts)), null, 'ten secrets open LANTERN');
+    p.c2 = { deaths: 0 }; for (let i = 0; i < 9; i++) C2.noteDeath(p); assert.ok(lockOf(by.salt, p, fd(p, facts))); C2.noteDeath(p); assert.equal(p.c2.deaths, 10); assert.equal(lockOf(by.salt, p, fd(p, facts)), null, 'ten falls open SALT');
+    facts.silvers = 11; assert.ok(lockOf(by.lantern, p, fd(p, facts)), '11 silver is not enough'); facts.silvers = 12; assert.equal(lockOf(by.lantern, p, fd(p, facts)), null, 'twelve silver open LANTERN'); assert.equal(C2.featProgress('silver:12', p, { silvers: 30 }), '12 OF 12 SILVER');
     assert.match(C2.featProgress('deaths:10', p), /^10 OF 10 FALLS$/); assert.equal(C2.featProgress('heroes:3', p, { heroes: 1 }), '1 OF 3 HEROES'); }
   /* the worn charm */
   for (const id of NEW) assert.equal(C2.worn(id), id); for (const id of BASE) assert.equal(C2.worn(id), null, 'the six base charms are not this file\'s');
@@ -81,7 +81,14 @@ try {
     const again = migrateProgress(JSON.stringify(out), []).progress; assert.deepEqual(JSON.parse(JSON.stringify(again.charmOf)), out.charmOf); validateProgress(JSON.parse(JSON.stringify(out))); }
   assert.ok(PER_HERO.includes('charmOf'), 'the charm rides the hero snapshot (co-op / online)');
   /* c2() repairs a damaged counter instead of throwing */
-  { const p = { c2: 'junk' }; C2.noteDeath(p); assert.deepEqual(p.c2, { deaths: 1, secrets: {} }); const q = { c2: { deaths: 'x', secrets: 5 } }; C2.noteSecret(q, 'a'); assert.equal(q.c2.deaths, 0); assert.deepEqual(q.c2.secrets, { a: 1 }); }
+  { const p = { c2: 'junk' }; C2.noteDeath(p); assert.deepEqual(p.c2, { deaths: 1 }); const q = { c2: { deaths: 'x' } }; C2.noteDeath(q); assert.equal(q.c2.deaths, 1); }
+  /* (claude/charms3-d) A VETERAN GETS CREDIT for falls: seeded from cleared levels (capped at 9, never completes the feat alone), a new save gets none, written once, never grows */
+  { const vet = {}; for (let i = 0; i < 30; i++) vet['lv' + i] = { cleared: true }; vet.coins = 5;
+    assert.equal(C2.deathsOf(vet), 9); assert.equal(C2.featDone('deaths:10', vet), false, 'credit leaves one real fall'); assert.equal(C2.featProgress('deaths:10', vet), '9 OF 10 FALLS');
+    assert.equal(C2.noteDeath(vet), true); assert.equal(C2.deathsOf(vet), 10); assert.equal(C2.featDone('deaths:10', vet), true); assert.deepEqual(vet.c2, { deaths: 10 });
+    vet.lv30 = { cleared: true }; vet.lv31 = { cleared: true }; assert.equal(C2.deathsOf(vet), 10, 'the credit does not grow once written');
+    assert.equal(C2.deathsOf({ a: { cleared: true }, b: { cleared: true }, c: { cleared: true }, d: { cleared: true } }), 4); assert.equal(C2.deathsOf({ coins: 3 }), 0);
+    assert.equal(C2.featDone('silver:12', {}, { silvers: 12 }), true); assert.equal(C2.featDone('silver:12', {}, {}), false); }
   /* a save that wears a new charm with the flag OFF again is simply a save with a charm nothing reads (nothing throws, the six stay) */
 } finally { C2.setCharms2Ship(false); }
 assert.deepEqual(C2.rows(), [], 'flag back off: inert again');

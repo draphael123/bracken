@@ -1942,8 +1942,9 @@ export function bakeSpearRack() { const [c, g] = canvas(18, 18); rect(g, 1, 14, 
 export function bakeBarrelStack() { const [c, g] = canvas(26, 20); const b = (x, y) => { rect(g, x, y, 10, 10, C.wood); rect(g, x, y + 2, 10, 1, '#5a6270'); rect(g, x, y + 7, 10, 1, '#5a6270'); rect(g, x + 4, y, 1, 10, C.woodD); rect(g, x, y, 1, 10, C.woodL); }; b(2, 10); b(14, 10); b(8, 0); return outline(c, OUT); }
 // Scattered bones. 16×6.
 export function bakeBones(seed) { const rnd = mulberry(seed); const [c, g] = canvas(16, 6); rect(g, 1, 3, 8, 1, '#e8dcc0'); px(g, 0, 2, '#e8dcc0'); px(g, 9, 4, '#e8dcc0'); rect(g, 10, 1, 5, 1, '#c9b27c'); px(g, 15, 0, '#c9b27c'); circle(g, 12, 4, 1.5, '#e8dcc0'); if (rnd() < 0.5) px(g, 4, 5, '#c9b27c'); return outline(c, OUT); }
-// Charm icons for the store: lucky, iron, feather, heart, swift.
+// Charm icons for the store: lucky, iron, feather, heart, swift, ribbon (+ the eight dark ones below).
 export function bakeCharms() {
+  const gr = (g, rows, pal) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (pal[ch]) px(g, x, y, pal[ch]); }));
   const mk = f => { const [c, g] = canvas(10, 12); f(g); return outline(c, OUT); };
   return {
     lucky: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#ffd34a', '#b8842a'); px(g, 3, 5, '#fff6c8'); rect(g, 4, 6, 2, 3, '#b8842a'); }),
@@ -1951,15 +1952,16 @@ export function bakeCharms() {
     feather: mk(g => { fillPoly(g, [[8, 0], [2, 6], [1, 11], [6, 6]], '#c9d1dc'); fillPoly(g, [[8, 0], [4, 5], [3, 9]], '#e8ecf4'); rect(g, 1, 10, 2, 2, '#7c8797'); }),
     heart: mk(g => { rect(g, 1, 3, 3, 3, '#e04848'); rect(g, 6, 3, 3, 3, '#e04848'); rect(g, 1, 5, 8, 3, '#e04848'); rect(g, 2, 8, 6, 2, '#e04848'); rect(g, 4, 10, 2, 1, '#e04848'); px(g, 2, 4, '#ff9a9a'); }),
     swift: mk(g => { rect(g, 1, 2, 7, 2, '#8fd160'); rect(g, 3, 5, 6, 2, '#8fd160'); rect(g, 1, 8, 8, 2, '#8fd160'); px(g, 8, 2, '#dfffa0'); px(g, 9, 8, '#dfffa0'); }),
+    ribbon: mk(g => { fillPoly(g, [[1.5, 7], [5, 7], [5, 12], [3.2, 10], [1.5, 12]], '#2a6aa8'); fillPoly(g, [[5, 7], [8.5, 7], [8.5, 12], [6.8, 10], [5, 12]], '#3a80c8'); circle(g, 5, 4, 3.5, '#3a80c8'); circle(g, 5, 4, 2.5, '#6ab4f0'); circle(g, 5, 4, 1.2, '#ffd34a'); px(g, 3, 2, '#e8f4ff'); }),   /* (charms3-d) RUNNER'S RIBBON had NO icon (the shop drew the bolt): a blue award rosette with two tails */
     /* (claude/charms2) the eight new charms, 10x12 like the six above: same flat fills, one highlight pixel, the outline pass */
-    thorn: mk(g => { rect(g, 4, 0, 2, 12, '#3f7a48'); rect(g, 4, 0, 1, 12, '#57964f'); for (const y of [2, 6, 9]) { px(g, 2, y, '#dfffa0'); px(g, 3, y, '#8fd160'); px(g, 6, y + 1, '#8fd160'); px(g, 7, y + 1, '#dfffa0'); } }),
+    thorn: mk(g => gr(g, ['....cc....', '..c.cc.c..', '...bbbb...', '.c.bBbbb.c', 'cbb....bbc', '.b......b.', '.b......b.', 'cbb....bbc', '.c.bbbb.c.', '...bbbb...', '..c.cc.c..', '....cc....'], { b: '#4d7a3a', B: '#8fd160', c: '#f0e8d8' })),   /* (charms3-d) a green bramble ring ringed with cream thorns: the first one (a green stem) read as a cactus or a fern, the second (brown ring) as a plain hoop */
     stone: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#8b8378', '#5f5a52'); px(g, 3, 5, '#c9d1dc'); px(g, 4, 5, '#c9d1dc'); circle(g, 5, 7, 1, '#3a3448'); }),
     hound: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); fillPoly(g, [[1, 2], [9, 2], [9, 6], [7, 6], [7, 12], [6, 12], [5, 7], [4, 12], [3, 12], [3, 6], [1, 6]], '#f0e8d8'); rect(g, 1, 2, 8, 1, '#ffffff'); rect(g, 3, 6, 1, 4, '#c9b27c'); rect(g, 7, 6, 1, 3, '#c9b27c'); }),
-    gambler: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); circle(g, 5, 7, 4, '#ffd34a', '#b8842a'); rect(g, 4, 4, 2, 6, '#e04848'); px(g, 3, 5, '#fff6c8'); px(g, 5, 7, '#fff6c8'); }),
-    salt: mk(g => { rect(g, 3, 0, 4, 2, '#8a5a32'); ellipse(g, 5, 7, 4.5, 4.5, '#e8ecf4', '#9fb4d0'); rect(g, 3, 2, 4, 1, '#9fb4d0'); px(g, 3, 6, '#ffffff'); px(g, 6, 8, '#ffffff'); px(g, 5, 4, '#bfe6f5'); px(g, 4, 10, '#bfe6f5'); }),
+    gambler: mk(g => { circle(g, 6, 4.5, 3.5, '#c9962a'); circle(g, 4, 7, 4, '#b8842a'); circle(g, 4, 7, 3, '#ffd34a'); rect(g, 3, 6, 2, 2, '#c03030'); px(g, 2, 5, '#fff6c8'); px(g, 3, 5, '#fff6c8'); }),   /* (charms3-d) two coins, the front one a red pip: it was the LUCKY CHARM's gold disc on a cord with a red stripe */
+    salt: mk(g => gr(g, ['...ssss...', '..ssssSS..', '..sksksS..', '..SSSSSS..', '.bBBBBBBb.', '.bwwwwwwb.', '.bwBwwwwb.', '.bwwwwwwb.', '.bwwwwBwb.', '.bwwwwwwb.', '.bwwwwwwb.', '.bbbbbbbb.'], { s: '#c9d1dc', S: '#7c8797', k: '#3a3448', w: '#f4f6fa', b: '#7f9cc0', B: '#bfe6f5' })),   /* (charms3-d) a salt shaker: a silver cap with holes on a white-filled jar (it was a round potion-looking flask) */
     quiet: mk(g => { rect(g, 2, 0, 4, 2, '#a07850'); rect(g, 2, 2, 4, 6, '#6a4a32'); rect(g, 2, 7, 8, 3, '#6a4a32'); rect(g, 2, 10, 8, 1, '#2a1608'); rect(g, 2, 2, 1, 6, '#8a6a4a'); px(g, 8, 8, '#8a6a4a'); }),
     lantern: mk(g => { rect(g, 4, 0, 2, 2, '#7c8797'); rect(g, 2, 2, 6, 1, '#5f5a52'); rect(g, 2, 3, 6, 6, '#ffd36b'); rect(g, 4, 4, 2, 4, '#fff6c8'); rect(g, 2, 3, 1, 6, '#5f5a52'); rect(g, 7, 3, 1, 6, '#5f5a52'); rect(g, 2, 9, 6, 2, '#5f5a52'); }),
-    pilgrim: mk(g => { rect(g, 4, 0, 2, 2, '#8a5a32'); fillPoly(g, [[5, 2], [1, 5], [0, 9], [10, 9], [9, 5]], '#f0d890'); for (const x of [3, 5, 7]) rect(g, x, 3, 1, 6, '#c9a060'); rect(g, 3, 9, 4, 2, '#c9a060'); rect(g, 4, 11, 2, 1, '#8a5a32'); px(g, 2, 6, '#fff6c8'); }),
+    pilgrim: mk(g => { circle(g, 5, 6, 3.8, '#c9a060'); line(g, 2, 4, 7, 9, '#8a6a3a'); line(g, 7, 3, 2, 8, '#8a6a3a'); line(g, 2, 7, 7, 4, '#8a6a3a'); px(g, 3, 4, '#f0d890'); px(g, 4, 3, '#f0d890'); px(g, 6, 5, '#f0d890'); rect(g, 3, 0, 4, 1, '#8a5a32'); rect(g, 3, 1, 1, 2, '#8a5a32'); rect(g, 6, 1, 1, 2, '#8a5a32'); rect(g, 3, 10, 1, 2, '#c9a060'); rect(g, 6, 10, 1, 2, '#c9a060'); px(g, 3, 11, '#8a6a3a'); px(g, 6, 11, '#8a6a3a'); }),   /* (charms3-d) a woven rope knot with a hanging loop and two tails (it was a yellow bell) */
   };
 }
 

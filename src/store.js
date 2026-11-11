@@ -70,7 +70,7 @@ export const STORE_HELP = {
 /* WHAT HOLDS AN ITEM BACK. One place for the three locks a stock line can carry:
      needs  a level id that must be CLEARED (progress: PROG[id].cleared)    - the smith's better edges, the class heroes' levels
      feat   a feat string (featDone in main.js: 'boss:<level id>', 'medals:N', 'iron', or a level id cleared)
-          (claude/charms2: also 'deaths:N', 'secrets:N', 'heroes:N' - src/charms2.js featDone - for the eight new charms, dark behind CHARMS2_SHIP)
+          (claude/charms2: also 'deaths:N', 'silver:N', 'heroes:N' - src/charms2.js featDone - for the eight new charms, dark behind CHARMS2_SHIP)
    Returns the sentence the store shows for the lock, or null when the item is open. `feat` is main.js's featDone. */
 export function lockOf(k, prog, featDone) {
   if (k.needs && !(prog[k.needs] && prog[k.needs].cleared)) return 'clear ' + k.needsName + ' first';
