@@ -164,6 +164,7 @@ export const BY_HAND = {
   'pike|tell': '!',          // the thrust: blocked, it staggers the pike
   'archer|draw': '!',        // an arrow: a seed the shield turns
   'sprig|biteTell': '!',     // the bite: a plain damagePlayer
+  'shadowgob|biteTell': '!',     // (claude/owl4) the Shadow Goblin's bite: the sprig's, told
   'shield|shoveTell': '!',   // the shove: a plain damagePlayer, blocked it only pushes
   'thorn|wind': '!',         // the charge: contact damage the shield turns
   'wasp|stingTell': '!',     // the river wasp's dart: a shield turns it
@@ -362,7 +363,7 @@ export const MARK = {
   'siren|snapTell': '!', 'siren|strikeTell': '!', 'siren|thrustTell': '!', 'skiffchief|potTell': '!!', 'skitter|biteTell': '!', 'slinger|kickTell': '!',
   'slinger|slingTell': '!', 'snuffer|snuffTell': '', 'snuffer|swipeTell': '!', 'soldier|grabTell': '!!', 'soldier|raise': '!!', 'soldier|slashTell': '!',
   'soldier|windUp': '!', 'spider|biteTell': '!', 'spider|drop': '!', 'spider|dropTell': '!', 'spider|reelTell': '!', 'spider|spitTell': '!',
-  'spitcap|spitTell': '!', 'spitcap|swellTell': '!!', 'spit|spitTell': '!', 'sporeling|biteTell': '!', 'sprig|biteTell': '!', 'stagehand|dropTell': '!!',
+  'spitcap|spitTell': '!', 'spitcap|swellTell': '!!', 'spit|spitTell': '!', 'sporeling|biteTell': '!', 'sprig|biteTell': '!', 'shadowgob|biteTell': '!', 'stagehand|dropTell': '!!',
   'stagehand|swingTell': '!!', 'stiltwalker|jabTell': '!', 'stiltwalker|stabTell': '!', 'stiltwalker|stompTell': '!!', 'stormshaman|callTell': '!!', 'stormshaman|jabTell': '!',
   'strawking|baleTell': '!!', 'strawking|callTell': '', 'strawking|forkTell': '!', 'strawking|lanternTell': '!!', 'strawking|leapTell': '!!', 'strawking|lightTell': '',
   'strawking|slamTell': '!', 'strawking|sweepTell': '!!', 'stringjack|jerk': '!', 'suncatcher|clawTell': '!', 'suncatcher|frostTell': '!!', 'suncatcher|hailTell': '!!',
@@ -549,6 +550,7 @@ export const ANSWER = {
   'soldier|grabTell': 'dodge', 'soldier|raise': 'dodge', 'soldier|slashTell': 'block', 'soldier|windUp': 'block',
   'spider|drop': 'block', 'spider|dropTell': 'block', 'spider|reelTell': 'block', 'spider|spitTell': 'block',
   'sprig|biteTell': 'block',
+  'shadowgob|biteTell': 'block',
   'stormshaman|callTell': 'dodge',
   'swornsword|aim': 'block', 'swornsword|cutTell': 'block', 'swornsword|leapTell': 'dodge', 'swornsword|shout': 'block', 'swornsword|stabTell': 'block', 'swornsword|swingTell': 'block',
   'temperer|cutTell': 'block', 'temperer|quenchTell': 'dodge', 'temperer|shoveTell': 'block',
@@ -847,6 +849,7 @@ export const HEIGHT = {
   'spit|spitTell': 'low',
   'sporeling|biteTell': 'low',
   'sprig|biteTell': 'low',
+  'shadowgob|biteTell': 'low',   /* (claude/owl4) the sprig's bite */
   'stormshaman|callTell': 'low',
   'sweep|popTell': 'low',
   'swornsword|aim': 'high', 'swornsword|cutTell': 'low', 'swornsword|leapTell': 'low', 'swornsword|shout': 'low', 'swornsword|stabTell': 'low', 'swornsword|swingTell': 'low',
