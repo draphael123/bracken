@@ -722,7 +722,7 @@ let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the ro
    opts.addsLog (or opts.adds) also writes a census on the row: adds seen, killed, seconds with one up, damage taken with an add the nearest foe. It only watches. ==== */
 const ADD_DUTY = new Set(['gprincess', 'gqueen', 'gravewarden', 'hedgewarden', 'burieddead', 'bloodknight', 'matriarch', 'hornetqueen', 'hawkmistress', 'wickerqueen', 'bellcrab', 'grandmother', 'abbot', 'lance', 'queen']);
 const ADD_PART = new Set(['krakenarm']);   /* the boss's own body pushed as a foe (the Kraken's arms, krakenInit): counted by the census, never hunted as an add */
-const ADD_AWAY = new Set(['hide', 'hidden', 'away', 'gone', 'sunk', 'submerged', 'burrow', 'burrowed', 'under', 'flee', 'fled', 'retreat', 'aloft', 'hover', 'perch', 'offstage', 'roost']);
+const ADD_AWAY = new Set(['hide', 'hidden', 'away', 'gone', 'sunk', 'submerged', 'burrow', 'burrowed', 'flee', 'fled', 'retreat', 'offstage']);   /* (r2) modes in which the boss is NOT THERE to be cut - a flight, a perch or a high cap is not one: the boss's own plan reaches those */
 const isAddOf = (AC, boss) => e => e && e.alive && e !== boss && !e.harmless && !AC.pre.has(e) && !(e.hp <= 0) && !e.mini && e.xpRole !== 'mini' && !e.boss;
 function addCensus(AC, BK, boss, P, before, n) {
   const live = BK.enemies().filter(isAddOf(AC, boss));
@@ -736,16 +736,22 @@ function addCensus(AC, BK, boss, P, before, n) {
 const acRow = (AC, spf) => ({ n: AC.seen.size, kinds: AC.kinds, killed: AC.killed, gone: AC.gone, live: AC.seen.size - AC.killed - AC.gone, max: AC.max, secs: +(AC.fr * spf).toFixed(1), dmg: Math.round(AC.dmg),
   ...(AC.on ? { duty: { threat: +(AC.dF.threat * spf).toFixed(1), gate: +(AC.dF.gate * spf).toFixed(1), route: +(AC.dF.route * spf).toFixed(1) } } : {}) });
 /* which add, if any, the hands turn to this frame (null: the boss plan plays) */
-function addPick(AC, BK, boss, A, open, f) {
+function addPick(AC, BK, boss, A, open, f, h) {
   const P = BK.P; if (P.dead || P.swim || P.carry || P.galeRide || P.plunge || open || !boss.alive) { AC.cur = null; return null; }
   const adds = BK.enemies().filter(isAddOf(AC, boss)).filter(e => !ADD_PART.has(e.t) && e.x > A.x0 - 40 && e.x < A.x1 + 40 && Math.abs(e.y - P.y) < 220 && !(AC.skip.get(e) > f));
   if (!adds.length) { AC.cur = null; return null; }
-  const bdx = Math.abs(boss.x - P.x) - (boss.w || 20) / 2, bdy = Math.abs(boss.y - P.y);
+  const bdx = Math.abs(boss.x - P.x) - (boss.w || 20) / 2, bdy = Math.abs(boss.y - P.y), reach = (LAB_REACH[h] || 22) + 20;
   if (/Tell$/.test(boss.mode || '') && bdx < 140 && bdy < 60) return null;   /* his blow first: the boss plan answers it */
   const edge = e => Math.abs(e.x - P.x) - (e.w || 12) / 2, level = e => Math.abs(e.y - P.y) < 26;
-  const away = bdy > 56 || bdx > 220 || !!boss.hidden || ADD_AWAY.has(boss.mode) || boss.ward > 0 || boss.invuln > 0;
-  let e = AC.cur && adds.includes(AC.cur) && (away || (level(AC.cur) && edge(AC.cur) < 90)) ? AC.cur : null, why = e ? AC.why : null;
-  if (!e) { const t = adds.filter(q => level(q) && edge(q) < 56 && edge(q) < bdx).sort((a, b) => edge(a) - edge(b))[0]; if (t) { e = t; why = 'threat'; } }
+  /* (r2) (a) THE BOSS IS NOT THERE: hidden, invulnerable, or in a mode that takes him off the field (ADD_AWAY). Far off or high up is NOT that - r1 read it so and the bot
+     left the Owl's lamps and the Mother's cap for adds across the room (hanging 89 -> 56%, spore 78 -> 17%) */
+  const away = !!boss.hidden || boss.invuln > 0 || ADD_AWAY.has(boss.mode);
+  /* (r2) (b) A REAL THREAT IN REACH: on his level, inside 48 px, and either AT HIS BACK (the far side from the boss: the Queen's soldiers) or nearer than the boss with the boss
+     out of his reach (a player cutting the boss keeps cutting him) */
+  const back = q => Math.sign(q.x - P.x) !== Math.sign(boss.x - P.x) || bdy > 40;
+  const threat = q => level(q) && edge(q) < 48 && (back(q) || (bdx > reach && edge(q) < bdx - 16));
+  let e = AC.cur && adds.includes(AC.cur) && (away ? true : threat(AC.cur) || (level(AC.cur) && edge(AC.cur) < 30)) ? AC.cur : null, why = e ? AC.why : null;
+  if (!e) { const t = adds.filter(threat).sort((a, b) => edge(a) - edge(b))[0]; if (t) { e = t; why = 'threat'; } }
   if (!e && away) { e = adds.slice().sort((a, b) => (!level(a) - !level(b)) || edge(a) - edge(b))[0]; why = 'gate'; }
   if (!e) { AC.cur = null; return null; }
   if (e !== AC.cur) { AC.cur = e; AC.t0 = f; AC.hp0 = e.hp; }
@@ -1100,7 +1106,7 @@ async function runbossLab(BK, opts) {
         }
       }
       /* (claude/labadds-d) THE ADDS (AC.on: the switch on, and no per-boss duty for this boss's adds): turn to one, reach it, fight it with the duel hands, back to the boss */
-      if (AC && AC.on) { const ap = addPick(AC, BK, boss, A, dkOpen(), f);
+      if (AC && AC.on) { const ap = addPick(AC, BK, boss, A, dkOpen(), f, h);
         if (ap) { const e = ap.e, lvl = Math.abs(e.y - P.y) < 26 || !P.ground;
           if (lvl && !P.climb) { P.labAddJump = 0; labBotFrame(BK, h, e, f); AC.dF[ap.why]++; } else { addRoute(BK, e, T, k, f); AC.dF.route++; }
           const was = P.hp; advance(1); taken += Math.max(0, was - P.hp); if (P.dead) falls++; if (f % 600 === 599) await yieldNow(); continue; } }
