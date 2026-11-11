@@ -1,3 +1,4 @@
+import { owl4On, OWL4, HV_LAMPS, SIGNS as OWL4_SIGNS } from './owl4.js';   /* (claude/owl4) THE HANGING VILLAGE REWORK: every add below is behind owl4On() (OWL4_SHIPS false) */
 import { CAST_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
@@ -2023,6 +2024,19 @@ function hangingVillage() {
   coins([103, 51], [104, 50], [105, 51], [107, 51], [103, 43], [104, 43]); // the nook past the rock face pays
 
 
+  /* (claude/owl4) THE HANGING VILLAGE REWORK (plan scratch/lane-reports/owl4-plan.md), behind OWL4_SHIPS: the crown's west deck knot moves clear of the deck's boards (so the tie
+     is within reach of a hero on the deck and 32-48 px of the bag line), one crown sign about the weights, the Reeve's two net bundles on the dead bough, and the village LAMPS +
+     SHADOW GOBLINS on the mill, rookery and stair floors (teach -> test -> exam). OFF: none of this exists - the built level is master's, byte for byte (tools/owl4-rules.mjs). */
+  const owlNets = [], hangersX = [];
+  if (owl4On()) {
+    for (const r of ropes) if (OWL4.knotMove[r.id]) r.knot = OWL4.knotMove[r.id].slice();
+    ent('sign', 14, 19, { text: OWL4_SIGNS.weights });
+    for (const [col, row] of OWL4.net.bundles) owlNets.push({ x: col * TS + 8, y: row * TS + 28 });
+    for (const f of Object.values(HV_LAMPS)) {
+      for (const l of f.lamps) {
+        if (l.hang === null) ent('lantern', l.x, f.row, { hv: true, dark: true });
+        else { ent('lantern', l.x, l.hang, { hv: true, dark: true, cord: l.cord }); ropes.push({ kind: 'lampcord', id: l.cord, x: l.x, anchor: l.anchor, hang: l.hang, floor: f.row, knot: [l.x + 3, f.row] }); hangersX.push([l.x - 2, l.x, l.anchor]); } }
+      for (const x of f.gobs) ent('shadowgob', x, f.row, { face: -1 }); } }
   for(const m of movers)if(m.kind==='lift'){const tx=Math.floor((m.x+16)/TS);let row=Math.floor(Math.min(m.y0,m.y1)/TS)-1;while(row>0&&!L.grid[row*W+tx])row--;m.top=(row+1)*TS;}
   for (const m of movers) if (m.hoist) { if (m.topRow !== undefined) m.top = m.topRow * TS; m.wheelX = Math.round((m.x + 16 + m.well * TS + 8) / 2); m.wheelY = m.top + 10; }   /* the wheel between the deck's rope and the basket's */
   // A house for every inhabited door; two large public buildings mark the roots and market.
@@ -2036,7 +2050,8 @@ function hangingVillage() {
     hangingTown:true, hoists: movers.filter(m => m.hoist).map(m => m.hoist), W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 107 }, pools: [], falls: [], moversExtra: movers, gusts, interiors, crumbles,
     bridges: [{ x: 50, x1: 56, y: tops.t3 }],   /* THE CLIFF HALL's own rope (src/main.js L.bridges/updateCutter): whole every attempt, cut by the ambush's cutter, hauled back once you step off it */
     ropes, reachSpans: ropes.filter(r => r.kind === 'bridge').map(r => r.span),   /* (claude/hanging3) CUT IT AND RIDE IT: every rope you can cut (src/hanging-ropes.js); a bridge's span is road once its tie is cut (src/reachcore.js) */
-    hangers: [CROWN_BOUGH],   /* (claude/owl2) what a HUNG thing may hang from that is not rock: the crown pine's bough [x0, x1, row] - her perch lamps hang on chains off it (tools/floaters.mjs) */
+    ...(owl4On() ? { owlNets } : {}),   /* (claude/owl4) the Reeve's net bundles [{ x, y }] on the dead bough */
+    hangers: [CROWN_BOUGH, ...hangersX],   /* (claude/owl2) what a HUNG thing may hang from that is not rock: the crown pine's bough [x0, x1, row] - her perch lamps hang on chains off it (tools/floaters.mjs) */
     vines: [52, 68, 34, 48, 61, 41, 63], perches: [[42, 9], [54, 12], [65, 9]], tall: { top: 20 * TS, bottom: 108 * TS },
     duskStart: -1, duskLen: 1, music: 'hangingvillage', night: false, glowNight: true,   /* "Dark Shrine Loop" by qubodup, CC0 - THE HANGING VILLAGE's own theme, benching town (audio/CREDITS.txt) */
     /* SEVEN FLOORS, SEVEN GROUNDS (src/hanging-village.js): each band of rows wears its floor's look - its top, its rock, its underside, its

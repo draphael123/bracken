@@ -44,12 +44,15 @@ export const HV_LAMP = { burn: 8, flick: 1.5, cool: 2.5, r: 64 };
 export const LAMP_DROP = { pool: 5, w: 56, tick: 0.7, dmg: 8, rehang: 12, g: 700 };
 /* THE SHADOW GOBLIN: a goblin that only a light can hurt */
 export const SHADOW = { reveal: 0.6, revealCd: 3, hint: 'BRING IT INTO THE LIGHT', glance: 'IT SLIPS THE BLOW' };
-/* a real shadow-goblin level pass: which rows get lamps and Shadow Goblins (teach -> test -> exam), as [lamp col, lamp row, hang row | null, goblin cols] */
+/* THE LEVEL PASS: which floors (ent rows) get village lamps and Shadow Goblins, teach -> test -> exam. A lamp is { x, hang, cord, anchor }: hang null = a floor lamp you strike;
+   a number = a lamp hung that many rows up (its ent row) off a gallows arm at row `anchor`, tied off at a red-and-gold knot 3 tiles on - cut it and it falls (src/hanging-ropes.js
+   lampcord). No soft-lock: every Shadow Goblin has a re-lightable lamp within 6 tiles on its floor and light on >= 40% of its +-7 tile patrol (tools/owl4-rules.mjs). */
 export const HV_LAMPS = {
-  mill:   { row: 65, lamps: [{ x: 30, hang: null }], gobs: [28] },                      /* TEACH: one beside a lamp you strike */
-  rook:   { row: 51, lamps: [{ x: 44, hang: 47 }], gobs: [44] },                        /* TEST: one under a lamp you cut onto it */
-  stair:  { row: 37, lamps: [{ x: 34, hang: null }, { x: 58, hang: null }], gobs: [30, 56] },   /* EXAM: two, beside the existing snuffers */
+  mill:  { row: 65, lamps: [{ x: 20, hang: null }], gobs: [24] },                                                   /* TEACH: one beside a lamp you strike (the mill floor) */
+  rook:  { row: 51, lamps: [{ x: 48, hang: 50, cord: 'lamp-rook', anchor: 45 }], gobs: [48] },                      /* TEST: one under a hung lamp you strike, then cut onto it (the rookery) */
+  stair: { row: 37, lamps: [{ x: 30, hang: null }, { x: 51, hang: null }], gobs: [33, 45] },                        /* EXAM: two, beside the stair's own snuffers (the lantern stair) */
 };
+export const SIGNS = { weights: 'A SANDBAG ON HER WHILE SHE IS LOW SLAMS HER DOWN. STRIKE ONE, OR CUT A DECK KNOT.' };
 
 /* ---- THE PERCH FIX ---- */
 /* the nearest standing board for a floor rest at x: the arena's width, off every hole (L.arena.drops [[x0, x1] tile cols]) by restPad past its edge */

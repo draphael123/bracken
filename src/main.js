@@ -2989,6 +2989,7 @@ function spawnEnt(e) {
     switch (e.t) {
       case 'sprig': enemies.push({ ...base, t: 'sprig', w: e.fat ? 12 : 8, h: e.fat ? 15 : 10, hp: e.fat ? EHP.sprig * 4 : EHP.sprig, speed: e.fat ? 14 : 28, big: !!e.fat, fat: !!e.fat, cutter: !!e.cutter, ringer: !!e.ringer, bell: e.bell ? e.bell * TS + 8 : 0 }); break;   /* THE OLD FAT SPRIG (fat: true, Bracken Wood's third-cut lesson): drawn big, four times the health, half the pace and a bite that barely hurts, so a run of three is FELT on something before it is needed */
       case 'shield': enemies.push({ ...base, t: 'shield', w: 10, h: 14, hp: EHP.shield, speed: 26, turnT: 0, behindT: 0 }); break;
+      case 'shadowgob': enemies.push({ ...base, t: 'sprig', w: 8, h: 10, hp: EHP.shield, speed: 28, shadow: { lit: false, revealCd: 0, seen: false } }); break;   /* (claude/owl4) THE SHADOW GOBLIN: the plain goblin's walk and fight (a sprig), HP of a shield goblin, hurt only by LIGHT (owl4Shadow / the gate in hurtEnemy0) */
       case 'spit': enemies.push({ ...base, t: 'spit', w: 12, h: 12, hp: EHP.spit, timer: 1 + Math.random(), mouth: 0 }); break;
       case 'wasp': enemies.push({ ...base, t: 'wasp', hx: px, hy: py, w: 8, h: 6, hp: EHP.wasp, face: -1, ...(e.sting ? { sting: true, mode: 'hover', modeT: 0, cd: 1 } : {}) }); break;   /* sting: true darts at you from its post, on a yellow ! (the river wasps) */
       case 'thorn': enemies.push({ ...base, t: 'thorn', w: 12, h: 11, hp: EHP.thorn, speed: 22, mode: 'walk', modeT: 0 }); break;
@@ -3312,8 +3313,8 @@ function spawnEnt(e) {
       case 'spider': enemies.push({ ...base, t: 'spider', w: e.big ? 20 : 10, h: e.big ? 16 : 8, hp: e.big ? EHP.spider * 12 : EHP.spider, maxHp: e.big ? EHP.spider * 12 : undefined, big: !!e.big, mini: !!e.mini, restY: py, drop: e.drop || 100, mode: 'hang', modeT: 0, cd: 0, face: 1 }); break;
       case 'squirrel': enemies.push({ ...base, t: 'thief', squirrel: true, w: 8, h: 9, hp: EHP.spider, speed: 92, loot: 0, mode: 'stalk' }); break;
       case 'owl': boss = { ...base, t: 'owl', w: 44, h: 26,   /* he is twice the bird he was */ hp: EHP.owl, maxHp: EHP.owl, mode: 'sleep', modeT: 0, face: -1, phase: 1, px: px, py: py, tx: px, ty: py, swoopT: 2, screechT: 6, gustT: 9, featherT: 4, skimCd: 5, hitT: 0 }; enemies.push(boss); break;
-      case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, owl: !!e.owl, lampT: 0, perch: !!e.perch, city: !!e.city, gut: 0, gate: e.gate }; props.push(pr);   /* (claude/lamplit2) gate: the column of PORT a lit lamp lifts (THE TOLL GATE) */
-        lights.push(pr.city ? { x: px, y: py - 40, r: (L.lpDark && L.lpDark.lampR) || 66, lantern: pr } : { x: px, y: py - 30, r: pr.owl ? 78 : 50, glow: true, lantern: pr }); break; }
+      case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, owl: !!e.owl || !!e.hv, hv: !!e.hv, cord: e.cord, y0: py, lampT: 0, perch: !!e.perch, city: !!e.city, gut: 0, gate: e.gate }; props.push(pr);   /* (claude/lamplit2) gate: the column of PORT a lit lamp lifts (THE TOLL GATE) */
+        lights.push(pr.city ? { x: px, y: py - 40, r: (L.lpDark && L.lpDark.lampR) || 66, lantern: pr } : { x: px, y: py - 30, r: pr.hv ? O4.HV_LAMP.r : pr.owl ? 78 : 50, glow: true, lantern: pr }); break; }   /* (claude/owl4: a village lamp's light) */
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'fledgling': enemies.push({ ...base, t: 'fledgling', w: 10, h: 9, hp: EHP.fledgling, speed: 44, mode: 'walk', modeT: 0.6 + Math.random(), hopT: 0 }); break;
       case 'gobpriest': enemies.push({ ...base, t: 'gobpriest', w: 10, h: 16, hp: EHP.gobpriest, speed: 34, mode: 'keep', modeT: 0, cd: PRIEST.first + Math.random(), censerCd: 1 + Math.random(), bellCd: 0 }); break;   /* the monks' robe on a goblin: see updateGobPriest */
@@ -9630,6 +9631,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
   /* (claude/bosswave1) her windows pay x1.3 now, not double (the boss rule chips her everywhere else): the old double on the boards, and 2.5x under the bough,
      gave the mash bot 92% of her in one grounded window. The bough, the window the player makes, still pays best. */
+  if (e.shadow && dmg > 0 && !owlShadowLit(e)) { e.glancedAt = time; e.flash = 0.12; e.bleed = 0; SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 5, e.y - 6, Math.sign(e.x - fromX) || 1, 3); number(e.x, e.y - 20, O4.SHADOW.glance, '#8a8090');   /* (claude/owl4) UNLIT: every blow glances, nothing lands */
+    if (!owl4Said.shadow) { owl4Said.shadow = true; number(P.x, P.y - 34, O4.SHADOW.hint, '#ffd36b'); } return; }
   if (e.t === 'owl') dmg = Math.round(dmg * owlTake(e, tag));   /* (claude/owl2) the lamp crash x2, on the boards x1.5, under the bough x1.6, nothing in her ward - and 0.4 anywhere else (the chip, src/boss-greed.js) */
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
   if (e.t === 'windcaller' && !callerThere(e)) { SFX.buzz(); return; } // between stones there is nothing to cut (on a stone he is there: the boss rule chips him, claude/bosswave1)
@@ -20641,6 +20644,17 @@ function owl4Tick(e, dt, floor, A) { const N = O4.OWL4;
   for (const b of HVR.bags()) { const near = Math.abs(e.x - b.x) < S.lowNear + S.bagW;
     if (b.armed && near && b.b + S.bagReach >= top && b.t < e.y) { owlSlam(e, b.id); HVR.bagSpent(b.id); return; }
     if (!owl4Said.bag && !b.armed && Math.abs(e.x - b.x) < 40) { owl4Said.bag = true; number(P.x, P.y - 34, S.hint, '#ffd36b'); HVR.glint(b.id); } } }
+/* ===== (claude/owl4) THE SHADOW GOBLIN: a goblin made of the dark. Its lights: a lit lamp (a village lamp's radius HV_LAMP.r, any other lit lantern 56), the oil pool of a dropped lamp,
+   a fire on the boards, or itself burning (the pyromancer works). Unlit, every blow glances (hurtEnemy0). The first time a light reaches it: REVEALED, a 0.6 s stagger, 3 s cooldown. ===== */
+function owl4Lights() { const out = []; for (const pr of props) if (pr.t === 'lantern' && pr.lit && !pr.gone) out.push({ x: pr.x, y: pr.y - 30, r: pr.hv ? O4.HV_LAMP.r : 56 });
+  if (typeof HVR !== 'undefined' && HVR && HVR.pools) for (const q of HVR.pools()) out.push(q); for (const f of fires) if (f && !(f.life <= 0) && !(f.delay > 0)) out.push({ x: f.x, y: f.y - 6, r: 26 }); return out; }
+function owlShadowLit(e) { return e.burn > 0 || O4.shadowLit(e.x, e.y - 6, owl4Lights()); }
+function owl4Shadow(e, dt) { const s = e.shadow; s.revealCd = Math.max(0, s.revealCd - dt); const lit = owlShadowLit(e); if (!lit && e.bleed > 0) e.bleed = 0;
+  if (lit && !s.lit && s.revealCd <= 0) { s.revealCd = O4.SHADOW.revealCd; e.stagger = Math.max(e.stagger || 0, O4.SHADOW.reveal); e.flash = 0.3; number(e.x, e.y - 22, 'REVEALED', '#ffd36b'); SFX.spark(); ringAt(e.x, e.y - 8, 16, '#ffd36b', 0.4); }
+  s.lit = lit; }
+function drawShadowGob(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy), lit = e.shadow.lit, k = 0.5 + 0.5 * Math.sin(time * 9 + e.x);   /* (GREYBOX: its own art before it is live) */
+  if (!lit) { g.globalAlpha = 0.62; g.fillStyle = '#120a1e'; g.beginPath(); g.ellipse(x, y - 6, 8, 9, 0, 0, 7); g.fill(); g.globalAlpha = 0.4 + 0.3 * k; g.fillStyle = '#7a5aa8'; for (let i = 0; i < 4; i++) g.fillRect(x - 6 + ((i * 5 + Math.floor(time * 12)) % 12), y - 12 + ((i * 3 + Math.floor(time * 9)) % 10), 1, 2); g.globalAlpha = 0.9; g.fillStyle = '#c9a0ff'; g.fillRect(x - 3, y - 9, 2, 2); g.fillRect(x + 1, y - 9, 2, 2); g.globalAlpha = 1; }
+  else { g.globalAlpha = 0.35 + 0.2 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 6, 8, 9, 0, 0, 7); g.stroke(); g.globalAlpha = 1; } }
 /* WHAT THE REEVE 2 SHOWS (claude/owl2): the swoop's HIGH line (duck), the bough's shadows and what falls into them, the lamp she carries and the strip
    it will burn, the oil burning, her ward (B3) and her OPEN read (B10: the gold ring on the boards round her and the bar that runs out with it) */
 function drawOwlReads(e, cx, cy) { const A = L.arena, fl = A.floor, R = Math.round;
@@ -26869,7 +26883,7 @@ function updateSnuffer(e, dt) {
     e.target = best;
   }
   if (e.mode === 'snuffTell' && e.lamplighter) { if (e.modeT <= 0) { CNH.relightPost(CANAL, CNX, e.target); e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }   /* he LIGHTS it */
-  else if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit && pr.city) { snuffLamp(pr, 0.9); e.mode = 'seek'; e.modeT = 0.6; e.target = null; return; } if (pr && pr.lit) { pr.lit = false; pr.hits = 0; burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
+  else if (e.mode === 'snuffTell') { if (e.modeT <= 0) { const pr = e.target; if (pr && pr.lit && pr.city) { snuffLamp(pr, 0.9); e.mode = 'seek'; e.modeT = 0.6; e.target = null; return; } if (pr && pr.lit) { if (pr.hv) snuffOwlLamp(pr); else { pr.lit = false; pr.hits = 0; } burst(pr.x, pr.y - 10, 10, ['#3a3448', '#5a5468', '#8a919c'], 40, 0.8, -20, 2); number(pr.x, pr.y - 26, 'PUT OUT', '#9aa39a'); SFX.puff(); } e.target = null; e.mode = 'seek'; e.modeT = 0.6; } }
   else if (e.mode === 'swipe') { if (e.modeT <= 0) { e.mode = 'seek'; e.modeT = 0.3; } }
   else if (e.mode === 'swipeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'swipe'; e.modeT = 0.3; SFX.slash(); if (!P.dead && Math.sign(P.x - e.x) === e.face && ad < 30 && Math.abs(P.y - e.y) < 20) { const res = damagePlayer(e.x, DMG.snuffer); if (res === 'blocked') { e.stagger = 0.8; number(e.x, e.y - e.h - 10, 'PARRIED', '#8fd160'); } } } }
   else if (e.stagger > 0) want = 0;
@@ -29861,6 +29875,7 @@ function updateEnemies(dt) {
     if (e.t === 'mother') { if (bossActive) beastSeen('mother'); if (bossActive || e.mode === 'sleep') MC2H.update(e, dt); continue; }   /* (claude/sporewood2) THE MOTHER CAP 2 (src/mother-cap2.js) */
     if (e.t === 'ram') { if (bossActive) beastSeen('ram'); if (bossActive || e.mode === 'sleep') updateRam(e, dt); continue; }
     if (e.t === 'greathound') { updateGreatHound(e, dt); continue; }
+    if (e.shadow && e.alive) owl4Shadow(e, dt);   /* (claude/owl4) the Shadow Goblin: lit or not, and the first light that reaches it */
     if (e.t === 'owl') { if (bossActive) beastSeen('owl'); if (bossActive || e.mode === 'sleep') updateOwl(e, dt); continue; }
     if (e.t === 'forgemaster') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('forgemaster'); if (live || e.mode === 'sleep') updateForgemaster(e, dt); continue; }
     if (e.t === 'golem') { const live = e.mini ? miniActive : bossActive; if (live) beastSeen('golem'); if (live || e.mode === 'sleep') updateGolem(e, dt); continue; }
@@ -32638,7 +32653,7 @@ function updateProps(dt) {
     if (L.hasCryst && hb && !P.crystHit) { const tx0 = Math.floor(hb.l / TS), tx1 = Math.floor(hb.r / TS), ty0 = Math.floor(hb.t / TS), ty1 = Math.floor(hb.b / TS);
       for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { const i = ty * LW + tx;
         if (L.grid[i] === T.CRYST && !P.hitSet.has('c' + i)) { P.hitSet.add('c' + i); crackCrystal(i, 2); sparks(tx * TS + 8, ty * TS + 8, P.face, 4); } } }
-    if (pr.t === 'lantern' && pr.owl) {
+    if (pr.t === 'lantern' && pr.owl && !pr.gone) {
       if(pr.cool>0)pr.cool=Math.max(0,pr.cool-dt);
       if(pr.lit&&!pr.wasBurning){pr.cool=0;lightOwlLamp(pr);}   /* (lit by her waking: THE VILLAGE LIGHTS UP) */
       if(pr.lit){pr.lampT-=dt;if(pr.lampT<=0){snuffOwlLamp(pr);if(bossActive)number(pr.x,pr.y-42,'THE LAMP GOES OUT','#8a8090');}}   /* (claude/owl3) OWL_LAMP: two seconds, then out */
@@ -35542,11 +35557,11 @@ function drawWorld(cx, cy, showPlayer) {
       g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy);
       if (st === 1 && pr.tollK > 0) LA.lampDrain(g, lx0, ly0, pr.tollK);   /* its flame drawn out to the toll box */
       if (lampDrowned(pr)) LA.hoodWater(g, lx0, ly0, time, Math.round(pr.x) & 7); }   /* the writ's water standing in its hood */
-    else if (pr.t === 'lantern') { const lit = pr.lit && !(pr.owl && pr.lampT < OWL_LAMP.flick && Math.sin(time * 38 + pr.x) < -0.15);   /* (claude/owl3) THE GUTTER: her lamp's last OWL_LAMP.flick s stutters dark and bright */ if (lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; }
+    else if (pr.t === 'lantern' && !pr.gone) { const lit = pr.lit && !(pr.owl && pr.lampT < (pr.hv ? O4.HV_LAMP.flick : OWL_LAMP.flick) && Math.sin(time * 38 + pr.x) < -0.15);   /* (claude/owl3) THE GUTTER: her lamp's last OWL_LAMP.flick s stutters dark and bright */ if (lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (pr.owl && !pr.perch) { const px = Math.round(pr.x - cx), py = Math.round(pr.y - cy); g.globalAlpha = lit ? 0.22 + 0.05 * Math.sin(time * 4 + pr.x) : 0.12; g.fillStyle = lit ? '#ffd36b' : '#141020'; g.beginPath(); g.ellipse(px, py - 1, lit ? 40 : 14, lit ? 6 : 3, 0, 0, 7); g.fill(); if (lit) { g.globalAlpha = 0.18; g.fillStyle = '#fff2c0'; g.beginPath(); g.ellipse(px, py - 1, 18, 3, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }   /* (claude/owl2) HER FLOOR LAMPS' GLOW POOLS on the boards: a lit lamp is where she crashes */
       if (pr.perch) g.drawImage(PROP.crownLantern[lit ? 1 : 0], 0, 0, 12, 11, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy, 12, 11);   /* (claude/owl2) HER PERCH LAMPS HANG: the lamp alone, on its chain off a limb of the bough (src/hanging-village.js drawCrown) - they stood on posts that floated over the planks */
       else g.drawImage(PROP.crownLantern[lit ? 1 : 0], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy);
-      if (pr.owl && !pr.perch) OWA.lampFx(g, Math.round(pr.x - cx), Math.round(pr.y - 31 - cy), time, { lit: pr.lit, gut: pr.lit ? (pr.lampT < OWL_LAMP.flick ? pr.lampT / OWL_LAMP.flick : undefined) : undefined, cool: pr.cool, coolMax: OWL_LAMP.cool }); }   /* (claude/owl3art) THE GUTTER's tongue and sparks, THE SMOKING WICK */
+      if (pr.owl && !pr.perch) OWA.lampFx(g, Math.round(pr.x - cx), Math.round(pr.y - 31 - cy), time, { lit: pr.lit, gut: pr.lit ? (pr.lampT < (pr.hv ? O4.HV_LAMP.flick : OWL_LAMP.flick) ? pr.lampT / (pr.hv ? O4.HV_LAMP.flick : OWL_LAMP.flick) : undefined) : undefined, cool: pr.cool, coolMax: OWL_LAMP.cool }); }   /* (claude/owl3art) THE GUTTER's tongue and sparks, THE SMOKING WICK */
     else if (pr.t === 'gas') g.drawImage(PROP.gasSeam, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 6 - cy);
     else if (pr.t === 'minerlamp') g.drawImage(PROP.minerLamp[pr.lit ? 1 : 0], Math.round(pr.x) - 4 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'sarcophagus') g.drawImage(PROP.sarcophagus[pr.open ? 1 : 0], Math.round(pr.x) - 26 - cx, Math.round(pr.y) - 31 - cy);
@@ -36064,6 +36079,7 @@ function drawWorld(cx, cy, showPlayer) {
         else { const hh = Math.round(22 * Math.min(1, gr * 3) * (1 - Math.max(0, gr - 0.6) / 0.4)); g.fillStyle = '#b08a5c'; g.beginPath(); g.moveTo(px + 3, py); g.lineTo(px + 8, py - hh); g.lineTo(px + 13, py); g.fill(); g.fillStyle = '#e8d0a0'; g.fillRect(px + 7, py - hh + 3, 1, Math.max(0, hh - 4)); } } }
     if (e.t === 'owl' && (e.mode === 'stalk' || e.mode === 'plunge')) { const k = e.mode === 'plunge' ? 1 : 1 - e.modeT / 1.3, fl = L.arena.floor; g.fillStyle = 'rgba(10,8,20,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(fl - cy) - 1, 8 + 8 * k, 2 + 2 * k, 0, 0, Math.PI * 2); g.fill(); }
     if (e.t === 'owl') drawOwlReads(e, cx, cy);
+    if (e.shadow && e.alive) drawShadowGob(e, cx, cy);   /* (claude/owl4) */
     if (e.t === 'butcher' && KGH) KGH.butcherOver(g, e, cx, cy, time);
     if (e.t === 'drummer' && WCH) WCH.drummerOver(g, e, cx, cy, time); if (WCH && WCH.eliteOver) WCH.eliteOver(g, e, cx, cy, time);   /* (claude/warcairn2art) an elite of the clan: war paint, antlers, bone */   /* (claude/warcairn) the drum on his back, his sticks */   /* (claude/kitchengate) his apron, his cleaver, his flames */   /* (claude/owl2) */
     if ((e.t === 'harpy' || e.t === 'shrieker' || e.t === 'galeharpy') && RKH && RKH.on()) RKH.harpyOver(g, e, cx, cy, time);   /* (claude/rookery) the shrieker's crest and scream rings */   /* (claude/owl2) */

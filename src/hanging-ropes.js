@@ -115,6 +115,8 @@ export function makeHangingRopes(ctx) {
     for (const s of S.r.values()) { const d = s.d;
       if (s.glint > 0) s.glint -= dt;
       if (d.kind === 'counter' && d.arena && owl4On()) { const m = moverOf(d.id), up = m && (m.rs === 'top' || m.rs === 'back');
+        if (s.rsPrev === 'rise' && m && m.rs !== 'rise') s.settle = 0.45;   /* the bag has just stopped at the top of its fall: still a weight for a beat */
+        s.rsPrev = m ? m.rs : null; if (s.settle > 0) s.settle -= dt;
         if (s.sw && !up) s.sw = null;
         if (up && !s.sw) { const bb = bagBoxOf(d, s); if (bb && ctx.struck && ctx.struck(bb)) startSwing(s, heroX()); }   /* a bolt, a shot, an ember on the bag swings it as well */
         if (s.sw) { s.sw.t += dt; s.sw.hit = Math.max(0, s.sw.hit - dt); const off = bagSwingX(s.sw.t, s.sw.dir);
@@ -173,7 +175,7 @@ export function makeHangingRopes(ctx) {
   H.owlTarget = id => H.owlTargets().find(t => t.id === id) || null;
   /* every arena sandbag: where it hangs, and whether it is ARMED (falling with its deck, or swinging after a blow) - src/main.js owl4Tick slams her with an armed one */
   H.bags = () => { if (!S || !owl4On()) return []; const out = [];
-    for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena) continue; const bb = bagBoxOf(d, s); if (!bb) continue; out.push({ id: d.id, x: bb.x, l: bb.l, r: bb.r, t: bb.t, b: bb.b, armed: bb.m.rs === 'rise' || !!(s.sw && s.sw.t > OWL4.swing.pull), swinging: !!s.sw }); }
+    for (const s of S.r.values()) { const d = s.d; if (d.kind !== 'counter' || !d.arena) continue; const bb = bagBoxOf(d, s); if (!bb) continue; out.push({ id: d.id, x: bb.x, l: bb.l, r: bb.r, t: bb.t, b: bb.b, armed: bb.m.rs === 'rise' || s.settle > 0 || !!(s.sw && s.sw.t > OWL4.swing.pull), swinging: !!s.sw }); }
     return out; };
   H.bagSpent = id => { const s = S && S.r.get(id); if (s && s.sw) s.sw.hit = 9; };
   H.glint = id => { const s = S && S.r.get(id); if (s) s.glint = 3; };
