@@ -72,7 +72,7 @@ export function makeGlassblowerHands(ctx) {
       else if (v.t === 'rise') { snd('boil'); ctx.burst(e.x, e.y - 8, 14, ['#e6c98a', '#a87a40', '#7a5a30'], 80, 0.7); k.n.rises++; e.rose = true; }
       else if (v.t === 'tell') { snd('tellHard'); ctx.number(e.x, e.y - GRASP.markH, v.mark, '#ff6b6b'); say('roll', e.x, e.y - 52, BC5_SAY.grRoll, '#ffd36b'); }
       else if (v.t === 'hit') { snd('grab'); const landed = hitHeroes(e, v.box, v.dmg, 'THE SAND GRASPER', { key: 'grasp' + e.x + ctx.time().toFixed(1), blockable: false });
-        if (landed && v.grab) { for (const pp of ctx.players) if (!pp.dead && Math.abs(pp.x - e.x) < GRASP.grabR + 14 && Math.abs(pp.y - e.y) < 26) { pp.bcGrab = { e, t: GRASP.hold, tick: GRASP.tick }; k.n.grabs++; ctx.number(pp.x, pp.y - 30, BC5_SAY.grHold, '#ff6b6b'); } s.mode = 'hold'; s.pose = 'grHold'; } }
+        if (landed && v.grab) { for (const pp of ctx.players) if (!pp.dead && Math.abs(pp.x - e.x) < GRASP.grabR + 14 && Math.abs(pp.y - e.y) < 26) { pp.bcGrab = { e, t: GRASP.hold, tick: GRASP.tick }; k.n.grabs++; ctx.number(pp.x, pp.y - 30, BC5_SAY.grHold, '#ff6b6b'); } s.mode = 'hold'; s.pose = 'grHold'; e.mode = 'hold'; e.pose = 'grHold'; } }
     }
   }
   /* the hold (the mummy's, src/sealed-pyramid-hands.js): drawn in, a squeeze a tick, ends when it is struck (take), when its time is up, or when it dies */
