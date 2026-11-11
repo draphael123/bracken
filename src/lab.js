@@ -2939,11 +2939,15 @@ async function runbossLab(BK, opts) {
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {
-        const down=['grounded','crash','pinned','stuckTalons','perchDown','perchFall'].includes(boss.mode);
+        const down=['grounded','crash','pinned','stuckTalons','perchDown','perchFall','slammed','stoopDown','netted'].includes(boss.mode);   /* (claude/owl4: a slam, a parried stoop, her own net - open, so the hands cut her) */
         /* (claude/owl3) A LAMP IS A MOMENT: it burns two seconds and one crash spends it, so a player waits by a lamp and strikes it AS SHE COMES -
            her swoop or skim told and set on its line (she runs through him, and the lamp beside him), or her shadow over him for the plunge - never before */
         const comes = (boss.mode === 'swoopTell' && boss.swAt) || (boss.mode === 'skimTell' && boss.skimAt) || boss.mode === 'stalk';
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];const run=(boss.mode==='swoopTell'&&boss.swAt)||(boss.mode==='skimTell'&&boss.skimAt);if(lamp){goal=run?lamp.x+(Math.sign(lamp.x-boss.x)||1)*12:lamp.x+(Math.sign((A.x0+A.x1)/2-lamp.x)||1)*10;   /* (set on her line: to the lamp's far side from her, so she meets the light before him) */   /* (stood on the lamp's inner side, away from the drop: a goal that flipped sides of the lamp each frame set off the stuck-hop, and the hop carried him into the drop) */if(comes&&!lamp.lit&&!(lamp.cool>0)&&Math.abs(P.x-lamp.x)<22&&P.atk<0&&(!run||(P.x-lamp.x)*(lamp.x-boss.x)>=0)){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        /* (claude/owl4) THE SILENT STOOP: the line is told (dotted, red at the lock) - the hands leave it when the lock is near, and a parry-hero (the shield held up) meets it instead. THE NET CAST: out from under her mesh shadow
+           as the lock lands. Both only exist with the flag on (BRACKEN_OWL4 / ?owl4=1). */
+        if (boss.mode === 'stoopTell' && P.ground) { const lx = boss.stLock ? boss.stLock.x : boss.x; if (Math.abs(P.x - lx) < 56 && boss.modeT < 0.5) { strike = false; goal = lx + (Math.sign(P.x - lx) || (lx < (A.x0 + A.x1) / 2 ? 1 : -1)) * 80; } }
+        if (boss.mode === 'netTell' && P.ground && Math.abs(P.x - boss.x) < 64 && boss.modeT < 0.6) { strike = false; goal = boss.x + (Math.sign(P.x - boss.x) || ((A.x0 + A.x1) / 2 > boss.x ? 1 : -1)) * 90; }
         /* (claude/hanging3) HER PERCH HANGS ON A ROPE: while she sits on a perch whose rope is still tied, a player walks to its red-and-gold knot on the floor
            and cuts it - she comes down with it, open. (The lamps stay the minor extra above; her told moves below still come first.) */
         { const hv = BK.hvr ? BK.hvr() : null; if (!down && hv && P.ground && ['sit','land','screechTell','screech','fanTell','fan','gustTell','gust','pelletTell','pellet','hootTell','douseTell'].includes(boss.mode)) {
