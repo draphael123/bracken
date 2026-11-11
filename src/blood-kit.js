@@ -101,7 +101,7 @@ export function payBlood(p, pct, free = false) {
   const c = Math.max(1, Math.round(p.maxHp * pct));
   if (free) { debtAdd(p, c); p.bdLast = p.hp; return c; }
   const hp0 = p.hp; p.hp = hp0 <= 1 ? hp0 : Math.max(1, hp0 - c); const paid = hp0 - p.hp;
-  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold; p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
+  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); const fk = p.bdFk, hd = BLOOD.debt.hold + (fk ? fk.hold : 0), dr = BLOOD.debt.drainT + (fk ? fk.drain : 0); p.bdHold = hd; p.bdRate = p.bd / Math.max(0.1, dr - hd); }   /* (claude/bkfork) p.bdFk = the DEBT fork's hold / drain seconds (hero only) */
   return paid;
 }
 /* (claude/bkkit2) DRAIN's tick of `n` blood: into the debt first (all of it), the rest heals `over` of itself. Returns the health given. */
@@ -124,7 +124,7 @@ export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   if (dead) { debtClear(p); return; }
   if (p.bdLast === undefined || p.bdLast === null) p.bdLast = p.hp;
   const d = p.hp - p.bdLast;
-  if (d < 0) debtAdd(p, -d * D.share);
+  if (d < 0) { debtAdd(p, -d * D.share); p.bkTaken = (p.bkTaken || 0) + -d * D.share; }   /* (claude/bkfork) debt taken from a blow: MARTYR reads it (main.js bkBloodStep zeroes it) */
   else if (d > 0) p.bd = Math.max(0, (p.bd || 0) - d);   /* any heal fills the segment first */
   p.bdLast = p.hp;
   debtClamp(p);
@@ -133,18 +133,18 @@ export function debtStep(p, dt, { freeze = false, dead = false } = {}) {
   if ((p.bdHold || 0) > 0) { p.bdHold -= dt; return; }
   p.bd = Math.max(0, p.bd - (p.bdRate || p.bd / D.drainT) * dt);
 }
-export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bd = (p.bd || 0) + n; debtClamp(p); p.bdHold = D.hold; p.bdRate = p.bd / Math.max(0.1, D.drainT - D.hold); }
+export function debtAdd(p, n) { const D = BLOOD.debt; if (!(n > 0)) return; p.bd = (p.bd || 0) + n; debtClamp(p); const fk = p.bdFk, hd = D.hold + (fk ? fk.hold : 0), dr = D.drainT + (fk ? fk.drain : 0); p.bdHold = hd; p.bdRate = p.bd / Math.max(0.1, dr - hd); }   /* (claude/bkfork) fk: LONG LEDGER / QUICK SETTLE (hero only) */
 export function debtClamp(p) { const D = BLOOD.debt; p.bd = Math.max(0, Math.min(p.bd || 0, D.cap * p.maxHp, Math.max(0, p.maxHp - p.hp))); }
 /* a landed blow of his that did `dmg`: part of the segment comes back as health. Returns the health given. */
 export function debtReclaim(p, n) { if (!(p.bd > 0) || !(n > 0) || !(p.hp > 0)) return 0; const r = Math.min(p.bd, n, Math.max(0, p.maxHp - p.hp)); p.hp += r; p.bd -= r; p.bdLast = p.hp;
   if (r > 0) p.bkVitIn = (p.bkVitIn || 0) + r;   /* (claude/bkblood) every reclaimed point is VITAE (main.js vitaeStep drinks it into the bar) */
   return r; }
 /* (claude/bkblood) what a landed blow of `dmg` wins back: x debt.reclaim, x bleed.hitMul on a bleeding foe, all of it in a CRIMSON FRENZY */
-export const reclaimOf = (dmg, o = {}) => Math.max(BLOOD.debt.reclaimMin, dmg * (o.frenzy ? BLOOD.frenzy.reclaim : BLOOD.debt.reclaim) * (o.bleeding ? BLOOD.bleed.hitMul : 1));
+export const reclaimOf = (dmg, o = {}) => Math.max(BLOOD.debt.reclaimMin, dmg * (o.frenzy ? BLOOD.frenzy.reclaim : BLOOD.debt.reclaim) * (o.bleeding ? BLOOD.bleed.hitMul : 1) * (o.k || 1));   /* (claude/bkfork) o.k: QUICK SETTLE x1.5 */
 /* (claude/bkblood) VITAE: the meter points (0-100) `hp` reclaimed health is worth on a max health of maxHp */
 export const vitaeOf = (hp, maxHp) => Math.max(0, hp) * 100 / Math.max(1, BLOOD.vitae.per * maxHp);
 /* (claude/bkblood) CRIMSON FRENZY's lifesteal past the debt: steal x the blow, never past stealCap x maxHp a frenzy (p.bkStole counts it), never above max health. Returns the heal. */
-export function frenzySteal(p, dmg) { const F = BLOOD.frenzy, room = Math.max(0, F.stealCap * p.maxHp - (p.bkStole || 0)), h = Math.min(room, Math.max(0, dmg) * F.steal, Math.max(0, p.maxHp - p.hp));
+export function frenzySteal(p, dmg, mod) { const F = BLOOD.frenzy, cap = mod && mod.cap != null ? mod.cap : F.stealCap, st = mod && mod.steal != null ? mod.steal : F.steal, room = Math.max(0, cap * p.maxHp - (p.bkStole || 0)), h = Math.min(room, Math.max(0, dmg) * st, Math.max(0, p.maxHp - p.hp));   /* (claude/bkfork) mod: DEEP FRENZY / DEEP RITES */
   if (!(h > 0) || !(p.hp > 0)) return 0; p.hp += h; p.bdLast = p.hp; p.bkStole = (p.bkStole || 0) + h; return h; }
 /* (claude/bkblood) THE HEARTBEAT: beats a second for a debt of `bd` on maxHp (0 = no heartbeat), and the edge pulse's strength 0..1 */
 export function heartOf(bd, maxHp) { const F = BLOOD.feel, k = (bd || 0) / Math.max(1, maxHp); if (k < F.heartMin) return { bps: 0, k: 0 };
@@ -154,7 +154,7 @@ const BLOODLESS = new Set(['construct', 'turret', 'hourglass', 'hourglassking', 
 export function sprayKind(t, mat) { if (BLOODLESS.has(t) || ['stone', 'metal', 'crystal', 'shell', 'wood', 'clockwork', 'glass'].includes(mat)) return 'sparks';
   if (['bone', 'chitin', 'fungus', 'spirit'].includes(mat)) return 'dust'; return 'blood'; }
 /* (claude/bkblood) THE BLOOD LASH's box: past the drag's steel (rhythmBox step 2) the whip reaches lash.reach more at chest height, from lash.from of the art clock */
-export function lashBox(x, y, face, atk, steelR) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + L.reach;
+export function lashBox(x, y, face, atk, steelR, reach) { const L = BLOOD.lash; if (atk < L.from || atk >= 0.24) return null; const r0 = steelR - 2, r1 = steelR + (reach != null ? reach : L.reach);   /* (claude/bkfork) reach: CRIMSON REACH */
   return face > 0 ? { l: x + r0, r: x + r1, t: y - L.top, b: y - L.bot } : { l: x - r1, r: x - r0, t: y - L.top, b: y - L.bot }; }
 /* ALL of it back (the parries) */
 export const debtReclaimAll = p => debtReclaim(p, p.bd || 0);
@@ -162,7 +162,7 @@ export const debtReclaimAll = p => debtReclaim(p, p.bd || 0);
 export function debtSpend(p) { const s = p.bd || 0; p.bd = 0; p.bdHold = 0; return s; }
 export function debtClear(p) { p.bd = 0; p.bdHold = 0; p.bdRate = 0; p.bdLast = p.hp; }
 /* BLOOD PRICE on p: what it costs (never his last point), put on the bar as debt. Returns what was paid. */
-export const payPrice = (p, free = false) => payBlood(p, BLOOD.price.pct, free);
+export const payPrice = (p, free = false, pct) => payBlood(p, pct != null ? pct : BLOOD.price.pct, free);   /* (claude/bkfork) pct: HEAVY EDGE */
 /* a T4/T5's multiplier for what was spent */
 export const spendMul = (spent, maxHp) => 1 + BLOOD.tiers.spendMul * Math.max(0, spent) / Math.max(1, maxHp);
 
@@ -181,7 +181,7 @@ export function heavyBox(x, y, face, atk, tier, longHaft, live) {
      stop     hit-stop (s) on a held blow: [empty ward, full ward], +heavy on a blow of heavyDmg or more; shake [light, full] (a 'hurt'-tagged shake: the default save shows it); glow = the armour's top crimson alpha */
 export const GUARD = { share: 1, notches: 3, life: 12, boost: 1, stop: [0.06, 0.1], heavy: 0.03, heavyDmg: 20, shake: [2.5, 5], glow: 0.38 };
 /* the ward's blood price: `n` health leaves him and the WHOLE of it lies on the bar as debt. Returns what was paid. */
-export function guardPay(p, n) { if (!(n > 0)) return 0; p.hp -= n; p.bdLast = p.hp; debtAdd(p, n * GUARD.share); return n; }
+export function guardPay(p, n) { if (!(n > 0)) return 0; p.hp -= n; p.bdLast = p.hp; debtAdd(p, n * GUARD.share); p.bkTaken = (p.bkTaken || 0) + n * GUARD.share; return n; }   /* (claude/bkfork) MARTYR reads bkTaken */
 /* the notches a blade has (they run dry `life` s after the last), and one more drunk */
 export const notchesOf = (p, now) => (p.bkNotch || 0) > 0 && now - (p.bkNotchAt ?? -99) <= GUARD.life ? p.bkNotch : 0;
 export function notchDrink(p, now) { const n = Math.min(GUARD.notches, notchesOf(p, now) + 1); p.bkNotch = n; p.bkNotchAt = now; return n; }

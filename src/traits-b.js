@@ -32,6 +32,7 @@ export const TRAIT_SPLIT_B = {
     traits: ['gleaner', 'press', 'secondDeath', 'longPassing', 'fullCircle', 'dueRites', 'lastRites', 'deepRed', 'coldComfort', 'gripAll'],
     merged: { gleaner: ['ossuary'], secondDeath: ['graveProvides'] },
     folded: { overflow: 'ward:DEEP WARD' },
+    foldRetire: true,   /* (claude/bkfork) OVERFLOW retires as a slottable trait while FORKS_SHIP is on: it lives on as the L27 ward fork side B (DEEP WARD); flag off it stays slottable */
     retired: [],
     shared: ['winnow'],   /* WINNOWED -> the shared EXECUTIONER (its legacy row already names reaper:'winnow') */
     cut: ['sunder'],   /* LAID OPEN (2nd mark): a deliberate cut */
