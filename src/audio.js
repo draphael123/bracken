@@ -363,6 +363,10 @@ export const SFX = {
   bkDrink(k = 0.5) { if (!gate('bkDrink', 0.06)) return; noise(0.07, 0.18 + 0.1 * k, 650, 0.6); tone('sine', 260 - 60 * k, 110, 0.13, 0.16 + 0.08 * k, 0.02); tone('sine', 150, 70, 0.11, 0.12, 0.09); noise(0.05, 0.08, 1800, 2, 0.1); },
   bkHeart(k = 0.5) { if (!gate('bkHeart', 0.25)) return; tone('sine', 68, 44, 0.11, 0.16 + 0.22 * k); noise(0.05, 0.04 + 0.05 * k, 120, 0.7); tone('sine', 60, 40, 0.1, 0.12 + 0.18 * k, 0.15); },
   bkFrenzy() { if (!gate('bkFrenzy', 0.3)) return; noise(0.5, 0.26, 300, 0.5); tone('sawtooth', 90, 45, 0.5, 0.14); tone('sine', 55, 32, 0.7, 0.3, 0.02); noise(0.3, 0.12, 1300, 1.2, 0.15); tone('sine', 68, 44, 0.12, 0.3, 0.35); tone('sine', 60, 40, 0.1, 0.24, 0.5); },
+  /* (claude/bkrework, PLACEHOLDER SFX for the art lane to polish) RED REQUIEM: the toll of the windup, the geyser's burst; the DEBT DRAIN cut's low wet crack */
+  bkToll() { if (!gate('bkToll', 0.4)) return; tone('sine', 196, 180, 0.5, 0.2); tone('sine', 392, 370, 0.4, 0.09, 0.01); noise(0.2, 0.08, 500, 0.8); },
+  bkRequiem() { if (!gate('bkRequiem', 0.4)) return; noise(0.45, 0.3, 380, 0.6); tone('sawtooth', 110, 40, 0.5, 0.16); tone('sine', 60, 36, 0.7, 0.3, 0.02); noise(0.3, 0.14, 1500, 1.1, 0.05); },
+  bkDebtDrain() { if (!gate('bkDebtDrain', 0.12)) return; noise(0.1, 0.2, 900, 0.7); tone('sawtooth', 220, 80, 0.12, 0.1); tone('sine', 130, 70, 0.14, 0.12, 0.04); },
   bkLash() { if (!gate('bkLash', 0.1)) return; noise(0.06, 0.2, 2600, 1.5); noise(0.12, 0.14, 700, 0.6, 0.03); tone('square', 900, 300, 0.05, 0.05); },
   bloodDraw() { if (!gate('bloodDraw', 0.15)) return; noise(0.35, 0.16, 420, 0.5); tone('sine', 180, 90, 0.35, 0.1); noise(0.2, 0.08, 1400, 1.5, 0.12); },
   bloodHarvest() { if (!gate('bloodHarvest', 0.15)) return; noise(0.16, 0.24, 380, 0.5); tone('sine', 240, 60, 0.22, 0.18); tone('sine', 62, 40, 0.18, 0.26, 0.14); tone('sine', 62, 40, 0.16, 0.2, 0.34); },

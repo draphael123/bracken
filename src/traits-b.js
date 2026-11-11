@@ -31,15 +31,15 @@ export const TRAIT_SPLIT_B = {
   },
   reaper: {   /* identity: pay back the ledger */
     core: ['longHaft', 'drainWalk', 'wardPull', 'bloodMark', 'rend'],
-    traits: ['gleaner', 'press', 'secondDeath', 'longPassing', 'fullCircle', 'dueRites', 'lastRites', 'deepRed', 'coldComfort', 'gripAll'],
+    traits: ['gleaner', 'press', 'secondDeath', 'longPassing', 'fullCircle', 'dueRites', 'deepRed', 'coldComfort', 'gripAll'],
     merged: { gleaner: ['ossuary'], secondDeath: ['graveProvides'] },
     folded: { overflow: 'ward:DEEP WARD' },
     foldRetire: true,   /* (claude/bkfork) OVERFLOW retires as a slottable trait while FORKS_SHIP is on: it lives on as the L27 ward fork side B (DEEP WARD); flag off it stays slottable */
     retired: [],
     shared: ['winnow'],   /* WINNOWED -> the shared EXECUTIONER (its legacy row already names reaper:'winnow') */
-    cut: ['sunder'],   /* LAID OPEN (2nd mark): a deliberate cut */
+    cut: ['sunder', 'lastRites'],   /* LAID OPEN (2nd mark): a deliberate cut; LAST RITES (claude/repoint, Daniel 11-10 Q10): it boosted the old surge / lastHarvest, dead since CRIMSON FRENZY and gone with it - cut with the Frenzy by the rework */
     defaults: ['deepRed', 'longPassing'],
-    learnAt: { deepRed: 2, gleaner: 3, press: 5, longPassing: 6, fullCircle: 8, dueRites: 10, lastRites: 12, coldComfort: 14, secondDeath: 16, gripAll: 17, overflow: 18 },
+    learnAt: { deepRed: 2, gleaner: 3, press: 5, longPassing: 6, fullCircle: 8, dueRites: 10, coldComfort: 14, secondDeath: 16, gripAll: 17, overflow: 18 },
     tags: { gleaner: 'BLOODWORMS', press: 'BLOODWORMS', secondDeath: 'BLOODWORMS' },
   },
   berserker: {   /* identity: momentum costs */

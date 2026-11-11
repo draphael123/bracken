@@ -1,6 +1,6 @@
-// src/forks-bloodknight.js - THE BLOOD KNIGHT'S 11 RUNGS AND 10 TRAIT FORKS (claude/bkfork; forkplan sec 4 BLOOD KNIGHT + passiveplan sec 4 / row 8 + heroaudit sec 5; hero id 'reaper').
+// src/forks-bloodknight.js - THE BLOOD KNIGHT'S 11 RUNGS AND 9 TRAIT FORKS (claude/bkfork, re-pointed in claude/repoint to claude/bkrework: RED REQUIEM on UP+C, DEBT DRAIN third cut, LONG RALLY debt, no heal from the nova; LAST RITES cut with the old Frenzy; forkplan sec 4 BLOOD KNIGHT + passiveplan sec 4 / row 8 + heroaudit sec 5; hero id 'reaper').
 // Pure data, read by src/forks.js. Daniel's rule: every side is an A/B version of an ability the Blood Knight ALREADY HAS on master (the blood step, BLOODLETTING, the rhythm's lash,
-// the blood ward, BLOOD MAIL, the five-tier heavy, VITAE, BLOOD PRICE, the DEBT, the BLOOD SPIKE and CRIMSON FRENZY). Nothing here is a new move, button or ultimate.
+// the blood ward, BLOOD MAIL, the five-tier heavy, VITAE, BLOOD PRICE, the DEBT, the BLOOD SPIKE and RED REQUIEM). Nothing here is a new move, button or ultimate.
 // The plan's NEW-MOVE sides (PLANT THE BLADE, PAY IT FORWARD's UP+C wave, MORTGAGE's double-tap) are NOT built: see the lane report questions.
 // His FOLDED list is { overflow: 'ward:DEEP WARD' } (traits-b.js): OVERFLOW lives on as the L27 side B (DEEP WARD); foldRetire in src/traits.js retires the id while the flag is on.
 // The effect code is in src/main.js behind bb('<side id>') = hero() === 'reaper' && tech(id); src/blood-kit.js carries the debt / price / frenzy / lash numbers the sides read.
@@ -23,7 +23,7 @@ export const BK_RUNG_FORKS = {
   chain: { slot: 'chain', ability: 'chain', name: 'THE RHYTHM', trade: 'REACH OR REAP',
     A: { id: 'bkreach', name: 'CRIMSON REACH', input: 'THE THIRD CUT',
       what: 'THE THIRD CUT\'S LASH REACHES TWICE AS FAR AND DRAGS SMALL FOES A STEP IN',
-      teach: 'THE BLOOD LASH OF THE THIRD CUT WHIPS TWICE AS FAR PAST THE STEEL AND DRAGS A SMALL FOE IT LANDS ON A STEP TOWARD YOU' },
+      teach: 'THE DEBT DRAIN CUT (THE THIRD) WHIPS TWICE AS FAR PAST THE STEEL AND DRAGS A SMALL FOE IT LANDS ON A STEP TOWARD YOU' },
     B: { id: 'bkreap', name: 'REAP THE BLEED', input: 'THE THIRD CUT',
       what: 'THE THIRD CUT ON A BLEEDING FOE POPS THE BLEED: ITS REST COMES AT ONCE',
       teach: 'THE THIRD CUT ON A BLEEDING FOE ENDS THE BLEED AND PAYS ITS REST AT ONCE: A QUARTER SWORD BLOW A SECOND OF BLEED, UP TO TWICE' } },
@@ -50,8 +50,8 @@ export const BK_RUNG_FORKS = {
       teach: 'HOLD X STOPS AT TIER THREE, THE CRIMSON CRESCENT, BUT EVERY TIER ARRIVES 40% SOONER' } },
   spender: { slot: 'spender', ability: 'vitae', name: 'VITAE', trade: 'DRINK IT OR TAKE IT',
     A: { id: 'bkdrinker', name: 'DRINKER', input: 'WIN IT BACK',
-      what: 'DEBT IS OWED HEALTH, VITAE IS FRENZY FUEL: DRINKING BACK FILLS IT 35% FASTER',
-      teach: 'DEBT IS HEALTH YOU OWE; VITAE IS THE FUEL FOR YOUR FRENZY. THE HEALTH YOU DRINK BACK FILLS VITAE 35% FASTER' },
+      what: 'DEBT IS OWED HEALTH, VITAE IS REQUIEM FUEL: DRINKING BACK FILLS IT 35% FASTER',
+      teach: 'DEBT IS HEALTH YOU OWE; VITAE IS THE FUEL FOR YOUR REQUIEM. THE HEALTH YOU DRINK BACK FILLS VITAE 35% FASTER' },
     B: { id: 'bkmartyr', name: 'MARTYR', input: 'TAKE IT',
       what: 'DEBT YOU TAKE OR WARD ALSO FILLS VITAE, BUT DRINKING BACK FILLS IT 25% SLOWER',
       teach: 'A HALF OF EVERY BLOW YOU TAKE OR WARD AS DEBT FILLS VITAE, BUT THE HEALTH YOU DRINK BACK FILLS IT 25% SLOWER' } },
@@ -65,10 +65,10 @@ export const BK_RUNG_FORKS = {
   sig: { slot: 'sig', ability: 'debt', name: 'THE DEBT', trade: 'LONG OR QUICK',
     A: { id: 'bklongdebt', name: 'LONG LEDGER', input: 'AFTER A HIT',
       what: 'DEBT HOLDS 2 S LONGER BEFORE IT DRAINS, AND LASTS 2 S MORE ON THE BAR',
-      teach: 'THE RED ON YOUR BAR WAITS 2 S LONGER BEFORE IT DRAINS AND TAKES 2 S MORE TO RUN OUT: 7 S IN ALL, NOT 5' },
+      teach: 'THE RED ON YOUR BAR WAITS 2 S LONGER BEFORE IT DRAINS AND TAKES 2 S MORE TO RUN OUT: 10 S IN ALL, NOT 8' },
     B: { id: 'bkquickdebt', name: 'QUICK SETTLE', input: 'AFTER A HIT',
-      what: 'EVERY BLOW DRINKS BACK HALF AGAIN AS MUCH, BUT THE DEBT DRAINS IN 3.5 S',
-      teach: 'EVERY BLOW OF YOURS WINS BACK HALF AGAIN AS MUCH DEBT, BUT WHAT YOU DO NOT WIN BACK DRAINS AWAY IN 3.5 S, NOT 5' } },
+      what: 'EVERY BLOW DRINKS BACK HALF AGAIN AS MUCH, BUT THE DEBT DRAINS IN 6.5 S',
+      teach: 'EVERY BLOW OF YOURS WINS BACK HALF AGAIN AS MUCH DEBT, BUT WHAT YOU DO NOT WIN BACK DRAINS AWAY IN 6.5 S, NOT 8' } },
   spike: { slot: 'skill4', ability: 'spike', name: 'BLOOD SPIKE', trade: 'ONE DEEP OR A RING',
     A: { id: 'bkspikea', name: 'ONE SPIKE', input: 'KNEEL ON THE BEAT',
       what: 'THE ONE THAT STRUCK TAKES 1.5x AND REELS HALF AGAIN AS LONG; WIND BACK DOUBLED',
@@ -76,12 +76,12 @@ export const BK_RUNG_FORKS = {
     B: { id: 'bkspikeb', name: 'SPIKE RING', input: 'KNEEL ON THE BEAT',
       what: 'EVERY FOE WITHIN 90 PX TAKES 80% AND REELS, NOT ONLY THE ONE THAT STRUCK',
       teach: 'THE BEAT\'S SPIKES RISE ROUND YOU: EVERY FOE WITHIN 90 PX TAKES 80% OF THE BLOW AND REELS. ALL THE DEBT STILL COMES BACK' } },
-  ult: { slot: 'ult', ability: 'ult', name: 'CRIMSON FRENZY', trade: 'LONG OR DEEP', capstone: true,
-    A: { id: 'bklongfrenzy', name: 'LONG FRENZY', input: 'FULL VITAE, HOLD F',
-      what: 'THE FRENZY LASTS 6.5 S, AND QUICKENS THE CUTS 10% INSTEAD OF 20%',
-      teach: 'CRIMSON FRENZY LASTS 6.5 S INSTEAD OF 5, BUT QUICKENS THE CUTS ONLY 10%. EVERY BLOW STILL WINS BACK ALL OF ITSELF' },
-    B: { id: 'bkdeepfrenzy', name: 'DEEP FRENZY', input: 'FULL VITAE, HOLD F',
-      what: 'THE FRENZY LASTS 4 S, QUICKENS THE CUTS 40%, AND DRINKS 20% OF EVERY BLOW',
+  ult: { slot: 'ult', ability: 'ult', name: 'RED REQUIEM', trade: 'LONG OR DEEP', capstone: true,
+    A: { id: 'bklongreq', name: 'LONG REQUIEM', input: 'UP + C AT FULL VITAE',
+      what: 'THE BRAND OF BLOOD LASTS 10 S AND YOUR BLOWS ON IT LAND 15% HARDER, NOT 8 S AT 25%',
+      teach: 'HEMORRHAGE LASTS 10 S INSTEAD OF 8, BUT YOUR BLOWS ON A BRANDED FOE LAND ONLY 15% HARDER, NOT 25%. EVERY BLOW STILL WINS BACK ALL OF ITSELF' },
+    B: { id: 'bkdeepreq', name: 'DEEP REQUIEM', input: 'UP + C AT FULL VITAE',
+      what: 'THE BRAND OF BLOOD LASTS 6 S AND YOUR BLOWS ON IT LAND 50% HARDER, NOT 8 S AT 25%',
       teach: 'CRIMSON FRENZY LASTS 4 S, QUICKENS THE CUTS 40%, AND PAST THE DEBT DRINKS 20% OF EVERY BLOW (CAPPED AT 16% OF YOUR HEALTH)' } },
 };
 
@@ -106,12 +106,9 @@ export const BK_TRAIT_FORKS = {
   'trait:dueRites': TF('dueRites', 'DUE RITES', 'FAR OR SURE',
     { id: 'bkdra', name: 'WIDE RITES', what: 'THE HEART IS LEFT FROM 60% FURTHER OFF, STILL BY CHANCE', teach: 'A KILL UP TO 60% FURTHER FROM YOU THAN A FULL WARD REACHES CAN LEAVE A HEART, WITH THE SAME CHANCE AS BEFORE' },
     { id: 'bkdrb', name: 'SURE HEART', what: 'THE HEART IS ALWAYS LEFT, BUT ONLY 30% CLOSER IN', teach: 'A KILL INSIDE 70% OF A FULL WARD\'S REACH ALWAYS LEAVES A HEART, WHATEVER THE RANK' }),
-  'trait:lastRites': TF('lastRites', 'LAST RITES', 'LONG OR DEEP',
-    { id: 'bklra', name: 'LONG RITES', what: 'CRIMSON FRENZY LASTS A FURTHER SECOND', teach: 'THE LAST RITES NOW LENGTHEN CRIMSON FRENZY: A FURTHER SECOND, AT RANK III' },
-    { id: 'bklrb', name: 'DEEP RITES', what: 'CRIMSON FRENZY DRINKS HALF AGAIN AS MUCH PAST THE DEBT', teach: 'THE LAST RITES NOW DEEPEN CRIMSON FRENZY: ITS DRINK PAST THE DEBT AND ITS CAP ARE HALF AGAIN AS GREAT, AT RANK III' }),
   'trait:deepRed': TF('deepRed', 'DEEP RED', 'MARKED OR BIG',
-    { id: 'bkdea', name: 'MARKED DRAW', what: 'THE NOVA DRINKS 8 FOR EACH MARKED FOE IT CATCHES, NOT 4', teach: 'THE NOVA HEALS 8 FOR EVERY MARKED FOE IT CATCHES INSTEAD OF 4' },
-    { id: 'bkdeb', name: 'BIG DRAW', what: 'THE NOVA HEALS 90% MORE, BUT MARKS NO LONGER ADD TO IT', teach: 'THE NOVA HEALS 90% MORE THAN THE BLOOD IT COST, BUT THE EXTRA FOR MARKED FOES IS GONE' }),
+    { id: 'bkdea', name: 'MARKED DRAW', what: 'THE NOVA FILLS 6 VITAE FOR EACH MARKED FOE IT CATCHES', teach: 'THE NOVA HEALS NOTHING NOW: IT FILLS VITAE, 6 FOR EVERY MARKED FOE IT CATCHES (AT RANK III, UP TO 25)' },
+    { id: 'bkdeb', name: 'BIG DRAW', what: 'THE NOVA FILLS 12 VITAE FLAT, BUT MARKS NO LONGER ADD TO IT', teach: 'THE NOVA FILLS 12 VITAE WHATEVER IT CATCHES, MARKED OR NOT (AT RANK III). THE BLOOD THE WARD COST YOU STAYS DEBT, WON BACK BY YOUR BLOWS' }),
   'trait:coldComfort': TF('coldComfort', 'KEEN PRICE', 'LONG OR KEENER',
     { id: 'bkcca', name: 'LONG KEEN', what: 'THE EDGE LASTS 3 S LONGER', teach: 'BLOOD PRICE\'S EDGE STAYS ON THE BLADE 3 S LONGER' },
     { id: 'bkccb', name: 'KEENER', what: 'THE EDGE CUTS 45% HARDER AGAIN, BUT LASTS 2 S LESS', teach: 'WHILE THE EDGE IS ON, THE GREATSWORD CUTS 45% HARDER AGAIN INSTEAD OF 25%, BUT THE EDGE LASTS 2 S LESS' }),
