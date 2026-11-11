@@ -20,7 +20,7 @@ import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
 import { SKIN_MAPS } from '../src/redraw/undercrown_skins.js';   /* the recoloured skins (claude/goblinsweep) are baked from a table, not assigned one by one */
 
-export const GOBLIN_KINDS = new Set(['sprig', 'shield', 'thorn', 'archer', 'sapper', 'brute', 'rockgoblin', 'gobpriest', 'gobmage', 'assassin', 'berserker',
+export const GOBLIN_KINDS = new Set(['sprig', 'shadowgob', 'shield', 'thorn', 'archer', 'sapper', 'brute', 'rockgoblin', 'gobpriest', 'gobmage', 'assassin', 'berserker',
   'burngob', 'hearthgob', 'stormshaman', 'sailer', 'horn', 'thief', 'miner', 'sheargob', 'gaffer', 'kite', 'sandgob', 'chief', 'lance', 'snuffer',
   'propman', 'tippler', 'scalder', 'sentry', 'pike', 'temperer', 'gobgeo']);   /* (claude/gobgeo) THE GOBLIN GEOMANCER: Highcrown only, before the Queen */
 /* the levels whose goblins are reskinned (a lane adds its level here when it fixes it). THE UNDERCROWN left this list (claude/undercrown2art, ROAD_OPEN.undercrown): on the main road it comes BEFORE the Goblin Queen, so its goblins are living goblins in a goblin level and the lint no longer measures it (its navvies, timbermen and lamp-snuffers keep their skins anyway). */

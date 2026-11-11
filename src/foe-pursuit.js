@@ -19,7 +19,7 @@ export const PURSUIT = { see: 230, leash: 300, walkMul: 2.2, walkMin: 45, walk: 
 export const PURSUE = {
   hound: 'hunt',
   soldier: 'walk', pike: 'walk', shield: 'walk', brute: 'walk', heavy: 'walk', javelin: 'walk', miner: 'walk', cutter: 'walk', sheargob: 'walk',
-  sprig: 'walk', thief: 'walk', badger: 'walk', hearthgob: 'walk', assassin: 'walk', burngob: 'walk', swornsword: 'walk', hedgeknight: 'walk',
+  sprig: 'walk', shadowgob: 'walk', thief: 'walk', badger: 'walk', hearthgob: 'walk', assassin: 'walk', burngob: 'walk', swornsword: 'walk', hedgeknight: 'walk',
   cutlass: 'walk', sailor: 'walk', boarder: 'walk', cutthroat: 'walk', tippler: 'walk', bellman: 'walk', trophyhunter: 'walk',
 };
 export const LEAD = { k: 0.7, max: 80 };

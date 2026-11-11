@@ -101,9 +101,9 @@ export const FEINT = new Set(['soldier|slashTell', 'cutlass|slashTell', 'sailor|
    (every kind below stands in that act's levels today). A designed squad for a level of act N is made from act N's roster; a kind from an EARLIER
    act may come back reskinned (cnSkin) to fit the place, never a living goblin past the Goblin Queen (theme fit; undead bonegob is fine). */
 export const ROSTER = {
-  1: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'hound', 'thief', 'badger', 'lurker', 'swornsword'], back: ['archer', 'thorn', 'spit', 'spitcap', 'weaver', 'stormshaman'],
+  1: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'shadowgob', 'hound', 'thief', 'badger', 'lurker', 'swornsword'], back: ['archer', 'thorn', 'spit', 'spitcap', 'weaver', 'stormshaman'],
        heavy: ['brute', 'heavy'], support: ['sapper', 'horn', 'hornsman'], note: 'goblin woods and the stockade: the shield-covers-the-bow lesson' },
-  2: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'cutter', 'miner', 'goat', 'hound', 'assassin', 'hearthgob', 'sheargob'], back: ['rockgoblin', 'archer', 'javelin', 'gobmage', 'scalder', 'skybolt'],
+  2: { front: ['shield', 'pike', 'soldier'], flank: ['sprig', 'shadowgob', 'cutter', 'miner', 'goat', 'hound', 'assassin', 'hearthgob', 'sheargob'], back: ['rockgoblin', 'archer', 'javelin', 'gobmage', 'scalder', 'skybolt'],
        heavy: ['brute', 'troll', 'heavy', 'berserker', 'golem'], support: ['gobpriest', 'horn', 'sentry', 'snuffer', 'sapper'], note: 'the crags and the goblin court: priests and bells to kill first' },
   3: { front: ['tideguard', 'watch', 'bellguard', 'merrowbrute'], flank: ['cutlass', 'sailor', 'boarder', 'bonecorsair', 'drownedknight', 'crab', 'wight'], back: ['scout', 'netter', 'marine', 'merrowspear', 'lookout', 'seawitch'],
        heavy: ['merrowbrute', 'drownedknight', 'holdfast', 'tidemarauder'], support: ['bosun', 'merrowcaller', 'lanternshade', 'snuffer'], water: ['eel', 'angler', 'urchin', 'puffer', 'lamprey', 'siren', 'manta', 'jelly'],

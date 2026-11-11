@@ -12,7 +12,7 @@
 // a lever, a firepit) is weighted low - it is not aimed at you until you aim it.
 export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 0, shrieker: 2.5, galeharpy: 2.5, shrieksisters: 6,   /* THE ROOKERY (claude/rookery): its cracked rocks are machines (worth 0); THE HARPY SHRIEKER as the harpy; THE SHRIEK SISTERS a boss */ burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, overhang: 0, watertrough: 0, villagewell: 0,   /* THE BURNING VILLAGE: a hearth goblin's swing plus the ground it lights; a slow touch you steer round; the boss; and the village's own things, which fight nobody */
   familiar:5, lanternshade:2.5,bonecorsair:3,tidemarauder:4,
-  sprig: 1, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
+  sprig: 1, shadowgob: 2.5, spit: 1, wasp: 1.5, hopper: 1, shield: 2, archer: 2, thorn: 2, spitter: 1.5, turtle: 1.5,
   brute: 3.5, sapper: 3, hound: 2.5, pike: 3, soldier: 3, javelin: 2.5, heavy: 4, crow: 1, bat: 1,
   sporeling: 1.5, lurker: 2.5, spitcap: 2, weaver: 3, shaman: 3, thief: 1, folk: 0, squirrel: 0,
   glowbud: 0, mendpuff: 0, springpuff: 0, rootknot: 0,   /* (claude/sporewood2) SPOREWOOD 2's spores that help you: the lantern cap, the mend puff, the puffball that bursts into a spring spore, the root knot - things you work, worth nothing as foes */

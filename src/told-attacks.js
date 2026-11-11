@@ -31,7 +31,7 @@ export const SIG = {
   /* act I - the greenwood */
   gobgeo: { mode: 'rockTell', answer: 'parry' },   /* (batch155, foe-pass) the Goblin Geomancer's thrown rock is told and parried back (src/gob-geomancer.js) */
   attendant: { mode: 'bashTell', answer: 'parry' },   /* (batch127 integ: kitchengate2's Grubbag attendant - the shield bash is told and parried) */
-  archer: { mode: 'draw', answer: 'duck' },        sprig: { mode: 'biteTell', answer: 'parry' },     wasp: { mode: 'stingTell', answer: 'parry' },
+  archer: { mode: 'draw', answer: 'duck' },        sprig: { mode: 'biteTell', answer: 'parry' },  shadowgob: { mode: 'biteTell', answer: 'parry' },     wasp: { mode: 'stingTell', answer: 'parry' },
   shield: { mode: 'shoveTell', answer: 'parry' },  sporeling: { mode: 'biteTell', answer: 'parry' }, lurker: { mode: 'springTell', answer: 'parry' },
   thorn: { mode: 'wind', answer: 'parry' },        hopper: { mode: 'hopTell', answer: 'parry' },     brute: { mode: 'wind', answer: 'parry' },
   pike: { mode: 'tell', answer: 'parry' },         hound: { mode: 'pounceTell', answer: 'jump' },    weaver: { mode: 'spitTell', answer: 'parry' },
