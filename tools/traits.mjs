@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { SKILLS, passiveOn, migrateProgress, validateProgress, wearTrait, migrateTraits, HERO_IDS, TRT } from '../src/progression.js';
 import { xpFloor } from '../src/xp.js';
+import { forksShip } from '../src/forks.js';   /* (claude/rangerfork) with FORKS_SHIP on the Ranger's four folded ids retire as well */
 const T = TRT;
 /* (claude/traitsmoke-d) the shipped value is not asserted (the flip commit must not break this tool); section 1 is the FLAG OFF path, so it starts by turning the flag off */
 T.setTraitsShip(false);
@@ -75,8 +76,8 @@ try {
   };
   for (const [h, w] of Object.entries(A)) {
     const s = T.TRAIT_SPLIT[h]; assert(T.hasSplit(h), h + ' is split');
-    assert.deepEqual([s.core.length, s.traits.length, Object.keys(s.folded).length, Object.values(s.merged).flat().length, s.retired.length, s.shared.length], [w.core, w.traits, w.folded, w.merged, w.retired, w.shared], h + ' table shape');
-    const cat = SKILLS.filter(x => x.hero === h && !x.active), listed = [...s.core, ...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat(), ...s.retired, ...s.shared];
+    assert.deepEqual([s.core.length, s.traits.length, Object.keys(s.folded).length, Object.values(s.merged).flat().length, s.retired.length, s.shared.length], [w.core, w.traits, w.folded, w.merged, w.retired + (h === 'ranger' && forksShip() ? 4 : 0), w.shared], h + ' table shape');
+    const cat = SKILLS.filter(x => x.hero === h && !x.active), listed = [...s.core, ...s.traits, ...Object.keys(s.folded), ...Object.values(s.merged).flat(), ...s.retired.filter(id => !(id in s.folded)), ...s.shared];   /* (claude/rangerfork) a folded id that retired with FORKS_SHIP is one id, listed once */
     assert.equal(new Set(listed).size, listed.length, h + ': no id is listed twice');
     for (const n of cat) assert(listed.includes(n.id), h + '/' + n.id + ' unlisted');
     for (const id of listed) assert(cat.some(n => n.id === id) || T.isNewTrait(h, id), h + '/' + id + ' is neither a catalog passive nor a NEW trait');

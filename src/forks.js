@@ -38,6 +38,7 @@ export const CAPSTONE_LEVEL = 50;
 export const NAME_MAX = 14;   /* a fork name on a card (textfit) */
 const LADDER_LV = Object.fromEntries(FORK_LADDER.map(r => [r.slot, r.lv]));
 import { GEO_FORKS } from './forks-geomancer.js';   /* (claude/geofork) the Geomancer's 11 rungs + 9 trait pairs */
+import { RG_FORKS } from './forks-ranger.js';   /* (claude/rangerfork) the Ranger's 11 rungs + 10 trait pairs */
 
 /* THE REGISTRY: hero -> { key: entry }. Hero lanes add their file here; tools may register a synthetic fork (registerFork / unregisterFork) for the framework checks. */
 const REG = { knight: KNIGHT_FORKS, paladin: PALADIN_FORKS };
@@ -46,6 +47,7 @@ REG.berserker = BERSERKER_FORKS;   /* (claude/bersfork) */
 export const registerFork = (h, key, entry) => { (REG[h] = REG[h] || {})[key] = entry; };
 export const unregisterFork = (h, key) => { if (REG[h]) delete REG[h][key]; };
 REG.geomancer = GEO_FORKS;   /* (claude/geofork) */
+REG.ranger = RG_FORKS;   /* (claude/rangerfork) */
 export const forksOf = h => REG[h] || {};
 export const hasForks = h => Object.keys(forksOf(h)).length > 0;
 const entryOf = (h, key) => forksOf(h)[key] || null;
