@@ -20,15 +20,18 @@
 // drawHud, dummyHit, thrown, revived, debug }. The greybox furniture is drawn here with plain fills (ART list: TAVERN_ART below).
 import { DRILLS, DRILL_IDS, TEAM_WINDOW, cleanTavern, COLOURS, stepColour, colourOf } from './party.js';
 import { PVP_SHIPS } from './pvp-duel.js';   /* (claude/pvpduel) the pit is open when DUEL (BETA) ships */
+import { forksShip } from './forks.js';   /* (claude/forkframe) THE CROSSROADS station exists only while FORKS_SHIP is on (read once at load: the shipped flag, or the lab's ?forks=on) */
 import * as TA from './tavern-art.js';   /* (claude/tavernart) the stations' art */
 
 /* THE ROOM, in tiles (src/level.js theTavern paints it from this): floor top at row FLOOR, everything stands on row FLOOR - 1 */
 export const ROOM = { W: 68, H: 26, FLOOR: 20, CEIL: 12, wallL: 1, wallR: 66 };
+const CROSSROADS_STATION = { id: 'crossroads', x: 20, name: 'THE CROSSROADS', verb: 'PATHS', first: 'THE CROSSROADS: A SIGNPOST BY THE HEARTH. SWAP THE A OR B OF EVERY PATH YOU HAVE OPENED, FREE, AS OFTEN AS YOU LIKE.' };   /* (claude/forkframe) dark behind FORKS_SHIP */
 export const STATIONS = [
   { id: 'door', x: 3, name: 'THE DOOR', verb: 'LEAVE', first: 'THE DOOR: FRIENDS WALK IN HERE. P1 TAKES THE PARTY OUT TO THE MAP.' },
   { id: 'board', x: 7, name: 'THE PARTY BOARD', verb: 'PARTY', first: 'THE PARTY BOARD: FILL A SEAT - JOIN HERE ON A SAVE OF YOUR OWN, OR INVITE A FRIEND ONLINE.' },
   { id: 'guestbook', x: 10, name: 'THE GUEST BOOK', verb: 'SAVES', first: 'THE GUEST BOOK: YOUR SAVES - SWITCH, START A NEW ONE, OR CLEAR ONE. P1 KEEPS THE BOOK.' },   /* (claude/innsaves, Daniel 11-06) the real SAVES station: the five-slot save screen, from the inn */
   { id: 'saves', x: 14, name: 'CO-OP RULES', verb: 'READ', first: 'CO-OP RULES: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
+  ...(forksShip() ? [CROSSROADS_STATION] : []),
   { id: 'unlocks', x: 27, name: 'THE UNLOCKS BOARD', verb: 'UNLOCKS', first: 'THE UNLOCKS BOARD: WHAT IS STILL LOCKED, HOW TO OPEN IT, AND HOW FAR YOU ARE.' },   /* (claude/unlocks, Daniel 11-07) the UNLOCKS screen, read-only: levels, heroes, skins, the rest */
   { id: 'store', x: 31, name: 'THE BAR STORE', verb: 'STORE', first: 'THE BARKEEP IS THE TRADER: THE ONE STORE.' },
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
@@ -51,6 +54,7 @@ export const TAVERN_ART = [
   ['tiles', 'inn floorboards (worn oak, a hearth-stone patch before the fire), the plastered back wall with timber framing, the beamed ceiling, the yard\'s packed-sand floor and its open back wall'],
   ['door', 'the inn door in the west wall: oak with iron straps, a lamp over it, swung open while somebody walks in (2 frames: shut / open), the road and a signpost seen through it'],
   ['board', 'THE INVITE BOARD: a cork-and-timber notice board with pinned bills and a chalk slate for the four-letter room code (blank / chalked)'],
+  ...(forksShip() ? [['crossroads', 'THE CROSSROADS: a signpost by the hearth with two arrow boards (A pointing west, B east), a lantern hung on the post']] : []),
   ['unlocks', 'THE UNLOCKS BOARD: a plank board on a post between the long tables and the bar, UNLOCKS chalked on it with a small padlock hung from a nail'],
   ['store', 'THE BAR STORE: the barkeep doubles as the trader - a hung STORE plank over the counter (src/tavern-art.js store); using it opens the one store (src/store.js, openStore in main.js)'],
   ['table', 'THE CAMPAIGN TABLE: a heavy map table with the world map spread on it, pins and a candle; the party standing round it reads as planning'],
@@ -96,6 +100,7 @@ export function makeTavern(api) {
     if (s.id === 'board') { (api.openParty || api.openOnline)(); return; }
     if (s.id === 'guestbook') { if (p.n !== 1) { say(p, 'P1 KEEPS THE BOOK', '#9aa39a'); api.hint('P1 KEEPS THE BOOK: ONLY PLAYER ONE CHANGES SAVES.', 4); api.sfx('ui'); return; } if (api.openBook) api.openBook(); return; }
     if (s.id === 'saves') { if (api.openSaves) api.openSaves(); return; }
+    if (s.id === 'crossroads') { if (api.openCrossroads) api.openCrossroads(); return; }   /* (claude/forkframe) */
     if (s.id === 'unlocks') { if (api.openUnlocks) api.openUnlocks(); return; }
     if (s.id === 'store') { if (api.openStore) api.openStore(); return; }   /* (claude/tavshop, Daniel 11-04) THE BARKEEP IS THE TRADER: the same store, back to this spot */
     if (s.id === 'table') { api.takeRoad(); return; }
@@ -193,6 +198,7 @@ export function makeTavern(api) {
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time, api.text);
     TA.lesson(g, at('lesson'), fy, time, api.text);
+    if (forksShip()) TA.crossroads(g, at('crossroads'), fy, time, api.text);
     TA.unlocks(g, at('unlocks'), fy, time, api.text);
     TA.target(g, X(TARGET.x), fy, time);
     TA.arena(g, at('arena'), fy, time, api.text, PVP_SHIPS);

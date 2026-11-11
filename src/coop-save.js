@@ -35,7 +35,7 @@ const get = (storage, k) => { try { return storage.getItem(k); } catch { return 
 export const slotRawOf = (storage, i) => get(storage, slotKey(i)) || (i === 0 ? get(storage, LEGACY_KEY) : null);
 
 /* THE ONE HERO'S PART OF A SAVE: the maps keyed by hero (only his entry travels) and the few that are the save's own */
-export const PER_HERO = ['xp', 'xpGot', 'done', 'card', 'cardFree', 'skillOwned', 'loadouts', 'skillRank', 'talents', 'charmOf', 'traits'];   /* (claude/traitframe) the hero's worn traits join his snapshot */
+export const PER_HERO = ['xp', 'xpGot', 'done', 'card', 'cardFree', 'skillOwned', 'loadouts', 'skillRank', 'talents', 'charmOf', 'traits', 'fork'];   /* (claude/traitframe) the hero's worn traits join his snapshot */
 export const FLAT = ['charm', 'items', 'coins'];
 /* every PROG key main.js swaps while a profiled seat's pass runs (tech is per hero by its 'hero:' prefix) */
 export const OVERLAY_KEYS = [...PER_HERO, 'tech', ...FLAT];

@@ -18,7 +18,8 @@
 import { KNIGHT_FORKS } from './forks-knight.js';
 
 export const FORKS_SHIP = false;
-let ship = FORKS_SHIP;
+const labOn = () => { try { return typeof location !== 'undefined' && /[?&]forks=on(&|$)/.test(location.search || ''); } catch { return false; } };   /* the lab's ?forks=on, read at load so the inn station (src/tavern.js) can see it */
+let ship = FORKS_SHIP || labOn();
 export const forksShip = () => ship;
 export const setForksShip = v => { ship = !!v; return ship; };   /* tools and the lab only: the shipped value is FORKS_SHIP */
 
@@ -71,7 +72,7 @@ export const owedCount = (p, h, lv, worn) => forksOwed(p, h, lv).length + traitF
 /* THE CARD'S OPTIONS (the shape main.js drawCard already draws: id, name, what, fork, trade, input) - id is the SIDE LETTER here, what the pick records */
 export function forkCard(h, key) { const e = entryOf(h, key); if (!e) return null;
   return { kind: 'fork', key, n: levelOfFork(e), title: e.name, trade: e.trade, capstone: isCapstone(e), trait: !!e.trait, slotted: e.ability && String(e.ability).startsWith('skill:'),
-    opts: ['A', 'B'].map(s => ({ id: s, side: s, sideId: e[s].id, name: e[s].name, what: e[s].what, fork: true, free: true, trade: e.trade, input: e[s].input || '', capstone: isCapstone(e), rec: false })) }; }
+    opts: ['A', 'B'].map(s => ({ id: s, side: s, sideId: e[s].id, name: e[s].name, what: e[s].what, teach: e[s].teach, fork: true, free: true, trade: e.trade, input: e[s].input || '', capstone: isCapstone(e), rec: false })) }; }
 
 /* PICK or SWAP (one call: the card and the inn board are the same write; free, unlimited). null = done, else the refusal text. */
 export function setFork(p, h, key, side, lv) {
@@ -93,6 +94,8 @@ export function roadStrip(p, h, lv) {
     return { level, key, fork: true, capstone: isCapstone(e), compact: true, state: st, reached: (lv || 0) >= level, side, picked: side ? { id: e[side].id, name: e[side].name } : null,
       options: ['A', 'B'].map(s => ({ id: e[s].id, name: e[s].name, input: e[s].input || '', locked: !!side && side !== s })) }; }); }
 
+/* BOTS / AI PARTNERS / the lab (forkplan Q10): every fork on side A (c.fork 'B' = all B; an object { key: side } = exactly that). Inert while the flag is off. */
+export function botForks(h, spec) { const m = { v: 1 }; if (spec && typeof spec === 'object') { for (const k of Object.keys(forksOf(h))) if (spec[k] === 'A' || spec[k] === 'B') m[k] = spec[k]; return m; } for (const k of Object.keys(forksOf(h))) m[k] = spec === 'B' ? 'B' : 'A'; return m; }
 /* THE FIRST SAVE CHECK: p.fork must be { hero: { key: 'A'|'B' } }. A bad entry is DROPPED, never an error. While the flag is off an unknown key is kept (a later build may know it). */
 export function validateForks(p) {
   if (!p || p.fork === undefined) return; if (!p.fork || typeof p.fork !== 'object' || Array.isArray(p.fork)) { delete p.fork; return; }
@@ -118,6 +121,7 @@ export function migrateForks(p) {
   for (const k of Object.keys(ms)) { const id = ms[k]; if (OLD_TECH_IDS.includes(id) || /^u[a-z]+:\d$/.test(String(id))) { delete ms[k]; if (OLD_TECH_IDS.includes(id)) out.perksOwed++; else out.upgradesReturned++; } }
   if (c.up && typeof c.up === 'object') { out.upgradesReturned = Math.max(out.upgradesReturned, Object.values(c.up).reduce((a, n) => a + (n | 0), 0)); delete c.up; }
   p.cardFree = p.cardFree && typeof p.cardFree === 'object' ? p.cardFree : {}; if (out.picked.length || out.perksOwed || out.upgradesReturned) p.cardFree.knight = 1;
+  if (out.perksOwed || out.upgradesReturned || out.picked.length) p.cardNew = 1;   /* the map opens the card that owes the returned perks / stat picks */
   m.v = 1; out.done = true; return out; }
 
 /* THE LEGACY READS (main.js tech() / upg() while the flag is on): the Knight's effect sites still ask for technique and upgrade ids. They are answered from the forks. */

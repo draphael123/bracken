@@ -109,6 +109,14 @@ export function unlocks(g, x, fy, time, text) {   /* (claude/unlocks) a greybox 
   text('UNLOCKS', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 10, T + 13, 26, 1, '#ffd36b');
   R(g, L + 38, T + 20, 5, 4, '#8a8f80'); R(g, L + 39, T + 18, 1, 2, '#8a8f80'); R(g, L + 41, T + 18, 1, 2, '#8a8f80'); R(g, L + 39, T + 18, 3, 1, '#8a8f80'); if (Math.floor(time * 2) & 1) P(g, L + 42, T + 21, '#fff');
 }
+export function crossroads(g, x, fy, time, text) {   /* (claude/forkframe) a greybox signpost: two arrow boards on a post (A west, B east) and a lantern; the art lane paints it */
+  const T = fy - 44;
+  R(g, x - 2, T + 4, 4, 40, TP.o2); R(g, x - 2, T + 4, 1, 40, TP.o4); R(g, x - 5, fy - 4, 10, 2, TP.o1);
+  R(g, x - 22, T + 6, 20, 9, TP.o3); R(g, x - 22, T + 6, 20, 1, TP.o6); R(g, x - 24, T + 8, 2, 5, TP.o3); R(g, x - 26, T + 9, 2, 3, TP.o3);
+  R(g, x + 2, T + 17, 20, 9, TP.o3); R(g, x + 2, T + 17, 20, 1, TP.o6); R(g, x + 22, T + 19, 2, 5, TP.o3); R(g, x + 24, T + 20, 2, 3, TP.o3);
+  text('A', x - 12, T + 8, '#e8f0e8', 'center', 6); text('B', x + 12, T + 19, '#e8f0e8', 'center', 6);
+  R(g, x + 3, T + 1, 3, 4, '#c9a24a'); if (Math.floor(time * 3) & 1) P(g, x + 4, T + 2, '#fff2b0'); R(g, x + 4, T - 1, 1, 2, TP.o1);
+}
 export function lesson(g, x, fy, time, text) {   /* (claude/shrinekey) the plank is wider for TUTORIAL */
   const L = x - 23, T = fy - 40;
   R(g, L + 21, T + 18, 4, 22, TP.o2); R(g, L + 21, T + 18, 1, 22, TP.o4); R(g, L + 18, T + 38, 10, 2, TP.o1);   /* the post */

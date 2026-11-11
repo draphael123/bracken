@@ -173,7 +173,7 @@ const EG_QUIET = { light: () => {}, open: () => {} };   /* (claude/maker) the ST
 import * as NDSP from './num-display.js'; const numTxt = n => NDSP.shownLabel(n.txt, n.col);   /* (claude/hpdisplay, Daniel 11-07) every HEALTH / DAMAGE number the player reads is the internal number / 10: src/num-display.js, the one helper */
 import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';   /* (claude/airmotion) the air frame leans and stretches with the arc - art only */ import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, respecForks, hasForkPick, roadToL50, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, FRK, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, respecForks, hasForkPick, roadToL50, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -276,7 +276,7 @@ import { supportsUpdate, supportsReset, drawSupports } from './tower-supports.js
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
 import { villageLandmarks, woodLandmarks } from './landmarks.js';
 import { hasTrackFile, initAudio, SFX, music, ambient, ready as audioReady, setVolume, setSfxFiles, setVoices, setMusicVolume, SFX_NAMES, MUSIC_NAMES, MUSIC_CREDITS, MUSIC_CREDITS_ROW, AMBIENT_NAMES, setHeroVoice, emitAt, emitNow, debugAudio, setUiVolume, setReverb, setAmbientVolume, setHeardHook } from './audio.js';
-import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js'; import * as C2 from './charms2.js';   /* (claude/charms2) EIGHT NEW CHARMS, dark behind CHARMS2_SHIP */   /* THE ONE STORE's rules (claude/onestore) */
+import { SHOP_START, tabIndex as storeTabIndex, stepTab as stepStoreTab, refusal as storeRefusalOf, mayBuy, lockOf, BUY_HINT, STORE_HELP } from './store.js'; import * as UL from './unlocks.js'; import * as XR from './crossroads.js';   /* (claude/forkframe) THE CROSSROADS board */ import * as C2 from './charms2.js';   /* (claude/charms2) EIGHT NEW CHARMS, dark behind CHARMS2_SHIP */   /* THE ONE STORE's rules (claude/onestore) */
 import { drawAbilityPreview } from './ability-preview.js';   /* THE LIVE ABILITY PREVIEW in the skills store (17a): pure draw, no game state */
 import { createTouch } from './touch.js'; import { interactVerb, VERB_HOOKS, ctxButton, CTX_HOOKS } from './touch-interact.js';   /* THE PHONE'S HANDS (claude/mobile): the stick, the buttons, the contextual action button, tap menus */
 import * as FC from './first-cards.js';   /* FIRST-TIME EXPLAINER + BOSS STUCK-HINT CARDS (claude/onboard2) */ import * as SCARD from './salt-card.js';   /* THE FIRST-DEATH CARD (claude/onboard1) */
@@ -862,8 +862,10 @@ const perk = id => perkOn(PROG, hero(), id);   /* a MILESTONE PERK this hero too
 /* LEVELING2 (Daniel 10-04): prk = the RANK of the hero's OWN milestone perk (HERO_PERKS: 0..5), thr = a stat THRESHOLD (stat 'v'|'e'|'m', 0 = ten picks, 1 = twenty) */
 const prk = id => perkRank(PROG, hero(), id);
 /* THE L25-L50 KIT (claude/knightid, src/progression.js 'CARD v2'): tech(id) = this hero took that TECHNIQUE; upg(id) = the rank (0, 1, 2) of that UPGRADE. A trial lends none. */
-const tech = id => techOn(PROG, hero(), id);
-const upg = id => upgRank(PROG, hero(), id);
+/* (claude/forkframe) FORKS_SHIP on: the Knight's technique and upgrade ids are answered from his A/B forks (src/forks.js legacyTech / legacyUpg); off: the card, exactly as before */
+const fkCtx = (h, lv) => ({ worn: id => TRT.traitsShip() && TRT.wornOf(PROG, h, lv).includes(id), slotted: id => equipped(PROG, h, lv).includes(id) });
+const tech = id => FRK.forksShip() ? !!FRK.legacyTech(PROG, hero(), heroLevel(), id, fkCtx(hero(), heroLevel())) : techOn(PROG, hero(), id);
+const upg = id => FRK.forksShip() ? FRK.legacyUpg(PROG, hero(), heroLevel(), id, fkCtx(hero(), heroLevel())) : upgRank(PROG, hero(), id);
 const thr = (stat, i) => thrOn(PROG, hero(), stat, i);
 let mendSeen = 0;   /* TURNED BLOW: the count of turned blows last frame */
 const GEO_LIFE0 = GEO_K.stone.gnaw, GEO_PERFECT0 = GEO_K.ward.perfect;   /* (claude/geoid: HARD STONE now slows how fast a foe gnaws her stone) */   /* her stone's life and the rune-ward's perfect window before the hero's own perks */
@@ -5019,7 +5021,7 @@ const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), trt = TRT.traitUpText(h, from, n), got = trt ? [] : passivesArriving(h, from, n);   /* (claude/traitframe) a split hero's line says TRAIT LEARNED, rank growth and the second trait slot (dark: trt is '' while the flag is off) */
   const slot2 = from < SECOND_SLOT_LEVEL && n >= SECOND_SLOT_LEVEL ? ' A SECOND SKILL SLOT.' : '', pas = (got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '') + slot2 + (h === 'pyro' && ((from < 25 && n >= 25) || (from < 40 && n >= 40)) ? ' LIVING BOMB GROWS.' : '') + trt;   /* (Daniel 11-01: level 30 opens the second skill slot - said in the level-up line) (claude/pyrokit2: and LIVING BOMB's two growth steps) */
   const head = 'LEVEL ' + n + (n - from > 1 ? ' (+' + (n - from) + ')' : '');
-  const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length;   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
+  const owe = picksOwed(PROG, h, n) + milestonesOwed(PROG, h, n).length + fkOwed(h, n);   /* THE CARD (LEVELING): the growth is a pick now, so the line says there is one to make */
   const tries = [head + ': ' + (owe ? (owe > 1 ? owe + ' CARDS' : 'A CARD') + ' TO CHOOSE. ' : '+' + NDSP.shownHp(after.hp - before.hp) + ' HEALTH. ') + 'FULLY HEALED.' + pas, head + '. FULLY HEALED.' + pas, head + '.' + trt, head + '. FULLY HEALED.' + slot2];
   return tries.find(s => wrap(s, VW - 40, 6).length <= 2) || tries[tries.length - 1]; }
 function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || fightLive()) return; const p = players ? players[0] : P; if (!p || p.dead) return;
@@ -5034,18 +5036,22 @@ function levelHealTick() { const o = lvHealOwed; if (!o || state !== 'play' || f
    RESPEC_SILVER silver (a migrated save's first is free). The stats it shows are the ones the hero will have (growthAt). */
 let cardUi = null, cardNag = '';
 function grow(h, lv) { return growthAt(h, lv, cardOf(PROG, h)); }   /* (a declaration: applyUpgrades may run before this line has) */
-const cardOwed = h => picksOwed(PROG, h, heroLevel(h)) + milestonesOwed(PROG, h, heroLevel(h)).length;
+const fkOwed = (h, lv) => FRK.forksShip() ? FRK.owedCount(PROG, h, lv, TRT.traitsShip() ? TRT.wornOf(PROG, h, lv) : []) : 0;   /* (claude/forkframe) fork cards owed: a reached rung with no pick, a worn trait at L20+ with no pick */
+const cardOwed = h => picksOwed(PROG, h, heroLevel(h)) + milestonesOwed(PROG, h, heroLevel(h)).length + fkOwed(h, heroLevel(h));
 function cardNow() { const h = hero(), lv = heroLevel(h), ms = milestonesOwed(PROG, h, lv);
   if (ms.length) return { kind: 'perk', n: ms[0], opts: perkOffer(PROG, h, ms[0]) };
-  return picksOwed(PROG, h, lv) ? { kind: 'stat', opts: CARD } : null; }
+  if (picksOwed(PROG, h, lv)) return { kind: 'stat', opts: CARD };
+  if (FRK.forksShip()) { const w = TRT.traitsShip() ? TRT.wornOf(PROG, h, lv) : [], o = FRK.forksOwed(PROG, h, lv)[0] || FRK.traitForksOwed(PROG, h, lv, w)[0]; if (o) return FRK.forkCard(h, o.key); }   /* (claude/forkframe) the FORK CARD comes after the stat card: a reached rung, or a trait worn for the first time at L20+ */
+  return null; }
 function openCard(back, review) { if (passOn && players && passOn !== players[0]) return false; if (!review && !cardOwed(hero())) return false;
   cardUi = { back, i: 0, msg: '', msgT: 0, review: !!review, arm: 0, t: 0, fresh: !review && back !== 'menu' }; cardNag = hero() + ':' + heroLevel(); state = 'card'; SFX.uiSel();
   if (cardUi.fresh) { SFX.sting(); if (milestonesOwed(PROG, hero(), heroLevel()).length && SFX.medal) SFX.medal(); }   /* THE LEVEL-UP MOMENT (LEVELING2): a flash, a sting, the card slides in (drawCard) - only out of a fight (levelHealTick / the map) */
   return true; }
 function closeCard() { if (!cardUi) return; delete PROG.cardNew; const back = cardUi.back; cardUi = null; state = back; if (back === 'menu') menuKind = 'pause'; SFX.menuClose(); }
 function cardTake(i) { const c = cardNow(); if (!c || !cardUi) return; const h = hero(), lv = heroLevel(h), k = c.opts[i]; if (!k) return;
-  const err = c.kind === 'perk' ? pickMilestone(PROG, h, c.n, k.id, lv) : pickCard(PROG, h, k.id, lv);
+  const err = c.kind === 'perk' ? pickMilestone(PROG, h, c.n, k.id, lv) : c.kind === 'fork' ? FRK.setFork(PROG, h, c.key, k.side, lv) : pickCard(PROG, h, k.id, lv);
   if (err) { SFX.buzz(); cardUi.msg = err.toUpperCase(); cardUi.msgT = 2; return; }
+  if (c.kind === 'fork') { hintSay('mechanic', 7, 'NEW PATH: ' + k.name + '. ' + k.teach + '. SWAP FREE AT THE INN.'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 40, k.name, '#ffd36b'); if (SFX.medal) SFX.medal(); }
   if (k.tech) { const tt = techniqueById(h, k.id); if (tt) techniquePractice(tt); }   /* (claude/knightid) a technique taken is taught at once */
   const mh = P.maxHp, mst = P.maxSt; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); P.st = Math.min(P.maxSt, P.st + Math.max(0, P.maxSt - mst));
   saveProgress(); SFX.equip(); statFlash = 1; cardUi.msg = k.name + ' TAKEN'; cardUi.msgT = 1.6; if (!cardNow() && !cardUi.review) closeCard(); }
@@ -5070,10 +5076,10 @@ function updateCard(dt) { const u = cardUi; if (!u) { state = 'map'; return; } u
 const perkName = id => { const kn = milestoneName(hero(), id); if (kn) return kn; const k = PERKS.find(q => q.id === id) || MINOR_PERKS.find(q => q.id === id) || ALL_HERO_PERKS.find(q => q.id === id) || PYRO_CARDS.find(q => q.id === id); return k ? k.name : null; };   /* (claude/pyrokit: her L10 cards) */
 function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = heroLevel(h), c = cardNow(), cd = cardOf(PROG, h) || { v: 0, e: 0, m: 0, ms: {} }, gr = grow(h, lv);
   if (u.back === 'map') g.drawImage(MAPC, 0, -MAP_TOP); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
-  const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length, calm = SET.reduceMotion;
+  const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length + fkOwed(h, lv), calm = SET.reduceMotion;
   const slide = u.fresh && !calm ? Math.max(0, 1 - Math.min(1, u.t / 0.35)) : 0, oy = Math.round(slide * slide * 70);
-  text(c ? (c.kind === 'perk' ? (c.opts[0] && c.opts[0].fork ? 'LEVEL ' + c.n + ': CHOOSE YOUR PATH' : isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
-  const road = roadToL50(PROG, h, lv);   /* (forkproof) the strip needs the foot of the card: its next-perk line moves up under the name */
+  text(c ? (c.kind === 'fork' ? fitName('CHOOSE YOUR PATH: ' + c.title, VW - 12, 12) : c.kind === 'perk' ? (c.opts[0] && c.opts[0].fork ? 'LEVEL ' + c.n + ': CHOOSE YOUR PATH' : isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
+  const road = FRK.forksShip() ? FRK.roadStrip(PROG, h, lv) : roadToL50(PROG, h, lv);   /* (claude/forkframe: with the flag on the strip is the fork ladder) */   /* (forkproof) the strip needs the foot of the card: its next-perk line moves up under the name */
   text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, road.length ? 18 - oy : 22 - oy, UI.dim, 'center', 6);
   const opts = c ? c.opts : CARD, n = Math.max(1, opts.length), gap = 6, cw = Math.floor((VW - 16 - gap * (n - 1)) / n), top = 34 + oy, statCard = !c || c.kind === 'stat', ch = statCard ? 94 : 78;
   opts.forEach((k, i) => { const x = 8 + i * (cw + gap), sel = !!c && i === u.i, stat = !c || c.kind === 'stat', full = stat && (cd[k.id] || 0) >= CARD_CAP, own = !!k.own;
@@ -5089,8 +5095,8 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
       if (th) text(have + '/' + th.at, x + cw - 8, top + 59, UI.gold, 'right', 6);   /* VIGOR 7/10 */
       text(fitName(th ? th.name : 'BOTH UNLOCKED', cw - 8, 6), x + cw / 2, top + 67, th ? UI.text : '#8fd160', 'center', 6);
       if (th) wrap(th.what, cw - 8, 6).slice(0, 2).forEach((ln, j) => text(ln, x + cw / 2, top + 76 + j * 8, UI.dim, 'center', 6)); }
-    else { text(k.fork ? (k.capstone ? 'CAPSTONE: ONE OR THE OTHER' : 'PICK ONE, THE OTHER LOCKS') : k.tech ? 'A NEW MOVE' : k.up ? 'UPGRADE ' + (k.rank > 1 ? 'II' : 'I') : own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : k.tech || k.up ? '#ffd36b' : UI.gold, 'center', 6);
-      if (k.rec && !k.fork) text('RECOMMENDED', x + cw / 2, top + ch - 21, '#8fd160', 'center', 6); if (k.tech && k.input) wrap(k.input, cw - 8, 6).slice(0, 1).forEach(ln => text(ln, x + cw / 2, top + 20 + Math.min(3, wrap(k.what, cw - 8, 6).length) * 9, UI.dim, 'center', 6)); }   /* (claude/knightid) the pick that is the hero's NEXT technique is RECOMMENDED, and says its input */
+    else { text(k.fork ? (k.free ? 'SWAP FREE AT THE INN' : k.capstone ? 'CAPSTONE: ONE OR THE OTHER' : 'PICK ONE, THE OTHER LOCKS') : k.tech ? 'A NEW MOVE' : k.up ? 'UPGRADE ' + (k.rank > 1 ? 'II' : 'I') : own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : k.tech || k.up ? '#ffd36b' : UI.gold, 'center', 6);
+      if (k.rec && !k.fork) text('RECOMMENDED', x + cw / 2, top + ch - 21, '#8fd160', 'center', 6); if (k.free && k.trade) text(fitName(k.trade, cw - 8, 6), x + cw / 2, top + ch - 21, UI.gold, 'center', 6); if ((k.tech || k.free) && k.input) wrap(k.input, cw - 8, 6).slice(0, 1).forEach(ln => text(ln, x + cw / 2, top + 20 + Math.min(3, wrap(k.what, cw - 8, 6).length) * 9, UI.dim, 'center', 6)); }   /* (claude/knightid) the pick that is the hero's NEXT technique is RECOMMENDED, and says its input */
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
   const below = top + ch + 5;
   const nx = levelsToPerk(lv, h), nm = nextMilestone(lv, h);
@@ -5106,8 +5112,10 @@ const isMinorMs = n => n <= 20;
    other option is struck dim: LOCKED), the next pip is lit, the rest are dim; a fork shows both names, one per line; L50 is a gold-framed double slot (the two capstones). */
 /* a pip is ~7 letters wide: a long technique name shows its last word (COUNTER-THRUST: THRUST, LONG GUARD: GUARD), cut only if that still will not go */
 function pipName(n, w) { if (inkW(n, 6) <= w) return n; const l = String(n).split(/[ -]/).pop(); return inkW(l, 6) <= w ? l : fitText(l, w, 6); }
-function drawRoadToL50(road, y) { const n = road.length, gap = 3, pw = Math.floor((VW - 16 - gap * (n - 1)) / n), ph = 31;
-  road.forEach((r, i) => { const x = 8 + i * (pw + gap), lit = r.state === 'next', col = r.state === 'taken' ? '#8fd160' : lit ? UI.sel : UI.dim;
+function drawRoadToL50(road, y) { const n = road.length, gap = 3, pw = Math.floor((VW - 16 - gap * (n - 1)) / n), ph = 31, tiny = n > 6;   /* (claude/forkframe) the fork ladder can run to eleven pips: past six a pip is just its level and the side taken (A / B), the names are on the card and the board */
+  road.forEach((r, i) => {
+    if (tiny) { const x = 8 + i * (pw + gap), lit = r.state === 'next', col = r.state === 'taken' ? '#8fd160' : lit ? UI.sel : UI.dim; g.fillStyle = 'rgba(26,24,36,0.85)'; g.fillRect(x, y, pw, ph); g.strokeStyle = r.capstone ? '#ffd36b' : lit ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
+      text('L' + r.level, x + pw / 2, y + 4, r.capstone ? '#ffd36b' : col, 'center', 6); text(r.side || (lit ? '?' : '-'), x + pw / 2, y + 16, col, 'center', 8); return; } const x = 8 + i * (pw + gap), lit = r.state === 'next', col = r.state === 'taken' ? '#8fd160' : lit ? UI.sel : UI.dim;
     g.fillStyle = 'rgba(26,24,36,0.85)'; g.fillRect(x, y, pw, ph); g.strokeStyle = r.capstone ? '#ffd36b' : lit ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
     text('L' + r.level + (r.capstone ? ' CAP' : r.fork ? ' FORK' : ''), x + pw / 2, y + 2, r.capstone ? '#ffd36b' : col, 'center', 6);
     if (r.state === 'taken' && !r.fork) text(pipName(r.picked.name, pw - 4), x + pw / 2, y + 12, col, 'center', 6);
@@ -6008,7 +6016,7 @@ function updateSkills(dt) {
  if(upPress)treeI=(treeI+ns.length-1)%ns.length;if(downPress)treeI=(treeI+1)%ns.length;
  if(old!==treeI){treePage=0;SFX.ui();}if(morePress()&&treePages>1)treePage=(treePage+1)%treePages;
  const n=ns[treeI],say=m=>{treeMsg=m;treeMsgT=3;SFX.ui();};
- if(traitUi()&&treeBranch===1&&n&&(confirmPress||throwPress||skill2Press)){const h0=hero(),lv0=heroLevel();if(n.tkind==='core'){say(n.name+' is a core passive: always on');}else{const worn=TRT.wornOf(PROG,h0,lv0),at=worn.indexOf(n.id),slots=TRT.traitSlotsAt(lv0);let idx=throwPress?0:skill2Press?1:(at>=0?at:(worn.length<slots?worn.length:0));const off=confirmPress&&at>=0;const error=saveBlocked?'Save protected: resolve storage before changing traits':wearTrait(PROG,h0,off?null:n.id,idx,lv0);if(error)say(error);else{applyUpgrades();saveProgress();say(off?n.name+' taken off':n.name+' worn in trait slot '+(idx+1));SFX.equip();}}return;}   /* (claude/traitframe) X/F/G wear a trait: F = slot 1, G = slot 2, X = the first free slot (or off, if worn); outside a fight only (the store's own rule) */
+ if(traitUi()&&treeBranch===1&&n&&(confirmPress||throwPress||skill2Press)){const h0=hero(),lv0=heroLevel();if(n.tkind==='core'){say(n.name+' is a core passive: always on');}else{const worn=TRT.wornOf(PROG,h0,lv0),at=worn.indexOf(n.id),slots=TRT.traitSlotsAt(lv0);let idx=throwPress?0:skill2Press?1:(at>=0?at:(worn.length<slots?worn.length:0));const off=confirmPress&&at>=0;const error=saveBlocked?'Save protected: resolve storage before changing traits':wearTrait(PROG,h0,off?null:n.id,idx,lv0);if(error)say(error);else{applyUpgrades();saveProgress();say(off?n.name+' taken off':n.name+' worn in trait slot '+(idx+1));SFX.equip();if(!off&&FRK.forksShip()&&FRK.traitForksOwed(PROG,h0,lv0,TRT.wornOf(PROG,h0,lv0)).some(o=>o.e.trait===n.id)){PROG.cardNew=1;openCard('menu');}}}return;}   /* (claude/forkframe) the first time an unforked trait is worn at L20+: its CHOOSE YOUR PATH card */   /* (claude/traitframe) X/F/G wear a trait: F = slot 1, G = slot 2, X = the first free slot (or off, if worn); outside a fight only (the store's own rule) */
  else if(confirmPress&&n&&!n.active){say(passiveOn(PROG,hero(),n.id,heroLevel())?n.name+' is always on':'Arrives at level '+n.level);}
  else if(confirmPress&&n){if(saveBlocked)say('Save protected: resolve storage before buying');else if(!loadoutSafe())say('Buy and equip at a map, shop or safe shrine');else if(PROG.skillOwned[hero()]?.[n.id]){const error=rankUp(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' is rank '+skillRank(PROG,hero(),n.id)+': it hits harder');SFX.coin();}}else{const error=buySkill(PROG,hero(),n.id,heroLevel());if(error)say(error);else{saveProgress();say(n.name+' learned; choose a slot');SFX.coin();}}}   /* (Z on an owned ability: its next RANK, LEVELING) */
  [throwPress,skill2Press,skill3Press,skill4Press].forEach((pressed,index)=>{if(!pressed||!n)return;if(!n.active){say(traitUi()?'Traits are worn in the trait slots':'Passives are always on: slots are for abilities');return;}const id=equipped(PROG,hero(),heroLevel())[index]===n.id?null:n.id;const error=equipSkill(PROG,hero(),id,index,heroLevel(),loadoutSafe()&&!saveBlocked);if(error)say(error);else{applyUpgrades();saveProgress();say(id?n.name+' in slot '+(index+1):'Slot '+(index+1)+' empty');SFX.equip();}});
@@ -6243,6 +6251,16 @@ const unlockTabs = () => UL.buildTabs({ demo: unlockDemo(), inSlice: id => { con
   other: unlockOtherRows() });
 const UNLUI = UL.makeUnlocks({ g: () => g, VW: () => VW, VH: () => VH, time: () => time, text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), panel: (x, y, w, h) => panel(x, y, w, h), hit: (x, y, w, h, fn) => TCH.hit(x, y, w, h, fn),
   sfx: k => { const f = SFX[k]; if (f) f(); }, wrap: (s, w, z) => wrap(s, w, z), tabs: unlockTabs });
+/* THE CROSSROADS BOARD (claude/forkframe, dark behind FORKS_SHIP: its inn station is only dealt while the flag is on): every unlocked A/B fork of the current hero, swapped free at the inn */
+const XRDUI = XR.makeCrossroads({ g: () => g, VW: () => VW, VH: () => VH, text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), panel: (x, y, w, h) => panel(x, y, w, h), hit: (x, y, w, h, fn) => TCH.hit(x, y, w, h, fn),
+  sfx: k => { const f = SFX[k]; if (f) f(); }, wrap: (s, w, z) => wrap(s, w, z), fit: (s, w, z) => fitName(s, w, z),
+  data: () => { const h = hero(), lv = heroLevel(h), cx = fkCtx(h, lv); return { hero: h, heroName: HERO_SHORT[h] || String(h).toUpperCase(), level: lv, tabs: { ABILITIES: FRK.boardRows(PROG, h, lv, 'ABILITIES', cx), TRAITS: FRK.boardRows(PROG, h, lv, 'TRAITS', cx) } }; },
+  set: (key, side) => { const h = hero(), err = FRK.setFork(PROG, h, key, side, heroLevel(h)); if (!err) { applyUpgrades(); saveProgress(); } return err; } });
+function XRD_OPEN() { return FRK.forksShip() ? XRDUI.open('inn') : false; }
+function crossroadsFrame(dt) {
+  XRDUI.input({ left: leftPress, right: rightPress, up: upPress, down: downPress, confirm: confirmPress, tab: swapPress, back: pausePress || mapPress || dodgePress || talentsPress, dt });
+  leftPress = rightPress = confirmPress = pausePress = upPress = downPress = throwPress = swapPress = atkPress = jumpPress = dodgePress = talentsPress = mapPress = talkPress = false;
+}
 /* open it: from the title the save in the chosen slot is read first (the title holds no progress of its own) */
 function UNLOCK_OPEN(from) { if (from === 'title') { try { if (!['corrupt', 'newer'].includes(slotHealthOf(slot).state)) loadSlot(slot); } catch {} } return UNLUI.open(from); }
 /* one frame of the screen's input (the caller returns after it): arrows walk it, ESC / X / Q / B / the pad's back close it; every press is used up */
@@ -7836,7 +7854,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openStore: () => openStore('play', 'heroes'), openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openUnlocks: () => UNLOCK_OPEN('inn'), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
+  openStore: () => openStore('play', 'heroes'), openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE), openUnlocks: () => UNLOCK_OPEN('inn'), openCrossroads: () => XRD_OPEN(), openBook: () => bookOpen(),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); yardEnter(true); }, tutorial: () => { partyToWant(); rush = null; setView('normal'); opnEnter(true); },   /* (claude/tutorial1) THE INN'S LESSON BOARD replays the roadside lesson with the party and returns to the inn */  duel: p => !!(PVP_SHIPS && DUELO && DUELO.openCard(p)),   /* (claude/pvpduel) THE DUEL PIT opens the DUEL (BETA) card */   /* (claude/yardswap) THE INN'S ARENA YARD DOOR (station id 'practice') goes straight into the Arena Yard with the party; the hero trials are gone */
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroStrip: (x, y, w, cur, p) => tavStrip(x, y, w, cur, p), heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -12629,7 +12647,7 @@ function levelJump(id, heroId, campaign) {
 let attractOn = false, attract = null, attractSnap = null, attractIdle = 0, attractTouched = false, attractSwallow = 0, attractForce = false;
 const attractOff = () => q.has('noattract') || !!window.__NOATTRACT || (!attractForce && (!!(window.BK && window.BK.manualSimulation) || !!navigator.webdriver));
 const attractBlock = () => AT.blockedBy({ off: attractOff(), reduceMotion: !!SET.reduceMotion, noAudio: !audioReady(), state, pressCard, titleSub, hidden: !!document.hidden,
-  overlay: UNLUI.isOpen || SWAPUI.isOpen || FBF.isOpen() || BUGUI.isOpen() || DEND.isOpen() || PBOARD.shown(),   /* (the party board of PLAY WITH AI is a screen over the title) */
+  overlay: UNLUI.isOpen || XRDUI.isOpen || SWAPUI.isOpen || FBF.isOpen() || BUGUI.isOpen() || DEND.isOpen() || PBOARD.shown(),   /* (the party board of PLAY WITH AI is a screen over the title) */
   savePrompt: !!saveBlocked || !!saveFail });
 const attractPoke = () => { attractTouched = true; };
 function attractNext() {
@@ -33554,6 +33572,7 @@ function update(dt) {
   if (state !== 'play' || !isPyro()) SFX.jet(false);
   music.muffle(state === 'menu' || state === 'talk' || state === 'herocard' || state === 'bestiary' || (state === 'store' && !!(L && (L.shop || L.tavern))));
   music.lowHealth(state === 'play' && !P.dead && P.hp > 0 && P.hp <= 25);
+  if (XRDUI.isOpen) { crossroadsFrame(dt); return; }   /* (claude/forkframe) THE CROSSROADS board over the inn */
   if (UNLUI.isOpen) { unlockFrame(dt); return; }   /* (claude/unlocks) THE UNLOCKS screen over the title, the pause menu, the inn */
   if (SWAPUI.isOpen && state !== 'store') { swapFrame(dt); return; }   /* (claude/hubpolish) the swap hero panel over the map or the pause menu */
   if (saltCard) {   /* (claude/onboard1) THE FIRST-DEATH CARD holds the world still until the confirm key (armed after SCARD.ARM_S, so a mashed attack key cannot skip it) */
@@ -38535,7 +38554,7 @@ function render() {
   trnChoiceDraw();   /* (claude/transchoice) ONWARD / RETURN TO THE MAP, over the level-complete card */
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   if (state === 'title' && titleSayT > 0 && !SWAPUI.isOpen) { titleSayT -= 1 / 60; const w = inkW(titleSay, 6) + 12; g.fillStyle = 'rgba(16,13,24,0.9)'; g.fillRect(Math.round((VW - w) / 2), 4, w, 11); g.strokeStyle = '#a8e06e'; g.strokeRect(Math.round((VW - w) / 2) + 0.5, 4.5, w - 1, 10); text(titleSay, VW / 2, 7, '#a8e06e', 'center', 6); }   /* (claude/heroroster2) what the title's SWAP HERO said */
-  if (SWAPUI.isOpen) SWAPUI.draw(); if (UNLUI.isOpen) UNLUI.draw();   /* (claude/unlocks) */   /* (claude/hubpolish) over the store, the map or the pause menu */
+  if (SWAPUI.isOpen) SWAPUI.draw(); if (UNLUI.isOpen) UNLUI.draw(); if (XRDUI.isOpen) XRDUI.draw();   /* (claude/unlocks) */   /* (claude/hubpolish) over the store, the map or the pause menu */
   drawTransition();
   if(saveBlocked&&!edTesting&&state!=='editor'){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SAVE. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
