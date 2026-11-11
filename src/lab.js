@@ -711,6 +711,61 @@ function dashIn(BK, h, e, f) {
 let GUARDR = null, GSTATS = null;   /* (claude/flasklever) the human parry's dice and counts, per row */
 let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
 let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
+/* ==== (claude/labadds-d) THE ADDS, IN GENERAL. A boss lab switch, OFF by default (bossLab opts.adds; tools/boss-run.mjs BOSS_ADDS=on): with it off nothing below runs and
+   every row is what it was. GQ5TUNE-d found the bot ignored the Goblin Princess's gallery goblins and the Queen's soldiers and taught it per boss (labDuty); this is the same
+   lesson for every boss: when the boss's ADDS (anything alive in the fight that was not there when it began - lab line "kills all but the boss" below) are up and
+   (a) the boss is away / not to be cut now (high above, far off, hidden, warded), or (b) an add is a real threat in reach (on the hero's level, nearer than the boss),
+   the hands turn to the add - the ELITE LAB's duel hands (labBotFrame: guard / roll / duck its told blow, cut it otherwise), reading it through the same eyes as the
+   boss (src/lab-perceive.js tracks every foe in 360 px: a reaction late, misreads, no superhuman read) - reach it (down off a ledge, up a ladder or a hop onto a deck),
+   then go back to the boss. Never while the boss is open or telling at him close, never carrying a device. Bosses whose hands already answer their adds keep them
+   (ADD_DUTY: the per-boss duties; with the switch on they are left exactly as they were).
+   opts.addsLog (or opts.adds) also writes a census on the row: adds seen, killed, seconds with one up, damage taken with an add the nearest foe. It only watches. ==== */
+const ADD_DUTY = new Set(['gprincess', 'gqueen', 'gravewarden', 'hedgewarden', 'burieddead', 'bloodknight', 'matriarch', 'hornetqueen', 'hawkmistress', 'wickerqueen', 'bellcrab', 'grandmother', 'abbot', 'lance', 'queen']);
+const ADD_AWAY = new Set(['hide', 'hidden', 'away', 'gone', 'sunk', 'submerged', 'burrow', 'burrowed', 'under', 'flee', 'fled', 'retreat', 'aloft', 'hover', 'perch', 'offstage', 'roost']);
+const isAddOf = (AC, boss) => e => e && e.alive && e !== boss && !e.harmless && !AC.pre.has(e) && !(e.hp <= 0) && !e.mini && e.xpRole !== 'mini' && !e.boss;
+function addCensus(AC, BK, boss, P, before, n) {
+  const live = BK.enemies().filter(isAddOf(AC, boss));
+  for (const e of live) if (!AC.seen.has(e)) { AC.seen.add(e); AC.kinds[e.t] = (AC.kinds[e.t] || 0) + 1; }
+  for (const e of AC.seen) if (!e.alive && !AC.done.has(e)) { AC.done.add(e); if (e.hp <= 0) AC.killed++; else AC.gone++; }
+  if (live.length) { AC.fr += n; AC.max = Math.max(AC.max, live.length); }
+  if (P.hp < before && live.length) { const bd = Math.abs(boss.x - P.x) - (boss.w || 20) / 2;
+    const e = live.filter(q => Math.abs(q.y - P.y) < 40).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    if (e && Math.abs(e.x - P.x) - (e.w || 12) / 2 < Math.min(48, bd)) AC.dmg += before - P.hp; }
+}
+const acRow = (AC, spf) => ({ n: AC.seen.size, kinds: AC.kinds, killed: AC.killed, gone: AC.gone, live: AC.seen.size - AC.killed - AC.gone, max: AC.max, secs: +(AC.fr * spf).toFixed(1), dmg: Math.round(AC.dmg),
+  ...(AC.on ? { duty: { threat: +(AC.dF.threat * spf).toFixed(1), gate: +(AC.dF.gate * spf).toFixed(1), route: +(AC.dF.route * spf).toFixed(1) } } : {}) });
+/* which add, if any, the hands turn to this frame (null: the boss plan plays) */
+function addPick(AC, BK, boss, A, open, f) {
+  const P = BK.P; if (P.dead || P.swim || P.carry || P.galeRide || P.plunge || open || !boss.alive) { AC.cur = null; return null; }
+  const adds = BK.enemies().filter(isAddOf(AC, boss)).filter(e => e.x > A.x0 - 40 && e.x < A.x1 + 40 && Math.abs(e.y - P.y) < 220 && !(AC.skip.get(e) > f));
+  if (!adds.length) { AC.cur = null; return null; }
+  const bdx = Math.abs(boss.x - P.x) - (boss.w || 20) / 2, bdy = Math.abs(boss.y - P.y);
+  if (/Tell$/.test(boss.mode || '') && bdx < 140 && bdy < 60) return null;   /* his blow first: the boss plan answers it */
+  const edge = e => Math.abs(e.x - P.x) - (e.w || 12) / 2, level = e => Math.abs(e.y - P.y) < 26;
+  const away = bdy > 56 || bdx > 220 || !!boss.hidden || ADD_AWAY.has(boss.mode) || boss.ward > 0 || boss.invuln > 0;
+  let e = AC.cur && adds.includes(AC.cur) && (away || (level(AC.cur) && edge(AC.cur) < 90)) ? AC.cur : null, why = e ? AC.why : null;
+  if (!e) { const t = adds.filter(q => level(q) && edge(q) < 56 && edge(q) < bdx).sort((a, b) => edge(a) - edge(b))[0]; if (t) { e = t; why = 'threat'; } }
+  if (!e && away) { e = adds.slice().sort((a, b) => (!level(a) - !level(b)) || edge(a) - edge(b))[0]; why = 'gate'; }
+  if (!e) { AC.cur = null; return null; }
+  if (e !== AC.cur) { AC.cur = e; AC.t0 = f; AC.hp0 = e.hp; }
+  else if (f - AC.t0 > 720) { if (e.hp < AC.hp0) { AC.t0 = f; AC.hp0 = e.hp; } else { AC.skip.set(e, f + 240); AC.cur = null; return null; } }   /* 12 s on one add and not a scratch on it: let it be 4 s (a stuck route) */
+  AC.why = why; return { e, why };
+}
+/* to an add on another level: down off the deck (a one-way one dropped through), up a ladder (NET) that climbs to its level, or a hop onto a low deck */
+function addRoute(BK, e, T, k, f) {
+  const P = BK.P, L = BK.L, dy = e.y - P.y, TS = 16; k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
+  const walk = gx => { if (Math.abs(gx - P.x) > 4) k[gx > P.x ? 'right' : 'left'] = true; };
+  if (P.labAddJump > 0) { P.labAddJump--; k.jump = true; walk(e.x); return; }
+  if (P.climb) { if (dy < 0) k.up = true; else k.down = true; return; }
+  if (dy > 0) { if (P.ground && [T.ONEWAY, T.PLANK, T.SHELF, T.RAIL].includes(P.groundTile) && Math.abs(e.x - P.x) < 140) { k.down = true; return; }   /* (main.js: DOWN on a one-way deck drops through it) */
+    walk(lowerFooting(BK, e, T, false)); return; }
+  const px = Math.floor(P.x / TS), py = Math.floor((P.y - 1) / TS), ey = Math.floor((e.y - 1) / TS); let lad = null, ls = 1e9;
+  for (let x = Math.max(1, px - 16); x <= Math.min(L.W - 2, px + 16); x++) { let top = null; for (let y = py; y >= Math.max(0, ey - 1); y--) { if (L.grid[y * L.W + x] === T.NET) top = y; else if (top !== null) break; }
+    if (top === null || top > ey + 1) continue; const s = Math.abs(x * TS + 8 - P.x) + Math.abs(x * TS + 8 - e.x); if (s < ls) { ls = s; lad = x * TS + 8; } }
+  if (lad !== null) { walk(lad); if (Math.abs(lad - P.x) < 6) k.up = true; return; }
+  if (-dy <= 76 && P.ground) { const gx = e.x - (Math.sign(e.x - P.x) || 1) * 18; walk(gx); if (Math.abs(e.x - P.x) < 44) { BK.press('jump'); P.labAddJump = 22; k.jump = true; } return; }
+  walk(e.x);
+}
 function humanSwingOk(BK) {
   const P = BK.P, h = HUMAN_H; if (BK.labHuman === false || !P || !h || !(P.ground || P.swim) || committed(P)) return true;
   const total = artLim(false) / artRate(h, false) + (COMMIT[h] || COMMIT.knight).light;
@@ -950,6 +1005,7 @@ async function runbossLab(BK, opts) {
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
     if (!boss) { rows.push({ lvl: lvId, h, skipped: 'no boss' }); continue; }
     for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
+    const AC = opts.adds || opts.addsLog ? { on: !!opts.adds && !ADD_DUTY.has(boss.t), pre: new Set(BK.enemies().filter(e => e.alive)), seen: new Set(), done: new Set(), kinds: {}, killed: 0, gone: 0, fr: 0, max: 0, dmg: 0, dF: { threat: 0, gate: 0, route: 0 }, cur: null, skip: new Map() } : null;   /* (claude/labadds-d) the adds' census and duty state; null (the default): not one line below reads it */
     if (A.carpet) { BK.board(); BK.sim(30); }   /* THE SKY FIGHT: its fight starts when the carpet is boarded */
     else { if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse?-1:1), Math.round(A.floor / 16) - 1);   /* A.start: a room whose floor is no place to stand (the Gate Gargoyle's spikes) says where the fight begins */ if (opts.nudge) BK.P.x += opts.nudge; BK.sim(30); }   /* opts.nudge: start a few px off, for reps of a fight no dice reach (the Deep and the Hurricane replay identically under any seed) */
     /* THE QUARTERMASTER GOES UP HER SHIP: the playtest walker knows ropes, steps and ledges, so it follows her deck to deck */
@@ -976,7 +1032,7 @@ async function runbossLab(BK, opts) {
     const palHG={t:0},palHallow=()=>{const kk=BK.keys;if(palHG.t>0){palHG.t--;kk.block=palHG.t>0;return;}if(P.dead||!P.ground||P.labRest||P.atk>=0||kk.block||P.aegis||(P.dodge>0))return;
       const H=BK.holy(),own=H.circles.find(c=>c.owner===P.n||c.owner===1||c.owner===null),inC=own&&Math.abs(P.x-own.x)<=own.r&&Math.abs(P.y-own.y)<=30,lt=P.light||0;
       if((lt>=100&&Math.abs(P.x-boss.x)<110)||(lt>=80&&lt<100&&Math.abs(P.x-boss.x)<64)){palHG.t=2;kk.block=true;}};   /* (PALADIN TUNE) tried TWIN SMITE at two pips in smite reach: the bot went 12/12 on marsh + burning (knight 11 / 8) - left out, see the lane report */   /* (PALADIN 4) SUNFALL at five pips, RADIANCE+ at four when close (the bot holds through three for the empowered burst; own/inC kept for the read) */
-    const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;if(h==='paladin'&&BK.holy&&LABP.v2)palHallow();BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
+    const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;if(h==='paladin'&&BK.holy&&LABP.v2)palHallow();BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);if(AC)addCensus(AC,BK,boss,P,before,n);};
     P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labHold=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
@@ -1042,6 +1098,11 @@ async function runbossLab(BK, opts) {
           const was=P.hp;advance(1);taken+=Math.max(0,was-P.hp);if(f%600===599)await yieldNow();continue;
         }
       }
+      /* (claude/labadds-d) THE ADDS (AC.on: the switch on, and no per-boss duty for this boss's adds): turn to one, reach it, fight it with the duel hands, back to the boss */
+      if (AC && AC.on) { const ap = addPick(AC, BK, boss, A, dkOpen(), f);
+        if (ap) { const e = ap.e, lvl = Math.abs(e.y - P.y) < 26 || !P.ground;
+          if (lvl && !P.climb) { P.labAddJump = 0; labBotFrame(BK, h, e, f); AC.dF[ap.why]++; } else { addRoute(BK, e, T, k, f); AC.dF.route++; }
+          const was = P.hp; advance(1); taken += Math.max(0, was - P.hp); if (P.dead) falls++; if (f % 600 === 599) await yieldNow(); continue; } }
       /* THE DEEP: THE KING SWIMS. No stone - a stone is a man standing on the floor, and he is not there. The bot swims at him, up
          and down as well as along; it leaves a marked charge by going across its line and a marked fall by going aside, keeps a
          shield up for what a shield turns, and cuts him whenever he is in reach. */
@@ -3276,7 +3337,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: gqLabRow(GQS, boss, f, gqSpf) } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: gqLabRow(GQS, boss, f, gqSpf) } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}), ...(AC ? { adds: acRow(AC, (BK.SET.speed || 1) / 60) } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
