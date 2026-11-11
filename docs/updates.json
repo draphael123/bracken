@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 160,
+    "lines": [
+      { "s": "HIT FEEL: every blow has a short freeze, longer on heavy hits and kills", "lv": [] },
+      { "s": "Heavier weapons hit heavier", "lv": [] },
+      { "s": "Light melee cuts lose the old swing arc", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 159,
     "lines": [
       { "s": "HERO TRAITS: heroes keep core passives and wear the rest as traits", "lv": [] },
