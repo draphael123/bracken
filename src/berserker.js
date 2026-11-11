@@ -34,25 +34,27 @@ import { BF, spinCfg, roarCfg } from './forks-berserker.js';   /* (claude/bersfo
 export const BZ = {
   hp: 105, dmg: 12,                                   /* base health (src/progression.js) and the chop's base damage (main.js swordDmg) */
   run: 1.0,                                           /* x RUN on foot: a quick man, not a heavy one */
-  swing: { base: 1.3, rage: 1.38, frenzy: 1.5, one: 0.8, haste: 1.1, cross: 0.82 },   /* P.atk runs at these multiples (the flurry is QUICK); the cross-chop finisher x cross */
-  flurry: { run: 5, dmg: 0.85 },                      /* the run's length (the fifth is the CROSS-CHOP) and each quick chop's share of a full cut */
+  swing: { base: 1.3, rage: 1.38, frenzy: 1.5, one: 0.8, haste: 1.1, cross: 0.6 },   /* P.atk runs at these multiples (the flurry is QUICK); the cross-chop finisher x cross */
+  flurry: { run: 5, dmg: 0.85 },
+  /* (claude/berserkerid, Daniel 11-01 "jab combo = DISTINCT 3rd hit": the Berserker's is a WIDE SLOW CLEAVE) THE RUN-ENDER (the fifth, was the cross-chop): both axes round in one broad, slow arc - 36 out in front
+     and 12 behind him, tall - but it is told (swing.cross 0.6: the wind-up is long), and it overcommits (commit.js third 0.34 s of recovery): the trade for hitting everything beside him. */
+  cleaveHit: { front: 36, back: 12, top: 34, shove: 200, rec: 0.34 },                      /* the run's length (the fifth is the CROSS-CHOP) and each quick chop's share of a full cut */
   rage: { dealt: 0.9, taken: 1.4, brace: 30, hitCap: 14, drainAfter: 2.5, drain: 9, high: 50, chain: 10, absorb: 1.2, absorbCap: 30 },   /* absorb: rage per hp the crossed axes take */
   frenzy: { t: 8, takeMul: 1.25, hideMul: 1.1, heal: 0.025, priceHeal: 0.05, cryR: 110, haste: 5, mist: 40, long: 3 },   /* heal: of every blow that lands (BLOOD PRICE: priceHeal) */
   rend: { n: 4, decay: 2.5 },                         /* REND: the n-th frenzied blow on one foe cracks it (counts as a HEAVY); stacks fall off after decay s without one */
   take: { min: 0.25, chip: 0.1, beat: 1 },            /* TAKE IT: a tap holds it up min s; a blow on it costs him chip of it; beat x the shared tap beat */
+  cost: { spin: 25, cleave: 30, storm: 45 },           /* (Daniel 10-31 Q8) stamina to cast the three AoEs, before the rage discount (bzAoeCost) */
+  cost: { spin: 25, cleave: 30, storm: 45 },           /* (Daniel 10-31 Q8) stamina to cast the three AoEs, before the rage discount (bzAoeCost) */
   brace: { live: 0.3, rec: 0.28, won: 0.1, st: 10, stagger: 0.7, back: 1.2 },   /* (kept for the bots and old saves' readers: braceRec is never set now) */
   roll: { t: 0.28, speed: 300, shove: 200, stagger: 0.55, dmg: 0.4 },   /* (claude/heropassa) THE SHOULDER BARGE (his distinct dodge): 250 -> 300, a fifth further into them; brutes, elites, minis and bosses are not shoved (smallFoe) */
   axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
   perk: { rage: 1, brace: 1 },                        /* LEVELING2's hero perks (STOKED, STOUT BRACE): main.js applyUpgrades sets these from the card; 1 = none */
   poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
-  /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move") THE RAGE WIND-UP: HOLD X and the double chop climbs three tiers. at = s of WIND (past HEAVY_START, x his wind's
-     quickness) each arrives at - T1 is the old full wind; RAGE (half a bar or more) winds them x rageQ, a FRENZY x frenzyQ; hold = s held at T3 before it goes by itself;
-     st = wind each costs ON TOP of the heavy's own; mul = x the heavy's blow; poise = x the heavy's lean on the bar.
-       T1 OVERHEAD CHOP   both axes down from over his head (the double chop he always had)
-       T2 THE WHIRL one full turn with both axes out, carried a step and a half in: it cuts BEHIND him as well as ahead (cleave)
-       T3 GROUND-SPLITTER both axes buried in the floor: the ground splits both ways (a shockwave that knocks the small ones DOWN) - the heaviest lean on a bar he has (claude/chargetiers) */
-  tiers: { at: [0.36, 0.86, 1.41], hold: 0.8, rageQ: 0.8, frenzyQ: 0.65, st: [0, 0, 6, 12], mul: [0, 1, 1.2, 1.35], poise: [0, 1, 1.15, 1.5],   /* (tuned 10-22: 1.25/1.5 and 1.2/1.8 took the wood from 4/12 to 12/12 for him) */
-    names: ['', 'OVERHEAD CHOP', 'THE WHIRL', 'GROUND-SPLITTER'], cols: [null, '#ffd0a0', '#ff8a4c', '#ff3a2a'], label: [null, '#ffe6c8', '#ffb07a', '#ff7a5a'] },
+  /* (claude/berserkerid, Daniel 10-31 Q6 "the Blood Knight keeps the ONLY tier ladder; knight/ranger/berserker/geomancer lose theirs") THE WIND-UP COMMIT: HOLD X and he WINDS - armoured (no flinch from min), he cannot turn and
+     cannot stop (he creeps on, creep px/s), and past min s of wind (x his quickness: rage rageQ, a frenzy frenzyQ) the blow is COMMITTED. Let go and it is ONE heavy chop whose SIZE is how long he wound it (min..full s):
+     mul = x the heavy's blow, poise = x its lean on the bar, reach = px out in front; st = extra wind it costs at full size. It overcommits: rec = s of recovery after it (small..full), punishable.
+     hold = s held at full before it goes by itself. Rage adds poise (poise.rage) as before. */
+  wind: { min: 0.36, full: 1.2, hold: 0.7, rageQ: 0.8, frenzyQ: 0.65, mul: [1, 1.5], poise: [1, 1.7], reach: [21, 33], creep: 46, st: 10, rec: [0.3, 0.5], col: '#ff8a4c', label: '#ffb07a', name: 'COMMITTED', full_name: 'ALL IN' },
   cleave: { vx: 190, reach: 26, back: 22, shove: 220 },
   slam: { sp: 240, life: 0.38, dmg: 0.45, reach: 24 },
   /* WEIGHT (claude/weight): his row of its commit table (src/commit.js reads COMMIT.berserker) - kept here as the record */
@@ -60,8 +62,14 @@ export const BZ = {
 };
 /* WHO MAY BE ROLLED THROUGH AND KNOCKED ASIDE (and knocked along by the pounce): a small common foe, never a boss, a mini, an elite, a big one or one that cannot be moved */
 /* (claude/chargetiers) THE TIER HIS WIND HAS REACHED: held = s X has been down (main.js P.atkHeld), q = the wind's quickness (heavyWind / BZ.tiers.at[0] x rage / frenzy), start = HEAVY_START */
-export const bzTierAt = (i, q = 1, start = 0.14) => start + BZ.tiers.at[i - 1] * q;
-export const bzTierFor = (held, q = 1, start = 0.14) => { let t = 0; for (let i = 1; i <= 3; i++) if (held >= bzTierAt(i, q, start) - 1e-6) t = i; return t; };
+/* THE WIND-UP COMMIT's clock (q = his wind's quickness, start = HEAVY_START): the s of hold it commits at, the s it is at full size, whether it has committed, and how far (0..1) between */
+export const bzWindMinAt = (q = 1, start = 0.14) => start + BZ.wind.min * q;
+export const bzWindFullAt = (q = 1, start = 0.14) => start + BZ.wind.full * q;
+export const bzCommitted = (held, q = 1, start = 0.14) => held >= bzWindMinAt(q, start) - 1e-6;
+export const bzWindFrac = (held, q = 1, start = 0.14) => !bzCommitted(held, q, start) ? 0 : Math.max(0, Math.min(1, (held - bzWindMinAt(q, start)) / Math.max(0.01, bzWindFullAt(q, start) - bzWindMinAt(q, start))));
+export const bzLerp = (pair, f) => pair[0] + (pair[1] - pair[0]) * Math.max(0, Math.min(1, f || 0));
+/* THE AoE COSTS (Daniel 10-31 Q8): SPIN / CLEAVE / STORM cost stamina again - 25 / 30 / 45 - and RAGE pays part of it back: half a bar -20%, a full bar (or a frenzy) -40% */
+export const bzAoeCost = (base, rage = 0, frenzy = false) => Math.round(base * (frenzy || rage >= 100 ? 0.6 : rage >= BZ.rage.high ? 0.8 : 1));
 export const smallFoe = (e, knockSkip) => !!(e && e.alive && !e.harmless && !e.maxHp && !e.mini && !e.elite && !e.big && !e.xpRole && !(knockSkip && knockSkip(e)));
 /* WHO HE MAY THROW IN A FRENZY (for claude/throw): a medium foe too - not a boss, a mini, an elite captain */
 export const canThrowMedium = (P, e) => !!(P && P.frenzyT > 0 && e && e.alive && !e.maxHp && !e.mini && !e.elite && !e.xpRole);
@@ -71,7 +79,7 @@ export const selfFloor = (hp, cost) => Math.max(Math.min(hp, 1), hp - Math.max(0
 export function makeBerserker(api) {
   const stats = { takes: 0, taken: 0, absorbed: 0, chip: 0, parries: 0, takeRed: 0, takeBroken: 0, frenzies: 0, throws: 0, pickups: 0, recalls: 0, axeHits: 0, rollShoves: 0, kills: 0,
     healed: 0, rageDealt: 0, rageTaken: 0, cries: 0, rends: 0, cracks: 0, floored: 0,
-    braces: 0, braced: 0, braceMiss: 0, braceRed: 0, tier1: 0, tier2: 0, tier3: 0 };   /* (claude/chargetiers: the rage wind-up's tiers let go) */   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
+    braces: 0, braced: 0, braceMiss: 0, braceRed: 0, tier1: 0, tier2: 0, tier3: 0, catches: 0, warcries: 0, leaps: 0, rampages: 0, chained: 0, aoeCasts: 0 };   /* (claude/berserkerid: the L25-L50 techniques' counters) */   /* (claude/chargetiers: the rage wind-up's tiers let go) */   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
   const P = () => api.P, T = () => api.tal();
   const K = id => { const t = T(); return t.rk ? t.rk(id) : 1; };
   const F = id => { const t = T(); return !!(t.fk && t.fk(id)); };   /* (claude/bersfork) a picked fork side: false with FORKS_SHIP off, for another hero, in an EVEN duel, below its level */
@@ -131,7 +139,7 @@ export function makeBerserker(api) {
     if (p.hardenT > 0) k *= 2 / 3;
     if (t.scar) { if (F('bfscara')) { if (p.hp < p.maxHp * BF.trait.scarAhp) k *= BF.trait.scarAmul; } else if (F('bfscarb')) { if (p.hp < p.maxHp * BF.trait.scarBhp) k *= BF.trait.scarBmul; } else if (p.hp < p.maxHp / 3) k *= 1 - 0.2 * K('bzScar'); }
     return k; }
-  /* A BLOW THAT WOULD KILL HIM: LAST STAND holds him at one; UNBOWED, once a fight, too - with a full bar of rage. And THE FRENZY'S SURCHARGE never
+  /* A BLOW THAT WOULD KILL HIM: LAST STAND (his ONE "do not die" card now: SCARRED and UNBOWED are gone, Daniel 10-31 Q6/identity) holds him at one for 4 s. And THE FRENZY'S SURCHARGE never
      kills him (surcharge: what the frenzy added to this blow, main.js): a blow that would have left him standing without it leaves him on one */
   function lethal(dmg, surcharge = 0) { const p = P(); if (p.hp - dmg > 0) return dmg;
     if (p.standT > 0) return Math.max(0, p.hp - 1);
@@ -142,7 +150,7 @@ export function makeBerserker(api) {
     if (surcharge > 0 && p.hp - (dmg - surcharge) > 0) { stats.floored++; return Math.max(0, p.hp - 1); }
     return dmg; }
   /* NO FLINCH: a frenzy, UNFLINCHING with half a bar, or the beat SHRUG IT OFF buys */
-  const armoured = () => { const p = P(); return p.frenzyT > 0 || (p.standT > 0 && F('bfholdstand')) || (T().unflinch && (p.rage || 0) >= BZ.rage.high) || p.bzIronT > 0; };
+  const armoured = () => { const p = P(); return p.frenzyT > 0 || (p.charge || 0) >= BZ.wind.min * 0.9 || (p.standT > 0 && F('bfholdstand')) || (T().unflinch && (p.rage || 0) >= BZ.rage.high) || p.bzIronT > 0; };
 
   /* ---- TAKE IT: the crossed axes ---- */
   const beatLen = () => api.tap() * BZ.take.beat * BZ.perk.brace * (T().braceLong ? (F('bfbracea') ? BF.trait.braceA : F('bfbraceb') ? BF.trait.braceB : lerp(1, 4 / 3, K('bzBraceLong'))) : 1);   /* (STOUT BRACE and WIDE BRACE widen the beat) */
@@ -180,6 +188,7 @@ export function makeBerserker(api) {
     api.SFX.bzBraced && api.SFX.bzBraced(); api.hitstop(0.05); api.shakeCam(2, -p.face * 2);
     api.ringAt(p.x + p.face * 8, p.y - 12, 11, '#ff9a5c', 0.22); api.sparks(p.x + p.face * 8, p.y - 12, p.face, 6); api.number(p.x, p.y - 28, 'TOOK IT', '#ff9a5c');
     api.trialEvent('block'); return 'blocked'; }
+
 
   /* ---- FRENZY ---- */
   function frenzy(p, free, tideT) { p.frenzyT = (tideT || (F('bffuse') ? BF.frenzy.fuseT : BZ.frenzy.t)) + (T().long ? (F('bflonga') ? BF.trait.longA : F('bflongb') ? BF.trait.longB : BZ.frenzy.long * K('bzLong')) : 0); p.frenzyMax = p.frenzyT; p.bfChainAdd = 0; p.rage = 100; stats.frenzies++; p.bzRendE = null; p.bzRendN = 0; p.bzHealAcc = 0;
@@ -248,7 +257,6 @@ export function makeBerserker(api) {
     else if (cDown && free && keys.down && (p.ground || p.swim) && (p.rage || 0) >= fuseAt() && !(p.frenzyT > 0)) frenzy(p, free);   /* (claude/bzart, Daniel 10-11: THE FRENZY IS DOWN+C; a plain C at a full bar is TAKE IT) */
     else if (cDown && free && (p.ground || p.swim) && !takeUp(p)) { if (ctx.guardOk === false) { p.stFlash = 0.35; } else raise(p); }   /* (WINDED: no guard - claude/weight guardOk) */
     stepAxe(p, dt); rollStep(p);
-    if (p.ground && !p.dead && p.bzFightT !== undefined && api.time - p.bzFightT > 6) p.bzUnbowedUsed = false;   /* UNBOWED is once a FIGHT: six quiet seconds and it is his again */
   }
 
   /* ---- THE CAPSTONE (L50, claude/bersfork): UP+C at a FULL bar. ready only with a picked side (false with FORKS_SHIP off) ---- */
@@ -269,15 +277,16 @@ export function makeBerserker(api) {
   const kit = {
     roar() { const p = P(), R = roarCfg(F('bfwideroar') ? 'A' : F('bfgutroar') ? 'B' : ''); api.kitPose(p, 'bzRoar', 0.5); gain(p, R.rage, 'brace'); warCry(p, 5); fight(p); api.SFX.bzRoar && api.SFX.bzRoar(); api.shakeCam(4); api.ringAt(p.x, p.y - 12, R.r, '#ff9a5c', 0.45);
       for (const e of near(p, R.r)) { if (e.maxHp || e.mini) e.stagger = Math.max(e.stagger || 0, F('bfgutroar') ? 0.1 : 0.2); else { e.stagger = Math.max(e.stagger || 0, R.small); e.vx = (Math.sign(e.x - p.x) || 1) * R.push; } } },   /* (bersfork) WIDE ROAR / GUT ROAR: cfg from forks-berserker.js; the base row is the old numbers */
-    spin() { const p = P(), S = spinCfg(F('bfwidespin') ? 'A' : F('bfquickspin') ? 'B' : ''); api.kitPose(p, 'bzSpin', S.dur); p.spinT = S.dur; p.spinCfg = S; p.spinHits = Array.from({ length: S.n }, () => new Set()); api.SFX.bzChop && api.SFX.bzChop(); },
+    spin() { const p = P(), S = spinCfg(F('bfwidespin') ? 'A' : F('bfquickspin') ? 'B' : ''); stats.aoeCasts++; api.kitPose(p, 'bzSpin', S.dur); p.spinT = S.dur; p.spinCfg = S; p.spinHits = Array.from({ length: S.n }, () => new Set()); api.SFX.bzChop && api.SFX.bzChop(); },
     harden() { const p = P(); api.kitPose(p, 'bzHarden', 0.4); p.hardenT = 5; api.SFX.bzHarden && api.SFX.bzHarden(); api.ringAt(p.x, p.y - 12, 16, '#8a5a3a', 0.4); },
-    cleave() { const p = P(); api.kitPose(p, 'bzCleave', F('bfsweep') ? 0.5 : 0.35); p.cleaveT = F('bfsweep') ? 0.34 : 0.16; p.cleavePass = 0; p.cleaveHit = new Set(); p.vx = p.face * 60; api.SFX.bzHeavy && api.SFX.bzHeavy(); api.shakeCam(3, p.face * 2); },
+    cleave() { const p = P(); stats.aoeCasts++; api.kitPose(p, 'bzCleave', F('bfsweep') ? 0.5 : 0.35); p.cleaveT = F('bfsweep') ? 0.34 : 0.16; p.cleavePass = 0; p.cleaveHit = new Set(); p.vx = p.face * 60; api.SFX.bzHeavy && api.SFX.bzHeavy(); api.shakeCam(3, p.face * 2); },
     rampage() { const p = P(); api.kitPose(p, 'bzRamp', 0.45); p.rampT = 0.45; p.rampHit = new Set(); api.SFX.bzRoar && api.SFX.bzRoar(); api.streaks(p.x, p.y - 10, -p.face, ['#ff9a5c', '#e8dcc0'], 140); },
     shrug() { const p = P(); api.kitPose(p, 'bzShrug', 0.35); p.hurt = 0; p.flatT = 0; p.bzIronT = 0.4; gain(p, 15, 'brace'); api.SFX.bzShrug && api.SFX.bzShrug(); api.ringAt(p.x, p.y - 12, 14, '#c9b27c', 0.3); },
     stand() { const p = P(); api.kitPose(p, 'bzStand', 0.5); p.standT = F('bfholdstand') ? BF.stand.holdT : F('bfroarstand') ? BF.stand.roarT : BF.stand.baseT; p.bfRoarStand = F('bfroarstand'); api.SFX.bzRoar && api.SFX.bzRoar(); api.ringAt(p.x, p.y - 12, 22, '#ff4a3a', 0.45); },
     unchained() { const p = P(); api.kitPose(p, 'bzUnch', 0.45); p.rage = 100; frenzy(p, true); },
     storm() { const p = P(); api.kitPose(p, 'bzStorm', 0.4); p.hatchets = p.hatchets || [];
-      for (let i = 0; i < 4; i++) p.hatchets.push({ x: p.x + p.face * 8, y: p.y - 14, vx: p.face * (260 + i * 20), vy: -120 + i * 55, life: 1.1, hit: new Set(), spin: i }); api.SFX.bzThrow && api.SFX.bzThrow(); },
+      const n = 4, hm = 1;
+      for (let i = 0; i < n; i++) p.hatchets.push({ x: p.x + p.face * 8, y: p.y - 14, vx: p.face * (260 + i * 20), vy: -120 + i * 55 * 4 / Math.max(4, n), life: 1.1, hit: new Set(), spin: i, hm }); stats.aoeCasts++; api.SFX.bzThrow && api.SFX.bzThrow(); },
   };
   /* THE KIT'S BODIES IN MOTION (every frame, after update): the spin, the cleave, the rampage and the hatchets */
   function kitStep(dt) { const p = P();
@@ -300,7 +309,7 @@ export function makeBerserker(api) {
     if (p.hatchets && p.hatchets.length) { for (const h of p.hatchets) { h.life -= dt; h.vy += 300 * dt; h.x += h.vx * dt; h.y += h.vy * dt; h.spin += dt * 20;
         if (api.isSolid(Math.floor(h.x / api.TS), Math.floor(h.y / api.TS))) h.life = 0;
         for (const e of api.enemies) { if (h.life <= 0 || !e.alive || e.harmless || e.gone > 0 || h.hit.has(e) || !api.overlap({ l: h.x - 4, r: h.x + 4, t: h.y - 4, b: h.y + 4 }, api.box(e))) continue; h.hit.add(e);
-          api.hurtAs('shot', e, Math.round(api.swordDmg() * SKK.K.bzStorm * api.amul('bzStorm')), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
+          api.hurtAs('shot', e, Math.round(api.swordDmg() * SKK.K.bzStorm * api.amul('bzStorm') * (h.hm || 1)), h.x - Math.sign(h.vx) * 10, false); api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(h.vx), 4); } }
       p.hatchets = p.hatchets.filter(h => h.life > 0); } }
 
   /* ---- DRAWN (after the hero): the axe in flight or on the ground, the hatchets, the frenzy's glow, the crossed axes, a rend's notches, a partner's haste ---- */
@@ -347,7 +356,9 @@ export function makeBerserker(api) {
   const read = () => { const p = P(); return { rage: +(p.rage || 0).toFixed(1), frenzyT: +(p.frenzyT || 0).toFixed(2), braceT: p.braceT || 0, braceRec: p.braceRec || 0, takeUp: takeUp(p), onBeat: onBeat(p), axe: p.bzAxe ? { state: p.bzAxe.state, x: Math.round(p.bzAxe.x), y: Math.round(p.bzAxe.y) } : null,
     oneHanded: !!p.bzAxe, chain: p.bzChainN || 0, rendN: p.bzRendN || 0, workT: p.workT || 0, coilT: p.coilT || 0, whetT: p.whetT || 0, pounceT: p.pounceT || 0, pounceRec: p.pounceRec || 0, hasteT: p.hasteT || 0,
     swingMul: +swingMul().toFixed(3), takeMul: +takeMul().toFixed(3), armoured: armoured(), stats: { ...stats } }; };
-  return { BZ, fuseAt, ultReady, ultFire, windK, heavyK, dodgeK, reachK, slipped, wideR, wideB, tierStat: n => { stats['tier' + n] = (stats['tier' + n] || 0) + 1; }, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
+  /* THE WIND-UP COMMIT as it stands now (main.js reads it for the blow, the poise and the recovery) */
+  const aoeCost = id => bzAoeCost(BZ.cost[id], P().rage || 0, P().frenzyT > 0);
+  return { BZ, aoeCost, fuseAt, ultReady, ultFire, windK, heavyK, dodgeK, reachK, slipped, wideR, wideB, tierStat: n => { stats['tier' + n] = (stats['tier' + n] || 0) + 1; }, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
     throwAxe: () => throwAxe(P()), recall: () => recall(P()), frenzy: () => frenzy(P(), true),
     update, kit, kitStep, draw, clear, read, raging: () => raging(P()), resetStats: () => { for (const k in stats) stats[k] = 0; }, canThrowMedium: e => canThrowMedium(P(), e) };
 }

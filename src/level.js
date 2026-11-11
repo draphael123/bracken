@@ -3831,7 +3831,7 @@ export function trialSteps(hero) {
       ['meter', 1, 'STONES STAND UNTIL BROKEN. THREE UP, UP+C: MOUNTAIN COLLAPSE. RAISED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'UP + LB WITH THREE STONES UP'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
-       straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
+       straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE WIDE CLEAVE), THE WIND-UP COMMIT (his held X: armoured, ONE chop that grows with the wind), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
        (the brace takes a yellow one; a red one goes through it), THE SHOULDER ROLL, THE AXE THROW (UP+C, and then he must fetch it) and
        THE FRENZY (a full bar, spent) */
     /* THE RANGER'S YARD (claude/ranger, 2026-10-14): her verbs. THE QUICK SHOT (a tap), THE DRAW (held: a full one carries to the far straw), THE QUIVER (walk
@@ -3853,8 +3853,8 @@ export function trialSteps(hero) {
       ['meter', 1, 'ARROWS FROM THE SWEET SPOT FILL FOCUS. FULL: UP+C LOOSES THE GREAT ARROW. SKEWER THE STRAW.', [['dummy', 14], ['sprig', 20]], 'UP + LB WITH A FULL BAR'],
       SKILL],
     berserker: [
-      ['third', 2, 'THE FLURRY: X FIVE TIMES, LEFT AXE, RIGHT AXE. LAND THEM ALL: THE FIFTH IS THE CROSS-CHOP.', [['dummy', 16], ['dummy', 20]], 'X x5'],
-      ['heavyblow', 2, 'HOLD X, LET GO: BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
+      ['third', 2, 'THE FLURRY: X FIVE TIMES. LAND THEM ALL: THE FIFTH IS THE WIDE CLEAVE, SLOW AND BROAD.', [['dummy', 16], ['dummy', 20]], 'X x5'],
+      ['heavyblow', 2, 'HOLD X TO WIND UP: THE LONGER, THE BIGGER. NO TURNING OR STOPPING. LET GO.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
       ['flash', 2, 'TAKE IT: RAISE THE AXES (C) AS HIS SWORD FLASHES. A PARRY: HE REELS. TWICE.', [['swornsword', 18]], 'LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : HOLD C AND TAKE IT AS RAGE. TWO RED !! : TOO STRONG, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['dodge', 2, 'THE SHOULDER BARGE: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
