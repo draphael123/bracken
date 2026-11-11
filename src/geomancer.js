@@ -417,7 +417,7 @@ export function makeGeomancer(api) {
       if (p) P.y = ty * TS; P.vy = GEO.stepVy; P.ground = false; P.coyote = 0; api.dust(P.x, P.y, 6); api.squash(0.8, 1.25, 0.1); },
     boulder() { const P = api.P; api.kitPose(P, 'gHeave', 0.34);
       if (fk('ggreat')) rollers.push({ x: P.x + P.face * 16, y: P.y, vy: 0, dir: P.face, ...GEO.boulder, sp: GEO.boulder.sp * 0.6, r: GEO.boulder.r * 2, dmg: GEO.boulder.dmg * 2, bounces: 1, bigKnock: 1.5, hit: new Set(), spin: 0, kind: 'boulder' });   /* GREAT BOULDER */
-      else if (fk('gscatter')) for (const [i, m] of [1.15, 0.85, 0.6].entries()) rollers.push({ x: P.x + P.face * (14 + i * 3), y: P.y, vy: 0, dir: P.face, ...GEO.boulder, sp: GEO.boulder.sp * m, r: 5, dmg: GEO.boulder.dmg * 0.5, bounces: 3, hit: new Set(), spin: 0, kind: 'boulder' });   /* SCATTER */
+      else if (fk('gscatter')) for (const [i, m] of [1.15, 0.85, 0.6].entries()) rollers.push({ x: P.x + P.face * (14 + i * 3), y: P.y, vy: 0, dir: P.face, ...GEO.boulder, sp: GEO.boulder.sp * m, r: 5, dmg: GEO.boulder.dmg * 0.65, bounces: 3, hit: new Set(), spin: 0, kind: 'boulder' });   /* SCATTER */
       else rollers.push({ x: P.x + P.face * 14, y: P.y, vy: 0, dir: P.face, ...GEO.boulder, hit: new Set(), spin: 0, kind: 'boulder' });
       api.SFX.geoRise(); api.shakeCam(3); },
     spikeRow() { const P = api.P; api.kitPose(P, 'gSpikes', 0.4); api.SFX.geoThud(); let fy0 = Math.floor((P.y + 1) / TS);
@@ -695,7 +695,7 @@ export function makeGeomancer(api) {
       const tipX = fl.x0 + fl.dir * fl.len, ttx = Math.floor(tipX / TS), fy = Math.floor(fl.gy / TS); if (api.isSolid(ttx, fy - 1) || !(api.isSolid(ttx, fy) || api.isOneWay(api.tileAt(ttx, fy)))) fl.max = Math.min(fl.max, fl.len);
       if (fl.len > was && Math.random() < 0.6) api.dust(tipX, fl.gy, 2);
       for (const e of foes()) { if (e.harmless || e.turncoat || fl.hit.has(e) || Math.abs(e.y - fl.gy) > 14) continue; const d = (e.x - fl.x0) * fl.dir; if (d < -6 || d > fl.len) continue;
-        fl.hit.add(e); api.hurtAs('heavy', e, dmg(0.8 * (fl.kick ? 1.33 : 1), 'faultLine'), e.x - fl.dir * 8, false);   /* HIGH RIFT: a third more, two thirds higher */
+        fl.hit.add(e); api.hurtAs('heavy', e, dmg(0.8 * (fl.kick ? 1.2 : 1), 'faultLine'), e.x - fl.dir * 8, false);   /* HIGH RIFT: a fifth more, two thirds higher */
         if (e.alive && liftable(e)) { e.vy = fl.kick ? -530 : -320; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.8); api.number(e.x, e.y - (e.h || 16) - 14, 'THROWN UP', STONE.hi); } else if (e.alive) e.stagger = Math.max(e.stagger || 0, 0.4); } }
     faults = faults.filter(f => f.life > 0);
     const stepGolem = G => { G.life -= dt;   /* (claude/geofork) one step for the base golem and the second of TWO GOLEMS */ G.rise = Math.min(1, G.rise + dt * 4); G.atkT -= dt; G.swing = Math.max(0, G.swing - dt);
