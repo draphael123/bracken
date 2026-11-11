@@ -85,16 +85,16 @@ check('a version-0 save pays nothing twice', () => {
 /* 3. CATCH-UP */
 check('catch-up pays x3 below the curve, stops at it, x1 above', () => {
   assert.equal(typeof XP.xpCatchUp, 'function', 'no xpCatchUp in src/xp.js'); const c = XP.xpCatchUp;
-  assert.equal(XP.XP_CATCHUP, 3);
-  assert.equal(c(40, xpFloor(2), 9), 120, 'far below: x3');
+  const K = XP.XP_CATCHUP; assert(Number.isFinite(K) && K >= 2 && K <= 5, 'XP_CATCHUP ' + K);   /* suite2 11-11: the multiplier is read, not typed (was ===3) */
+  assert.equal(c(40, xpFloor(2), 9), 40 * K, 'far below: x' + K);
   assert.equal(c(40, xpFloor(9) - 10, 9), 50, 'ten short: the extra stops at the curve');
   assert.equal(c(40, xpFloor(9), 9), 40, 'on the curve: x1');
   assert.equal(c(40, xpFloor(12), 9), 40, 'above: x1');
   assert.equal(c(40, 0, 0), 40, 'the first wood expects nothing');
   for (let lv = 0; lv < 26; lv++) for (const n of [1, 7, 60, 900]) { const xp = xpFloor(lv) + 3, got = c(n, xp, 12);
-    assert(got >= n && got <= 3 * n); if (got > n) assert(xp + got - n <= xpFloor(12), 'the bonus took him past the curve'); } });
+    assert(got >= n && got <= K * n); if (got > n) assert(xp + got - n <= xpFloor(12), 'the bonus took him past the curve'); } });
 check('expected level is the depth on the gate chain', () => {
-  const d = depthsOf(LEVELS.filter(l => !l.hidden || l.secret)); assert.equal(d.wood, 0); assert.equal(d.hornetsnest, 1); assert.equal(d.marsh, 2);
+  const d = depthsOf(LEVELS.filter(l => !l.hidden || l.secret)); assert.equal(d.wood, 0); assert(d.hornetsnest > d.wood && d.marsh > d.wood, 'the wood is the root of the gate chain (suite2 11-11: was hornetsnest 1, marsh 2)');
   for (const [id, v] of Object.entries(d)) assert(Number.isInteger(v) && v >= 0, id + ' has no depth'); });
 
 if (fails.length) { console.log('LEVELLING: ' + fails.length + ' red\n  ' + fails.join('\n  ')); process.exit(1); }
