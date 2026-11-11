@@ -9788,7 +9788,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   if (dmg > 0 && isPaladin() && !hurtKnock && P.atk >= 0 && (e.quakedUntil || 0) > time) { e.quakedUntil = 0; dmg = Math.round(dmg * 1.6); number(e.x, e.y - e.h - 26, 'SHAKEN LOOSE', '#ffe6a0'); }   /* PALADIN: the quake, then the maul on what it shook */
   if (dmg > 0 && isPirate() && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time) { dmg = Math.round(dmg * 1.5); if (!e.powderSaid) { e.powderSaid = true; number(e.x, e.y - e.h - 26, 'POWDER AND STEEL', '#ffd34a'); } }   /* PIRATE: the ball, then the cutlass into the man it staggered */
   if (dmg > 0 && fb('fsteel') && P.atk >= 0 && !P.heavySwing && (e.powderUntil || 0) > time && e.fSteelFor !== e.powderUntil) { e.fSteelFor = e.powderUntil; dmg = Math.round(dmg * 1.2); gainPlunder(6); number(e.x, e.y - e.h - 34, 'AFTER SMOKE', '#ffd34a'); }   /* (claude/freefork) AFTER SMOKE: the first cut into a mark x1.2 + 6 plunder, once a mark */
-  if (dmg > 0 && fb('fswift')) dmg = Math.round(dmg * 0.9);   /* SWIFT BLADE: each blow a tenth lighter (it swings a fifth faster: updatePlayer) */
+  if (dmg > 0 && fb('fswift') && P.atk >= 0 && !P.heavySwing) dmg = Math.round(dmg * 0.9);   /* SWIFT BLADE: each blow a tenth lighter (it swings a fifth faster: updatePlayer) */
   if (dmg > 0 && !hurtKnock && (P.atk >= 0 || plunge) && (e.knock > 0 || e.carried > 0) && (e.launchedT || 0) > time) { dmg = Math.round(dmg * 1.3); if (!e.airSaid) { e.airSaid = true; number(e.x, e.y - e.h - 26, 'OFF THE GROUND', '#8fd160'); } }   /* ANY HERO: the rising cut, then the blow while it hangs */
   const finishCut = dmg>0 && !glance && !e.trainer && !e.maxHp && !e.mini && !e.elite && !FINISH_SKIP.has(e.t) && !P.jetHit && P.atk>=0 && (P.swingRiposte || (P.heavy && e.face && Math.sign(fromX-e.x)===-e.face));
   if(finishCut){if(e.rpPaidAt!==time)dmg=Math.round(dmg*COMBAT.finishMul);   /* (claude/riposte) a PARRY's riposte is paid ONCE, by the shared x2 (src/riposte.js payoff) - the finisher's x2.2 no longer stacks on it; it still finishes a low foe */
@@ -11520,11 +11520,11 @@ function updatePlayer(dt) {
   if (P.jfPend) { const jp = P.jfPend; squash(jp.sx, jp.sy, 0.1); }   /* (claude/jumpfeel) the frame after the press squash: the stretch */
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
-  if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
+  if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if ((fb('fgrapple') && !(P.boardT > 0)) || !e.alive || e.harmless || P.boardHit.has(e)) continue;
     if (Math.abs(e.x - P.x) < e.w / 2 + 12 && Math.abs((e.y - e.h / 2) - (P.y - 12)) < 22) { P.boardHit.add(e);
-      hurtAs('dash', e, Math.round(swordDmg() * (SKK.K.boardingBase + SKK.K.boardingTal * tal('boarding')) * amul('boarding') * (fb('fgrapple') ? 2 : 1)), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
+      hurtAs('dash', e, Math.round(swordDmg() * (SKK.K.boardingBase + SKK.K.boardingTal * tal('boarding')) * amul('boarding') * (fb('fgrapple') ? 3 : 1)), P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = P.face * 180; }
       sparks(e.x, e.y - e.h / 2, P.face, 6);
-      if (fb('fgrapple')) { P.boardT = 0; P.vx = 0; if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 1); } } } }   /* (claude/freefork) GRAPPLE: he lands on the first foe and stops: x2 cut, a common foe dazed 1 s */
+      if (fb('fgrapple')) { P.boardT = 0; P.vx = 0; if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 1); } } } }   /* (claude/freefork) GRAPPLE: he lands on the first foe and stops: x3 cut, a common foe dazed 1 s */
   if (isPirate() && !P.loaded) { P.reloadT = Math.max(0, (P.reloadT || 0) - dt); if (P.reloadT <= 0) reloadPistol(''); }
   if (isPirate() && P.loaded && !P.barrels) P.barrels = 1 + tal('secondBarrel') + (fb('ftthreebarrel') ? 1 : 0);
   if (P.landT > 0 && (P.jbuf > 0 || P.dbuf > 0)) P.landT = 0; // a landing can always be left early: the controls never take the wheel
