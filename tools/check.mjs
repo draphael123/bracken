@@ -231,7 +231,10 @@ if (SHARD) for (const [name, ms] of Object.entries(timings).sort((a, b) => b[1] 
   const i = load.indexOf(Math.min(...load)); assigned.set(name, i + 1); load[i] += Math.max(1, ms); }
 const belongs = name => !SHARD || (assigned.has(name) ? assigned.get(name) === SHARD[0]
   : [...name].reduce((h, c) => (Math.imul(h, 33) + c.charCodeAt(0)) >>> 0, 5381) % SHARD[1] + 1 === SHARD[0]);
-let skipped = 0; const take = name => { const y = wanted(name) && belongs(name); if (!y) skipped++; return y; };
+/* EACH CHECK RUNS ONCE (claude/leakfix 11-10): gate157 ran every check TWICE (6.77 h instead of ~3.4 h) because the claude/maker branch's list line carried the WHOLE
+   earlier list again after its own maker-* names, and a union merge of two check lists keeps both copies. A name taken a second time is skipped and reported at the end. */
+let skipped = 0; const takenNames = new Set(), dupNames = new Set();
+const take = name => { const y = wanted(name) && belongs(name); if (!y) { skipped++; return y; } if (takenNames.has(name)) { dupNames.add(name); return false; } takenNames.add(name); return true; };
 /* LIVE LOG (10-16, after a runaway browser took the PC down and the end-of-run summary could not say which check did it): one line per check
    AS IT FINISHES, flushed at once, with the peak working set of this run's test browsers while it ran. The lines start with '[live]', never
    ' ok' or 'FAIL', so scratch/release.sh's greps of the summary below are untouched. Peak = sampled every 3 s by tools/rss-sampler.ps1
@@ -361,6 +364,7 @@ if (!WANT.length && take('profile-leaks')) results.push(run('profile-leaks', pro
 
 if (JOBS > 1) results = await runPool(results, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor, onDone: r => live(r.name, r.ok, r.ms) });
 
+if (dupNames.size) console.log('NOTE: ' + dupNames.size + ' check name(s) were listed more than once in tools/check.mjs and ran ONCE: ' + [...dupNames].slice(0, 12).join(', ') + (dupNames.size > 12 ? ', ...' : '') + ' (a merge kept two copies of a list: delete the second)');
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + ' ' + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
 /* A release reader takes the SECOND word of each ^FAIL line as the check name. Child output can itself begin FAIL,
