@@ -173,7 +173,7 @@ const EG_QUIET = { light: () => {}, open: () => {} };   /* (claude/maker) the ST
 import * as NDSP from './num-display.js'; const numTxt = n => NDSP.shownLabel(n.txt, n.col);   /* (claude/hpdisplay, Daniel 11-07) every HEALTH / DAMAGE number the player reads is the internal number / 10: src/num-display.js, the one helper */
 import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';   /* (claude/airmotion) the air frame leans and stretches with the arc - art only */ import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
-import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, respecForks, hasForkPick, roadToL50, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -5049,20 +5049,21 @@ function cardTake(i) { const c = cardNow(); if (!c || !cardUi) return; const h =
   if (k.tech) { const tt = techniqueById(h, k.id); if (tt) techniquePractice(tt); }   /* (claude/knightid) a technique taken is taught at once */
   const mh = P.maxHp, mst = P.maxSt; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); P.st = Math.min(P.maxSt, P.st + Math.max(0, P.maxSt - mst));
   saveProgress(); SFX.equip(); statFlash = 1; cardUi.msg = k.name + ' TAKEN'; cardUi.msgT = 1.6; if (!cardNow() && !cardUi.review) closeCard(); }
-function cardRespec() { const h = hero(), free = !!(PROG.cardFree || {})[h], c = cardOf(PROG, h);
-  if (!c || (!picksSpent(c) && !Object.keys(c.ms || {}).length)) { SFX.buzz(); cardUi.msg = 'NOTHING TO RESPEC'; cardUi.msgT = 2; return; }
+function cardRespec(forksOnly) { const h = hero(), free = !!(PROG.cardFree || {})[h], c = cardOf(PROG, h);
+  if (!c || (!picksSpent(c) && !Object.keys(c.ms || {}).length) || (forksOnly && !hasForkPick(PROG, h))) { SFX.buzz(); cardUi.msg = forksOnly ? 'NO FORK TO REDO' : 'NOTHING TO RESPEC'; cardUi.msgT = 2; return; }
   if (!free && silverAvail() < RESPEC_SILVER) { SFX.buzz(); cardUi.msg = 'A RESPEC IS ' + RESPEC_SILVER + ' SILVER: NEED ' + (RESPEC_SILVER - silverAvail()) + ' MORE'; cardUi.msgT = 2.5; return; }
-  respecCard(PROG, h); if (!free) PROG.silverSpent = (PROG.silverSpent || 0) + RESPEC_SILVER;
-  applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); P.st = Math.min(P.st, P.maxSt); saveProgress(); SFX.crack(); cardUi.i = 0; cardUi.review = true; cardUi.msg = free ? 'RESPEC: FREE THIS ONCE' : 'RESPEC: ' + RESPEC_SILVER + ' SILVER'; cardUi.msgT = 2.5; }
+  if (forksOnly) respecForks(PROG, h); else respecCard(PROG, h); if (!free) PROG.silverSpent = (PROG.silverSpent || 0) + RESPEC_SILVER;   /* (claude/ltfork) FORKS ONLY keeps the stats, upgrades and fixed moves: same price */
+  applyUpgrades(); P.hp = Math.min(P.hp, P.maxHp); P.st = Math.min(P.st, P.maxSt); saveProgress(); SFX.crack(); cardUi.i = 0; cardUi.review = true; cardUi.msg = (forksOnly ? 'FORKS REDONE: ' : 'RESPEC: ') + (free ? 'FREE THIS ONCE' : RESPEC_SILVER + ' SILVER'); cardUi.msgT = 2.5; }
 function updateCard(dt) { const u = cardUi; if (!u) { state = 'map'; return; } u.msgT = Math.max(0, u.msgT - dt); u.arm = Math.max(0, u.arm - dt); u.t += dt;
   if (u.fresh && u.t < 0.5) { leftPress = rightPress = upPress = downPress = confirmPress = false; }   /* the card is still sliding in: a mashed key must not take a perk unseen */
   if (pausePress) { closeCard(); return; }
-  const c = cardNow();
+  const c = cardNow(); const hasFk = hasForkPick(PROG, hero());
+  if (u.arm > 0 && hasFk && (upPress || downPress)) { u.forksOnly = !u.forksOnly; u.arm = 2.5; upPress = downPress = false; u.msg = u.forksOnly ? moreKey() + ' AGAIN: REDO FORKS ONLY (UP/DOWN: FULL RESPEC)' : moreKey() + ' AGAIN: FULL RESPEC (UP/DOWN: FORKS ONLY)'; u.msgT = 2.5; SFX.ui(); }
   if (c) { const n = c.opts.length; if (u.i >= n) u.i = 0;
     if (leftPress || upPress) { u.i = (u.i + n - 1) % n; SFX.ui(); } if (rightPress || downPress) { u.i = (u.i + 1) % n; SFX.ui(); }
     if (confirmPress) { cardTake(u.i); return; } }
   else if (confirmPress) { closeCard(); return; }
-  if (morePress()) { if (u.arm > 0) { u.arm = 0; cardRespec(); } else { u.arm = 2.5; const free = !!(PROG.cardFree || {})[hero()]; u.msg = moreKey() + ' AGAIN: RESPEC ' + (free ? 'FREE ONCE' : 'FOR ' + RESPEC_SILVER + ' SILVER'); u.msgT = 2.5; SFX.ui(); } }
+  if (morePress()) { if (u.arm > 0) { u.arm = 0; cardRespec(!!u.forksOnly && hasFk); } else { u.arm = 2.5; u.forksOnly = false; const free = !!(PROG.cardFree || {})[hero()]; u.msg = moreKey() + ' AGAIN: RESPEC ' + (free ? 'FREE ONCE' : 'FOR ' + RESPEC_SILVER + ' SILVER') + (hasFk ? ' (UP/DOWN: FORKS ONLY)' : ''); u.msgT = 2.5; SFX.ui(); } }
 }
 /* THE CARD'S LOOK (LEVELING2): the hero's own perk marked green and ranked; each stat card carries its THRESHOLD bar (VIGOR 7/10: BLOOD DRAWN) and what that
    threshold gives; under the three: how many levels to the next perk and the perks taken. A fresh card (a level-up, never a review) opens with a flash and slides in. */
@@ -5071,8 +5072,9 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
   if (u.back === 'map') g.drawImage(MAPC, 0, -MAP_TOP); else { g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH); } g.fillStyle = 'rgba(8,8,14,0.82)'; g.fillRect(0, 0, VW, VH);
   const owed = picksOwed(PROG, h, lv), mso = milestonesOwed(PROG, h, lv).length, calm = SET.reduceMotion;
   const slide = u.fresh && !calm ? Math.max(0, 1 - Math.min(1, u.t / 0.35)) : 0, oy = Math.round(slide * slide * 70);
-  text(c ? (c.kind === 'perk' ? (isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
-  text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, 22 - oy, UI.dim, 'center', 6);
+  text(c ? (c.kind === 'perk' ? (c.opts[0] && c.opts[0].fork ? 'LEVEL ' + c.n + ': CHOOSE YOUR PATH' : isTechLevel(h, c.n) ? 'LEVEL ' + c.n + ': A NEW MOVE' : isUpgradeLevel(h, c.n) ? 'LEVEL ' + c.n + ': AN UPGRADE' : isMinorMs(c.n) ? 'LEVEL ' + c.n + ': A SMALL PERK' : 'LEVEL ' + c.n + ': A MILESTONE') : 'LEVEL UP: CHOOSE ONE') : 'THE LEVEL CARD', VW / 2, 6 - oy, UI.title, 'center', 12);
+  const road = roadToL50(PROG, h, lv);   /* (forkproof) the strip needs the foot of the card: its next-perk line moves up under the name */
+  text((HERO_SHORT[h] || h).toUpperCase() + '  LEVEL ' + lv + (owed + mso ? '   ' + (owed + mso) + ' TO CHOOSE' : ''), VW / 2, road.length ? 18 - oy : 22 - oy, UI.dim, 'center', 6);
   const opts = c ? c.opts : CARD, n = Math.max(1, opts.length), gap = 6, cw = Math.floor((VW - 16 - gap * (n - 1)) / n), top = 34 + oy, statCard = !c || c.kind === 'stat', ch = statCard ? 94 : 78;
   opts.forEach((k, i) => { const x = 8 + i * (cw + gap), sel = !!c && i === u.i, stat = !c || c.kind === 'stat', full = stat && (cd[k.id] || 0) >= CARD_CAP, own = !!k.own;
     g.fillStyle = sel ? 'rgba(60,80,50,0.92)' : 'rgba(26,24,36,0.92)'; g.fillRect(x, top, cw, ch);
@@ -5087,18 +5089,30 @@ function drawCard() { const u = cardUi; if (!u) return; const h = hero(), lv = h
       if (th) text(have + '/' + th.at, x + cw - 8, top + 59, UI.gold, 'right', 6);   /* VIGOR 7/10 */
       text(fitName(th ? th.name : 'BOTH UNLOCKED', cw - 8, 6), x + cw / 2, top + 67, th ? UI.text : '#8fd160', 'center', 6);
       if (th) wrap(th.what, cw - 8, 6).slice(0, 2).forEach((ln, j) => text(ln, x + cw / 2, top + 76 + j * 8, UI.dim, 'center', 6)); }
-    else { text(k.tech ? 'A NEW MOVE' : k.up ? 'UPGRADE ' + (k.rank > 1 ? 'II' : 'I') : own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : k.tech || k.up ? '#ffd36b' : UI.gold, 'center', 6);
-      if (k.rec) text('RECOMMENDED', x + cw / 2, top + ch - 21, '#8fd160', 'center', 6); if (k.tech && k.input) wrap(k.input, cw - 8, 6).slice(0, 1).forEach(ln => text(ln, x + cw / 2, top + 20 + Math.min(3, wrap(k.what, cw - 8, 6).length) * 9, UI.dim, 'center', 6)); }   /* (claude/knightid) the pick that is the hero's NEXT technique is RECOMMENDED, and says its input */
+    else { text(k.fork ? (k.capstone ? 'CAPSTONE: ONE OR THE OTHER' : 'PICK ONE, THE OTHER LOCKS') : k.tech ? 'A NEW MOVE' : k.up ? 'UPGRADE ' + (k.rank > 1 ? 'II' : 'I') : own ? 'YOURS  RANK ' + k.rank + '/' + HERO_PERK_MAX : k.card ? 'A NEW MOVE' : k.minor ? 'SMALL, ONCE' : 'ONCE, FOR GOOD', x + cw / 2, top + ch - 12, own ? '#8fd160' : k.tech || k.up ? '#ffd36b' : UI.gold, 'center', 6);
+      if (k.rec && !k.fork) text('RECOMMENDED', x + cw / 2, top + ch - 21, '#8fd160', 'center', 6); if (k.tech && k.input) wrap(k.input, cw - 8, 6).slice(0, 1).forEach(ln => text(ln, x + cw / 2, top + 20 + Math.min(3, wrap(k.what, cw - 8, 6).length) * 9, UI.dim, 'center', 6)); }   /* (claude/knightid) the pick that is the hero's NEXT technique is RECOMMENDED, and says its input */
     TCH.hit(x, top, cw, ch, () => { if (!c) return; if (u.i === i) cardTake(i); else { u.i = i; SFX.ui(); } }); });
   const below = top + ch + 5;
   const nx = levelsToPerk(lv, h), nm = nextMilestone(lv, h);
-  text(nm === null ? 'EVERY PERK IS YOURS' : nx + (nx === 1 ? ' LEVEL' : ' LEVELS') + ' TO YOUR NEXT PERK (LEVEL ' + nm + ')', VW / 2, below, UI.gold, 'center', 6);
+  text(nm === null ? 'EVERY PERK IS YOURS' : nx + (nx === 1 ? ' LEVEL' : ' LEVELS') + ' TO YOUR NEXT PERK (LEVEL ' + nm + ')', VW / 2, road.length ? 26 - oy : below, UI.gold, 'center', 6);
   const perks = Object.entries(cd.ms || {}).sort((a, b) => a[0] - b[0]).map(([, id]) => perkName(id)).filter(Boolean);
-  if (perks.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, 3).forEach((ln, j) => text(ln, VW / 2, below + 10 + j * 8, UI.sel, 'center', 6));
+  if (perks.length && !road.length) wrap('PERKS: ' + perks.join(', '), VW - 20, 6).slice(0, 3).forEach((ln, j) => text(ln, VW / 2, below + 10 + j * 8, UI.sel, 'center', 6));
+  if (road.length) drawRoadToL50(road, VH - 46);
   const help = u.msgT > 0 ? u.msg : c ? 'LEFT/RIGHT  Z TAKE IT  ESC LATER  ' + moreKey() + ' RESPEC' : 'Z OR ESC BACK   ' + moreKey() + ' RESPEC (' + ((PROG.cardFree || {})[h] ? 'FREE ONCE' : RESPEC_SILVER + ' SILVER') + ')';
   text(fitName(help, VW - 16, 6), VW / 2, VH - 12, u.msgT > 0 ? UI.gold : UI.sel, 'center', 6);
   if (u.fresh && SET.flashes && !calm && u.t < 0.3) { g.fillStyle = 'rgba(255,246,200,' + (0.75 * flashK() * (1 - u.t / 0.3)).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* the flash: a third of a second, off in REDUCE MOTION and with flashes off */
 const isMinorMs = n => n <= 20;
+/* THE ROAD TO L50 (claude/ltfork, brief-lategame2 sec 2): the six technique levels as a strip of pips on the level-up card. A taken pip names the pick (green; at a fork the
+   other option is struck dim: LOCKED), the next pip is lit, the rest are dim; a fork shows both names, one per line; L50 is a gold-framed double slot (the two capstones). */
+/* a pip is ~7 letters wide: a long technique name shows its last word (COUNTER-THRUST: THRUST, LONG GUARD: GUARD), cut only if that still will not go */
+function pipName(n, w) { if (inkW(n, 6) <= w) return n; const l = String(n).split(/[ -]/).pop(); return inkW(l, 6) <= w ? l : fitText(l, w, 6); }
+function drawRoadToL50(road, y) { const n = road.length, gap = 3, pw = Math.floor((VW - 16 - gap * (n - 1)) / n), ph = 31;
+  road.forEach((r, i) => { const x = 8 + i * (pw + gap), lit = r.state === 'next', col = r.state === 'taken' ? '#8fd160' : lit ? UI.sel : UI.dim;
+    g.fillStyle = 'rgba(26,24,36,0.85)'; g.fillRect(x, y, pw, ph); g.strokeStyle = r.capstone ? '#ffd36b' : lit ? UI.sel : 'rgba(255,255,255,0.16)'; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, pw - 1, ph - 1);
+    text('L' + r.level + (r.capstone ? ' CAP' : r.fork ? ' FORK' : ''), x + pw / 2, y + 2, r.capstone ? '#ffd36b' : col, 'center', 6);
+    if (r.state === 'taken' && !r.fork) text(pipName(r.picked.name, pw - 4), x + pw / 2, y + 12, col, 'center', 6);
+    else if (r.fork) r.options.forEach((o, j) => text((!o.locked && r.state === 'taken' ? '> ' : '') + pipName(o.name, pw - 4 - (!o.locked && r.state === 'taken' ? 12 : 0)), x + pw / 2, y + 12 + j * 9, o.locked ? UI.dim : r.state === 'taken' ? '#8fd160' : col, 'center', 6));
+    else if (r.options[0]) text(pipName(r.options[0].name, pw - 4), x + pw / 2, y + 12, col, 'center', 6); }); }
 /* THE SIM (tools/xp.mjs): the campaign in the order it opens - a secret wood straight after the wood that opens it - priced by the same
    xpFoe the kills use. A straight run kills XP_KILL_NORMAL of what a wood holds, every mini and boss, and takes the share; a full clear
    takes everything and every quest as well. old is the level the count of woods gave. */
@@ -8191,7 +8205,7 @@ function heroMeterFrac() { return ((hero() === 'knight' ? (lcOn() ? 100 : (P.lin
 function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
   { const u = (state === 'play' || state === 'talk') ? ultCue(hero(), blink) : null; if (u) return u; }   /* (claude/ults) ONE cue for every hero: ULT READY: UP+C */
-  if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: 'SHIELD CHARGE: UP+C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
+  if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.links || 0) >= KC.max ? { s: (tech('kwheel') ? 'BREAKING WHEEL: UP+C' : 'SHIELD CHARGE: UP+C'), col: blink ? '#ffd36b' : '#fff6c8' } : null; }
   if (isPyro()) return P.full ? { s: 'METEOR FALL: UP + C', col: blink ? '#ffd36b' : '#fff6c8' } : null;   /* (claude/pyrokit2: it was CONFLAGRATION: C, and PYRE before) */
   if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
     if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
@@ -10168,7 +10182,7 @@ const lcOn = () => P.lcBrace > 0 || P.lcLeft > 0;
    hedge knight carry a maxHp for their bars and are ordinary foes, and the charge goes through them like anyone else */
 const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t) || !!(L.mini && L.mini.boss === e.t && (e.mini || !(L.ents || []).some(q => q.t === e.t && q.mini)));
 /* THE ULTIMATES (claude/ults): who has one, what makes it ready, what fires it. The Warden's Reach and the Pyromancer's Meteor Fall register here with one line each when their lanes land. */
-ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && (P.ground || P.swim) && !P.climb, fire: () => { lastCharge(); return true; } });
+ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && !(tech('kwheel') && thrown) && (P.ground || P.swim) && !P.climb, fire: () => { if (tech('kwheel')) wheelThrow(); else lastCharge(); return true; } });
 ultRegister('geomancer', { name: 'MOUNTAIN COLLAPSE', ready: () => !!GEO && GEO.avalancheReady() && (P.ground || P.swim), fire: () => { const ok = GEO.avalanche(); if (ok) trialEvent('meter'); return ok; } });
 ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
 function lastCharge() {
@@ -10286,7 +10300,7 @@ const knightWinding = () => hero() === 'knight' && (P.charge > 0 || (P.atkHeld |
 function heavyCut(stage) {
   P.atk = 0; P.hitSet.clear(); P.heavy = true; P.cutQuaked = false;
   P.vx = P.face * 70;
-  startSwing(); P.cutStage = stage; P.combo = 3; P.heavySwing = true; P.swingMul = (P.punishCut ? 2.0 : CUT_MUL[stage]) + 0.15 * Math.max(0, tal('heavy') - 1); P.punishCut = false;   /* (claude/knightid: VALIANT is the riposte FINISHER now; PUNISH (L35) is x2.0 on a broken foe) */   /* (after startSwing, which sets it from the run) */
+  startSwing(); P.cutStage = stage; P.combo = 3; P.heavySwing = true; P.swingMul = (P.punishCut || P.linkCutWant ? 2.0 : CUT_MUL[stage]) + 0.15 * Math.max(0, tal('heavy') - 1); P.punishCut = false; P.cutLink = !!P.linkCutWant; P.linkCutWant = false;   /* (claude/knightid: VALIANT is the riposte FINISHER now; PUNISH (L35) is x2.0 on a broken foe) */   /* (after startSwing, which sets it from the run) */
   SFX.heavyCut(stage); shakeCam(1 + stage, P.face * 2); zoomKick(1.02 + 0.015 * stage, 0.16);
   streaks(P.x + P.face * 10, P.y - 24, 6 + 2 * stage, [CUT_COL[stage], '#fff6e0'], 120); }
 /* WHAT EACH STAGE DOES TO WHAT IT LANDS ON, after the heavy blow has done everything a heavy blow does (the swing pass) */
@@ -10297,7 +10311,8 @@ function cutHit(e) {
     if (m && !(e.broken > 0) && !(e.poiseCd > 0)) { e.poise = Math.min(m, (e.poise || 0) + m * 0.25); if (e.poise >= m) addPoise(e, 1, P.x, false); }
     hitstop(0.1); return; }
   if (st === 3 && floorFoe(e, 1.8)) { number(e.x, e.y - e.h - 20, 'KNOCKED DOWN', '#ff8a4c'); return; }
-  if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); } }
+  if (!(e.broken > 0)) { e.broken = 1.3; e.guardT = 0; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); }
+  if (P.cutLink && !(e.maxHp || e.mini || e.noGrav)) { e.vx = P.face * 190; e.knock = 0; e.stagger = Math.max(e.stagger || 0, 0.45); dust(e.x, e.y, 5); } }   /* LINK CUT: the front man is shoved back along the floor (a boot-scuff of dust, nothing flies) */
 /* ON ITS BACK: a knockdown (the heavy cut's third stage, the Warden's WHEEL). It is BROKEN - stood still, open, every blow on it
    landing as on an opening - and drawn lying down (poseOf) until it gets up. Bosses, minis and what cannot be thrown are rocked instead. */
 function floorFoe(e, secs) {
@@ -10323,6 +10338,7 @@ function updateCharge(dt) {
   }
   P.atkHeld = (P.atkHeld || 0) + dt;
   if (hero() === 'knight' && tech('kpunish') && P.atkHeld >= HEAVY_START && P.atkHeld < cutAt(0)) { const t = punishTarget(); if (t) { P.cutWant = 2; P.punishCut = true; P.cutShown = 0; fireHeavy(); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; keys.atk = false; return; } }   /* PUNISH (L35): a guard-broken foe in reach takes the heavy cut AT ONCE */
+  if (hero() === 'knight' && tech('klinkcut') && (P.links | 0) >= 1 && !lcOn() && P.atkHeld >= HEAVY_START + 0.1 && P.atkHeld < cutAt(0) && P.st >= heavyCost()) { P.links--; P.linkT = 0; P.linkKeep = 0; P.cutWant = 2; P.linkCutWant = true; P.cutShown = 0; number(P.x, P.y - 40, 'LINK CUT', '#c9d1dc'); fireHeavy(); P.atkHeld = 0; P.charge = 0; P.chargeFull = false; keys.atk = false; return; }   /* LINK CUT (L30 B, claude/kfork): HOLD X with a link in the chain spends it - the heavy cut falls a beat sooner (0.24 s, not 0.5), breaks the guard and shoves the front man */
   const was = P.charge || 0;
   P.charge = Math.max(0, P.atkHeld - HEAVY_START);
   if (was <= 0 && P.charge > 0) { SFX.charge(); P.cutShown = 0; P.rgShown = 0; P.rgShakeSaid = false; if (isReaper()) { P.bkShown = 0; P.bkDrySaid = false; } }
@@ -33207,13 +33223,46 @@ function updatePwaves(dt) {
   }
   pwaves = pwaves.filter(w => w.life > 0);
 }
+/* SHIELD HOOK (L40 B, claude/kfork): the thrown shield catches the shooter it strikes by the rim and drags it home along the floor - a scrape of dust, a taut chain, nothing glowing.
+   Only a foot-soldier on the ground: no boss, no mini, no flier, nothing pinned; it stops at a wall or when the shooter is at arm length, and lets go dazed. */
+const hookable = e => !e.maxHp && !e.mini && !lcBig(e) && !e.noGrav && !e.pinned && !['wasp', 'drone', 'bell'].includes(e.t);
+function hookDrag(s, dt) { const e = s.hook; if (!e || !e.alive || e.gone > 0) { s.hook = null; return; }
+  const gap = Math.abs(P.x - e.x) - 14; e.vx = 0; e.stagger = Math.max(e.stagger || 0, 0.3); if (e.guardT > 0) e.guardT = 0; if (gap <= 0) return;
+  const dir = Math.sign(P.x - e.x) || 1, nx = e.x + dir * Math.min(gap, (300 + s.t * 60) * dt);
+  if (isSolid(Math.floor((nx + dir * 5) / TS), Math.floor((e.y - 4) / TS))) { hookRelease(s); return; }
+  e.x = nx; if (Math.random() < dt * 40) dust(e.x, e.y, 1); }
+function hookRelease(s) { const e = s.hook; s.hook = null; if (!e || !e.alive) return; e.stagger = Math.max(e.stagger || 0, 0.9); e.vx = 0; number(e.x, e.y - (e.h || 16) - 22, 'DRAGGED', '#c9d1dc'); dust(e.x, e.y, 6); }
+/* THE BREAKING WHEEL (L50 B capstone, claude/kfork): three links spent, the shield is hurled the length of the room (about 13 tiles) along the floor at a roll, through every guard it
+   crosses (each ordinary foe: a heavy blow, its guard BROKEN, 1.2 outbound, 0.6 on the way home), then rolls back to his hand. A boss or a mini stops it dead (a blow, no free
+   stagger and no guard drop: the boss law's OPEN rule is the only door), and a wall stops it with a clank. Not the Long Charge: he does not move, and the shield is away
+   (no shield to raise, no heavy cut) until it is caught. */
+function wheelThrow() {
+  trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
+  thrown = { x: P.x + P.face * 6, y: P.y - 9, dir: P.face, t: 0, back: false, hit: new Set(), hitB: new Set(), wheel: true };
+  kitPose(P, 'toss', 0.4); if (SFX.lcCry) SFX.lcCry(); SFX.throwWhoosh(); zoomKick(1.04, 0.2); shakeCam(2, P.face * 2); squash(0.85, 1.15, 0.1); dust(P.x + P.face * 8, P.y, 10);
+  number(P.x, P.y - 34, 'THE BREAKING WHEEL', '#c9d1dc'); }
+function wheelHits(s, sb) {
+  if (Math.random() < 0.8) dust(s.x, s.y + 9, 2);
+  const set = s.back ? s.hitB : s.hit;
+  for (const e of enemies) { if (!e.alive || set.has(e) || e.harmless || e.gone > 0 || e.turncoat || !overlap(sb, box(e))) continue; set.add(e);
+    if (e.t === 'drone') { if (!s.back) { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); } continue; }
+    const big = lcBig(e);
+    hurtAs('shot', e, Math.max(2, Math.round(swordDmg() * (s.back ? 0.6 : 1.2) * amul('kwheel'))), s.x - s.dir * 10, false);
+    impactAt(s.x, s.y, 'steel'); SFX.clank(); shakeCam(2, s.dir * 2); if (!e.alive) continue;
+    if (big) { if (!s.back) { s.back = true; sparks(s.x, s.y, -s.dir, 6); } continue; }   /* a boss or a mini stops the wheel: the blow, and nothing more */
+    if (e.maxHp) continue;   /* a duelist's bar: the blow only */
+    if (e.guardT > 0) e.guardT = 0;
+    if (!s.back && !(e.broken > 0)) { e.broken = 1.3; e.vx = 0; e.knock = 0; number(e.x, e.y - e.h - 20, 'GUARD BROKEN', '#ffd36b'); breakBeat(e); }
+    e.stagger = Math.max(e.stagger || 0, 0.6); } }
 function updateThrown(dt) {
   if (!thrown) return; const s = thrown; s.t += dt;
-  if (!s.back) { s.x += s.dir * 290 * dt; s.y += Math.sin(s.t * 14) * 8 * dt; const wall = isSolid(Math.floor((s.x + s.dir * 7) / TS), Math.floor(s.y / TS)); if (s.t > 0.5 || wall) { s.back = true; if (wall) { SFX.clank(); sparks(s.x, s.y, -s.dir, 4); } } }
-  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { thrown = null; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
-  const sb = { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
+  if (!s.back) { s.x += s.dir * (s.wheel ? 340 : 290) * dt; s.y += Math.sin(s.t * 14) * 8 * dt; const wall = isSolid(Math.floor((s.x + s.dir * 7) / TS), Math.floor(s.y / TS)); if (s.t > (s.wheel ? 0.62 : 0.5) || wall) { s.back = true; if (wall) { SFX.clank(); sparks(s.x, s.y, -s.dir, 4); } } }
+  else { const dx = P.x - s.x, dy = (P.y - 9) - s.y, d = Math.hypot(dx, dy) || 1; if (d < 10 || s.t > 3) { if (s.hook) hookRelease(s); thrown = null; SFX.shieldCatch(); impactAt(P.x + P.face * 6, P.y - 9, 'steel'); return; } const sp = 300 + s.t * 60; s.x += dx / d * sp * dt; s.y += dy / d * sp * dt; }
+  if (s.back && s.hook) hookDrag(s, dt);
+  const sb = s.wheel ? { l: s.x - 8, r: s.x + 8, t: s.y - 9, b: s.y + 9 } : { l: s.x - 6, r: s.x + 6, t: s.y - 6, b: s.y + 6 };
   const RANGED = ['archer', 'spit', 'shaman', 'wasp', 'drone', 'bell', 'thief'];
-  if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round(swordDmg() * (ranged ? SKK.K.shieldThrowFar : SKK.K.shieldThrowNear) * amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
+  if (s.wheel) wheelHits(s, sb);
+  else if (!s.back) for (const e of enemies) { if (!e.alive || s.hit.has(e) || !overlap(sb, box(e))) continue; s.hit.add(e); if (e.t === 'drone') { s.back = true; SFX.clank(); sparks(s.x, s.y, -s.dir, 3); break; }   /* (claude/sporewood2: the shield takes THE MOTHER CAP 2 at her hide's share) */ const ranged = RANGED.includes(e.t); hurtAs('shot', e,Math.round(swordDmg() * (ranged ? SKK.K.shieldThrowFar : SKK.K.shieldThrowNear) * amul('shieldThrow')), s.x - s.dir * 10, false); if (e.guardT > 0) e.guardT = 0; if (e.alive && !e.maxHp) e.stagger = Math.max(e.stagger || 0, ranged ? 1.6 : 0.8); impactAt(s.x, s.y, 'steel'); SFX.clank(); if (ranged) number(e.x, e.y - e.h - 14, 'STRUCK', '#c9d1dc'); if (ranged && tech('kshook') && !s.hook && e.alive && hookable(e)) { s.hook = e; s.back = true; number(e.x, e.y - e.h - 28, 'HOOKED', '#c9d1dc'); } if (e.maxHp || e.mini) { s.back = true; break; } }   /* (claude/herokit) it goes THROUGH the small and stuns what it hits (a guard dropped, a shooter reeling), and cuts again on the way home */
   else for (const e of enemies) { if (!e.alive || s.hitB.has(e) || !overlap(sb, box(e))) continue; s.hitB.add(e); hurtAs('shot', e, Math.round(swordDmg() * SKK.K.shieldThrowBack * amul('shieldThrow')), s.x + s.dir * 10, false); impactAt(s.x, s.y, 'steel'); }
   for (const sd of seeds) if (!sd.dead && !sd.reflected && overlap(sb, { l: sd.x - 3, r: sd.x + 3, t: sd.y - 3, b: sd.y + 3 })) { sd.dead = true; parries++; SFX.parry(); sparks(sd.x, sd.y, -s.dir, 4); number(sd.x, sd.y - 8, 'SWATTED', '#8fd160'); }
   for (const pr of props) if (pr.t === 'puffball' && !pr.popped && overlap(sb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 12, b: pr.y })) { pr.popped = true; SFX.crack(); burst(pr.x, pr.y - 6, 12, ['#e8e0d0', '#c8bcb0'], 60, 0.5); clouds2.push({ x: pr.x, y: pr.y - 6, r: 14, life: 2 }); }
@@ -36372,7 +36421,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawReflections(cx, cy); drawWater(cx, cy, true); if (L.frogCourt) { FCA.drawWater(g, L, cx, cy, time, boss && boss.t === 'frog' ? boss : null, movers); FCA.drawFlies(g, L, cx, cy, time); } drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (L.fenroad) FRA.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
-  if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
+  if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * (s.wheel ? 30 : 22) * s.dir); if (s.wheel) g.scale(1.5, 1.5); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (s.hook && s.hook.alive) { g.strokeStyle = '#8a8f98'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(s.x - cx), Math.round(s.y - cy)); g.lineTo(Math.round(s.hook.x - cx), Math.round(s.hook.y - (s.hook.h || 16) / 2 - cy)); g.stroke(); }   /* the hook's chain */ if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
   for (const r of rings) { const k = r.t / r.life; g.globalAlpha = 1 - k; g.strokeStyle = r.col; g.lineWidth = k < 0.5 ? 2 : 1; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 2 + r.r * Math.pow(k, 0.6), 0, 7); g.stroke(); }
   g.globalAlpha = 1; g.lineWidth = 1;
   for (const i of impacts) { const set = i.kind === 'steel' ? PROP.impactSteel : i.kind === 'red' ? PROP.impactRed : PROP.impact; const c = set[i.t < 0.07 ? 0 : 1]; const sc = i.kind === 'plunge' ? 1.5 : 1; g.drawImage(c, Math.round(i.x - cx - 8 * sc), Math.round(i.y - cy - 8 * sc), 16 * sc, 16 * sc); }
