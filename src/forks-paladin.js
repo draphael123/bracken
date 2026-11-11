@@ -5,7 +5,7 @@
 // four sites that move (hammer path, SUNFALL input, bulwark advance, third-blow pose).
 // A skill fork's key is 'skill:<catalog id>' (it applies while that skill is slotted). The hammer is NOT a slotted skill (UP+C spends Light): key 'hammer', ability 'hammer', rung L22.
 // Boss law holds for every side: no resist pins, no invulnerability on a foe, stagger / shove sides skip bosses and minis, damage only on a boss (the old boss-aware paths).
-// Side ids: 'p' + word, read in src/main.js as pb('<id>') (hero() === 'paladin' && tech(id)); FORKS_SHIP off = pb is false everywhere = the base Paladin.
+// Side ids: 'p' + word, read in src/main.js as plb('<id>') (hero() === 'paladin' && tech(id)); FORKS_SHIP off = pb is false everywhere = the base Paladin.
 const TF = (id, name, trade, a, b) => ({ trait: id, ability: 'trait:' + id, name, trade, A: { input: 'TRAIT', ...a }, B: { input: 'TRAIT', ...b } });
 export const PALADIN_RUNG_FORKS = {
   dash: { slot: 'dash', ability: 'dash', name: 'SANCTUARY STEP', trade: 'RUN LIGHT OR CARRY THE WARD',
