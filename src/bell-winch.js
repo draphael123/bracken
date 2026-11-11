@@ -74,5 +74,5 @@ export function callSpawns(gates, order, seats, room) {
   return out.slice(0, Math.max(0, room));
 }
 /* the add phase's goblins: 4 (soldier, pike, javelin, shield) +1 per seat past the first, cap 6 */
-export const ADDN = { n: 3 };   /* (GQ4TUNE r4: 4 -> 3 ads in the ALL GATES phase; r2 crown:mini deaths: 11/34 before the add phase ended) */   /* (gq4tune-d) the ALL GATES add phase's base count, in a table (the lab lever GQ_LEVER reaches it) */
+export const ADDN = { n: 4 };   /* (GQ5TUNE-d: back to the plan's 4 - GQ4TUNE r4 had cut 4 -> 3 while the lab bot could not reach the gallery goblins (failsafe ended 17/18 add phases); with the lab fixed, 3 ads put crown:mini at 15/18 = 83%, 4 ads + the 40 s failsafe at 24/36 = 67%) */   /* (gq4tune-d) the ALL GATES add phase's base count, in a table (the lab lever GQ_LEVER reaches it) */
 export function addKinds(seats) { return ['soldier', 'pike', 'javelin', 'shield', 'soldier', 'pike'].slice(0, Math.min(6, ADDN.n + Math.max(0, seats - 1))); }

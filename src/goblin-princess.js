@@ -33,7 +33,7 @@ export const GP = {
   stomp: { tell: 0.5, t: 0.5, dmg: P4 ? 16 : 20 /* (GQ4TUNE r4, flag ON only: 20 -> 16) */, speed: 220 },
   /* (claude/gq4p-d, GQ4 plan sec 2) THE GATES: 'GUARDS!' tell 1.0 s, the open gates' lanterns burn 3.5 s, then one goblin per open gate (never more than maxAlive alive); THE KEY (tell 1.2 s; a blow in it = STAGGERED 1.5 s);
      'ALL GATES!' (tell 1.5 s, 4 ads +1 per extra seat, cap 6; she is INVINCIBLE until the last one falls, 40 s failsafe), then DAZED 2.0 s x1.15 and phase 2 */
-  gate: { callTell: 1.0, lantern: 3.5, cd: [14, 11], firstCall: 7, maxAlive: 3, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 30 /* (GQ4TUNE r4: 40 -> 30) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
+  gate: { callTell: 1.0, lantern: 3.5, cd: [14, 11], firstCall: 7, maxAlive: 3, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 40 /* (GQ4TUNE r4: 40 -> 30; GQ5TUNE-d: back to 40 with the lab's gallery fix - see src/bell-winch.js ADDN) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
   dazeMul: 1.15, dizzyMul: 1.0,
   /* THE PIROUETTE (phase 2): tell 0.7 s, a skid line drawn along her path, two spinning passes at 260 px/s, rapier at shin height (jump it or roll through), then DIZZY 1.4 s; cd 9 s */
   pir: { tell: 0.7, speed: 260, len: 300, min: 120, dmg: 10, /* (GQ4TUNE r1: 14 -> 10; baseline n=6/hero 8/18 = 44%) */ h: 10, reach: 9, dizzy: 1.4, cd: 9 },
