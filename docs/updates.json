@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-11-10",
+    "batch": 157,
+    "lines": [
+      { "s": "NEW LEVEL: WISPWOOD, a dead wood where only what the light touches is real", "lv": ["wispwood"] },
+      { "s": "NEW BOSS: the Lantern Widow, waiting in the Widow's Glade", "lv": ["wispwood"] },
+      { "s": "NEW LEVEL: THE SILK UNDERCROFT, the web beneath the manor", "lv": ["silk"] },
+      { "s": "NEW LEVEL: THE HOLLOW MANOR, the house above the undercroft", "lv": ["manor"] },
+      { "s": "NEW LEVEL: THE MAGE ACADEMY, with the Headmistress waiting at the end", "lv": ["academy"] },
+      { "s": "The maker's hint words and font are tidied", "lv": [] }
+    ]
+  },
+  {
     "date": "2026-11-11",
     "batch": 156,
     "lines": [
