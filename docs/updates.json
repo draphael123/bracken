@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 159,
+    "lines": [
+      { "s": "HERO TRAITS: heroes keep core passives and wear the rest as traits", "lv": [] },
+      { "s": "Traits grow with your level (I, II, III); a second slot opens at level 20", "lv": [] },
+      { "s": "Clear a region once to unlock a shared trait any hero can wear", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 158,
     "lines": [
       { "s": "A feedback form in the game: tell us what you think without leaving it", "lv": [] },
