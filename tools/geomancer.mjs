@@ -69,8 +69,8 @@ try {
     window.__raise=()=>{const P=BK.P;P.st=P.maxSt;BK.geo().raiseWall();BK.sim(2);P.face=-P.face;};   /* (RAISE WALL is PARKED - no longer her C - and still held to THE CAP here) */
     return 1})()`);
   const out = {};
-  out.cap = await pg.evalp(`(()=>{const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
-    __geo([]);const three=run(5);__geo([],true,0,24);return {three,four:run(6)}})()`);
+  out.cap = await pg.evalp(`(async()=>{const TR=await import('/src/traits.js');const run=n=>{let most=0;for(let k=0;k<n;k++){BK.tp(5+k*5,21);BK.sim(3);BK.P.face=1;__raise();BK.sim(4);most=Math.max(most,BK.geo().pieces().length);}return most;};
+    __geo([]);const three=run(5);TR.setLabTraits(['geoFourth']);__geo([],true,0,24);const four=run(6);TR.setLabTraits(null);return {three,four}})()`);   /* (claude/traitsmoke-d) with TRAITS_SHIP on THE FOURTH STONE is a trait: it has to be WORN to lift the cap (flag off: the lab spec is ignored) */
   out.crumble = await pg.evalp(`(()=>{__geo([]);const g0=Array.from(BK.L.grid);__raise();BK.sim(3);__raise();BK.sim(5);const n=BK.geo().pieces().length;
     for(let i=0;i<60*7;i++){BK.sim(1);}   /* seven seconds: it STANDS (claude/geoid) */const left=BK.geo().pieces().length;BK.geo().clear();const g1=Array.from(BK.L.grid);return {raised:n,left,same:g0.every((v,i)=>v===g1[i])}})()`);
   out.lift = await pg.evalp(`(()=>{const up=e=>BK.geo().erupt(Math.floor(e.x/16),22,2,'step',{hurt:false,noHero:true});   /* (the eruption STONE STEP uses: stone out of the floor under a body) */

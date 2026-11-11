@@ -1,0 +1,39 @@
+== DEMO bosses (juice on; kings=KING GORM L9, stockade=CHIEFTAIN L4, burning=PYROMANCER L5) knight/warden/pyro; n=12/hero stockade+burning, n=6/hero kings
+burning|built        | OFF: kn 11/12 wa 12/12 py 7/12 = 30/36 83% | ON: kn 12/12 wa 12/12 py 5/12 = 29/36 81%
+burning|practiced    | OFF: kn 4/12 wa 12/12 py 12/12 = 28/36 78% | ON: kn 2/12 wa 12/12 py 11/12 = 25/36 69%
+kings|built          | OFF: kn 4/6 wa 6/6 py 6/6 = 16/18 89% | ON: kn 4/6 wa 6/6 py 6/6 = 16/18 89%
+kings|practiced      | OFF: kn 3/6 wa 6/6 py 4/6 = 13/18 72% | ON: kn 4/6 wa 6/6 py 5/6 = 15/18 83%
+stockade|built       | OFF: kn 8/12 wa 4/12 py 7/12 = 19/36 53% | ON: kn 8/12 wa 5/12 py 4/12 = 17/36 47%
+stockade|practiced   | OFF: kn 7/12 wa 4/12 py 9/12 = 20/36 56% | ON: kn 7/12 wa 4/12 py 7/12 = 18/36 50%
+
+== MAIN LIST (juice off; marsh=FROG KING L3, scree=RAM LORD L10, crown=GOBLIN QUEEN L21, causeway=KRAKEN L29, waymeet=CRUSADER L30, mage=MAGE'S FOLLY L42, unburied=DEATH KNIGHT L41). n=6/hero (crown/causeway/waymeet n=12/hero). ON = OLD pyro defaults (emberSkin,heatShield)
+causeway|built       | OFF: kn 9/12 wa 4/12 py 12/12 ra 5/12 ge 7/12 = 37/60 62% | ON: kn 10/12 wa 5/12 py 12/12 ra 6/12 ge 8/12 = 41/60 68%
+causeway|practiced   | OFF: kn 7/12 wa 3/12 py 11/12 ra 3/12 ge 5/12 = 29/60 48% | ON: kn 8/12 wa 3/12 py 3/12 ra 3/12 ge 5/12 = 22/60 37%
+crown|built          | OFF: kn 11/12 wa 1/12 py 11/12 ra 8/12 ge 5/12 = 36/60 60% | ON: kn 9/12 wa 4/12 py 10/12 ra 5/12 ge 5/12 = 33/60 55%
+crown|practiced      | OFF: kn 5/12 wa 0/12 py 10/12 ra 4/12 ge 0/12 = 19/60 32% | ON: kn 5/12 wa 0/12 py 6/12 ra 4/12 ge 0/12 = 15/60 25%
+mage|built           | OFF: kn 5/6 wa 6/6 py 6/6 ra 6/6 ge 5/6 = 28/30 93% | ON: kn 6/6 wa 6/6 py 6/6 ra 4/6 ge 5/6 = 27/30 90%
+mage|practiced       | OFF: kn 4/6 wa 3/6 py 3/6 ra 0/6 ge 4/6 = 14/30 47% | ON: kn 5/6 wa 1/6 py 2/6 ra 2/6 ge 4/6 = 14/30 47%
+marsh|built          | OFF: kn 3/6 wa 1/6 py 2/6 = 6/18 33% | ON: kn 3/6 wa 1/6 py 5/6 = 9/18 50%
+marsh|practiced      | OFF: kn 3/6 wa 1/6 py 5/6 = 9/18 50% | ON: kn 3/6 wa 1/6 py 5/6 = 9/18 50%
+scree|built          | OFF: kn 3/6 wa 3/6 py 6/6 = 12/18 67% | ON: kn 5/6 wa 2/6 py 6/6 = 13/18 72%
+scree|practiced      | OFF: kn 3/6 wa 5/6 py 6/6 = 14/18 78% | ON: kn 4/6 wa 5/6 py 6/6 = 15/18 83%
+unburied|built       | OFF: kn 6/6 wa 6/6 py 6/6 ra 6/6 ge 6/6 = 30/30 100% | ON: kn 6/6 wa 6/6 py 6/6 ra 6/6 ge 6/6 = 30/30 100%
+unburied|practiced   | OFF: kn 0/6 wa 6/6 py 5/6 ra 3/6 ge 4/6 = 18/30 60% | ON: kn 1/6 wa 6/6 py 4/6 ra 1/6 ge 4/6 = 16/30 53%
+waymeet|built        | OFF: kn 11/12 wa 12/12 py 12/12 ra 11/12 ge 8/12 = 54/60 90% | ON: kn 7/12 wa 12/12 py 12/12 ra 10/12 ge 7/12 = 48/60 80%
+waymeet|practiced    | OFF: kn 4/12 wa 11/12 py 10/12 ra 3/12 ge 0/12 = 28/60 47% | ON: kn 1/12 wa 10/12 py 11/12 ra 0/12 ge 0/12 = 22/60 37%
+
+== AFTER TUNE: pyro ON with new defaults (emberSkin,phoenix), n=12
+causeway|built       | NEWPYRO: py 12/12 = 12/12 100%
+causeway|practiced   | NEWPYRO: py 8/12 = 8/12 67%
+crown|built          | NEWPYRO: py 8/12 = 8/12 67%
+crown|practiced      | NEWPYRO: py 10/12 = 10/12 83%
+mage|built           | NEWPYRO: py 11/12 = 11/12 92%
+mage|practiced       | NEWPYRO: py 8/12 = 8/12 67%
+unburied|built       | NEWPYRO: py 12/12 = 12/12 100%
+unburied|practiced   | NEWPYRO: py 12/12 = 12/12 100%
+waymeet|built        | NEWPYRO: py 12/12 = 12/12 100%
+waymeet|practiced    | NEWPYRO: py 11/12 = 11/12 92%
+
+== causeway pyro practiced n=12 trait probes: OFF 11/12; ON old default 3/12; core only 3/12; brand+wildfire 3/12; longFlame+scatter 3/12; jetWalk+inferno 3/12; twin+blaze 5/12; phoenix+emberHeart 7/12; emberSkin+phoenix 8/12; heatShield+phoenix 10/12
+== waymeet knight practiced n=12 probes: OFF 4/12 (n=12 pooled), ON old 1/12, plated+unbroken 0, riposte+counterstroke 0, flurry+bleed 0, evasion+plated 1
+== waymeet knight BUILT n=12 probes: OFF 11/12 (seeds13-24) + 5/6 (1-6); ON default 5/12 (13-24) + 3/6; riposte+counterstroke 8/12; plated+unbroken 6/12; vengeance+riposte 7/12 (crown built 9/12 vs OFF 11/12)
