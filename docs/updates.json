@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 162,
+    "lines": [
+      { "s": "FOE VARIETY: the desert, canal road and fair mix up the foes you already know", "lv": ["caravan","underwell","glasssea","ksar","buriedcity","sealedpyramid","towpath","canal","fair"] },
+      { "s": "Fire, oil and thirst scorpions, Ksar raptors, vultures and drowned in the pyramid", "lv": ["underwell","glasssea","ksar","buriedcity","sealedpyramid"] },
+      { "s": "Order paladins at Waymeet and Warcairn: wait for the gleam, then parry", "lv": ["waymeet","warcairn"] },
+      { "s": "Goblin kites in the Rookery, club goblins in the Kitchen Gate, mimics in the Tower", "lv": ["rookery","kitchengate","underleaf","fallingtower"] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 161,
     "lines": [
       { "s": "Store Skills tab: your core passives and worn traits show under your abilities", "lv": [] },
