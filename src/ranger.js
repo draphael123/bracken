@@ -147,7 +147,7 @@ export function makeRanger(api) {
     if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : (a.kind === 'draw' && a.full) || a.kind === 'pierce' ? 'heavyblow' : 'hit');   /* (claude/chargetiers: every drawn tier is a heavy blow on the straw) */ if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
     if (landed && sweet) { stats.sweet++; focusGain(p, a.focus); if (!p.rgSweetSaid || api.time - p.rgSweetSaid > 1.2) { p.rgSweetSaid = api.time; api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#9fdc6a', 0.2); } }
     if (landed && a.wild) markFoe(p, e);
-    if (landed && sweet && a.kind === 'quick' && fk('rtrueflight') && api.time - (p.rgTrueAt ?? -9) >= 1) { p.rgTrueAt = api.time; a.wild = true; markFoe(p, e, 'TRUE FLIGHT', 3); }   /* (claude/rangerfork) TRUE FLIGHT: the arrow comes straight back (wild: landArrow gives it) and the foe is marked */
+    if (landed && sweet && a.kind === 'quick' && fk('rtrueflight') && api.time - (p.rgTrueAt ?? -9) >= 1) { p.rgTrueAt = api.time; a.wild = true; api.number(e.x, e.y - (e.h || 16) - 14, 'TRUE FLIGHT', '#e8dcb0'); }   /* (claude/rangerfork) TRUE FLIGHT: the arrow comes straight back (wild is set AFTER the hit's mark line, so landArrow gives the arrow back and nothing is marked: she has the one mark, heroaudit item 8) */
     if (landed && a.emp && a.kind === 'pierce' && e.alive && !markOn(e)) markFoe(p, e, 'QUARRY', RG.mark.tSteady);   /* (claude/ults) a steady shot that lands marks its quarry */
     if (landed && a.great && e.alive) { if (big) { e.stagger = Math.max(e.stagger || 0, e.mini || e.maxHp ? RG.great.miniStagger : RG.great.stagger); api.poiseLean && api.poiseLean(e, 30); e.vx = 0; } else { e.stagger = Math.max(e.stagger || 0, 0.8); e.vx = Math.sign(a.vx || p.face) * 200; } api.hitstop(0.08); api.shakeCam(5, p.face * 3); }
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
@@ -162,6 +162,7 @@ export function makeRanger(api) {
     if (!e) return; const sp = Math.hypot(a.vx, a.vy) || 1, want = Math.atan2((e.y - (e.h || 16) / 2) - a.y, e.x - a.x), cur = Math.atan2(a.vy, a.vx); let df = want - cur; while (df > Math.PI) df -= 2 * Math.PI; while (df < -Math.PI) df += 2 * Math.PI;
     const ang = cur + Math.max(-6 * dt, Math.min(6 * dt, df)); a.vx = Math.cos(ang) * sp; a.vy = Math.sin(ang) * sp; }
   function landArrow(p, a, how) {
+    if (a.smoke && a.bigCloud && !a.puffed) { a.state = how; a.t = 0; return; }   /* (claude/rangerfork) BIG CLOUD: a smoke arrow that strikes a foe still puffs (kitStep turns it to smoke) */
     if (a.free || a.wild) { if (a.wild && !a.free) giveArrow(p, 1, 'wild'); a.state = 'gone'; return; }   /* (a skill's arrow is not hers to keep; THE WILD HUNT's comes straight back) */
     a.state = how; a.t = 0; }
   function stepArrows(p, dt) { if (!p.rgArrows || !p.rgArrows.length) return;
