@@ -32,7 +32,9 @@ check('passives are not slotted', () => {
 check('a passive is on from its level, owned or not', () => {
   assert.equal(typeof PR.passiveOn, 'function', 'no passiveOn in src/progression.js');
   const p = migrateProgress(null).progress;
-  for (const n of SKILLS.filter(n => !n.active)) { assert.equal(PR.passiveOn(p, n.hero, n.id, n.level), true, n.id + ' off at its level');
+  /* (claude/traitframe, TRAITS_SHIP on): a SPLIT hero's trait is on only while WORN - its gate is proved in tools/traits.mjs; this row keeps the core and the unsplit heroes */
+  const worn = n => PR.TRT.traitsShip() && PR.TRT.hasSplit(n.hero) && !PR.TRT.coreIds(n.hero).includes(n.id);
+  for (const n of SKILLS.filter(n => !n.active && !worn(n))) { assert.equal(PR.passiveOn(p, n.hero, n.id, n.level), true, n.id + ' off at its level');
     assert.equal(PR.passiveOn(p, n.hero, n.id, n.level - 1), false, n.id + ' on below its level'); }
   for (const n of SKILLS.filter(n => n.active)) assert.equal(PR.passiveOn(p, n.hero, n.id, 99), false, n.id + ' is an ability'); });
 check('a slot never reads a passive', () => { const n = SKILLS.find(n => !n.active); const p = { loadouts: { [n.hero]: [n.id] } };
