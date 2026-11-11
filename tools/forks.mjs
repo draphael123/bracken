@@ -31,7 +31,7 @@ check('flag OFF is the base: nothing reads the forks', () => {
 });
 
 check('data shape (every registered fork, every hero)', () => {
-  for (const h of Object.keys({ knight: 1 })) { const ids = new Set(), list = F.forkList(h); assert(list.length >= 4, h + ' has forks');
+  for (const h of Object.keys({ knight: 1 })) { const ids = new Set(), list = F.forkList(h); assert.equal(list.length, 21, h + ' has 11 rungs + 10 trait forks');
     for (const { key, e, level } of list) { assert(e.name && e.trade && e.A && e.B, key + ' text'); assert(level >= 20 && level <= 50, key + ' level ' + level);
       for (const s of ['A', 'B']) { const x = e[s]; assert(x.id && x.name && x.what && x.teach, key + s + ' text'); assert(x.name.length <= F.NAME_MAX, key + s + ' name > 14: ' + x.name); assert(x.what.length <= 96, key + s + ' what too long for 2 lines'); assert(!ids.has(x.id), 'dup id ' + x.id); ids.add(x.id); }
       assert.notEqual(e.A.id, e.B.id); assert.notEqual(e.A.name, e.B.name);
@@ -51,10 +51,10 @@ check('flag ON: the Knight has no technique / upgrade cards (they are cut), thos
 }));
 
 check('owed queue: a rung reached with no pick, in ladder order; the stat card is not touched', () => withFlag(true, () => {
-  const p = mk(26); assert.deepEqual(F.forksOwed(p, 'knight', 26).map(r => r.key), []); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(r => r.key), ['block']);
-  assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['block', 'heavy', 'spender']); assert.deepEqual(F.forksOwed(p, 'knight', 50).map(r => r.key), ['block', 'heavy', 'spender', 'ult']);
-  assert.equal(F.owedCount(p, 'knight', 50, []), 4); assert.deepEqual(F.forksOwed(p, 'pyro', 50), [], 'a hero without fork data owes nothing');
-  assert.equal(F.setFork(p, 'knight', 'block', 'B', 27), null); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['heavy', 'spender']);
+  const p = mk(26); assert.deepEqual(F.forksOwed(p, 'knight', 26).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain']); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block']);
+  assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender']); assert.deepEqual(F.forksOwed(p, 'knight', 50).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender', 'skill:groundSlam', 'sig', 'skill:ironclad', 'ult']);
+  assert.equal(F.owedCount(p, 'knight', 50, []), 11); assert.deepEqual(F.forksOwed(p, 'pyro', 50), [], 'a hero without fork data owes nothing');
+  assert.equal(F.setFork(p, 'knight', 'block', 'B', 27), null); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'skill:risingCut', 'heavy', 'spender']);
 }));
 
 check('pick and swap: level gate, free, unlimited, the read needs the level', () => withFlag(true, () => {
@@ -94,11 +94,11 @@ check('knight migration: L24 (no technique yet) changes nothing but the marker',
 check('knight migration: L27 (an upgrade only) returns the upgrade as a stat pick', () => withFlag(true, () => {
   const p = full(27, { 25: 'kcounter', 27: 'ukeep:1' }); p.card.knight.up = { ukeep: 1 }; p.card.knight.v = 4; const before = PR.picksOwed(p, 'knight', 27), r = withFlag(true, () => F.migrateForks(p));
   assert.equal(r.upgradesReturned >= 1, true); assert.equal(p.card.knight.up, undefined); assert.deepEqual(Object.keys(p.card.knight.ms), [], 'both the technique perk and the upgrade pick are owed back');
-  assert.equal(p.cardFree.knight, 1); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(x => x.key), ['block'], 'the L27 fork card is owed, A/B not picked for him (kcounter is core)'); assert(PR.picksOwed(p, 'knight', 27) >= before, 'stat picks grow'); }));
+  assert.equal(p.cardFree.knight, 1); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(x => x.key), ['dash', 'skill:shieldThrow', 'chain', 'block'], 'the L21-L27 fork cards are owed, A/B not picked for him (kcounter is core)'); assert(PR.picksOwed(p, 'knight', 27) >= before, 'stat picks grow'); }));
 check('knight migration: L35 full kit -> sides, perks and stat picks owed, one free respec', () => withFlag(true, () => {
   const ms = { 25: 'kcounter', 27: 'ukeep:1', 29: 'urise:1', 30: 'kadvance', 32: 'usunder:1', 35: 'kpunish' }; const { p, r } = migrate(35, ms, { ukeep: 1, urise: 1, usunder: 1 });
-  assert.deepEqual(p.fork.knight, { block: 'B', heavy: 'A', v: 1 }); assert.equal(r.picked.length, 2); assert.deepEqual(p.card.knight.ms, {}); assert.equal(p.card.knight.up, undefined); assert.equal(p.cardFree.knight, 1); assert.equal(p.cardNew, 1);
-  assert.deepEqual(F.forksOwed(p, 'knight', 35).map(x => x.key), [], 'block and heavy picked, the L36 spender rung is not reached at 35'); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(x => x.key), ['spender']); }));
+  assert.deepEqual(p.fork.knight, { block: 'B', heavy: 'A', chain: 'A', v: 1 }, 'usunder folds into chain A'); assert.equal(r.picked.length, 3); assert.deepEqual(p.card.knight.ms, {}); assert.equal(p.card.knight.up, undefined); assert.equal(p.cardFree.knight, 1); assert.equal(p.cardNew, 1);
+  assert.deepEqual(F.forksOwed(p, 'knight', 35).map(x => x.key), ['dash', 'skill:shieldThrow', 'skill:risingCut'], 'block, heavy, chain picked; the L36 spender rung is not reached at 35'); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(x => x.key), ['dash', 'skill:shieldThrow', 'skill:risingCut', 'spender']); }));
 check('knight migration: L35 spender not reached; L50 capstone + every side', () => withFlag(true, () => {
   const ms = { 25: 'kcounter', 30: 'klinkcut', 35: 'kpunish', 40: 'klong', 45: 'korders', 50: 'kwheel' }; const { p } = migrate(50, ms);
   assert.deepEqual(p.fork.knight, { heavy: 'A', block: 'A', spender: 'B', ult: 'B', v: 1 }, 'klinkcut + kpunish both held: A wins; klong -> block A; korders -> spender B; kwheel -> ult B');
@@ -129,17 +129,17 @@ check('a save written with the flag ON still loads with the flag OFF (rollback)'
 
 check('card, strip and board shapes', () => withFlag(true, () => {
   const c = F.forkCard('knight', 'heavy'); assert.equal(c.kind, 'fork'); assert.equal(c.opts.length, 2); assert.deepEqual(c.opts.map(o => o.side), ['A', 'B']); assert(c.opts.every(o => o.fork && o.free && o.name && o.what && o.teach && !o.rec), 'no recommended: both equal'); assert.equal(c.n, 32); assert.equal(F.forkCard('knight', 'ult').capstone, true);
-  const p = mk(36); F.setFork(p, 'knight', 'block', 'B', 36); const s = F.roadStrip(p, 'knight', 36); assert.equal(s.length, 4); assert.deepEqual(s.map(x => x.state), ['taken', 'next', 'ahead', 'ahead']); assert(s[0].picked.id === 'kadvance' && s[0].options.find(o => o.id === 'klong').locked && !s[0].options.find(o => o.id === 'kadvance').locked); assert(s[3].capstone);
-  assert.deepEqual(F.roadStrip(p, 'warden', 50), [], 'no fork data: no strip'); const rows = F.boardRows(p, 'knight', 36, 'ABILITIES'); assert.deepEqual(rows.map(r => r.open), [true, true, true, false]); assert.equal(rows[3].note, 'LEVEL 50'); assert.deepEqual(F.boardRows(p, 'knight', 36, 'TRAITS'), []); }));
+  const p = mk(36); F.setFork(p, 'knight', 'block', 'B', 36); const s = F.roadStrip(p, 'knight', 36); assert.equal(s.length, 11); assert.deepEqual(s.map(x => x.state), ['next', 'ahead', 'ahead', 'taken', 'ahead', 'ahead', 'ahead', 'ahead', 'ahead', 'ahead', 'ahead']); const sb = s.find(x => x.key === 'block'); assert(sb.picked.id === 'kadvance' && sb.options.find(o => o.id === 'klong').locked && !sb.options.find(o => o.id === 'kadvance').locked); assert(s[10].capstone);
+  assert.deepEqual(F.roadStrip(p, 'warden', 50), [], 'no fork data: no strip'); const rows = F.boardRows(p, 'knight', 36, 'ABILITIES'); assert.deepEqual(rows.map(r => r.open), [true, true, true, true, true, true, true, false, false, false, false]); assert.equal(rows[10].note, 'LEVEL 50'); assert.equal(F.boardRows(p, 'knight', 36, 'TRAITS').length, 10, 'ten trait forks'); assert(F.boardRows(p, 'knight', 36, 'TRAITS').every(r => r.trait && r.note === 'LEVEL 20' || r.open), 'open from L20 (level 36 here)'); }));
 
 check('THE CROSSROADS screen (fake api): open, flip, set, locked refusal, tabs, back', () => withFlag(true, () => {
   const p = mk(36), log = []; const g = new Proxy({}, { get: () => () => {}, set: () => true });
   const data = () => ({ heroName: 'KNIGHT', level: 36, tabs: { ABILITIES: F.boardRows(p, 'knight', 36, 'ABILITIES'), TRAITS: F.boardRows(p, 'knight', 36, 'TRAITS') } });
   const X = makeCrossroads({ g: () => g, VW: () => 320, VH: () => 180, text: (...a) => log.push(a[0]), panel() {}, hit() {}, sfx: k => log.push('sfx:' + k), wrap: s => [s], fit: s => s, data, set: (k, s) => F.setFork(p, 'knight', k, s, 36) });
-  assert.equal(X.isOpen, false); assert.equal(X.input({ down: true }), false, 'closed: eats nothing'); X.open('inn'); assert(X.isOpen); assert.equal(X.rows().length, 4); X.draw();
-  X.input({ right: true }); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'block'), 'B'); X.input({ left: true }); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'block'), 'A', 'flipped back, free');
-  X.input({ down: true }); X.input({ down: true }); X.input({ down: true }); assert.equal(X.state.sel[0], 3); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'ult'), null, 'L50 row is locked at 36'); assert(/LOCKED/.test(X.state.msg));
-  X.input({ tab: true }); assert.equal(X.state.tab, 1); assert.equal(X.rows().length, 0); X.draw(); assert(log.includes('PATHS OPEN WITH THIS HERO\'S ROAD'), 'the TRAITS tab is dim until the hero lane writes the pairs');
+  assert.equal(X.isOpen, false); assert.equal(X.input({ down: true }), false, 'closed: eats nothing'); X.open('inn'); assert(X.isOpen); assert.equal(X.rows().length, 11); X.draw();
+  X.input({ down: true }); X.input({ down: true }); X.input({ down: true }); X.input({ right: true }); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'block'), 'B'); X.input({ left: true }); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'block'), 'A', 'flipped back, free');
+  X.input({ down: true }); X.input({ down: true }); X.input({ down: true }); X.input({ down: true }); assert.equal(X.state.sel[0], 7); X.input({ confirm: true }); assert.equal(F.forkSide(p, 'knight', 'skill:groundSlam'), null, 'the L38 row is locked at 36'); assert(/LOCKED/.test(X.state.msg));
+  X.input({ tab: true }); assert.equal(X.state.tab, 1); assert.equal(X.rows().length, 10, 'the TRAITS tab lists the ten pairs'); X.draw();
   X.input({ tab: true }); assert.equal(X.state.tab, 0); X.input({ back: true }); assert.equal(X.isOpen, false); }));
 
 check('flag ON: the inn station + art are dealt (module load flag is the lab/shipped one: checked by source)', () => {
@@ -147,7 +147,7 @@ check('flag ON: the inn station + art are dealt (module load flag is the lab/shi
   assert(!t || /crossroads/.test(src)); assert(STATIONS.every((s, i) => i === 0 || s.x - STATIONS[i - 1].x >= 3), 'stations 3+ tiles apart: ' + STATIONS.map(s => s.x)); });
 
 check('bots, AI partners and the lab take side A; the co-op snapshot carries the map', () => withFlag(true, () => {
-  assert.deepEqual(F.botForks('knight'), { v: 1, block: 'A', heavy: 'A', spender: 'A', ult: 'A' }); assert.equal(F.botForks('knight', 'B').ult, 'B'); assert.deepEqual(F.botForks('knight', { heavy: 'B', nope: 'A' }), { v: 1, heavy: 'B' }); assert.deepEqual(F.botForks('warden'), { v: 1 });
+  assert.deepEqual(F.botForks('knight'), Object.fromEntries([['v', 1], ...F.forkList('knight').map(r => [r.key, 'A'])])); assert.equal(F.botForks('knight', 'B').ult, 'B'); assert.deepEqual(F.botForks('knight', { heavy: 'B', nope: 'A' }), { v: 1, heavy: 'B' }); assert.deepEqual(F.botForks('warden'), { v: 1 });
   assert(PER_HERO.includes('fork'), 'fork joins the hero snapshot'); }));
 if (bad.length) { console.log('FORKS: ' + bad.length + ' problem(s)\n  - ' + bad.join('\n  - ')); process.exit(1); }
 console.log('Forks: flag off is the base (no read, no write, no station); data shape, rungs off the milestones, owed queue, pick/swap free, skill/trait conditions, bad saves dropped, Knight migration (L24/L27/L35/L50, idempotent), legacy tech()/upg() reads, flag-on round trip + rollback load, card/strip/board shapes, THE CROSSROADS screen all hold.');

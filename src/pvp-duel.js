@@ -16,6 +16,7 @@
 // BOTS: botThink (pure) drives a 'duelbot' seat - the opponent when one person duels alone, and the hands of tools/pvp-duel.mjs's AI-vs-AI runs.
 
 import { setPvpEvenTraits } from './traits.js';
+import { setPvpEvenForks } from './forks.js';   /* (claude/knightfork) EVEN L1 = no forks either */
 import { makeRoster } from './duel-roster.js';   /* (claude/duelroster) the Smash-Bros-style pick screen: the DUEL entry (the interim settings card stays as ?duelcard / __DUELCARD) */
 const PVP_SHIP_FLAG = true;   /* THE SHIP SWITCH (one line): true = every player sees DUEL (BETA) - FLIPPED 11-06 (Daniel 11:53: the duel goes public in the SAT demo cut, labelled BETA) */
 export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && (!!globalThis.__DUELBETA || (!!globalThis.location && /[?&]duelbeta(=|&|$)/.test(String(globalThis.location.search)))));   /* (pvpduel2) DEV/URL SWITCH: open the game with ?duelbeta (or a tool sets window.__DUELBETA) to see the mode while the ship flag is off */
@@ -310,7 +311,7 @@ export function makeDuel(api) {
     if (S.teams && !(st.seats.some(p => p.duelTeam === 1) && st.seats.some(p => p.duelTeam === 2))) st.seats.forEach((p, i) => { p.duelTeam = defTeam(i, st.seats.length); });
     st.cfg = S; st.plan = { ...S, seats: resolved };
     /* THE LEVEL: EVEN = every seat at its L1 hand (today's duel); YOUR = each at his own level, a bot at the highest human's */
-    setPvpEvenTraits(S.level !== 'your');   /* (claude/traitframe) EVEN L1 = core only, no traits; YOUR LEVEL = each seat's worn traits (inert while TRAITS_SHIP is off) */
+    setPvpEvenTraits(S.level !== 'your'); setPvpEvenForks(S.level !== 'your');   /* (claude/traitframe) EVEN L1 = core only, no traits; YOUR LEVEL = each seat's worn traits (inert while TRAITS_SHIP is off) */
     st.norm.clear(); st.lvl.clear();
     const hands = new Map(st.seats.map(p => [p, api.hand ? api.hand(p) : null]));
     const top = Math.max(0, ...st.seats.filter(p => !p.duelBot).map(p => (hands.get(p) || { add: 0 }).add));
@@ -321,7 +322,7 @@ export function makeDuel(api) {
     placeAll(); sync(null); api.sfx('bell');
     return true;
   }
-  function end() { setPvpEvenTraits(false); clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; if (st.restore) { const h = st.restore; st.restore = null; try { if (api.players()[0] && api.players()[0].hero !== h && api.restoreHero) api.restoreHero(h); } catch {} }   /* (duelroster, Daniel 11-06) player one's campaign hero comes back (after the bots leave, so none wears him) */ }
+  function end() { setPvpEvenTraits(false); setPvpEvenForks(false); clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; if (st.restore) { const h = st.restore; st.restore = null; try { if (api.players()[0] && api.players()[0].hero !== h && api.restoreHero) api.restoreHero(h); } catch {} }   /* (duelroster, Daniel 11-06) player one's campaign hero comes back (after the bots leave, so none wears him) */ }
 
   /* ===== hands: once a frame per seat, in his own pass, BEFORE the buffers read the presses ===== */
   function hands(p) {

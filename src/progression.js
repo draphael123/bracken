@@ -166,7 +166,7 @@ export const perkRank = (p, h, id) => { const c = cardOf(p, h); return c ? Objec
 export const THRESH_AT = [10, 20];
 export const THRESH = {
  v: [{ name: 'BLOOD DRAWN', what: 'EVERY KILL HEALS 1' }, { name: 'STEADY HANDS', what: 'REVIVES: FASTER, MORE HP' }],
- e: [{ name: 'LEAN ROLL', what: 'CHEAPER ROLLS UNDER HALF' }, { name: 'SECOND WIND', what: 'ONCE A FIGHT, A SURGE' }],
+ e: [{ name: 'LEAN ROLL', what: 'CHEAPER ROLLS UNDER HALF' }, { name: 'SECOND WIND', get what() { return FRK.forksShip() ? 'A SURGE; SKILLS COOL 10% FASTER' : 'ONCE A FIGHT, A SURGE'; } }],   /* (claude/knightfork) the ENDURANCE rider with the forks on: 20 picks = skills -10% cooldown (main.js cdOf) */
  m: [{ name: 'HEAVY HAND', what: 'HEAVIES BREAK POISE FASTER' }, { name: 'FINISHER', what: 'BROKEN FOES TAKE MORE' }],
 };
 export const thrOn = (p, h, stat, i) => { const c = cardOf(p, h); return !!c && (c[stat] || 0) >= THRESH_AT[i]; };

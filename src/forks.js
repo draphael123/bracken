@@ -22,6 +22,8 @@ const labOn = () => { try { return typeof location !== 'undefined' && /[?&]forks
 let ship = FORKS_SHIP || labOn();
 export const forksShip = () => ship;
 export const setForksShip = v => { ship = !!v; return ship; };   /* tools and the lab only: the shipped value is FORKS_SHIP */
+let pvpEven = false;   /* (claude/knightfork) a PvP duel at EVEN L1 (pvp-duel.js): base kits, no forks, no capstone - the read answers 'no pick' for everyone */
+export const setPvpEvenForks = v => { pvpEven = !!v; };
 
 /* THE LADDER (forkplan sec 3): the same rungs for every hero; a hero may leave a rung empty (then that level is a plain level). Rungs avoid 20/25/30/35/40/45/50-milestones except the capstone,
    so no level ever deals two CHOICE cards. */
@@ -52,7 +54,7 @@ export const forkList = (h, trait) => Object.entries(forksOf(h)).map(([key, e]) 
 
 const mapOf = (p, h) => (p && p.fork && typeof p.fork === 'object' && !Array.isArray(p.fork) && p.fork[h] && typeof p.fork[h] === 'object') ? p.fork[h] : null;
 /* the picked side of one fork ('A' | 'B' | null); null while the flag is off or the key is unknown */
-export const forkSide = (p, h, key) => { if (!ship) return null; const e = entryOf(h, key), m = mapOf(p, h); return e && m && (m[key] === 'A' || m[key] === 'B') ? m[key] : null; };
+export const forkSide = (p, h, key) => { if (!ship || pvpEven) return null; const e = entryOf(h, key), m = mapOf(p, h); return e && m && (m[key] === 'A' || m[key] === 'B') ? m[key] : null; };
 export const sideId = (h, key, side) => { const s = sideOf(entryOf(h, key), side); return s ? s.id : null; };
 /* find the fork a side id belongs to: { key, e, side } or null */
 export function findSide(h, id) { for (const [key, e] of Object.entries(forksOf(h))) for (const s of ['A', 'B']) if (e[s] && e[s].id === id) return { key, e, side: s }; return null; }
@@ -62,7 +64,7 @@ const ctxOk = (e, ctx) => {
   if (typeof e.ability === 'string' && e.ability.startsWith('skill:')) return !ctx || !ctx.slotted ? true : !!ctx.slotted(e.ability.slice(6));
   return true; };
 /* THE READ: true only if the side is picked AND the hero's level has reached the rung AND (trait fork) the trait is worn / (skill fork) the skill is slotted. Base behaviour otherwise. */
-export function forkOn(p, h, id, lv, ctx) { if (!ship) return false; const f = findSide(h, id); if (!f) return false; if (forkSide(p, h, f.key) !== f.side) return false; if ((lv || 0) < levelOfFork(f.e)) return false; return ctxOk(f.e, ctx); }
+export function forkOn(p, h, id, lv, ctx) { if (!ship || pvpEven) return false; const f = findSide(h, id); if (!f) return false; if (forkSide(p, h, f.key) !== f.side) return false; if ((lv || 0) < levelOfFork(f.e)) return false; return ctxOk(f.e, ctx); }
 
 /* WHAT IS OWED: ability forks whose rung the level has reached and that hold no valid pick, in ladder order (the level-up card deals the first). Trait forks wait for the trait to be worn. */
 export const forksOwed = (p, h, lv) => !ship ? [] : forkList(h, false).filter(r => r.level <= (lv || 0) && !forkSide(p, h, r.key));
@@ -110,12 +112,15 @@ export function validateForks(p) {
      4. one free card respec (cardFree.knight = 1) so the returned picks can be redone.
    Forks for rungs the hero has reached but held no old technique for stay unpicked: their cards are dealt at the next card / inn visit. Returns a small summary (the tool asserts it). */
 export const KNIGHT_LEGACY = { klong: ['block', 'A'], kadvance: ['block', 'B'], kpunish: ['heavy', 'A'], klinkcut: ['heavy', 'B'], korders: ['spender', 'B'], kcharge2: ['ult', 'A'], kwheel: ['ult', 'B'] };
+export const KNIGHT_UP_FOLD = { usunder: ['chain', 'A'], uthrow: ['skill:shieldThrow', 'A'] };
 const OLD_TECH_IDS = ['kcounter', 'kadvance', 'kpunish', 'klong', 'korders', 'kcharge2', 'klinkcut', 'kshook', 'kwheel'];
 export function migrateForks(p) {
   const out = { done: false, picked: [], perksOwed: 0, upgradesReturned: 0 }; if (!ship || !p || !p.card || !p.card.knight || typeof p.card.knight !== 'object') return out;
   p.fork = p.fork && typeof p.fork === 'object' && !Array.isArray(p.fork) ? p.fork : {}; const m = p.fork.knight = (p.fork.knight && typeof p.fork.knight === 'object') ? p.fork.knight : {};
   if ((m.v | 0) >= 1) return out;
   const c = p.card.knight, ms = c.ms && typeof c.ms === 'object' ? c.ms : {}, have = new Set(Object.values(ms));
+  const up = c.up && typeof c.up === 'object' ? c.up : {};   /* (claude/knightfork) a ranked upgrade that folds into a fork side picks that side: DEEP SUNDER -> chain A SUNDER, SHIELD THROW+ -> shield throw A HEAVY SHIELD (the rest are baked into MIGHT / ENDURANCE picks, see the report) */
+  for (const [uid, [key, side]] of Object.entries(KNIGHT_UP_FOLD)) if ((up[uid] | 0) > 0 && !m[key]) { m[key] = side; out.picked.push(key + ':' + side); }
   for (const [id, [key, side]] of Object.entries(KNIGHT_LEGACY)) { if (!have.has(id) || m[key]) continue; const both = Object.entries(KNIGHT_LEGACY).filter(([, [k2]]) => k2 === key).map(([i]) => i).filter(i => have.has(i));
     const win = both.length > 1 ? both.find(i => KNIGHT_LEGACY[i][1] === 'A') : id; if (win === id) { m[key] = side; out.picked.push(key + ':' + side); } }
   for (const k of Object.keys(ms)) { const id = ms[k]; if (OLD_TECH_IDS.includes(id) || /^u[a-z]+:\d$/.test(String(id))) { delete ms[k]; if (OLD_TECH_IDS.includes(id)) out.perksOwed++; else out.upgradesReturned++; } }
