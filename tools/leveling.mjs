@@ -22,7 +22,8 @@ const check = (name, fn) => { try { fn(); } catch (e) { fails.push(name + ': ' +
 const old = n => n <= 0 ? 0 : Math.round(325 * Math.pow(n, 1.455) / 10) * 10;
 
 check('curve', () => {
-  assert.equal(XP.xpFloor(10), 9270); assert.equal(XP.xpFloor(24), 30620); assert.equal(XP.xpFloor(32), 45350); assert.equal(XP.xpFloor(50), 83400);
+  /* suite2 11-11 (Daniel 11-11 10:48, priority-1016.md line 605: exact numbers only for '!!' decisions): the curve's own points are tuning, so assert a band against the old curve instead (never above it - line 26 - and not collapsed to a trivial one) */
+  for (const n of [10, 24, 32, 50]) { const r = XP.xpFloor(n) / old(n); assert(r >= 0.4 && r <= 1, 'xpFloor(' + n + ') is ' + XP.xpFloor(n) + ', ' + (r * 100).toFixed(0) + '% of the old curve (want 40-100%)'); }
   for (let n = 1; n <= 60; n++) { assert(XP.xpFloor(n) <= old(n), 'L' + n + ' rose: ' + XP.xpFloor(n) + ' > ' + old(n)); assert(XP.xpFloor(n) > XP.xpFloor(n - 1), 'L' + n + ' does not climb'); }
   for (const xp of [0, 500, 3400, 9270, 20000, 47632, 80000]) assert(XP.levelOfXp(xp) >= (() => { let n = 0; while (old(n + 1) <= xp) n++; return n; })(), xp + ' XP lost a level');
   assert.equal(XP.xpCap(), XP.xpFloor(XP.LV_MAX)); assert.equal(XP.LV_MAX, 50); assert.equal(XP.levelOfXp(XP.xpCap()), 50);
@@ -55,7 +56,7 @@ check('card', () => {
   PR.respecCard(r, 'pyro'); assert.equal(PR.picksOwed(r, 'pyro', 50), 50); assert.equal(PR.milestonesOwed(r, 'pyro', 50).length, 10);
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'heart' } }).hp > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: {} }).hp, 'GREAT HEART does nothing');
   assert(PR.growthAt('knight', 30, { v: 10, e: 10, m: 10, ms: { 25: 'arcane' } }).skillMultiplier > PR.growthAt('knight', 30, { v: 10, e: 10, m: 10 }).skillMultiplier, 'MASTERY does nothing');
-  assert.equal(PR.RESPEC_SILVER, 3); assert.equal(PR.PERKS.length >= 8, true); assert.equal(PR.CARD_CAP, 25);
+  assert(PR.RESPEC_SILVER >= 1 && PR.RESPEC_SILVER <= 10, 'respec price ' + PR.RESPEC_SILVER); assert.equal(PR.PERKS.length >= 8, true); assert(PR.CARD_CAP >= 10 && PR.CARD_CAP <= 30, 'CARD_CAP ' + PR.CARD_CAP + ' (priority-1016.md line 221 Q3: stat cards taper, ~10 of 26)');
 });
 
 /* LEVELING2 (Daniel 10-04): early minor milestones, the hero's own at every one, stat thresholds, the card's words */
@@ -73,8 +74,8 @@ check('early milestones', () => {
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
   assert.equal(PR.PERKS.length + PR.MINOR_PERKS.length >= 16, true); assert.equal(PR.MINOR_PERKS.length >= 8, true);
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
-  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
-  assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
+  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, PR.ALL_HERO_PERKS.length, 'two hero perks share an id'); assert(PR.ALL_HERO_PERKS.length >= 16 && PR.ALL_HERO_PERKS.length % 2 === 0, 'two own perks a hero: ' + PR.ALL_HERO_PERKS.length);   /* (was ===18: berserkerport two a hero, eight heroes; claude/ranger: nine; every new hero moved it) */
+  for (let lv = 0; lv < XP.LV_MAX; lv++) { const nx = PR.MILESTONES.find(m => m > lv); assert.equal(PR.levelsToPerk(lv), nx - lv, 'levelsToPerk(' + lv + ')'); } assert.equal(PR.levelsToPerk(XP.LV_MAX), null);   /* derived from MILESTONES, not typed */
   assert.deepEqual(PR.techniquesArriving('pyro', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [25, 30, 35, 40, 45, 50]);   /* the technique hook: a hero with no kit offers none (claude/knightid: the knight's six are tools/tech-cards.mjs) */
 });
 check('stat thresholds', () => {
@@ -114,9 +115,12 @@ check('the card says it', () => {
 
 check('soft cap', () => {
   const d = 10;   /* a wood at depth 10: E = 11 */
-  assert.equal(XP.softCapMul(11, d), 1); assert.equal(XP.softCapMul(13, d), 1); assert.equal(XP.softCapMul(14, d), 0.5); assert.equal(XP.softCapMul(16, d), 0.5);
-  assert.equal(XP.softCapMul(17, d), 0.2); assert.equal(XP.softCapMul(49, 0), 0.2); assert.equal(XP.softCapMul(1, 30), 1);
-  assert.equal(XP.xpSoftCap(40, 14, d), 20); assert.equal(XP.xpSoftCap(40, 20, d), 8); assert.equal(XP.xpSoftCap(1, 20, d), 1); assert.equal(XP.xpSoftCap(0, 20, d), 0);
+  /* suite2 11-11: the shape, not the table - full pay up to the level the wood expects, never rising above it, never zero, and the pay is the multiplier applied (rounded, at least 1 for a foe that paid anything) */
+  assert.equal(XP.softCapMul(11, d), 1); assert.equal(XP.softCapMul(1, 30), 1);
+  let prev = 1; for (let lv = 1; lv <= 60; lv++) { const m = XP.softCapMul(lv, d); assert(m > 0 && m <= prev + 1e-9, 'softCapMul(' + lv + ') = ' + m + ' after ' + prev); prev = m; }
+  assert(XP.softCapMul(14, d) < 1 && XP.softCapMul(17, d) < XP.softCapMul(14, d) && XP.softCapMul(49, 0) <= 0.5, 'the soft cap never bites');
+  for (const lv of [14, 17, 20]) assert.equal(XP.xpSoftCap(40, lv, d), Math.round(40 * XP.softCapMul(lv, d)), 'xpSoftCap(40, ' + lv + ')');
+  assert.equal(XP.xpSoftCap(1, 20, d), 1); assert.equal(XP.xpSoftCap(0, 20, d), 0);
 });
 
 check('slots', () => {   // ONE SLOT, A SECOND AT LEVEL 30, TWO AT MOST (Daniel 2026-11-01; it was 2 + a third at 16)
@@ -175,7 +179,7 @@ check('skill ranks', () => {
       assert(silver ? p >= 6 && p <= 10 : p >= 150 && p <= 400, id + ' priced ' + p); } });
   check('sinks', () => { { const f2 = readFileSync(new URL('../src/flasks2.js', import.meta.url), 'utf8'); assert(/id: 'tonic', group: 'COUNT'/.test(f2) && (f2.match(/group: 'COUNT'/g) || []).length === 3 && /F2\.FLASK_ITEMS/.test(src), 'the extra flasks do not take a hero to four (claude/flasks2, Daniel 10-08: EXTRA FLASK I - the old tonic line - II and the hidden III, on the FLASKS tab)'); } assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
     for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer', 'berserker', 'ranger'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
-    assert.equal(DC.bankStake(400), 0); assert.equal(DC.bankStake(900), 100); assert.equal(DC.bankStake(5000), 300); assert.equal(DC.bankStake(-5), 0);
+    /* suite2 11-11: the stake is a non-decreasing, capped, non-negative function of the bank (the 0/100/300 table was tuning) */ { let prev = 0; for (const b of [-5, 0, 100, 400, 900, 1000, 2000, 5000, 20000]) { const s = DC.bankStake(b); assert(s >= prev && s >= 0 && s <= Math.max(0, b), 'bankStake(' + b + ') = ' + s + ' after ' + prev); prev = s; } assert.equal(DC.bankStake(-5), 0); assert.equal(DC.bankStake(0), 0); assert(DC.bankStake(20000) > 0 && DC.bankStake(20000) === DC.bankStake(200000), 'the stake has a cap'); }
     notes.push('bank stake on death: bank 1k ' + DC.bankStake(1000) + ', 2k ' + DC.bankStake(2000) + ', 5k ' + DC.bankStake(5000)); }); }
 
 for (const n of notes) console.log('  ' + n);

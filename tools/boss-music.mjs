@@ -7,7 +7,7 @@ const events = [];   // every oscillator / noise start: { t, kind, type, f, dest
 const param = () => { const p = { value: 0, first: null, setValueAtTime(v) { if (p.first === null) p.first = v; }, exponentialRampToValueAtTime() {}, linearRampToValueAtTime() {}, setTargetAtTime() {}, setValueCurveAtTime() {} }; return p; };
 const node = (kind) => { const n = { kind, type: '', frequency: param(), gain: param(), detune: param(), Q: param(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param(), connect() { return n; }, disconnect() {}, addEventListener() {}, stop() {}, buffer: null };
   n.start = t => { if (kind === 'osc' || kind === 'src') events.push({ t, kind, type: n.type, f: n.frequency.first, d: n.__dest }); }; return n; };
-let clock = 0, speed = 12, t0 = Date.now(), frozen = null;   /* time only moves between macrotasks, as a real ac clock effectively does inside one scheduler call */
+let clock = 0, speed = 300, t0 = Date.now(), frozen = null;   /* suite2 11-11: speed 12 -> 300 (the check waited ~120 s of real time for 17 tracks; the scheduler timer ticks every 100 ms and catches up any lag, so a faster clock changes nothing it asserts) time only moves between macrotasks, as a real ac clock effectively does inside one scheduler call */
 class AC { constructor() { this.sampleRate = 8000; this.destination = node('dest'); this.state = 'running'; }
   get currentTime() { if (frozen === null) { frozen = clock + (Date.now() - t0) / 1000 * speed; setImmediate(() => { frozen = null; }); } return frozen; }
   createGain() { return node('gain'); } createBiquadFilter() { return node('filter'); } createDynamicsCompressor() { return node('comp'); } createConvolver() { return node('conv'); }

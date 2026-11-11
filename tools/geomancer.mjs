@@ -244,7 +244,7 @@ try {
     for(const k of ['atk','block','throw','skill2','jump'])BK.press(k);BK.sim(60);BK.state='map';BK.sim(2);BK.state='play';return {hp:BK.P.maxHp,lv:BKT.heroLevel('geomancer')}})()`);
   console.log(JSON.stringify(out));
   assert(out.upair.sh.length === 3 && out.upair.sh.every(q => q.vy < 0) && out.upair.sh.some(q => q.vx > 50) && out.upair.sh.some(q => q.vx < -50) && out.upair.sh.some(q => Math.abs(q.vx) < 30) && out.upair.same && out.upair.pieces === 0, 'UP-AIR: three shards fanned up, no cell placed (' + JSON.stringify(out.upair) + ')');
-  assert.equal(out.cap.three, 3, 'THE CAP: never more than three pieces stand at once (' + out.cap.three + ')');
+  /* exact 3: Daniel 10-31 18:07 (priority-1016.md line 220, hero identity Q3: stones STAND until broken, cap 3) */ assert.equal(out.cap.three, 3, 'THE CAP: never more than three pieces stand at once (' + out.cap.three + ')');
   assert.equal(out.cap.four, 4, 'THE FOURTH STONE: four (' + out.cap.four + ')');
   assert(out.crumble.raised >= 2 && out.crumble.left === out.crumble.raised, 'every piece STANDS (no timer) (' + JSON.stringify(out.crumble) + ')');
   assert(out.crumble.same, 'and the level is exactly what it was');
