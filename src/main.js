@@ -20453,7 +20453,7 @@ function updateOwl(e, dt) {
     /* ===== (claude/owl4) A1 THE SILENT STOOP: up without a sound, two gold eyes high in the dark (the dotted line follows your feet, red the last 0.3 s: that is the lock), straight down.
        Step off the line or roll it; BLOCK turns her; PARRY lays her open. A lit floor lamp on her line crashes her, as the plunge. ===== */
     case 'stoopUp': { const N = O4.OWL4.stoop, sp = Math.max(300, Math.hypot(e.stX - e.x, e.stY - e.y) / N.up); e.face = Math.sign(e.stX - e.x) || e.face; toward(e.stX, e.stY, sp);
-      if (e.modeT <= 0) { e.x = e.stX; e.y = e.stY; e.mode = 'stoopTell'; e.modeT = N.tell[p2 ? 1 : 0]; e.stLock = null; e.hitT = 0; SFX.owlStoop(0); number(e.x, e.y - 14, '!!', '#ff6b6b'); number(P.x, P.y - 34, 'THE STOOP: OFF THE LINE', '#ff9a5c'); } break; }
+      if (e.modeT <= 0) { e.x = e.stX; e.y = e.stY; e.mode = 'stoopTell'; e.modeT = N.tell[p2 ? 1 : 0]; e.stLock = null; e.hitT = 0; SFX.owlStoop(0); number(e.x, e.y - 14, '!', '#ffd36b');   /* (a BLOCKABLE talon move: the soft mark - a shield turns it, a parry opens her) */ number(P.x, P.y - 34, 'THE STOOP: OFF THE LINE', '#ff9a5c'); } break; }
     case 'stoopTell': { const N = O4.OWL4.stoop; e.x = e.stX; e.y = e.stY + Math.round(Math.sin(e.anim * 6)); e.face = Math.sign(P.x - e.x) || e.face;
       if (!e.stLock && e.modeT <= N.lock) { e.stLock = { x: P.x, y: Math.min(P.y, floor) }; SFX.crack(); ringAt(e.stLock.x, e.stLock.y - 2, 12, '#ff6b6b', N.lock); }
       if (e.modeT <= 0) { const lk = e.stLock || { x: P.x, y: Math.min(P.y, floor) }; let ux = lk.x - e.x, uy = lk.y - e.y; const ln = Math.hypot(ux, uy) || 1; ux /= ln; uy /= ln; if (uy < 0.5) { uy = 0.5; ux = Math.sign(ux || 1) * Math.sqrt(0.75); }
