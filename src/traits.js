@@ -22,11 +22,15 @@
 // An id a split hero's catalog has but this table lists NOWHERE is OFF while the flag is on (the cuts), so list every passive.
 import { SKILLS } from './progression-catalog.js';
 import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
+import { ONECORE_SHIP, ONECORE, PALADIN_BASE } from './traits-onecore.js';   /* (claude/onecore-d) ONE core passive per hero, the rest become traits: dark behind ONECORE_SHIP */
 
 export const TRAITS_SHIP = true;
 let ship = TRAITS_SHIP;
 export const traitsShip = () => ship;
 export const setTraitsShip = v => { ship = !!v; return ship; };   /* tools and the lab only: the shipped value is TRAITS_SHIP */
+let onecore = ONECORE_SHIP;   /* (claude/onecore-d) ON: splitOf reads ONECORE_SPLIT (one core, the other former cores slot as traits; the paladin gets a row). Needs TRAITS on to matter */
+export const onecoreShip = () => onecore;
+export const setOnecoreShip = v => { onecore = !!v; return onecore; };   /* tools and the lab only (?onecore=on, BOSS_ONECORE=on): the shipped value is ONECORE_SHIP */
 
 export const RANK = [0.70, 0.85, 1.0];   /* rank I (to L9), II (L10-19), III (L20+ = today's value) */
 export const RANK_AT = [0, 10, 20];
@@ -118,8 +122,16 @@ Object.assign(TRAIT_SPLIT, TRAIT_SPLIT_B);   /* claude/traitdata-b: its four her
 const NODE = {};   /* hero -> id -> catalog node (own lookup: no import of progression.js) */
 for (const n of SKILLS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
 for (const n of NEW_TRAITS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
-const splitOf = h => { const s = TRAIT_SPLIT[h]; return s && ((s.core && s.core.length) || (s.traits && s.traits.length)) ? s : null; };
+/* (claude/onecore-d) THE ONECORE ROWS: derived once from TRAIT_SPLIT (+ the paladin's PALADIN_BASE). A moved core is learned at ONECORE[h].learnAt[id], else its catalog level capped at 18 */
+const oneCoreRow = (h, base, oc) => { const moved = (base.core || []).filter(id => id !== oc.core), learnAt = Object.assign({}, base.learnAt || {});
+  for (const id of moved) learnAt[id] = oc.learnAt && oc.learnAt[id] != null ? oc.learnAt[id] : Math.min(18, NODE[h] && NODE[h][id] ? NODE[h][id].level : 18);
+  return Object.assign({}, base, { core: [oc.core], traits: [...(base.traits || []), ...moved], learnAt, defaults: (oc.defaults || base.defaults || []).slice(), moved }); };
+export const ONECORE_SPLIT = {};
+for (const h of Object.keys(ONECORE)) { const base = TRAIT_SPLIT[h] || (h === 'paladin' ? PALADIN_BASE : null); if (base) ONECORE_SPLIT[h] = oneCoreRow(h, base, ONECORE[h]); }
+export const movedCores = h => ((onecore && ONECORE_SPLIT[h]) ? ONECORE_SPLIT[h].moved : []).slice();
+const splitOf = h => { const s = onecore && ONECORE_SPLIT[h] ? ONECORE_SPLIT[h] : TRAIT_SPLIT[h]; return s && ((s.core && s.core.length) || (s.traits && s.traits.length)) ? s : null; };
 export const hasSplit = h => !!splitOf(h);
+export const splitRow = h => splitOf(h);   /* (claude/onecore-d) the row in force (ONECORE's derived row while it is on), for tools */
 /* a card name that differs from the catalog (split.names, shown only while the flag is on) and a row tag ('JET' / 'BLOODWORMS': split.tags) */
 export const nameOf = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return (ship && s && s.names && s.names[id]) || (ship && s && s.words && s.words[id] && s.words[id].name) || (n ? n.name : id); };
 export const tagOf = (h, id) => { const s = splitOf(h); return (s && s.tags && s.tags[id]) || ''; };

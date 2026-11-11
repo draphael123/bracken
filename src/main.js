@@ -353,6 +353,7 @@ function resize() {
 }
 addEventListener('resize', () => { if (viewMode === 'zoom' || viewMode === 'coop') setView(viewMode); resize(); }); resize();
 const q = new URLSearchParams(location.search);
+{ const oq = q.get('onecore'); if (oq) TRT.setOnecoreShip(oq === 'on' || oq === '1'); }   /* (claude/onecore-d) lab only: ?onecore=on|off (ONE core passive a hero, the rest worn as traits; ONECORE_SHIP stays false for everyone else) */
 { const tq = q.get('traits'); if (tq) { TRT.setTraitsShip(tq !== 'off'); TRT.setLabTraits(tq === 'on' || tq === 'off' ? null : tq === 'core' || tq === 'def' ? tq : tq.split(',').filter(Boolean)); } }   /* (claude/traitframe) lab only: ?traits=on|off|core|def|<id>,<id> (TRAITS_SHIP stays false for everyone else) */
 
 // ---------- settings + progress ----------
