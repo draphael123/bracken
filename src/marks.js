@@ -564,6 +564,7 @@ export const ANSWER = {
   'turtle|lungeTell': 'block', 'turtle|pinchTell': 'block', 'turtle|snapTell': 'block', 'turtle|strikeTell': 'block', 'turtle|thrustTell': 'block', 'turtle|shockTell': 'dodge',
   'urchin|biteTell': 'block', 'urchin|castTell': 'block', 'urchin|dive': 'block', 'urchin|hookTell': 'block', 'urchin|swellTell': 'block',
   'kiterider|swoopTell': 'block', 'kiterider|kickTell': 'block', 'roc|diveTell': 'dodge',   /* (claude/skyroad) */
+  'owl|stoopTell': 'block', 'owl|netTell': 'dodge',   /* (claude/owl4) the stoop is turned by a shield (a parry opens her); the net is stepped out from under */
   'owl|swoopTell': 'duck', 'owl|skimTell': 'jump', 'owl|shakeTell': 'dodge', 'owl|lampTell': 'dodge', 'owl|pelletTell': 'dodge',   /* (claude/owl3) off the pellet's marks */   /* (claude/owl2) THE OWL REEVE's pair: under the head-high swoop, over the ankle-high skim; out from under the bough's shadows and the lamp's strip */
   'roc|deadAirTell': 'dodge', 'roc|chainTell': 'jump',   /* (claude/roc2) out of the column under the dead air; off the floor (or over it) as the chain lightning runs */
   'raptor|watch': 'dodge',   /* (claude/redgorge) as the vulture's */
@@ -698,6 +699,7 @@ export const HEIGHT = {
   'grubbag|lobTell': 'low', 'grubbag|flingTell': 'low', 'grubbag|sweepTell': 'low', 'grubbag|greaseTell': 'low', 'grubbag|bellTell': 'low', 'attendant|aim': 'low', 'attendant|bashTell': 'low', 'grubbag|belchTell': 'low', 'grubbag|grabTell': 'low', 'butcher|raise': 'low', 'butcher|wind': 'low',   /* (claude/kitchengate) */
   'waterthief|slashTell': 'low',   /* (claude/welltown) as the cutthroat's */
   'sandworm|lungeTell': 'low',   /* (claude/desertfoes) up out of the floor */
+  'owl|stoopTell': 'low', 'owl|netTell': 'low',   /* (claude/owl4) */
   'owl|swoopTell': 'high', 'owl|skimTell': 'low', 'owl|shakeTell': 'low', 'owl|lampTell': 'low', 'owl|pelletTell': 'low',   /* (claude/owl2) THE OWL REEVE: her swoop runs at head height (a ducked hero is under it), the rest reach the boards */
   'roc|diveTell': 'low',   /* (claude/skyroad) a dive from above reaches the floor */
   'trophyhunter|lungeTell': 'low', 'trophyhunter|jabTell': 'low', 'huntmaster|aimTell': 'low', 'huntmaster|volleyTell': 'low', 'huntmaster|splitTell': 'low', 'huntmaster|hoistTell': 'low', 'huntmaster|netTell': 'low', 'huntmaster|heavyTell': 'low', 'huntmaster|snareTell': 'low', 'huntmaster|flurryTell': 'low',   /* (claude/rootway) his arrows are aimed at the chest: no duck goes under them */
