@@ -176,7 +176,7 @@
   "gob-priest": 500,
   "gobgeo": 600,
   "goblin-lint": 4100,
-  "godmode": 43600,
+  "godmode": 300,
   "gorge-basket": 25200,
   "gorm-scaffold-reach": 1900,
   "gorm2": 11600,
@@ -506,6 +506,6 @@
   "windcaller-gusts": 110300,
   "witchlight": 27700,
   "wood2-beats": 400,
-  "zipline": 322800,
+  "zipline": 100000,
   "zoom-coverage": 1900
 }
