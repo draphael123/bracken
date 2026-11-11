@@ -1354,6 +1354,7 @@ Object.assign(SFX, {
   kingLaugh() { file('laugh', 0.5, 0.62) || (tone('sawtooth', 150, 130, 0.12, 0.2), tone('sawtooth', 170, 140, 0.12, 0.2, 0.14), tone('sawtooth', 190, 150, 0.16, 0.2, 0.28)); },
   chiefBark() { file('roar', 0.4, 1.55) || tone('sawtooth', 300, 140, 0.18, 0.22); tone('square', 420, 200, 0.1, 0.12, 0.02); noise(0.1, 0.18, 1200, 0.7); }, // a bark: short, high, clipped
   owlHoot() { tone('sine', 520, 440, 0.18, 0.16); tone('sine', 480, 400, 0.22, 0.14, 0.2); },
+  owlStoop(rel) { if (rel) { tone('triangle', 1100, 260, 0.28, 0.06); tone('sawtooth', 700, 200, 0.2, 0.025, 0.04); } else { tone('sine', 190, 150, 0.55, 0.13); tone('sine', 232, 180, 0.5, 0.07, 0.12); } },   /* (claude/owl4) THE SILENT STOOP: a breathy low hoo at the tell, a wing whisper at the release */
   frogBoom() { tone('sawtooth', 60, 90, 0.5, 0.3); tone('square', 120, 80, 0.4, 0.12, 0.05); noise(0.2, 0.12, 300, 0.6); },
   /* THE WHELP'S SCREECH (its tell): thin and high, a stone throat - a small thing's version of its sire's, and quicker */
   whelpScreech() { tone('sawtooth', 2600, 3400, 0.16, 0.08); tone('square', 1900, 1200, 0.2, 0.05, 0.05); noise(0.08, 0.1, 4200, 1.2); },
