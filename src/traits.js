@@ -21,6 +21,7 @@
 //   learnAt: { id: level }   re-levels a trait's arrival (<= L18 so every trait reaches rank III at L20); core keeps its catalog level
 // An id a split hero's catalog has but this table lists NOWHERE is OFF while the flag is on (the cuts), so list every passive.
 import { SKILLS } from './progression-catalog.js';
+import { forksShip } from './forks.js';   /* (claude/wardenfork) foldRetire: a folded id leaves the slots once its fork side is live (forks flag on) */
 import { TRAIT_SPLIT_B } from './traits-b.js';   /* TRAITDATA-B rows (pyro, pirate, reaper, berserker) */
 
 export const TRAITS_SHIP = false;
@@ -73,6 +74,7 @@ export const TRAIT_SPLIT = {
     merged: { vaulter: ['longVault'], throughAndThrough: ['driveHome'], freeHand: ['airPoint'] },   /* the second passive IS the host's rank-III side */
     folded: { openPoint: 'L24:POINTED', counterpoise: 'L27:HAFT CATCH', spearhead: 'L24:RUN THROUGH B', holdTheLine: 'L29:PHALANX' },   /* slottable traits until the WARDEN fork lane ships the side (FOLD RULE); the fork keys are provisional */
     retired: ['deepSet'],   /* CUT (= the tip rule) */
+    foldRetire: true,   /* (claude/wardenfork) the four folded ids retire as slottable traits while FORKS_SHIP is on: their effects live on as fork sides (src/forks-warden.js); flag off they stay slottable as today */
     shared: [],
     defaults: ['vaulter', 'everReady'],
     /* today's order spread to L18 (vaulter 3 -> 2 ... skirmisher 24 -> 18); folded ids arrive by L18 too */
@@ -118,6 +120,7 @@ Object.assign(TRAIT_SPLIT, TRAIT_SPLIT_B);   /* claude/traitdata-b: its four her
 const NODE = {};   /* hero -> id -> catalog node (own lookup: no import of progression.js) */
 for (const n of SKILLS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
 for (const n of NEW_TRAITS) (NODE[n.hero] = NODE[n.hero] || {})[n.id] = n;
+const foldGone = (s, id) => !!(s.foldRetire && s.folded && s.folded[id] && forksShip());   /* (claude/wardenfork) */
 const splitOf = h => { const s = TRAIT_SPLIT[h]; return s && ((s.core && s.core.length) || (s.traits && s.traits.length)) ? s : null; };
 export const hasSplit = h => !!splitOf(h);
 /* a card name that differs from the catalog (split.names, shown only while the flag is on) and a row tag ('JET' / 'BLOODWORMS': split.tags) */
@@ -127,7 +130,7 @@ export const tagOf = (h, id) => { const s = splitOf(h); return (s && s.tags && s
 /* what an id is for this hero: 'core' | 'trait' | 'merged' | 'folded' | 'shared' | 'retired' | 'cut' | null (not a passive of his) */
 export function kindOf(h, id) {
   const s = splitOf(h), n = NODE[h] && NODE[h][id]; if (!s || !n || n.active) return null;
-  if ((s.retired || []).includes(id)) return 'retired';
+  if ((s.retired || []).includes(id) || foldGone(s, id)) return 'retired';
   if ((s.core || []).includes(id)) return 'core';
   if ((s.traits || []).includes(id)) return 'trait';
   if (s.folded && s.folded[id]) return 'folded';
@@ -139,11 +142,11 @@ export function kindOf(h, id) {
 export const traitWord = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return (s && s.words && s.words[id]) ? Object.assign({}, n, s.words[id]) : n; };
 export const mergedHost = (h, id) => { const s = splitOf(h); if (s && s.merged) for (const host of Object.keys(s.merged)) if (s.merged[host].includes(id)) return host; return null; };
 /* ids a hero may WEAR in a slot: his traits and folded ones, and the shared six */
-export const slottable = h => { const s = splitOf(h); return s ? [...(s.traits || []), ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id)), ...SHARED_TRAITS.map(x => x.id)] : []; };
+export const slottable = h => { const s = splitOf(h); return s ? [...(s.traits || []), ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id) && !foldGone(s, id)), ...SHARED_TRAITS.map(x => x.id)] : []; };
 export const isSlottable = (h, id) => slottable(h).includes(id);
 export const learnLevel = (h, id) => { const s = splitOf(h), n = NODE[h] && NODE[h][id]; return s && s.learnAt && s.learnAt[id] != null ? s.learnAt[id] : (n ? n.level : 99); };
 export const coreIds = h => (splitOf(h) || { core: [] }).core.slice();
-export const traitIds = h => { const s = splitOf(h); return s ? [...s.traits, ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id))] : []; };
+export const traitIds = h => { const s = splitOf(h); return s ? [...s.traits, ...Object.keys(s.folded || {}).filter(id => !(s.retired || []).includes(id) && !foldGone(s, id))] : []; };
 export const defaultsAt = (h, lv) => { const s = splitOf(h); if (!s) return []; return (s.defaults || []).slice(0, traitSlotsAt(lv)); };
 /* learned: a hero's own trait by its level (or owned by an older save); a shared trait by the account's first clear */
 export const learned = (p, h, id, lv) => {
@@ -252,7 +255,7 @@ export function rowLabel(p, h, r, lv) {
 export function traitUpText(h, from, to) {
   if (!ship || !hasSplit(h)) return '';
   const s = splitOf(h), bits = [];
-  const got = [...(s.traits || []), ...Object.keys(s.folded || {})].filter(id => learnLevel(h, id) > from && learnLevel(h, id) <= to && NODE[h][id]).sort((a, b) => learnLevel(h, a) - learnLevel(h, b));
+  const got = [...(s.traits || []), ...Object.keys(s.folded || {}).filter(id => !foldGone(s, id))].filter(id => learnLevel(h, id) > from && learnLevel(h, id) <= to && NODE[h][id]).sort((a, b) => learnLevel(h, a) - learnLevel(h, b));
   const core = (s.core || []).filter(id => NODE[h][id] && NODE[h][id].level > from && NODE[h][id].level <= to);
   if (core.length) bits.push(core.length > 1 ? 'CORE: ' + nameOf(h, core[0]) + ' +' + (core.length - 1) + ' MORE.' : 'CORE: ' + nameOf(h, core[0]) + '.');
   if (got.length) bits.push(got.length > 1 ? 'TRAIT LEARNED: ' + nameOf(h, got[0]) + ' +' + (got.length - 1) + ' MORE.' : 'TRAIT LEARNED: ' + nameOf(h, got[0]) + '.');
