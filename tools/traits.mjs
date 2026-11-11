@@ -68,7 +68,7 @@ try {
   }
   /* TRAITDATA-A: knight, warden, ranger, geomancer - the table as built (plan passiveplan sec 2) */
   const A = {
-    knight: { core: 6, traits: 10, folded: 0, merged: 0, retired: 0, shared: 6, total: 22, def: ['vengeance', 'bash'] },
+    knight: { core: 6, traits: 10, folded: 0, merged: 0, retired: 0, shared: 6, total: 22, def: ['vengeance', 'bleed'] },
     warden: { core: 5, traits: 10, folded: 4, merged: 3, retired: 1, shared: 0, total: 23, def: ['vaulter', 'everReady'] },
     ranger: { core: 5, traits: 10, folded: 4, merged: 1, retired: 1, shared: 0, total: 21, def: ['rgKill', 'rgCover'] },
     geomancer: { core: 4, traits: 9, folded: 0, merged: 1, retired: 0, shared: 0, total: 10, def: ['geoAftershock', 'geoShrapnel'], newTraits: 4 },
@@ -156,7 +156,7 @@ try {
   { const bad = v2(); bad.traits = { knight: ['vengeance', 'vengeance', 'zzz', 'bash'], nobody: ['x'], pyro: 'no' };
     const out = validateProgress(JSON.parse(JSON.stringify(bad))); assert.deepEqual(out.traits, { knight: ['vengeance'] }, JSON.stringify(out.traits)); }
   { const bad = v2(); bad.traits = 7; assert.equal(validateProgress(bad).traits, undefined); }
-  { const p = migrateProgress(JSON.stringify(v2()), []).progress; assert.deepEqual(p.traits.knight, ['vengeance', 'bash'], 'L21 gets both defaults');
+  { const p = migrateProgress(JSON.stringify(v2()), []).progress; assert.deepEqual(p.traits.knight, ['vengeance', 'bleed'], 'L21 gets both defaults');
     const again = JSON.parse(JSON.stringify(p)); assert.equal(migrateTraits(again), false, 'idempotent'); assert.deepEqual(again.traits, p.traits);
     p.traits.knight = ['bleed']; const keep = migrateProgress(JSON.stringify(p), []).progress; assert.deepEqual(keep.traits.knight, ['bleed'], 'an existing choice is never overwritten');
     const young = v2(); young.xp.knight = xpFloor(4); const y = migrateProgress(JSON.stringify(young), []).progress; assert.deepEqual(y.traits.knight, ['vengeance'], 'L4: one slot');
