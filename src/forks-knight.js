@@ -6,6 +6,7 @@
 // Dropped from claude/kfork: the L30/L40/L50 pair DATA (superseded by this ladder; the pair-card machinery in progression.js stays as dormant generic code), SHIELD HOOK (parked:
 // forkplan Q4, SHIELD THROW B is TWIN SHIELDS), COUNTER-THRUST (riposte is CORE since RECS158-d, so block A is LONG GUARD alone).
 // Boss law holds for every side: damage and guard breaks on bosses stay as the effect code has them (no pins, no new mitigation).
+import { KNIGHT_RUNG_FORKS, KNIGHT_TRAIT_FORKS } from './forks-knight-rungs.js';   /* (claude/knightfork) the other seven rungs and the ten trait pairs */
 export const KNIGHT_FORKS = {
   block: { slot: 'block', ability: 'block', name: 'THE SHIELD UP', trade: 'TURN IT OR MARCH',
     A: { id: 'klong', name: 'LONG GUARD', input: 'PERFECT GUARD A SHOT',
@@ -36,3 +37,4 @@ export const KNIGHT_FORKS = {
       what: 'THE SHIELD IS HURLED DOWN THE ROOM THROUGH EVERY GUARD IT CROSSES, AND ROLLS HOME',
       teach: 'UP+C AT THREE LINKS NOW HURLS THE SHIELD THE LENGTH OF THE ROOM: EVERY GUARD IT CROSSES IS BROKEN, THE BIG ONES JUST TAKE THE BLOW. IT RETURNS TO YOUR HAND' } },
 };
+Object.assign(KNIGHT_FORKS, KNIGHT_RUNG_FORKS, KNIGHT_TRAIT_FORKS);   /* (claude/knightfork) all 11 rungs + 10 trait forks */
