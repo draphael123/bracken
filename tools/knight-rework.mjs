@@ -30,8 +30,8 @@ if (WANT.includes('lesson')) {
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
-    window.__kn=(ids,foes)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BKT.setHeroLevel("knight",0);
-      BKT.PROG.skillOwned.knight=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.knight=ids.slice(0,4);BK.applyUpgrades();BK.load(0);BK.state='play';
+    window.__kn=(ids,foes)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BKT.setHeroLevel("knight",window.__lv||0);
+      BKT.PROG.skillOwned.knight=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.traits=BKT.PROG.traits||{};if(window.__worn)BKT.PROG.traits.knight=window.__worn;else delete BKT.PROG.traits.knight;   /* (FIX158B) TRAITS_SHIP: a trait counts only when learned (level) AND worn; the COUNTERSTROKE row runs a level-20 knight wearing it */BKT.PROG.loadouts.knight=ids.slice(0,4);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(120);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;BK.P.combo=0;BK.P.riposteT=0;BK.P.riposteHeavy=false;BK.P.thirdPays=0;BK.P.thirdPayLast=null;
       return foes.map(([t,dx])=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.dmgPct=70;return e;});};   /* (batch88 integ, as tools/knock-into.mjs) THE THROW IS THE FOE'S DAMAGE % NOW (claude/damagepct): these 5000-hp dummies never build one, so they stand at 70%, where a throw goes as far as the old fixed one; every assertion is unchanged */
@@ -66,7 +66,7 @@ try {
   const out = {};
   if (WANT.includes('riposte')) out.riposte = await pg.evalp(`(()=>({
       perfect: __guard([],2,2), early: __guard([],30,2), late: __guard([],-3,2), none: __guard([],null,2), plain: __guard([],'noblow',2),
-      afterWindow: __guard([],2,44), passive: __guard(['parry'],10,2), noPassive: __guard([],10,2), counter: __guard(['counterstroke'],2,2)}))()`);
+      afterWindow: __guard([],2,44), passive: __guard(['parry'],10,2), noPassive: __guard([],10,2), counter: (window.__lv=20,window.__worn=['counterstroke'],(c=>(window.__lv=0,window.__worn=null,c))(__guard(['counterstroke'],2,2)))}))()`);
   if (WANT.includes('third')) out.third = await pg.evalp(`(()=>({open:__third('open'),wall:__third('wall'),spikes:__third('spikes'),pit:__third('pit'),foe:__third('foe'),wallFirst:__third('wallFirst')}))()`);
   if (WANT.includes('guard')) out.guard = await pg.evalp(`(()=>({hold:__hold([],120),steady:__hold(['holdLine'],120),tap:__hold([],4),
       light:__blows('timed',1,8),lightTurtle:__blows('turtle',1,8),heavy:__blows('turtle',1,30),turtle:__blows('turtle',5,12),timed:__blows('timed',5,12)}))()`);

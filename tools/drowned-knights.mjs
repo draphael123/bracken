@@ -77,13 +77,15 @@ try {
   const r = await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');const DKN=await import('/src/drowned-knights.js');BK.manualSimulation=true;BK.SET.speed=1;
     const out={clipped:DKN.DK_CLIPPED.slice(),frames:{knight:BK.SPR.drownedknight?BK.SPR.drownedknight.R.length:0,captain:BK.SPR.drownedcaptain?BK.SPR.drownedcaptain.R.length:0}};
     const{xpFloor}=await import('/src/xp.js');BK.setHero('knight');BK.reset({fresh:true});BKT.setHeroLevel("knight",18);BK.applyUpgrades();BK.load(LEVELS.findIndex(l=>l.id==='keep'));BK.start();BK.sim(5);for(const e of BK.enemies())e.alive=false;BK.god=false;   /* a knight of the level the Keep expects (18, the curve at the Keep): three cuts is his, not a fresh one's */
-    const P=BK.P,tx=Math.floor(P.x/16),ty=Math.floor(P.y/16)-1;const [k]=BK.spawnFoe({t:'drownedknight',x:tx+3,y:ty,face:-1});out.hp=k.hp;
-    let cuts=0;for(let i=0;i<14&&k.alive&&k.hp>0;i++){k.mode='rest';k.modeT=1;k.cd=9;k.x=P.x+14;k.y=P.y;k.vx=k.vy=0;P.face=1;BK.press('atk');BK.sim(26);cuts++;}out.cuts=cuts;out.dead=!k.alive||k.hp<=0;
+    const P=BK.P,tx=Math.floor(P.x/16),ty=Math.floor(P.y/16)-1,hx0=P.x,hy0=P.y;const [k]=BK.spawnFoe({t:'drownedknight',x:tx+3,y:ty,face:-1});out.hp=k.hp;
+    let cuts=0;for(let i=0;i<14&&k.alive&&k.hp>0;i++){k.mode='rest';k.modeT=1;k.cd=9;k.x=P.x+14;k.y=P.y;k.vx=k.vy=0;P.face=1;BK.press('atk');BK.sim(26);cuts++;}out.cuts=cuts;out.dead=!k.alive||k.hp<=0;P.x=hx0;P.y=hy0;P.vx=P.vy=0;P.hp=P.maxHp;   /* (FIX158B) more cuts = more seconds, and the start vent lifts a hero who stands still: put him back where the spawn tiles were measured */
     const [q]=BK.spawnFoe({t:'drownedknight',x:tx+4,y:ty,face:-1});q.cd=0;q.mode='swim';const hp0=P.hp,px0=P.x,py0=P.y;for(let i=0;i<400&&P.hp>=hp0;i++){P.x=px0;P.y=py0;P.vx=P.vy=0;BK.sim(1);}   /* held still: the lunge drives at where you WERE, and the start vent lifts a hero who is left alone */out.lunged=hp0-P.hp;
     const [c]=BK.spawnFoe({t:'drownedcaptain',x:tx+5,y:ty,face:-1});BK.step(3);out.capDrawn=c.lastSet===BK.SPR.drownedcaptain;out.capHp=c.hp;return out;})()`, 300000);
   assert.deepEqual(r.clipped, [], 'pixels drawn off the sprite grid (E6): ' + r.clipped.slice(0, 8).join(' '));
   assert.equal(r.frames.knight, 7, 'the knight has 7 frames'); assert.equal(r.frames.captain, 10, 'the captain has 10 frames');
-  assert(r.dead && r.cuts >= 2 && r.cuts <= 4, 'the knight should take about three cuts: ' + r.cuts + ' (hp ' + r.hp + ', dead ' + r.dead + ')');
+  /* (FIX158B) TRAITS_SHIP: the old 'three cuts' leaned on EXECUTIONER + BLEED being always on (the third cut left him at 29 > 28.75 and the execute rule finished him). Execute is a shared trait that must be WORN now, so the L18 knight lands 23/23/40 and needs about five (a cut pressed in the third cut's recovery is not a landed one): bound 6 with traits on, 4 with them off */
+  const { traitsShip } = await import('../src/traits.js');
+  assert(r.dead && r.cuts >= 2 && r.cuts <= (traitsShip() ? 6 : 4), 'the knight should take about three cuts: ' + r.cuts + ' (hp ' + r.hp + ', dead ' + r.dead + ')');
   assert(r.lunged > 0, 'a knight left to lunge at a hero who stands there never hurt him');
   assert(r.capDrawn, 'the captain is drawn with his own sprite');
   assert.deepEqual(pg.errors, []);

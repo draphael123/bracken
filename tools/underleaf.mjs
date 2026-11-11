@@ -102,7 +102,7 @@ try {
    BK.god=false;P().hp=1;BKT.hurtPlayer?BKT.hurtPlayer(99):(P().hp=0,P().dead=1);for(let i=0;i<60*5&&(P().dead||BK.state!=='play');i++)BK.sim(1);BK.god=true;out.red.after=H().state().hedges[0].burnt&&tile(198,26)===${T.AIR};}
   /* RED: the thorn-beast's coat */
   {boot(218,32);const b=BK.enemies().find(e=>e.alive&&e.t==='brute'&&e.thornCoat);b.stagger=9;const blow=(n)=>{const h0=b.hp;BKT.hurtAs('light',b,n,b.x-12,false);const d=h0-b.hp;b.hp=h0;return d;};
-   const coat=blow(20),said=BK.textLab.nums().map(n=>n.txt);const j=jarAt('red',218*16);take(j);b.x=P().x+44;b.vx=0;toss(j,P().x,'low');for(let i=0;i<40;i++)BK.sim(1);out.coat={coat,said,off:!!b.coatOff,bare:blow(20)};}
+   const coat=blow(20),said=BK.textLab.nums().map(n=>n.txt);BK.sim(30);P().vx=0;/* (FIX158B) JUICE2: the glance on his coat is a CLINK - the hero rebounds a step and the world freezes: let it settle before the jar is thrown */const j=jarAt('red',218*16);take(j);b.x=P().x+44;b.vx=0;toss(j,P().x,'low');for(let i=0;i<40;i++)BK.sim(1);out.coat={coat,said,off:!!b.coatOff,bare:blow(20)};}
   /* GREEN off a bed: a snare */
   {boot(58,29);const f=BK.enemies().find(e=>e.alive&&e.t==='sprig'&&Math.abs(e.x-60*16-8)<20);P().carry=null;const j=jarAt('green',78*16);take(j);f.x=P().x+36;f.y=P().y;f.vx=0;f.stagger=0;toss(j,P().x,'low');out.snare={stag:+(f.stagger||0).toFixed(2)};}
   /* 4. THE POTION MASTER (claude/underleaf4): three phases, one potion guard each */
