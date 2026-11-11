@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 161,
+    "lines": [
+      { "s": "Store Skills tab: your core passives and worn traits show under your abilities", "lv": [] },
+      { "s": "Trait slots show their level, an open slot reads EMPTY, the 2nd opens at level 20", "lv": [] },
+      { "s": "The abilities list shows 4 rows a page to make room", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 160,
     "lines": [
       { "s": "HIT FEEL: every blow has a short freeze, longer on heavy hits and kills", "lv": [] },
