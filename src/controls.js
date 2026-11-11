@@ -156,7 +156,7 @@ const HEROES_C = {
   paladin:    ['conviction', tk => 'TAP ' + tk.c + ' SPEND, HOLD AEGIS'],   /* (PALADIN 3) the tap spends Conviction by tier */
   pirate:     ['hook / catch', tk => 'TAP ' + tk.c + ' CATCH, HOLD HOOK'],   /* (claude/heroblocksa) the tap is the HOOK CATCH (src/hook-catch.js) */
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
-  warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD BRACE'],   /* (claude/heroblocksb) hold = the spear-haft brace; (claude/wardenid) the third jab is the long thrust (the hint line) */
+  warden:     ['deflect', tk => 'TAP ' + tk.c + ' DEFLECT, HOLD THROW'],   /* (claude/heroblocksb) hold = the javelin THROW (claude/repoint: the text said BRACE after herofeel replaced it); (claude/wardenid) the third jab is the long thrust (the hint line) */
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],   /* (claude/ults) the ultimate is the shared row below */
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
   ranger:     ['bash / guard', tk => 'TAP ' + tk.c + ' BASH, HOLD GUARD'],   /* (claude/heroblocksb) hold = the bow guard; the bash on the beat is still her parry */
