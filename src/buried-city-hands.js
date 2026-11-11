@@ -26,6 +26,7 @@ const RULE_SAID = { first: 1, granary: 1, street: 1, cellar: 1, upperbulb: 1, ya
 export function makeBuriedCityHands(ctx) {
   let K = null;
   const H = {};
+  H.struckHooks = [];   /* (claude/bc5) THE GLASSBLOWER listens for a hero's blow on a glass (src/glassblower-hands.js pushes its hook here) */
   let FL = null;   /* THE FLIP (src/buried-city-flip.js), made on the first reset (it needs the hands' unburyIn) */
   const TS = () => ctx.TS, T = () => ctx.T;
   const once = k => { if (K.said[k]) return false; K.said[k] = 1; return true; };
@@ -68,7 +69,7 @@ export function makeBuriedCityHands(ctx) {
     K.waiting = (L.ents || []).map((e, k) => ({ e, k })).filter(q => q.e.sandWait && H.waits(q.e));
     { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].bc) arr.splice(i, 1); for (const lp of (L.lamps || [])) arr.push({ x: lp.x * TS() + 8, y: lp.y * TS() + (lp.kind === 'brazier' ? 2 : 4), r: lp.kind === 'brazier' ? 64 : 44, torch: true, bare: true, warm: true, bc: true }); } }   /* (the lamps are lights the game blooms) */
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.leverFx = {};
-    if (!FL) FL = makeFlip({ ctx, number, once, unburyIn: (a, b, r) => unburyIn(a, b, r) }); FL.reset(K, fresh); H.flip = FL;
+    if (!FL) FL = makeFlip({ ctx, number, once, unburyIn: (a, b, r) => unburyIn(a, b, r), struck: (g, P) => { for (const f of H.struckHooks) f(g, P); } }); FL.reset(K, fresh); H.flip = FL;
     for (const pp of ctx.players) { pp.bcJam = 0; pp.bcFall = 0; }
     if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { buriedCity: () => K, buriedCityHands: () => H, walkHint: () => H.walkHint(ctx.hero()), flipAll: () => FL && FL.flipAll(), flip: () => FL && FL.read() });
   };

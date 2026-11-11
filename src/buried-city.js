@@ -409,7 +409,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   construct(613, TH - 1, 'trapLip', { face: 1 }); drowned(615, TH - 1, 'trapLip');   /* THE EXAM's construct on the lip, in the fall (JAMMED while it holds him), and a drowned on the lip's edge: a heavy blow throws him OFF THE EDGE */
   ground(632, 701, TH); plat('balcony', 637, 641, 29); slinger(639, 28, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   /* THE KING'S COURT: his kneeling courtiers (the drowned of his court, stone now), his statues, and THE THRONE'S WARDEN */
-  decor.push({ kind: 'courtiers', x0: 635, x1: 651, y: TH - 1 }, ...(BC5 ? [] : [{ kind: 'kingstatue', x: 665, y: TH - 1, h: 9 }]), { kind: 'kingstatue', x: 684, y: TH - 1, h: 9 });   /* (claude/bc5: the lift chain stands where the first statue did) */
+  decor.push({ kind: 'courtiers', x0: 635, x1: 651, y: TH - 1 }, { kind: 'kingstatue', x: BC5 ? 652 : 665, y: TH - 1, h: 9 }, { kind: 'kingstatue', x: 684, y: TH - 1, h: 9 });   /* (claude/bc5: the lift chain stands where the first statue did - it steps back to 652) */
   drift(647, 649, TH); plat('balcony', 648, 652, 29);
   construct(654, TH - 1, 'throneGuard', { elite: true, gate: 661 }); scorpion(658, TH - 1, 'throneGuard');
   block(661, 661, 21, 21);   /* (claude/bc4fix: the street is eleven rows tall and his gate ten - a hero (fourteen px) could go over its top under the roof, off the balcony: a lintel shuts it) */
