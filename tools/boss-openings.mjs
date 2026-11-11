@@ -127,7 +127,7 @@ try {
    {const hurt=d=>{const h0=w.hp;BKT.hurtAs('light',w,d,w.x-12,false);const t=h0-w.hp;w.hp=h0;return t;};
     w.mode='stalk';w.cd=99;w.burnT=0;w.stuckT=0;w.reopenCd=0;w.greenUp=false;w.growth=0;w.hp=w.maxHp;w.x=143*16;BK.P.x=w.x-150;BK.sim(2);
     const ans={};BK.sim(600);ans.alone=+(w.open||0).toFixed(1);ans.outside=hurt(40);
-    ans.did=HW.hedgeAnswered(w,'cut');BK.sim(3);ans.mode=w.mode;ans.open=+(w.open||0).toFixed(1);ans.inside=hurt(40);ans.again=HW.hedgeAnswered(w,'cut');
+    ans.did=HW.hedgeAnswered(w,'cut');BK.sim(12);/* (FIX158B) JUICE2: the blow just above freezes the world 65 ms (4 frames), and an enemy is not updated in a freeze - 3 frames read open = 0. 12 frames is past the freeze and still inside the 3 s (open > 2.5) */ans.mode=w.mode;ans.open=+(w.open||0).toFixed(1);ans.inside=hurt(40);ans.again=HW.hedgeAnswered(w,'cut');
     BK.sim(260);ans.after=w.mode;ans.afterOpen=+(w.open||0).toFixed(1);ans.reopen=w.reopenCd>0;ans.tooSoon=HW.hedgeAnswered(w,'cut');
     out.hedgeAnswer=ans;}}
   /* THE GATE GARGOYLE: the same dive three times - on a low slab left late, on a high slab left late, on a slab left early */
