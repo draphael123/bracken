@@ -66,8 +66,8 @@ export const SIG = {
 /* THE FAMILIES OF ACTS I-II WHOSE EVERY BLOW IS A RED !! (dodge) - no blow they have can be parried, jumped or ducked. Each needs a NEW told attack
    with its own windup pose, built by its act's sweep lane. This list may only shrink (tools/foe-pass.mjs). */
 export const TOLD_TODO = {};   /* EMPTY (claude/sweepact12): thief, spitcap, sapper, emberwisp, stormshaman, clinger and shardling each have a signature now */
-/* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage */
-export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord']);
+/* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage, the order's paladins (rel162: their own AI, src/order-paladin.js, with its own told GLEAM + parry-to-break, not a SIG row) */
+export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord', 'orderpaladin', 'deadpaladin']);
 
 /* is e in its family's signature windup right now? (the row, or null). base: the kind its AI runs on (a cnSkin body is its kind) */
 export const sigOf = e => { const r = e && SIG[e.t]; return r && !e.elite && !e.maxHp && !e.mini && e.mode === r.mode ? r : (r && e.t === 'archer' && r.mode === 'draw' && e.draw > 0.3 && !e.elite ? r : null); };
