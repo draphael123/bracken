@@ -22,7 +22,7 @@ const wardenUltJs = () => process.env.WARDEN_ULT_HAND ? "if(h==='warden'){const 
    time out real wins - her row never runs under 360 s (src/lab-gqueen.js) */
 export const ROW_MIN_SECS = { crown: 360 };
 /* (claude/traittune-d) BOSS_TRAITS=on|core (off/unset = today): flips the passives rework in the page before the fight (TRAITS_SHIP on: the bot wears its defaults; core: core passives only) and CHARMS2_SHIP (BOSS_CHARMS2=0 to skip). A measuring flag; the shipped flags stay false. */
-const traitsJs = () => { const t = process.env.BOSS_TRAITS; if (!t || t === 'off') return ''; return "{const T=await import('/src/traits.js');T.setTraitsShip(true);T.setLabTraits(" + (t === 'core' ? "'core'" : t === 'on' ? 'null' : JSON.stringify(t.split(','))) + ");}" + (process.env.BOSS_CHARMS2 === '0' ? '' : "{const C=await import('/src/charms2.js');C.setCharms2Ship(true);}"); };
+const traitsJs = () => { const t = process.env.BOSS_TRAITS; if (!t || t === 'off') return ''; return "{const T=await import('/src/traits.js');T.setTraitsShip(true);T.setLabSlots(" + (+process.env.BOSS_TRAIT_SLOTS || 0) + ");T.setLabTraits(" + (t === 'core' ? "'core'" : t === 'on' ? 'null' : JSON.stringify(t.split(','))) + ");}" + (process.env.BOSS_CHARMS2 === '0' ? '' : "{const C=await import('/src/charms2.js');C.setCharms2Ship(true);}"); };
 export function fightJs({ r, way, h, s, profile, flasks }, secs = 240) {
   const [id, fl] = r.split(':'), lvl = levelOverride() ?? campaignLevel(id), built = way === 'built', fk = fightFlasks(id, flasks), fkN = Object.keys(fk).filter(k => ['tonic', 'extra2', 'extra3'].includes(k)).length;
   const prof = way === 'first' ? (typeof profile === 'string' ? profile + '+first' : { ...profile, first: true }) : profile;
