@@ -164,4 +164,36 @@ process.env.BRACKEN_OWL4 = '1';
   process.env.BRACKEN_OWL4 = '1'; const LON = hang(); delete process.env.BRACKEN_OWL4; const ents = LON.ents.filter(e => e.t === 'shadowgob'); assert.equal(ents.length, 4); const bust = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/case 'shadowgob': enemies\.push\(\{ \.\.\.base, t: '(\w+)'/); assert(bust && bust[1] === 'shadowgob');
   sum.push('G shadow goblin = own foe type: registry rows (threat / told / pursuit / blows / bestiary / cast-lint kinds), gate in hurtEnemy0, unlit glances x4 sizes + hint once, lit by village lamp r64 / lantern r56 / pool / burning, snuffed or dropped lamp = dark, REVEALED stagger ' + SHADOW.reveal + ' s with a ' + SHADOW.revealCd + ' s cooldown'); }
 
+/* H. THE WALK BOT'S LAMP LESSON (src/owl4-bot.js, played by src/playtest.js): in a tiny sim of each placed Shadow Goblin (the level's own ent rows) the bot strikes the dark lamp, lures the goblin through the light, cuts the hung lamp's cord onto it, and never swings at it in the dark */
+{ const BOT = await import('../src/owl4-bot.js'); process.env.BRACKEN_OWL4 = '1'; const LON = hang(); delete process.env.BRACKEN_OWL4;
+  const cords = LON.ropes.filter(r => r.kind === 'lampcord'); assert.equal(cords.length, 1, 'one hung lamp (the rookery)');
+  const gobs = LON.ents.filter(e => e.t === 'shadowgob'); let cutSeen = 0, lightSeen = 0, lureSeen = 0; const rows = [];
+  for (const ge of gobs) {
+    const ls = LON.ents.filter(e => e.t === 'lantern' && e.hv && Math.abs(e.y - ge.y) <= 2 && Math.abs(e.x - ge.x) <= 8).map(e => ({ t: 'lantern', x: e.x * TS + 8, y: e.y * TS + 16, lit: !e.dark, hv: true, cord: e.cord, cordState: e.cord ? 'hung' : undefined }));
+    const floor = (ge.y + 1) * TS, g = { t: 'shadowgob', alive: true, x: ge.x * TS + 8, y: floor, hp: 20, shadow: { lit: false }, burn: 0 }, P = { x: g.x - 130, y: floor }; let pool = null, glance = 0, swingDark = 0, f = 0, killedAt = -1, dmgAcc = 0; const dt = 1 / 60;
+    const lights = () => { const o = ls.filter(l => l.lit && !l.gone).map(l => ({ x: l.x, y: l.y - 30, r: HV_LAMP.r })); if (pool && pool.t > 0) o.push({ x: pool.x, y: floor - 6, r: OWL4 ? O4.LAMP_DROP.w / 2 : 28 }); return o; };
+    for (; f < 60 * 45 && g.alive; f++) {
+      g.shadow.lit = shadowLit(g.x, g.y - 6, lights()) || g.burn > 0;
+      const view = { P, foes: [g], lamps: ls, cords: cords.map(c => ({ ...c, state: (ls.find(l => l.cord === c.id) || { cordState: 'hung' }).cordState === 'hung' ? 'tied' : 'cut' })), reach: 22, lampR: HV_LAMP.r }, plan = BOT.shadowGobPlan(view), pk = BOT.planKeys(plan, view);
+      if (plan && plan.act === 'light') lightSeen++; if (plan && plan.act === 'lure') lureSeen++;
+      if (pk) { P.x += pk.dir * 90 * dt;
+        if (pk.swing && plan.act === 'light' && !plan.lamp.lit) plan.lamp.lit = true;
+        if (pk.swing && plan.act === 'cut') { cutSeen++; const l = ls.find(q => q.cord === plan.cord); if (l.cordState === 'hung') { l.cordState = 'fall'; l.gone = true; pool = { x: l.x, t: O4.LAMP_DROP.pool, tick: 0 }; } } }
+      else if (plan && plan.act === 'fight' && Math.abs(g.x - P.x) < 24 && f % 24 === 0) { if (!g.shadow.lit) swingDark++; else g.hp -= 5; }
+      if (plan === null || plan.act === 'skip') swingDark += 0;
+      if (pool) { pool.t -= dt; pool.tick += dt; if (pool.t > 0 && pool.tick >= O4.LAMP_DROP.tick && Math.abs(g.x - pool.x) < O4.LAMP_DROP.w / 2) { pool.tick = 0; g.hp -= O4.LAMP_DROP.dmg; } }
+      if (g.hp <= 0) { g.alive = false; killedAt = f; break; }
+      if (Math.abs(P.x - g.x) < 110 && Math.abs(g.x - P.x) > 18) g.x += Math.sign(P.x - g.x) * 28 * dt;
+    }
+    assert(!g.alive, `the walk bot lights and kills the Shadow Goblin at ${ge.x},${ge.y} within 45 s (still alive: hp ${g.hp})`); assert.equal(swingDark, 0, 'never a swing at it unlit'); rows.push(`${ge.x},${ge.y}: dead at ${(killedAt / 60).toFixed(1)} s`);
+  }
+  assert(lightSeen > 0 && lureSeen > 0, 'the bot both strikes a dark lamp and lures'); assert(cutSeen > 0, 'and cuts the hung lamp\'s cord onto the rookery goblin');
+  /* no lamp in reach: skip, never stand swinging; no goblin: null */
+  const g0 = { t: 'shadowgob', alive: true, x: 300, y: 200, shadow: { lit: false } }, v0 = { P: { x: 260, y: 200 }, foes: [g0], lamps: [], cords: [], reach: 22, lampR: 64 };
+  assert.equal(BOT.shadowGobPlan(v0).act, 'skip', 'no lamp within seven tiles: skip it'); assert.equal(BOT.planKeys(BOT.shadowGobPlan(v0), v0), null); assert.equal(BOT.shadowGobPlan({ ...v0, foes: [{ ...g0, t: 'sprig' }] }), null, 'a plain goblin is not this lesson');
+  assert.equal(BOT.shadowGobPlan({ ...v0, foes: [{ ...g0, shadow: { lit: true } }] }).act, 'fight', 'lit: the ordinary fight');
+  assert.equal(BOT.shadowGobPlan({ ...v0, lamps: [{ t: 'lantern', x: 700, y: 200, lit: false, hv: true }] }).act, 'skip', 'a lamp beyond seven tiles of the goblin is not its lamp');
+  sum.push('H walk bot lamp lesson (src/owl4-bot.js): ' + rows.join('; ') + '; strike a dark lamp, lure through the light, cut the rookery cord onto the goblin, never a swing at it unlit, skip when no lamp');
+}
+
 console.log('OWL4 RULES: all green.\n  ' + sum.join('\n  '));

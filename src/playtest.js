@@ -25,6 +25,7 @@ import { THREAT, RAMP_DROP, RAMP_WALL, spanOf, indexOf, worstGap, measureLevel }
 import { floodReach } from './reachcore.js';
 import { checkDrawables } from './floatlab.js';
 import { inReach as zipInReach, lineY as zipLineY } from './zipline.js'; import { inTransfer as hlTransfer } from './haul-lines.js';   /* (stormhold4) rope to rope */ const HLX = { inTransfer: hlTransfer, lineY: zipLineY };   /* THE ZIP LINE (claude/zipline): the bot takes a rope that runs his way, and lets it carry him */
+import { shadowGobPlan, planKeys } from './owl4-bot.js';   /* THE SHADOW GOBLIN (claude/owl4b): lure it into a lit lamp, strike a dark lamp, cut a hung lamp's cord onto it - and never swing at it in the dark */
 import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): the walker drinks like a person - under a third of the bar, a flask held */
 
 const SEV = { bug: 3, odd: 2, note: 1 };
@@ -441,6 +442,7 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
     if (!P.swim && !(P.dead > 0)) for (const e of BK.enemies()) {
       if (!e.alive || e.harmless || e.dying > 0) continue;
       if (e.t === 'folk' || e.t === 'fisher' || e.t === 'bale' || e.t === 'dummy' || e.t === 'sheep') continue;
+      if (e.t === 'shadowgob' && !(e.shadow && e.shadow.lit) && !(e.burn > 0)) continue;   /* (claude/owl4b) unlit, every blow glances: the lamp lesson below handles it */
       if ((tick.skip.get(e) || 0) > tick.frame) continue;
       if (Math.abs(e.y - P.y) > 30) continue;
       const dx = e.x - P.x, d = Math.abs(dx);
@@ -452,7 +454,12 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
       if (d < fd) { fd = d; foe = e; }
     }
     let fighting = false;
-    if (foe) {
+    { const foes = BK.enemies(); if (!P.swim && !(P.dead > 0) && foes.some(e => e.t === 'shadowgob' && e.alive)) {   /* (claude/owl4b) THE LAMP LESSON (src/owl4-bot.js) */
+        const lamps = props.filter(p => p.t === 'lantern'), ropes = (L.ropes || []).filter(r => r.kind === 'lampcord').map(r => { const lp = lamps.find(p => p.cord === r.id); return { ...r, state: !lp || lp.cordState === undefined || lp.cordState === 'hung' ? 'tied' : 'cut' }; });
+        const view = { P, foes, lamps, cords: ropes, reach: 22, lampR: 64 }, plan = shadowGobPlan(view), pk = plan && planKeys(plan, view);
+        if (pk) { fighting = true; keys.left = pk.dir < 0; keys.right = pk.dir > 0; keys.block = false; if (pk.jump && P.ground && !keys.jump) BK.press('jump');
+          if (pk.swing && P.atk < 0 && (P.st === undefined ? 100 : P.st) > 12 && !(tick.sgSwing > tick.frame)) { if (pk.face) { keys.left = pk.face < 0; keys.right = pk.face > 0; } BK.press('atk'); tick.sgSwing = tick.frame + 14; } } } }
+    if (foe && !fighting) {
       const fdir = Math.sign(foe.x - P.x) || 1;
       const face = () => { keys.left = fdir < 0; keys.right = fdir > 0; };
       const telling = BK.telling ? BK.telling(foe) : false;
