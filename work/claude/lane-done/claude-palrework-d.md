@@ -74,3 +74,19 @@ Traits: TRAITS_SHIP is on, but the Paladin has no trait row on master (`traits.j
 | crown (Goblin Queen) | 2/12 | 4/12 |
 | pooled | 22/36 | 20/36 |
 Pooled gap 2 (< 5) and it does not hold across the three (church -4, warcairn 0, crown +2): HG.mace.mul stays 0.8; no numbers changed. Church is the one real lean: the new bot reaches SUNFALL there 0.3 times a fight vs the old 2.4 (he spends at three pips on RADIANCE/hammer before five).
+
+# PALPOSE-d - the one-handed pose pass (11-11, same branch; Daniel: "clips with his body a lot")
+Diagnosis checked against the code: right. The mace was drawn from the two-handed MAUL segments (knightFrame's maul slot): idle gripped at sh+(3,1) (his front shoulder, mid-chest), the run's `carry()` slung it from the chest back up over the torso, and the haft ran 3 px BEHIND the fist into him; all drawn after the body.
+## What changed (src/chars.js only + the bake tool; no reach/damage/number touched)
+- CARRIED (every pose that does not work the weapon arm, i.e. no `arm`: idle, run, jump, fall, land, takeoff, apex, skid, hurt, crouch, the swing's rest frame): the maul segment is ignored; the mace hangs from the BACK hand at the hip, haft down and back, painted BEFORE the body (behind the torso), the back arm drawn to the grip. Only the hand, the haft past his back and the head show.
+- SWINGS (an `arm`): gripped at the arm's end, drawn in front, as before.
+- Haft: starts AT the fist (pommel only behind it), 8 px fist-to-head (MACE_L 12 -> 11 grip-to-centre), one length everywhere; head unchanged.
+- Shield: up on the forearm at chest height (SHX 7, SHY 4), over the torso's FRONT EDGE only; off the legs; the raised ward is unchanged.
+- HEAD vs HIT: the drawn head now lands at main.js attackBox reach on the forward strike frames (light 22, heavy 25, sweep 26): strike frames bake with `strikeAt(reach)`, which reaches the fist forward (up to 10 px, the forearm drawn) and widens the canvas on the right. Measured front edge: atk 20/22, atkB 21/22, atkC 23/22, heavy 23/25, sweep 23/26 (rise 23: ~23). Before this pass they were 6-10 px short (atk 16, heavy 15, sweep 21).
+- Foe Paladins: the foe (maul) set bakes byte-identical to master (280/280 frames), and so does the Knight (275/275). Order Paladins do not use bakePaladin.
+- Asserts (tools/palrework-bake.mjs, node, no browser): (1) no haft/grip pixel in the torso box (cols 11-20, rows 12-16 + headroom) in idle/run/jump/fall/land/takeoff/apex/hurt - fails on the v3 art (run 24 px, hurt 5, jump/fall/land/takeoff 4), passes now (0 everywhere); (2) drawn head front within 3 px of the reach on the strike frames.
+## v4 1x sheet (v4/BEFORE-AFTER-1x.png / -4x.png, rows: knight, v3, v4), pose by pose
+idle CLEAN (shield on the chest's front edge, mace hanging behind the back hip, head by the back heel) - walk/run CLEAN - jump CLEAN (mace trails behind and down) - hurt CLEAN - atk (wind-up frame) the haft crosses behind his helm while it is raised: a swing, allowed - atkB (first frame, low wind-up) the haft crosses his front low: a swing - atkC (overhead wind-up) clean, head above and behind - ward/block STILL OVERLAPS: the shield is raised clear, but the mace (an arm pose) goes down-forward across his front leg. Left-facing live frames mirror correctly (shield on the leading arm, mace trailing).
+Honest leftovers: the carried head sits low behind him and can read as dragged; the ward pose's mace over the front leg; swing wind-ups cross the body by design.
+## Checks
+Switch ON: paladin-kit, paladin-hammer, pal-smite, hero-trials, attack-animation, ability-poses, palrework-bake (with the two new asserts) all PASS. Switch OFF (BRACKEN_QS='?palmace=0'): paladin-kit, pal-smite, hero-trials, attack-animation, ability-poses all PASS. No boss-rate run (art only).
