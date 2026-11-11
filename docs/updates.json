@@ -4,7 +4,8 @@
     "batch": 158,
     "lines": [
       { "s": "A feedback form in the game: tell us what you think without leaving it", "lv": [] },
-      { "s": "Goblin Queen fixed: her crown can no longer soft-lock the fight", "lv": ["crown"] }
+      { "s": "Goblin Queen fixed: her crown can no longer soft-lock the fight", "lv": ["crown"] },
+      { "s": "What's New now flags every new update, even two on the same day", "lv": [] }
     ]
   },
   {
