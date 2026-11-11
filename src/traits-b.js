@@ -3,6 +3,7 @@
 // Dark behind TRAITS_SHIP like everything in traits.js. Every catalog passive of each hero is listed once (tools/traits.mjs fails on an unlisted id: unlisted = a CUT).
 //   learnAt: every slottable trait arrives by L18 (spread L2..18 in today's order, the slot-1 DEFAULT first so it exists from L2 and every default by L10); core keeps its catalog level.
 //   names:   card names that differ from the catalog (shown only while the flag is on).   tags: a requirement shown on the row ('NEEDS THE JET' / 'NEEDS BLOODWORMS'; display hook owed to the menu lane).
+import { forksShip } from './forks.js';   /* (claude/freefork) a flag-aware retired list for the Freebooter */
 export const TRAIT_SPLIT_B = {
   pyro: {   /* identity: heat, stand in fire */
     core: ['pilot', 'conflagration', 'smoulder', 'kindle', 'backdraft'],
@@ -21,7 +22,7 @@ export const TRAIT_SPLIT_B = {
     traits: ['longBarrel', 'powderBurn', 'looter', 'shareOut', 'deadEye', 'ransom', 'pieces', 'runThrough', 'secondBarrel', 'hotBarrel'],
     merged: {},
     folded: { longLine: 'hook:LONG LINE', turncoat: 'block:TURNCOAT B', parryCut: 'block:SLIPKNOT A', noQuarter: 'spender:FULL PURSE' },
-    retired: [],
+    get retired() { return forksShip() ? ['longLine', 'turncoat', 'parryCut', 'noQuarter'] : []; },   /* (claude/freefork) with FORKS_SHIP on the four folded ids retire (THE HOOK B, THE HOOK CATCH A + B, THE PURSE A carry them): kept in the catalog, never slot; flag off they stay slottable traits (FOLD RULE, no gap) */
     shared: ['swash'],   /* SWASHBUCKLE -> the shared AIR ROLL (SHARED lane: add pirate:'swash' to the airRoll legacy row and make the roll hero-agnostic) */
     cut: ['sunder', 'rollCut', 'paidInGold'],   /* HOLED (2nd mark), TUMBLING CUT (dash-strike spam), PAID IN GOLD (gold skips cooldowns): deliberate cuts, off while the flag is on */
     defaults: ['longBarrel', 'secondBarrel'],

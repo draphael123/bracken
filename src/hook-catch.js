@@ -25,16 +25,16 @@ export const CATCH = {
 };
 /* what the snap makes of a blow met `age` s after the press: 'perfect' | 'block' | 'heavy' | 'none'.
    dmg is the raw blow; front whether it came at his face; red a blow nothing catches; pierce a bolt that goes through a guard. */
-export function catchVerdict({ age, dmg = 0, front = true, red = false, pierce = false } = {}) {
+export function catchVerdict({ age, dmg = 0, front = true, red = false, pierce = false, perfect = CATCH.perfect } = {}) {   /* (claude/freefork) perfect: SLIPKNOT's longer beat; omitted = the base 0.2 */
   if (!(age >= 0) || age > CATCH.snap + 1e-6 || !front || red) return 'none';
-  if (age <= CATCH.perfect + 1e-6) return 'perfect';
+  if (age <= perfect + 1e-6) return 'perfect';
   if (pierce) return 'none';
   return dmg >= CATCH.heavy ? 'heavy' : 'block';
 }
 /* a thrown thing met in the snap: 'fling' on the beat, 'drop' after it, 'none' if nothing catches it (red / piercing / out of the snap) */
-export function seedVerdict({ age, red = false, pierce = false } = {}) {
+export function seedVerdict({ age, red = false, pierce = false, perfect = CATCH.perfect } = {}) {
   if (!(age >= 0) || age > CATCH.snap + 1e-6 || red) return 'none';
-  if (age <= CATCH.perfect + 1e-6) return 'fling';
+  if (age <= perfect + 1e-6) return 'fling';
   return pierce ? 'none' : 'drop';
 }
 /* the pistol after a perfect catch: wind (s), and the ball's multiplier for a mark `d` px away */
