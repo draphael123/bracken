@@ -44,8 +44,8 @@ export const TRAIT_SPLIT_B = {
     core: ['bzBite', 'bzCool', 'bzReturn', 'bzChain', 'bzUnflinch'],
     traits: ['bzLong', 'bzBraceLong', 'bzBraceBack', 'bzHot', 'bzScar', 'bzWide', 'bzPrice', 'bzIronBrace', 'bzHaft', 'bzUnbowed'],
     merged: { bzLong: ['bzMist'], bzHot: ['bzBurn'], bzWide: ['bzSpinChop'], bzHaft: ['bzStagger'] },
-    folded: { bzHide: 'frenzy:THICK HIDE', bzSplit: 'cleave:GREAT CLEAVE A' },
-    retired: [],
+    folded: { bzHide: 'spender:SHORT FUSE', bzSplit: 'skill:bzCleave:OVERHEAD' },   /* (claude/bersfork) THICK HIDE is baked into the L36 SHORT FUSE side, SPLITTER into the L38 OVERHEAD side: slottable traits until FORKS_SHIP is on */
+    get retired() { return forksShip() ? ['bzHide', 'bzSplit'] : []; },   /* (claude/bersfork) with FORKS_SHIP on the two folded traits retire (kept in the catalog, never slot) */
     shared: [],
     defaults: ['bzHot', 'bzIronBrace'],
     learnAt: { bzHot: 2, bzLong: 3, bzBraceLong: 4, bzBraceBack: 5, bzScar: 6, bzIronBrace: 7, bzWide: 8, bzPrice: 10, bzHide: 12, bzHaft: 14, bzSplit: 16, bzUnbowed: 18 },

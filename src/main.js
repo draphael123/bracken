@@ -193,6 +193,7 @@ import { makePotionHands } from './potion-hands.js'; let POH = null;   /* UNDERL
 import { gearTier } from './gear-tiers.js';   /* VISUAL GEAR TIERS (claude/geartiers): what a hero wears at his level, one table */   /* THE GEOMANCER (2026-09-24): her rig */
 import { makeGeomancer, GEO as GEO_K, geoTierAt, geoTierFor } from './geomancer.js';   /* and her kit: the stone she raises and what she does with it */   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
 import { bakeBerserkerHero } from './chars.js'; import { makeBerserker, BZ as BZ_K, smallFoe as bzSmall, bzTierFor, bzTierAt } from './berserker.js'; import { makeCrouchC } from './crouch-c.js';   /* THE BERSERKER (claude/berserker, 2026-10-04): his rig, his kit, and WORKING UP */
+import { BF_BURN_RK } from './forks-berserker.js';   /* (claude/bersfork) SLOW BURN's coil rank */
 import { ultRegister, ultHas, ultReady, ultFire, ultCue, ULT_LINE } from './ultimate.js';   /* (claude/ults) ONE ULTIMATE INPUT: UP + C at a full meter, for every hero */
 import { bakeRanger } from './chars.js'; import { makeRanger, RG as RG_K, rgTierFor, rgTierAt, rgWinEnd, rgShakyAt } from './ranger.js';
 import { WID, tipStart as widTipStart, bandPay as widBandPay, longBox as widLongBox, driveSpeed as widDrive } from './warden-id.js'; /* (claude/wardenid) THE WARDEN'S IDENTITY PASS: the long thrust (third jab), the reach band, the phalanx skill, the pole-vault */ import { makeHeroPass, HP as HP_K, TIP as TIP_K, tipMul } from './hero-pass.js';   /* (claude/heropassa) HERO PASS A: one dodge a hero, the knight's SHIELD BASH + VALIANT STRIKE, the warden's COUNTER-THRUST + WALL PLANT + LOW HOP, the tip up to 2x */   /* THE RANGER (claude/ranger, 2026-10-14): her rig and her kit - the bow, the quiver, the knife, focus, the bash, the snare */
@@ -8245,7 +8246,7 @@ function hudMeterLabel() {
     if (P.ducking && (P.kneelT || 0) >= HG.pray.settle) return { s: 'PRAYING', col: '#fff6c8' }; return null; }   /* (PALADIN 4) the empowered versions, and the prayer */
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
   if (isRg()) { if (state !== 'play' && state !== 'talk') return null; if (RGK && RGK.greatDrawing()) return { s: 'DRAWING', col: '#ffd36b' }; if (RGK && RGK.arrows() <= 0) return { s: 'QUIVER EMPTY', col: '#9aa39a' }; return null; }   /* (claude/ranger) HUNTER'S FOCUS full: the mark waits on UP+C; an empty quiver, say so */
-  if (isBz()) { if (state !== 'play' && state !== 'talk') return null; if ((P.frenzyT || 0) > 0) return { s: 'FRENZY', col: blink ? '#ff4a3a' : '#ffb08a' }; if ((P.rage || 0) >= 100) return { s: 'FRENZY: DOWN+C', col: blink ? '#ff4a3a' : '#ffd0b0' };
+  if (isBz()) { if (state !== 'play' && state !== 'talk') return null; if ((P.frenzyT || 0) > 0) return { s: 'FRENZY', col: blink ? '#ff4a3a' : '#ffb08a' }; if ((P.rage || 0) >= (BZK ? BZK.fuseAt() : 100)) return { s: 'FRENZY: DOWN+C', col: blink ? '#ff4a3a' : '#ffd0b0' };
     if (P.bzAxe) return { s: 'ONE AXE', col: '#c9b27c' }; if ((P.braceT || 0) > 0) return { s: 'TAKE IT', col: '#ff9a5c' }; return null; }   /* RAGE: full, the frenzy waits on C; one axe in the air, say so */
   if (isGeo()) return GEO && GEO.empowered() ? { s: 'EMPOWERED', col: '#e8a83a' } : null;   /* (EMPOWERED: a perfect ward's three seconds, said where her bar is) */
   if (isWarden()) { if (state !== 'play' && state !== 'talk') return null;
@@ -8421,6 +8422,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (window.BK && window.BK.blowRec) { const q = who || updFoe; if (q && (q === boss || q.xpRole === 'mini')) { const k = q.t + (q.xpRole === 'mini' ? ':mini' : '') + ' ' + (blow || name || '?'), v = pct > 0 ? P.maxHp * pct : dmg * diffNow().take * (1 + 0.28 * bossTierOf(curId())), R = window.BK.blowRec, c = R[k] || (R[k] = { max: 0, n: 0, sum: 0 }); c.n++; c.sum = (c.sum || 0) + Math.round(v); if (v > c.max) c.max = Math.round(v); } }   /* (claude/oneshotcap) tools/blow-census.mjs: the biggest single blow a boss or mini lands (or is turned from), after every table and the dial. Off (null) in play. */
   if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > (kb('kevadeb') ? 0.35 : 0.7)) { P.evadeAt = time; CM.refund(P, Math.round(20 * trk('evasion') * (kb('kevadeb') ? 2 : 1))); P.evadeCutT = time + (kb('kevadea') ? 2 : 1); number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
   if (!P.dead && isReaper() && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && P.kPoseK === 'shadowStep' && (who || updFoe) && time - (P.bkPerfectAt ?? -9) >= BKIT.BLOOD.step.cd) bkPerfectStep();   /* (claude/bloodstep) THE BLOOD STEP's PERFECT STEP: stepped through a blow in the last moment */
+  if (!P.dead && isBz() && BZK && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && (who || updFoe)) BZK.slipped();   /* (claude/bersfork) SLIP: a blow that finds only air feeds the rage */
   if (P.dead || invulnerable()) return false;
   if (HPK) { const w = HPK.takes(fromX, dmg, { unblockable, pierce, low, pct, src: who || updFoe }); if (w === 'blocked') return 'blocked'; if (w === 'miss') return false; if (w === 'half') dmg = Math.ceil(dmg / 2); }   /* (claude/heropassa) THE SHIELD-STEP's guard, THE LOW HOP, THE STONE SHRUG (src/hero-pass.js takes) */
   if ((unblockable || (pierce && !(who || updFoe))) && rpAnswerUp()) RP.tooStrong();   /* (claude/riposte) a RED blow, or a bolt, met on the beat: never parried - TOO STRONG */
@@ -10226,6 +10228,7 @@ const lcBig = e => e === boss || !!e.mini || !!(L.arena && L.arena.boss === e.t)
 ultRegister('knight', { name: 'SHIELD CHARGE', ready: () => (P.links || 0) >= KC.max && !lcOn() && !(tech('kwheel') && thrown) && (P.ground || P.swim) && !P.climb, fire: () => { if (tech('kwheel')) wheelThrow(); else lastCharge(); return true; } });
 ultRegister('geomancer', { name: 'MOUNTAIN COLLAPSE', ready: () => !!GEO && GEO.avalancheReady() && (P.ground || P.swim), fire: () => { const ok = GEO.avalanche(); if (ok) trialEvent('meter'); return ok; } });
 ultRegister('ranger', { name: 'GREAT ARROW', ready: () => !!RGK && RGK.greatReady(), fire: () => RGK.greatArrow() });
+if (FRK.forksShip()) ultRegister('berserker', { get name() { return BZK && bzFk('bfgreataxe') ? 'THE GREAT AXE' : 'THE RED TIDE'; }, ready: () => isBz() && !!BZK && BZK.ultReady(), fire: () => BZK.ultFire() });   /* (claude/bersfork) the Berserker's capstone: UP+C at a FULL rage bar, L50 + a picked side (THE RED TIDE | THE GREAT AXE); not registered, so not a thing, with FORKS_SHIP off */
 function lastCharge() {
   trialEvent('meter'); P.links = 0; P.linkT = 0; P.linkKeep = 0; P.lcBrace = LC_BRACE; P.lcLeft = 0; P.lcDir = P.face; P.lcHit = new Set();
   P.block = false; P.atk = -1; P.heavy = false; P.heavySwing = false; P.bashing = false; P.charge = 0; P.atkHeld = 0; P.chargeFull = false; P.rush = 0; P.rushRec = 0; P.vx = 0;
@@ -11158,15 +11161,15 @@ function attackBox0() {
   if (isRg() && !P.swingKind && P.atk >= 0 && !P.plunge && !P.dashCut) { if (P.heavy) { if (P.atk < 0.05 || P.atk >= 0.22) return null; return P.face > 0 ? { l: P.x + 2, r: P.x + 20, t: P.y - 20, b: P.y - 2 } : { l: P.x - 20, r: P.x - 2, t: P.y - 20, b: P.y - 2 }; }
     if (P.atk < 0.04 || P.atk >= 0.17) return null; const rr = P.heavySwing ? RG_K.kick.reach : 17;   /* (claude/rangerid) the PUSH KICK reaches a little further than the stab: the boot steps in */
     return P.face > 0 ? { l: P.x + 2, r: P.x + rr, t: P.y - 22, b: P.y - (P.ground || P.swim ? 2 : -2) } : { l: P.x - rr, r: P.x - 2, t: P.y - 22, b: P.y - (P.ground || P.swim ? 2 : -2) }; }
-  if (isBz() && P.heavy) { if (P.atk < 0.05 || P.atk >= (P.bzTier === 2 ? 0.3 : 0.24)) return null; const r = (P.bzTier === 2 ? BZ_K.cleave.reach : 21) + (tal('bzWide') ? 8 * trk('bzWide') : 0), bk = P.bzTier === 2 ? BZ_K.cleave.back + (tal('bzWide') ? 8 * trk('bzWide') : 0) : tal('bzWide') ? -2 + 12 * trk('bzWide') : -2;   /* (claude/chargetiers) THE WHIRL: one full turn - it cuts BEHIND him as well as ahead, for longer */
+  if (isBz() && P.heavy) { if (P.atk < 0.05 || P.atk >= (P.bzTier === 2 ? 0.3 : 0.24)) return null; const r = ((P.bzTier === 2 ? BZ_K.cleave.reach : 21) + (BZK ? BZK.wideR() : tal('bzWide') ? 8 * trk('bzWide') : 0)) * (BZK ? BZK.reachK() : 1), bk = P.bzTier === 2 ? BZ_K.cleave.back + (BZK ? BZK.wideB(2) : 0) : (BZK ? BZK.wideB(1) : -2);   /* (claude/bersfork) the WIDE CROSS sides and the GREAT AXE read through the kit; flag off they equal the old numbers */   /* (claude/chargetiers) THE WHIRL: one full turn - it cuts BEHIND him as well as ahead, for longer */
     return P.face > 0 ? { l: P.x - bk, r: P.x + r, t: P.y - 32, b: P.y + 2 } : { l: P.x - r, r: P.x + bk, t: P.y - 32, b: P.y + 2 }; }
   /* (claude/berserker2) THE FLURRY is SHORT (19 out: shorter than the knight's sword), THE CROSS-CHOP that ends a run of five both axes in together (23 out, from
      just behind him), and IN THE AIR both axes SPIN round him - a box both sides. Placeholder numbers until his flurry/cross/spin frames are drawn */
   if (isBz() && P.atk >= 0.04 && P.atk < 0.17 && !P.swingKind) {
     if (!P.ground && !P.swim) return { l: P.x - 17, r: P.x + 17, t: P.y - 26, b: P.y + 3 };   /* BOTH AXES SPINNING */
     if (P.heavySwing) { if (tal('bzSpinChop')) return P.face > 0 ? { l: P.x - 16, r: P.x + 23, t: P.y - 26, b: P.y + 2 } : { l: P.x - 23, r: P.x + 16, t: P.y - 26, b: P.y + 2 };   /* SPIN CHOP: round behind him too */
-      return P.face > 0 ? { l: P.x - 2, r: P.x + 23, t: P.y - 30, b: P.y + 2 } : { l: P.x - 23, r: P.x + 2, t: P.y - 30, b: P.y + 2 }; }
-    return P.face > 0 ? { l: P.x + 2, r: P.x + 19, t: P.y - 27, b: P.y } : { l: P.x - 19, r: P.x - 2, t: P.y - 27, b: P.y }; }
+      return P.face > 0 ? { l: P.x - 2, r: P.x + 23 * (BZK ? BZK.reachK() : 1), t: P.y - 30, b: P.y + 2 } : { l: P.x - 23 * (BZK ? BZK.reachK() : 1), r: P.x + 2, t: P.y - 30, b: P.y + 2 }; }
+    return P.face > 0 ? { l: P.x + 2, r: P.x + 19 * (BZK ? BZK.reachK() : 1), t: P.y - 27, b: P.y } : { l: P.x - 19 * (BZK ? BZK.reachK() : 1), r: P.x - 2, t: P.y - 27, b: P.y }; }
   if (isGeo() && P.heavy) return null;
   if (isGeo() && P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) return P.face > 0 ? { l: P.x + 8, r: P.x + 24, t: P.y - 36, b: P.y + 2 } : { l: P.x - 24, r: P.x - 8, t: P.y - 36, b: P.y + 2 };
   if (isGeo() && P.atk >= 0.05 && P.atk < 0.18 && P.swingKind !== 'sweep') { const cm = (P.combo || 1) % 3;
@@ -11810,7 +11813,7 @@ function updatePlayer(dt) {
         P.dodgeCd = P.stepN >= 2 ? STEP_CD : STEP_GAP; P.dodgeInv = STEP_INV; if (CM.STAM.stepFree) P.stDelay = Math.min(P.stDelay, CM.STAM.stepDelay); }   /* WEIGHT: her step is SPACING, not a roll - it does not stop the bar coming back (src/commit.js STAM.stepFree) */
       /* THE DASH IN IT: for as long as it lasts, X early is the DASH ATTACK and a jump is a running jump (dashCutNow, the jump).
          Not in her step back - that one gives ground and nothing else, as it always did - and not under the floor. */
-      if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; if (hero() === 'knight' && !P.swim) { if (kb('kshoulder')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.8; P.kShove = new Set(); } else if (kb('ksidestep')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.75; P.kSide = true; } } }   if (isPyro()) pySmokeStart();   /* (claude/pyrofork) SMOKE STEP */   /* (claude/knightfork) SHOULDER IN / SIDESTEP: a shorter dodge (chainTick does the rest) */
+      if (!back && !burrow) { P.dash = P.dodge; P.dashDur = P.dash; if (hero() === 'knight' && !P.swim) { if (kb('kshoulder')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.8; P.kShove = new Set(); } else if (kb('ksidestep')) { P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * 0.75; P.kSide = true; } } if (isBz() && BZK && !P.swim) { const bk = BZK.dodgeK(); if (bk !== 1) P.dodge = P.dodgeMax = P.dash = P.dashDur = P.dodge * bk; } }   if (isPyro()) pySmokeStart();   /* (claude/pyrofork) SMOKE STEP */   /* (claude/bersfork) SLIP: a shorter roll */   /* (claude/knightfork) SHOULDER IN / SIDESTEP: a shorter dodge (chainTick does the rest) */
       P.dashCd = P.dodgeCd;   /* (one cooldown: the lab's hands still read the dash's name for it) */
       /* THE WARDEN STEPS. She does not roll through a blow, she gives ground with the point still up - so whatever she just left
          is back at the end of the spear by the time she lands. Tapped forward, the same step goes in, and a jump out of it vaults. */
@@ -28970,7 +28973,7 @@ const rgDrawing = () => isRg() && !!RGK && RGK.bowReady() && (P.charge || 0) > 0
 const rgTier = () => rgTierFor(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull());   /* (claude/rangerid) 0 partial, 1 the LONG SHOT (full draw), 2 the STEADY window (empowered) */
 const rgShaky = () => rgShakyAt(P.atkHeld || 0, rgQuick(), HEAVY_START, !!RGK && RGK.focusFull());   /* held past the steady window: the hand shakes */
 /* (claude/chargetiers) THE BERSERKER'S RAGE WIND-UP (src/berserker.js BZ.tiers): the wind's quickness (heavyWind over his base, x rage / frenzy), the tier the hold has reached, and the start of each blow */
-const bzQuick = () => heavyWind() / BZ_K.tiers.at[0] * ((P.frenzyT || 0) > 0 ? BZ_K.tiers.frenzyQ : (P.rage || 0) >= BZ_K.rage.high ? BZ_K.tiers.rageQ : 1);
+const bzQuick = () => heavyWind() / BZ_K.tiers.at[0] * ((P.frenzyT || 0) > 0 ? BZ_K.tiers.frenzyQ : (P.rage || 0) >= BZ_K.rage.high ? BZ_K.tiers.rageQ : 1) * (BZK ? BZK.windK() : 1);   /* (claude/bersfork) DEEP WIND / SHALLOW WIND */
 const bzTierNow = () => bzTierFor(P.atkHeld || 0, bzQuick(), HEAVY_START);
 const bzWinding = () => isBz() && (P.charge || 0) > 0;
 /* (claude/chargetiers) THE GEOMANCER'S THREE-TIER STAVE (src/geomancer.js GEO.tiers): her wind's quickness, the tier the hold has reached, and whether she is winding */
@@ -28979,7 +28982,7 @@ const geoTierNow = () => { const t = geoTierFor(P.atkHeld || 0, geoQuick(), HEAV
 const geoWinding = () => isGeo() && !!GEO && (P.charge || 0) > 0;
 function bzHeavyStart(tier) { const T = BZ_K.tiers; P.bzTierWant = 0; P.bzShown = 0; P.bzSplit = false;
   if (tier >= 2 && T.st[tier] && !spend(T.st[tier])) tier = 1;   /* (no wind for the extra: the overhead chop) */
-  P.bzTier = tier; P.swingMul *= T.mul[tier]; if (BZK && BZK.tierStat) BZK.tierStat(tier);
+  P.bzTier = tier; P.swingMul *= T.mul[tier] * (BZK ? BZK.heavyK() : 1); if (BZK && BZK.tierStat) BZK.tierStat(tier);
   if (tier === 2) { P.vx = P.face * BZ_K.cleave.vx; streaks(P.x, P.y - 14, 10, [T.cols[2], '#ffd0a0'], 200); }   /* THE WHIRL carries him in */
   if (tier >= 2) { number(P.x, P.y - 30, T.names[tier], T.label[tier]); if (SFX.bzTierGo) SFX.bzTierGo(tier); } }
 /* (claude/chargetiers) THE GROUND-SPLITTER LANDS: both axes into the floor - the ground splits both ways (the heavy cut's shockwave, written once: pwaves with its own blow, flooring what it meets) */
@@ -30551,7 +30554,8 @@ const JAV_SPEED = 480, JAV_RANGE = 0.55, JAV_BACK = 4, JAV_CARRY = 100;
 /* ==== THE BERSERKER'S KIT (src/berserker.js, claude/berserker). main.js owns the world, the input and the tal() reads; the module owns his rage,
    his frenzy, his brace and his thrown axe (all of it on the hero, P.rage / P.frenzyT / P.braceT / P.bzAxe). His nine bought actives are pressed
    here (skillPress / cdReady / spend, like everyone's: none is free); his passives are read here and handed over by name. ==== */
-const bzTal = () => ({ rk: id => trk(id), hot: tal('bzHot'), price: tal('bzPrice'), chain: tal('bzChain'), bite: tal('bzBite'), cool: tal('bzCool'), long: tal('bzLong'), burn: tal('bzBurn'), mist: tal('bzMist'),
+const bzFk = id => isBz() && FRK.forksShip() && FRK.forkOn(PROG, 'berserker', id, heroLevel(), fkCtx('berserker', heroLevel()));   /* (claude/bersfork) a picked Berserker fork side: false with FORKS_SHIP off, for another hero, below its level, in an EVEN-L1 duel (src/forks.js forkOn) */
+const bzTal = () => ({ rk: id => id === 'bzBurn' && bzFk('bfhotb') ? BF_BURN_RK : trk(id), fk: bzFk, hot: tal('bzHot'), price: tal('bzPrice'), chain: tal('bzChain'), bite: tal('bzBite'), cool: tal('bzCool'), long: tal('bzLong'), burn: tal('bzBurn'), mist: tal('bzMist'),
   ret: tal('bzReturn'), stagger: tal('bzStagger'), wide: tal('bzWide'), spinChop: tal('bzSpinChop'), haft: tal('bzHaft'), split: tal('bzSplit'),
   braceLong: tal('bzBraceLong'), braceBack: tal('bzBraceBack'), scar: tal('bzScar'), unflinch: tal('bzUnflinch'), ironBrace: tal('bzIronBrace'), hide: tal('bzHide'), unbowed: tal('bzUnbowed') });
 BZK = makeBerserker({ get P() { return P; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get LH() { return LH; }, TS, SFX,
@@ -31987,7 +31991,7 @@ function swingDmg(e) { if (P.heavySwing || P.heavy) CM.refund(P, 3);   /* WEIGHT
   if (isPaladin() && HGR && HGR.standing(P)) mul *= HG.hitMul; else if (isPaladin() && e === boss) mul *= HG.bossOutMul;   /* (claude/paltune) off his ground a boss takes his blows a little harder: the circle is his edge on a still boss, not on a roaming one */   /* (claude/paladin2) ON HOLY GROUND his maul lands harder */
   if (isPaladin()) mul *= palForkBlow(e);
   if (isPaladin() && P.wrathT > 0) { mul *= plb('pquick') ? 1.15 : 1.4; P.hp = Math.min(P.maxHp, P.hp + Math.max(1, Math.round(P.maxHp * 0.003))); }   /* (PALADIN TUNE: was 0.015) HOLY WRATH (claude/herokit): blows land a bit over a third harder and mend him */
-  if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && tal('bzSplit') && e.broken > 0) mul *= 1 + trk('bzSplit'); }   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
+  if (isBz() && BZK) { mul *= BZK.chopLanded(e); if (!P.heavy && !P.heavySwing && !P.swingKind && !P.dashCut && !P.swingRiposte) mul *= BZ_K.flurry.dmg;   /* (claude/berserker2) THE FLURRY: quick chops, each a little lighter */ if (P.heavy && (tal('bzSplit') || bzFk('bfoverhead')) && e.broken > 0) mul *= 1 + (tal('bzSplit') ? trk('bzSplit') : 1); }   /* (claude/bersfork) OVERHEAD bakes SPLITTER */   /* THE CHAIN goes on (BITE: a tenth harder on a foe it has cut); SPLITTER: the cross-chop on a broken foe */
   if (isRg()) mul *= RG_K.knife.dmg * (tal('rgLast') && RGK && RGK.arrows() <= 0 ? trm(2, 'rgLast') : 1);   /* (claude/ranger) THE KNIFE: a little lighter than a sword (THE LAST ARROW: twice, with the quiver empty) */
   if (isWarden()) { if (wardJav) mul *= 0.35; else { mul *= tipPay(e); runThroughDrive(e); if (P.runThrough && L.trial && ++P.rtN === 2) trialEvent('runthrough'); } }   /* (her yard: ONE lunge through two is the run-through) */   /* (bare-handed while the JAVELIN is out: a weak jab, no point to pay) */   /* THE TIP: where along the spear it landed is the whole hero - and the lunge drives what it skewers */
   if (isWarden() && P.wReachT > 0) mul *= SKK.K_WARDEN_REACH.perHit * amul('wardenReach');   /* (claude/wardenid) swordDmg x k x amul (src/skill-k.js) */
@@ -38327,7 +38331,7 @@ function render() {
       g.fillStyle = '#8a6a42'; g.fillRect(4, hy + 1, 7, 1); g.fillStyle = '#e0b040'; g.fillRect(11, hy + 1, 1, 1);
       g.fillStyle = '#e8eef6'; g.fillRect(12, hy, 2, 3); g.fillStyle = '#ffffff'; g.fillRect(13, hy + 1, 1, 1);
       if (hudMeter) meterPrompt(hudMeter, hy); }
-    if (isBz()) { const hy = HY, fr = (P.frenzyT || 0) > 0, full = (P.rage || 0) >= 100, fill = (P.rage || 0) / 100;   /* RAGE (src/berserker.js): dark under half, hot over it, flashing full, and in a frenzy it runs out */
+    if (isBz()) { const hy = HY, fr = (P.frenzyT || 0) > 0, full = (P.rage || 0) >= (BZK ? BZK.fuseAt() : 100), fill = (P.rage || 0) / 100;   /* RAGE (src/berserker.js): dark under half, hot over it, flashing full, and in a frenzy it runs out */
       bar(16, hy, 45, 4, fill, fr ? (Math.floor(time * 12) % 2 ? '#ffb08a' : '#ff3a2a') : full ? (Math.floor(time * 10) % 2 ? '#ffd0b0' : '#ff4a3a') : fill >= 0.5 ? '#c8402a' : '#7a2a1c', fill);
       g.fillStyle = '#7a5230'; g.fillRect(6, hy - 3, 1, 9); g.fillRect(11, hy - 3, 1, 9); g.fillStyle = '#c9d1dc'; g.fillRect(3, hy - 3, 3, 3); g.fillRect(12, hy - 3, 3, 3); g.fillStyle = '#ffffff'; g.fillRect(3, hy - 3, 1, 3); g.fillRect(14, hy - 3, 1, 3);   /* two little axes for the icon */
       if (P.bzAxe) { g.fillStyle = '#5a4a3a'; g.fillRect(12, hy - 3, 3, 3); }   /* one of them out of his hand */
