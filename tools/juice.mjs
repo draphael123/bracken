@@ -16,10 +16,13 @@ const read = f => readFileSync(new URL('../src/' + f, import.meta.url), 'utf8');
 /* THE TABLE */
 let J = null;
 try { J = await import('../src/juice.js'); } catch (e) { bad.push('src/juice.js missing: ' + e.message); }
+const ON = !!(J && J.JUICE2_SHIPS);
 if (J) {
-  const { JUICE, blowClass, stopFor, shakeAdd, SHAKE_CAP, safeKnock, knockCurve, motionScale, takenClass, blockClass } = J;
-  must(Math.abs(stopFor('light') - 0.04) < 0.005, 'a light blow should freeze ~40 ms, not ' + stopFor('light'));
-  must(Math.abs(stopFor('heavy') - 0.09) < 0.01 && Math.abs(stopFor('finish') - 0.09) < 0.01, 'a heavy blow and a finisher should freeze ~90 ms');
+  /* JUICE2 (11-10: ships ON for the demo). Flag-aware: ON asserts 65/110/130 ms, OFF the old 40/90 */
+  const { JUICE, blowClass, stopFor2: stopFor, shakeAdd, SHAKE_CAP, safeKnock, knockCurve, motionScale, takenClass, blockClass } = J;
+  const L0 = ON ? 0.065 : 0.04, H0 = ON ? 0.11 : 0.09, F0 = ON ? 0.13 : 0.09;
+  must(Math.abs(stopFor('light') - L0) < 0.005, 'a light blow should freeze ~' + L0 * 1000 + ' ms, not ' + stopFor('light'));
+  must(Math.abs(stopFor('heavy') - H0) < 0.01 && Math.abs(stopFor('finish') - F0) < 0.01, 'a heavy blow and a finisher should freeze ~' + H0 * 1000 + ' / ' + F0 * 1000 + ' ms');
   must(stopFor('light') < stopFor('heavy'), 'hit-stop must scale with weight');
   must(stopFor('heavy', { boss: true, opening: true }) > stopFor('heavy', { boss: true }), 'a boss opening should freeze a little more than an ordinary boss hit');
   must(stopFor('heavy', { boss: true, opening: true }) > stopFor('heavy'), 'a boss opening should freeze a little more than the class');
@@ -52,7 +55,7 @@ if (J) {
   must(/from '\.\/juice\.js'/.test(m), 'main.js does not import src/juice.js');
   must(/function shakeCam\([^)]*\)\s*\{[^\n]*shakeAdd\(/.test(m), 'shakeCam does not go through the shake budget (shakeAdd)');
   must(/function shakeCam\([^)]*\)\s*\{[^\n]*reduceMotion/.test(m), 'shakeCam does not read reduce-motion');
-  must(/function blowStop\([^)]*\)\s*\{[\s\S]{0,700}stopFor\(/.test(m), 'blowStop does not take its freeze from the table (stopFor)');
+  must(/function blowStop\([^)]*\)\s*\{[\s\S]{0,700}stopFor2?\(/.test(m), 'blowStop does not take its freeze from the table (stopFor2)');
   must(/P\.vx = P\.ground \? safeKnock\(/.test(m), 'the hero\'s hurt knock does not go through safeKnock');
   must((m.match(/blowStop\(/g) || []).length === 2, 'blowStop should be called from exactly the one landed-blow branch'); }
 
@@ -99,8 +102,8 @@ if (!bad.length || J) {
   console.log(JSON.stringify(r));
   if (r.err) bad.push(r.err);
   else {
-    must(r.light.s > 0 && r.light.s < 0.06, 'a landed light blow should freeze ~40 ms on the page, got ' + r.light.s);
-    must(r.heavy.s >= 0.08 && r.heavy.s > r.light.s * 1.5, 'a heavy blow should freeze ~90 ms and more than a light one, got ' + r.heavy.s + ' vs ' + r.light.s);
+    must(r.light.s > 0 && (ON ? Math.abs(r.light.s - 0.065) < 0.01 : r.light.s < 0.06), 'a landed light blow should freeze ~' + (ON ? 65 : 40) + ' ms on the page, got ' + r.light.s);
+    must(r.heavy.s >= (ON ? 0.1 : 0.08) && r.heavy.s > r.light.s * (ON ? 1.4 : 1.5), 'a heavy blow should freeze ~90 ms and more than a light one, got ' + r.heavy.s + ' vs ' + r.light.s);
     must(r.glance.s === 0, 'a blow that did nothing froze the world for ' + r.glance.s);
     must(r.pile <= 10 + 1e-9, 'twenty heavy blows stacked the shake to ' + r.pile + ' (cap 10)');
     must(r.reduce === 0, 'reduce-motion left a shake of ' + r.reduce);
