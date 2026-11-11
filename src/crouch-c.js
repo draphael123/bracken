@@ -81,14 +81,14 @@ export function makeCrouchC(api) {
       p.coilT = (p.coilT || 0) + dt; p.workT = 0;
       if (p.coilT >= COIL.settle) { const dir = (api.keys.right ? 1 : 0) - (api.keys.left ? 1 : 0); if (dir) p.face = dir;   /* coiled, a way turns him */
         stats.coilT += dt;
-        if (!(p.frenzyT > 0)) { const was = p.rage || 0; if (was < COIL.cap) { const add = Math.min(COIL.cap - was, COIL.rate * (api.tal().burn ? 2 : 1) * dt); p.rage = was + add; stats.coilRage += add; stats.rageGiven += add; } }
+        if (!(p.frenzyT > 0)) { const was = p.rage || 0; if (was < COIL.cap) { const add = Math.min(COIL.cap - was, COIL.rate * (api.tal().burn ? 1 + (api.tal().rk ? api.tal().rk('bzBurn') : 1) : 1) * dt); p.rage = was + add; stats.coilRage += add; stats.rageGiven += add; } }
         if (Math.random() < dt * 10) api.parts.push({ x: p.x + p.face * 7 + (Math.random() - 0.5) * 4, y: p.y - 7, vx: (Math.random() - 0.5) * 30, vy: -20 - Math.random() * 20, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ff6b4a' : '#ffd36b', size: 1, grav: 60 }); }
     }
     /* THE WHETSTONE: stood calm between fights */
     const calm = !p.ducking && p.ground && !p.dead && (p.calmFor || 0) >= WHET.settle && !(p.frenzyT > 0) && !p.bzAxe;
     p.whetHold = calm && (p.rage || 0) <= WHET.cap;   /* (the drain is held while the whetstone tops him up - above its cap it drains down to it as ever) */
     if (calm) { p.whetT = (p.whetT || 0) + dt; stats.whetT += dt;
-      const was = p.rage || 0; if (was < WHET.cap) { const add = Math.min(WHET.cap - was, WHET.rate * (api.tal().burn ? 2 : 1) * dt); p.rage = was + add; stats.whetRage += add; stats.rageGiven += add; }
+      const was = p.rage || 0; if (was < WHET.cap) { const add = Math.min(WHET.cap - was, WHET.rate * (api.tal().burn ? 1 + (api.tal().rk ? api.tal().rk('bzBurn') : 1) : 1) * dt); p.rage = was + add; stats.whetRage += add; stats.rageGiven += add; }
       if (Math.random() < dt * 6) api.parts.push({ x: p.x + p.face * 5 + (Math.random() - 0.5) * 3, y: p.y - 13, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.2, max: 0.2, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: 120 });   /* the sparks off the edge */
       if (p.whetT > 0.6 && api.levelIndex > 0 && (p.rage || 0) < 30) teach(); }
     else { p.whetT = 0; p.whetHold = false; }

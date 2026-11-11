@@ -38,7 +38,7 @@ ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[
 /* THE OLD SAVES: the gate rule over a fake PROG (the levelLocked clause and the migration, lifted out of main.js) */
 { const mig = /if \(!PROG\.kitchenRoadMig\) \{[^\n]*\}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
   ok(mig && lock && /lv\.id === 'crown' && PROG\.crownOpen/.test(lock[0]), 'the migration and the gate clause are in src/main.js');
-  if (mig && lock) { const run = PROG => { new Function('PROG', mig[0])(PROG); const q = { get: () => null }; const locked = l2 => new Function('lv', 'PROG', 'q', 'return !!' + lock[0])(l2, PROG, q);
+  if (mig && lock) { const run = PROG => { new Function('PROG', mig[0])(PROG); const q = { get: () => null }; const locked = l2 => new Function('lv', 'PROG', 'q', 'roadKept', 'return !!' + lock[0])(l2, PROG, q, () => false);
       return { crown: locked(crown), kg: locked(lv) }; };
     const past = run({ ucRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true }, crown: { cleared: true } }), atUc = run({ ucRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true } });
     const fresh = run({ ucRoadMig: 1, kitchenRoadMig: 1, storm: { cleared: true }, undercrown: { cleared: true } }), done = run({ ucRoadMig: 1, kitchenRoadMig: 1, undercrown: { cleared: true }, kitchengate: { cleared: true } });
@@ -259,7 +259,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   const tells = GBM.MOVES;
   ok(tells.length >= 7 && tells.every(k => POSE_GB[k + 'Tell'] && POSE_GB[k] && JSON.stringify(POSE_GB[k + 'Tell']) !== JSON.stringify(POSE_GB[k])), 'B16/B17: seven told attacks, each its own windup and release pose (' + tells.join(', ') + ')');
   ok(['eat', 'gulp', 'stun', 'hot', 'recover', 'sleep', 'wake', 'sit'].every(k => POSE_GB[k]), 'and his eating, gulping, stunned, too hot, coughing, sleeping and waking each their own');
-  ok(/OWN_WARD = new Set\(\['grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'stun' \|\| e\.mode === 'hot' \|\| e\.mode === 'drop'/.test(src('src/boss-greed.js')), 'boss-greed knows his openings and his own ward');
+  ok(/OWN_WARD = new Set\(\[[^\]]*'grubbag'/.test(src('src/boss-greed.js')) && /grubbag: e => e\.mode === 'stun' \|\| e\.mode === 'hot' \|\| e\.mode === 'drop'/.test(src('src/boss-greed.js')), 'boss-greed knows his openings and his own ward');
   /* THE BOT reads the line: it goes for a dish, bats a bomb, spares a chilli, stokes the stove when it is hot */
   { const pl = (S0, items, Pp) => { S0.items = items; return GBM.gbPlan({ P: { x: G.belt.x0 + 30, y: G.floorY, vy: 0, face: 1, ground: true, atk: -1, ...Pp }, e: { ...e, mode: 'sit' }, S: S0, reach: 30, t: 1, rng: () => 0.9, mem: {} }); };
     const S3 = GBM.newFight(G); S3.stove.st = 'cool'; S3.stove.t = 9;

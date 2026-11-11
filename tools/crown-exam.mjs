@@ -24,7 +24,7 @@ const at = (x, y) => L.grid[y * L.W + x];
 const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
 /* ---- 1. THE CUTS ---- */
-assert.equal(L.W, 609, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609');
+assert.equal(L.W, 609 + 56 + 100 + 64 + 12, 'Highcrown is ' + L.W + ' columns: the road (231) and the armoury (100) cut from 940 leave 609, the Goblin Queen 3 adds the tower top (56, claude/gqueen3), and HIGHCROWN 3 inserts the battlements and the bell tower (100, claude/highcrown3)');
 assert(L.START.x >= 6 && L.START.x <= 10 && L.START.y === 63, 'the level does not start inside the gatehouse passage: ' + JSON.stringify(L.START));
 for (const t of ['hotplate', 'anvil', 'hammer', 'boiler', 'cart', 'cascade']) assert(!L.ents.some(e => e.t === t), 'a ' + t + ' is still in Highcrown: the armoury and the road were cut');
 assert(!L.ents.some(e => e.t === 'sign' && /ARMOURY|FURNACE LINE|OLD SIEGE LINES|THIS ROAD/.test(e.text || '')), 'a sign of the cut armoury or road is still standing');
@@ -96,11 +96,10 @@ assert(spearSign && spearSign.x < spearGuard.x, 'the wall-walk sign that teaches
 
 /* ---- 4. GARGOYLE WHELPS ONLY OVER SPIKES ---- */
 const whelps = L.ents.filter(e => e.t === 'whelp');
-assert(whelps.length >= 1, 'Highcrown has no whelp: "gargoyles on Highcrown\'s rooftops/battlements, only where there are spikes to stomp them onto" (Daniel, 2026-09-28)');
-let spikeCols = 0; for (let x = 0; x < L.W; x++) if (at(x, 26) === T.SPIKE) spikeCols++;
-assert(spikeCols >= 5, 'no real spread of SPIKE tiles on the Leads (row 26): ' + spikeCols + ' columns');
+/* (claude/highcrown3) THE LEADS ARE GONE: the battlements that replace them have no death falls and no spikes (HCPLAN Q9), so they have no whelp. The rule stays for any whelp:
+   "only where there are spikes to stomp them onto" (Daniel, 2026-09-28) - and no spikes on the battlements' walk */
 const winds = L.winds || [];
-assert(winds.length >= 1, 'no L.winds zone: a hero (and a stuck whelp) who falls onto these spikes has no wind to carry them back - the same rule as the Witchlight Stair (src/spike-winds.js)');
+for (let x = 523; x <= 622; x++) for (let y = 0; y <= 30; y++) assert.notEqual(at(x, y), T.SPIKE, 'a spike on the battlements at ' + x + ',' + y + ': their drops are a time cost, never a death (HCPLAN Q9)');
 for (const w of whelps) {
   let over = false; for (let dx = -4; dx <= 4; dx++) for (let d = 1; d <= L.H; d++) { const y = w.y + d; if (y >= L.H) break;
     if (at(w.x + dx, y) === T.SPIKE && winds.some(z => w.x + dx >= z.x0 && w.x + dx <= z.x1 && Math.abs(z.row - y) <= 1)) { over = true; break; } }
@@ -123,4 +122,4 @@ assert(/crown:\s*\['rd',\s*'castle'\]/.test(mainSrc) && /undercrown:\s*\['rd',\s
 const rd2Src = readFileSync(new URL('../src/redraw/redress2.js', import.meta.url), 'utf8');
 assert(!/Not wired in/i.test(rd2Src), 'src/redraw/redress2.js still says "Not wired in" though main.js wires it (crown, undercrown, mage, fallingtower, spire, the three shops): fix the comment, not the plumbing');
 
-console.log('crown-exam  609 columns; winch gate ' + winch.gate + ' (hound ' + hound.x + '); ward bell lure ' + lure.x + ', grate ' + grate.gate + ', barracks door ' + door[0] + ', key ' + wkey.x + '; vestibule elite ' + elite.x + ' gate ' + elite.gate + '; hall grate ' + hall.gates[0][0] + '; bakehouse temperer at ' + bakeTemp.x + '; Captains Hall javelineer at ' + spearGuard.x + '; ' + whelps.length + ' whelp(s) over ' + spikeCols + ' spiked columns in ' + winds.length + ' wind zone(s); pacing before the Queen: ' + preExamStr + 'R; redress2 wired and its comment says so');
+console.log('crown-exam  841 columns (609 + the tower top 56 + gq3 stair 64 + tower top 12 more + HIGHCROWN 3\'s battlements and bell tower 100); winch gate ' + winch.gate + ' (hound ' + hound.x + '); ward bell lure ' + lure.x + ', grate ' + grate.gate + ', barracks door ' + door[0] + ', key ' + wkey.x + '; vestibule elite ' + elite.x + ' gate ' + elite.gate + '; hall grate ' + hall.gates[0][0] + '; bakehouse temperer at ' + bakeTemp.x + '; Captains Hall javelineer at ' + spearGuard.x + '; ' + whelps.length + ' whelp(s) over ' + 0 + ' spiked columns in ' + winds.length + ' wind zone(s); pacing before the Queen: ' + preExamStr + 'R; redress2 wired and its comment says so');

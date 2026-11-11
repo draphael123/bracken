@@ -34,7 +34,8 @@ export const ALLOW = {
 /* HOVER (claude/floatfix2, Daniel's photo of the Royal Road's stump): solid stone with only open void under it all the way to the map's bottom edge (a block bridging over a dip) must either sit
    over a backed slot (src/demo-slots.js paints the masonry behind a roofed dip, so the sky is not seen through the terrain) or be allowed here with the drawn reason a player can read. A group = a run of
    columns at one row. WINDOW: every roofed slot (1-4 wide, 3+ tall, stone either side, open to the map edge) must be backed (L.demoSlots). */
-export const HOVER_ALLOW = { fenroad: [{ x0: 195, x1: 200, y: 22, why: 'a timber trestle road over the water: the braced piles (drawn in the water by fen_road_art) stand under it, the tiles are the deck boards' }] };
+const CEIL = 'the cave ceiling (rows 0-6 are one slab hung from the map\x27s top edge) over a pit in the floor: nothing is in the air, the void is the pit below it, not a deck over open sky (batch156 integ: unmasked when check.mjs stopped feeding every tool the six check names as arguments)';
+export const HOVER_ALLOW = { spore: [{ x0: 318, x1: 324, y: 6, why: CEIL }, { x0: 327, x1: 328, y: 6, why: CEIL }], fenroad: [{ x0: 195, x1: 200, y: 22, why: 'a timber trestle road over the water: the braced piles (drawn in the water by fen_road_art) stand under it, the tiles are the deck boards' }] };
 export function hoverGroups(L) {
   const by = new Map(); for (const h of hovers(L, T)) { if (slotAt(L, h.x, h.y + 1)) continue; (by.get(h.y) || by.set(h.y, []).get(h.y)).push(h.x); }
   const out = []; for (const [y, xs] of by) { xs.sort((a, b) => a - b); let cur = null; for (const x of xs) { if (cur && x === cur.x1 + 1) cur.x1 = x; else out.push(cur = { x0: x, x1: x, y }); } }

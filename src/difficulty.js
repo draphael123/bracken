@@ -24,13 +24,17 @@
 // on some boss attacks - per-boss code) and EARLIER PHASES (each boss reads his own hp thresholds; `phase` is here for the lane that wires them).
 export const MODES = {
   story:  { label: 'VERY EASY', col: '#8fd160', take: 0.5,  stagger: 1.35, poise: 1,    flinch: true,  parry: 1.4, open: 1.35, gap: 1,    flaskAdd: 1,  shrine: 'all',  death: 0,   punish: false, phase: 0,    stale: null, affix: 0.5 },
+  /* EASY (claude/lives2, Daniel 11-08): halfway between VERY EASY and NORMAL on every field (the flask add rounds UP to +1 - a flask is whole - and the shrine stays NORMAL's one) */
+  easy:   { label: 'EASY',      col: '#c7d265', take: 0.85, stagger: 1.12, poise: 1,    flinch: true,  parry: 1.12, open: 1.12, gap: 1,    flaskAdd: 1,  shrine: 'one',  death: 0.5, punish: false, phase: 0,    stale: null, affix: 0.75 },
   normal: { label: 'NORMAL',    col: '#ffd36b', take: 1,    stagger: 1,    poise: 1,    flinch: true,  parry: 1,   open: 1,    gap: 1,    flaskAdd: 0,  shrine: 'one',  death: 1,   punish: false, phase: 0,    stale: null, affix: 1 },
+  /* HARD (claude/diff3, Daniel 11-08): halfway between NORMAL and MASTER on every field. Whole-number fields round AWAY from Normal, as EASY's did: flaskAdd -0.5 -> -1. The booleans cannot be halved, so flinch stays Normal's (true) and punish stays Normal's (false): HARD has no boss reprisals. shrine stays 'one' (between 'one' and 'none'). stale = the mean of the shared table [1,.85,.7,.55] and Master's [1,.8,.65,.5]. */
+  hard:   { label: 'HARD',      col: '#ff9f6b', take: 1.14, stagger: 0.92, poise: 0.88, flinch: true,  parry: 0.92, open: 0.92, gap: 1.08, flaskAdd: -1, shrine: 'one',  death: 1.25, punish: false, phase: 0.05, stale: [1, 0.83, 0.68, 0.53], affix: 1.25 },
   master: { label: 'MASTER',    col: '#ff6b6b', take: 1.35, stagger: 0.8,  poise: 0.75, flinch: false, parry: 0.8, open: 0.8,  gap: 1.15, flaskAdd: -1, shrine: 'none', death: 1.5, punish: true,  phase: 0.1,  stale: [1, 0.8, 0.65, 0.5], affix: 1.5 },
 };
-export const MODE_IDS = ['story', 'normal', 'master'];
+export const MODE_IDS = ['story', 'easy', 'normal', 'hard', 'master'];
 export const FLASK_MIN = 1;
-/* the names a tool or a URL may use: ?difficulty=easy|story|veryeasy|normal|master */
-const ALIAS = { easy: 'story', veryeasy: 'story', 'very-easy': 'story', story: 'story', normal: 'normal', master: 'master', hard: 'master' };
+/* the names a tool or a URL may use: ?difficulty=story|veryeasy|easy|normal|hard|master (easy = EASY since 11-08, it used to mean VERY EASY; hard = HARD since 11-08, it used to mean MASTER) */
+const ALIAS = { easy: 'easy', veryeasy: 'story', 'very-easy': 'story', story: 'story', normal: 'normal', hard: 'hard', master: 'master' };
 export const modeId = s => ALIAS[String(s || '').toLowerCase()] || null;
 
 /* THE MODE IN FORCE: a dev/test override (?difficulty=..., or setOverride from a tool) wins; else the save's (setSaveMode, main.js boot and
@@ -45,7 +49,7 @@ export const df = k => { const r = row(); return k in r ? r[k] : MODES.normal[k]
 export const isMaster = () => mode() === 'master';
 
 /* THE PICKER'S RULES (Daniel's recs, built; the picker UI + save storage is the Sonnet lane's):
-   - Very Easy <-> Normal any time, no lock.
+   - Very Easy <-> Easy <-> Normal any time in the table's rules (the new-save card locks the pick at the first level, claude/lives).
    - MASTER UNLOCKS AFTER A NORMAL CLEAR: device-wide (localStorage 'bracken.masterUnlocked') once any save beats the current final main-road boss on
      Normal; it stays unlocked as acts are added. ?difficulty=master always works (tests, tune lanes).
    - A Master save can drop to Normal but never come back to Master. */
@@ -56,8 +60,8 @@ export function unlockMaster() { try { localStorage.setItem(UNLOCK_KEY, '1'); } 
 export function canSwitch(from, to, prog = {}, unlocked = masterUnlocked()) {
   from = modeId(from) || 'normal'; to = modeId(to) || 'normal'; if (from === to) return true;
   if (to === 'master') return from !== 'master' && !prog.masterDropped && !prog.modeChosen ? unlocked : false;   /* Master is chosen at a save's creation only */
-  if (from === 'master') return to === 'normal';                                                              /* down to Normal, never back */
-  return true;                                                                                                 /* story <-> normal, any time */
+  return MODE_IDS.indexOf(to) < MODE_IDS.indexOf(from);   /* (claude/diff3) a save only ever goes DOWN (the pause menu steps one at a time); never back up, and never into Master */
+
 }
 /* the dev/test override in force (?difficulty= or setOverride), or null: the new-save card lets MASTER be picked when it is set (claude/lives DIFFPICK) */
 export const overrideId = () => override;

@@ -30,7 +30,7 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
     ['', 'One camera follows the pair, with no zoom. The frame is a wall: whoever runs ahead stops at the edge until the other catches up. Nobody is dragged.'],
     ['#', 'DOWN, NOT DEAD'],
     ['', 'A hero at zero lies down and crawls. Their partner stands on them for ' + reviveT + 's and they are up at a third of their health, with a moment of grace.'],
-    ['', 'Leave them ' + downT + 's, or lose both at once, and you BOTH wake at the last shrine.'],
+    ['', 'Leave them ' + downT + 's and THEY wake at the last shrine alone, paying their own death cost, while the other fights on. Lose both at once and you BOTH wake there.'],
   ] },
   { title: 'SHARED, AND NOT', lines: [
     ['#', 'SHARED'],

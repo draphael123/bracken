@@ -1,10 +1,11 @@
 // tools/uiscreens.mjs - UI POLISH B, the opening and the map (claude/uiscreens, 2026-10-06). What the screens must SAY and DO:
-//   PRESS CARD   the first title is a card (PRESS ANY KEY), not the menu; the first key (or tap) takes the card down and does nothing else (the menu does not move or open),
-//                the sign and the menu then come in; the in-level PRESS A KEY FOR SOUND banner is only the fallback for a run that never passed the title.
+//   PRESS PROMPT the first title is the LIVING SCENE (claude/intro: the bright forest, the sign, five heroes walking in, PRESS ANY KEY blinking under the sign with the controls line), not the menu;
+//                the first key (or tap) starts the sound and takes the prompt down and does nothing else (the menu does not move or open), then the board slides in;
+//                the in-level PRESS A KEY FOR SOUND banner is only the fallback for a run that never passed the title.
 //   OPENING      four illustrated panels (title + two lines each) before the first hero pick; X or ESC skips them all; finishing or skipping writes the once-only flag; a tool run
 //                (BK.manualSimulation) never gets them, so no other check is held up by them.
 //   HERO PICK    the selected hero's signature move plays in a window beside the words, with its name under it, and the window MOVES (two frames half a second apart differ).
-//   MAP CARD     a level's card shows its postcard, BEST, the three medal times, silver / gold / quest, and the RECOMMENDED LV (and a long blurb pages instead of being cut).
+//   MAP CARD     a level's card shows its postcard, BEST, the three medal times, silver / gold / quest, and the RECOMMENDED LV (and page 1, then E for the MORE page; the blurb left the card).
 //   BOOT         the page's boot line is empty without ?debug, and the loading screen carries tips and the knight by the fire.
 // usage: node tools/uiscreens.mjs
 import assert from 'node:assert/strict';
@@ -30,6 +31,10 @@ console.log('ok  static         boot line empty without ?debug, ' + TIPS.length 
     assert.equal(await pg.evalp('BK.ui.pressCard'), true, 'a fresh page opens on the press card');
     const card = await pg.evalp(TX);
     assert.ok(card.includes('PRESS ANY KEY'), 'the card says PRESS ANY KEY: ' + card.join(' / '));
+    assert.ok(card.includes('KEYBOARD OR GAMEPAD - 1 TO 4 PLAYERS'), 'and under it what the game takes: ' + card.join(' / '));
+    assert.ok(card.includes('THORNROAD'), 'the sign is up over the scene: ' + card.join(' / '));
+    assert.ok(!card.includes('this also starts the sound'), 'the dark card and its small print are gone');
+    { const s0 = await pg.evalp('BK.ui.introS()'); await pg.evalp('BK.step(30)'); const s1 = await pg.evalp('BK.ui.introS()'); assert.ok(s0 >= 0 && s1 > s0, 'the walk-in clock runs while the prompt is up (' + s0 + ' -> ' + s1 + ')'); }
     assert.ok(!card.includes('CONTINUE') && !card.includes('CHOOSE A SAVE'), 'and the menu is not drawn behind it: ' + card.join(' / '));
     const before = await pg.evalp('BK.ui.titleI');
     for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'ArrowDown', code: 'ArrowDown', windowsVirtualKeyCode: 40 });
@@ -69,17 +74,18 @@ try {
   console.log('ok  hero pick      each of the ' + hp.length + ' heroes shows a named signature move, and the window moves');
 
   /* ---- 4. THE MAP CARD ---- */
-  const mc = await pg.evalp(`(async()=>{ const {LEVELS}=await import('/src/level.js'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true});
+  let mc = await pg.evalp(`(async()=>{ const {LEVELS}=await import('/src/level.js'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true});
     const P=BKT.PROG; for(const l of LEVELS.slice(0,8)) P[l.id]={cleared:true,medal:2,silver:3,best:151,gold:12,total:20};
-    BK.mapLook('fair'); BK.state='map'; for(let i=0;i<150;i++)BK.step(1);
-    const s=new Set(); for(let k=0;k<12;k++){ for(let j=0;j<29;j++)BK.step(1); window.__textRec=[]; BK.step(1); for(const t of (window.__textRec||[])) if(t.kind==='text') s.add(t.s); window.__textRec=null; }
-    return [...s]; })()`);
+    BK.mapLook(LEVELS[1].id); BK.state='map'; for(let i=0;i<150;i++)BK.step(1);
+    const grab=()=>{const s=new Set(); for(let k=0;k<12;k++){ for(let j=0;j<29;j++)BK.step(1); window.__textRec=[]; BK.step(1); for(const t of (window.__textRec||[])) if(t.kind==='text') s.add(t.s); window.__textRec=null; } return [...s]; };
+    const p1=grab(); BK.press('talk'); BK.step(3); const p2=grab();
+    return { p1, p2 }; })()`);
+  /* (claude/fix151, Daniel 11-07 mapclean) the map card is COMPACT now: page 1 = name, RECOMMENDED LV, best medal, difficulty; E opens the MORE page (the three medal times, quest, silver/gold); the blurb left the card (map-scale owns that); a LOCKED node (the Fair, not among the walked 8) shows no MORE, so the card under test is the second level. So page 1 and the MORE page are read separately. */
+  const mc2 = mc.p2; mc = mc.p1;
   assert.ok(mc.some(s => /^RECOMMENDED LV \d+$/.test(s)), 'the recommended level: ' + mc.join(' / '));
-  assert.ok(mc.some(s => /^NOT WALKED$|^BEST /.test(s)), 'best (or not walked)');
-  assert.ok(mc.filter(s => /^\d+:\d\d$/.test(s)).length >= 3, 'the three medal times: ' + mc.join(' / '));
-  assert.ok(mc.some(s => /^QUEST (OPEN|DONE)$/.test(s)), 'the quest, said in words, not "OPEN"');
-  /* (claude/mapscale, Daniel 10-09: a blurb is ONE whole line that fits - no paging, no cut sentence; the Fair's reads whole in a single frame) */
-  assert.ok(mc.some(s => /^abandoned mid-festival, at sundown$/i.test(s)), 'the blurb is one whole line, not cut and not paged: ' + mc.join(' / '));
-  console.log('ok  map card       recommended level, best, three medal times, quest in words, a paged blurb');
+  assert.ok(mc.some(s => /MEDAL$/.test(s)) && mc2.some(s => /^NOT WALKED$|^BEST /.test(s)), 'best medal on page 1, BEST time on the MORE page');
+  assert.ok(mc2.filter(s => /^\d+:\d\d$/.test(s)).length >= 3, 'the three medal times (MORE page): ' + mc2.join(' / '));
+  assert.ok(mc2.some(s => /^QUEST (OPEN|DONE)$/.test(s)), 'the quest, said in words, not "OPEN" (MORE page): ' + mc2.join(' / '));
+  console.log('ok  map card       recommended level, best (page 1); three medal times, quest in words (MORE page)');
   assert.deepEqual(pg.errors, [], 'no page errors'); console.log('ok  console        no page errors');
 } finally { await pg.close(); }

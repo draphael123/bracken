@@ -1,6 +1,6 @@
 /* src/demo-end-config.js - THE END CARD'S WORDS AND LINKS (claude/demoend). Daniel fills the two blanks; until he does the card shows no link at all (never a dead one). */
 export const FOLLOW_LINE = 'FOLLOW THORNROAD ON ITCH.IO FOR THE FULL GAME';   /* shown as plain text; it becomes a link only when FOLLOW_URL is set */
-export const FOLLOW_URL = '';   /* the itch.io page, https only (Daniel owns the page) */
+export const FOLLOW_URL = 'https://draphael123.itch.io/thornroad';   /* the itch.io page, https only (Daniel owns the page) */
 export const FOLLOW_BTN = 'WISHLIST / FOLLOW ON ITCH.IO';   /* (demoend2) the button that opens FOLLOW_URL */
 export const SOON_BTN = 'WISHLIST / FOLLOW: COMING SOON';   /* (demoend2) what the button says, shut, while FOLLOW_URL is empty: never a dead link */
 export const SOON_LINE = 'THE FULL GAME HAS NO PAGE YET. IT IS COMING.';   /* (demoend2) the plain line while FOLLOW_URL is empty (the follow line would promise a page that is not there) */

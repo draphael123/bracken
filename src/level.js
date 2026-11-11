@@ -12,7 +12,10 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js'; import { buildSealedPyramid, RULE as PYRAMID_RULE } from './sealed-pyramid.js';   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the main road past THE BURIED CITY; its boss is THE SCARAB MOTHER */   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
+import { buildAirship, AS_RULE, AS_SHIPS, AS_NAME, asOn } from './airship.js';   /* (claude/airship) THE DESERT AIRSHIP (the greybox, behind its flag) */
+import { buildGreatDune, GD_RULE, GD_SHIPS, gdOn } from './great-dune.js'; import { applyInserts } from './route-insert.js';   /* (claude/greatdune) THE GREAT DUNE (the greybox, behind its flag) and THE ROAD INSERTS' one rule */
 import { buildRookery, RK_RULE } from './rookery.js';   /* THE ROOKERY (claude/rookery, the OPUS GREYBOX): between GALE MOOR and THE SKY ROAD - src/rookery-hands.js its rule, src/shriek-sisters.js its boss */
+import { buildWispwood } from './wispwood.js'; import { WW_RULE } from './ww-lines.js'; import { wwOn } from './ww-flag.js';   /* WISPWOOD (claude/wispwood, the OPUS GREYBOX): behind WISPWOOD_SHIPS */
 import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
 import { buildKitchenGate, KG_RULE } from './kitchen-gate.js';   /* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX): between THE UNDERCROWN and HIGHCROWN - src/kitchen-hands.js its rule, src/grubbag.js its boss */
 import { buildPalisadeWood, PW_RULE } from './palisade-wood.js';   /* THE PALISADE WOOD (claude/palisadewood, the greybox): between THE ROOTWAY and KINGSWOOD - src/palisade-hands.js its rule, src/battering-beast.js its boss */
@@ -51,6 +54,9 @@ import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the 
 import { highcrownTwo } from './highcrown2.js';
 import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js'; import { buildLesson } from './opening-tutorial.js';   /* (claude/tutorial1, Daniel 11-05) THE ROADSIDE LESSON: the generic opening for a new save, replayable from the inn */   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
+import { buildSilkUndercroft } from './silk-undercroft.js'; import { SK_RULE } from './sk-lines.js'; import { skOn } from './sk-flag.js';   /* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX): behind SILK_SHIPS */
+import { buildHollowManor } from './hollow-manor.js'; import { MN_RULE } from './mn-lines.js'; import { mnOn } from './mn-flag.js';   /* THE HOLLOW MANOR (claude/hollowmanor, the OPUS GREYBOX): behind MANOR_SHIPS */
+import { buildAcademy } from './academy.js'; import { AC_RULE } from './ac-lines.js'; import { acOn, AC_INSERT } from './ac-flag.js';   /* (claude/academy) THE MAGE ACADEMY (the OPUS GREYBOX, behind ACADEMY_SHIPS) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -1307,7 +1313,7 @@ function screePath() {
 
   // ---- 5b. THE GULLY: the last of the open hill before the fold. ----
   ent('deco', 299, 8, { kind: 'cairn' }); ent('deco', 304, 7, { kind: 'stone', v: 1 });
-  ent('harpy', 295, 2); ent('goat', 293, 8, { face: -1 });
+  ent('goat', 293, 8, { face: -1 });   /* (claude/scree3tune: the harpy at 295,2 is cut - a diver on top of the goat + rockgoblin squad + the sentry above it was 2 of the pilot's 8 deaths; the squad is the exam) */
   coins([296, 7], [302, 6]);
   // the Ram Lord's stile: a lip of rock one step up outside the fold gate. The goats can't take a step, the harpies don't come this far: a quiet place to stand before the fight.
   block(300, 311, 8, 8); ent('check', 308, 7);
@@ -1318,6 +1324,7 @@ function screePath() {
   // loose scree is stacked against the west wall (313): his crash always shakes rock down (updateRam, main.js),
   // and a ram baited into THIS wall buries himself deeper for it - a caused opening, not a waited one.
   ent('sign', 307, 7, { text: 'HIS HORNS TURN STEEL: GO ROUND HIM. WHEN HE STANDS UNDER AN OVERHANG, KNOCK OUT ITS PROP.' });   /* (claude/scree2: the reworked Ram Lord - src/ram-lord.js) */
+  ent('sign', 305, 7, { text: 'HE HORNS THE CLIFF AND A BOULDER ROLLS: JUMP IT. HIS BOULDERS KNOCK THE PROPS TOO.' });   /* (claude/scree3: the boulder butt) */
   ent('deco', 313, 8, { kind: 'foldGate' }); ent('deco', 341, 8, { kind: 'foldGate' });
   ent('deco', 313, 8, { kind: 'cairn' }); ent('deco', 341, 8, { kind: 'cairn' });
   for (const x of [314, 315, 316]) ent('deco', x, 8, { kind: 'stone', v: x % 3 }); // THE SCREE BANK: banked loose stone against the west wall
@@ -1326,7 +1333,7 @@ function screePath() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'mountain', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'musMountain', night: false, glowNight: false,   /* (claude/scree3, Daniel 11-01 "the music doesn't totally fit": beardalaxy's 12.3 s 'mountain' loop repeated every dozen seconds; MintoDog's 32 s stage-select 'musMountain' (in the repo, CC0, benched since the windcaller took its own) plays here - one word to put 'mountain' back) */
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'crag', haze: 'rgba(140,90,150,0.14)', grass: '#8a8a3a', grassL: '#c9b84a', grassD: '#5a5a2a', dirt: '#6a5642', dirtL: '#80694e', dirtD: '#3e3226',   /* (claude/scree2: warm earth, not the cold blue-grey) */ canopy: ['#4a4458', '#5e5870', '#6a4a7a', '#a07ab8'] },
     stone, scree, slide: { x0: 184 * TS, x1: 252 * TS, speed: 118 },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
@@ -1341,7 +1348,7 @@ function screePath() {
   GA.R.ropes = [{ x0: 279 * TS + 8, y0: 6 * TS + 4, x1: 305 * TS + 8, y1: 6 * TS + 4, posts: [[279 * TS + 8, 6 * TS + 4, 19 * TS], [305 * TS + 8, 6 * TS + 4, 19 * TS]] }]; // the ropeway cable the swing hangs from
   GA.R.moversExtra.push({ kind: 'lift', ropeway: true, x: 272 * TS, y: 18 * TS, y0: 18 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
   GA.plat(276, 12, 2);
-  GA.block(279, 283, 19, 23); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on an arch: the gorge floor runs under it
+  GA.block(279, 283, 19, 25); GA.ent('deco', 281, 18, { kind: 'mill' }); // the mill stands on a rock stack that goes down to the gorge floor (claude/scree3: it was an arch hung in the air over a 2-tile gap - the gorge bottom is two pockets now, each with its own rope ladder out)
   for (let i = 0; i < 4; i++) GA.R.moversExtra.push({ kind: 'wheel', px: 281 * TS + 8, py: 19 * TS - 58, r: 42, phase: i * Math.PI / 2, period: 7, x: 0, y: 0, w: 22, h: 6 });
   GA.plat(285, 12, 3);
   GA.R.moversExtra.push({ kind: 'swing', px: 291 * TS, py: 6 * TS, arm: 100, x: 0, y: 0, w: 48, h: 8, period: 3.4, phase: 1.5 });
@@ -1369,7 +1376,7 @@ function screePath() {
   G.ent('deco', 181, 13, { kind: 'stone', v: 0 }); G.ent('deco', 186, 13, { kind: 'cairn' }); G.ent('deco', 205, 13, { kind: 'stone', v: 2 }); G.ent('deco', 211, 13, { kind: 'cairn' });
   G.ent('rockfall', 193, 5, { every: 3.6 }); G.ent('harpy', 187, 8); G.ent('harpy', 212, 9);
   G.R.stone.push([200, 200, 13, 13], [208, 208, 13, 13]); G.block(200, 200, 13, 13); G.block(208, 208, 13, 13);
-  G.ent('goat', 203, 13, { face: -1 }); G.ent('goat', 206, 13, { face: 1 }); G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
+  G.ent('goat', 203, 13, { face: -1 });   /* (claude/scree3tune: ONE goat at the slide's foot, not a pair flanking the troll - two charges 3 tiles apart were an unreadable double hit) */ G.ent('sprig', 184, 13, { face: -1 }); G.ent('troll', 209, 13, { face: -1 });
   G.plat(202, 11, 2); G.plat(205, 9, 3); G.coins([206, 8]); // a perch over the goat pen
   // THE RIDGE ROAD: from the loft, a high line of ledges over the cairn field and the whole scree slope, harpies all the way, the miller's silver at the end
   for (const [x, y, n] of [[161, 5, 2], [165, 4, 3], [170, 3, 3], [176, 4, 3], [182, 3, 3], [188, 4, 3], [194, 3, 4], [200, 4, 3], [206, 3, 3], [212, 4, 3], [218, 5, 3], [224, 6, 3], [230, 7, 3], [236, 8, 3], [242, 9, 3], [248, 10, 3], [254, 11, 3], [260, 12, 3], [266, 13, 3], [272, 14, 3], [278, 15, 3], [284, 16, 3]]) G.plat(x, y, n);
@@ -3187,18 +3194,19 @@ function highcrown() {
      load-bearing drums of stone, floor to ceiling, between her chandeliers and clear of her windows (final columns 899, 904, 911). She lands beside
      one to hold court: break it then, three blows, and it comes down on her - pinned, as the chandelier pins her (main.js gqPin) - and a heap of
      rubble to stand on. They stand again for her third round. */
-  for (const x of [217, 222, 229]) ent('qpillar', x, 19, { top: 10 });
+  /* (claude/gqueen3) the pillars are gone: her hall is an open floor under a bell and a grate */
   for (const x of [214, 220, 226, 232, 238, 245]) ent('weight', x, 10, { len: 6, lamp: true, hang: true, gq: true }); // her chandeliers: when she stands, she throws at them - and a jump and a swing cuts one down on HER
-  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. BREAK THE PILLAR SHE HOLDS COURT BESIDE: IT COMES DOWN ON HER.' });
+  ent('sign', 209, 19, { text: 'HER PLATE TURNS BLADES. PARRY HER CROWN OR A PORTAL SHARD AND SHE IS STUNNED.' });
   /* HER HALL'S BELL AND ITS GRATE (claude/bosswave2: the level's rule in her fight - EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT; the
      audit's "the Queen ignores it"). A grate hangs between her middle pillars on the bell's rope: strike the bell while she stands under it and the
      grate comes down on HER - pinned, as a pillar or a chandelier pins her (main.js gqPin). Rung while she is anywhere else, it only shuts the hall. */
   ent('winch', 227, 18, { gate: 225, gy0: 16, gy1: 19, drop: true, hold: 7, bossGate: true, bell: true });
-  ent('sign', 231, 19, { text: 'THE HALL BELL DROPS ITS GRATE. RING IT WHILE SHE STANDS UNDER.' });
+  ent('sign', 231, 19, { text: 'RING THE HALL BELL: SHE STORMS TO THE SOUND. UNDER THE GRATE WHEN IT DROPS, SHE IS PINNED.' });
+  ent('sign', 216, 19, { text: 'WHEN HER GUARDS COME, CRANK THE WINCH BY THE DOOR: THE GATE DROPS AND KEEPS THEM OUT.' });   /* (claude/gq2mech) the barracks gate's winch stands at col 217 (src/gqueen-hands.js GQ3.mech.winchCol) */
   // the roof: three peaks with an iron rod on each, and a step up to each
   block(214, 218, 4, 7); block(228, 232, 4, 7); block(242, 246, 4, 7);
   plat(211, 6, 3); plat(219, 6, 3); plat(225, 6, 3); plat(233, 6, 3); plat(239, 6, 3); plat(247, 6, 3);
-  ent('rod', 216, 3); ent('rod', 230, 3); ent('rod', 244, 3);
+  /* (claude/gqueen3) the roof rods went with the roof phase: the old peaks are chimney stacks for the escape */
 
   // FOUR FLOORS, FOUR ROOMS. The whole keep was drawn with her throne room's wall, so you came up out of the
   // armoury into what looked like her hall and the Queen seemed to be standing right behind the smith. Each
@@ -3292,6 +3300,45 @@ export function cutColumns(R, c0, c1) {
     if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [lo(x), y, w]);
     R.arena = A; }
   if (R.START) R.START = { ...R.START, x: cx(R.START.x) ?? lo(R.START.x) };
+  R.grid = g; R.W = W2; return R;
+}
+/* INSERT COLUMNS (claude/highcrown3, Daniel 11-06 22:34 "a bit longer"): cutColumns run the other way. n new columns of SOLID open at column c,
+   and everything at c or right of it slides right by n: the grid, the ents, movers, pools, zones, alarms, winds, the arena, the tower top, the
+   escape table and every tile box the castle keeps. A range that starts left of c and ends at or past it GROWS by n. Applied LAST in
+   highcrownTwo(), after every literal it writes, so nothing written above it has to change; the new section is carved into the n columns after. */
+export function insertColumns(R, c, n) {
+  const W2 = R.W + n, H = R.H, g = new Uint8Array(W2 * H).fill(T.SOLID);
+  for (let y = 0; y < H; y++) for (let x = 0; x < R.W; x++) g[y * W2 + (x < c ? x : x + n)] = R.grid[y * R.W + x];
+  const sx = x => (typeof x === 'number' && x >= c ? x + n : x), P0 = c * TS, NP = n * TS, sp = p => (typeof p === 'number' && p >= P0 && p < 99999 ? p + NP : p);
+  const tbox = a => [a[0] >= c ? a[0] + n : a[0], a[1] >= c ? a[1] + n : a[1], ...a.slice(2)];
+  const spEnd = p => (typeof p === 'number' && p > P0 && p < 99999 ? p + NP : p), pz = z => ({ ...z, x0: sp(z.x0), x1: spEnd(z.x1) });   /* a pixel range's END on the seam stays (it ended before column c) */
+  const REF = ['ram', 'cage', 'gate', 'door', 'bell', 'at', 'wall', 'x0', 'x1', 'pool', 'ifDrained'];
+  R.ents = R.ents.map(e => { const o = { ...e, x: sx(e.x) }; for (const k of REF) if (typeof o[k] === 'number') o[k] = sx(o[k]); return o; });
+  if (R.pools) R.pools = R.pools.map(pz);
+  if (R.moversExtra) R.moversExtra = R.moversExtra.map(m => { const o = { ...m }; for (const k of ['x', 'x0', 'x1', 'px']) if (typeof o[k] === 'number' && o[k] > 0) o[k] = sp(o[k]); return o; });
+  for (const k of ['weather', 'ambient', 'gusts', 'fog', 'sleeps']) if (R[k]) R[k] = R[k].map(pz);
+  for (const k of ['interiors', 'masonry', 'facades', 'tints', 'calm', 'stone']) if (R[k]) R[k] = R[k].map(tbox);
+  if (R.structures) R.structures = R.structures.map(z => ({ ...z, x0: sx(z.x0), x1: sx(z.x1) }));
+  if (R.alarms) R.alarms = R.alarms.map(a => ({ ...a, gates: a.gates.map(([cc, y0, y1]) => [sx(cc), y0, y1]), garrison: (a.garrison || []).map(gd => ({ ...gd, x: sx(gd.x) })), ...(a.opens ? { opens: a.opens.map(([cc, y0, y1]) => [sx(cc), y0, y1]) } : {}),
+    ...(a.wake ? { wake: tbox(a.wake) } : {}), ...(a.trip ? { trip: tbox(a.trip) } : {}) }));
+  if (R.winds) R.winds = R.winds.map(w => ({ ...w, x0: sx(w.x0), x1: sx(w.x1), wells: (w.wells || []).map(sx), exits: (w.exits || []).map(([x, y]) => [sx(x), y]) }));
+  for (const k of ['arena', 'arenaRoof', 'mini']) if (R[k]) { const A = { ...R[k] };
+    for (const f of ['x0', 'trigger', 'well']) if (typeof A[f] === 'number') A[f] = sp(A[f]); if (typeof A.x1 === 'number') A.x1 = spEnd(A.x1);
+    for (const f of ['wallL', 'wallR', 'gate']) if (typeof A[f] === 'number') A[f] = sx(A[f]);
+    if (A.hole) A.hole = { ...A.hole, x0: sx(A.hole.x0), x1: sx(A.hole.x1) };
+    if (A.rubble) A.rubble = A.rubble.map(([x, y, w]) => [sx(x), y, w]);
+    if (A.exit) A.exit = { ...A.exit, x: sx(A.exit.x) };
+    for (const f of ['hatches', 'stack', 'poles']) if (Array.isArray(A[f])) A[f] = A[f].map(sx);
+    R[k] = A; }
+  if (R.gqEscape) { const E = R.gqEscape;
+    R.gqEscape = { ...E, tiers: E.tiers.map(t => ({ ...t, x0: sx(t.x0), x1: sx(t.x1) })), start: { ...E.start, x: sx(E.start.x) }, check: { ...E.check, x: sx(E.check.x) }, portal: { ...E.portal, x: sx(E.portal.x) },
+      hallPortals: (E.hallPortals || []).map(p => ({ ...p, x: sx(p.x) })), slates: E.slates && { ...E.slates, x0: sx(E.slates.x0), x1: sx(E.slates.x1) }, throwers: (E.throwers || []).map(t => ({ ...t, x: sx(t.x) })),
+      route: (E.route || []).map(([x, y]) => [sx(x), y]), supports: (E.supports || []).map(s => ({ ...s, x: sx(s.x) })) }; }
+  if (R.routeSupports) R.routeSupports = R.routeSupports.map(s => ({ ...s, x: sx(s.x) }));
+  if (R.hcDeco) R.hcDeco = R.hcDeco.map(d => ({ ...d, ...(typeof d.x === 'number' ? { x: sx(d.x) } : {}), ...(typeof d.x0 === 'number' ? { x0: sx(d.x0) } : {}), ...(typeof d.x1 === 'number' ? { x1: sx(d.x1) } : {}), ...(typeof d.gate === 'number' ? { gate: sx(d.gate) } : {}) }));
+  if (R.hcDoors) R.hcDoors = R.hcDoors.map(([x, y0, y1]) => [sx(x), y0, y1]);
+  if (R.reachDoors) R.reachDoors = R.reachDoors.map(d => ({ ...d, x0: sx(d.x0), x1: sx(d.x1) }));
+  if (R.START) R.START = { ...R.START, x: sx(R.START.x) };
   R.grid = g; R.W = W2; return R;
 }
 function highcrownWhole() {
@@ -3473,7 +3520,7 @@ function highcrownWhole() {
     block(X + 65, X + 69, 64, BOT); plat(X + 66, 58, 3); plat(X + 66, 54, 3); plat(X + 66, 50, 3);   // its back, and the hoarding down it
     ent('scaffold', X + 66, 50, { x1: X + 68 });
     ent('check', X + 2, 63); ent('sign', X + 4, 63, { text: 'THE CRAG WALK. HER WALL GOES UP THE MOUNTAIN, AND THE WAY ON GOES WITH IT.' });
-    ent('goat', X + 14, 59, { face: -1 }); ent('soldier', X + 27, 53, { face: -1 }); ent('harpy', X + 34, 47);
+    ent('hound', X + 14, 59, { face: -1 });   /* (claude/hcfix1) was a crag goat (the Crags' ram, Daniel 11-09 'why is there a goat'): a castle hound, the bailey's own beast, takes its place */ ent('soldier', X + 27, 53, { face: -1 }); ent('harpy', X + 34, 47);
     ent('check', X + 43, 47); ent('javelin', X + 50, 47, { face: -1 }); ent('soldier', X + 57, 47, { face: -1 }); ent('archer', X + 62, 45, { face: -1 });
     ent('torch', X + 26, 53); ent('torch', X + 47, 47); ent('deco', X + 60, 45, { kind: 'banner', v: 1 }); ent('deco', X + 19, 57, { kind: 'cairn' });
     coins([X + 11, 60], [X + 15, 58], [X + 19, 55], [X + 22, 54], [X + 31, 52], [X + 34, 51], [X + 37, 52], [X + 54, 45], [X + 67, 49], [X + 67, 53], [X + 67, 57]);
@@ -3664,7 +3711,7 @@ function highcrownWhole() {
      the Kitchen Gate brings you in under the walls). 940 -> 609 columns. Then the new pieces, written in the CUT level's own columns
      (src/highcrown2.js): the winch gate at the bailey, the ward bell as a lure, the vestibule exam, the one tall keep hall. */
   cutColumns(R, 488, 587); cutColumns(R, 0, 230);
-  return highcrownTwo(R, { T, TS, painter });
+  return highcrownTwo(R, { T, TS, painter, insertColumns });
 }
 
 
@@ -4411,7 +4458,7 @@ function sprinkleCoins(L) {
   return L;
 }
 // ============================================================================================
-// LEVEL 12 - THE LONG WATER. Three days after the Queen fell, the melt off Highcrown began to run salt. The goblins paid
+// LEVEL 12 - THE LONG WATER. Three days after the Queen fled, the melt off Highcrown began to run salt. The goblins paid
 // the deep a tribute for a hundred years to keep it asleep; the tribute has stopped, and the sea is coming inland to
 // collect. Down the mountain's back face on the falls, down the river on the Ferryman's raft with the Bore coming up it,
 // into SALTREACH at the river mouth, where the Tidebound are walking up the streets - and the Tide Herald is waiting in
@@ -8127,6 +8174,30 @@ LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw 
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
 /* THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): APPENDED (saves count levels by index). The short generic opening a NEW save starts in (and the inn's training yard replays); it ends at the inn's door. src/opening-tutorial.js */
 LEVELS.push({ id: 'lesson', name: 'THE TUTORIAL', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
+/* THE GREAT DUNE (claude/greatdune, the OPUS GREYBOX, 11-06; plan-desert-1105 s1.9, brief-greatdune-1014): the board road between the Buried City and the Sealed Pyramid.
+   BEHIND ITS FLAG (src/great-dune.js gdOn: ?gd=1, GD=1): OFF (as shipped) this row is NOT appended - LEVELS is master's array, no index or save moves. ON it is appended
+   HIDDEN (no map node), needing the Buried City: ?gd=1&level=greatdune. THE ROAD INSERT (the Sealed Pyramid needs it) is src/route-insert.js's, live with GD_SHIPS (art before live). */
+if (gdOn()) LEVELS.push({ id: 'greatdune', arc: 'the desert', name: 'THE GREAT DUNE', sub: 'the sand is a road', rule: GD_RULE, build: () => buildGreatDune({ T, TS }), needs: 'buriedcity', hidden: !GD_SHIPS });
+/* THE DESERT AIRSHIP (claude/airship, the OPUS GREYBOX, 11-06; plan-desert-1105 s1.12, brief-desertairship-1104): the road's end - stoke = altitude, the cold, THE THUNDER WYRM.
+   BEHIND ITS FLAG (src/airship.js asOn: ?airship=1, AS=1): OFF (as shipped) this row is NOT appended. ON it is appended HIDDEN (no map node), needing the last desert level that exists
+   (THE KING'S PYRAMID once it merges, the Sealed Pyramid until then): ?airship=1&level=airship. THE ROAD INSERT is src/route-insert.js's, live with AS_SHIPS (art before live). */
+if (asOn()) LEVELS.push({ id: 'airship', arc: 'the desert', name: AS_NAME, sub: 'feed the burners, climb into the storm', rule: AS_RULE, build: () => buildAirship({ T, TS }), needs: LEVELS.some(l => l.id === 'kingspyramid') ? 'kingspyramid' : 'sealedpyramid', hidden: !AS_SHIPS });
+/* WISPWOOD (claude/wispwood, the OPUS GREYBOX; scratch/brief-wispwood-1108.md): APPENDED (saves count levels by index), and ONLY WHILE WISPWOOD_SHIPS / ?ww=1 is on (src/ww-flag.js) -
+   with it off LEVELS is master's. On the road between THE BURIAL CAVERNS and THE WITCHLIGHT STAIR by its needs (the stair needs it; a save that had it open keeps it: src/main.js wwRoadMig). Its boss: THE LANTERN WIDOW */
+if (wwOn()) { LEVELS.push({ id: 'wispwood', name: 'WISPWOOD', sub: 'the dead wood over the barrows', rule: WW_RULE, build: () => buildWispwood({ painter, T, TS }), needs: 'burial' }); LEVELS.find(l => l.id === 'witchlight').needs = 'wispwood'; }
+/* (nightroad) ROAD ORDER: the pushes below run wispwood, silk, (applyInserts), manor, academy - each takes the stair's CURRENT needs, so with all on the road is burial > wispwood > silk > manor > stair > academy > Folly */
+/* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX; scratch/brief-silkundercroft-1015.md): APPENDED (saves count levels by index), and ONLY WHILE SILK_SHIPS / ?sk=1 is on (src/sk-flag.js) -
+   with it off LEVELS is master's. It goes on the road just before THE WITCHLIGHT STAIR: it takes the stair's needs (THE BURIAL CAVERNS on master; WISPWOOD if that lands first) and the stair needs it
+   (a save that had the stair open keeps it, and a save past the stair gets the undercroft as an extra: src/main.js skRoadMig). Its boss: THE CRYPT MOTHER */
+if (skOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ id: 'silk', name: 'THE SILK UNDERCROFT', sub: 'the web beneath the manor', rule: SK_RULE, build: () => buildSilkUndercroft({ painter, T, TS }), needs: wl.needs }); wl.needs = 'silk'; }
+applyInserts(LEVELS);   /* (claude/greatdune) the desert's road inserts (src/route-insert.js): rewires `needs` only for an insert that is live - none is on this branch */
+/* THE HOLLOW MANOR (claude/hollowmanor, the OPUS GREYBOX; scratch/lane-reports/hollowmanor-plan.md): APPENDED (saves count levels by index), and ONLY WHILE MANOR_SHIPS / ?mn=1 is on (src/mn-flag.js) -
+   with it off LEVELS is master's. It goes on the road just before THE WITCHLIGHT STAIR: it takes the stair's needs (THE BURIAL CAVERNS on master; THE SILK UNDERCROFT if that lands - its push is above this line,
+   so the road reads caverns > (wispwood) > undercroft > manor > stair) and the stair needs it (old saves: src/main.js mnRoadMig). Its boss: THE CASTELLAN'S GHOST */
+if (mnOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ id: 'manor', name: 'THE HOLLOW MANOR', sub: 'the house above the undercroft', rule: MN_RULE, build: () => buildHollowManor({ painter, T, TS }), needs: wl.needs }); wl.needs = 'manor'; }
+/* THE MAGE ACADEMY (claude/academy, the OPUS GREYBOX; scratch/brief-academy-1016.md): APPENDED (saves count levels by index), and ONLY WHILE ACADEMY_SHIPS / ?ac=1 is on (src/ac-flag.js) -
+   then THE WITCHLIGHT STAIR -> THE MAGE ACADEMY -> THE MAGE'S FOLLY by src/route-insert.js's one rule with the Academy's own row (AC_INSERT): the Folly needs it */
+if (acOn()) { LEVELS.push({ id: 'academy', name: 'THE MAGE ACADEMY', sub: "the archmage's school", rule: AC_RULE, build: () => buildAcademy({ painter, T, TS }), needs: 'witchlight' }); applyInserts(LEVELS, AC_INSERT); }
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
@@ -8573,7 +8644,7 @@ const AMBUSH = {
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
     /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
        ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
-    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
+    waves: [[['troll', 180], ['goat', 178], ['sprig', 191]]] }],   /* (claude/scree3tune: the harpy is cut from THE GOAT TRACK - a diver over an elite troll's swat + the goat's charge was 4 of the pilot's 8 deaths; troll + goat + sprig is still the exam) */
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
        (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.
@@ -8646,8 +8717,8 @@ const AMBUSH = {
      checkpoint is the barn's own at 341, outside the screen. */
   burning: [{ name: 'THE BARN', row: 25, wallL: 358, wallR: 398, check: false,
     waves: [[['brute', 388, null, { elite: true }], ['burngob', 368], ['sprig', 378], ['archer', 370, 19]]] }],
-  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 485, wallR: 521, check: [478, 19],   /* (claude/highcrown2: the cut level's columns, 331 to the left) */
-    waves: [[['brute', 507, null, { elite: true }], ['soldier', 495], ['hearthgob', 499], ['javelin', 515, 23]]] }],
+  crown: [{ name: 'THE BANQUET HALL', row: 25, wallL: 485, wallR: 521, check: false,   /* (claude/highcrown2: the cut level's columns, 331 to the left) */   /* (claude/highcrown3, HCPLAN beat 9) THE PRE-THRONE REHEARSAL: her CAPTAIN is a heavy elite at the high table (the bell rope lures him under the grate, src/goblin-princess.js); the servery's garrison is the winch wave; the door shrine moved to the banquet's EAST door (src/highcrown2.js HC3.BANQ_SHRINE) */
+    waves: [[['heavy', 505, null, { elite: true }], ['soldier', 493], ['javelin', 515, 23]]] }],
   /* THE LIT CHURCH (claude/litchurch): THE SEALED VAULT in the crypt - the one ambush. The crypt's dead under their grave captain (the caverns' husk: he calls up the dead);
      a wight, a haunt over the shelves and a bone archer. No door checkpoint of its own (CHECKPOINT TWO is in the gallery; THREE stands at the altar past it) */
   church: [{ name: 'THE SEALED VAULT', row: 53, wallL: 108, wallR: 141, check: false,   /* (the crypt's floor is row 54: its walls drop under the vault's lintels) */

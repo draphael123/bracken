@@ -86,6 +86,7 @@ export function makeRanger(api) {
     snares: 0, snared: 0, restocked: 0, snatched: 0, flung: 0, kneels: 0, kneelHits: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0,
     tier1: 0, tier2: 0, steady: 0, shaky: 0, far: 0, near: 0, kicks: 0, volleys: 0, volleyShort: 0 };   /* (claude/chargetiers) the three tiers loosed, the fan's arrows that landed, FOCUSED T2/T3 */
   const P = () => api.P, T = () => api.tal();
+  const mulK = (x, k) => 1 + (x - 1) * k;   /* (claude/traitdata-a) a multiplier x whose BONUS scales with the trait's rank k (T() hands the rank; exactly x at k = 1) */
   const maxQ = () => RG.quiver.n + (T().deep ? 1 : 0);
   const refillT = () => (T().fletch ? RG.quiver.fletch : RG.quiver.refill) / RG.perk.quiver;
   const isFree = p => !p.dead && !(p.asleep > 0);
@@ -96,14 +97,14 @@ export function makeRanger(api) {
   function giveArrow(p, n = 1, why) { ensure(p); const was = p.rgQ; p.rgQ = Math.min(maxQ(), p.rgQ + n); if (p.rgQ > was && why) { api.ringAt(p.x, p.y - 16, 8, '#e8dcb0', 0.18); } return p.rgQ - was; }
 
   /* ---- HUNTER'S FOCUS ---- */
-  function focusGain(p, n) { if (!(n > 0)) return; const was = p.rgFocus || 0; p.rgFocus = Math.min(100, was + n * (T().keen ? 1.25 : 1) * RG.perk.focus);
+  function focusGain(p, n) { if (!(n > 0)) return; const was = p.rgFocus || 0; p.rgFocus = Math.min(100, was + n * (T().keen ? mulK(1.25, T().keen) : 1) * RG.perk.focus);
     if (was < 100 && p.rgFocus >= 100) { stats.focusFull++; api.meterReady('#9fdc6a'); api.teach('focus'); } }
   const focusFull = p => (p.rgFocus || 0) >= 100;
 
   /* ---- THE MARK ---- */
   const markOn = e => !!e && e.alive && (e.rgMarkT || 0) > api.time;
   const markMul = e => markOn(e) ? (T().apex ? RG.mark.apex : RG.mark.mul) : 1;
-  function markFoe(p, e, why, t) { if (!e || !e.alive || e.harmless) return false; e.rgMarkT = api.time + (t || RG.mark.t) * (T().longMark ? 1.5 : 1); e.rgMarkBy = p; stats.marks++;
+  function markFoe(p, e, why, t) { if (!e || !e.alive || e.harmless) return false; e.rgMarkT = api.time + (t || RG.mark.t) * (T().longMark ? mulK(1.5, T().longMark) : 1); e.rgMarkBy = p; stats.marks++;
     api.number(e.x, e.y - (e.h || 16) - 18, why || 'QUARRY', '#ff7a5a'); api.ringAt(e.x, e.y - (e.h || 16) / 2, 16, '#ff7a5a', 0.3); api.SFX.rgMark && api.SFX.rgMark(); return true; }
   /* the nearest foe AHEAD of her within RG.mark.range - walls do not hide it (a hunter knows where her quarry is) */
   function quarry(p, range = RG.mark.range) { let best = null, bd = 1e9;
@@ -130,11 +131,11 @@ export function makeRanger(api) {
   const pose = (p, k, t) => { if (p.rgRipNow) { p.rgRipNow = false; api.kitPose(p, 'ripo', 0.3); } else api.kitPose(p, k, t); };
   function arrowHit(p, a, e) {
     const hp0 = e.hp, d = Math.abs(a.x - a.x0), sweet = d >= RG.sweet.near && d <= RG.sweet.far && !a.free;
-    let dmg = a.dmg; if (sweet && T().eagle) dmg *= 4 / 3;
+    let dmg = a.dmg; if (sweet && T().eagle) dmg *= mulK(4 / 3, T().eagle);
     const big = !!(e.maxHp || e.mini || e === api.boss);
     if (a.great) { const G = RG.great, k = Math.min(1, d / Math.max(1, a.range || G.range)); dmg = api.swordDmg() * (G.dmg0 + (G.dmg1 - G.dmg0) * k) * (big ? G.boss : 1); api.number(e.x, e.y - (e.h || 16) - 26, 'GREAT ARROW x' + (dmg / Math.max(1, api.swordDmg())).toFixed(1), '#ffd36b'); stats.greatHits = (stats.greatHits || 0) + 1; stats.greatMax = Math.max(stats.greatMax || 0, Math.round(dmg)); }
     const dm = a.great ? 1 : distMul(d, !!a.emp); dmg *= dm; if (dm >= 1.3) { stats.far++; api.number(e.x, e.y - (e.h || 16) - 26, a.emp ? 'STEADY x' + dm.toFixed(1) : 'FAR x' + dm.toFixed(1), a.emp ? '#dfffb0' : '#e8dcb0'); } else if (dm < 1) stats.near++;   /* (claude/rangerid) THE DISTANCE BONUS */
-    if (a.kind === 'draw' && a.full && T().bodkin && e.guardT > 0) { e.guardT = 0; api.number(e.x, e.y - (e.h || 16) - 14, 'THROUGH', '#ffd36b'); }   /* BODKIN POINTS: as a ball does */
+    if (a.kind === 'draw' && a.full && T().bodkin && e.guardT > 0) { e.guardT = e.guardT * (1 - T().bodkin);   /* BODKIN: a full draw leaves 30% / 15% / none of the guard */ api.number(e.x, e.y - (e.h || 16) - 14, 'THROUGH', '#ffd36b'); }   /* BODKIN POINTS: as a ball does */
     api.hurtAs(a.tag, e, Math.max(1, Math.round(dmg)), a.x - Math.sign(a.vx || p.face) * 20, false); stats.hits++;
     const landed = e.hp < hp0 || !e.alive;
     if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : (a.kind === 'draw' && a.full) || a.kind === 'pierce' ? 'heavyblow' : 'hit');   /* (claude/chargetiers: every drawn tier is a heavy blow on the straw) */ if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
@@ -224,7 +225,7 @@ export function makeRanger(api) {
       const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far) * (kn ? kn.vx : 1), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy * (kn ? kn.vy : 1) + (sh ? (Math.random() * 2 - 1) * sh.vy : 0), g: RG.draw.g / Math.sqrt(far) * (kn ? kn.g : 1), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k) * (sh ? sh.dmg : 1), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) * (kn ? kn.focus : 1), low: !!kn });
       if (kn) a.kneel = true;
       a.full = full;
-      if (full && T().twin && takeArrow(p)) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8, tag: a.tag, focus: 0 }); b.full = true; b.y += 3; }
+      if (full && T().twin && takeArrow(p)) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8 * T().twin, tag: a.tag, focus: 0 }); b.full = true; b.y += 3; }
       if (full) { api.shakeCam(2, p.face * 2); api.zoomKick(1.03, 0.14); }
     }
     if (tier >= 2 && p.rgKneel) { const a = p.rgArrows.at(-1); if (a) a.kneel = true; }   /* (the knee's trial counts any drawn tier) */
@@ -258,7 +259,7 @@ export function makeRanger(api) {
      A common foe is thrown OUT TO RANGE and knocked; an elite / mini / boss is only staggered a beat (never thrown). Returns true when it shoved ---- */
   function kickHit(p, e) { if (!e || !e.alive) return false; stats.kicks++;
     if (e.maxHp || e.mini || e.elite || (api.knockSkip && api.knockSkip(e))) { e.stagger = Math.max(e.stagger || 0, e.maxHp || e.mini ? RG.kick.bossStagger : RG.kick.stagger * 0.6); api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#c8e89a', 0.2); api.number(e.x, e.y - (e.h || 16) - 14, 'PUSHED', '#c8e89a'); return false; }
-    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.kick.push * (T().bashBack ? 1.4 : 1); e.vy = Math.min(e.vy || 0, -90); knockOut(e, 0.4); e.stagger = Math.max(e.stagger || 0, RG.kick.stagger);
+    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.kick.push * (T().bashBack ? mulK(1.4, T().bashBack) : 1); e.vy = Math.min(e.vy || 0, -90); knockOut(e, 0.4); e.stagger = Math.max(e.stagger || 0, RG.kick.stagger);
     api.ringAt(p.x + p.face * 12, p.y - 6, 14, '#c8e89a', 0.25); api.sparks(e.x, e.y - (e.h || 16) / 2, p.face, 6); api.number(e.x, e.y - (e.h || 16) - 14, 'PUSH KICK', '#c8e89a'); api.SFX.rgBash && api.SFX.rgBash(); return true; }
   /* ---- THE BOW-BASH (C) and her PARRY ---- */
   const beatLen = () => api.tap() * RG.bash.beat * (T().bashLong ? 4 / 3 : 1);
@@ -268,7 +269,7 @@ export function makeRanger(api) {
     p.rgBashT = RG.bash.t; p.rgBashAt = api.time; p.rgBashHit = new Set(); p.charge = 0; p.atkHeld = 0; p.rgNock = null; p.vx *= 0.3;
     api.kitPose(p, 'rgBash', RG.bash.t); api.SFX.rgBash && api.SFX.rgBash(); api.teach('bash'); return true; }
   const shove = (p, e, k = 1) => { if (e.maxHp || e.mini || e.elite || (api.knockSkip && api.knockSkip(e))) { e.stagger = Math.max(e.stagger || 0, e.maxHp || e.mini ? 0.15 : 0.35); return; }
-    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.bash.push * k * (T().bashBack ? 2 : 1); e.vy = Math.min(e.vy || 0, -80); knockOut(e, 0.35 * k); e.stagger = Math.max(e.stagger || 0, 0.5); };
+    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.bash.push * k * (T().bashBack ? mulK(2, T().bashBack) : 1); e.vy = Math.min(e.vy || 0, -80); knockOut(e, 0.35 * k); e.stagger = Math.max(e.stagger || 0, 0.5); };
   /* the knock carries on the knock's own velocity (main.js: e.kvx / e.kvy) - set with it, or the foe's position goes NaN */
   const knockOut = (e, t) => { e.knock = Math.max(e.knock || 0, t); e.kvx = e.vx; e.kvy = e.vy; e.knockAir = 0; e.bounced = false; e.slammed = false; };
   function bashStep(p) { if (!bashUp(p)) return;
@@ -282,7 +283,7 @@ export function makeRanger(api) {
     if (pierce && !foe) return null;                                      /* a bolt is not knocked aside by a bow */
     stats.parries++; p.parryT = 0.22;
     if (api.parried) api.parried(foe);                                    /* (claude/riposte) THE BOW-BASH ON THE BEAT is her parry: the window, the foe's reel */
-    if (foe && foe.alive) { if (!foe.maxHp && !foe.mini && !foe.elite) { foe.vx = (Math.sign(foe.x - p.x) || p.face) * RG.bash.push * 1.25 * (T().bashBack ? 2 : 1); foe.vy = Math.min(foe.vy || 0, -110); knockOut(foe, 0.5); } p.rgBashHit.add(foe); }   /* OUT TO RANGE */
+    if (foe && foe.alive) { if (!foe.maxHp && !foe.mini && !foe.elite) { foe.vx = (Math.sign(foe.x - p.x) || p.face) * RG.bash.push * 1.25 * (T().bashBack ? mulK(2, T().bashBack) : 1); foe.vy = Math.min(foe.vy || 0, -110); knockOut(foe, 0.5); } p.rgBashHit.add(foe); }   /* OUT TO RANGE */
     api.SFX.parry(); api.hitstop(0.08); api.shakeCam(3, -p.face * 2); api.zoomKick(1.04, 0.16);
     api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BOW-BASH', '#c8e89a');
     api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
@@ -335,9 +336,9 @@ export function makeRanger(api) {
   /* ---- THE SNARE (DOWN+C) ---- */
   function setSnare(p) { if (!(p.ground) || p.rgSnareCd > 0) return false; if (!api.spend(RG.snare.st)) { api.tired(); return false; }
     ensure(p); const n = T().snares ? 2 : 1; while (p.rgSnares.length >= n) p.rgSnares.shift();
-    p.rgSnares.push({ x: p.x, y: p.y, life: RG.snare.life, sprung: 0, held: null }); p.rgSnareCd = RG.snare.cd; stats.snares++;
+    p.rgSnares.push({ x: p.x, y: p.y, life: RG.snare.life * (T().snares || 1), sprung: 0, held: null }); p.rgSnareCd = RG.snare.cd; stats.snares++;
     api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); api.teach('snare'); return true; }
-  function snareStep(p, dt) { if (!p.rgSnares || !p.rgSnares.length) return; const tooth = T().toothed ? RG.snare.toothed : 1;
+  function snareStep(p, dt) { if (!p.rgSnares || !p.rgSnares.length) return; const tooth = T().toothed ? mulK(RG.snare.toothed, T().toothed) : 1;
     for (const s of p.rgSnares) { s.life -= dt; if (s.sprung > 0) { s.sprung -= dt; if (s.held && s.held.alive) { s.held.vx = 0; s.held.x += (s.x - s.held.x) * Math.min(1, dt * 10); } continue; }
       for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || e.noGrav || e.fly || Math.abs(e.x - s.x) > (e.w || 12) / 2 + 4 || Math.abs(e.y - s.y) > 6) continue;
         stats.snared++; api.hurtAs('sweep', e, Math.max(1, Math.round(dmgBase() * RG.snare.dmg * tooth)), s.x, false); api.SFX.rgSnap && api.SFX.rgSnap(); api.sparks(s.x, s.y - 2, 0, 5);
@@ -347,9 +348,9 @@ export function makeRanger(api) {
     p.rgSnares = p.rgSnares.filter(s => s.life > 0); }
 
   /* ---- THE BACKFLIP (main.js dodge start calls flip()): up and back, facing what she left ---- */
-  function flip(p, dir) { const k = T().highFlip ? RG.flip.high : 1; stats.flips++; p.rgFlip = { t: 0, dir }; p.rgFlipShots = 0;
+  function flip(p, dir) { const k = T().highFlip ? mulK(RG.flip.high, T().highFlip) : 1; stats.flips++; p.rgFlip = { t: 0, dir }; p.rgFlipShots = 0;
     if (p.ground && !p.swim) p.vy = RG.flip.vy * Math.sqrt(k);
-    if (T().cover && api.time - (p.rgCoverAt ?? -9) >= 3 && giveArrow(p, 1, 'cover')) p.rgCoverAt = api.time;
+    if (T().cover && api.time - (p.rgCoverAt ?? -9) >= 3 / T().cover && giveArrow(p, 1, 'cover')) p.rgCoverAt = api.time;
     api.SFX.rgFlip && api.SFX.rgFlip(); return RG.flip.vx * k; }
 
   function restock(dt, keys) { const p = P(); ensure(p); p.rgDuckT = p.ducking && p.ground && !p.swim ? (p.rgDuckT || 0) + dt : 0; if (p.rgKneel && !p.ducking && !(p.charge > 0)) p.rgKneel = false;   /* (claude/heropassa) how long she has been knelt: THE KNEELING DRAW's settle */
@@ -378,7 +379,7 @@ export function makeRanger(api) {
     guardStep(p, dt, keys, ctx);   /* (claude/heroblocksb) HOLD C: THE BOW GUARD */
     recallStep(p, dt); bashStep(p); stepArrows(p, dt); snareStep(p, dt);
     /* THE DRAW ROOTS HER (SOFT STEP: a slow walk; AIR DRAW: the fall slows while she holds it) */
-    if (p.charge > 0) { if (p.ground || p.swim) { if (!t.softStep) p.vx = 0; else p.vx *= RG.draw.slow; } else if (t.airDraw && p.vy > 40) p.vy = 40; }
+    if (p.charge > 0) { if (p.ground || p.swim) { if (!t.softStep) p.vx = 0; else p.vx *= RG.draw.slow * t.softStep; } else if (t.airDraw && p.vy > 40 + 80 * (1 - t.airDraw)) p.vy = 40 + 80 * (1 - t.airDraw); }
   }
 
   /* ---- HER NINE BOUGHT ACTIVES (main.js rangerKit presses them through skillPress / cdReady / spend, like everyone's) ---- */
@@ -400,7 +401,7 @@ export function makeRanger(api) {
     if (d < 10) { a.state = 'gone'; if (giveArrow(p, 1, 'recall')) api.SFX.rgPick && api.SFX.rgPick(); } }
   const kit = {
     /* (claude/herofeel) THE SNARE, now a STORE skill (progression-catalog rgSetSnare): the same RG.snare numbers, set from the skill slot (main.js pays the wind) */
-    snare() { const p = P(); if (!p.ground) return false; ensure(p); const n = T().snares ? 2 : 1; while (p.rgSnares.length >= n) p.rgSnares.shift(); p.rgSnares.push({ x: p.x, y: p.y, life: RG.snare.life, sprung: 0, held: null }); stats.snares++; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); api.teach('snare'); return true; },
+    snare() { const p = P(); if (!p.ground) return false; ensure(p); const n = T().snares ? 2 : 1; while (p.rgSnares.length >= n) p.rgSnares.shift(); p.rgSnares.push({ x: p.x, y: p.y, life: RG.snare.life * (T().snares || 1), sprung: 0, held: null }); stats.snares++; api.kitPose(p, 'rgSnare', 0.3); api.SFX.rgSnare && api.SFX.rgSnare(); api.teach('snare'); return true; },
     /* (claude/rangerid, Daniel 10-31 Q9) VOLLEY: 6 s apart (main.js CD_MAX.rgVolley) and TWO ARROWS FROM THE QUIVER - two of its three arrows are hers to pick up again, the third is free. Short of two arrows it does not go */
     volley() { const p = P(); if ((p.rgQ | 0) < RG.volleyCost) return false; for (let i = 0; i < RG.volleyCost; i++) takeArrow(p); stats.volleys++; api.kitPose(p, 'rgVolleyPose', 0.3); let n = 0; for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * SKK.K.rgVolley * api.amul('rgVolley'), tag: 'shot', free: n++ === 2 }); api.SFX.rgLoose && api.SFX.rgLoose(2); return true; },
     hawk() { const p = P(), e = quarry(p, 220); api.kitPose(p, 'rgHawkPose', 0.35); p.rgHawk = { x: p.x, y: p.y - 22, e, t: 0, strikes: 0, back: false }; api.SFX.rgHawk && api.SFX.rgHawk(); },
@@ -434,8 +435,8 @@ export function makeRanger(api) {
   }
   /* A FOE OF HERS DIED (main.js hurtEnemy, a kill): THE KILL and BLOOD TRAIL read it */
   function killed(e) { const p = P(); if (!markOn(e) && !((e.rgMarkT || 0) > api.time - 0.05)) return;
-    if (T().kill) { giveArrow(p, 2, 'kill'); focusGain(p, 20); }
-    if (T().trail) { let q = null, qd = 1e9; for (const f of api.enemies) { if (f === e || !f.alive || f.harmless || f.gone > 0) continue; const d = Math.hypot(f.x - e.x, f.y - e.y); if (d < 160 && d < qd) { q = f; qd = d; } } if (q) markFoe(p, q); }
+    if (T().kill) { giveArrow(p, Math.max(1, Math.round(2 * T().kill)), 'kill'); focusGain(p, 20 * T().kill); }   /* THE KILL: two arrows and a fifth of her focus at rank III; rank I one arrow */
+    if (T().trail) { let q = null, qd = 1e9; for (const f of api.enemies) { if (f === e || !f.alive || f.harmless || f.gone > 0) continue; const d = Math.hypot(f.x - e.x, f.y - e.y); if (d < 160 && d < qd) { q = f; qd = d; } } if (q) markFoe(p, q, undefined, RG.mark.t * T().trail); }
     e.rgMarkT = 0; }
 
   /* ---- DRAWN (after the hero): her arrows (in flight, in foes, stuck and glinting), the snare, the bear traps, the hawk, the rain; the nocked string ---- */

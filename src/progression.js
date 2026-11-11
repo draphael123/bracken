@@ -4,7 +4,9 @@ import {shownHp} from './num-display.js';   /* (claude/hpdisplay) health reads /
 import {retireRelics} from './relics.js';   /* THE RELICS ARE GONE: an old save's found-relic tick is dropped and its vault silver paid */
 import {KNIGHT_TECH, KNIGHT_UPGRADES} from './tech-knight.js';   /* THE L25-L50 KITS, one file a hero (claude/knightid; a hero lane adds its file and one line below) */
 import {normalizeDeathCost} from './death-cost.js';   /* THE DEATH COST's save shape: an older save has none, and gets an empty one (everything it holds is banked) */
+import * as TRT from './traits.js';   /* CORE PASSIVES AND EQUIPPABLE TRAITS (claude/traitframe): dark behind TRAITS_SHIP, see src/traits.js */
 export {LEGACY_NODES, SKILLS};
+export { TRT };
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
    or slotted: it is on from the hero level the catalog gives it. Version 1 saves are migrated by passivesToLevels below. */
 export const PROGRESSION_VERSION = 2;
@@ -41,7 +43,10 @@ export const skillsFor = h => BY_HERO[h]||[];
 /* A PASSIVE (active:false in the catalog) is ON from its level, bought or not, and a passive a save paid for before this is on
    whatever its level (it is kept: the coins come back, the technique stays). Never in a slot: two slots are for abilities. */
 export const isPassive = (h,id) => { const n=BY_ID[h]?.[id]; return !!n && !n.active; };
-export const passiveOn = (p,h,id,lv) => { const n=BY_ID[h]?.[id]; return !!n && !n.active && (lv>=n.level || !!p?.skillOwned?.[h]?.[id]); };
+/* THE TRAITS SPLIT (claude/traitframe, plan sec 3): with TRAITS_SHIP off this is exactly the line it was. With it on, a SPLIT hero's passive is judged by src/traits.js traitGate:
+   core as before, a trait only while worn in a slot his level has (and learned), a merged one by its host. A hero with no split rows yet is judged as before. */
+export const passiveOn = (p,h,id,lv) => { const n=BY_ID[h]?.[id]; if(!n&&TRT.traitsShip()&&TRT.isNewTrait(h,id))return TRT.traitGate(p,h,id,lv); if(!n||n.active)return false; if(TRT.traitsShip()&&TRT.hasSplit(h))return TRT.traitGate(p,h,id,lv); return lv>=n.level || !!p?.skillOwned?.[h]?.[id]; };
+export const wearTrait = TRT.wearTrait, migrateTraits = p => TRT.migrateTraits(p, levelOfXp), traitSlotsAt = TRT.traitSlotsAt;
 /* the ladder: every passive this hero has, in the order they arrive */
 export const passiveLadder = h => skillsFor(h).filter(n=>!n.active).sort((a,b)=>a.level-b.level||a.branch-b.branch||a.row-b.row||a.col-b.col);
 /* what a level-up from `from` to `to` brings (from < n.level <= to) */
@@ -261,6 +266,7 @@ export function validateProgress(p){
  if(p.hero!==undefined&&!HERO_IDS.includes(p.hero))throw Error('Unknown hero. Original save retained.');
  for(const value of Object.values(p.done||{}))if(!object(value))throw Error('Invalid completion history. Original retained.');
  if(p.progressionVersion && p.progressionVersion>PROGRESSION_VERSION)throw Error('This save needs a newer version of THORNROAD.');
+ TRT.validateTraits(p);   /* p.traits: a bad entry is DROPPED, never an error (no version bump: a v2 build ignores the key) */
  for(const k of ['coins','silverSpent'])if(p[k]!==undefined&&(!Number.isFinite(p[k])||p[k]<0))throw Error('Invalid '+k+'. Original save retained.');
  for(const k of ['xp','done','talents','skillOwned','loadouts','heroes','items','card','cardFree','skillRank'])if(p[k]!==undefined&&!object(p[k]))throw Error('Invalid '+k+'. Original save retained.');
  if(p.bossRecords!==undefined){
@@ -318,9 +324,9 @@ export function grantStarters(p){let n=0;for(const h of HERO_IDS)if(grantStarter
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);migratePyroKit(p);migrateTraits(p);grantStarters(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */

@@ -32,7 +32,9 @@ for (const l of W.votive.lamps) {
 const hands = read('../src/lit-church-hands.js'), vhands = read('../src/votive-hands.js'), flame = read('../src/flame.js'), towpath = read('../src/towpath.js'), main = read('../src/main.js');
 ok(/from '\.\/flame\.js'/.test(hands) && /from '\.\/flame\.js'/.test(vhands) && /export function takeFlame/.test(flame) && !/lcFlame = FLAME\.life/.test(hands) && !/lcFlame = FLAME\.life/.test(vhands), 'ONE flame verb: the church\'s hands and the votive hands both take it from src/flame.js (neither writes its own)');
 ok(!/ent\('tpchurch'/.test(towpath) && !/to: 'church'/.test(towpath) && !/boards\(32, 39, 22\)/.test(towpath), 'THE TOWPATH\'s first screen: no church door, no hill path');
-ok(/LIGHT WAYMEET'S VOTIVE LAMPS /.test(main) && /votiveLocked/.test(main), 'the locked tip: LIGHT WAYMEET\'S VOTIVE LAMPS n/3');
+/* (batch150, claude/unlocks - Daniel's UNLOCKS screen) every lock line is built from src/unlocks.js: 'LIGHT ALL 3 VOTIVE LAMPS IN WAYMEET' + the progress line 'n/3 VOTIVE LAMPS' (level-reach.mjs pins the shown text) */
+const ul = read('../src/unlocks.js');
+ok(/'LIGHT ALL '/.test(ul) && /votiveLocked/.test(main) && /lv\.votiveLamps\) return \['LOCKED: ' \+ UL\.reqText\(r\), UL\.reqProgress\(r\)/.test(main), 'the locked tip: LIGHT ALL 3 VOTIVE LAMPS IN WAYMEET + n/3');
 
 /* ---- B. THE PAGE ---- */
 const pg = await openPage({ audio: false, fonts: false });

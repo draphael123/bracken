@@ -76,7 +76,7 @@ if(ls.getItem(K(3)+'.corrupt')!=='{"hero":"knight","coins":12')F('the erased cor
 /* the other doors: a damaged CURRENT slot opens the picker */
 ls.setItem(K(1),bad); BK.loadSlot(1); if(!/damaged/i.test(BKT.saveBlocked))F('loading a corrupt slot says nothing readable: '+BKT.saveBlocked);
 BK.state='title'; const items=BK.ui.titleItems(); out.items=items;
-for(const door of ['ARENA YARD','LOCAL CO-OP']){ const i=BK.ui.titleTop().indexOf(door); if(i<0){F('no '+door+' door');continue;} BK.state='title'; BK.ui.titleI=i; BK.ui.pressCard=false; press('confirm'); if(BK.state!=='slots')F(door+' with a damaged slot went to '+BK.state); if(BKT.fixAsk!==-1)F('(the picker opens ready)'); }
+for(const door of ['ARENA YARD','LOCAL CO-OP']){ BK.state='title'; if(!BK.ui.titleSelect(door)){F('no '+door+' door');continue;} BK.ui.pressCard=false; press('confirm'); if(BK.state!=='slots')F(door+' with a damaged slot went to '+BK.state); if(BKT.fixAsk!==-1)F('(the picker opens ready)'); }
 /* a failed write is told, and the old text stays */
 BK.state='title'; ls.setItem(K(1),goodText); BK.loadSlot(1); const before=ls.getItem(K(1)); const orig=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){ if(String(k).startsWith('bracken.progress')) throw Object.assign(new Error('The quota has been exceeded.'),{name:'QuotaExceededError',code:22}); return orig.call(this,k,v); };

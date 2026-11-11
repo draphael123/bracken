@@ -23,7 +23,7 @@ export const KB_ACTIONS = [
   { id: 'left', label: 'MOVE LEFT' }, { id: 'right', label: 'MOVE RIGHT' }, { id: 'up', label: 'UP / LOOK UP' }, { id: 'down', label: 'CROUCH / DOWN' },
   { id: 'jump', label: 'JUMP' }, { id: 'atk', label: 'ATTACK / HEAVY' }, { id: 'block', label: 'C: GUARD/ABILITY' }, { id: 'dodge', label: 'DODGE' },
   { id: 'throw', label: 'SKILL ONE' }, { id: 'skill2', label: 'SKILL TWO' }, { id: 'flask', label: 'DRINK FLASK' }, { id: 'stance', label: 'BOW / KNIFE' }, { id: 'grab', label: 'GRAB / THROW' },   /* (claude/partnerthrow) lift your partner, throw him; throw what you carry */ { id: 'talk', label: 'TALK / READ' }, { id: 'map', label: 'MAP' },
-  { id: 'talents', label: 'SKILLS MENU' }, { id: 'pause', label: 'PAUSE' }, { id: 'dance', label: 'EMOTE' },
+  { id: 'ping', label: 'PING / MARK' }, { id: 'talents', label: 'SKILLS MENU' }, { id: 'pause', label: 'PAUSE' }, { id: 'dance', label: 'EMOTE' },
 ];
 export const ACTION_IDS = KB_ACTIONS.map(a => a.id);
 export const PROFILES = [{ id: 'kb', name: 'KEYBOARD  P1' }, { id: 'pad1', name: 'GAMEPAD  P1' }, { id: 'pad2', name: 'GAMEPAD  P2' }];
@@ -33,13 +33,13 @@ const PROFILE_IDS = PROFILES.map(p => p.id);
 export const KB_DEFAULT = {
   jump: ['z', 'Space', 'ArrowUp', 'w', 'k'], atk: ['x', 'j', 'Enter'], block: ['c', 'l'], dodge: ['v', 'Shift'],
   throw: ['f', 'b'], grab: ['i'], skill2: ['g', 'n'],   /* GRAB: I (free: V is the dodge, Y is a common rebind) */ talk: ['e', 't'], flask: ['u', '1'], stance: ['2'],   /* THE RANGER's STANCE (Daniel 10-15). 10-23: no second key - O, Y and the rest are the rebinds other actions and tests rely on being free */   /* THE FLASK (claude/survival, Daniel 10-07) */
-  left: ['ArrowLeft', 'a'], right: ['ArrowRight', 'd'], down: ['ArrowDown', 's'], up: ['ArrowUp', 'w'], pause: ['Escape', 'p'], talents: ['q'], dance: ['h'], map: ['Tab'],
+  left: ['ArrowLeft', 'a'], right: ['ArrowRight', 'd'], down: ['ArrowDown', 's'], up: ['ArrowUp', 'w'], pause: ['Escape', 'p'], talents: ['q'], dance: ['h'], map: ['Tab'], ping: ['y'],   /* (claude/cooppr) PING / MARK: Daniel asked for V, which is the dodge - Y is free (no default shares it) */
 };
 /* the pad's defaults: A jump, X swing, B dodge, Y skill one, RT skill two, LB/RB C, BACK the emote, START pause, the d-pad to move (the stick always moves too).
    skill three / four (L3, R3) have no menu row (the game has two skill slots) but keep their buttons. */
 /* (claude/survival) THE FLASK takes LT (6), which was talk's second button: talk keeps the d-pad's up */
 export const PAD_DEFAULT = { stance: [8],   /* (Daniel 10-23) BACK: the ranger's BOW / KNIFE. BACK is also the emote's button: a ranger's BACK is the stance and does not dance (main.js: danceHeld). Every other free button is a skill, the flask, the grab or the C guard */ jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], grab: [11], talk: [12],   /* GRAB: R3 (the fourth skill slot has no skill, so its press is free) */ flask: [6], block: [4, 5], dance: [8], pause: [9],
-  left: [14], right: [15], up: [12], down: [13], map: [], talents: [] };
+  left: [14], right: [15], up: [12], down: [13], map: [], talents: [], ping: [10] };   /* (claude/cooppr) PING / MARK: L3 (Daniel asked for LB, which is the C guard with RB; skill three's own button has no slot to fire) */
 const ALL_PAD_ACTIONS = Object.keys(PAD_DEFAULT);
 
 export const RESERVED_KEYS = ['m'];   /* M: music (main.js's keydown); R was the shrine key until claude/shrinekey removed it */
@@ -138,7 +138,7 @@ export function padTable(binds, prof) {
 export function padStateOf(gp, table) {
   const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), any = a => table[a].some(b), ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
   return { jump: any('jump'), atk: any('atk'), dodge: any('dodge'), throw: any('throw'), grab: any('grab'), skill2: any('skill2'), skill3: any('skill3'), skill4: any('skill4'), talk: any('talk'), flask: any('flask'), stance: any('stance'), block: any('block'), dance: any('dance'),
-    pause: any('pause'), map: any('map'), talents: any('talents'), left: any('left') || ax < -0.5, right: any('right') || ax > 0.5, up: any('up') || ay < -0.5, down: any('down') || ay > 0.5 };
+    ping: any('ping'), pause: any('pause'), map: any('map'), talents: any('talents'), left: any('left') || ax < -0.5, right: any('right') || ax > 0.5, up: any('up') || ay < -0.5, down: any('down') || ay > 0.5 };
 }
 
 /* "Z / SPACE": the keys (or buttons) an action answers to, n of them */
@@ -181,7 +181,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's held still is also STOKE (claude/pyrokit: the EMBER FLARE left down for the ward on C) */
-    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)' + (hero === 'ranger' ? ', +' + tk.c + ' SNARE' : ''), 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
+    hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'stoke' : 'crouch', 'HOLD ' + k1('down') + (hero === 'ranger' ? ', +' + tk.c + ' SNARE' : ' (STILL)'), 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['full bar', 'UP + ' + tk.c + ': METEOR FALL', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     ...(ultRow(hero, k1('up'), tk.c, pd('up'), pd('block')) ? [ultRow(hero, k1('up'), tk.c, pd('up'), pd('block'))] : []),   /* (claude/ults) ONE ULTIMATE ROW for every hero that has one: UP + C with the meter full (src/ultimate.js) */   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
@@ -196,6 +196,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['talk', kb('talk') + ' (signs, folk)', pd('talk')],
     ['flask', kb('flask') + ' (A BLOW SPILLS IT)', pd('flask')],
     ['grab', kb('grab') + ' (CO-OP: LIFT, THROW)', pd('grab')],   /* (claude/partnerthrow) */
+    ['ping', kb('ping') + ' (CO-OP: MARK)', pd('ping')],   /* (claude/cooppr) */
     ['pause', kb('pause') + '   (MAP: ' + k1('map') + ')', pd('pause')],
     ['drop', k1('down') + '+' + k1('jump') + ' ON A LEDGE', pd('down') + '+' + pd('jump')],
     ['swap hero', k1('dance') + ' (MAP, STORE) OR PAUSE MENU', '-'],   /* (claude/heroroster2, Daniel 11-07) the swap panel's keys; outside a level only */

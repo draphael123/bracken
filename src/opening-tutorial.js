@@ -97,7 +97,7 @@ export function buildLesson({ painter, T }) {
   const { block, ent, set } = L;
   const gy = F - 1;
   block(0, W - 1, F, H - 1); block(0, 1, 0, F - 1); block(W - 2, W - 1, 0, F - 1);
-  for (const s of STEPS) ent('sign', s.x0 + 2, gy, { text: s.sign });
+  for (const s of STEPS) ent('sign', s.x0 + 2, gy, { text: s.sign, mute: true });   /* (claude/polish151, first5 audit) a step's sign says what the prompt strip already says, and the hero spawns / stands on it: no floating E over him with nothing to use (the inn's own sign below stays talkable) */
   for (const x of [8, 20, 36, 60, 72, 84, 100, 108, 122, 136, 146]) ent('torch', x, gy);
   // ---- JUMP: a one-tile curb, then a three-wide ditch two rows deep (a floor in it: nothing is lost, and a jump climbs out) ----
   block(GEO.curb, GEO.curb, gy, gy);
@@ -209,5 +209,6 @@ export function makeLesson(api) {
     lines.forEach((ln, i) => api.text(ln, x + w / 2, y + 14 + i * 8, '#fff6e0', 'center', 6));
     g.globalAlpha = 1;
   }
-  return { st, on, tick, reset, dummyHit, event, blow, innCard, drawStep, drawCard, test, finish };
+  const cardUp = () => !!st.card, dismissCard = () => { const was = !!st.card; st.card = null; return was; };   /* (claude/polish151) the inn card can be closed by key */
+  return { st, on, tick, reset, dummyHit, event, blow, innCard, cardUp, dismissCard, drawStep, drawCard, test, finish };
 }

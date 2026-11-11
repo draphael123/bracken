@@ -1,10 +1,10 @@
 /* tools/feedback-form.mjs - GIVE FEEDBACK, THE IN-GAME FORM (claude/feedback, Daniel 11-03).
- *   A. STATIC   the GIVE FEEDBACK rows (title top level, pause menu) are wired; FEEDBACK_FORM_URL ships EMPTY; new filenames / ids / classes carry no ad-block word.
+ *   A. STATIC   the GIVE FEEDBACK rows (title top level, pause menu) are wired; FEEDBACK_FORM_URL is Daniel's form (11-10) with 7 entry ids; new filenames / ids / classes carry no ad-block word.
  *   B. FORM     from the title row: 1-5 rating, 10 'liked' + 10 'frustrating' chips, one text box, SEND, BACK; hero / level / build shown and NOT editable (the only
  *               field is the textarea); the line 'Sends only what you type, plus build, level and hero.'; from the pause menu in a level the level name is the real one.
  *   C. KEYS     real key events: arrows walk rating > liked > frustrating > text > SEND/BACK (and wrap), Z toggles a chip, ESC closes; the game under it sees none.
  *   D. PAD      a fake pad: d-pad / stick walk, A takes, B closes; the game's own pad poll sees none of it.
- *   E. NO NET   FEEDBACK_FORM_URL empty: Send shows 'Thanks!', ZERO requests (fetch / XHR / beacon / image / socket), the note is kept in localStorage; 1 send a minute; 1000-char cap.
+ *   E. NO NET   with the config emptied (test.setConfig): Send shows 'Thanks!', ZERO requests (fetch / XHR / beacon / image / socket), the note is kept in localStorage; 1 send a minute; 1000-char cap.
  *   F. POST     a DUMMY url + entry ids, fetch intercepted in the page (never sent): POST, mode no-cors, entry.N=value, checkbox keys repeat, no save field; an offline reject is quiet.
  *   G. FIT      at 1280x720, 960x540, 640x360 and a 375x667 phone the card keeps every control inside it, nothing sideways; SEND is reachable.
  * usage: node tools/feedback-form.mjs [shotDir]      (shotDir: save screenshots of the form there)
@@ -22,7 +22,8 @@ const shotDir = process.argv[2]; if (shotDir) mkdirSync(shotDir, { recursive: tr
 const ok = m => console.log('ok  ' + m);
 
 /* ---- A. static ---- */
-assert.equal(FEEDBACK_FORM_URL, '', 'the shipped FEEDBACK_FORM_URL is empty until Daniel creates the form');
+assert.match(FEEDBACK_FORM_URL, /^https:\/\/docs\.google\.com\/forms\/d\/e\/[\w-]+\/formResponse$/, "the shipped FEEDBACK_FORM_URL is Daniel's Google Form (.../formResponse)");
+for (const [k, v] of Object.entries(FEEDBACK_FIELDS)) assert.match(v, /^entry\.\d+$/, 'field ' + k + ' has its entry id');
 assert.deepEqual(Object.keys(FEEDBACK_FIELDS), ['rating', 'hero', 'level', 'build', 'liked', 'frustrating', 'text'], 'the seven fields');
 assert.deepEqual(FEEDBACK_TOPICS, ['Combat', 'Bosses', 'Platforming', 'Co-op', 'Heroes', 'Difficulty', 'Controls', 'Art', 'Music', 'Performance']);
 assert.ok(PAUSE_ROWS.includes('Give feedback'), 'the pause menu has a Give feedback row');
@@ -34,7 +35,7 @@ for (const n of names) assert.ok(!BAD.test(n.split('/').pop()), 'ad-block-safe f
 const ids = new Set([...form.matchAll(/#(fb\w+)|\.id = '([\w-]+)'|\bID = '([\w-]+)'|'(?:button|div|p|h1|h2|span|textarea)?\.([\w.-]+)'|dataset\.(\w+)/g)].flatMap(m => m.slice(1).filter(Boolean)));
 const cssWords = [...form.matchAll(/[#.]([A-Za-z][\w-]*)/g)].map(m => m[1]).filter(w => /^(fb|ob|on|go|sel|bad|dim|ok|row)/.test(w));
 for (const w of [...ids, ...cssWords]) assert.ok(!BAD.test(w), 'ad-block-safe id/class: ' + w);
-ok('A static       rows wired, URL empty, 7 fields, ' + names.length + ' filenames and ' + (ids.size + cssWords.length) + ' ids/classes carry no ad-block word');
+ok('A static       rows wired, form URL + 7 entry ids set, ' + names.length + ' filenames and ' + (ids.size + cssWords.length) + ' ids/classes carry no ad-block word');
 
 const pg = await openPage({ audio: false });
 const shot = async name => { if (!shotDir) return; const r = await pg.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(shotDir, name + '.png'), Buffer.from(r.result.data, 'base64')); };
@@ -44,7 +45,7 @@ const foc = () => pg.evalp(FOC);
 try {
   /* ---- B. the form from the title ---- */
   const b = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.ui.pressCard = false; BK.state = 'title'; BK.step(150);
-    const items = BK.ui.titleItems(); const i = items.indexOf('GIVE FEEDBACK'); BK.ui.titleI = i; const before = { st: BK.state, i: BK.ui.titleI };
+    const found = BK.ui.titleSelect('GIVE FEEDBACK'); const items = BK.ui.titleItems(); const i = found ? BK.ui.titleI : -1; const before = { st: BK.state, i: BK.ui.titleI };
     BK.press('confirm'); BK.step(3); await new Promise(r => setTimeout(r, 80));
     const root = document.getElementById('fbform'); if (!root) return { items, i, open: false };
     const q = s => [...root.querySelectorAll(s)];
@@ -89,8 +90,9 @@ try {
 
   /* ---- D. gamepad (a fake pad in the page) ---- */
   await pg.evalp(`(()=>{ window.__pad = { id: 'fake', index: 0, connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()`);
-  const padTap = async (btn, ax) => { await pg.evalp(`(async()=>{ const p = window.__pad; ${ax ? `p.axes[${ax[0]}] = ${ax[1]};` : `p.buttons[${btn}].pressed = true;`} await new Promise(r => setTimeout(r, 90)); p.axes[0] = 0; p.axes[1] = 0; p.buttons.forEach(x => x.pressed = false); await new Promise(r => setTimeout(r, 90)); })()`); };
-  await pg.evalp(`(()=>{ BK.state='title'; BK.ui.titleI = BK.ui.titleItems().indexOf('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); })()`);
+  /* (batch150) hold the pad for whole animation frames, not 90 ms of wall clock: a slow frame under load swallowed the press (flaky 2 of 3 runs) */
+  const padTap = async (btn, ax) => { await pg.evalp(`(async()=>{ const frames = n => new Promise(r => { const f = () => --n <= 0 ? r() : requestAnimationFrame(f); requestAnimationFrame(f); }); const p = window.__pad; ${ax ? `p.axes[${ax[0]}] = ${ax[1]};` : `p.buttons[${btn}].pressed = true;`} await frames(4); p.axes[0] = 0; p.axes[1] = 0; p.buttons.forEach(x => x.pressed = false); await frames(3); })()`); };
+  await pg.evalp(`(()=>{ BK.state='title'; BK.ui.titleSelect('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); })()`);
   assert.equal(await pg.evalp(`!!document.getElementById('fbform')`), true, 'the form re-opens'); const d0 = await pg.evalp(`JSON.stringify(BK.ui.titleI)`);
   assert.equal(await foc(), 'rate1'); await padTap(15); assert.equal(await foc(), 'rate2', 'd-pad RIGHT walks'); await padTap(14); assert.equal(await foc(), 'rate1', 'd-pad LEFT walks');
   await padTap(13); assert.ok(/^like:/.test(await foc()), 'd-pad DOWN reaches the liked chips: ' + await foc());
@@ -117,9 +119,9 @@ try {
   const e = await pg.evalp(`(async()=>{ const reqs = [], tap = (n, o, f) => { const old = o[f]; o[f] = function (...a) { reqs.push(n + ':' + String(a[0]).slice(0, 80)); return old.apply(this, a); }; };
     tap('fetch', window, 'fetch'); tap('xhr', XMLHttpRequest.prototype, 'open'); tap('beacon', navigator, 'sendBeacon'); const W = window.WebSocket; window.WebSocket = function (...a) { reqs.push('ws:' + a[0]); return new W(...a); };
     const I = window.Image; window.Image = function (...a) { const i = new I(...a); Object.defineProperty(i, 'src', { set(v) { reqs.push('img:' + v); } }); return i; };
-    const FB = await import('/src/feedback-form.js'); localStorage.removeItem('bracken-fb-last'); localStorage.removeItem('bracken-fb-local'); FB.test.resetDraft();
+    const FB = await import('/src/feedback-form.js'); FB.test.setConfig({ url: '', fields: {} }); localStorage.removeItem('bracken-fb-last'); localStorage.removeItem('bracken-fb-local'); FB.test.resetDraft();
     BKT.PROG.coins = 424242; BKT.PROG.secretField = 'SAVEMARKER';
-    const out = { reqs }; BK.state = 'title'; BK.ui.pressCard = false; BK.step(3); BK.ui.titleI = BK.ui.titleItems().indexOf('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); const q = s => document.querySelector('#fbform ' + s);
+    const out = { reqs }; BK.state = 'title'; BK.ui.pressCard = false; BK.step(3); BK.ui.titleSelect('GIVE FEEDBACK'); BK.press('confirm'); BK.step(3); const q = s => document.querySelector('#fbform ' + s);
     out.noRating = await (async () => { q('#fbsend').click(); await new Promise(r => setTimeout(r, 60)); return q('.fbmsg').textContent; })();
     q('button.fbrate[data-n="5"]').click(); q('button[data-topic="Music"]').click(); const ta = q('#fbtext'); ta.value = 'x'.repeat(1500); out.maxLen = ta.maxLength; ta.value = 'loved the music ' + 'y'.repeat(1200).slice(0, 600); ta.dispatchEvent(new Event('input'));
     q('#fbsend').click(); await new Promise(r => setTimeout(r, 120)); out.thanks = document.getElementById('fbform').innerText;

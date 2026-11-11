@@ -75,6 +75,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   winchmaster: 6,
   /* the mage is a shooter that moves and a floor you must leave: the storm shaman's job with a red half, at his weight */
   gobmage: 3,
+  gobgeo: 3.5,   /* (claude/gobgeo) THE GOBLIN GEOMANCER: a lob, a volley and a burst, all sent back - the gobmage's weight and a little more */
   /* THE HEXED FIELDS: a scarecrow is a read (where are you looking), a rook a step as much as a threat, the wisp worth more to you dead */
   /* THE MAGE'S FOLLY: a topiary is a read (it shivers first), the armour a slow wall, a piece and a broom nearly nothing, a mimic a trap, an imp a shooter that moves, a turret one that does not */
   topiary: 3, armour: 3.5, piece: 0.5, broom: 1.5, mimic: 2.5, imp: 2.5, turret: 2, tome: 2.5, homunculus: 5, archmage: 6, glyph: 0, gplate: 0, vatspit: 0, rune: 0,
@@ -142,7 +143,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      cuts your skin and runs for a well: a 3. THE CISTERN QUEEN is a boss: a 6; THE GANG LEADER a mini: a 5 (claude/welltown3). The town's wells, mud walls, fires, windlasses and dry cistern fight nobody */
   /* THE SANDWORM (claude/desertfoes, src/desert-foes2.js): the sand goblin's buried strike with the Dune Worm's told ripple and an open beat after it: a 2.5 */
   sandworm: 2.5,
-  waterthief: 3, cisternqueen: 6, gangleader: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
+  waterthief: 3, cisternqueen: 6, gangleader: 5, gprincess: 5, qwindlass: 0, djwindlass: 0, djinn: 6, skinwell: 0, mudwall: 0, oilfire: 0, windlass: 0, cistern: 0,
   gsmirror: 0, gscampfire: 0, colmirror: 0, gsheap: 0, gscrack: 0, skitter: 0.6, colossus: 6, trophyhunter: 2.5, huntmaster: 6, hoist: 0, scaffoldprop: 0, towerprop: 0, crewprop: 0, stakeprop: 0, batteringbeast: 6, kgbellows: 0, kgpot: 0, kgspit: 0, kgtrail: 0, kgtallow: 0, kgpage: 0, kgvault: 0, butcher: 3.5, attendant: 2, grubbag: 6,   /* THE KITCHEN GATE (claude/kitchengate): its machines are worth 0; THE BUTCHER a heavy; LORD GRUBBAG a boss */   /* THE PALISADE WOOD (claude/palisadewood): its props are machines (worth 0); THE BATTERING BEAST a boss */   /* THE ROOTWAY (claude/rootway): the trophy-hunter rides a hoist down and lunges (a runner, as the kite-rider); THE GOBLIN HUNTMASTER a boss */   /* THE GLASS SEA (claude/glasssea): its mirrors, fires, sand heaps and cracks are things you work; the skitter is a swarm's small biter; THE GLASS COLOSSUS */
   mcpoints: 0, mccart: 0, mcramp: 0, mccrusher: 0, mcgate: 0, mcrock: 0, mcbeam: 0, mcgap: 0, mcgobcart: 0, drillpoints: 0, oretip: 0, greatdrill: 6,   /* THE DEEP RAILS (claude/minecart): its points, crushers, gates, rockfalls, beams, boost gaps and goblin carts are things you ride or work; THE GREAT DRILL */   /* THE GLASS SEA (claude/glasssea): its mirrors, fires, sand heaps and cracks are things you work; the skitter is a swarm's small biter; THE GLASS COLOSSUS */
   sconce: 0, nestplug: 0, greatlamp: 0, fountain: 0,   /* THE UNDERWELL (claude/underwell): its wall torches, brood nests, great lamp and dry fountain are things you work, not foes */
@@ -151,6 +152,8 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   raptor: 2.5, gorgecrab: 6, sluice: 0, jam: 0, waterwheel: 0, oldnest: 0,
   /* THE SKY ROAD (src/sky-road.js, claude/skyroad): the GOBLIN KITE-RIDER circles in a thermal and swoops (a told kick a shield turns), falls to his feet when his line is cut or the air dies: a 2.5, as the harpy.
      The sun-stones, the sun-disc, the cloak, the riders' loft and the Eyrie's kite-masts fight nobody */
+  thunderwyrm: 6, wyrmling: 2.5, asburner: 0, asvent: 0,   /* (claude/airship) THE THUNDER WYRM is a boss (6); THE WYRMLING a hover-and-spit flier (the kite-rider's weight); the stations fight nobody */
+  sandskiff: 2.5, skiffchief: 0,   /* (claude/greatdune) THE SAND-SKIFF BANDIT (a moving rider, a told sweep and a lobbed pot: the kite-rider's weight); THE SKIFF CHIEF races, he never fights you (0) */
   kiterider: 2.5, sunstone: 0, sundisc: 0, cloak: 0, loft: 0, mast: 0,
   /* (claude/redgorge2) THE RAPTOR MATRIARCH is a boss: a 6; her ledge's sluice levers fight nobody */
   matriarch: 6, mlever: 0,
@@ -187,7 +190,9 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      the snow cornices and the driven hatchets are things you work, not foes */
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
+Object.assign(THREAT, { wwspan: 0, wwcandle: 0, wwlamp: 0, wwstone: 0, wwhands: 0, wwthief: 2, lanternwidow: 6 });   /* (claude/wispwood) WISPWOOD: its pale spans, candles, lamps, waystones and hand pools are machines (the hands are the pools' own hazard); a wisp thief; its boss */
 
+Object.assign(THREAT, { skweb: 0, skanchor: 0, sksconce: 0, skwall: 0, sksac: 0, skgoo: 0, silklurker: 3, cryptmother: 6 });   /* (claude/silk) THE SILK UNDERCROFT: its taut webs, anchors, sconces, sticky walls, egg sacs and goo are machines (a sac's spiderlings are spiders); THE SILK LURKER; its boss */
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
 // A tall level is long, it is just long upwards, so the span counts height at three columns a row.
@@ -247,3 +252,5 @@ export function worstGap(ents, W, H, arena) {
   for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   return Math.max(gap, end - (cx[cx.length - 1] || 0));
 }
+Object.assign(THREAT, { mnshift: 0, mncandle: 0, mncandelabra: 0, mnrack: 0, mnportrait: 0, mndoor: 0, poltergeist: 3, castellan: 6 });   /* (claude/hollowmanor) THE HOLLOW MANOR: its shifting panels, candles, candelabra stands, empty suits, portraits and the nursery door are machines; THE POLTERGEIST; its boss */
+Object.assign(THREAT, { aclectern: 0, acrail: 0, acwell: 0, acrune: 0, acbooks: 2, headmistress: 6 });   /* (claude/academy) THE MAGE ACADEMY: its lecterns, ward rails, pits and shortcut runes are machines; a spellbook flock; its boss */

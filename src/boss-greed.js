@@ -28,6 +28,8 @@
    (GREED.miniHit), BK.bossOpen (openOf). tools/boss-greed.mjs is its check. */
 import { abbotOpen } from './false-abbot.js'; import { gormOpen } from './gorm.js';   /* (claude/gorm2) KING GORM 2 */
 import { gargOpen } from './gate-gargoyle.js';
+import { csOpen } from './castellan.js'; /* (claude/fix157) THE CASTELLAN'S GHOST (the Hollow Manor): his stumble / bite / wind / dizzy / knock-out openings are rules, his own number OWN_WARD (x0.45, x2 open, capped) */
+import { cmOpen } from './crypt-mother.js'; import { hmOpen as hmsOpen } from './headmistress.js'; import { wdOpen } from './lantern-widow.js';   /* (claude/nighthands) THE NIGHT ROAD's three: their openings (a knot cut, a lesson answered, the lantern taken back) are rules now - without one noteGreed counted every blow IN an opening as greed and the reprisal came down on the hero mid-opening */
 import { winchOpen } from './winchmaster.js';
 import { wormOpen } from './dune-worm.js';
 import { mageOpen, mageSoft } from './undead-mage.js';
@@ -42,7 +44,7 @@ import { hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (
 import { drillHittable } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart) */
 import { bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn; the hero as the boss) */ import { pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch; the hero as the boss, claude/church2) */ import { dcOpen } from './deacon.js';   /* THE DEACON (claude/church2) */
 import { fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath) */
-import { glOpen } from './gang-leader.js'; import { djOpen } from './djinn.js';
+import { glOpen } from './gang-leader.js'; import { gpOpen } from './goblin-princess.js'; import { djOpen } from './djinn.js';
 import { sextonOpen } from './sexton.js';
 import { hedgeOpen } from './hedge-warden.js';
 import { brOpen, bkOpen } from './unburied-foes.js';
@@ -120,6 +122,10 @@ export const OPEN_RULE = {
   batteringbeast: e => bbOpen(e),                                           // THE BATTERING BEAST (claude/palisadewood): STUCK in a scaffold's wreck, DAZED off a wall, LOOSE (his harness cut)
   oldtusker: e => otOpen(e),                                                 // OLD TUSKER (claude/oldtusker): PINNED under a felled pine, or DAZED off a ram into a pine or the wall
   tombking: e => tkOpen(e),                                                  // THE COFFIN KING (claude/pyramidboss): tipped over by a switch's counterweight, or a chamber trap (a plate) - the lid off, open
+  castellan: e => csOpen(e),                                                 // (claude/fix157) THE CASTELLAN'S GHOST: HE STUMBLES / THE BLADE BITES THE FLOOR / WINDED / DIZZY / KNOCKED OUT OF HIM; his own number (OWN_WARD: x0.45, x2 open, capped)
+  cryptmother: e => cmOpen(e),                                               // (claude/nighthands) THE CRYPT MOTHER: on her back (her knot cut); her own number (OWN_WARD: x0.45 hide, x2 open, capped)
+  headmistress: e => hmsOpen(e),                                             // (claude/nighthands) THE HEADMISTRESS: CORRECT - the lesson answered; her own number (OWN_WARD: x0.4, x2 open, capped)
+  lanternwidow: e => wdOpen(e),                                              // (claude/nighthands) THE LANTERN WIDOW: RECLAIMED - her lantern struck back; her own number (OWN_WARD: x0.55, x2 open, capped)
   mother: e => e.mode === 'open',                                           // (claude/sporewood2) THE MOTHER CAP 2: her knot plunged open (src/mother-cap2.js; x2 in her own take)
   scarabmother: e => smOpen(e),                                              // THE SCARAB MOTHER (claude/sealedpyramid): pinned / stuck / flipped by a trap she was lured into
   hourglassking: e => hkOpen(e) || e.mode === 'turn',                      // THE HOURGLASS KING (claude/buriedcity): stalled by a sand-gate pulled as his glass runs low, or turning his glass over (whole)
@@ -140,13 +146,14 @@ export const OPEN_RULE = {
   djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
   roc: e => rocEyrieOpen(e),                                                 // THE ROC (claude/skyroad): stuck in the nest off a dive, or knocked down - a thermal plunge, the lightning on her mast
   gangleader: e => glOpen(e),                                                // burning: his own bottle, struck home (claude/welltown3)
+  gprincess: e => gpOpen(e),                                                 // (claude/highcrown3) THE GOBLIN PRINCESS: pinned under her tower bell's grate, stunned by her own tiara, staggered off a parried lunge, preening after her pokes
 };
 /* BOSSES WITH THEIR OWN TWENTIETH: the rule leaves their number alone (it would be a twentieth of a twentieth) and only counts greed */
 /* BLOWS ARE HIS MECHANIC: the Pyromancer is opened by being HIT while he runs hot (every blow heats him, src/main.js hurtEnemy0), so a run of
    blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
-export const OWN_WARD = new Set(['grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['castellan', 'cryptmother', 'headmistress', 'lanternwidow', 'grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   /* (claude/sporewood2) mother: off this list - THE MOTHER CAP 2 has an opening (her knot) and her own number (OWN_WARD: 0.4 sealed, x2 open) */
@@ -188,7 +195,7 @@ export function install(helpers) { H = helpers || {}; }
    outside value - the chip for a mini on CHIP_MINI, his plain blow (no opening's bonus) for the rest. The purse is refilled when the
    opening ends (capStep, every frame). MINI_OWN_CAP already cap their own windows the same way, in their own code. */
 export const MINI_CAP = 1 / 3;
-export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader', 'deacon']);   /* (claude/church2) THE DEACON caps his grope himself (DC.gropeCap) */
+export const MINI_OWN_CAP = new Set(['greathound', 'homunculus', 'gangleader', 'deacon', 'gprincess']);   /* (claude/highcrown3) THE GOBLIN PRINCESS caps an opening herself (GP.capK) */   /* (claude/church2) THE DEACON caps his grope himself (DC.gropeCap) */
 const ruleOpen = e => { if (e.rpOpenT > 0) return true;   /* (claude/riposte) a parry's short told opening (src/riposte.js) */ if (e.broken > 0 && !(e.xpRole === 'mini' && CHIP_MINI.has(e.t))) return true; const r = OPEN_RULE[e.t]; if (!r) return null; try { return !!r(e); } catch { return null; } };
 const capped = e => !!e && e.xpRole === 'mini' && !MINI_OWN_CAP.has(e.t);
 /* dmg: what his own code made of a hero's blow; raw: the blow before it. Returns what comes off the bar. say(e) tells the shut. */

@@ -38,7 +38,7 @@ const move = async (id, x, y) => { active.set(id, { x, y }); await sendTouch('to
 const up = async (id) => { const p = active.get(id); active.delete(id); await pg.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ x: p.x, y: p.y, id }] }); await sleep(40); };   /* (touchEnd lists the points that LEAVE, not the ones that stay) */
 const tap = async (x, y, hold = 60) => { await down(9, x, y); await sleep(hold); await up(9); };
 const goto = async (query = '', keepCard = false) => {   /* (keepCard: the one page that tests the PRESS ANY KEY card itself; every other page takes the card down, as a player's first tap does) */
-  await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?touch=1&nosw' + query });
+  await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?touch=1&nosw&noattract' + query });
   await sleep(1500);
   for (let i = 0; i < 160; i++) { const r = await E('typeof window.BK === "object" && !!window.BK.lookPass', 3000).catch(() => false); if (r) break; await sleep(300); }
   DPR = await E('document.getElementById("c").width / innerWidth');   // syncDpr
@@ -68,27 +68,35 @@ try {
   await section('press-card', async () => {
     await sleep(800);
     ok(await E('BK.ui.pressCard') === true, 'a fresh touch page opens on the press card');
+    { await E('window.__textRec = []'); await sleep(2600); const said = await E('(() => { const s = [...new Set((window.__textRec || []).filter(t => t.kind === "text").map(t => t.s))]; window.__textRec = null; return s; })()');   /* (claude/intro) the living scene: TAP TO START under the sign, and not the keyboard line */
+      ok(said.includes('TAP TO START'), 'a touch page says TAP TO START (' + said.join(' / ') + ')'); ok(!said.some(s => /KEYBOARD OR GAMEPAD|PRESS ANY KEY/.test(s)), 'and not the keyboard prompt or its controls line'); }
     const hs = await E('BK.touch.hitBoxes()'); ok(hs.length === 1 && hs[0].w >= 300 && hs[0].h >= 170, 'the card is ONE whole-screen tap box (' + hs.length + ' drawn)');
     await gameTap(0); await sleep(400);
     ok(await E('BK.ui.pressCard') === false, 'a tap did not take the card down');
     ok(await E('BK.state') === 'title', 'and it opened nothing else (state ' + await E('BK.state') + ')');
-    await sleep(2600);   // the fronds part, the knight walks in, the sign settles, the menu comes in
+    await sleep(1400);   // the board slides in
   });
 
   // ===================== 4+5: TAP MENUS, from the title =====================
   await section('title', async () => {
     await sleep(1500);
     const items = await E('BK.ui.titleItems()'), hits = await E('BK.touch.hitBoxes()');
-    const tw = await E('BK.ui.titleWin()'); ok(hits.length === tw.rows.length && items.length > 0 && !items.includes('GIVE FEEDBACK') && !items.includes('CREDITS'), 'the title drew ' + hits.length + ' tap boxes for ' + tw.rows.length + ' window rows of ' + items.length + ' items (GIVE FEEDBACK / CREDITS fold under OPTIONS on touch)');
+    const tw = await E('BK.ui.titleWin()'); ok(hits.length === tw.rows.length && items.length > 0 && !items.includes('GIVE FEEDBACK') && !items.includes('CREDITS'), 'the title drew ' + hits.length + ' tap boxes for ' + tw.rows.length + ' window rows of ' + items.length + ' items (the six-row top level; GIVE FEEDBACK / CREDITS fold under EXTRAS)');
     notes.push('title items: ' + items.join(', '));
     // every box is a real size for a thumb (at least 30 CSS px tall) and on screen
     const th = await E('BK.touch.hitBoxes().map(h => { const [x0, y0] = BK.touch.gameToClient(h.x, h.y), [x1, y1] = BK.touch.gameToClient(h.x + h.w, h.y + h.h); return { w: x1 - x0, h: y1 - y0, x: x0, y: y0 }; })');
     ok(th.every(r => r.h >= 43 && r.x >= 0 && r.x + r.w <= 844 && r.y >= 0 && r.y + r.h <= 390), 'a title tap box is off screen or sliver-thin: ' + JSON.stringify(th[0]));
     ok(!items.includes('SETTINGS') && !items.includes('SOUND TEST') && !items.includes('CONTROLS'), 'SETTINGS / SOUND TEST / CONTROLS sit under OPTIONS, not on the title: ' + items.join('|'));
-    ok(items.includes('OPTIONS'), 'no OPTIONS on the title');
+    ok(items.includes('OPTIONS') && items.includes('EXTRAS') && items.includes('PLAY TOGETHER') && items.includes('MORE MODES') && !items.includes('SWAP HERO'), 'the touch title is the six-row top level: ' + items.join('|'));
+    /* (claude/titlemenu, Daniel 11-08) every group opens by tap, shows a BACK row, and BACK (a tap) returns to the top level on the group's row */
+    for (const [g, want] of [['PLAY TOGETHER', ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI']], ['MORE MODES', ['ARENA YARD', 'BOSS SELECT']], ['EXTRAS', ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS']]]) {
+      await tapTitleItem(g); const gi = await E('BK.ui.titleItems()'), gh = await E('BK.touch.hitBoxes()');
+      ok(want.every(k => gi.includes(k)) && gi[gi.length - 1] === 'BACK' && gh.length >= want.length + 1, g + ' opened by tap with ' + gh.length + ' boxes: ' + gi.join('|'));
+      await tapTitleItem('BACK'); await sleep(250); const back = await E('({ sub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI] })'); ok(back.sub === null && back.on === g, 'a tap on BACK returned to the top level on ' + g + ': ' + JSON.stringify(back));
+    }
     await tapTitleItem('OPTIONS');
     const sub = await E('BK.ui.titleItems()'), subHits = await E('BK.touch.hitBoxes()');
-    ok(sub.includes('SETTINGS') && sub.includes('GIVE FEEDBACK') && sub.includes('CREDITS') && subHits.length >= 3, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
+    ok(sub.includes('SETTINGS') && sub.includes('REPORT A BUG') && sub.includes('BACK') && subHits.length >= 3, 'the OPTIONS list drew ' + subHits.length + ' tap boxes for ' + sub.join('|'));
     await tapTitleItem('SETTINGS');
     ok(await E('BK.state') === 'menu', 'a tap on SETTINGS did not open Settings (state ' + await E('BK.state') + ')');
   });
@@ -149,7 +157,8 @@ try {
   await section('map', async () => {
     await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = false; BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.setDev(true); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200);
     const hs = await E('BK.touch.hitBoxes()'), mn = await E('BK.mapNodes()');
-    ok(hs.length === mn.hitOrder.length && hs.length > 5, 'the map drew ' + hs.length + ' node boxes for ' + mn.hitOrder.length + ' nodes');
+    /* (claude/fix151, mapclean 11-07) two boxes follow the node boxes now: the compact info card (tap = its MORE page) and the NAMES chip (tap = every name). The node boxes stay first, so hs[k] is still hitOrder[k]. */
+    ok(hs.length === mn.hitOrder.length + 2 && hs.length > 5, 'the map drew ' + hs.length + ' boxes for ' + mn.hitOrder.length + ' nodes + the card + the NAMES chip');
     const here = mn.hitOrder.indexOf(mn.node), next = mn.hitOrder.findIndex((n, k) => k > here && !mn.spur[n]);
     ok(here >= 0 && next >= 0, 'could not find the node under the hero and the next one');
     // the next node may be off the top or bottom of the view: the camera follows the hero, so ask for the one that is on screen
@@ -174,7 +183,7 @@ try {
     await E('BK.ui.storeOpen("map", "heroes")'); await sleep(900);
     ok(await E('BK.state') === 'store', 'the store did not open');
     const hs = await E('BK.touch.hitBoxes()'), nt = await E('BK.ui.tabs()'); ok(hs.length >= nt + 1, 'the store drew ' + hs.length + ' tap boxes (' + nt + ' tabs + item rows)');
-    const sw = 1;   /* (rel139fix, claude/hubpolish) a SWAP HERO pill is the first tap box on every tab but SKILLS, so the tabs follow it */
+    const sw = 2;   /* (rel139fix, claude/hubpolish) a SWAP HERO pill is a tap box on every tab but SKILLS; (batch150, menuback) the BACK button is the very first box: the tabs follow both */
     await gameTap(2 + sw); ok(await E('BK.ui.storeTab') === 2, 'a tap on the third store tab did not open it (' + await E('BK.ui.storeTab') + ')');
     await sleep(400);
     if ((await E('BK.ui.items()')) > 1) { await gameTap(nt + 1 + sw); ok(await E('BK.ui.storeI') === 1, 'a tap on the second store row did not pick it (' + await E('BK.ui.storeI') + ')'); }
@@ -499,6 +508,7 @@ try {
     await E('BK.touchCtx.length = 0; BK.enemies().forEach(e => { e.alive = false; e.hp = 0; }); BK.sim(2); BK.P.face = 1');
     // auto-interact: pushing into a doorway and standing there uses it; off, it does not
     const D = (await dbg()).layout.dpad;
+    await E('BK.P.x = 184; BK.P.vx = 0; BK.P.vy = 0; BK.sim(3)');   /* (autodoor) clear of the wood's signs (tiles 5 and 18): a dodge in thumb-friendly leaves him beside the first, and a sign's READ outranks a door's ENTER */
     await E("BK.P.vx = 0; BK.props().push({ t: 'doorway', id: 'tAuto', needs: null, test: 1, x: BK.P.x, y: BK.P.y })"); await tk(); await tk();
     await down(1, ...pointAt(D, 0, 0.75)); await E('BK.P.vx = 0; BK.P.coyote = 1'); for (let i = 0; i < 6; i++) await tk(0.1); ok(!(await snap()).talk, 'Auto-interact OFF still used the door');
     await E('BK.SET.touchAutoUse = true'); for (let i = 0; i < 6; i++) { await E('BK.P.vx = 0; BK.P.coyote = 1'); await tk(0.1); } { const dd2 = await dbg(); ok((await snap()).talk, 'Auto-interact ON did not use the door after standing against it (verb ' + JSON.stringify(dd2.verb) + ', keys ' + JSON.stringify(await keysNow()) + ', vx ' + await E('BK.P.vx') + ', ground ' + await E('BK.P.ground') + ')'); } await up(1); await E('BK.SET.touchAutoUse = false; BK.sim(3)');

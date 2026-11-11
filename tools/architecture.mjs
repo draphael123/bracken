@@ -62,7 +62,8 @@ export function architecture(R) {
   // UNDER THE SURFACE OF WHAT YOU CANNOT SEE THROUGH, a foot is hidden: a house drawn standing in the lava stands in it. Clear
   // water is not that - you can see the gap under a tower in it - so only an opaque pool (fire, a harmful one, one not drawn clear) hides
   const hidden = (x, y) => (R.pools || []).some(p => !p.clear && x * 16 + 8 >= p.x0 && x * 16 + 8 <= p.x1 && y * 16 + 8 > p.y && (p.bottom === undefined || y * 16 < p.bottom));
-  const piece = i => laid[i] || face[i];
+  const LID = 2;   /* (batch156) the top two rows are the WORLD'S LID: Highcrown's Queen's Stair (claude/gq3) opens the section below with air() and leaves the lid slab over open sky - it is the sky cap, nobody can see or stand on it, and nothing rests on it */
+  const piece = i => i >= LID * W && (laid[i] || face[i]);
   const natural = (x, y) => rock(x, y) && !(x >= 0 && x < W && y >= 0 && y < H && laid[y * W + x]);
   const base = new Uint8Array(W * H), held = new Uint8Array(W * H), bridged = new Uint8Array(W * H);   /* bridged: a lintel between two piers */
   /* A DOORWAY. A wall up to three tiles thick with a way through its foot is drawn edge on: the door is IN the wall, and the

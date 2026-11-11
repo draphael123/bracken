@@ -85,12 +85,23 @@ export async function openPage(opts = {}) {
     pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
     ws.send(JSON.stringify({ id: i, method, params }));
   });
+  /* THE PAGE IS COLLECTED, NOT LEFT TO PILE UP (claude/leakfix 11-10). A dropped canvas and a left-behind document keep their NATIVE memory until a MAJOR garbage collection, and V8 cannot see it,
+     so it never hurries: a renderer sat at ~1.5 GB after boot and grew past memguard's 3 GB cap in the long checks (11-10: 20 kills, each one a red and a rerun; cdp-recovery's twenty reloads
+     added ~100 MB each). A full collection (HeapProfiler.collectGarbage, what DevTools' bin button does) is asked for after every pg.reload() and, at most every BRACKEN_PAGE_GC_MS (15 s), after an
+     evaluation. The game itself asks for one every third level load inside an evaluation (src/main.js retireBakes, only while window.__gcOnLoad is set - which only this file sets). Nothing a check
+     reads changes; only RSS does. opts.gc === false or BRACKEN_PAGE_GC=0 turns all of it off (tools/load-leak.mjs measures growth WITHOUT a collection and opts out). */
+  /* (FIX158B 11-11) OPT-IN: with the collection on by default boss-openings page-CRASHED on batch158 (Inspector.targetCrashed) in 3 of 5 runs here and flags-off in REL158OFF; it passes with BRACKEN_PAGE_GC=0. Set BRACKEN_PAGE_GC=1 (or opts.gc === true) to get the leakfix collection back for a memory-bound gate */
+  const gcOn = opts.gc !== false && process.env.BRACKEN_PAGE_GC !== '0', GC_EVERY_MS = +(process.env.BRACKEN_PAGE_GC_MS || 15000);
+  let gcLive = false, gcBusy = false, gcOk = true, gcAt = Date.now(), gcEnabled = false;
+  const collectGc = async force => { if (!gcOn || !gcOk || gcBusy || deadWhy || (!force && Date.now() - gcAt < GC_EVERY_MS)) return; gcBusy = true;
+    try { if (!gcEnabled) { await send('HeapProfiler.enable', {}, 10000).catch(() => {}); gcEnabled = true; } await send('HeapProfiler.collectGarbage', {}, 30000); await send('HeapProfiler.disable', {}, 10000).catch(() => {}); gcEnabled = false; }   /* profiler stopped after each collect */
+    catch (e) { if (/not found|not supported/i.test(e.message)) gcOk = false; } finally { gcAt = Date.now(); gcBusy = false; } };
   /* A timed-out evaluation FAILS LOUDLY NAMING ITS EXPRESSION (claude/harnessstall): it used to say only 'Runtime.evaluate did not answer within 1801000ms', or never, and the guard killed the check 900 s in */
   const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000)
     .catch(e => { throw /did not answer/.test(e.message) ? new Error(e.message + ' - evaluating: ' + String(expr).replace(/\s+/g, ' ').slice(0, 160)) : e; });
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    return r.result && r.result.result ? r.result.result.value : undefined; };   /* (FIX158B, suite-audit recipe) NO forced collection after an evaluation: it page-crashed boss-openings / riposte after long ones */
   await send('Runtime.enable'); await send('Page.enable'); await send('Inspector.enable').catch(() => {});
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
@@ -99,6 +110,9 @@ export async function openPage(opts = {}) {
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
   if (opts.duelBeta) await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__DUELBETA=1' });   /* (pvpduel2) the DUEL (BETA) dev switch while PVP_SHIP_FLAG is off */
+  if (process.env.BRACKEN_ROAD) await send('Page.addScriptToEvaluateOnNewDocument', { source: process.env.BRACKEN_ROAD.split(',').map(k => ({ ww: 'window.__WW=true', sk: 'window.__SK=true', mn: 'window.__MN=true', ac: 'window.__AC=true' })[k.trim()]).filter(Boolean).join(';') || '0' });   /* (claude/nightwalk) BRACKEN_ROAD=ww,sk,mn,ac: the four flag-off road areas on in THIS page only (the same globals tools/road-on.mjs sets in node), from the first script of every document; never a committed flip */
+  if (process.env.BRACKEN_COL4 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_COL4=true' });   /* (claude/colossus4) the Glass Sea + Colossus 4 flag for bossLab / boss-rates (src/colossus4.js col4On): from the first script of every document, so the lab's reloads keep it */
+  /* (FIX158B) no window.__gcOnLoad: the in-page collection every 3rd level load is OFF by default (BRACKEN_PAGE_GC_INPAGE=1 brings it back) */ if (gcOn && process.env.BRACKEN_PAGE_GC_INPAGE === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__gcOnLoad=3' });   /* (claude/leakfix) src/main.js retireBakes: a full collection every 3rd level load, only while this is set and the browser was started with --expose-gc (browser-profile.mjs) */
   if (opts.seed !== undefined) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{let s=' + (opts.seed >>> 0) + ';Math.random=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};})()' });
   /* THE GAME SPEED IS PINNED (Daniel 10-12: results must not change with the player's setting): every page a tool opens starts with a settings file at the speed the
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
@@ -112,7 +126,9 @@ export async function openPage(opts = {}) {
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
+  gcLive = gcOn;
   const reload = async () => {
+    gcLive = false;
     const previousOrigin = await evalp('localStorage.clear(); window.__labReloading = true; performance.timeOrigin', 10000);
     const url = URL0 + '?labReload=' + Date.now() + '-' + id;
     await send('Page.navigate', { url });
@@ -123,6 +139,7 @@ export async function openPage(opts = {}) {
       if (!ready) await sleep(100);
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
+    gcLive = gcOn; await collectGc(true);   /* (claude/leakfix) the document just left is garbage now: ~100 MB a reload that only a major collection gives back */
   };
   /* (claude/botmem) killedByGuard(): the memguard2 kill-log entry for THIS page's profile (or null); dead: why the page stopped answering; infra: either */
   const profName = run ? basename(run.prof) : '';

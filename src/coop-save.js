@@ -35,7 +35,7 @@ const get = (storage, k) => { try { return storage.getItem(k); } catch { return 
 export const slotRawOf = (storage, i) => get(storage, slotKey(i)) || (i === 0 ? get(storage, LEGACY_KEY) : null);
 
 /* THE ONE HERO'S PART OF A SAVE: the maps keyed by hero (only his entry travels) and the few that are the save's own */
-export const PER_HERO = ['xp', 'xpGot', 'done', 'card', 'cardFree', 'skillOwned', 'loadouts', 'skillRank', 'talents', 'charmOf'];
+export const PER_HERO = ['xp', 'xpGot', 'done', 'card', 'cardFree', 'skillOwned', 'loadouts', 'skillRank', 'talents', 'charmOf', 'traits'];   /* (claude/traitframe) the hero's worn traits join his snapshot */
 export const FLAT = ['charm', 'items', 'coins'];
 /* every PROG key main.js swaps while a profiled seat's pass runs (tech is per hero by its 'hero:' prefix) */
 export const OVERLAY_KEYS = [...PER_HERO, 'tech', ...FLAT];
@@ -124,7 +124,12 @@ export function earnedOf(led, unbanked = null) {
 export function noteClear(led, id) { if (typeof id === 'string' && !led.clears.includes(id)) led.clears.push(id); }
 /* (claude/smallfix8, Daniel 11-01) A PARTY UNLOCK: a named flag the whole party earned (CREDIT_FLAGS: the Burning Village on a clean King Gorm). Every seat on his own save gets it written with his credit. */
 export const CREDIT_FLAGS = ['burningOpen'];
-export function noteFlag(led, name) { if (CREDIT_FLAGS.includes(name)) { led.flags = led.flags || []; if (!led.flags.includes(name)) led.flags.push(name); } }
+/* (claude/cooppr, Daniel 11-04) ITEM / UNLOCK CREDIT: what a wood hands out for a boss goes to EVERY seat's own save, not just the host's - a boss beaten (bossDown: the road to buying the hero it opens) and a boss's own weapon (swords: the Chieftain's axes). Namespaced flags: 'bossDown:<level>' and 'swords:<id>'. (Charms, skins and store items are bought with a purse in the store - there is nothing in a wood to credit.) */
+export const UNLOCK_KINDS = ['bossDown', 'swords'];
+export const UNLOCK_RE = /^(bossDown|swords):([A-Za-z0-9_-]{1,40})$/;
+const SAFE_ID = id => !['__proto__', 'constructor', 'prototype'].includes(id);
+export const isCreditFlag = f => typeof f === 'string' && (CREDIT_FLAGS.includes(f) || (UNLOCK_RE.test(f) && SAFE_ID(f.split(':')[1])));
+export function noteFlag(led, name) { if (isCreditFlag(name)) { led.flags = led.flags || []; if (!led.flags.includes(name)) led.flags.push(name); } }
 /* the next credit, cumulative and never lower than the last one sent; null when nothing changed (a final one is always sent) */
 export function nextCredit(led, unbanked = null, final = false) {
   const e = earnedOf(led, unbanked), xp = Math.max(led.last.xp, e.xp), coins = Math.max(led.last.coins, e.coins);
@@ -139,7 +144,7 @@ export function cleanCredit(c) {
   if (!object(c) || c.v !== 1 || typeof c.sid !== 'string' || !/^[A-Za-z0-9-]{1,64}$/.test(c.sid) || !Number.isInteger(c.seq) || c.seq < 1 || !HERO_IDS.includes(c.hero)) return null;
   if (!(Number.isFinite(c.xp) && c.xp >= 0) || !(Number.isFinite(c.coins) && c.coins >= 0) || !Array.isArray(c.clears) || c.clears.length > 500) return null;
   const clears = [...new Set(c.clears.filter(id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(id) && !['__proto__', 'constructor', 'prototype'].includes(id)))];
-  const flags = Array.isArray(c.flags) ? [...new Set(c.flags.filter(f => CREDIT_FLAGS.includes(f)))] : [];
+  const flags = Array.isArray(c.flags) ? [...new Set(c.flags.slice(0, 64).filter(isCreditFlag))] : [];
   return { v: 1, sid: c.sid, seq: c.seq, hero: c.hero, xp: Math.floor(c.xp), coins: Math.floor(c.coins), clears, flags, final: !!c.final };
 }
 /* Returns { ok, dup, fresh, applied: { xp, coins, clears }, why, progress }. Never throws. opts: { campaignIds, now, xpOnly, isLevel(id) } */
@@ -156,7 +161,7 @@ export function applyCredit(storage, key, credit, opts = {}) {
   if (c.seq <= (prev.seq || 0)) return { ok: true, dup: true, applied: { xp: 0, coins: 0, clears: [] } };
   const h = c.hero, dXp = Math.max(0, c.xp - (prev.xp || 0)), dCoins = opts.xpOnly ? 0 : Math.max(0, c.coins - (prev.coins || 0));
   const had = Array.isArray(prev.clears) ? prev.clears : [], newClears = opts.xpOnly ? [] : c.clears.filter(id => !had.includes(id) && (!opts.isLevel || opts.isLevel(id)));
-  const newFlags = opts.xpOnly ? [] : (c.flags || []).filter(f => !(Array.isArray(prev.flags) ? prev.flags : []).includes(f)); for (const f of newFlags) p[f] = 1;   /* (claude/smallfix8) a party unlock lands in his save too */
+  const newFlags = opts.xpOnly ? [] : (c.flags || []).filter(f => !(Array.isArray(prev.flags) ? prev.flags : []).includes(f)); for (const f of newFlags) { const m = UNLOCK_RE.exec(f); if (m) { p[m[1]] = object(p[m[1]]) ? p[m[1]] : {}; p[m[1]][m[2]] = true; } else p[f] = 1; }   /* (claude/smallfix8) a party unlock lands in his save too; (claude/cooppr) so does a boss beaten / a boss's weapon */
   p.xp = object(p.xp) ? p.xp : {}; const xp0 = p.xp[h] || 0; p.xp[h] = Math.min(Math.max(xp0, xpCap()), xp0 + dXp);
   if (dCoins) p.coins = (p.coins || 0) + dCoins;
   if (newClears.length) { p.done = object(p.done) ? p.done : {}; const d = p.done[h] = object(p.done[h]) ? p.done[h] : {};

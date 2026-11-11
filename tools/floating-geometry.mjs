@@ -11,7 +11,10 @@
      node tools/floating-geometry.mjs <id> ...    just those levels, every hit listed */
 import { LEVELS, T } from '../src/level.js';
 
-export const FIXED = ['theatre'];   /* claude/theatre3: the Maskwright's Theatre, fixed and gated */
+export const FIXED = ['theatre', 'scree'];   /* claude/theatre3: the Maskwright's Theatre, fixed and gated; claude/scree3: the Scree Path (Daniel 11-01 "some geometry isn't grounded") */
+/* ROUTE LEDGES a gated level may keep: one-way stone steps and snapping shelves ARE the road up a hillside; each is drawn as a crag with its own rock pier or underbelly
+   (src/scree-rock.js) and tools/visible-supports.mjs finds 0 overhangs without a verified visible support on the Scree Path. Anything SOLID (a block, an arch, a stack) must still touch the mass. */
+const LEDGE_OK = { scree: ['ONEWAY', 'SHELF'] };
 const args = process.argv.slice(2), only = args.filter(a => !a.startsWith('-'));
 const built = new Map(); const build = d => { if (!built.has(d.id)) { try { built.set(d.id, d.build()); } catch (e) { built.set(d.id, null); } } return built.get(d.id); };
 
@@ -38,7 +41,8 @@ export function floating(L) {
 const campaign = LEVELS.filter(d => !(d.hidden && !d.secret) && !/^(shop|trial_|custom)/.test(d.id));
 const pick = only.length ? campaign.filter(d => only.includes(d.id)) : campaign;
 let fails = 0; const report = [];
-for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; const hits = floating(L);
+for (const d of pick) { const L = build(d); if (!L || !L.grid) continue; const all = floating(L), okK = LEDGE_OK[d.id] || [], hits = all.filter(h => !h.kinds.every(k => okK.includes(k)));
+  if (FIXED.includes(d.id) && all.length > hits.length) console.log('  ' + d.id + ': ' + (all.length - hits.length) + ' route-ledge group(s) allowed (' + okK.join('+') + ': drawn on crag piers, tools/visible-supports.mjs)');
   if (!hits.length) continue;
   const line = d.id + ': ' + hits.length + ' floating group(s): ' + hits.map(h => h.kinds.join('+') + ' x' + h.n + ' @' + h.x0 + (h.x1 > h.x0 ? '-' + h.x1 : '') + ',' + h.y0 + (h.y1 > h.y0 ? '-' + h.y1 : '')).join('; ');
   if (FIXED.includes(d.id)) { fails++; console.log('FAIL ' + line); } else report.push(line); }

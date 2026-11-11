@@ -36,7 +36,8 @@ for (const lv of LEVELS) {
   for (const g of gates) if (!held.has(g.needs || 'brass')) out.push('the ' + (g.needs || 'brass') + ' gate @' + g.x + ',' + g.y + ' never opens');
   for (const k of keys) if (!near(k.x, k.y)) out.push('the ' + (k.kind || 'brass') + ' key @' + k.x + ',' + k.y + ' is never reached');
   const jn = (x, y) => { for (let dy = -2; dy <= 4; dy++) for (let dx = -2; dx <= 2; dx++) if (R.seen.has((x + dx) + ',' + (y + dy))) return true; return false; };
-  for (const e of L0.ents) if (['silver', 'stray', 'relic', 'check'].includes(e.t) && !jn(e.x, e.y)) out.push(e.t + (e.kind ? ':' + e.kind : '') + ' @' + e.x + ',' + e.y + ' is only behind a gate that never opens');
+  /* (batch156) a CHECKPOINT past the arena's far wall is the fight's second stage: Highcrown's Burning Tower shrine (gq3, x795) is entered THROUGH the Queen's fight (toEscape), never walked to - skip it once the arena itself is reached */
+  for (const e of L0.ents) if (['silver', 'stray', 'relic', 'check'].includes(e.t) && !jn(e.x, e.y) && !(e.t === 'check' && arenaOk && A && e.x * 16 > A.x1)) out.push(e.t + (e.kind ? ':' + e.kind : '') + ' @' + e.x + ',' + e.y + ' is only behind a gate that never opens');
   console.log((out.length ? 'FAIL ' : ' ok  ') + lv.id.padEnd(11) + gates.length + ' gate' + (gates.length === 1 ? '' : 's') + ', keys held ' + ([...held].join(',') || '-') + ' of ' + ([...new Set(keys.map(k => k.kind || 'brass'))].join(',') || '-') + (out.length ? ': ' + out.join('; ') : ''));
   bad += out.length;
 }

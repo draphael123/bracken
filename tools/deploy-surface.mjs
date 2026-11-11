@@ -24,7 +24,7 @@ const ignored = path => { let hide = false; for (const { neg, re } of compiled) 
 
 const files = (dir, out = []) => { for (const n of readdirSync(dir)) { if (n === '.git' || n === 'node_modules') continue; const p = join(dir, n), s = statSync(p); if (s.isDirectory()) files(p, out); else out.push(relative(ROOT, p).replace(/\\/g, '/')); } return out; };
 const all = files(ROOT);
-const mustServe = ['index.html', 'sw.js', 'manifest.webmanifest', 'favicon.ico', 'docs/updates.json', 'tools/fixtures/campaign-xp.json', 'audio/manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'fonts/PressStart2P-Regular.ttf', 'fonts/Silkscreen-Regular.ttf'];
+const mustServe = ['index.html', 'sw.js', 'manifest.webmanifest', 'favicon.ico', 'docs/updates.json', 'tools/fixtures/campaign-xp.json', 'audio/manifest.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'assets/ui/title-mark.png', 'fonts/PressStart2P-Regular.ttf', 'fonts/Silkscreen-Regular.ttf'];
 for (const f of mustServe) { assert.ok(existsSync(join(ROOT, f)), 'the page names ' + f + ' but it is not in the tree'); assert.ok(!ignored(f), f + ' is hidden by .vercelignore but the game loads it'); }
 const srcFiles = all.filter(f => f.startsWith('src/') && !f.startsWith('src/benched/'));
 const hiddenSrc = srcFiles.filter(ignored); assert.deepEqual(hiddenSrc, [], 'src files hidden from the deploy: ' + hiddenSrc.slice(0, 5).join(', '));

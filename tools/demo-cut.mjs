@@ -52,21 +52,31 @@ assert.equal(prepareImport(full, LEVELS), full, 'a save with no demo tag imports
 assert.equal(prepareImport('not json', LEVELS), 'not json', 'junk comes back for the importer to refuse');
 assert.equal(demoShaped(JSON.parse(full), LEVELS), false, 'a full-game save (Scree cleared) is never tagged');
 assert.equal(tag({ wood: { cleared: true } }, LEVELS).demoSave, 1); assert.equal(tag({ scree: { cleared: true } }, LEVELS).demoSave, undefined);
+/* (claude/lives2) DIFFICULTY + LIVES in the demo: every mode but MASTER is pickable (MASTER waits on a road clear the demo cannot reach), the save's mode rides a demo save through the import unchanged, and the lives count follows the mode */
+{ const { MODE_IDS, modeOf, livesFor, setMode } = await import('../src/lives.js');
+  assert.deepEqual(MODE_IDS, ['story', 'easy', 'normal', 'hard', 'master'], 'the card steps VERY EASY / EASY / NORMAL / HARD / MASTER');
+  for (const m of MODE_IDS) { const sv = JSON.stringify({ hero: 'knight', wood: { cleared: true }, mode: m, lives: 'on', rulesSet: 1 }); const back = JSON.parse(prepareImport(sv, LEVELS)); assert.equal(modeOf(back), m, 'a demo save keeps its mode through the import: ' + m); assert.equal(back.lives, 'on'); }
+  assert.deepEqual(MODE_IDS.map(m => livesFor({ mode: m })), [10, 5, 3, 2, 1], 'lives per level by mode');
+  const p = {}; assert.equal(setMode(p, 'easy', LEVELS.map(l => l.id), false), 'easy', 'EASY is pickable in the demo'); assert.equal(setMode(p, 'master', LEVELS.map(l => l.id), false), 'easy', 'MASTER stays locked without a road clear'); assert.equal(setMode(p, 'hard', LEVELS.map(l => l.id), false), 'hard', 'HARD is open from the start, demo included');
+  console.log('ok  MODES   demo: EASY and HARD pickable, MASTER locked, mode + lives ride a demo save, counts 10/5/3/2/1'); }
 /* every use of the flag in src/main.js: pinned, each of the shape that is a no-op when the flag is off */
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const uses = main.split(/\r?\n/).flatMap((ln, i) => [...ln.matchAll(/\bDS\.(DEMO\b|demoLocked|demoEndsHere)[^;]{0,70}/g)].map(m => ({ i, t: m[0] })));
 const PINNED = [
   [/^DS\.DEMO && DS\.demoLocked\(lv\)\) \|\|/, 'levelLocked: the lock first, then the full rule untouched'],
+  [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[li\]\)\)\) \{ attractNext/, 'attract mode (claude/intro): a demo-locked clip level is skipped; no-op when off'],
+
   [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[to\]\)/, 'trnBegin: no walk-out to a locked wood (unless the row is the demoEnd teaser, claude/gormburn)'],
   [/^DS\.DEMO\) \{ TRN = null/, 'trnFinish: the demo mountain teaser ends on the END CARD (claude/gormburn)'],
   [/^DS\.DEMO \? bossTable\(\)\.filter/, 'boss select: the slice only'],
-  [/^DS\.DEMO \? \[\] : \['THE EDITOR'\]/, 'title: no editor'],
+  [/^DS\.DEMO \? \[\] : \['THE (EDITOR|MAKER)( \(TEST\))?'\]/, 'title: no editor (claude/maker: the row is THE MAKER (TEST), in EXTRAS; the demo still has none)'],
   [/^DS\.DEMO\) DSV\.tag\(PROG, LEVELS\)/, 'progDefaults: tag a demo save'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) \? -1 : partyNextLevel\(\)/, 'win card: no party-next past Gorm'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) && !bossSelectFight/, 'win card: the end card'],
   [/^DS\.DEMO \? \['knight'/, 'hero pick: the five demo heroes'],
   [/^DS\.DEMO \? HEROES\.filter/, 'store: the HEROES rows are the demo five'],
   [/^DS\.DEMO\) DEND\.mapCaption/, 'map: the road-continues caption'],
+  [/^DS\.DEMO\) \{ capBox = DEND\.mapCaptionBox/, 'map: the caption box is fixed before the boards (claude/mapfix151)'],
   [/^DS\.demoLocked\(lv\)\)/, 'map header counters: the slice only (smallfix14)'],
   [/^DS\.DEMO \? MUSIC_NAMES/, 'sound test: only the shipped tracks (smallfix14)'],
   [/^DS\.DEMO && nd\.y < WOOD_Y/, 'demohide: demoOut - the map shows the wood sheet only'],
@@ -136,14 +146,14 @@ console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption a
     let opaque = 0; const cols = new Set(); for (let i = 0; i < a.px.length; i += 4) { if (a.px[i + 3] === 255) opaque++; cols.add(a.px[i] << 16 | a.px[i + 1] << 8 | a.px[i + 2]); }
     assert.equal(opaque, TZ.W * TZ.H, sc.id + ' paints every pixel'); assert.ok(cols.size >= 8 && cols.size <= 400, sc.id + ' is a real picture, not a flat fill (' + cols.size + ' colours)'); }
   assert.throws(() => TZ.bake('nope'), /no such teaser scene/);
-  assert.equal(CFG.FOLLOW_URL, '', 'no itch page yet: FOLLOW_URL ships blank (Daniel fills it)'); assert.equal(DE.followUrlOk(), false, 'blank URL: no live follow button');
+  assert.equal(CFG.FOLLOW_URL, 'https://draphael123.itch.io/thornroad', 'the itch page (Daniel 11-08)'); assert.equal(DE.followUrlOk(), true, 'set URL: live follow button');
   for (const bad of ['', 'http://x.io/a', 'javascript:alert(1)', 'https://', 'https://a b', 'itch.io/x']) assert.equal(DE.followUrlOk(bad), false, 'refused: "' + bad + '"');
   assert.equal(DE.followUrlOk('https://someone.itch.io/thornroad'), true);
   const src = readFileSync(new URL('../src/demo-end.js', import.meta.url), 'utf8');
   assert.ok(src.includes('b.disabled = true') && src.includes('CFG.SOON_BTN') && src.includes("window.open(u, '_blank', 'noopener,noreferrer')"), 'blank: a shut COMING SOON button; set: opens noopener');
   assert.ok(src.includes('KEEP YOUR PROGRESS') && src.includes('H.keep()') && src.includes('H.feedback()') && src.includes('H.credits()'), 'KEEP YOUR PROGRESS / GIVE FEEDBACK / CREDITS are still wired');
   assert.ok(!/<img|\.png|\.jpg|fetch\(/.test(readFileSync(new URL('../src/demo-teaser.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')), 'the vignettes ship as code: no image file, no fetch');
-  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button shut + blank-safe until FOLLOW_URL is an https address'); }
+  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button live (FOLLOW_URL = the itch page), refuses non-https'); }
 /* ---- NAMES ---- */
 const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'src/demo-teaser.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;

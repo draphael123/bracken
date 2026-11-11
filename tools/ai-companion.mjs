@@ -23,7 +23,7 @@ import * as AIC from '../src/ai-companion.js';
 import { LEASH } from '../src/party.js';
 import { leaderOf } from '../src/party.js';
 
-const ALL = ['pure', 'board', 'save', 'follow', 'raft', 'fight', 'chain', 'linked', 'pausebd', 'reload'];
+const ALL = ['pure', 'board', 'save', 'follow', 'raft', 'fight', 'chain', 'linked', 'pausebd', 'titleai', 'reload'];
 const argv = process.argv.slice(2), ratesArg = argv.find(a => /^--rates/.test(a));
 const WANT = argv.find(a => !a.startsWith('--')) ? argv.find(a => !a.startsWith('--')).split(',') : ALL.concat(ratesArg ? ['rates'] : []);
 const NRATE = ratesArg && /=\d+/.test(ratesArg) ? +ratesArg.split('=')[1] : 6;
@@ -53,7 +53,7 @@ if (WANT.includes('pure')) {
   const L0 = { x: 0, y: 0 };
   ok(AIC.catchWhy({ x: AIC.CATCH.far + 10, y: 0 }, L0, null) === 'far' && AIC.catchWhy({ x: 10, y: AIC.CATCH.farY + 5 }, L0, null) === 'far' && AIC.catchWhy({ x: 100, y: 0 }, L0, { stuckT: AIC.CATCH.stuck }) === 'stuck' && AIC.catchWhy({ x: 100, y: 0 }, L0, { wait: true }) === 'wait' && AIC.catchWhy({ x: 5, y: 0 }, L0, { raft: true }) === 'raft' && AIC.catchWhy({ x: 50, y: 0 }, L0, { stuckT: 0 }) === '', 'catch-up: far, stuck, waiting after a fall, alone on a raft; near and moving, nothing');
   for (const k of ['dead', 'down', 'held', 'flying']) ok(AIC.catchWhy({ x: 900, y: 0, [k]: 3 }, L0, { raft: true }) === '', 'catch-up: never a ' + k + ' AI');
-  let s = { best: 1e9, stuckT: 0 }; for (let i = 0; i < 200; i++) s = AIC.stuckStep(s, 200, 1 / 60, false); ok(s.stuckT > AIC.CATCH.stuck, 'the stuck clock runs while it does not close on him (' + s.stuckT.toFixed(1) + ' s)');
+  let s = { best: 1e9, stuckT: 0 }; for (let i = 0; i < Math.ceil((AIC.CATCH.stuck + 0.5) * 60); i++) s = AIC.stuckStep(s, 200, 1 / 60, false); ok(s.stuckT > AIC.CATCH.stuck, 'the stuck clock runs while it does not close on him (' + s.stuckT.toFixed(1) + ' s)');
   s = { best: 1e9, stuckT: 0 }; for (let i = 0; i < 200; i++) s = AIC.stuckStep(s, 300 - i, 1 / 60, false); ok(s.stuckT < 0.5, '...not while it closes the gap');
   ok(AIC.stuckStep({ best: 300, stuckT: 9 }, 300, 1 / 60, true).stuckT === 0 && AIC.stuckStep({ best: 300, stuckT: 9 }, 40, 1 / 60, false).stuckT === 0, '...a fight or a revive, or being near him, resets it');
   ok(AIC.seatLine('KNIGHT', 6, 1, 'balanced') === 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' && AIC.seatLine('PYRO', null, -1, 'support') === 'AI PARTNER - PYRO, SUPPORT: YOUR LEVEL - NOTHING SAVED', 'the seat line says where what it earns goes');
@@ -254,6 +254,31 @@ if (PAGE.length) {
       ok(r.afterAdd.n === 2 && r.afterAdd.ai[0] === 'warden:support' && r.afterAdd.want === 1 && r.afterAdd.gap < 40, 'an AI WARDEN (SUPPORT) steps in beside player one mid-wood and is wanted for the next one');
       ok(r.retuned[0] === 'aggressive', 'HOW IT PLAYS retunes it live (SUPPORT -> AGGRESSIVE)');
       ok(r.afterDismiss.n === 1 && !r.afterDismiss.want, 'DISMISS sends it off: solo again, nothing wanted');
+    }
+
+    if (PAGE.includes('titleai')) {
+      /* (claude/titlemenu2, Daniel 11-08) the title's PLAY TOGETHER > PLAY WITH AI: the party board opens on its AI PARTNER picker; a partner (or up to three) is seated; PLAY takes the CONTINUE road with them wanted */
+      console.log('titleai');
+      const T = `(async()=>{await __fresh();BK.state='title';BK.ui.pressCard=false;BK.ui.titleSub=null;`;
+      const o = await E(T + `const o={};o.rows=(BK.ui.titleSelect('PLAY WITH AI'),BK.ui.titleItems());o.sub=BK.ui.titleSub;
+        BK.press('confirm');BK.step(3);await new Promise(r=>setTimeout(r,60));const b0=BK.aiComp.board();o.view=b0.view;o.kinds=b0.buttons.map(b=>b.act);o.heroes=b0.buttons.filter(b=>b.hero).length;
+        const click=p=>{const b=[...__board().querySelectorAll('button')].find(p);if(!b)return false;b.click();return true;};
+        o.c1=true;o.c2=click(b=>b.dataset.hero==='warden');o.c3=click(b=>b.dataset.beh==='balanced');
+        const b1=BK.aiComp.board();o.afterView=b1.view;o.btns=b1.buttons.map(b=>b.t);o.ai2=b1.buttons.filter(b=>b.act==='ai').map(b=>b.dis);
+        o.c4=click(b=>b.dataset.act==='ai');o.c5=true;o.c6=click(b=>b.dataset.hero==='knight'||b.dataset.hero);o.c7=click(b=>b.dataset.beh==='support');
+        o.want=((BK.tavern.want()||{}).seats||[]).map(x=>x.hero+':'+((x.aiCfg||{}).beh));o.stillTitle=BK.state;
+        o.c8=click(b=>b.textContent==='PLAY');await new Promise(r=>setTimeout(r,60));BK.step(3);o.after=BK.state;o.shown=!!__board();o.want2=((BK.tavern.want()||{}).seats||[]).length;
+        return o;})()`);
+      console.log('    ' + JSON.stringify(o));
+      ok(o.rows.includes('PLAY WITH AI') && o.sub === 'PLAY TOGETHER' && o.rows.slice(0, 4).join('|') === 'LOCAL CO-OP|ONLINE CO-OP|PLAY WITH AI|BACK', 'PLAY TOGETHER reads SAME SCREEN / ONLINE / PLAY WITH AI / BACK: ' + o.rows.join('|'));
+      ok(o.view === 'aihero' && o.heroes >= 4 && !o.kinds.includes('ailinked') && !o.kinds.includes('aidefault'), 'ENTER on PLAY WITH AI opens the hero pick straight (DEFAULT partner, no LINKED / DEFAULT step): ' + o.view);
+      ok(o.c1 && o.c2 && o.c3 && o.afterView === 'seats' && o.btns.includes('PLAY') && o.want[0] === 'warden:balanced', 'a DEFAULT warden is seated and the seats list ends in PLAY: ' + o.btns.join('|'));
+      ok(o.ai2.length >= 2 && o.ai2.every(d => d === false) && o.want.length === 2 && o.stillTitle === 'title', 'a second partner can be added before PLAY (up to three), the title waits');
+      ok(o.c8 && !o.shown && (o.after === 'map' || o.after === 'heropick') && o.want2 === 2, 'PLAY leaves the board and takes the CONTINUE road (' + o.after + ') with both partners wanted');
+      const e0 = await E(T + `const o={};BK.ui.titleSelect('PLAY WITH AI');BK.press('confirm');BK.step(3);await new Promise(r=>setTimeout(r,60));o.open=!!__board();return o;})()`);
+      for (const type of ['keyDown', 'keyUp']) await pg.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });   /* a real ESC key */
+      const e = { ...e0, ...(await E(`(async()=>{await new Promise(r=>setTimeout(r,60));BK.step(3);return { shown: !!__board(), st: BK.state, want: ((BK.tavern.want()||{}).seats||[]).length, sub: BK.ui.titleSub };})()`)) };
+      ok(e.open && !e.shown && e.st === 'title' && e.want === 0 && e.sub === 'PLAY TOGETHER', 'ESC on the picker with nobody seated returns to the title, nothing started: ' + JSON.stringify(e));
     }
 
     if (PAGE.includes('reload')) {

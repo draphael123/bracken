@@ -29,6 +29,7 @@ const NOT_BOSS = {
   'BLM.leechTake': 'THE BOG LEECH (src/bog-leech.js), a common fen foe: its own mode (lurk, latched, rear, home) gates the blow, and a leech is not a boss (claude/fenroad2)',
   'CNF.grindylowTake': 'THE GRINDYLOW, a common canal foe', 'CNF.wispTake': 'THE WILL-O-WISP, a common canal foe', 'FWR.wraithTake': 'THE FOG WRAITH, a common towpath foe (light, not the blow, makes it solid: claude/towpath2)',
   'GLU.take': 'PACK GLUE (src/foe-glue.js, claude/lategameb): a common foe planted plate / braced shield; it is handed the already-read whole-blow verbs (heavy, plunge, sweep), not a boss key', 'WMH.take': 'THE WICKER MAN, a fair prop-foe (not on OPEN_RULE)', 'LDH.take': 'THE LESSER DJINN, a common welltown foe',
+  'frogTake': "THE FROG KING's opening-size lookup (src/main.js, claude/frogking2): returns the fraction of his health a daze or the bellow break is worth by his MODE (bellyUp or not) - a number, not a blow hook, so it reads no blow verb",
   'FOA.shellTake': 'THE SHIELDED AFFIX (src/foe-affix.js), a common foe affix: it reads the blow VERB (amV), not a boss key', 'GEO.tombHit': 'the geomancer tomb', 'MYH.ward': "the bandit mystics' lamp", 'SKY.riderHurt': 'THE KITE-RIDER, a common Sky Road foe (a blow cuts his line)',
 };
 let hooks = 0; const missing = [];
@@ -39,7 +40,7 @@ for (const fn of ['hurtEnemy0', 'wardedDamage']) { const b = bodyOf(fn); let m; 
     if (!args.includes('tag')) missing.push(fn + ': ' + name + '(' + args.join(', ') + ')'); } }
 assert.ok(hooks >= 28, 'the boss hooks are found (' + hooks + '): the pattern still sees them');
 assert.deepStrictEqual(missing, [], 'every boss hook in hurtEnemy0 / wardedDamage receives the blow tag');
-assert.ok(/function hurtEnemy0\(e, dmg, fromX, plunge, blow, tag = blow\) \{ const raw0 = dmg, pl = !!plunge \|\| blowHas\(tag, 'plunge'\);/.test(main), 'hurtEnemy0 takes the tag and reads a plunge BY IT (pl)');
+assert.ok(/function hurtEnemy0\(e, dmg, fromX, plunge, blow, tag = blow\) \{[^\n]*?const raw0 = dmg, pl = !!plunge \|\| blowHas\(tag, 'plunge'\);/.test(main), 'hurtEnemy0 takes the tag and reads a plunge BY IT (pl)');
 assert.ok(/function wardedDamage\(e, dmg, blow, tag = blow\)/.test(main), 'wardedDamage takes the tag');
 assert.ok(/r = hurtEnemy0\(e, dmg, fromX, plunge, blow, tag\);/.test(main), 'hurtEnemy hands hurtEnemy0 the tag');
 for (const w of main.match(/wardedDamage\(e, dmg, blow(?:, tag)?\)/g)) assert.strictEqual(w, 'wardedDamage(e, dmg, blow, tag)', 'every blow into wardedDamage carries the tag');

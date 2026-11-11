@@ -107,7 +107,7 @@ try {
       /* THE WARD: a ball glances */
       hold();S.ward=2;const r=AH.onBall(e,{x:e.x,y:G.floorY-9,vx:400});o.ward={spent:r,glanced:S.n.glanced,plates:S.plates};S.ward=0;
       /* HIS KEG struck back */
-      hold();const p0=S.plates;e.x=G.hulls[0][0]+300;e.face=-1;BK.P.x=e.x-120;BK.P.y=G.floorY;BK.P.face=1;BK.P.inv=99;BK.sim(2);S.keg={x:BK.P.x+16,y:G.floorY,vx:-60,fuse:3,back:false,key:'kt'};if(h==='ranger'){BK.keys.down=true;BK.sim(2);}BK.press('atk');
+      hold();const p0=S.plates;e.x=G.hulls[0][0]+300;e.face=-1;BK.P.x=e.x-120;BK.P.y=G.floorY;BK.P.face=1;BK.P.inv=99;BK.sim(2);for(let i=0;i<90&&BK.P.atk>=0;i++)BK.sim(1);/* (FIX158B) JUICE2: the last section's blow (a hit-freeze + follow-through) can still be in its swing, and a press during a swing is not a new cut - wait it out first */S.keg={x:BK.P.x+16,y:G.floorY,vx:-60,fuse:3,back:false,key:'kt'};if(h==='ranger'){BK.keys.down=true;BK.sim(2);}BK.press('atk');
       for(let i=0;i<150&&S.plates===p0;i++){if(e.mode!=='stagger'){e.mode='walk';e.modeT=99;S.script=['cut'];S.step=0;S.ward=0;}BK.sim(1);}BK.keys.down=false;o.keg={plates:S.plates,p0,back:S.n.kegBack};
       e.hp=e.maxHp;e.alive=true;}catch(err){o.err=String(err&&err.stack||err).slice(0,300);}out.heroes[h]=o;}
     /* THE WORLD (the knight, out of the fight) */

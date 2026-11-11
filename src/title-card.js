@@ -1,59 +1,62 @@
-// src/title-card.js - THE PRESS ANY KEY CARD (claude/uiscreens, 2026-10-06). The game opens on a dark card: the wood closed over the picture, the name
-// of the game and PRESS ANY KEY. The press is also what the browser needs to start the audio, so it replaces the in-level "PRESS A KEY FOR SOUND"
-// banner (that banner stays only as the fallback for a run that reaches a wood without ever passing the title: a deep link, a tool).
-// Then, in this order: the fronds part (0.9 s), the knight walks in from the left and takes his seat by the fire (about 2 s), and the sign settles
-// into place (the title already drops its sign on `since`; main.js sets titleSince to the end of the parting).
-// All of it is time-driven pure drawing: main.js owns the state (pressCard, pressAt) and asks these for pictures.
+// src/title-card.js - THE LIVING TITLE SCENE (claude/intro, 2026-11-08; it began as the dark PRESS ANY KEY card of claude/uiscreens, 2026-10-06).
+// The game opens on the bright forest title: the sign eases down, the heroes walk in along the road and settle round the fire, and PRESS ANY KEY
+// blinks under the sign with what the game takes (keyboard or pad, one to four players; a touch device says TAP TO START). The first press is still
+// what the browser needs to start the audio, so it is kept: it starts the sound, and the menu board slides in.
+// All of it is time-driven pure drawing: main.js owns the state (pressCard, pressAt, introAt) and asks these for positions and pictures.
 
-export const PART_S = 0.9;        // the fronds part over this long after the press
-export const WALK_FROM = 0.35;    // the knight starts walking this long after the press
-export const WALK_S = 1.9;        // and takes this long to cross to his seat
-export const SETTLE_S = PART_S;   // the sign starts to drop when the fronds are apart
+export const SIGN_S = 0.7;        // the sign eases down over this long
+export const WALK_AT = 0.7;       // the first hero steps onto the road this long into the intro
+export const WALK_GAP = 0.42;     // and the next one this much later, the one with the farthest seat first
+export const WALK_V = 62;         // px/s along the road
+export const PROMPT_AT = 1.5;     // PRESS ANY KEY comes up this long into the intro
+export const PROMPT_FADE = 0.35;  // and goes this fast when it is pressed
 
-const ease = k => k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k);
-
-/* THE KNIGHT'S WALK IN: where he is `since` seconds after the press (since < 0: the card is still up, he is not on the screen yet) */
-export function walkIn(since, seat, face = -1) {
-  if (since === null || since === undefined) return { x: seat, walking: false, face, here: true };
-  const k = (since - WALK_FROM) / WALK_S;
-  if (since < WALK_FROM) return { x: -40, walking: false, face: 1, here: false };
-  if (k >= 1) return { x: seat, walking: false, face, here: true };
-  return { x: -40 + (seat + 40) * ease(Math.min(1, Math.max(0, k))), walking: true, face: 1, here: false };
+/* A HERO'S WALK IN. `s` is seconds into the intro (Infinity: simply there - reduce-motion, a tool, a later visit to the title), `order` is his turn (0 first),
+   `seat` the x he settles on, `face` the way he faces once he is there. */
+export function castAt(s, order, seat, face) {
+  if (!isFinite(s)) return { x: seat, walking: false, face, here: true };
+  const t = s - WALK_AT - order * WALK_GAP;
+  if (t < 0) return { x: -40, walking: false, face: 1, here: false };
+  const x = -30 + t * WALK_V;
+  return x >= seat ? { x: seat, walking: false, face, here: true } : { x, walking: true, face: 1, here: false };
 }
 
-/* THE WOOD CLOSED OVER THE PICTURE. `open` is 0 (shut) to 1 (apart): the left half of the fronds goes left, the right half right, and the dark lifts. */
-export function drawPressFronds(g, time, open, VW, VH) {
-  const o = ease(open);
-  if (o >= 1) return;
-  g.save();
-  g.globalAlpha = 0.74 * (1 - o); g.fillStyle = '#070a08'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
-  for (let side = 0; side < 2; side++) {
-    const dir = side ? 1 : -1;
-    for (let i = 0; i < 15; i++) {
-      const u = i / 14, rx = side ? VW * (0.5 + 0.55 * u) : VW * (0.5 - 0.55 * u);   // roots spread from the middle outward; the near ones are the tallest
-      const h = VH * (1.05 - 0.45 * u) + ((i * 29) % 13), sway = Math.sin(time * 0.9 + i * 1.7 + side) * 2.5;
-      const x = rx + dir * o * (VW * 0.62 + 30 * u), base = VH + 6, lean = -dir * (22 - u * 14) * (1 - o * 1.5) + sway;
-      const col = i % 3 === 0 ? '#0d1a10' : i % 3 === 1 ? '#13241a' : '#0a140d', tip = i % 2 ? '#2a4a2c' : '#1c3622';
-      g.strokeStyle = col; g.lineWidth = 3; g.beginPath(); g.moveTo(x, base); g.quadraticCurveTo(x + lean * 0.3, base - h * 0.55, x + lean, base - h); g.stroke();
-      for (let f = 1; f <= 9; f++) {
-        const t = f / 10, fy = base - h * t, fx = x + lean * t * t * 1.15 + lean * 0.1 * t, sp = (20 - f * 1.6) * (0.65 + 0.35 * Math.sin(Math.PI * Math.min(1, t * 1.1)));
-        g.strokeStyle = f > 5 ? tip : col; g.lineWidth = f > 5 ? 2 : 3;
-        g.beginPath(); g.moveTo(fx, fy); g.quadraticCurveTo(fx - sp * 0.6, fy - 3, fx - sp, fy - 11 + sway * 0.2); g.moveTo(fx, fy); g.quadraticCurveTo(fx + sp * 0.6, fy - 3, fx + sp, fy - 11 - sway * 0.2); g.stroke();
-      }
-    }
+/* WHEN THE LAST HERO HAS SAT DOWN (seconds into the intro), for the tools and for the prompt: it is up before then, and is not waiting on it. */
+export function introEnd(seats) {
+  const sorted = seats.slice().sort((a, b) => b - a);
+  return Math.max(0, ...sorted.map((sx, i) => WALK_AT + i * WALK_GAP + (sx + 30) / WALK_V));
+}
+
+/* THE PRESS PROMPT: PRESS ANY KEY (TAP TO START on a touch device), blinking, centred on `cx` at `y`, and under it the line of what the game takes with a
+   tiny keycap and a tiny pad. `a` is its alpha (1 -> 0 as it is pressed), `still` is reduce-motion (no blink). `text` is main.js's text(), `inkW` its measure. */
+export function drawPrompt(g, text, inkW, UI, time, cx, y, a, touch, still) {
+  if (a <= 0) return;
+  g.save(); g.globalAlpha = a;
+  const on = still || Math.floor(time * 1.4) % 3 !== 2;
+  if (!touch) { const pw = inkW('KEYBOARD OR GAMEPAD - 1 TO 4 PLAYERS', 6) + 40; g.fillStyle = 'rgba(8,6,12,0.42)'; g.fillRect(Math.round(cx - pw / 2), y - 4, pw, 27); }   /* a dim plate under the words: they read over the gate's pale stone */
+  else { const pw = inkW('TAP TO START', 8) + 30; g.fillStyle = 'rgba(8,6,12,0.42)'; g.fillRect(Math.round(cx - pw / 2), y - 4, pw, 16); }
+  if (on) text(touch ? 'TAP TO START' : 'PRESS ANY KEY', cx, y, '#fff6e0', 'center', 8);
+  if (!touch) {
+    const line = 'KEYBOARD OR GAMEPAD - 1 TO 4 PLAYERS', w = inkW(line, 6), y2 = y + 13, x0 = Math.round(cx - w / 2);
+    text(line, cx, y2, UI.text, 'center', 6);
+    drawKeycap(g, x0 - 13, y2 - 1);
+    drawPad(g, x0 + w + 5, y2);
   }
   g.restore();
 }
 
-/* THE CARD'S WORDS: the name, the line under it and PRESS ANY KEY, blinking. `text` is main.js's text(); `fade` 1 -> 0 as the fronds part. */
-export function drawPressText(g, text, UI, time, VW, VH, fade, touch) {
-  if (fade <= 0) return;
-  g.globalAlpha = fade;
-  g.fillStyle = 'rgba(6,8,6,0.5)'; g.fillRect(36, 28, VW - 72, 128);   /* a plate under the words: they read over the fronds, and sit on a box that holds them */
-  const bob = Math.round(Math.sin(time * 1.3) * 1.5);
-  text('THORNROAD', VW / 2, 52 + bob, UI.gold, 'center', 22);
-  text('a road, a crown, a mountain', VW / 2, 82, UI.text, 'center', 6);
-  if (Math.floor(time * 1.4) % 3 !== 2) text(touch ? 'TAP TO BEGIN' : 'PRESS ANY KEY', VW / 2, 126, '#fff6e0', 'center', 8);
-  text(touch ? 'tapping also starts the sound' : 'this also starts the sound', VW / 2, 142, UI.dim, 'center', 6);
-  g.globalAlpha = 1;
+/* a keycap, 8x7: pale top, dark underside, a mark on it */
+function drawKeycap(g, x, y) {
+  g.fillStyle = '#1a1410'; g.fillRect(x, y, 8, 8);
+  g.fillStyle = '#7a6a54'; g.fillRect(x + 1, y + 1, 6, 6);
+  g.fillStyle = '#e8dcc0'; g.fillRect(x + 1, y + 1, 6, 5);
+  g.fillStyle = '#1a1410'; g.fillRect(x + 3, y + 2, 2, 1); g.fillRect(x + 3, y + 4, 2, 1);
+}
+
+/* a gamepad, 10x7: a body, a cross on the left, two buttons on the right */
+function drawPad(g, x, y) {
+  g.fillStyle = '#1a1410'; g.fillRect(x, y + 1, 10, 6); g.fillRect(x + 1, y, 8, 1);
+  g.fillStyle = '#8a8478'; g.fillRect(x + 1, y + 1, 8, 5);
+  g.fillStyle = '#1a1410'; g.fillRect(x + 2, y + 3, 3, 1); g.fillRect(x + 3, y + 2, 1, 3);
+  g.fillStyle = '#e0b040'; g.fillRect(x + 6, y + 2, 1, 1); g.fillStyle = '#8fd160'; g.fillRect(x + 7, y + 4, 1, 1);
 }

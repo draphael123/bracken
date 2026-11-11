@@ -1,0 +1,26 @@
+# claude/intro - the living title scene, controls hint, attract mode (11-08)
+
+## Commits (branch claude/intro, from origin/master 262faf01a)
+- ITEMS 1+2: a475314ae (pushed ~09:55 local, before the 12:45 cut)
+- ITEM 3 (attract mode): b8caa38bf, then 32f230475 (boss clip waits out the wake, needs the sound unlocked, no wood banner), then the titlemenu2 merge 5b4e221bc (conflict was the one title-update line: PBOARD guard + my press branch; the party board now also blocks attract), then the itch QA tool commit on top.
+
+## What changed
+1. LIVING TITLE SCENE. src/title-card.js rewritten: no dark card, no fronds. The sign eases down at the start; five heroes (the slot's hero, then owned ones, padded with the starters - the demo's five) walk in along the road in turn, farthest seat first, and idle by the fire on their existing run/idle frames; PRESS ANY KEY blinks under the sign (from 1.5 s) in the game's font on a dim plate. The first press is kept (starts the audio) and slides the menu board in. Reduce-motion: sign, cast in place, steady prompt (no blink). The walk-in is once per page (every later visit to the title, ?nocard and tools: everyone simply there).
+2. CONTROLS HINT. Under it: KEYBOARD OR GAMEPAD - 1 TO 4 PLAYERS with a tiny keycap and a tiny pad (neither existed in the art; drawn in title-card.js from fillRects, 8x8 and 10x7). Touch: TAP TO START, no hint line; the sign sits mid-screen under it and slides left on the tap to make room for the tall board.
+3. ATTRACT MODE. src/attract.js (timing, clip list, may-it-start rule) + main.js glue. ~20 s idle on the title scene or main menu (not a submenu, press prompt, open screen/form/party board, save problem, hidden tab, reduce-motion, or sound not unlocked yet) -> four ~9 s clips: wood-run (ranger, platforming), marsh-pair (knight + AI geomancer), tusker (warden, boss glimpse, Old Tusker; the clock waits out the name card), spore-run (geomancer). Whole list plays once, then the title again until the next wait. Hands = playtest walker (makeBot, fightThrough) + the lab's duel hands, same as the AI partner. Hero is topped up below 34% (it is a picture of the game). Any key / click / tap is eaten in the CAPTURE phase and ends it that frame (+260 ms swallow); a pad press ends it at the top of update() (before anything reads it) -> never a menu choice. NO SAVE TOUCH: runs behind bossJumpOn (the boss jump sandbox), PROG is a structuredClone put back, coopWant/levelIndex restored, partySave/partyToWant never called. Off: ?noattract, window.__NOATTRACT, BK.manualSimulation, navigator.webdriver (every tool page); BK.ui.attract.force = true turns the tool/webdriver gate off for tools/attract.mjs only.
+
+## Tools updated / added (all re-run ALONE)
+uiscreens (press prompt asserts the controls line, sign, no dark-card print, walk clock runs), touch (TAP TO START asserted; &noattract), textfit press (prompt settled, mid-walk, reduce-motion), loading-screen (?noattract), titlescene/whatsnew/textfit title unchanged and green; NEW tools/attract.mjs, tools/itch-qa-attract.mjs, tools/intro-shots.mjs. Trailer tools: none on master (trailer3/4 are other lanes' branches) - not touched; they must pass ?noattract if they idle on the title.
+
+## Checks (after the titlemenu2 merge unless noted)
+uiscreens green; titlescene green; whatsnew green (first run once died on a CDP websocket error mid-run, RAM ~2.5 GB, green on rerun); textfit title,press 0 issues on 26 screens; loading-screen green; touch green (full run; one earlier run crashed the page at 1.9 GB free, reruns green incl. pwa-live); attract.mjs green (rule, off cases, all four clips, five press kinds, every localStorage key + PROG + party unchanged, CONTINUE and a wood still start; one run died on a CDP websocket error, green on rerun); itch build + itch-qa-desktop green, itch-qa-coop green, itch-qa-paths green, itch-qa-attract green (clips run in the bundled build); itch-qa-mobile 3 RED = PRE-EXISTING (identical on a fresh master build: tap route stops at opening > heropick); itch-qa-load 1 RED (throttled loading bar flat 9.9 s > 6 s) NOT re-baselined - looks network-bound, owed.
+
+## Stills (scratch\intro-stills\)
+walk-in f1-walk-0_4s .. f1-walk-6_5s; idle + hint f1-idle-hint; reduce-motion f1-reduce; touch t1-touch-walk / -idle / -after-tap; attract a2-attract-clip{0..3}-{2s,7s} + a2-attract-return-title; itch itch\attract-itch-clip. Looked at all of them.
+
+## Questions (recommendation first)
+1. Attract in reduce-motion: I turned it OFF (auto-playing motion). Keep? Yes.
+2. Clips play with the wood's own music/SFX (sound is unlocked by then; boss music on the boss glimpse). Mute instead? No - arcade feel; it never starts before the first press.
+3. The pass is 4 clips once (~45 s) then the title again for 20 s. Loop forever? No.
+4. Release note line for the whatsnew list (release lane): "The title is alive: the heroes walk in to the fire, a controls line under PRESS ANY KEY, and after a while idle the game plays itself like an arcade cabinet (any key stops it)."
+5. itch-qa-load RED and the 3 itch-qa-mobile REDs: pre-existing/unrelated; want a separate lane? Mobile tool needs its tap route updated for the first-run opening; yes, small.

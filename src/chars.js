@@ -4275,7 +4275,7 @@ export function bakeGoblinQueen() {
   const WIDE = x => { const d = x - 28, a = Math.abs(d); return CX + (a <= 12 ? d * 2.6 : Math.sign(d) * (19 + a)); };
   const mapXs = a => a && a.map((v, i) => i % 2 === 0 && typeof v === 'number' ? WIDE(v) : v);
   const frame = (o) => {
-    const { sit = 0, lean = 0, dy = 0, flare = 0, head = 'grin', tilt = 0, stars = 0, rot = 0, rope = null } = o;
+    const { sit = 0, lean = 0, dy = 0, flare = 0, head = 'grin', tilt = 0, stars = 0, rot = 0, rope = null, crown = 'on', glow = 0 } = o;   /* (claude/gq2art) crown: 'on' (her head) | 'off' (gone: tossed or knocked off) | 'hand' (in the near fist); glow: the sceptre-head's violet fire */
     const arm = mapXs(o.arm || [34, 26, 42, 30]), arm2 = mapXs(o.arm2 || null), rod = mapXs(o.rod || null), feet = (o.feet || [[24, 58], [31, 58]]).map(([x, y]) => [WIDE(x), y]);
     /* the shoulder is out at the edge of the fat, not in the middle of her chest */
     arm[0] += 12 * Math.sign(arm[0] - CX); if (arm2) arm2[0] += 12 * Math.sign(arm2[0] - CX);
@@ -4290,7 +4290,7 @@ export function bakeGoblinQueen() {
     poly([[CX - 22, 22], [CX + 22, 22], [CX + 37 + flare, 56 - sit], [CX - 37 - flare, 56 - sit]], 'r'); poly([[CX - 24, 28], [CX - 16, 28], [CX - 35 - flare, 56 - sit], [CX - 39 - flare, 56 - sit]], 'R');
     // the sceptre when it is carried behind her
     const rodDraw = () => { if (!rod) return; const [x0, y0, x1, y1] = rod; line(g, x0, y0, x1, y1, C.I, 3); line(g, x0, y0, x1, y1, C.i, 1);
-      circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q);
+      circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q); if (glow) { circle(g, x1, y1, 2 + glow, '#e8dcff'); circle(g, x1, y1, 1 + glow, '#b28cff'); for (const [a, b] of [[-6, 0], [6, 0], [0, -6], [0, 6]]) px(g, x1 + a * glow, y1 + b * glow, '#e8dcff'); }
       for (const [a, b] of [[-5, 0], [5, 0], [0, -5], [0, 5]]) px(g, x1 + a, y1 + b, C.I); };
     if (rod && rod[4] === 'back') rodDraw();
     for (const [fx, fy] of feet) rect(g, fx - 3, fy - 1, 6, 2, C.k);
@@ -4336,14 +4336,15 @@ export function bakeGoblinQueen() {
     else { line(g, hx - 6, hy + 6, hx + 6, hy + 6, C.k, 1); for (const [a, b] of [[-5, 5], [5, 5], [-5, 4], [5, 4]]) px(g, hx + a, hy + b, C.t); }
     px(g, hx - 9, hy + 3, C.d); px(g, hx + 8, hy - 4, C.d);
     // the crown: iron, five points, a red stone in each
-    g.save(); g.translate(hx, hy - 4); g.rotate(tilt); g.scale(1.3, 1);
+    if (crown === 'on') { g.save(); g.translate(hx, hy - 4); g.rotate(tilt); g.scale(1.3, 1);
     fillPoly(g, [[-8, 0], [8, 0], [9, -3], [-9, -3]], C.I); fillPoly(g, [[-8, -3], [8, -3], [8, -5], [-8, -5]], C.y);
     for (const k of [-8, -4, 0, 4, 8]) { fillPoly(g, [[k - 2, -5], [k + 2, -5], [k, -11 - (k === 0 ? 3 : 0)]], C.i); px(g, k, -7, C.m); }
-    g.restore();
+    g.restore(); } else { for (const [a, b] of [[-5, -3], [-2, -4], [2, -4], [5, -3]]) px(g, hx + a, hy + b, C.k); px(g, hx - 4, hy - 4, C.G); px(g, hx + 3, hy - 4, C.G); }   /* bare-headed: a few wisps */
     if (stars) for (let i = 0; i < 3; i++) { const a = i * 2.1 + stars; P1(hx + Math.cos(a) * 11, hy - 12 + Math.sin(a) * 3, 'e'); }
     // the near arm and the sceptre in it: a sleeve of the gown to the wrist, and a great deal of arm in the sleeve
     if (!rod || rod[4] !== 'back') rodDraw();
-    { const [x0, y0, x1, y1] = arm, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 8, C.q); line(g, x0, y0, x1, y1, C.q, 17); line(g, wx, wy, x1, y1, C.g, 11); circle(g, wx, wy, 6.5, C.n); circle(g, x1, y1, 6, C.g); } /* the sleeve past the elbow, a puffed cuff, then the green forearm and the fist: all-green from the shoulder read as a leaf */
+    { const [x0, y0, x1, y1] = arm, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 8, C.q); line(g, x0, y0, x1, y1, C.q, 17); line(g, wx, wy, x1, y1, C.g, 11); circle(g, wx, wy, 6.5, C.n); circle(g, x1, y1, 6, C.g);
+      if (crown === 'hand') { const cxh = x1 + 1, cyh = y1 - 6; fillPoly(g, [[cxh - 7, cyh + 3], [cxh + 7, cyh + 3], [cxh + 8, cyh], [cxh - 8, cyh]], C.y); rect(g, cxh - 8, cyh - 2, 16, 2, C.Y); for (const k of [-7, -3.5, 0, 3.5, 7]) { fillPoly(g, [[cxh + k - 1.6, cyh - 2], [cxh + k + 1.6, cyh - 2], [cxh + k, cyh - 8 - (k === 0 ? 2 : 0)]], C.e); px(g, cxh + k, cyh - 3, C.m); } circle(g, x1, y1, 5, C.g); } } /* the sleeve past the elbow, a puffed cuff, then the green forearm and the fist: all-green from the shoulder read as a leaf */
     if (rope) { /* (claude/highcrown2bell) THE BELL-PULL: a hemp rope run up from the fists toward the bell (rope = its far end, relative to the fist), the tail hanging below them with a knot and a tassel */
       const [rx, ry] = [arm[2], arm[3]];
       line(g, rx, ry - 2, rx + rope[0], ry + rope[1], C.U, 3); line(g, rx, ry - 2, rx + rope[0], ry + rope[1], C.u, 1); line(g, rx + 1, ry + 3, rx + 2, ry + 11, C.U, 3); line(g, rx + 1, ry + 3, rx + 1, ry + 11, C.u, 1);
@@ -4371,6 +4372,34 @@ export function bakeGoblinQueen() {
     frame({ arm: [34, 26, 46, 45], rod: [10, 50, 52, 48, 'back'], head: 'daze', tilt: 0.9, rot: 0.1, dy: 1, flare: 5 }),                        /* 14 down (the fist kept off the canvas's last row: the tip of her sleeve sat on it) */
     frame({ arm: [34, 24, 40, 4], arm2: [22, 25, 37, 7], rod: [12, 52, 9, 18, 'back'], lean: -3, feet: [[19, 58], [37, 58]], rope: [4, -18] }),   /* 15 BELL-PULL WINDUP (claude/highcrown2bell): both fists up on the rope, hauling back, her sceptre planted behind her */
     frame({ arm: [34, 27, 41, 41], arm2: [22, 27, 37, 39], rod: [12, 52, 9, 18, 'back'], head: 'shout', lean: 4, dy: 2, flare: 2, feet: [[19, 58], [37, 58]], rope: [5, -20] }),   /* 16 BELL-PULL RELEASE: the rope hauled to her belt, her weight thrown on it, the shout */
+    /* (claude/gq2art) THE THREE-STAGE FIGHT'S POSES, 17-27 (the greybox had borrowed 2/6/7/8/10/15 for these) */
+    frame({ arm: [34, 24, 38, 2], arm2: [22, 25, 18, 34], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: -3, crown: 'hand', feet: [[20, 58], [36, 58]] }),   /* 17 CROWN TOSS windup: the crown off her head, held up and back in the near fist */
+    frame({ arm: [34, 27, 54, 22], arm2: [22, 25, 18, 34], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: 6, flare: 3, crown: 'off', feet: [[18, 58], [38, 58]] }),   /* 18 CROWN TOSS release: thrown, the arm out flat, her weight on the front foot */
+    frame({ arm: [34, 22, 33, 6], arm2: [22, 22, 31, 8], rod: [14, 54, 54, 54, 'back'], head: 'daze', stars: 2, lean: -3, dy: 2, flare: 4, crown: 'off', feet: [[17, 58], [39, 58]] }),   /* 19 STUNNED: bare-headed, both hands clamped to her skull, the sceptre dropped, knees going */
+    frame({ arm: [34, 24, 51, 6], arm2: [22, 25, 18, 34], rod: [14, 52, 10, 20, 'back'], lean: 2, crown: 'off', feet: [[22, 58], [34, 58]] }),   /* 20 CATCH: the free hand open and reaching for the crown coming home, a smug grin */
+    frame({ arm: [34, 24, 40, 0], arm2: [22, 24, 28, 2], rod: [40, 4, 14, -4], head: 'shout', lean: -5, flare: 3, feet: [[20, 58], [36, 58]] }),   /* 21 BANNER LASH HIGH windup: the banner-staff over her head in both fists, hauled back */
+    frame({ arm: [34, 25, 52, 14], arm2: [22, 25, 44, 12], rod: [30, 2, 56, 24], head: 'shout', lean: 7, dy: 1, flare: 4, feet: [[18, 58], [38, 58]] }),   /* 22 BANNER LASH HIGH release: cracked down from over the shoulder */
+    frame({ arm: [34, 28, 30, 46], arm2: [22, 28, 24, 44], rod: [26, 50, 10, 56, 'back'], head: 'shout', lean: -4, dy: 3, flare: 5, feet: [[16, 58], [40, 58]] }),   /* 23 BANNER LASH LOW windup: crouched, the lash trailing back along the floor */
+    frame({ arm: [34, 28, 56, 50], arm2: [22, 28, 50, 48], rod: [38, 52, 58, 54], head: 'shout', lean: 8, dy: 3, flare: 5, feet: [[16, 58], [40, 58]] }),   /* 24 BANNER LASH LOW release: swept out along the floor at ankle height */
+    frame({ arm: [34, 22, 44, 4], arm2: [22, 25, 18, 34], rod: [44, 6, 46, -8], head: 'shout', glow: 1, lean: 1, flare: 2 }),   /* 25 PORTAL CAST: the sceptre thrust up, its head burning violet */
+    frame({ arm: [34, 25, 44, 38], arm2: [22, 25, 38, 38], rod: [44, 20, 44, 58], head: 'shout', glow: 1, lean: 3, dy: 3, flare: 4, feet: [[18, 58], [38, 58]] }),   /* 26 GEYSER: the sceptre driven point-down through the slates, both fists on it, violet at the floor */
+    frame({ arm: [34, 22, 52, 8], arm2: [22, 22, 4, 8], rod: [14, 52, 10, 20, 'back'], head: 'shout', flare: 8, crown: 'off', feet: [[14, 58], [42, 58]] }),   /* 27 CROWN STORM: arms flung wide, the crown gone up into the air to orbit */
+    /* (claude/gq3art) THE GQ3 POSES, 28-40 (the greybox borrowed 17/12/25/19/7/3/27 for these) */
+    frame({ arm: [34, 22, 40, 0], arm2: [22, 25, 26, 12], rod: [42, 6, 44, -10], head: 'shout', glow: 1, lean: -2, flare: 2 }),   /* 28 GEODE TELL a: the sceptre thrust up, a portal over it; the off hand open, waiting for the stone */
+    frame({ arm: [34, 21, 41, -2], arm2: [22, 24, 30, 8], rod: [43, 4, 46, -12], head: 'shout', glow: 2, lean: -4, flare: 3, feet: [[20, 58], [36, 58]] }),   /* 29 GEODE TELL b: higher, the sceptre-head blazing, the stone grinding out into her hand */
+    frame({ arm: [34, 28, 54, 36], arm2: [22, 27, 48, 34], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: 7, dy: 2, flare: 4, feet: [[16, 58], [40, 58]] }),   /* 30 GEODE THROW: an under-hand lob, both fists out low, her weight thrown forward */
+    frame({ arm: [34, 26, 38, 44], arm2: [22, 26, 34, 44], rod: [36, 28, 38, 58], head: 'shout', glow: 1, dy: 3, lean: 1, flare: 6, feet: [[18, 58], [38, 58]] }),   /* 31 BLINK IN a: the sceptre driven into the floor, the gown flaring as the ring takes her */
+    frame({ arm: [34, 28, 38, 48], arm2: [22, 28, 34, 48], rod: [36, 36, 38, 58], head: 'shout', glow: 2, dy: 6, lean: 0, flare: 10, feet: [[16, 58], [40, 58]] }),   /* 32 BLINK IN b: sunk to the waist in light, only the gown's hem still out */
+    frame({ arm: [34, 24, 50, 16], arm2: [22, 25, 8, 16], rod: [14, 52, 50, 50, 'back'], head: 'daze', stars: 1, lean: 7, dy: 1, flare: 5, tilt: 0.3, feet: [[16, 58], [40, 58]] }),   /* 33 STUMBLE OUT a: out of the ring on her face, arms windmilling, the crown slipping */
+    frame({ arm: [34, 24, 46, 34], arm2: [22, 24, 12, 10], rod: [14, 52, 50, 50, 'back'], head: 'daze', stars: 2, lean: -4, flare: 4, tilt: -0.3, feet: [[22, 58], [38, 58]] }),   /* 34 STUMBLE OUT b: rocking back on her heels, the other way */
+    frame({ arm: [34, 22, 54, 2], arm2: [22, 22, 2, 2], rod: [44, 6, 48, -12], head: 'shout', glow: 2, flare: 9, feet: [[14, 58], [42, 58]] }),   /* 35 DESPERATION: both arms flung up, the sceptre blazing, the gown blown out: the portal storm */
+    frame({ sit: 10, dy: 5, feet: [[22, 54], [34, 54]], arm: [34, 26, 38, 38], arm2: [22, 26, 30, 36], rod: [12, 52, 52, 50, 'back'], head: 'daze', crown: 'hand', lean: 3, flare: 4 }),   /* 36 KNEEL BEATEN: down on her knees, the sceptre dropped, the crown clutched to her chest */
+    frame({ arm: [34, 26, 40, 30], arm2: [22, 26, 30, 28], rod: [40, 50, 44, 14], head: 'shout', crown: 'hand', lean: -1, flare: 2 }),   /* 37 RISE CLUTCHING THE CROWN: on her feet again, both fists hugging it */
+    frame({ arm: [34, 25, 38, 30], arm2: [22, 26, 30, 32], rod: [40, 50, 44, 16], head: 'shout', crown: 'hand', lean: -5, flare: 1, feet: [[24, 58], [30, 58]] }),   /* 38 BACK INTO THE PORTAL a: shuffling backward, the crown clutched, eyes on you */
+    frame({ arm: [34, 25, 38, 30], arm2: [22, 26, 30, 32], rod: [40, 50, 44, 16], head: 'shout', crown: 'hand', lean: -6, dy: -1, flare: 1, feet: [[21, 58], [34, 58]] }),   /* 39 BACK INTO THE PORTAL b: the other foot */
+    frame({ arm: [34, 26, 46, 40], arm2: [22, 26, 12, 40], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: 3, dy: 1, flare: 6, feet: [[16, 58], [40, 58]] }),   /* 40 INTRO RAGE: both fists clenched low, the whole bulk thrown forward, roaring (MY DAUGHTER) */
+    frame({ arm: [34, 28, 46, 40], arm2: [22, 28, 14, 38], rod: [36, 36, 38, 58], head: 'shout', glow: 1, dy: 4, lean: -2, flare: 4, feet: [[22, 56], [34, 56]] }),   /* 41 TOWER HOP a (claude/gq3tune): crouched at the lip of her portal, the sceptre planted, both fists coiled, a violet spark in the sceptre-head */
+    frame({ arm: [34, 20, 44, -2], arm2: [22, 22, 10, 6], rod: [46, 2, 50, -14], head: 'shout', glow: 2, dy: -5, lean: 4, flare: 8, feet: [[26, 46], [32, 48]] }),   /* 42 TOWER HOP b: sprung up into the portal, legs tucked, one fist and the blazing sceptre reaching up, the gown blown out below her */
   ];
   return pack(F, CX, 70, 68, 50);
 }
