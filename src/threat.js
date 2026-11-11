@@ -190,7 +190,9 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      the snow cornices and the driven hatchets are things you work, not foes */
   bzchief: 6, drummer: 1.5, wcdrum: 0, wcgate: 0, wcslab: 0, wccornice: 0, wchold: 0, wcrope: 0,
 };
+Object.assign(THREAT, { wwspan: 0, wwcandle: 0, wwlamp: 0, wwstone: 0, wwhands: 0, wwthief: 2, lanternwidow: 6 });   /* (claude/wispwood) WISPWOOD: its pale spans, candles, lamps, waystones and hand pools are machines (the hands are the pools' own hazard); a wisp thief; its boss */
 
+Object.assign(THREAT, { skweb: 0, skanchor: 0, sksconce: 0, skwall: 0, sksac: 0, skgoo: 0, silklurker: 3, cryptmother: 6 });   /* (claude/silk) THE SILK UNDERCROFT: its taut webs, anchors, sconces, sticky walls, egg sacs and goo are machines (a sac's spiderlings are spiders); THE SILK LURKER; its boss */
 // THE INDEX, also in one place: what a level CONTAINS, not how a player does. Deliberately crude and
 // deliberately static - it is for spotting a level out of order with its neighbours, not for tuning a number.
 // A tall level is long, it is just long upwards, so the span counts height at three columns a row.
@@ -250,3 +252,5 @@ export function worstGap(ents, W, H, arena) {
   for (let i = 1; i < cx.length; i++) gap = Math.max(gap, cx[i] - cx[i - 1]);
   return Math.max(gap, end - (cx[cx.length - 1] || 0));
 }
+Object.assign(THREAT, { mnshift: 0, mncandle: 0, mncandelabra: 0, mnrack: 0, mnportrait: 0, mndoor: 0, poltergeist: 3, castellan: 6 });   /* (claude/hollowmanor) THE HOLLOW MANOR: its shifting panels, candles, candelabra stands, empty suits, portraits and the nursery door are machines; THE POLTERGEIST; its boss */
+Object.assign(THREAT, { aclectern: 0, acrail: 0, acwell: 0, acrune: 0, acbooks: 2, headmistress: 6 });   /* (claude/academy) THE MAGE ACADEMY: its lecterns, ward rails, pits and shortcut runes are machines; a spellbook flock; its boss */

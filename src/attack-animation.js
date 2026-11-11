@@ -1,3 +1,4 @@
+import { JUICE2_SHIPS } from './juice.js';   /* (claude/juice2) the flag: ranger / berserker beats and the third-cut wind-up */
 // THE POSE KEEPS THE BLOW'S TIME. This chooses art only; stamina, movement and live boxes remain in combat.
 /* THE ATTACK-ANIMATION BEAT TABLE (heroanim lane, 2026-10-10; art only, every window is combat's). Seconds on the swing clock P.atk -> the frame of
    the hero's atk / atkB / atkC list (0 anticipation, 1 strike (smear), 2 extended, 3 recover, 4 settle); then the recovery clock (P.atkRec, set by
@@ -17,6 +18,16 @@ const LIGHT = {
   pirate: [.03, .07, .15, .24], reaper: [.12, .15, .24, .28],
   geomancer: [.05, .10, .18, .25],   /* the stave: a beat longer to lift than a sword, the stone lands on the same frame as the spear */
 };
+/* (claude/juice2, J2) PER-HERO LIGHT BEATS, behind JUICE2_SHIPS (off = the knight's, as today): the ranger and the berserker had none and borrowed the knight's. The ranger's
+   quick snap-shot slap (.03 to the strike, the bow is light), the berserker's heavier haul: the axes lift a beat longer. And the THIRD CUT winds up one beat more
+   (+.02 s on the anticipation, art only: commit.js windows are untouched; the later beats stay put so the strike frame still lands on the blow). */
+export const LIGHT2 = { ranger: [.03, .08, .15, .22], berserker: [.05, .10, .17, .24] };
+export const THIRD_ANT = 0.02;
+export function beatsFor(hero, p) {
+  const on = JUICE2_SHIPS, base = LIGHT[hero] || (on && LIGHT2[hero]) || LIGHT.knight;
+  if (on && !p.heavy && !p.heavySwing && (p.combo || 1) % 3 === 0) return [base[0] + THIRD_ANT, base[1], base[2], base[3]];
+  return base;
+}
 export function attackPose(hero, p, frames) {
   const directional = p.swingKind === 'rise' || p.swingKind === 'sweep' || p.swingKind === 'airUp';   /* (claude/combat3: the air up-slash) */
   const combo = (p.combo || 1) % 3;
@@ -26,7 +37,7 @@ export function attackPose(hero, p, frames) {
   if (hero === 'berserker' && !directional) { const want = !p.ground ? 'bzAirSpin' : p.heavySwing ? 'bzCross' : (p.combo || 1) % 2 ? 'bzFlurryL' : 'bzFlurryR';
     desired = frames[want] ? want : !p.ground && frames.air ? 'air' : p.heavySwing ? 'atkC' : (p.combo || 1) % 2 ? 'atk' : 'atkB'; }
   const key = frames[desired] ? desired : desired === 'airUp' && frames.rise ? 'rise' : 'atk';
-  const beats = directional ? [.02, .08, p.swingKind === 'sweep' ? .15 : .17, .24] : LIGHT[hero] || LIGHT.knight;
+  const beats = directional ? [.02, .08, p.swingKind === 'sweep' ? .15 : .17, .24] : JUICE2_SHIPS ? beatsFor(hero, p) : LIGHT[hero] || LIGHT.knight;
   const frame = beats.findIndex(t => p.atk < t);
   return { key, frame: frame < 0 ? 4 : frame };
 }

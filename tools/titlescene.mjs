@@ -36,7 +36,7 @@ try {
   console.log('ok  options        OPTIONS groups SETTINGS / SOUND TEST / CONTROLS under one row of a six-row board; ESC closes it');
 
   /* ---- 1c. (claude/titlemenu, Daniel 11-08) THE THREE GROUPS: each opens in place with its rows and a BACK row; ESC, X (the back key) and BACK all return to the top level on the group's own row; SWAP HERO is not on the title ---- */
-  const GRP = { 'PLAY TOGETHER': ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': ['ARENA YARD', 'DUEL (BETA)', 'BOSS SELECT'], 'EXTRAS': ["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'] };
+  const GRP = { 'PLAY TOGETHER': ['LOCAL CO-OP', 'ONLINE CO-OP', 'PLAY WITH AI'], 'MORE MODES': ['ARENA YARD', 'DUEL (BETA)', 'BOSS SELECT'], 'EXTRAS': ["WHAT'S NEW", 'UNLOCKS', 'THE MAKER (TEST)', 'GIVE FEEDBACK', 'CREDITS'] };   /* (claude/maker, Daniel 11-09: the level maker ships as a test under EXTRAS; never in the demo) */
   for (const [g, rows] of Object.entries(GRP)) for (const how of ['pause', 'atk', 'BACK']) {
     const w = await pg.evalp('(()=>{ BK.state = "title"; BK.ui.pressCard = false; BK.ui.titleSub = null; BK.ui.titleI = BK.ui.titleItems().indexOf(' + JSON.stringify(g) + '); BK.press("confirm"); BK.step(3); const sub = BK.ui.titleItems(), at = BK.ui.titleSub, i0 = BK.ui.titleI;' +
       (how === 'BACK' ? 'BK.ui.titleI = sub.indexOf("BACK"); BK.press("confirm");' : 'BK.press(' + JSON.stringify(how) + ');') + ' BK.sim(2); BK.step(2); return { sub, at, i0, closedSub: BK.ui.titleSub, on: BK.ui.titleItems()[BK.ui.titleI], st: BK.state, top: BK.ui.titleItems() }; })()');

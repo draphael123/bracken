@@ -36,7 +36,7 @@ const TS = 16, idx = id => LEVELS.findIndex(l => l.id === id);
 const build = () => LEVELS[idx('witchlight')].build();
 // 1. plugged in
 assert.ok(idx('witchlight') > idx('burning'), 'appended after the village: no level index moves');
-assert.equal(LEVELS[idx('witchlight')].needs, 'burial'); assert.equal(LEVELS[idx('mage')].needs, 'witchlight', 'the Folly needs the stair');
+assert.ok(['burial','wispwood','silk','manor'].includes(LEVELS[idx('witchlight')].needs), 'the stair needs the last night area before it (burial on master; wispwood, silk, manor when the night road is on)'); assert.ok(['witchlight','academy'].includes(LEVELS[idx('mage')].needs), 'the Folly needs the stair (or the Academy after it)');
 const L = build(), R = floodReach(L, T, { rides: true }), reached = (x, y) => R.seen.has(x + ',' + y);
 const seen = [...R.seen].map(k => k.split(',').map(Number)), rows = seen.map(([, y]) => y);
 const near = e => { for (let dy = -2; dy <= 5; dy++) for (let dx = -3; dx <= 3; dx++) if (reached(e.x + dx, e.y + dy)) return true; return false; };

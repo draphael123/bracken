@@ -85,12 +85,22 @@ export async function openPage(opts = {}) {
     pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
     ws.send(JSON.stringify({ id: i, method, params }));
   });
+  /* THE PAGE IS COLLECTED, NOT LEFT TO PILE UP (claude/leakfix 11-10). A dropped canvas and a left-behind document keep their NATIVE memory until a MAJOR garbage collection, and V8 cannot see it,
+     so it never hurries: a renderer sat at ~1.5 GB after boot and grew past memguard's 3 GB cap in the long checks (11-10: 20 kills, each one a red and a rerun; cdp-recovery's twenty reloads
+     added ~100 MB each). A full collection (HeapProfiler.collectGarbage, what DevTools' bin button does) is asked for after every pg.reload() and, at most every BRACKEN_PAGE_GC_MS (15 s), after an
+     evaluation. The game itself asks for one every third level load inside an evaluation (src/main.js retireBakes, only while window.__gcOnLoad is set - which only this file sets). Nothing a check
+     reads changes; only RSS does. opts.gc === false or BRACKEN_PAGE_GC=0 turns all of it off (tools/load-leak.mjs measures growth WITHOUT a collection and opts out). */
+  const gcOn = opts.gc !== false && process.env.BRACKEN_PAGE_GC !== '0', GC_EVERY_MS = +(process.env.BRACKEN_PAGE_GC_MS || 15000);
+  let gcLive = false, gcBusy = false, gcOk = true, gcAt = Date.now(), gcEnabled = false;
+  const collectGc = async force => { if (!gcOn || !gcOk || gcBusy || deadWhy || (!force && Date.now() - gcAt < GC_EVERY_MS)) return; gcBusy = true;
+    try { if (!gcEnabled) { await send('HeapProfiler.enable', {}, 10000).catch(() => {}); gcEnabled = true; } await send('HeapProfiler.collectGarbage', {}, 30000); }
+    catch (e) { if (/not found|not supported/i.test(e.message)) gcOk = false; } finally { gcAt = Date.now(); gcBusy = false; } };
   /* A timed-out evaluation FAILS LOUDLY NAMING ITS EXPRESSION (claude/harnessstall): it used to say only 'Runtime.evaluate did not answer within 1801000ms', or never, and the guard killed the check 900 s in */
   const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000)
     .catch(e => { throw /did not answer/.test(e.message) ? new Error(e.message + ' - evaluating: ' + String(expr).replace(/\s+/g, ' ').slice(0, 160)) : e; });
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    const val = r.result && r.result.result ? r.result.result.value : undefined; if (gcLive) await collectGc(false); return val; };
   await send('Runtime.enable'); await send('Page.enable'); await send('Inspector.enable').catch(() => {});
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
@@ -102,7 +112,9 @@ export async function openPage(opts = {}) {
   if (process.env.BRACKEN_GQ4P === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4P=true' });   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (src/gq4p.js gq4pOn) */
   if (process.env.BRACKEN_GQ4L === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4L=true' });   /* (claude/gq4l) Highcrown pass 4's level half (src/gq4l.js gq4lOn): from the first script of every document */
   if (process.env.BRACKEN_GQ4Q === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4Q=true' });   /* (claude/gq4q) the Queen's pass 4 (src/gq4q.js gq4qOn) */
+  if (process.env.BRACKEN_ROAD) await send('Page.addScriptToEvaluateOnNewDocument', { source: process.env.BRACKEN_ROAD.split(',').map(k => ({ ww: 'window.__WW=true', sk: 'window.__SK=true', mn: 'window.__MN=true', ac: 'window.__AC=true' })[k.trim()]).filter(Boolean).join(';') || '0' });   /* (claude/nightwalk) BRACKEN_ROAD=ww,sk,mn,ac: the four flag-off road areas on in THIS page only (the same globals tools/road-on.mjs sets in node), from the first script of every document; never a committed flip */
   if (process.env.BRACKEN_COL4 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_COL4=true' });   /* (claude/colossus4) the Glass Sea + Colossus 4 flag for bossLab / boss-rates (src/colossus4.js col4On): from the first script of every document, so the lab's reloads keep it */
+  if (gcOn) await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__gcOnLoad=3' });   /* (claude/leakfix) src/main.js retireBakes: a full collection every 3rd level load, only while this is set and the browser was started with --expose-gc (browser-profile.mjs) */
   if (opts.seed !== undefined) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{let s=' + (opts.seed >>> 0) + ';Math.random=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};})()' });
   /* THE GAME SPEED IS PINNED (Daniel 10-12: results must not change with the player's setting): every page a tool opens starts with a settings file at the speed the
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
@@ -116,7 +128,9 @@ export async function openPage(opts = {}) {
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
+  gcLive = gcOn;
   const reload = async () => {
+    gcLive = false;
     const previousOrigin = await evalp('localStorage.clear(); window.__labReloading = true; performance.timeOrigin', 10000);
     const url = URL0 + '?labReload=' + Date.now() + '-' + id;
     await send('Page.navigate', { url });
@@ -127,6 +141,7 @@ export async function openPage(opts = {}) {
       if (!ready) await sleep(100);
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
+    gcLive = gcOn; await collectGc(true);   /* (claude/leakfix) the document just left is garbage now: ~100 MB a reload that only a major collection gives back */
   };
   /* (claude/botmem) killedByGuard(): the memguard2 kill-log entry for THIS page's profile (or null); dead: why the page stopped answering; infra: either */
   const profName = run ? basename(run.prof) : '';

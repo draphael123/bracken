@@ -37,7 +37,7 @@ function privMB(pids) {
   const o = execFileSync('ps', ['-o', 'rss=', '-p', pids.join(',')], { encoding: 'utf8' }); return Math.max(0, ...o.trim().split(/\s+/).filter(Boolean).map(n => Math.round(+n / 1024)));
 }
 
-const OPEN = () => openPage({ audio: false, fonts: false, args: ['--js-flags=--expose-gc --max-old-space-size=2048'] });
+const OPEN = () => openPage({ audio: false, fonts: false, gc: false /* (leakfix) this tool measures growth WITHOUT a collection */, args: ['--js-flags=--expose-gc --max-old-space-size=2048'] });
 let pg = await OPEN();
 try {
   const ids = await pg.evalp(`(async () => { window.__LV = (await import('/src/level.js')).LEVELS; BK.manualSimulation = true; BK.god = true; return __LV.map(l => l.id); })()`);

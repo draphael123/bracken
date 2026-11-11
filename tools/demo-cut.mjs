@@ -69,7 +69,7 @@ const PINNED = [
   [/^DS\.DEMO && DS\.demoLocked\(LEVELS\[to\]\)/, 'trnBegin: no walk-out to a locked wood (unless the row is the demoEnd teaser, claude/gormburn)'],
   [/^DS\.DEMO\) \{ TRN = null/, 'trnFinish: the demo mountain teaser ends on the END CARD (claude/gormburn)'],
   [/^DS\.DEMO \? bossTable\(\)\.filter/, 'boss select: the slice only'],
-  [/^DS\.DEMO \? \[\] : \['THE EDITOR'\]/, 'title: no editor'],
+  [/^DS\.DEMO \? \[\] : \['THE (EDITOR|MAKER)( \(TEST\))?'\]/, 'title: no editor (claude/maker: the row is THE MAKER (TEST), in EXTRAS; the demo still has none)'],
   [/^DS\.DEMO\) DSV\.tag\(PROG, LEVELS\)/, 'progDefaults: tag a demo save'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) \? -1 : partyNextLevel\(\)/, 'win card: no party-next past Gorm'],
   [/^DS\.demoEndsHere\(LEVELS\[levelIndex\]\.id\) && !bossSelectFight/, 'win card: the end card'],

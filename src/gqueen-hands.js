@@ -727,7 +727,7 @@ export function makeGQueenHands(ctx) {
     const c = S.crown;
     if (!c) { e.mode = 'rec'; e.modeT = 0.5; e.crownOut = false; return 0; }
     e.face = sign(c.x - e.x);
-    if (e.modeT <= -2.5) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.6; return 0; }   /* (GQ4TUNE) the fetch had no end: a crown on the far side of something she cannot cross (roof seed 4: 270 s of 'SHE FETCHES HER CROWN', bar 100%) held her there for ever. modeT starts at 4 and runs down: 2.5 s past zero she gives it up. */
+    if (e.modeT <= -2.5) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.6; return 0; }   /* (crownfix) the fetch had no end: a crown on the far side of something she cannot cross held her in 'SHE FETCHES HER CROWN' for ever (a lab run sat 270 s, bar 100%). modeT starts at 4 and runs down: 2.5 s past zero she gives it up. */
     if (Math.abs(c.x - e.x) < 18 && c.t >= G.crown.fetch) { S.crown = null; e.crownOut = false; e.mode = 'rec'; e.modeT = 0.6; ctx.ring(e.x, e.y - 52, 18, '#e0b040', 0.25); sfx('clank'); return 0; }
     return Math.abs(c.x - e.x) < 18 ? 0 : e.face * 90;
   }

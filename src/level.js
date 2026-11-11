@@ -15,6 +15,7 @@ import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './
 import { buildAirship, AS_RULE, AS_SHIPS, AS_NAME, asOn } from './airship.js';   /* (claude/airship) THE DESERT AIRSHIP (the greybox, behind its flag) */
 import { buildGreatDune, GD_RULE, GD_SHIPS, gdOn } from './great-dune.js'; import { applyInserts } from './route-insert.js';   /* (claude/greatdune) THE GREAT DUNE (the greybox, behind its flag) and THE ROAD INSERTS' one rule */
 import { buildRookery, RK_RULE } from './rookery.js';   /* THE ROOKERY (claude/rookery, the OPUS GREYBOX): between GALE MOOR and THE SKY ROAD - src/rookery-hands.js its rule, src/shriek-sisters.js its boss */
+import { buildWispwood } from './wispwood.js'; import { WW_RULE } from './ww-lines.js'; import { wwOn } from './ww-flag.js';   /* WISPWOOD (claude/wispwood, the OPUS GREYBOX): behind WISPWOOD_SHIPS */
 import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
 import { buildKitchenGate, KG_RULE } from './kitchen-gate.js';   /* THE KITCHEN GATE (claude/kitchengate, the OPUS GREYBOX): between THE UNDERCROWN and HIGHCROWN - src/kitchen-hands.js its rule, src/grubbag.js its boss */
 import { buildPalisadeWood, PW_RULE } from './palisade-wood.js';   /* THE PALISADE WOOD (claude/palisadewood, the greybox): between THE ROOTWAY and KINGSWOOD - src/palisade-hands.js its rule, src/battering-beast.js its boss */
@@ -53,6 +54,9 @@ import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the 
 import { highcrownTwo } from './highcrown2.js';
 import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js'; import { buildLesson } from './opening-tutorial.js';   /* (claude/tutorial1, Daniel 11-05) THE ROADSIDE LESSON: the generic opening for a new save, replayable from the inn */   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
 import { buildWarCairn, WC_RULE } from './war-cairn.js';   /* (claude/warcairn) THE WAR CAIRN: the Berserker's told spur off HIGHCROWN (scratch/brief-crownpath-1028.md) */   /* (claude/highcrown2) HIGHCROWN 2: the pieces laid after the cuts, in the cut level's columns */
+import { buildSilkUndercroft } from './silk-undercroft.js'; import { SK_RULE } from './sk-lines.js'; import { skOn } from './sk-flag.js';   /* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX): behind SILK_SHIPS */
+import { buildHollowManor } from './hollow-manor.js'; import { MN_RULE } from './mn-lines.js'; import { mnOn } from './mn-flag.js';   /* THE HOLLOW MANOR (claude/hollowmanor, the OPUS GREYBOX): behind MANOR_SHIPS */
+import { buildAcademy } from './academy.js'; import { AC_RULE } from './ac-lines.js'; import { acOn, AC_INSERT } from './ac-flag.js';   /* (claude/academy) THE MAGE ACADEMY (the OPUS GREYBOX, behind ACADEMY_SHIPS) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
@@ -8178,7 +8182,22 @@ if (gdOn()) LEVELS.push({ id: 'greatdune', arc: 'the desert', name: 'THE GREAT D
    BEHIND ITS FLAG (src/airship.js asOn: ?airship=1, AS=1): OFF (as shipped) this row is NOT appended. ON it is appended HIDDEN (no map node), needing the last desert level that exists
    (THE KING'S PYRAMID once it merges, the Sealed Pyramid until then): ?airship=1&level=airship. THE ROAD INSERT is src/route-insert.js's, live with AS_SHIPS (art before live). */
 if (asOn()) LEVELS.push({ id: 'airship', arc: 'the desert', name: AS_NAME, sub: 'feed the burners, climb into the storm', rule: AS_RULE, build: () => buildAirship({ T, TS }), needs: LEVELS.some(l => l.id === 'kingspyramid') ? 'kingspyramid' : 'sealedpyramid', hidden: !AS_SHIPS });
+/* WISPWOOD (claude/wispwood, the OPUS GREYBOX; scratch/brief-wispwood-1108.md): APPENDED (saves count levels by index), and ONLY WHILE WISPWOOD_SHIPS / ?ww=1 is on (src/ww-flag.js) -
+   with it off LEVELS is master's. On the road between THE BURIAL CAVERNS and THE WITCHLIGHT STAIR by its needs (the stair needs it; a save that had it open keeps it: src/main.js wwRoadMig). Its boss: THE LANTERN WIDOW */
+if (wwOn()) { LEVELS.push({ id: 'wispwood', name: 'WISPWOOD', sub: 'the dead wood over the barrows', rule: WW_RULE, build: () => buildWispwood({ painter, T, TS }), needs: 'burial' }); LEVELS.find(l => l.id === 'witchlight').needs = 'wispwood'; }
+/* (nightroad) ROAD ORDER: the pushes below run wispwood, silk, (applyInserts), manor, academy - each takes the stair's CURRENT needs, so with all on the road is burial > wispwood > silk > manor > stair > academy > Folly */
+/* THE SILK UNDERCROFT (claude/silk, the OPUS GREYBOX; scratch/brief-silkundercroft-1015.md): APPENDED (saves count levels by index), and ONLY WHILE SILK_SHIPS / ?sk=1 is on (src/sk-flag.js) -
+   with it off LEVELS is master's. It goes on the road just before THE WITCHLIGHT STAIR: it takes the stair's needs (THE BURIAL CAVERNS on master; WISPWOOD if that lands first) and the stair needs it
+   (a save that had the stair open keeps it, and a save past the stair gets the undercroft as an extra: src/main.js skRoadMig). Its boss: THE CRYPT MOTHER */
+if (skOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ id: 'silk', name: 'THE SILK UNDERCROFT', sub: 'the web beneath the manor', rule: SK_RULE, build: () => buildSilkUndercroft({ painter, T, TS }), needs: wl.needs }); wl.needs = 'silk'; }
 applyInserts(LEVELS);   /* (claude/greatdune) the desert's road inserts (src/route-insert.js): rewires `needs` only for an insert that is live - none is on this branch */
+/* THE HOLLOW MANOR (claude/hollowmanor, the OPUS GREYBOX; scratch/lane-reports/hollowmanor-plan.md): APPENDED (saves count levels by index), and ONLY WHILE MANOR_SHIPS / ?mn=1 is on (src/mn-flag.js) -
+   with it off LEVELS is master's. It goes on the road just before THE WITCHLIGHT STAIR: it takes the stair's needs (THE BURIAL CAVERNS on master; THE SILK UNDERCROFT if that lands - its push is above this line,
+   so the road reads caverns > (wispwood) > undercroft > manor > stair) and the stair needs it (old saves: src/main.js mnRoadMig). Its boss: THE CASTELLAN'S GHOST */
+if (mnOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ id: 'manor', name: 'THE HOLLOW MANOR', sub: 'the house above the undercroft', rule: MN_RULE, build: () => buildHollowManor({ painter, T, TS }), needs: wl.needs }); wl.needs = 'manor'; }
+/* THE MAGE ACADEMY (claude/academy, the OPUS GREYBOX; scratch/brief-academy-1016.md): APPENDED (saves count levels by index), and ONLY WHILE ACADEMY_SHIPS / ?ac=1 is on (src/ac-flag.js) -
+   then THE WITCHLIGHT STAIR -> THE MAGE ACADEMY -> THE MAGE'S FOLLY by src/route-insert.js's one rule with the Academy's own row (AC_INSERT): the Folly needs it */
+if (acOn()) { LEVELS.push({ id: 'academy', name: 'THE MAGE ACADEMY', sub: "the archmage's school", rule: AC_RULE, build: () => buildAcademy({ painter, T, TS }), needs: 'witchlight' }); applyInserts(LEVELS, AC_INSERT); }
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

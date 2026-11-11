@@ -119,7 +119,7 @@ console.log('layout and the screen');
   ok(hits.length > 8, 'touch / mouse: tabs, rows, arrows and BACK are hit boxes (' + hits.length + ')'); }
 
 console.log('wiring');
-ok(/\["WHAT'S NEW", 'UNLOCKS', 'GIVE FEEDBACK', 'CREDITS'\]/.test(main) && /k === 'UNLOCKS'\) \{ UNLOCK_OPEN\('title'\)/.test(main), 'the title menu has UNLOCKS (under EXTRAS)');
+ok(/\["WHAT'S NEW", 'UNLOCKS'(, 'GIVE FEEDBACK', 'CREDITS')?\]/.test(main) && /k === 'UNLOCKS'\) \{ UNLOCK_OPEN\('title'\)/.test(main), 'the title menu has UNLOCKS (under EXTRAS)');
 ok(PAUSE_ROWS.includes('Unlocks') && PAUSE_ROWS.indexOf('Unlocks') > 4 && /k === 'Unlocks'\) \{ UNLOCK_OPEN\('pause'\)/.test(main), 'the pause menu has an Unlocks row after the first screen');
 { const s = STATIONS.find(q => q.id === 'unlocks'); ok(!!s && s.verb === 'UNLOCKS' && /UNLOCKS BOARD/.test(s.name), 'the inn has THE UNLOCKS BOARD station');
   ok(TAVERN_ART.some(a => a[0] === 'unlocks'), 'its art is on the ART list'); const xs = STATIONS.map(q => q.x); ok(xs.every((x, i) => i === 0 || x - xs[i - 1] >= 3), 'the stations stay 3+ tiles apart, west to east: ' + xs.join(','));

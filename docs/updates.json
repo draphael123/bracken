@@ -1,6 +1,27 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 158,
+    "lines": [
+      { "s": "A feedback form in the game: tell us what you think without leaving it", "lv": [] },
+      { "s": "Goblin Queen fixed: her crown can no longer soft-lock the fight", "lv": ["crown"] },
+      { "s": "What's New now flags every new update, even two on the same day", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-10",
+    "batch": 157,
+    "lines": [
+      { "s": "NEW LEVEL: WISPWOOD, a dead wood where only what the light touches is real", "lv": ["wispwood"] },
+      { "s": "NEW BOSS: the Lantern Widow, waiting in the Widow's Glade", "lv": ["wispwood"] },
+      { "s": "NEW LEVEL: THE SILK UNDERCROFT, the web beneath the manor", "lv": ["silk"] },
+      { "s": "NEW LEVEL: THE HOLLOW MANOR, the house above the undercroft", "lv": ["manor"] },
+      { "s": "NEW LEVEL: THE MAGE ACADEMY, with the Headmistress waiting at the end", "lv": ["academy"] },
+      { "s": "Heroes move better in the air: new jump, fall, hit, skid, slide and crouch animations", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-10",
     "batch": 156,
     "lines": [
       { "s": "GOBLIN QUEEN reworked: a told bell-lure charge, a blink that really fires, a sealed hatch", "lv": ["crown"] },
