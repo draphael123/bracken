@@ -58,3 +58,19 @@ Not run: tools/check.mjs, QUICK gate (laptop owns them); canal-map (crashes on m
 3. Warcairn paladin at 356,24 sits at the Clan Ring door. Rec: keep the one at 20,81, and add `not:[[340,380]]` to the paladin row if a hand walk finds it crowded.
 4. Runners: nothing places them usefully (canal, towpath). Rec: place them only where a sworn sword / hedge knight / crossbow stands within 15 tiles x 3 (Waymeet already has them).
 5. Rule gap: cast rows silently remove designed pins (harvest-fair, tower-ascent, underwell brood, warcairn drummer, canal lamplighter). Rec: after any cast row, run the level's own browser tool (this lane's method); better, foe-cast-lint should refuse a row whose target is a squad named in a tool pin.
+
+## MASH RECHECK (coordinator follow-up, 11-11)
+mash-bot level mode, WITHOUT --write, --lite, same settings; "master" = origin/master a7c067880 in the detached scratch worktree wt-foevar-base, run today. Cells = hp lost % / deaths, knight | warden | pyro.
+| level | old stamp | master re-run today | foevar-d (stamped) |
+|---|---|---|---|
+| canal | 592/6 592/6 601/6 | 1502/15 1380/14 1294/13 | 1502/15 1380/14 1294/13 |
+| buriedcity | 4500/45 3497/35 718/6 | 5700/57 3913/39 704/6 | 5700/57 4013/40 609/5 |
+| ksar | 806/7 713/6 336/2 | 1050/9 678/5 677/5 | 1076/9 868/7 624/5 |
+| glasssea | 904/9 1006/10 904/9 | 1010/10 1215/12 293/2 | 1104/11 1215/12 634/5 |
+| underwell | 1702/17 1706/17 1613/16 | 1703/17 303/3 1670/16 | 1703/17 303/3 1642/16 |
+| sealedpyramid | 3595/36 3768/38 3220/31 | 1698/16 2855/28 3553/34 | 1898/18 2837/28 3454/33 |
+Cause: STAMP DRIFT, not foevar. Master today already shows the big moves (canal x2.5, underwell warden 1706 -> 303, pyramid knight 3595 -> 1698), identical or near-identical to foevar-d. The old stamps predate master's recent changes.
+Canal is bit-for-bit master (all six numbers equal), so the riverrat skin (the only canal row left; `keep:['canal']`, skin only, bargee flag kept) changes nothing the mash bot measures: damage, reach and boarding are untouched.
+Remaining foevar-vs-master differences are small and mixed in sign (ksar warden +190, pyro -53; glasssea knight +94, pyro +341 on a 2-death base; buriedcity warden +100, pyro -95; pyramid knight +200; underwell pyro -28). Every hero still dies in every level, so the mash gate (must die or drop under 40%) is nowhere near its edge. Largest is glasssea pyro 293/2 -> 634/5 and ksar warden 678/5 -> 868/7; these are single-seed bot runs on levels whose foe mix changed (glasssea fire/oil scorpions, ksar raptors/shield sentries), i.e. a real but gate-irrelevant shift, not a WARN-size jump.
+Repeatability: canal run twice on the same tree gave identical numbers (1502/15 1380/14 1294/13 both times, also = master). The mash bot is deterministic per tree (seeded), so ANY difference between two trees is a real change in the level/code, but its SIZE says little: one extra death = ~100 points, and the bot dies over and over, so counts of 10-60 deaths carry no difficulty meaning; only "dies / does not die" is a gate signal.
+Changed: nothing in code. No rows dropped or restamped for this recheck.
