@@ -53,7 +53,7 @@ check('flag ON: the Knight has no technique / upgrade cards (they are cut), thos
 check('owed queue: a rung reached with no pick, in ladder order; the stat card is not touched', () => withFlag(true, () => {
   const p = mk(26); assert.deepEqual(F.forksOwed(p, 'knight', 26).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain']); assert.deepEqual(F.forksOwed(p, 'knight', 27).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block']);
   assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender']); assert.deepEqual(F.forksOwed(p, 'knight', 50).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'block', 'skill:risingCut', 'heavy', 'spender', 'skill:groundSlam', 'sig', 'skill:ironclad', 'ult']);
-  assert.equal(F.owedCount(p, 'knight', 50, []), 11); assert.deepEqual(F.forksOwed(p, 'pyro', 50), [], 'a hero without fork data owes nothing');
+  assert.equal(F.owedCount(p, 'knight', 50, []), 11); assert.deepEqual(F.forksOwed(p, 'warden', 50), [], 'a hero without fork data owes nothing');
   assert.equal(F.setFork(p, 'knight', 'block', 'B', 27), null); assert.deepEqual(F.forksOwed(p, 'knight', 36).map(r => r.key), ['dash', 'skill:shieldThrow', 'chain', 'skill:risingCut', 'heavy', 'spender']);
 }));
 

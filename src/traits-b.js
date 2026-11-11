@@ -3,13 +3,14 @@
 // Dark behind TRAITS_SHIP like everything in traits.js. Every catalog passive of each hero is listed once (tools/traits.mjs fails on an unlisted id: unlisted = a CUT).
 //   learnAt: every slottable trait arrives by L18 (spread L2..18 in today's order, the slot-1 DEFAULT first so it exists from L2 and every default by L10); core keeps its catalog level.
 //   names:   card names that differ from the catalog (shown only while the flag is on).   tags: a requirement shown on the row ('NEEDS THE JET' / 'NEEDS BLOODWORMS'; display hook owed to the menu lane).
+import { forksShip } from './forks.js';   /* (claude/pyrofork) a flag-aware retired list for the Pyromancer */
 export const TRAIT_SPLIT_B = {
   pyro: {   /* identity: heat, stand in fire */
     core: ['pilot', 'conflagration', 'smoulder', 'kindle', 'backdraft'],
     traits: ['emberSkin', 'heatShield', 'brand', 'emberHeart', 'wildfire', 'phoenix', 'longFlame', 'jetWalk', 'scatter', 'twin'],
     merged: { phoenix: ['phoenixTrail'], longFlame: ['searing', 'sunder'], jetWalk: ['updraft'], scatter: ['skip'], twin: ['stoke'] },
-    folded: { blaze: 'heat:WHITE HEAT', inferno: 'heat:BELLOWED' },   /* the L43 heat-bar fork (FORKS lane) absorbs them; slottable traits until then */
-    retired: [],
+    folded: { blaze: 'sig:WHITE HEAT', inferno: 'sig:BELLOWED' },   /* the L43 heat-bar fork absorbs them: slottable traits until FORKS_SHIP is on */
+    get retired() { return forksShip() ? ['blaze', 'inferno'] : []; },   /* (claude/pyrofork) the L43 sig fork ships WHITE HEAT / BELLOWED: with FORKS_SHIP on the two old traits retire (kept in the catalog, never slot) */
     shared: [],
     defaults: ['emberSkin', 'phoenix'],   /* (claude/traittune-d) was ['emberSkin', 'heatShield']: TRAITS ON cost the bot pyro 11/12 -> 3/12 at THE DROWNED CAUSEWAY (practiced, L29); a revive in slot 2 gets 8/12 (heatShield+phoenix 10/12) */
     learnAt: { emberSkin: 2, longFlame: 3, twin: 4, scatter: 5, heatShield: 6, brand: 8, jetWalk: 10, blaze: 12, emberHeart: 14, phoenix: 10, wildfire: 17, inferno: 18 },
