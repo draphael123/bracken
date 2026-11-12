@@ -8176,8 +8176,6 @@ LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw 
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
 /* THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): APPENDED (saves count levels by index). The short generic opening a NEW save starts in (and the inn's training yard replays); it ends at the inn's door. src/opening-tutorial.js */
 LEVELS.push({ id: 'lesson', name: 'THE TUTORIAL', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
-/* THE HIGH LINES (claude/highlines1, the OPUS GREYBOX, 11-05): APPENDED (saves count levels by index). DEV ONLY - on no road, in no demo slice: hidden, no needs, reached with ?level=highlines - until its art lane and proof land (art before live; Daniel 11-05 15:27: Sky Road -> THE HIGH LINES -> Ore Road). src/highlines.js, src/highlines-hands.js, src/hookjack.js */
-LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to the cave mouth', rule: HL_RULE, build: () => buildHighLines({ painter, T, TS }), ...(HL_SHIPS ? { needs: 'skyroad' } : { hidden: true, dev: true }) });
 /* THE GREAT DUNE (claude/greatdune, the OPUS GREYBOX, 11-06; plan-desert-1105 s1.9, brief-greatdune-1014): the board road between the Buried City and the Sealed Pyramid.
    BEHIND ITS FLAG (src/great-dune.js gdOn: ?gd=1, GD=1): OFF (as shipped) this row is NOT appended - LEVELS is master's array, no index or save moves. ON it is appended
    HIDDEN (no map node), needing the Buried City: ?gd=1&level=greatdune. THE ROAD INSERT (the Sealed Pyramid needs it) is src/route-insert.js's, live with GD_SHIPS (art before live). */
@@ -8202,6 +8200,8 @@ if (mnOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ 
 /* THE MAGE ACADEMY (claude/academy, the OPUS GREYBOX; scratch/brief-academy-1016.md): APPENDED (saves count levels by index), and ONLY WHILE ACADEMY_SHIPS / ?ac=1 is on (src/ac-flag.js) -
    then THE WITCHLIGHT STAIR -> THE MAGE ACADEMY -> THE MAGE'S FOLLY by src/route-insert.js's one rule with the Academy's own row (AC_INSERT): the Folly needs it */
 if (acOn()) { LEVELS.push({ id: 'academy', name: 'THE MAGE ACADEMY', sub: "the archmage's school", rule: AC_RULE, build: () => buildAcademy({ painter, T, TS }), needs: 'witchlight' }); applyInserts(LEVELS, AC_INSERT); }
+/* THE HIGH LINES (claude/highlines1, the OPUS GREYBOX, 11-05): APPENDED (saves count levels by index). DEV ONLY - on no road, in no demo slice: hidden, no needs, reached with ?level=highlines - until its art lane and proof land (art before live; Daniel 11-05 15:27: Sky Road -> THE HIGH LINES -> Ore Road). src/highlines.js, src/highlines-hands.js, src/hookjack.js. (prephl) KEPT AFTER the shipped wispwood/silk/manor/academy rows: their indices are live, so highlines takes the next free one and is last. */
+LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to the cave mouth', rule: HL_RULE, build: () => buildHighLines({ painter, T, TS }), ...(HL_SHIPS ? { needs: 'skyroad' } : { hidden: true, dev: true }) });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did
