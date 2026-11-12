@@ -276,11 +276,12 @@ for (const [id, want] of [['street', /street/], ['sluice', /sluice/], ['trap', /
   ok(sb.length >= 3 && sb.every(e => e.t === 'ambusher' && L.glasses.some(g => g.id === e.glass)), 'brief 2: ' + sb.length + ' SAND-BOUND, each the ambusher\'s machine bound to a glass of the level');
   ok(sb.every(e => { const g = L.glasses.find(q => q.id === e.glass); return Math.abs(g.x - e.x) <= 12; }), 'every sand-bound stands within reach of its glass (the flip is your weapon there)');
   ok(L.foeHit.sandbound > 0 && L.foeHp.sandbound > 0, 'the sand-bound is weighed like the drowned (foeHit / foeHp)');
+  const anteSl = L.tplats.filter(p => p.glass === 'ante');   /* (claude/bc5) THE ANTECHAMBER'S slabs; the race span at the throne street's mouth (RACE.r2, flag ON) has its own - tools/buried-city5.mjs measures it */
   /* 9. THE EXAM BEFORE THE THRONE: one stretch - a glass, a sand-bound, an elite, the timed slabs - and the shrine after, at the throne room's door */
   const ex = ARCS.slab.exam, cy = ARCS.bound.exam, inEx = x => x >= cy[0] && x <= ex[1];
-  ok(L.ents.some(e => e.elite && inEx(e.x)) && sb.some(e => inEx(e.x)) && L.glasses.some(g => inEx(g.x)) && L.tplats.length >= 3 && L.tplats.every(p => inEx(p.x0)), 'brief 9: the exam before the throne has the flip, a sand-bound, an elite and ' + L.tplats.length + ' timed slabs');
-  ok(L.tplats.every((p, i) => i === 0 || p.life > L.tplats[i - 1].life) && L.tplats.every(p => p.life <= L.glasses.find(g => g.id === p.glass).dur), 'the slabs crumble one after another, the farthest last (each within its glass\'s run)');
-  ok(!reaches({ ...L, sandSolid: L.sandSolid.filter(b => !L.tplats.some(p => b[0] === p.x0 && b[1] === p.x1)) }), 'REQUIRED: without the timed slabs nothing crosses THE ANTECHAMBER');
+  ok(L.ents.some(e => e.elite && inEx(e.x)) && sb.some(e => inEx(e.x)) && L.glasses.some(g => inEx(g.x)) && anteSl.length >= 3 && anteSl.every(p => inEx(p.x0)), 'brief 9: the exam before the throne has the flip, a sand-bound, an elite and ' + anteSl.length + ' timed slabs');
+  ok(anteSl.every((p, i) => i === 0 || p.life > anteSl[i - 1].life) && anteSl.every(p => p.life <= L.glasses.find(g => g.id === p.glass).dur), 'the slabs crumble one after another, the farthest last (each within its glass\'s run)');
+  ok(!reaches({ ...L, sandSolid: L.sandSolid.filter(b => !anteSl.some(p => b[0] === p.x0 && b[1] === p.x1)) }), 'REQUIRED: without the timed slabs nothing crosses THE ANTECHAMBER');
   { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(cp.some(x => x > ex[1] - 4 && x < L.arena.x0 / TS), 'the shrine after the exam stands at the throne room\'s door (' + cp + ')'); }
   /* 10. THE LOOP BACK TO A SHRINE: the old street under the rooftops, its sand-gate shut as built (the route goes over the roofs) and opened from the courtyard side */
   const LD = L.loopDoor; ok(LD && at(LD.x, LD.y0) === T.SOLID && at(LD.x, LD.y1) === T.SOLID, 'brief 10: the old street\'s sand-gate is shut as built');
@@ -305,11 +306,11 @@ for (const [id, want] of [['street', /street/], ['sluice', /sluice/], ['trap', /
     const bound = { t: 'ambusher', cnSkin: 'sandbound', glass: 'works3', alive: true, x: 376 * TS + 8, y: 15 * TS, h: 18, st: { mode: 'walk', frame: 2 } };
     ok(F.boundTake(bound) === 1 && H.hold(bound, 1 / 60) && bound.sbBuried, 'while its glass runs the sand-bound is BURIED: held (stuck) and every blow whole');
     run(g3.dur + 0.5); ok(cell(t0.x0, t0.lo - n0) === T.SLOPE_L1, 'run out, the dune tilts back'); ok(F.boundTake(bound) === 0.4 && !H.hold(bound, 1 / 60), 'run out, THE SAND HOLDS IT: a blow lands at 0.4 (B15\'s floor, told in main.js)'); }
-  { const ga = glv('ante'), p0 = K4.tplats[0], pL = K4.tplats[K4.tplats.length - 1];
-    ok(K4.tplats.every(p => !p.up && cell(p.x0, p.y) === T.AIR), 'the timed slabs are down until their glass is struck');
-    place(ga.x, ga.y); H.interact(hero); run(0.1); ok(K4.tplats.every(p => p.up && cell(p.x0, p.y) === T.ONEWAY), 'struck, every slab rises');
+  { const K4a = K4.tplats.filter(p => p.glass === 'ante'), ga = glv('ante'), p0 = K4a[0], pL = K4a[K4a.length - 1];
+    ok(K4a.every(p => !p.up && cell(p.x0, p.y) === T.AIR), 'the timed slabs are down until their glass is struck');
+    place(ga.x, ga.y); H.interact(hero); run(0.1); ok(K4a.every(p => p.up && cell(p.x0, p.y) === T.ONEWAY), 'struck, every slab rises');
     run(p0.life); ok(!p0.up && cell(p0.x0, p0.y) === T.AIR && pL.up, 'the first crumbles on its timer while the last still stands');
-    run(pL.life); ok(K4.tplats.every(p => !p.up), 'and then the last'); }
+    run(pL.life); ok(K4a.every(p => !p.up), 'and then the last'); }
   { const sx = K4.seas.find(s => s.bottom !== undefined); hero.hp = 100; const x0 = hero.x; place(Math.round((sx.x0 + sx.x1) / 2), LD.y1); H.update(1 / 30); ok(hero.hp === 100 && Math.abs(hero.x - (Math.round((sx.x0 + sx.x1) / 2) * TS + 8)) < 2, 'a hero in the old street under a sand sea is not swallowed by it'); }
   { place(LD.x - 3, LD.y1); hero.dead = false; ok(!H.interact(hero) || !K4.loopOpen, 'from the street side the sand-gate does not open (its lever is in the courtyard)');
     place(LD.lever[0], LD.lever[1]); H.interact(hero); ok(K4.loopOpen && cell(LD.x, LD.y0) === T.AIR && cell(LD.x, LD.y1) === T.AIR, 'E at its lever in the courtyard opens the old street'); }
@@ -434,7 +435,7 @@ ok(DY === 1 && L.H === 49, '(the city is laid one row lower than its logical row
     ok(d && d.x > e.gate && coins >= 5, 'item 3: ' + e.squad + "'s gate keeps a COIN CACHE behind it (" + coins + ' coins at ' + (d && d.x) + ')'); }
   ok(/'HIS GATE KEEPS A CACHE OF COIN: PUT HIM DOWN'/.test(hands) && isCallout('HIS GATE KEEPS A CACHE OF COIN: PUT HIM DOWN') && /drawCoinCache/.test(hands), 'item 3: the cache is drawn and told');
   /* 4. THE HOURGLASSES READ: every glass moves something the link can be drawn to; STRIKE / E + a glint in reach; the sand runs UP; the camera looks at what it moved; no decorative hourglass reads as a switch */
-  const moves = id => L.risers.filter(r => r.glass === id).length + L.banks.filter(b => b.glass === id).length + L.dfalls.filter(f => f.glass === id).length + L.tilts.filter(t => t.glass === id).length + L.tplats.filter(p => p.glass === id).length + L.ents.filter(q => q.cnSkin === 'sandbound' && q.glass === id).length;
+  const moves = id => L.risers.filter(r => r.glass === id).length + L.banks.filter(b => b.glass === id).length + L.dfalls.filter(f => f.glass === id).length + L.tilts.filter(t => t.glass === id).length + L.tplats.filter(p => p.glass === id).length + L.ents.filter(q => q.cnSkin === 'sandbound' && q.glass === id).length + (L.doors || []).filter(d => d.glass === id).length + (((L.glasses.find(q => q.id === id) || {}).also) || []).length;   /* (claude/bc5) a race door, or a glass that turns another, is something it moves */
   for (const g of L.glasses) ok(moves(g.id) >= 1, 'item 4: the glass ' + g.id + ' moves ' + moves(g.id) + ' thing(s) - its link has somewhere to run');
   ok(/'STRIKE \/ E'/.test(flip) && /drawStrikeGlint/.test(flip) && /drawGlassLink/.test(flip) && /drawLinkTarget/.test(flip) && /F\.cam = /.test(flip) && /BCH\.cam\(\)/.test(main), 'item 4: STRIKE / E and a glint in reach, the link and the brackets, the camera\'s look');
   ok(/const up = live \? \(1 - k\) \* 9/.test(src('redraw/buried_city_flip_art.js')), 'item 4: a running glass\'s sand runs UP (bottom bulb into the top)');
