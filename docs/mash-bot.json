@@ -10921,5 +10921,64 @@
     "heroLevel": 41
    }
   }
+ },
+ "highlines": {
+  "hash": "e293bdf45f79",
+  "level": {
+   "knight": {
+    "deaths": 0,
+    "minHpPct": 4,
+    "hpLostPct": 96,
+    "hits": 7,
+    "walked": 100,
+    "lifts": 23,
+    "held": 4,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 5520,
+    "kills": 0,
+    "heroLevel": 16
+   },
+   "warden": {
+    "deaths": 0,
+    "minHpPct": 36,
+    "hpLostPct": 64,
+    "hits": 4,
+    "walked": 100,
+    "lifts": 23,
+    "held": 3,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 5520,
+    "kills": 0,
+    "heroLevel": 16
+   },
+   "pyro": {
+    "deaths": 0,
+    "minHpPct": 32,
+    "hpLostPct": 68,
+    "hits": 5,
+    "walked": 100,
+    "lifts": 21,
+    "held": 4,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 5500,
+    "kills": 1,
+    "heroLevel": 16
+   }
+  }
  }
 }

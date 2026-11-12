@@ -20,7 +20,7 @@ let pg = await openPage({ audio: false, fonts: false, seed: 20261112 });
 let saves;
 try {
   saves = await pg.evalp(`(async () => { const { LEVELS, ROAD_OPEN } = await import('/src/level.js'); BK.manualSimulation = true; const chain = (${chainBack});
-    const mk = f => { BK.reset({ fresh: true }); const P = BKT.PROG; f(P); return JSON.stringify(P); };
+    const mk = f => { BK.reset({ fresh: true }); const P = BKT.PROG; for (const l of LEVELS) delete P[l.id]; delete P.roadOpen; P.coins = 0; f(P); return JSON.stringify(P); };
     const clr = (P, ids) => { for (const id of ids) P[id] = { ...(P[id] || {}), cleared: true, medal: 2, best: 100 }; };
     const upTo = id => chain(LEVELS, id).slice(1);   /* the levels before it on the needs chain */
     const nx = id => LEVELS.find(l => l.needs === id);
