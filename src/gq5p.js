@@ -18,4 +18,4 @@ export const G5 = {
   tantrum: { tell: 0.5, dmg: 10, reach: 24, gap: 0.25, overTell: 0.35, overDmg: 22, overW: 24, overH: 32, overT: 0.2, recover: 0.6, stagger: 1.5 },
 };
 export const GAP5 = [0.5, 0.4];   /* (GQ5P-TUNE knob 3, REVERTED: [0.6,0.5] moved the WRONG way, n=6 61% -> 50%. gap[F.ph-1] only sets her 'recover' state length (main.js after()); recover is not a scored opening, so a longer one just stretches the fight without giving the player any more safe damage - it does not lower pressure the way the plan assumed. Back to the plan's own number; knob 4 (hp) tried next instead. See gq5p-tune.md. */
-export const GP5_HP = 980;   /* (GQ5P-TUNE knob 4) the plan's last tune-back lever: 1080 -> 980, applied in src/goblin-princess.js only under P5 */
+export const GP5_HP = 820;   /* (GQ5P-TUNE knob 4, round 2) the plan's own 980 was a no-move (n=6 61% at both 1080 and 980 - a 9% hp cut is inside this bot sample's noise). All three other tune-back knobs are spent (heel/curtsy barely connect; gap backfired). Iterating the one lever left, same method as gq4tune's repeated rounds on a single knob: 980 -> 820 (-24% from the plan's 1080). */
