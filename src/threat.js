@@ -154,7 +154,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
      The sun-stones, the sun-disc, the cloak, the riders' loft and the Eyrie's kite-masts fight nobody */
   thunderwyrm: 6, wyrmling: 2.5, asburner: 0, asvent: 0,   /* (claude/airship) THE THUNDER WYRM is a boss (6); THE WYRMLING a hover-and-spit flier (the kite-rider's weight); the stations fight nobody */
   sandskiff: 2.5, skiffchief: 0,   /* (claude/greatdune) THE SAND-SKIFF BANDIT (a moving rider, a told sweep and a lobbed pot: the kite-rider's weight); THE SKIFF CHIEF races, he never fights you (0) */
-  kiterider: 2.5, sunstone: 0, sundisc: 0, cloak: 0, loft: 0, mast: 0,
+  kiterider: 2.5, hookjack: 3, skyhook: 6,   /* THE HIGH LINES (rel164, threat-holes): the Hookjack is a guarded, long-reach human (a 3, between a heavy and a sniper); SKYHOOK is a boss (a 6, as the Shriek Sisters and the Hawk-Mistress) */  sunstone: 0, sundisc: 0, cloak: 0, loft: 0, mast: 0,
   /* (claude/redgorge2) THE RAPTOR MATRIARCH is a boss: a 6; her ledge's sluice levers fight nobody */
   matriarch: 6, mlever: 0,
   /* THE BANDIT KSAR (claude/ksar): THE HAWK SCOUT is a vulture's marked stoop (a 2) whose shriek sends the lookouts running: a 2.5. THE HAWK-MISTRESS is a boss: a 6. The gongs, keg stacks,

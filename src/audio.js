@@ -1,6 +1,7 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
+import { CF1_SHIPS, CF1 } from './cf-impact.js';   /* (claude/cf1) the thwack's material / combo pitch, the kill boom, the flame sizzle (all no-ops with the flag off) */
 import { JUICE2_SHIPS } from './juice.js'; import { feel as jfFeel } from './jump-feel.js';   /* (claude/juice2) the flag and the hero weights: the thwack layer, the clink, the jump / land weight (all OFF = today's sound) */
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
 const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg', canal: './audio/canal.ogg', harvestfair: './audio/harvestfair.ogg', wickerqueen: './audio/wickerqueen.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', blacklord: './audio/blacklord.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.ogg', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', mountain: './audio/mountain.ogg',   /* THE SCREE PATH (claude/scree2, Daniel 10-08): "Mountain Theme Loop" by beardalaxy, CC0 (audio/CREDITS.txt) */ boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
@@ -2002,6 +2003,7 @@ const CAST = {
   spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
   wight: { kit: 'zom', rate: 0.9, lp: 2200 }, drowned: { kit: 'zom', rate: 0.8, lp: 1600 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
 };
+CAST.hookjack = { kit: 'm2', rate: 1.0, mat: 'cloth', human: true }; CAST.skyhook = { kit: 'm4', rate: 0.82, lp: 1500, mat: 'mail', human: true, boss: true };   /* (claude/hllive) THE HOOKJACK and SKYHOOK are MEN (the line crews): the human kits (a rigger's bark; the captain's low, plated one), so both have a hurt and a death voice */
 /* (claude/audiovoices 10-18) THE ~120 FOES THAT HAD NO VOICE: every bestiary type now has a hurt AND a death, by family. People take the men's kits
    (m1-m6, hd) or the pack's evil voices (ev, for priests, mystics, snuffers); the dead take the zombie takes (zb, Little Robot); scorpions, scarabs,
    spiders and little things take sc; big beasts and the worm take di; imps and djinn take dm; goblins keep the goblin throats (gobbig); the wooden,
@@ -2323,14 +2325,17 @@ for (const k of ['hitHeavy', 'hitFinish', 'heavy', 'blockHeavy', 'guardBreak']) 
    THWACK: one shared transient under EVERY landed blow, whoever swung and whatever it hit: a 30 ms click (2.4 kHz) over a 140 Hz body (light); a 60 Hz sub, 90 ms, under it (heavy); a crunch on top (finish).
    Pitch +/- 6% per hit; the voice / material layers sit 15% under it (duckUnder). Peak (naive sum, layers never coincide): light ~0.24, finish ~0.62, under the 0.9 mix headroom with the voice + material + music ducks. */
 export const THWACK = { light: { click: 0.11, body: 0.13, sub: 0, crunch: 0 }, heavy: { click: 0.13, body: 0.15, sub: 0.2, crunch: 0 }, finish: { click: 0.12, body: 0.14, sub: 0.18, crunch: 0.12 }, jitter: 0.06, duck: 0.85, duckSec: 0.09, gate: 0.03 };
-SFX.thwack = function (cls = 'light') {
+SFX.thwack = function (cls = 'light', o) {
   if (!JUICE2_SHIPS || !ac) return; const R = THWACK[cls] || THWACK.light; if (!gate('thwack', THWACK.gate)) return;
-  const k = 1 - THWACK.jitter + Math.random() * 2 * THWACK.jitter;   /* +/- 6% */
-  noise(0.03, R.click, 2400 * k, 1.1); tone('sine', 140 * k, 90 * k, 0.07, R.body);
-  if (R.sub) tone('sine', 60 * k, 40 * k, 0.09, R.sub);
-  if (R.crunch) { noise(0.08, R.crunch, 1200 * k, 0.9, 0.012); tone('triangle', 520 * k, 260 * k, 0.07, R.crunch * 0.5, 0.01); }
+  const co = CF1_SHIPS && o, g = co ? o.gain : 1, k = (1 - THWACK.jitter + Math.random() * 2 * THWACK.jitter) * (co ? o.pitch : 1);   /* +/- 6%; (claude/cf1) x material / combo pitch, x the haft's -3 dB */
+  noise(0.03, R.click * g, 2400 * k, 1.1); tone('sine', 140 * k, 90 * k, 0.07, R.body * g);
+  if (R.sub) tone('sine', 60 * k, 40 * k, 0.09, R.sub * g);
+  if (R.crunch) { noise(0.08, R.crunch * g, 1200 * k, 0.9, 0.012); tone('triangle', 520 * k, 260 * k, 0.07, R.crunch * 0.5 * g, 0.01); }
   thwackUntil = ac.currentTime + THWACK.duckSec;
 };
+/* (claude/cf1) THE KILL BOOM (a low 70 Hz thump under the finish, the music ducked -4 dB for 150 ms) and THE FLAME SIZZLE (a soft tick of a burn / jet); no-ops with CF1_SHIPS off */
+SFX.cfBoom = function () { if (!CF1_SHIPS || !ac) return; duckBeat(CF1.boom.duck); tone('sine', CF1.boom.hz, CF1.boom.hz * 0.6, CF1.boom.dur, CF1.boom.vol); };
+SFX.cfSizzle = function () { if (!CF1_SHIPS || !ac || !gate('cfSizzle', 0.1)) return; noise(0.07, 0.05, 3400, 0.6); tone('triangle', 1800, 1200, 0.05, 0.015); };
 /* THE CLINK: the blocked blow, the clash file and a high ping (the synth glance while the files load or the flag is off) */
 SFX.clink = function () {
   if (!JUICE2_SHIPS) return SFX.glance(); if (!gate('clink', 0.05)) return;

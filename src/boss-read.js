@@ -71,6 +71,7 @@ export const TURN_WORD = {
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   gprincess: e => e.hiding ? 'BEHIND HER GUARD' : 'RING THE BELL',   // (claude/highcrown3) x0.5 outside her openings: the tower bell pins her; a guard she hides behind takes the rest (x0.4)
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  skyhook: e => (e.ward > 0 ? TURN.WARDED : "RIGGER'S COAT"),   // (claude/skyhook) his tarred coat turns half a blow (B15 x0.5); DOWN x2, JARRED x1.5
   bogtroll: e => (e.ward > 0 ? TURN.WARDED : 'PEAT HIDE'),   // (claude/fenroad) his peat hide takes most of a blow (B15: x0.4); stuck in a rotten section he takes it double
   hornetqueen: e => (e.ward > 0 ? TURN.WARDED : e.cloak > 0 ? 'CLOAKED' : 'HARD SHELL'),   // (claude/hornetsnest) her shell turns half a cut (B15 x0.5), her swarm cloak more (x0.4); a plunge from above lands whole; her openings x1.5-x2
   grubbag: e => (e.ward > 0 ? TURN.WARDED : 'WELL FED'),   // (claude/kitchengate) well fed he takes a blade at x0.45 (B15); stunned (a bomb) / too hot (a chilli) x2; hungry x0.7 (claude/kitchengate2)

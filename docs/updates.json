@@ -1,5 +1,38 @@
 [
   {
+    "date": "2026-11-12",
+    "batch": 166,
+    "lines": [
+      { "s": "Big skills now hit with real weight: a heavier freeze and kick on every capstone.", "lv": [] },
+      { "s": "Flames sizzle on foes instead of stuttering the fight.", "lv": [] },
+      { "s": "The Warden's spear tip now pops with a star; hit with the shaft and it thuds dull.", "lv": [] },
+      { "s": "Your hero leans into each swing, and heavy swings flash when fully charged.", "lv": [] },
+      { "s": "Hits sound different on wood, bone and steel; the third cut of a combo rings higher.", "lv": [] },
+      { "s": "Kills land with a low boom and a short dip in the music.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 165,
+    "lines": [
+      { "s": "Rootway's Huntmaster opens up for longer, so quick blades can land hits", "lv": ["rootway"] },
+      { "s": "His staggered openings last about 0.8 s longer than before", "lv": ["rootway"] },
+      { "s": "A little more life on the Huntmaster keeps the fight honest", "lv": ["rootway"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 164,
+    "lines": [
+      { "s": "New level: THE HIGH LINES, up the mountain on ropeways and winches", "lv": ["highlines"] },
+      { "s": "Grab a line to glide. Tuck with dodge to slip past a swing.", "lv": ["highlines"] },
+      { "s": "Cut a rope to drop a rider. Ride the gondola and the counterweight.", "lv": ["highlines"] },
+      { "s": "Meet the Hookjack: his hook guards his front and reaches far.", "lv": ["highlines"] },
+      { "s": "New boss SKYHOOK: strike his levers, then strike him when he falls.", "lv": ["highlines"] },
+      { "s": "The Ore Road now comes after it. A save with the Ore Road open keeps it.", "lv": ["oreroad"] }
+    ]
+  },
+  {
     "date": "2026-11-11",
     "batch": 163,
     "lines": [

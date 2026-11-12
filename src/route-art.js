@@ -7,12 +7,13 @@ import {drawPile as drawFenPile} from './redraw/fen_road_art.js';   /* (claude/f
 import {drawChurchSupport,CHURCH_SUPPORT} from './church-supports.js';
 import {drawKgChain} from './redraw/kitchen_art.js';   /* (claude/grubhook2) the Kitchen Gate's hung shelves */
 import {drawDemoSupport} from './demo-supports-art.js';   /* (claude/floatfix) the demo levels' risers and knee braces */
+import {drawGantry as drawHlGantry} from './redraw/high_lines_tiles.js';   /* (claude/hlart) THE HIGH LINES' gantry pylons, wall brackets and granite corbels */
 import {drawSupport as drawHcSupport} from './redraw/highcrown2_art.js';   /* (claude/highcrown2art) HIGHCROWN's castle piers and chains */   /* (claude/church2) LIT CHURCH 2: pew legs, piers, stalls, chains, bone columns, organ pipes */
 export function bakeRouteLedges(){
  const out={};for(const kind of ['cargo','awning','arcane']){const a=[];for(let v=0;v<3;v++){const[c,g]=canvas(16,16);g.fillStyle='#251e1a';g.fillRect(0,0,16,7);g.fillStyle=kind==='arcane'?'#a8a0c1':kind==='cargo'?'#ae8552':'#a57b56';g.fillRect(0,0,16,3);g.fillStyle='#e2c59a';g.fillRect(0,0,16,1);g.fillStyle=kind==='arcane'?'#514568':kind==='cargo'?'#67482f':'#813b47';g.fillRect(0,3,16,3);if(kind==='awning'){g.fillStyle='#c6a575';g.fillRect(v*4,3,4,3);}else{g.fillStyle='#526367';g.fillRect(3+v*4,1,2,5);g.fillStyle='#afc5c4';g.fillRect(3+v*4,1,1,1);}a.push(c);}out[kind]={ledge:a,ledgeL:a[0],ledgeR:a[2]};}return out;
 }
 export function drawRouteSupports(g,L,cx,cy){
- for(const p of L.routeSupports||[]){if(p.kind==='stkrope'){if(p.x*16-cx<g.canvas.width+8&&(p.x1+1)*16-cx>-8)drawStockadeSupport(g,p,cx,cy,L);continue;}const x=Math.round(p.x*16+6-cx),y=Math.round(p.y*16+5-cy),bottom=Math.round(p.bottom*16-cy);if(x < -4||x>g.canvas.width+4||bottom<0||y>g.canvas.height)continue;
+ for(const p of L.routeSupports||[]){if(p.kind==='hlgantry'){drawHlGantry(g,p,cx,cy);continue;}if(p.kind==='stkrope'){if(p.x*16-cx<g.canvas.width+8&&(p.x1+1)*16-cx>-8)drawStockadeSupport(g,p,cx,cy,L);continue;}const x=Math.round(p.x*16+6-cx),y=Math.round(p.y*16+5-cy),bottom=Math.round(p.bottom*16-cy);if(x < -4||x>g.canvas.width+4||bottom<0||y>g.canvas.height)continue;
  if(p.kind==='torpost'){drawTorPost(g,p,cx,cy,L);continue;}
  if(p.kind==='pile'&&L.stormSummit&&p.x>=640)continue;   /* (claude/windcaller4art) the stair's and summit's auto piles: the stones stand on rock, the ledges on their carved pillars */
  if(p.kind==='lpiron'){lpSupportDraw(g,p,L,cx,cy);continue;}

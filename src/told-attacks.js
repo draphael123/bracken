@@ -69,7 +69,7 @@ export const SIG = {
    with its own windup pose, built by its act's sweep lane. This list may only shrink (tools/foe-pass.mjs). */
 export const TOLD_TODO = {};   /* EMPTY (claude/sweepact12): thief, spitcap, sapper, emberwisp, stormshaman, clinger and shardling each have a signature now */
 /* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage, the order's paladins (rel162: their own AI, src/order-paladin.js, with its own told GLEAM + parry-to-break, not a SIG row) */
-export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord', 'orderpaladin', 'deadpaladin']);
+export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord', 'orderpaladin', 'deadpaladin', 'hookjack']);   /* (claude/hllive) THE HOOKJACK (src/hookjack.js): his own AI with its own told hook-draw (he is OPEN in it) and parry-to-spin, like the paladins - not a SIG row */
 
 /* is e in its family's signature windup right now? (the row, or null). base: the kind its AI runs on (a cnSkin body is its kind) */
 export const sigOf = e => { const r = e && SIG[e.t]; return r && !e.elite && !e.maxHp && !e.mini && e.mode === r.mode ? r : (r && e.t === 'archer' && r.mode === 'draw' && e.draw > 0.3 && !e.elite ? r : null); };
