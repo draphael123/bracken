@@ -42,12 +42,13 @@ try {
       all.push({ i, ...r.m }); if (keep(i, r.m, all)) kept.push(r);
     }
     strip(name, kept); res[name] = { frames: all, kept: kept.length };
-    const first = (f) => all.find(f); console.log(name, 'kept', kept.length, 'maxStop', Math.max(...all.map(m => m.stop)), 'half@', (first(m => m.half) || {}).i, 'flashAt set@', (first(m => m.flashAt != null) || {}).i, 'maxWhite', Math.max(...all.map(m => m.white)), 'tip', all.some(m => m.tip) ? 1 : 0, 'shaft', all.some(m => m.shaft) ? 1 : 0);
+    const first = (f) => all.find(f); console.log(name, 'kept', kept.length, 'maxStop', Math.max(...all.map(m => m.stop)), 'half@', (first(m => m.half) || {}).i, 'flashAt set@', (first(m => m.flashAt != null) || {}).i, 'halfEdges', all.filter((m, j) => m.half && !(all[j - 1] || {}).half).length, 'flashVals', new Set(all.filter(m => m.flashAt != null).map(m => m.flashAt)).size, 'maxWhite', Math.max(...all.map(m => m.white)), 'tip', all.some(m => m.tip) ? 1 : 0, 'shaft', all.some(m => m.shaft) ? 1 : 0);
   };
   /* 1. heavy charge, no foe near: hold X until the heavy goes by itself (pyro / warden), release; keep every 6th frame plus the ones around the half-charge and the flash */
-  for (const hero of ['pyro', 'warden', 'ranger']) {
+  for (const hero of (process.env.SIGHT_HEROES || 'pyro,warden,ranger').split(',')) {
+    const HOLD = hero === 'reaper' ? 520 : 150;
     let halfI = null, flashI = null;
-    await scene('heavy-' + hero, hero, null, { 2: 'keyDown', 150: 'keyUp' }, 170, (i, m) => { if (m.half && halfI === null) halfI = i; if (m.flashAt != null && flashI === null) flashI = i; return i === 1 || (halfI !== null && i >= halfI - 2 && i <= halfI + 3) || (flashI !== null && i >= flashI - 1 && i <= flashI + 5) || i % 20 === 0; });
+    await scene('heavy-' + hero, hero, null, { 2: 'keyDown', [HOLD]: 'keyUp' }, HOLD + 20, (i, m) => { if (m.half && halfI === null) halfI = i; if (m.flashAt != null && flashI === null) flashI = i; return i === 1 || (halfI !== null && i >= halfI - 2 && i <= halfI + 3) || (flashI !== null && i >= flashI - 1 && i <= flashI + 5) || i % 20 === 0; });
   }
   /* 2. the warden's point and the shaft: the foe at distance dx, one real X tap on frame 4. Scan dx for what registers. */
   for (const [nm, dx] of [['warden-tip', 38], ['warden-tip-b', 34], ['warden-shaft', 26], ['warden-shaft-b', 22]]) {
