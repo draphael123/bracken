@@ -25,7 +25,7 @@ export const GORM = {
   hp1: 1075,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
   hp2: 1500,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
-  take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
+  take: { held: 1.7, open: 1.1, downed: 1.5, stung: 1.3 },
   p1take: { held: 1.4, open: 1.0 },   /* (claude/kingsfix2) P1 ONLY: with every rope free at any moment his hall needs a little less per opening (P2's take is unchanged) */
   ward: 3,               /* B3: after an opening, seconds the hangings glance off him (told WARDED, a pale shell) */
   /* P1: THE COURT */
@@ -52,7 +52,7 @@ export const GORM = {
      gets a lit pot lobbed at him (told: tell s; the red ring on the landing spot all through the flight); never at a hero on the ground; every s after a throw */
   pot: { perch: 1.5, up: 12, tell: 0.9, every: 7, first: 3, r: 18, dmg: 14, g: 520, tMin: 0.85, tMax: 1.3, patch: 48, patchT: 2.5, drain: 0.12 },
   /* P2 THE SCEPTRE THROW: a wide boomerang - out LOW (jump it), back HIGH (duck it). range = his distance + over, inside the glade; lowY / highY px off the floor */
-  sceptre: { tell: 0.9, every: 8, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 22 },
+  sceptre: { tell: 0.9, every: 8, first: 6, over: 70, rMin: 150, rMax: 330, t: 2.1, lowY: 7, highY: 17, catchT: 0.5, minD: 50, maxD: 260, dmg: 25 },
   /* ENRAGE at rageAt of P2's bar: the crown cracks, he catches fire, the horn calls one last boar; tempo x his cooldowns; RAGE-ONLY THE BURNING CHARGE (a fire trail) */
   rageAt: 0.25,
   rage: { tellT: 2.0, tempo: 1.35, walk: 1.2, chargeTell: 1.0, chargeV: 250, chargeEvery: 6, chargeFirst: 1.5, hitY: 26, endT: 0.9, trailT: 3.5, trailDrain: 0.16, dmg: 28 },
