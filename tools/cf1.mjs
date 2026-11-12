@@ -8,9 +8,7 @@ const { CF1, SKILL_CLASS, setCF1, cfClass, makeLimiter, stopGate, jetGate, tipRe
 const near = (a, b, m) => assert.ok(Math.abs(a - b) < 1e-9, m + ': ' + a + ' vs ' + b);
 const read = f => fs.readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 
-/* the file ships OFF */
-assert.equal(C.CF1_SHIPS, false, 'CF1_SHIPS ships false');
-assert.match(read('src/cf-impact.js'), /export let CF1_SHIPS = false;/);
+/* the file ships ON (batch165: CF1 flipped); the OFF block below turns it off in-process first */assert.equal(C.CF1_SHIPS, true, 'CF1_SHIPS ships true');assert.match(read('src/cf-impact.js'), /export let CF1_SHIPS = true;/); setCF1(false);
 
 /* OFF = batch158: every function is the identity / a no-op */
 assert.equal(cfClass('light', 'lunge', 0.2, 'heavy'), 'light', 'off: class unchanged');
