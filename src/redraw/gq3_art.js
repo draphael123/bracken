@@ -360,3 +360,45 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
   if (st === 'gq3store') { paintStore(g, sx, sy, w, h, tx0, ty0, time); return true; }
   return false;
 }
+
+// ====================================================================================== (claude/gq5q2) THE TOWER TOP, CLEAR: the bell rope, the perch ward, the hatch's eruption, the sceptre sweep
+// THE BELL ROPE: hangs from the cupola frame's underside (x, top = the frame's bottom edge) to a knotted grip over the deck (bot). k 0 idle, 1 READY (she is in the bell: a gold glow + a pulsing grip), 2 SWINGING (the 1.2 s tell: it sways, kk 0..1),
+// 3 tolled (a short sway, nothing in the bell). Plain fillRects (the node sheet renders it).
+export function drawBellRope(g, x, top, bot, k, kk, t) {
+  x = ri(x); top = ri(top); bot = ri(bot); const len = Math.max(8, bot - top), sway = k === 2 ? Math.sin(kk * 18) * (2 + 4 * (1 - kk)) : k === 3 ? Math.sin(t * 14) * 1.5 : Math.sin(t * 1.3) * 0.6;
+  R(g, x - 4, top - 1, 9, 3, '#5a6270'); R(g, x - 3, top - 1, 7, 1, '#9aa4b8'); R(g, x - 1, top + 2, 3, 2, '#34343f');                          // the iron eye bolted to the frame
+  for (let y = top + 3; y < bot - 6; y += 2) { const f = (y - top) / len, ox = ri(sway * f); R(g, x - 1 + ox, y, 3, 2, ((y - top) >> 1) & 1 ? '#8a6a3a' : '#b08a4a'); R(g, x - 1 + ox, y, 1, 2, '#5a4222'); }   // twisted hemp
+  const gx = x + ri(sway), gy = bot - 7;
+  if (k === 1 || k === 2) { alpha(g, 0.25 + 0.2 * wave(t, 9)); R(g, gx - 8, gy - 4, 17, 16, '#ffd36b'); alpha(g, 1); }
+  R(g, gx - 3, gy, 7, 7, '#5a4222'); R(g, gx - 2, gy + 1, 5, 5, k ? '#ffd36b' : '#b08a4a'); R(g, gx - 1, gy + 2, 3, 3, k ? '#fff6c8' : '#c9a060'); R(g, gx - 3, gy, 7, 1, '#e0b040');   // the knotted grip
+}
+// THE PERCH WARD: the cupola ring flares violet under her and a rune ring spins round her (k 0..1 = the blink-in tell, then solid); swinging = the rune ring shudders and flashes gold
+export function drawPerchWard(g, x, y, t, k, swinging) {
+  x = ri(x); y = ri(y); const col = swinging ? '#ffd36b' : '#c9a0ff';
+  drawRoyalPortal(g, x, y - 17, t, { state: 'idle', tint: swinging ? 'gold' : 'royal', s: 0.62 + 0.1 * wave(t, 12) });
+  alpha(g, 0.18 + 0.1 * wave(t, 6)); R(g, x - 18, y - 56, 37, 56, col); alpha(g, 1);
+  for (let i = 0; i < 12; i++) { const a = t * (swinging ? 9 : 2.4) + i * 0.5236, rx = 19, ry = 27; alpha(g, Math.min(1, k * 1.4)); R(g, ri(x + Math.cos(a) * rx), ri(y - 30 + Math.sin(a) * ry), 2, 2, i & 1 ? '#e8dcff' : col); }
+  alpha(g, 1);
+}
+// THE HATCH SEAM (the told 1.2 s): the deck seam glows ember-red and breathes smoke (k 0..1)
+export function drawHatchSeam(g, x0, x1, fy, k, t) {
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy); alpha(g, 0.4 + 0.5 * k * wave(t, 18)); R(g, x0 + 1, fy - 1, x1 - x0 - 2, 2, '#ff6b2c'); R(g, x0 + 5, fy - 1, x1 - x0 - 10, 1, '#ffd36b'); alpha(g, 1);
+  for (let i = 0; i < 6; i++) { const ph = (t * 1.4 + i * 0.19) % 1; alpha(g, (1 - ph) * (0.35 + 0.5 * k)); R(g, x0 + 2 + ((i * 7) % Math.max(1, x1 - x0 - 8)) + ri(Math.sin(t * 3 + i) * 2), fy - 3 - ri(ph * 34), 5 + ri(ph * 5), 4 + ri(ph * 4), ph < 0.3 ? '#3a3a46' : '#6a6a78'); }
+  alpha(g, 1);
+}
+// THE HATCH FIRE: a column of flame `h` px tall over the 2-tile hatch for 2.0 s (k 0..1): the roar, a white-hot core, sparks; it gutters out over the last 0.2
+export function drawHatchFire(g, x0, x1, fy, h, k, t) {
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy); const rise = Math.min(1, k * 8), fade = k > 0.85 ? (1 - k) / 0.15 : 1, hh = ri(h * rise);
+  alpha(g, 0.22 * fade); R(g, x0 - 8, fy - hh, x1 - x0 + 16, hh, '#ff6b2c'); alpha(g, 1);
+  for (let x = x0; x < x1; x += 4) { const hv = ri(hh * (0.7 + 0.3 * wave(t, 21, x * 0.6))) * fade; alpha(g, 0.9 * fade); R(g, x, fy - hv, 4, hv, '#ff6b2c'); R(g, x + 1, fy - ri(hv * 0.8), 2, ri(hv * 0.8), '#ffa040'); alpha(g, 1); }
+  alpha(g, fade); R(g, x0 + 6, fy - ri(hh * 0.6), x1 - x0 - 12, ri(hh * 0.6), '#fff0b0'); alpha(g, 1);
+  for (let i = 0; i < 10; i++) { const ph = (t * 1.8 + i * 0.13) % 1; alpha(g, (1 - ph) * fade); R(g, x0 + ((i * 11) % Math.max(1, x1 - x0)), fy - ri(ph * (h + 20)), 1, 1, i & 1 ? '#ffd36b' : '#ff9a5c'); }
+  alpha(g, 1);
+}
+// THE SCEPTRE SWEEP, over her sceptre-up pose (she keeps her staff): the wind-up draws the chest-high arc as a gold ghost growing with k and a glint on the staff head; the release is the full white arc (reach px, chest height)
+export function drawSweep(g, x, y, face, k, released, reach, t) {
+  x = ri(x); y = ri(y); const dir = face < 0 ? -1 : 1, band0 = y - 30, n = 8;
+  if (!released) { alpha(g, 0.2 + 0.45 * k); for (let i = 0; i < n; i++) { const f = i / (n - 1), px0 = x + dir * ri(reach * f * Math.min(1, k * 1.4)), py0 = band0 + ri(18 * Math.sin(f * Math.PI) * 0.5); R(g, px0, py0, 2, 2, '#ffd36b'); } alpha(g, 1);
+    alpha(g, 0.5 + 0.5 * wave(t, 26)); R(g, x - dir * 6 - 1, y - 52, 3, 3, '#fff6c8'); alpha(g, 1); return; }
+  alpha(g, 0.85); for (let i = 0; i < n * 2; i++) { const f = i / (n * 2 - 1), px0 = x + dir * ri(reach * f), py0 = band0 + ri(9 + 9 * Math.cos(f * Math.PI)); R(g, px0, py0 - 2, 3, 5, f > 0.7 ? '#ffffff' : '#fff6c8'); } alpha(g, 1);
+}
