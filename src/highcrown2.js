@@ -22,7 +22,7 @@
                             THE CHAPEL (rows 10-19, as it was), then the Captains Hall, the Banquet Hall, the Leads and HER HALL (as they were). */
 import { gobgeoLay } from './gobgeo-level.js';   /* (claude/gobgeo) */
 import { towerLay } from './gq3-tower.js';   /* (claude/gq3) THE BURNING TOWER + the 60-column tower top */
-import { queenStairLay } from './queen-stair.js';   /* (claude/gq3) THE QUEEN'S STAIR, between the Princess's tower and her terrace */
+import { queenStairLay } from './queen-stair.js'; import { G4, SHIFT } from './gq4l.js'; import { P4 } from './gq4p.js';   /* (claude/gq3) THE QUEEN'S STAIR, between the Princess's tower and her terrace */
 export const HC2 = {
   START: { x: 8, y: 63 },
   WINCH_GATE: 25, WINCH: 20,                      // the bailey gate and its winch
@@ -259,16 +259,54 @@ export function highcrownTwo(R, opts) {
               the bell rope on the floor's west side (627), her guardroom door (643) and its winch (641), the roof hatch (639) she escapes by,
               and the inner stair door east (648, rows 14-19, the mini's gate) onto the terrace at her doors.
      649-658  the terrace and the Queen's doors (the old Leads' last ten columns); her hall from 659. */
+const X40 = SHIFT.battle, X20 = SHIFT.bell, XB = X40 + X20 / 2;   /* (claude/gq4l, flag GQ4L_SHIPS: 40 columns of gatehouse + leads walk before W3, the bell tower 20 wider; OFF = every term 0) */
 export const HC3 = {
-  AT: 523, ADD: 100, S: 21,
-  STAIR: [523, 526], W1: [527, 556], T1: [557, 566], W2: [567, 601], GAP: [576, 584], CORBELS: [[578, 579], [581, 582]], T2: [602, 611], W3: [612, 622],
-  BT: [623, 648], BT_ROOF: 6, LAND: [630, 641], LAND_ROW: 19, GRATE: 636, ROPE: 627, DOOR: 643, WINCH: 641, HATCH: 639, EXIT_ROWS: [14, 19],
+  AT: 523, ADD: 100 + X40 + X20, S: 21,
+  STAIR: [523, 526], W1: [527, 556], T1: [557, 566], W2: [567, 601], GAP: [576, 584], CORBELS: [[578, 579], [581, 582]], T2: [602, 611], W3: [612 + X40, 622 + X40],
+  G1: G4 ? [612, 630] : null, G2: G4 ? [631, 651] : null,   /* (gq4l) THE GATEHOUSE (a covered gate passage) and THE LEADS WALK (a lead roof between two turrets), W3's new start */
+  BT: [623 + X40, 648 + X40 + X20], BT_ROOF: 6, LAND: [630 + XB, 641 + XB], LAND_ROW: 19, GRATE: 636 + XB, ROPE: 627 + X40, DOOR: 643 + X40 + X20, WINCH: 641 + X40 + X20, HATCH: 639 + XB, EXIT_ROWS: [14, 19],
   BANQ: [485, 520], REH: { rope: 487, grate: 499, gy0: 16, gy1: 25, door: 510, winch: 507, row: 25 },
   BANQ_SHRINE: [524, 23],
   /* the towers: she rings at `bell`, the wave comes out of `door`, the winch at `winch` keeps it in, the murder hole's chain hangs at `chain` */
   TOWERS: [{ id: 'tower1', x0: 557, x1: 566, bell: 564, door: 561, winch: 558, chain: 559, wave: ['soldier', 'javelin'] },
-           { id: 'tower2', x0: 602, x1: 611, bell: 609, door: 606, winch: 603, chain: 604, wave: ['pike', 'soldier', 'hound'] }],
+           { id: 'tower2', x0: 602, x1: 611, bell: 609, door: 606, winch: 603, chain: 604, wave: G4 ? ['gobknight', 'soldier', 'hound'] : ['pike', 'soldier', 'hound'] }],
+  /* (gq4l) THE BELL TOWER'S 46-COLUMN ROOM, a SHELL for GQ4P (the Princess lane): rows 6-21, the floor stands at row 21, the belfry landing (row 19) in the middle, two one-way side galleries (row 14, 7 columns each,
+     a ladder at each inner end) and the three GATE PLACEHOLDERS (a portcullis column and its chain pin beside it): G-W floor west, G-E floor east, G-U on the east gallery. Marked with a torch each. */
+  ROOM46: G4 ? { galW: [666, 672], galE: [699, 705], galRow: 14, ladW: 672, ladE: 699,
+    gates: { W: { x: 675, y0: 15, y1: 21, pin: [677, 19] }, E: { x: 696, y0: 15, y1: 21, pin: [694, 19] }, U: { x: 705, y0: 8, y1: 13, pin: [703, 12] } } } : null,
 };
+
+/* ---- (claude/gq4l) G1 THE GATEHOUSE + G2 THE LEADS WALK, laid into the 40 columns opened at W3's start (HC3.G1 612-630, G2 631-651), and the bell tower's 46-column SHELL ---- */
+function gq4Gatehouse(R, B, { T, TS, ent, coins, fill, block, air, rungs, plat }) {
+  const S = B.S, [g0, g1] = B.G1, [l0, l1] = B.G2, w = B.W3[0];
+  /* G1: a covered stone gate passage (rows 15-21), machicolations overhead - a goblin pours a stone: a told rock (shadow ring 1.0 s) falls on the passage floor under each slot */
+  block(g0, g1, 7, 14); block(g0, g0, 5, 6); block(g1, g1, 5, 6); block(g0 + 8, g0 + 9, 5, 6);
+  R.masonry.push([g0, g1, 5, 14]); R.facades.push([g0, g1, 0, S, 'tower', { arch: [15, S], roof: true }]);
+  for (const x of [g0 + 5, g0 + 10]) { ent('rockfall', x, 15, { every: x === g0 + 5 ? 4.6 : 5.3, tell: 1.0 }); R.hcDeco.push({ k: 'murder', x, y: 15 }); }
+  ent('torch', g0 + 2, S); ent('torch', g1 - 2, S); ent('hedgeknight', g0 + 13, S, { face: -1, cnSkin: 'gobknight' }); ent('pike', g1 - 2, S, { face: -1 });
+  ent('sign', g0 - 1, S, { text: 'THE GATEHOUSE. A GOBLIN POURS A STONE: WATCH THE RING ON THE FLOOR, THEN GO.' });
+  coins([g0 + 3, S], [g0 + 7, S], [g0 + 12, S]);
+  /* G2: a flat lead roof between two turrets (a body over a passage, a ladder up the face to its roof), wind gusts, two stilt-walkers on staggered beats, a fire mage on the far turret */
+  block(l0, l0 + 4, 8, 14); block(l0, l0, 6, 7); block(l0 + 4, l0 + 4, 6, 7);
+  block(l1 - 4, l1, 8, 14); block(l1 - 4, l1 - 4, 6, 7); block(l1, l1, 6, 7);
+  rungs(l0 + 5, 7, S); rungs(l1 - 5, 7, S);
+  for (const [a, b] of [[l0, l0 + 4], [l1 - 4, l1]]) { R.masonry.push([a, b, 6, 14]); R.facades.push([a, b, 0, S, 'tower', { arch: [15, S], roof: true }]); ent('torch', a + 2, S); }
+  ent('stiltwalker', l0 + 9, S, { face: -1, beat: 3 }); ent('stiltwalker', l0 + 13, S, { face: -1, beat: 3 });
+  ent('gobmage', l1 - 2, 7, { face: -1, cnSkin: 'firemage' });
+  ent('sign', l0 - 1, S, { text: 'THE LEADS WALK. STILTS ON THE ROOF AND THE WIND ACROSS IT: LOW BLOWS TAKE A STILT.' });
+  ent('deco', l0 + 11, S, { kind: 'gobPennant', v: 1 }); coins([l0 + 8, S], [l0 + 11, S - 1], [l0 + 15, S]);
+  ent('soldier', w + 4, S, { face: -1 }); ent('javelin', w + 8, S, { face: -1 });   /* W3 (kept stretch): a soldier and a javelin before the bell tower */
+}
+function gq4BellRoom(R, B, { T, TS, ent, block, air, rungs, plat, port }) {
+  const S = B.S, Rm = B.ROOM46, [b0, b1] = B.BT;
+  for (const [x0, x1, lad] of [[Rm.galW[0], Rm.galW[1], Rm.ladW], [Rm.galE[0], Rm.galE[1], Rm.ladE]]) {
+    for (let x = x0; x <= x1; x++) if (x !== lad) plat(x, Rm.galRow, 1);
+    rungs(lad, Rm.galRow, S); R.routeSupports = R.routeSupports || [];
+    for (const x of [x0 === lad ? x0 + 1 : x0, x1 === lad ? x1 - 1 : x1]) R.routeSupports.push({ x, y: Rm.galRow, bottom: S + 1, kind: 'hcpier' });
+  }
+  for (const k of ['W', 'E', 'U']) { const G = Rm.gates[k]; ent('torch', G.pin[0], G.pin[1]); }   /* the three GATE PLACEHOLDERS (GQ4P: portcullis G.x rows y0-y1 + a chain pin at G.pin): a torch marks each pin */
+  R.gq4Room = { x0: b0, x1: b1, floor: S, roofRow: B.BT_ROOF, galleries: { W: Rm.galW, E: Rm.galE, row: Rm.galRow, ladders: [Rm.ladW, Rm.ladE] }, gates: Rm.gates, landing: { x0: B.LAND[0], x1: B.LAND[1], row: B.LAND_ROW } };
+}
 export function highcrownThree(R, { T, TS, insertColumns }) {
   if (!insertColumns) return R;
   const B = HC3, S = B.S;
@@ -300,12 +338,13 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   // ---- W1: the open walk, one soldier, the first tower's archer shooting along it ----
   ent('soldier', 547, S, { face: -1 }); ent('torch', 530, S); ent('deco', 540, S, { kind: 'gobPennant', v: 1 }); ent('deco', 552, S, { kind: 'warStandard', v: 0 });
   coins([533, S], [538, S - 1], [544, S], [550, S - 1]);
+  if (G4) ent('stiltwalker', 539, S, { face: -1, beat: 4 });   /* (gq4l) the low-blow lesson on stone: a goblin lookout on stilts, a four-tile beat mid-walk */
 
   // ---- THE TWO ALARM TOWERS: a body over a passage (rows 15-21), a roof with an archer, a ladder up the east face ----
   for (const Tw of B.TOWERS) {
     block(Tw.x0, Tw.x1, 7, 14); block(Tw.x0, Tw.x0, 5, 6); block(Tw.x1, Tw.x1, 5, 6); block(Tw.x0 + 4, Tw.x0 + 5, 5, 6);   /* the body, and its merlons */
     rungs(Tw.x1 + 1, 6, S);                                                                                     /* the ladder up its east face to the roof */
-    ent('archer', Tw.x0 + 7, 6, { face: -1 });
+    if (G4 && Tw.id === 'tower1') ent('gobmage', Tw.x0 + 7, 6, { face: -1, cnSkin: 'firemage' }); else ent('archer', Tw.x0 + 7, 6, { face: -1 });   /* (gq4l) tower 1's roof: a FIRE MAGE (his patch lands on the walk; told rune) */
     ent('murderhole', Tw.door, 15, { n: Tw.id === 'tower1' ? 5 : 6, kick: [Tw.chain, Tw.chain, S - 4, S] });   /* MURDER HOLES #5/#6: a slot in the passage's vault over the guardroom door, its pull-chain beside it */
     ent('torch', Tw.x0 + 2, S);
     R.masonry.push([Tw.x0, Tw.x1, 5, 14]);
@@ -319,12 +358,15 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   rungs(B.GAP[1], S + 1, S + 6);
   ent('pike', 588, S, { face: -1 }); ent('heavy', 594, S, { face: -1 }); ent('torch', 586, S); ent('deco', 598, S, { kind: 'gobPennant', v: 0 });
   coins([578, S], [581, S], [580, S + 6], [590, S - 1]);
+  if (G4) { ent('hound', 579, S + 6, { face: 1 }); ent('hound', 583, S + 6, { face: -1 }); }   /* (gq4l) a castle hound pair on the lower walk under the corbels (the way back is the ladder at 584) */
   R.hcDeco.push({ k: 'corbel', x: 578, y: S + 1 + 7 / 16, n: 2 }, { k: 'corbel', x: 581, y: S + 1 + 7 / 16, n: 2 });
   R.facades.push([B.GAP[0], B.GAP[1], S + 1, S + 6, 'chasm']);
 
   // ---- W3: the last stretch to THE BELL TOWER ----
-  ent('torch', 615, S); ent('deco', 619, S, { kind: 'warStandard', v: 1 }); coins([614, S], [618, S]);
-  ent('sign', 620, S, { text: 'THE BELL TOWER. RING ITS BELL, THEN STRIKE THE WINCH AS THE GRATE BLAZES.' });
+  const w3 = B.W3[0] - 612;   /* (gq4l) W3 slid east by the gatehouse and the leads walk */
+  ent('torch', 615 + w3, S); ent('deco', 619 + w3, S, { kind: 'warStandard', v: 1 }); coins([614 + w3, S], [618 + w3, S]);
+  ent('sign', 620 + w3, S, { text: 'THE BELL TOWER. RING ITS BELL, THEN STRIKE THE WINCH AS THE GRATE BLAZES.' });
+  if (G4) gq4Gatehouse(R, B, { T, TS, ent, coins, fill, block, air, rungs, plat });
 
   // ---- THE BELL TOWER (623-648): her room ----
   const [b0, b1] = B.BT;
@@ -332,17 +374,19 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   port(b1, B.EXIT_ROWS[0], B.EXIT_ROWS[1]);                                                                        /* the inner stair door: shut until she has gone (L.mini.gate) */
   block(b1 - 3, b1 + 3, B.EXIT_ROWS[1] + 1, S);                                                                    /* the stair's foot inside the door and the sill out to the terrace (stand at 19, the terrace's height) */
   plat(B.LAND[0], B.LAND_ROW, B.LAND[1] - B.LAND[0] + 1);                                                          /* THE BELFRY LANDING (one-way: every hero jumps it) */
-  ent('gprincess', 638, S, { face: -1, mini: true });
-  ent('torch', 626, S); ent('torch', 646, B.EXIT_ROWS[1]); ent('deco', 633, S, { kind: 'banner', v: 1 });
+  ent('gprincess', 638 + XB, S, { face: -1, mini: true });
+  ent('torch', 626 + X40, S); ent('torch', b1 - 2, B.EXIT_ROWS[1]); ent('deco', 633 + XB, S, { kind: 'banner', v: 1 });
+  if (G4) gq4BellRoom(R, B, { T, TS, ent, block, air, rungs, plat, port });
   R.masonry.push([b0, b1, 2, S]);
   R.facades.push([b0, b1, 0, S, 'tower', { roof: true }]);
   R.interiors.push([b0 + 1, b1 - 1, B.BT_ROOF + 1, S, 'hchall']);
   R.calm.push([b0, b1, 0, B.BT_ROOF]);
-  R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, { k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }, { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
+  R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, ...(P4 && G4 ? [] : [{ k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }]), { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
   R.mini = { x0: (b0 + 1) * TS, x1: b1 * TS, floor: (S + 1) * TS, y0: B.BT_ROOF * TS, y1: (S + 2) * TS, trigger: (b0 + 4) * TS, wallL: b0, wallR: b1, gate: b1, boss: 'gprincess',
     name: 'THE GOBLIN PRINCESS', music: 'goblinroyal', start: [b0 + 2, S],
     land: { x0: B.LAND[0] * TS, x1: (B.LAND[1] + 1) * TS, y: B.LAND_ROW * TS }, grate: { col: B.GRATE, gy0: B.BT_ROOF + 1, gy1: B.LAND_ROW - 1 },
-    rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8 };
+    rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8,
+    gq4Gates: G4 ? B.ROOM46.gates : null };   /* (claude/gq4p-d) THE THREE GATES (tile coords: portcullis col x rows y0-y1, chain pin tile): src/goblin-princess.js reads them when GQ4P_SHIPS is on */
 
   // ---- THE CHASE (src/goblin-princess.js): where she runs, where she rings ----
   R.gpChase = { x0: 527 * TS, start: 540 * TS + 8, floor: (S + 1) * TS, end: (b0 + 2) * TS, gap: [B.GAP[0] * TS, (B.GAP[1] + 1) * TS],
@@ -361,7 +405,8 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   R.weather = (R.weather || []).filter(z => !(z.x0 >= X0 * TS)).concat([{ x0: X0 * TS, x1: b0 * TS, kind: 'snow' }, { x0: (b1 + 1) * TS, x1: (b1 + 11) * TS, kind: 'snow' }]);
   R.ambient = (R.ambient || []).filter(z => !(z.x0 >= X0 * TS)).concat([{ x0: X0 * TS, x1: b0 * TS, kind: 'wind' }, { x0: b0 * TS, x1: (b1 + 1) * TS, kind: 'hall' }, { x0: (b1 + 1) * TS, x1: 99999, kind: 'wind' }]);
   R.gusts = (R.gusts || []).concat([{ x0: B.W1[0] * TS, x1: B.W1[1] * TS, y0: 8 * TS, y1: (S + 1) * TS, dir: -1, period: 6.5, on: 1.4, phase: 0, told: true },
-    { x0: B.W2[0] * TS, x1: B.W2[1] * TS, y0: 8 * TS, y1: (S + 7) * TS, dir: -1, period: 5.5, on: 1.8, phase: 2, told: true }]);   /* headwind gusts, told (crosswind on the walk, stronger over the broken stretch) */
+    { x0: B.W2[0] * TS, x1: B.W2[1] * TS, y0: 8 * TS, y1: (S + 7) * TS, dir: -1, period: 5.5, on: 1.8, phase: 2, told: true }]
+    .concat(G4 ? [{ x0: B.G2[0] * TS, x1: (B.G2[1] + 1) * TS, y0: 8 * TS, y1: (S + 1) * TS, dir: -1, period: 5.0, on: 1.6, phase: 1, told: true }] : []));   /* headwind gusts, told (crosswind on the walk, stronger over the broken stretch) */
   R.hc3 = true;
   gobgeoLay(R, { T, TS });   /* (claude/gobgeo) THE GOBLIN GEOMANCER's rooms, laid on these columns (src/gobgeo-level.js) */
   queenStairLay(R, { T, TS, insertColumns });

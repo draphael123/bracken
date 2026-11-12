@@ -818,8 +818,25 @@ function gqEscapeBot(BK, P, k) {
 function gqueenReact(BK, boss, P, k, A, h) {
   const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
   if (stage === 'escape') return gqEscapeBot(BK, P, k);
+  /* (claude/gq4q) THE SHARD FIGHT: her P2 stone shards are STRUCK HOME - face the shard and swing / shoot (every hero's attack key: a blow, an arrow, an ember, a shot); a hanging one (a boulder's burst, the great geode's) is walked to and struck. */
+  if (stage === 'roof' && !P.dead) {
+    let tgt = null, td = 1e9, hang = null, hd = 1e9;
+    for (const q of shots) { if (!q.p2 || q.home) continue; const dx = q.x - P.x, dy = q.y - (P.y - 9), d = Math.hypot(dx, dy);
+      if (q.hang) { if (d < hd && d < 260) { hd = d; hang = q; } continue; }
+      if ((q.vx || 0) * (P.x - q.x) <= 0) continue; if (d < td) { td = d; tgt = q; } }
+    if (tgt && td < 44) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
+    if (hang && !tgt) { const toward = Math.sign(hang.x - P.x) || P.face; P.face = toward; if (hd < 40) { k.left = k.right = false; return { goal: null, strike: true }; } return { goal: hang.x - toward * 14, strike: false }; }
+  }
+  /* (claude/gq4q) THE NEW TELLS, as a player answers them: the hearth jet is JUMPED on its release, the sceptre reach DUCKED, a rockfall shadow ROLLED through, a boulder's landing ring left, THE MOUNTAIN's gap stood in. */
+  { const m0 = boss.mode, Hq = BK.gqHands && BK.gqHands(), q4 = Hq && Hq.test && Hq.test.q4 ? Hq.test.q4() : null;
+    if (m0 === 'hearthTell') { if (boss.modeT < 0.12 && P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 12; } return { goal: null, strike: false }; }
+    if (m0 === 'reachTell') { if (boss.modeT < 0.4) k.down = true; return { goal: null, strike: false }; }
+    if (q4) { const tn = BK.time, fl = (q4.fall || []).find(f => !f.done && Math.abs(f.x - P.x) < 20 && f.at - tn < 0.35 && f.at - tn > -0.1);
+      if (fl && P.ground) { k.left = k.right = false; BK.press('dodge'); return { goal: null, strike: false }; }
+      if (q4.mtn && q4.mtn.gapX !== undefined) return { goal: q4.mtn.gapX, strike: false };
+      const Bq = q4.boulder; if (Bq && Bq.tx !== undefined && Math.abs(Bq.tx - P.x) < 36) return { goal: Bq.tx + (P.x >= Bq.tx ? 60 : -60), strike: false }; } }
   let best = null, bt = 9;
-  for (const q of shots) { if (q.home) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
+  for (const q of shots) { if (q.home || q.hang) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
   if (best && bt < 0.6) {
     if (parryShot(BK, h, best)) return { goal: null, strike: false };
     if (best.kind === 'crown') k.down = bt < 0.5; else if (bt < 0.22 && P.ground) BK.press('dodge');   /* not trying this one: the crown is ducked, a shard rolled */
@@ -995,7 +1012,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     const GQS = boss.t === 'gqueen' ? gqLabState() : null, gqSpf = (BK.SET.speed || 1) / 60;   /* (claude/gq2) her hall, the escape, the tower top: the stage clocks + stuns (src/lab-gqueen.js) */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
-      if (GQS) gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf);   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
+      if (GQS) { if (PERC) PERC.restore(); const gqSk = gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf); if (PERC) { if (gqSk) PERC.update(); PERC.apply(); } }   /* (gq4tune-d) the skip runs on the REAL state: with the eyes applied, the perception's restore() wrote the pre-skip mode (gone) back over her wake and she never began P2 (bar 100% for 240 s) */   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
       if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */

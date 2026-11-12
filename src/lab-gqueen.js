@@ -22,7 +22,7 @@ export function gqLabStep(BK, boss, f, st, mode, spf) {
     st.stage = stage;
   }
   if (stage === 'escape' && st.escF !== null && !P.dead) {
-    const why = mode === 'skip' ? 'skip' : (f - st.escF) * spf > GQ_ESC_STALL ? 'stall' : null;
+    const why = mode === 'skip' ? 'skip' : (BK.L && BK.L.gqEscape && BK.L.gqEscape.tower && BK.L.gqEscape.tower.OUT) ? 'gq4l' :   /* (gq4tune-d) GQ4L's tower is seven storeys + the outside face: the lab bot has no route for it (it stalled the full 90 s in the fire, burning flasks, every row), so the climb is the level walker's, like Gorm's */ (f - st.escF) * spf > GQ_ESC_STALL ? 'stall' : null;
     const H = why && BK.gqHands ? BK.gqHands() : null;
     if (H && H.skipRoof && H.skipRoof()) { st.skip = why; st.roofF = f; st.escHpEnd = pct(P.hp, P.maxHp); st.stage = 'roof'; return true; }
   }

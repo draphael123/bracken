@@ -15,7 +15,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
-const { LEVELS, T } = await imp('src/level.js');
+const { LEVELS, T } = await imp('src/level.js'); const { SH_HALL, G4 } = await imp('src/gq4l.js'); const { P4 } = await imp('src/gq4p.js');   /* (gq4p-d) with GQ4P on the old winch-guard wave is replaced by the gates (tools/gq4p.mjs holds those) */
 const { HC3 } = await imp('src/highcrown2.js');
 const GPX = await imp('src/goblin-princess.js'), { GP, gpMul, gpOpen } = GPX;
 const BW = await imp('src/bell-winch.js');
@@ -23,7 +23,7 @@ const TS = 16;
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
 
 console.log('== LAYOUT');
-ok(W === 841, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
+ok(W === 841 + SH_HALL, 'Highcrown is 841 columns (609 + the tower top 56 + 100 for the battlements and the bell tower + 64 for the Queen Stair + 12 for the 60-column tower top): ' + W);
 ok(L.ents.some(e => e.t === 'sign' && /CAPTAINS HALL/.test(e.text || '')), 'the Captains Hall is kept (Daniel 11-06 22:34: do NOT cut it)');
 ok(L.ents.some(e => e.t === 'sign' && /BAKEHOUSE YARD/.test(e.text || '')) && L.pools.some(p => p.fire), 'the bakehouse yard is kept (its sign and its fire)');
 const M = L.mini; ok(!!M && M.boss === 'gprincess' && M.name === 'THE GOBLIN PRINCESS', 'L.mini is THE GOBLIN PRINCESS');
@@ -81,7 +81,7 @@ for (const m of ['walk', 'lungeTell', 'lunge', 'flurry', 'fanTell', 'trinketTell
   ok(gpMul({ mode: m }) >= 0.4 && gpMul({ mode: m }) <= 0.5, m + ': ' + gpMul({ mode: m }) + 'x (>= 0.4, never 0)');
 ok(gpMul({ mode: 'walk', hiding: true }) === 0.4, 'hiding behind a guard: 0.4x (the floor)');
 ok(gpMul({ mode: 'pinned' }) === 1.15 && gpMul({ mode: 'stunned' }) === 1.15 && gpMul({ mode: 'preen' }) === 1 && gpMul({ mode: 'stagger' }) === 1, 'openings: pinned x1.15, stunned x1.15, preen / stagger x1.0');
-ok(GP.hp <= 1600 && GP.resist >= 0.4 && GP.endAt === 0 && GP.hp === 1000 && GP.bell.pin === 2.5, 'hp ' + GP.hp + ' (<= 1600), resist >= 0.4, she ends at 0 (a death, gq3), the pin is 2.5 s');
+ok(GP.hp <= 1600 && GP.resist >= 0.4 && GP.endAt === 0 && GP.hp === (P4 ? 1080 : 1000) && GP.bell.pin === 2.5, 'hp ' + GP.hp + ' (<= 1600), resist >= 0.4, she ends at 0 (a death, gq3), the pin is 2.5 s');
 
 console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate BLAZES -> a timed blow on the winch -> PINNED');
 { const w = make(); free(w); const gx = w.A.grate.col * TS + 8;
@@ -101,7 +101,7 @@ console.log('== THE TOWER BELL: ring -> she bolts -> told -> the grate BLAZES ->
 { const w = make(); free(w); w.ring(); w.step(2); ok(w.toReady(), 'the blaze'); w.step(Math.ceil(60 * GP.bell.win) + 2); ok(w.e.mode === 'ducked' && w.H.fight().n.slips === 1 && !w.st.grates.length, 'the blaze passes with no blow: she slips out from under it'); }
 { const w = make(); free(w); w.ring(); w.step(2); w.toReady(); w.st.shots.push({ x: w.A.winch, y: w.A.floor - 10, vx: 300, vy: 0, state: 'fly' }); w.step(1); ok(w.e.mode === 'pinned' && w.st.shots[0].state === 'drop', 'AN ARROW in the winch in the blaze releases it too: PINNED (the arrow drops)'); }
 { const w = make(); free(w); w.st.shots.push({ x: w.A.rope, y: w.A.floor - 10, vx: -300, vy: 0, state: 'fly' }); w.step(1); ok(w.H.fight().M.rings === 1, 'an arrow on the rope rings the bell'); w.step(10); w.st.shots.push(w.st.shots[0]); w.step(1); ok(w.H.fight().M.rings === 1, 'one arrow counts once'); }
-{ const w = make(); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); const F = w.H.fight(); for (let i = 0; i < 3; i++) { w.st.shots.push({ x: w.A.winch, y: w.A.floor - 8, life: 1 }); w.step(1); w.step(20); } ok(F.n.kept === 1, 'embers on the winch crank it: three keep the guards in'); }
+if (!P4) { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); const F = w.H.fight(); for (let i = 0; i < 3; i++) { w.st.shots.push({ x: w.A.winch, y: w.A.floor - 8, life: 1 }); w.step(1); w.step(20); } ok(F.n.kept === 1, 'embers on the winch crank it: three keep the guards in'); }
 { const w = make(); const F = w.H.fight(); w.e.mode = 'trinketTell'; w.e.modeT = 0.01; w.step(2); const q = F.gems[0]; ok(!!q, 'a gem flies'); w.st.shots.push({ x: q.x, y: q.y, vx: 300, vy: 0, state: 'fly' }); w.step(1); ok(q.away && F.n.knocked === 1, 'an arrow knocks her gem away'); }
 { const w = make(); free(w); w.ring(); w.step(2); w.toReady(); w.H.fight().bolt.state = 'ready'; w.e.x = w.A.grate.col * TS + 8 + 40; w.e.y = w.A.land.y; w.release(); ok(w.e.mode === 'ducked' && w.st.said.includes('SHE DUCKED'), 'not under it at the drop: SHE DUCKED, no pin'); }
 { const w = make(); w.e.mode = 'lungeTell'; w.e.modeT = 9; w.ring(); w.step(10); ok(w.e.mode === 'lungeTell', 'mid-move she is not yanked out of it'); w.e.mode = 'walk'; w.step(2); ok(w.e.mode === 'bolt', 'a moment later she answers the queued ring'); }
@@ -117,6 +117,7 @@ console.log('== PARRIES');
 { const w = make(); const h = w.heroes[0]; h.x = w.e.x - 20; w.e.mode = 'stompTell'; w.e.modeT = 0.01; w.st.dmg.length = 0; w.step(30); ok(w.st.dmg.some(q => q.o.name === 'HER STOMP' && q.o.unblockable), 'the stomp ripple: unblockable (jump it)'); }
 { const w = make(); const h = w.heroes[0]; h.x = w.e.x - 20; w.e.face = -1; w.e.mode = 'flurryTell'; w.e.modeT = 0.01; w.step(60); ok(w.H.fight().n.preens === 1, 'after her pokes she PREENS (a free window)'); }
 
+if (!P4) {
 console.log('== GUARDS! (70 / 35 %) and the winch');
 { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); const F = w.H.fight(); ok(!!F.wave && F.wave.state === 'open' && w.st.said.includes('GUARDS!'), 'at 70 %: GUARDS! - the door rises, the horn runs');
   for (let i = 0; i < 3; i++) { w.blow(w.heroes[0], w.winchBox); w.step(1); w.step(20); } ok(!F.wave && F.n.kept === 1 && !w.st.spawned.length, 'three blows on the winch, each inside 2 s: kept in'); }
@@ -125,8 +126,9 @@ console.log('== GUARDS! (70 / 35 %) and the winch');
 { const w = make(3); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); w.step(60 * (GP.guards.horn + 0.3)); ok(w.st.spawned.length === 2, '3 seats: one more soldier (' + w.st.spawned.map(s => s.t).join() + ')'); }
 { const w = make(2); free(w); w.e.hp = w.e.maxHp * 0.69; w.step(2); const F = w.H.fight(); w.blow(w.heroes[0], w.winchBox); w.step(1); w.step(20); w.blow(w.heroes[1], w.winchBox); w.step(1); w.step(20); w.blow(w.heroes[0], w.winchBox); w.step(1); ok(F.n.kept === 1, '2 seats: blows from both seats add up'); }
 
+}
 console.log('== THE TANTRUM, THE ESCAPE');
-{ const w = make(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); ok(w.H.fight().ph === 2 && w.st.said.some(s => /TANTRUM/.test(s)), 'below half: the tantrum (phase two)');
+if (!P4) { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.49; w.step(2); ok(w.H.fight().ph === 2 && w.st.said.some(s => /TANTRUM/.test(s)), 'below half: the tantrum (phase two)');
   const d0 = w.H.take(w.e, 20); ok(d0 > 0, 'the tantrum is not a free invulnerability (' + d0 + ')'); }
 { const w = make(); free(w); w.e.hp = w.e.maxHp * 0.12; const d = w.H.take(w.e, 9999); w.e.hp -= d;
   ok(w.e.hp >= 1 && w.e.hp <= 1.0001 && w.e.mode === 'dying' && w.st.said.includes('MOTHER...'), 'a killing blow takes her bar to 0 (1 hp held for the last act): MOTHER... and the dying');
@@ -148,7 +150,7 @@ console.log('== THE CHASE and the alarm towers');
   if (W1.state === 'open') { for (let i = 0; i < 3; i++) { w.blow(h, wb); w.H.level(1 / 60); h.box = null; w.st.time += 0.3; } } ok(W1.state === 'kept', 'tower 1: three blows on its winch keep the guardroom in');
   run(40); const C = w.H.test.chase(); ok(TW.has('tower2'), 'she rings tower 2\'s alarm');
   ok(C.state === 'in', 'she reaches her bell tower (' + C.state + ', x ' + Math.round(C.x / TS) + ')');
-  ok(w.st.spawned.some(s => s.t === 'pike'), 'tower 2 left alone: its guardroom is out (pike, soldier, hound)');
+  ok(w.st.spawned.some(s => (G4 ? s.cnSkin === 'gobknight' : s.t === 'pike')), 'tower 2 left alone: its guardroom is out (pike, soldier, hound)');
   w.H.clear(); w.H.level(1 / 60); ok(!w.H.test.chase() || w.H.test.chase().state === 'in', 'a death after she is in her tower: the chase is not replayed'); }
 { const w = make(); const Ch = w.Lw.gpChase, h = w.heroes[0]; h.y = Ch.floor; h.x = Ch.x0 + 20; w.H.level(1 / 60); w.H.clear(); w.H.level(1 / 60); ok(!w.H.test.chase() || w.H.test.chase().state !== 'in', 'a death mid-chase: it starts again'); }
 

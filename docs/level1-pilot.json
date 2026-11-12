@@ -285,17 +285,17 @@
   "bare": true
  },
  "crown": {
-  "hash": "85a25396d5d2",
+  "hash": "b3f7f7a78937",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 31,
-  "deaths": 0,
-  "kills": 50,
-  "lifts": 213,
+  "hits": 37,
+  "deaths": 4,
+  "kills": 51,
+  "lifts": 238,
   "walked": 100,
   "bare": true,
-  "seed": 1
+  "seed": 2
  },
  "reef": {
   "hash": "c614482bd7ef",
