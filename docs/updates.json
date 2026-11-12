@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-11",
+    "batch": 163,
+    "lines": [
+      { "s": "The Palisadewood battering beast stays stuck a little longer after it rams the wall", "lv": ["palisadewood"] },
+      { "s": "You get a bigger window to hit the beast while it is stuck", "lv": ["palisadewood"] },
+      { "s": "Gorm's second half is tougher: fewer openings to strike", "lv": ["kings"] },
+      { "s": "Gorm's sceptre hits harder", "lv": ["kings"] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
     "batch": 162,
     "lines": [
       { "s": "FOE VARIETY: the desert, canal road and fair mix up the foes you already know", "lv": ["caravan","underwell","glasssea","ksar","buriedcity","sealedpyramid","towpath","canal","fair"] },
