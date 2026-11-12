@@ -121,7 +121,7 @@ export function makeGQ5Q1(env) {
     const F = st && st.fire; if (!F) { e.mode = 'rec'; e.modeT = 0.4; return 0; }
     if (e.mode === 'fireBurn') {
       e.vx = 0; if (Math.random() < dt * 30) ctx.part({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 20, vx: 0, vy: -50, life: 0.4, max: 0.4, col: '#ff9a5c', size: 2, grav: 0, glow: true });
-      if (e.modeT <= 0) { fireEnd(e, 'end'); e.mode = 'rec'; e.modeT = 0.8; }
+      burnTicks(); if (e.modeT <= 0) { fireEnd(e, 'end'); e.mode = 'rec'; e.modeT = 0.8; }
       return 0;
     }
     // fireTell: she runs to her hearth's spot (told by the grille glow), plants the sceptre
@@ -180,18 +180,20 @@ export function makeGQ5Q1(env) {
     env.seats(P1 => { if (E.overHoist(P1)) P1.q5Hoist = tt; });
     const F = st.fire;
     if (F && e.mode !== 'fireTell' && e.mode !== 'fireBurn') { fireEnd(e, 'abort'); return; }   // stunned by a parry, dead...
-    if (F && F.phase === 'burn') {
-      const t = tt - F.tB;
-      while (F.tickN < Math.round(N.fire.burn / N.fire.tick) && t >= N.fire.tick * (F.tickN + 1)) {
-        F.tickN++;
-        env.seats(P1 => {
-          if (P1.dead || E.overHoist(P1)) return;
-          if (P1.inv > 0 && tt - (P1.q5TickAt ?? -9) < N.fire.tick + 0.1) P1.inv = 0;   // the burn is a drain: its own 0.8 s blow-invulnerability must not swallow the next tick
-          const r = env.gqRed(P1.x, N.fire.dmg, 'THE THRONE FIRE', { noKnock: true }); if (r) { P1.q5TickAt = tt; st.burned++; }
-        });
-      }
-    }
+    if (F && F.phase === 'burn') burnTicks();
   };
+  /* the drain: a tick every 0.5 s for 3.0 s (the last one lands on the burn's final frame, before the fire ends) */
+  function burnTicks() {
+    const F = st.fire, tt = tn(); if (!F || F.phase !== 'burn') return; const t = tt - F.tB;
+    while (F.tickN < Math.round(N.fire.burn / N.fire.tick) && t >= N.fire.tick * (F.tickN + 1) - 1e-6) {
+      F.tickN++;
+      env.seats(P1 => {
+        if (P1.dead || E.overHoist(P1)) return;
+        if (P1.inv > 0 && tt - (P1.q5TickAt ?? -9) < N.fire.tick + 0.1) P1.inv = 0;   // the burn is a drain: its own 0.8 s blow-invulnerability must not swallow the next tick
+        const r = env.gqRed(P1.x, N.fire.dmg, 'THE THRONE FIRE', { noKnock: true }); if (r) { P1.q5TickAt = tt; st.burned++; }
+      });
+    }
+  }
   E.reset = () => {
     const had = st && st.step > 0; if (had) { try { for (const row of [G0().fr - 1, G0().fr - 2]) rowTiles(row, 'unlay'); } catch (err) { /* nothing laid */ } }
     st = fresh(); const e = env.q(); if (e) e.scorch = false;
