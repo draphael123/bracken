@@ -75,7 +75,8 @@ export function towerLay(R, { T, TS }) {
   const W0 = R.W, add = (D.x1 + 5) - W0, W2 = W0 + Math.max(0, add), H0 = R.H, H = G4 ? Math.max(H0, TW.FLOORS[0] + 5) : H0;   /* (gq4l) the tower body grows DOWN: seven storeys under the outside stretch */
   if (add > 0 || H > H0) { const g2 = new Uint8Array(W2 * H).fill(T.SOLID); for (let y = 0; y < H0; y++) g2.set(R.grid.subarray(y * W0, y * W0 + W0), y * W2);
     for (let y = H0; y < H; y++) for (let x = 0; x < Math.min(W0, D.x0 - 2); x++) g2[y * W2 + x] = R.grid[(H0 - 1) * W0 + x];   /* (gq4l) the new rows under the old world keep its bottom row (a pit stays a pit to the void); only the tower's own columns are rock */
-    R.grid = g2; R.W = W2; R.H = H; }
+    R.grid = g2; R.W = W2; R.H = H;
+    if (H > H0 && R.facades) for (const f of R.facades) if (f[3] === H0 - 1) f[3] = H - 1; }   /* (rel167) the chasm wall faces that ran to the old bottom run to the new one: the pit is a pit to the void, so its wall stands on something (tools/architecture.mjs) */
   const W = R.W, g = R.grid;
   const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
   const fill = (x0, x1, y0, y1, v) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, v); };

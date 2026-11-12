@@ -10,6 +10,7 @@
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
+import { SHIFT as SHIFTX } from '../src/gq4l.js'; const SH_STAIRX = SHIFTX.battle;
 export const NEAR = 14, MAX_WALK = 40;
 const TS = 16;
 const near = (L, R) => { if (!R) return null; const fy = R.floor / TS - 1;
@@ -18,7 +19,7 @@ export function judgeRooms(lv, r, L = lv.build()) {
   const s = r.stats, bad = [], out = [], cl = s.checkList.filter(c => c.at !== null).sort((a, b) => a.at - b.at);
   for (const [kind, R, c] of [['boss', L.arena, 'B'], ['mini', L.mini, 'M']]) { if (!R) continue;
     if (kind === 'boss' && R.chase && L.chase3 && L.chase3.check) { out.push([lv.id, kind, 'chase', 0]); continue; }   /* THE CHASE (fallingtower): the fight starts at the stair's top and bossStart sets the fight's checkpoint there (main.js, L.chase3.check) - a death anywhere in it wakes beside his ring; the 84,146 shrine is the stair's foot, which IS the fight */
-    if (kind === 'mini' && R.boss === 'gprincess') { const c0 = L.ents.find(e => e.t === 'check' && e.x >= R.wallL - 104 && e.x <= R.wallL - 96); if (c0) { out.push([lv.id, kind, 'chase', 0]); continue; } }   /* (batch155) THE PRINCESS'S CHASE (Highcrown 3, Daniel-approved hcplan sec 4 11-06: fewer shrines, 'no CP on the battlements walk itself'): the banquet's east-door shrine opens the chase along the wall AND her fight in the Bell Tower as ONE checkpoint life (the chase plays once per life). Asked: that shrine stands at the stair where the chase begins, 96-104 columns west of the tower wall. */
+    if (kind === 'mini' && R.boss === 'gprincess') { const c0 = L.ents.find(e => e.t === 'check' && e.x >= R.wallL - 104 - SH_STAIRX && e.x <= R.wallL - 96 - SH_STAIRX);   /* (rel167) GQ4L: the gatehouse + leads walk put 40 more columns between the banquet shrine and her wall (0 off) */ if (c0) { out.push([lv.id, kind, 'chase', 0]); continue; } }   /* (batch155) THE PRINCESS'S CHASE (Highcrown 3, Daniel-approved hcplan sec 4 11-06: fewer shrines, 'no CP on the battlements walk itself'): the banquet's east-door shrine opens the chase along the wall AND her fight in the Bell Tower as ONE checkpoint life (the chase plays once per life). Asked: that shrine stands at the stair where the chase begins, 96-104 columns west of the tower wall. */
     const n = near(L, R); if (n) { out.push([lv.id, kind, 'near', n.x + ',' + n.y]); continue; }
     const d = s.doors.find(q => q.c === c), at = d ? (d.at === null ? s.endAt : d.at) : s.endAt, before = cl.filter(q => q.at <= at), last = before[before.length - 1];
     if (!last) { bad.push(lv.id + ' ' + kind + ': no shrine before the room (door at route ' + at + ')'); continue; }
