@@ -18,6 +18,7 @@
 //   THE CAVE MOUTH     58-  44  CHECKPOINT 3 (before the boss, always), a short on-foot climb, and THE HEAD STATION: SKYHOOK's arena (claude/skyhook)
 //                              (the boss is a LATER lane) and the way on into the Ore Road (the gate)
 // Landings are ONE-WAY decks (iron gantries / rock lips, art owed) so the node sweep (tools/highlines.mjs) and the page agree: nothing bonks a rider from below.
+import { endSupports } from './line-kit.js';   /* (claude/hlfix) what holds each rope end (a drawn mast, hanger or wall bracket) */
 export const HL = { W: 80, H: 240 };
 export const RULE = 'HANG ON AND STRIKE: EVERY BLOW HAULS A WINCH LINE UP AND THE RATCHET HOLDS YOU. MISS A LINE AND YOU DROP A LEVEL.';
 export const SECTIONS = [['FOOTHOLD', 206, 240], ['JUNCTIONS', 188, 206], ['THE WIND GORGE', 164, 188], ['THE AMBUSH', 133, 171], ['THE LEE HUT', 118, 134], ['THE COUNTERWEIGHT', 102, 118], ['THE GONDOLA', 85, 102], ['THE EXAM', 57, 104], ['THE CAVE MOUTH', 30, 58]];   /* [name, rowTop, rowBottom] - a TALL level's sections are row bands */
@@ -73,7 +74,8 @@ export const HL_DATA = {
      that tops out at each gallery (he cuts it in phase two), the swing rope's anchor row over the middle */
   arena: { x0: 8, x1: 39, floor: 48, boss: 'skyhook', wallL: 7, wallR: 40, trigger: 11, perchW: [10, 40], perchE: [37, 40], levers: [['W', 10], ['E', 36]], line: 'HL', winch: { W: 'SW', E: 'SE' }, swingY: 31, music: 'masthead' },
   lineKit: {
-    anchors: [[61, 199.536], [43, 151.6], [37, 97.5], [59, 85], [26, 198], [21, 198.5]],   /* iron pylons a line end hangs from (no landing under it) */
+    strictEnds: true,   /* (claude/hlfix) lintLines reds an end with no mast / hanger / wall bracket (src/line-kit.js endSupports); the declared anchors below no longer count on their own */
+    anchors: [[61, 199.536], [43, 151.6], [37, 97.5], [59, 85], [26, 198], [21, 198.5]],   /* (claude/hlfix) the six ends that had NO landing under them: each is now held by a drawn mast, see endSupports (S2 a: mast to L2; F1 b, F2 a: hanger from L5; S4 a: tall guyed pylon to L3; GD b: mast + foot beam to the dock; LO a: mast to the shelf) */
     lines: [
       /* 1 FOOTHOLD */
       { id: 'W1', kind: 'winch', a: [12, 231], b: [32, 218] },
@@ -188,8 +190,8 @@ export function buildHighLines({ painter, T, TS }) {
   foe('galeharpy', 44, 176, { face: -1 }); foe('galeharpy', 40, 160, { face: 1 });
   coinOn('G2', 36); coinOn('G3', 30); ent('coin', 70, 183);
   /* ---- 4 THE AMBUSH ---- */
-  sign(4, 170, 'THE LINE CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
-  sign(24, 155, 'A RIGGER WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
+  sign(4, 170, 'GOBLIN CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
+  sign(24, 155, 'A GOBLIN WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
   foe('crossbow', 55, 141, { face: -1 });
   coinOn('H2', 48); coinOn('S4', 36); ent('coin', 60, 141);
   /* ---- 5 THE LEE HUT (on foot) ---- */
@@ -225,7 +227,8 @@ export function buildHighLines({ painter, T, TS }) {
     line: { id: hl.id, xa: la[0] * TS, ya: la[1] * TS, xb: lb[0] * TS, yb: lb[1] * TS }, winch: { ...Ar.winch }, swingY: Ar.swingY * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: lkMovers, interiors: [],
-    highlines: true, hlKit: true, routeSupports: hlSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? T.SOLID : L.grid[y * W + x]), t => t === T.SOLID), lineKit: JSON.parse(JSON.stringify(D.lineKit)), hookjacks: D.hookjacks.map(h => ({ ...h })),
+    reskin: { crossbow: 'hlgobbow' },   /* (claude/hlfix) the crossbowmen are goblins here (src/redraw/hl_goblin_skins.js; a reskin table is not in the level hash) */
+    highlines: true, hlKit: true, routeSupports: hlSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? T.SOLID : L.grid[y * W + x]), t => t === T.SOLID), lineKit: { ...JSON.parse(JSON.stringify(D.lineKit)), ends: endSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? true : L.grid[y * W + x] === T.SOLID)) }, hookjacks: D.hookjacks.map(h => ({ ...h })),
     landings: D.landings.map(b => b.slice()), nets: D.nets.map(b => b.slice()), checkpoints: D.checkpoints.map(c => ({ ...c })), secrets: D.secrets.map(s => s.slice()), exit: D.exit.slice(), w: W, h: H,
     arena,
     squadBands: [{ lo: 0, hi: 99999, spots: 0, why: 'THE HIGH LINES: every foe is placed by hand on its line or station (nothing sprinkled)' }],

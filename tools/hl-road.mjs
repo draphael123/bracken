@@ -144,5 +144,5 @@ for (const [name, P0] of CASES) {
     ok(s.w > 26 && s.h <= 52 && s.ay <= s.h && s.ax <= s.w, k + ': ' + s.w + 'x' + s.h + ' is drawn x1 by the page (width > 26) and fits its 46-px box with the feet at ' + s.ay);
     ok(s.R.every(c => bbox(c).y1 <= s.ay + 2), k + ': nothing is drawn more than a boot sole (2 px) below the feet line'); }
   ok(Object.keys(S).join() === 'hookjackCard,skyhookCard', 'the keys the page reads: SPR.hookjackCard, SPR.skyhookCard'); }
-{ const { SFX } = await import('../src/audio.js'); for (const t of ['hookjack', 'skyhook']) ok(!!SFX.hurtOf(t) && !!SFX.dieOf(t), t + ' has a hurt and a death voice (src/audio.js CAST: the human kits)'); }
+{ const { SFX } = await import('../src/audio.js'); for (const t of ['hookjack', 'skyhook']) ok(!!SFX.hurtOf(t) && !!SFX.dieOf(t), t + ' has a hurt and a death voice (src/audio.js: goblin voices, claude/hlfix)'); }
 console.log('THE HIGH LINES ROAD (flag on): ' + n + ' checks so far');

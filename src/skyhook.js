@@ -1,7 +1,7 @@
 // src/skyhook.js - SKYHOOK, MASTER OF THE HEAD STATION (claude/skyhook, 11-05; zipclimb-plan.md 5 as amended by Daniel: a HUMAN rigger, 2 phases, the line kit).
 // The line crews' captain. THE HIGH LINES end at THE CAVE MOUTH, the ropeway's head station where the Ore Road runs into the mountain: the castle's supply
 // line. Skyhook guards it. He works his own HIGH LINE across the station on a crank trolley, stands on the two galleries it runs between, and fights with a
-// long iron boat-hook on a chain (phase two: a rigger's cutter too). NOT a goblin (Daniel's standing note; the Hookjacks are his crew).
+// long iron boat-hook on a chain (phase two: a rigger's cutter too). A GOBLIN (Daniel 11-12: goblins, not men, on THE HIGH LINES - art and words only; the Hookjacks are his crew).
 // This file is the fight, PURE (his moves, his two phases, what a blow does to him, the bot's plan); src/skyhook-hands.js binds it to the world (main.js,
 // the line kit's lines through src/highlines-hands.js) and draws him (greybox). tools/skyhook.mjs is its check.
 // HEADER (design-standard B1 / B3 / B5 / B10 / B15 / B16):

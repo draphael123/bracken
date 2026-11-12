@@ -2,7 +2,7 @@
 // amended: Daniel 11-05 15:27 "Hookjack ambush, cut lines drop you a level"). A PURE foe module, like src/gale-harpy.js: no DOM, no main.js. The level's hands
 // (src/highlines-hands.js) call hookStep(e, dt, w) for each one every frame, hookTake(e, dmg, fromX) when a blow lands, and drawHook for the greybox picture.
 //
-// WHO HE IS: a ROPEWAY RIGGER - a brigand of the line crews in the Queen's pay (a man, not a goblin: theme rule), hanging from a hand-cranked TROLLEY with a long
+// WHO HE IS: a ROPEWAY RIGGER - a goblin of the line crews in the Queen's pay (a goblin, Daniel 11-12; he was drawn a man before - art only, nothing else changed), hanging from a hand-cranked TROLLEY with a long
 // iron boat-hook. He rides the line kit's lines either way (src/line-kit.js foeRide) and comes AT you along your line.
 //   ride      patrols his line; sees a hero on it (or near it) inside HK.see and cranks at him. His hook is held across his body: a GUARD - a blow from the
 //             front clanks off at x HK.guard (grey spark, clank); from behind it is whole

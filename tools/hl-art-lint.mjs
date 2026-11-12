@@ -26,6 +26,7 @@ const colourBad = allowed => [...COLS.keys()].filter(c => !/^rgba?\(/.test(c) &&
 const HLT = await import(FILES.tiles.href), HLB = await import(FILES.back.href), HLA = await import(FILES.art.href), CREW = await import(FILES.crew.href);
 const { LEVELS, T } = await import(URLS('level.js').href), LKT = await import(URLS('line-kit.js').href), HJ = await import(URLS('hookjack.js').href), SKH = await import(URLS('skyhook-hands.js').href);
 const HLD = await import(URLS('highlines.js').href);
+const SUPX = LKT.SUP.HANG_X + 1, VIEWS_SUP = [[300, 3100], [200, 3000], [0, 2900], [0, 1500], [300, 1200], [700, 1450], [300, 600], [300, 800]];   /* (claude/hlfix) the foot beam may run this far (tiles); where the masts are drawn from */
 const L = LEVELS.find(l => l.id === 'highlines').build(), at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H ? T.SOLID : L.grid[y * L.W + x]);
 
 // ---------- A. THE TILE KIT ----------
@@ -50,6 +51,14 @@ for (const p of S) for (const cx of [p.x * 16 - 100, p.x * 16 + 30]) HLT.drawGan
 ok(BAD.length === 0, 'supports: no NaN or bad colour ' + BAD.slice(0, 3)); ok(colourBad(LIT.tiles).length === 0, 'supports: every colour is a kit literal: ' + colourBad(LIT.tiles).slice(0, 4));
 { const AL = await import(URLS('../tools/anchor-lint.mjs').href); const f = AL.anchorFaults(L); ok(f.filter(q => q.kind === 'cantilever').length === 0, 'anchor-lint: no cantilever left: ' + JSON.stringify(f.filter(q => q.kind === 'cantilever').slice(0, 3)));
   ok(f.filter(q => q.kind === 'prop').length === 0, 'anchor-lint: no prop on air'); ok(f.filter(q => q.kind === 'overhang').length === 0, 'anchor-lint: no overhang'); }
+/* (claude/hlfix) NO FLOATING CONNECTORS: every end of every line is held by a drawn mast / hanger / wall arm, checked against the level's own grid and landings, and the lint reds a floating one */
+{ const solid = (x, y) => at(x, y) === T.SOLID, E = LKT.endSupports(L, solid), nEnds = L.lineKit.lines.length * 2;
+  ok(L.lineKit.strictEnds === true, 'the level asks the strict end lint (lineKit.strictEnds)'); ok(E.length === nEnds && E.every(r => r.kind !== 'none'), 'every one of the ' + nEnds + ' line ends is held: ' + E.filter(r => r.kind === 'none').map(r => r.line + r.end));
+  ok(JSON.stringify(L.lineKit.ends) === JSON.stringify(E), 'the level ends table is what the grid says');
+  for (const r of E) { if (r.kind === 'deck' || r.kind === 'hang') { const deck = L.landings.find(b => (r.kind === 'deck' ? b[1] === r.toY : b[1] + 1 === r.toY) && r.foot >= b[0] - 1 && r.foot <= b[2] + 1); ok(!!deck, r.line + r.end + ': its mast meets a real deck (' + r.kind + ' to row ' + r.toY + ')'); ok(Math.abs(r.foot - r.x) <= SUPX, r.line + r.end + ': the foot beam is short (' + Math.abs(r.foot - r.x).toFixed(1) + ' tiles)'); } else ok(L.lineKit.lines.length > 0 && at(r.wallX, Math.round(r.y)) === T.SOLID || at(r.wallX - 1, Math.round(r.y)) === T.SOLID, r.line + r.end + ': its wall arm meets rock'); }
+  ok(LKT.lintLines(L).filter(q => /hangs from nothing/.test(q)).length === 0, 'lintLines: no end hangs from nothing');
+  for (const k of ['a', 'b']) { const bad = JSON.parse(JSON.stringify({ ...L, lineKit: { ...L.lineKit, ends: undefined } })); const ln = bad.lineKit.lines.find(q => q.id === 'W1'); ln[k] = [70, 20 + (k === 'a' ? 0 : 3)]; ok(LKT.lintLines(bad).some(q => /W1: end . .*hangs from nothing/.test(q)), 'a line end moved off into open air (' + k + ') is a red: ' + LKT.lintLines(bad).filter(q => /W1/.test(q)).slice(0, 2).join(' | ')); }
+  const g2 = makeCtx(320, 180); for (const [cx, cy] of VIEWS_SUP) HLA.drawEndSupports(g2, LKT.lineInit(L), cx, cy, 320, 180); ok(BAD.length === 0, 'end supports: no NaN or bad colour ' + BAD.slice(0, 3)); }
 { const decor = []; HLT.dress(decor, L, at, T); HLA.dress(decor, L, at, T); ok(decor.length > 20, 'dressing placed: ' + decor.length); ok(decor.every(d => d.c && d.c.width > 0 && Number.isFinite(d.x) && Number.isFinite(d.y)), 'every dressing piece has a sprite and a place');
   ok(decor.some(d => d.c.width === 104), 'the Lee Hut is placed'); ok(decor.filter(d => d.c.width >= 40 && d.c.width <= 56 && d.c.height >= 30).length >= 2, 'lee rocks are placed'); }
 
@@ -102,6 +111,25 @@ ok(sp.downed !== sp.rise && sp.jarred !== sp.landed, 'DOWN and JARRED (the openi
 { const e = fp(g2 => CREW.drawRiggerArt(g2, PO.hook, true, 0, 1, 60, 90, 1)); ok(/#ffffff/.test(e), 'the hit flash whitens him'); }
 fp(g2 => { CREW.drawSkyTrolley(g2, 30, 30, 1, 0.1); CREW.drawSkyHook(g2, 30, 30, -1, 0.1); CREW.chainLine(g2, 10, 10, 80, 40, 0); CREW.drawRag(g2, 40, 40, 0.2); CREW.drawLeverArt(g2, 30, 80, 0, false, false, 0); CREW.drawLeverArt(g2, 60, 80, 1, true, true, 0.2); });
 ok(BAD.length === 0, 'crew: no NaN rects or bad colours ' + BAD.slice(0, 3)); ok(colourBad(new Set([...LIT.crew, '#ffffff', '#fff3a0', '#ffb347', '#1b1626'])).length === 0, 'crew: every colour is a literal: ' + colourBad(new Set([...LIT.crew, '#ffffff', '#fff3a0', '#ffb347', '#1b1626'])).slice(0, 4));
+
+// ---------- G. (claude/hlfix) THE LINE PROMPTS and THE GOBLINS ----------
+{ const LP = await import(URLS('line-prompts.js').href), kitP = LKT.lineInit(L), PR = LP.promptsOf(kitP), kw = { kb: { kind: 'kb', up: 'UP', jump: 'SPACE', atk: 'X' }, pad: { kind: 'pad', up: 'D-UP', jump: 'A', atk: 'X' }, touch: { kind: 'touch' } };
+  const skip = id => { const d = L.lineKit.lines.find(q => q.id === id); return d.cab || d.secret || d.npc || L.lineKit.lines.some(q => q.cab && q.cab.onto === id); };
+  for (const d of L.lineKit.lines) { if (skip(d.id)) continue; const z = kitP.lines[d.id], sx = (z.dir > 0 ? z.xa : z.xb) / 16, deck = L.landings.some(b => sx >= b[0] - 1 && sx <= b[2] + 2 && b[1] * 16 >= LKT.lineY(z, sx * 16) - 2);
+    ok(!deck || PR.some(p => p.kind === 'grab' && p.line === d.id), d.id + ': a line a player takes from a deck has its grab prompt');
+    if (d.kind === 'winch' && d.drive !== 'post') ok(PR.some(p => p.kind === 'hit' && p.line === d.id), d.id + ': a grip-winch has its hit prompt'); }
+  ok(PR.some(p => p.kind === 'grab' && p.line === 'W3' && Math.abs(p.x / 16 - 70) < 0.5), 'the first junction deck (L2, the sign by the points board): W3 has its grab prompt at its low end (70, 207)');
+  ok(PR.filter(p => p.kind === 'points').length === 2 && PR.some(p => p.kind === 'post' && p.line === 'lift'), 'both points boards and the hopper carry a prompt');
+  ok(new Set(PR.map(p => p.key)).size === PR.filter((p, i, a) => a.findIndex(q => q.key === p.key) === i).length && PR.every(p => p.key && Number.isFinite(p.x) && Number.isFinite(p.y)), 'prompt keys and places are sane');
+  const g3 = makeCtx(320, 180); reset(); for (const p of PR) for (const dev of ['kb', 'pad', 'touch']) HLA.drawPrompt(g3, p, 100, 100, 0.3, LP.promptWords(p, kw[dev]), () => {}); ok(BAD.length === 0 && colourBad(new Set([...LIT.art, '#ffffff'])).length === 0, 'prompts draw clean in the kit palette: ' + BAD.slice(0, 2));
+  const g1 = PR.find(p => p.kind === 'grab'), h1 = PR.find(p => p.kind === 'hit');
+  ok(LP.promptWords(g1, kw.kb) === 'UP' && LP.promptWords(g1, kw.pad) === 'D-UP' && LP.promptWords(g1, kw.touch) === '' && LP.promptWords(h1, kw.kb) === 'X' && LP.promptWords(h1, kw.pad) === 'X' && LP.promptWords({ kind: 'grab', jump: true }, kw.kb) === 'SPACE+UP' && LP.promptWords({ kind: 'grab', jump: true }, kw.touch) === 'JUMP', 'the key plate words follow the input in use (keyboard, pad, touch)');
+  const hh = readFileSync(URLS('highlines-hands.js'), 'utf8'); ok(hh.includes('drawPrompts(') && hh.includes("used.add('hit:'") && hh.includes("used.add('grab:'"), 'the hands draw the prompts and retire them once the line is used');
+  /* THE GOBLINS: the crew is drawn green with leaf ears (the foe palette #6faa4a); the level's crossbowmen are reskinned; no word says man */
+  ok(CREW.CP.skin[1] === '#6faa4a' && CREW.CP.eye === '#ff4030', 'the line crew wears the goblin green and red eyes (the foe palette #6faa4a)');
+  ok(L.reskin && L.reskin.crossbow === 'hlgobbow', 'the level reskins its crossbowmen as goblins (cnSkin hlgobbow)');
+  const hs = readFileSync(URLS('highlines.js'), 'utf8'), mj = readFileSync(URLS('main.js'), 'utf8'); ok(!/A RIGGER WITH A SAW|THE LINE CREWS RIDE/.test(hs) && /GOBLIN CREWS RIDE AT YOU/.test(hs) && /A GOBLIN WITH A SAW/.test(hs), 'the signs say goblins');
+  ok(/sub: 'a goblin line-rigger/.test(mj) && /desc: "The goblin line crews' captain/.test(mj) && /t: 'hlgobbow', name: 'GOBLIN CROSSBOWMAN'/.test(mj), 'the bestiary cards say goblin (Hookjack, Skyhook, the crossbowman skin)'); }
 
 // ---------- F. PALETTE DISCIPLINE and FILES ----------
 const ceil = { tiles: 190, back: 140, art: 190, crew: 190 }; for (const k in LIT) ok(LIT[k].size <= ceil[k], k + ' palette ' + LIT[k].size + ' <= ' + ceil[k]);

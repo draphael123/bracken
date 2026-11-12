@@ -1,5 +1,5 @@
-// line_crew_art.js - THE LINE CREW, hand-drawn (claude/hlart, 2026-11-05): THE HOOKJACK (a human line-rigger of the high ropeway, about 26 px) and SKYHOOK (the crew's captain, MASTER OF THE HEAD STATION, about 36 px),
-// replacing the greybox rectangles of src/hookjack.js drawHook and src/skyhook-hands.js drawRigger. No goblins: they are men - weathered, wrapped against the cold, in tarred wool and rope.
+// line_crew_art.js - THE LINE CREW, hand-drawn (claude/hlart, 2026-11-05; GOBLINS from claude/hlfix, Daniel 11-12 "use goblin enemies rather than human ones"): THE HOOKJACK (a goblin line-rigger of the high ropeway, about 26 px) and SKYHOOK (the crew's captain, MASTER OF THE HEAD STATION, about 36 px),
+// replacing the greybox rectangles of src/hookjack.js drawHook and src/skyhook-hands.js drawRigger. Goblins (the game's own: skin #6faa4a, long swept-back leaf ears, a hooked nose, narrow red eyes, a tusk) in the human crew's dress - wrapped against the cold, in tarred wool and rope. The reskin is the head and hands only: every pose, tell and box is as before.
 //   HOOKJACK  slate-blue padded jerkin over a grey wool undershirt, an ochre muffler, a wool cap with the flaps down and rime on it, snow-goggle slit, leather straps, a coil of line bandoleered over one shoulder,
 //             a tool belt with a pulley block, hobnailed boots, fingerless mitts, and the iron BOAT-HOOK (a long ash shaft with a forged hook). On the line he hangs from a crank-trolley (two wheels on the cable).
 //   SKYHOOK   a long tarred coat to the knee (blue-black, rime on the shoulders), a RED knitted cap, a grey beard, a coil of line over a shoulder, the cutter on his belt in phase two, the iron boat-hook on a chain.
@@ -9,7 +9,8 @@
 const R = Math.round;
 export const CP = {
   jerkin: ['#161e2a', '#26344a', '#3a4e6a', '#566e8c'], wool: ['#30343c', '#4a505a', '#6c7480'], muffler: ['#6a4010', '#b07a2a', '#e0b050'], cap: ['#1c2230', '#323c52', '#4e5a74'], leather: ['#120c08', '#2e2016', '#523a24', '#7a5a38'],
-  skin: ['#6a4430', '#a87450', '#d09870', '#ecb890'], rope: ['#2a2014', '#4e3e24', '#8a7444', '#c0a868'], iron: ['#0e1014', '#222830', '#3c444e', '#68727e', '#9aa4b0', '#d0d8e0'], ash: ['#3a2a1a', '#6a5030', '#9a7a4c'],
+  skin: ['#3f6e2c', '#6faa4a', '#8fc760', '#b4dc86'], eye: '#ff4030', tooth: '#f3f0d2',   /* the goblin's green (the foes' own: #6faa4a / #8fc760 / #3f6e2c), red eyes, a pale tusk */
+ rope: ['#2a2014', '#4e3e24', '#8a7444', '#c0a868'], iron: ['#0e1014', '#222830', '#3c444e', '#68727e', '#9aa4b0', '#d0d8e0'], ash: ['#3a2a1a', '#6a5030', '#9a7a4c'],
   rime: ['#a8bccc', '#dce8f2', '#ffffff'], boot: ['#0c0a08', '#221a14', '#3e3024'], gold: '#ffd36b', red: '#ff6b6b', stars: '#fff0a0',
   coat: ['#0c1018', '#1a2230', '#2a384a', '#46586e'], cape: ['#5a1208', '#a8341e', '#d8523a'], beard: ['#58606a', '#8a929c', '#c0c6cc'], hookIron: ['#3a424c', '#98a2ae', '#dce4ec'], chain: ['#2a3038', '#6a7480', '#a8b2be'],
   lever: ['#3a2a1c', '#6a5038', '#a8885c'], flag: '#ff4a2a',
@@ -79,9 +80,11 @@ function hookjackBody(P, flash, time) {
   /* head: muffler, face, goggle slit, the cap with its flaps and rime */
   rc(hx - 3, hdY + 6, 7, 3, CP.muffler[1]); rc(hx - 3, hdY + 6, 7, 1, CP.muffler[2]); rc(hx - 2, hdY + 8, 4, 1, CP.muffler[0]);
   rc(hx - 2, hdY + 1, 6, 6, CP.skin[1]); rc(hx - 2, hdY + 1, 2, 6, CP.skin[2]); rc(hx + 3, hdY + 2, 1, 4, CP.skin[0]);
-  rc(hx + 1, hdY + 2, 4, 2, CP.iron[0]); rc(hx + 1, hdY + 2, 4, 1, CP.iron[2]); dot(hx + 3, hdY + 3, P.eyes === 'shut' ? CP.iron[1] : CP.rime[1]);                      /* the snow-goggle slit and a pale eye behind it */
+  rc(hx + 1, hdY + 2, 4, 2, CP.iron[0]); rc(hx + 1, hdY + 2, 4, 1, CP.iron[2]); dot(hx + 3, hdY + 3, P.eyes === 'shut' ? CP.iron[1] : CP.eye);                      /* the snow-goggle slit and a red eye behind it */
+  rc(hx + 4, hdY + 4, 3, 2, CP.skin[1]); dot(hx + 6, hdY + 5, CP.skin[0]); dot(hx + 3, hdY + 5, CP.tooth);                                                          /* the hooked goblin nose and a tusk over the muffler */
   rc(hx - 3, hdY - 2, 8, 3, CP.cap[1]); rc(hx - 3, hdY - 3, 7, 1, CP.cap[2]); rc(hx - 3, hdY + 1, 2, 5, CP.cap[0]); rc(hx - 4, hdY + 1, 1, 3, CP.cap[1]);        /* the cap, its flap down over the ear */
   rc(hx - 2, hdY - 3, 3, 1, CP.rime[2]); dot(hx + 2, hdY - 2, CP.rime[1]); dot(hx - 4, hdY, CP.rime[0]);
+  rc(hx - 9, hdY + 1, 6, 2, CP.skin[1]); rc(hx - 10, hdY, 2, 2, CP.skin[2]); rc(hx - 8, hdY + 3, 3, 1, CP.skin[0]); dot(hx - 4, hdY + 1, CP.skin[2]);   /* the long leaf ear, swept back out of the cap's flap */
   /* the arms */
   const ox = P.off[0] + jit, oy = P.off[1] + cr, hx2 = P.hand[0] + jit, hy2 = P.hand[1] + cr;
   limb(-2 + lean, shY + 2, ox, oy, J[1], J[3], 2); rc(ox - 1, oy - 1, 3, 3, CP.leather[2]);
@@ -137,9 +140,11 @@ export function drawRiggerArt(g, p, flash, time, ph, x, y, f) {
   /* head: the red knitted cap, grey beard, a weathered face, a hard eye */
   const hdX = lean * 5;
   rc(hdX - 4, top - 1, 9, 8, CP.skin[1]); rc(hdX - 4, top - 1, 3, 8, CP.skin[2]); rc(hdX + 4, top, 1, 6, CP.skin[0]);
+  rc(hdX + 5, top + 2, 3, 2, CP.skin[1]); dot(hdX + 7, top + 3, CP.skin[0]);                                                                                          /* the hooked goblin nose */
   rc(hdX - 4, top + 4, 9, 5, CP.beard[1]); rc(hdX - 4, top + 4, 4, 5, CP.beard[2]); rc(hdX - 3, top + 8, 7, 1, CP.beard[0]); rc(hdX + 1, top + 4, 4, 1, CP.beard[0]);
-  rc(hdX + 1, top + 1, 4, 2, CP.iron[0]); dot(hdX + 3, top + 1, p.look ? CP.rime[2] : CP.rime[1]); dot(hdX + 3, top + 2, CP.iron[1]);                                      /* the brow and the eye */
+  rc(hdX + 1, top + 1, 4, 2, CP.iron[0]); dot(hdX + 3, top + 1, p.look ? CP.gold : CP.eye); dot(hdX + 3, top + 2, CP.iron[1]); dot(hdX + 2, top + 3, CP.tooth); dot(hdX + 4, top + 3, CP.tooth);                                      /* the brow, the red eye (gold when he LOOKS) and two tusks over the beard */
   rc(hdX - 5, top - 5, 11, 5, CP.cape[1]); rc(hdX - 5, top - 5, 11, 2, CP.cape[2]); rc(hdX - 5, top - 1, 11, 1, CP.cape[0]); rc(hdX - 3, top - 7, 7, 2, CP.cape[1]); rc(hdX - 1, top - 8, 3, 1, CP.cape[2]); dot(hdX, top - 3, CP.cape[0]); dot(hdX + 3, top - 4, CP.cape[0]); rc(hdX - 6, top - 3, 1, 3, CP.cape[0]);   /* the cap: knit rows, a bobble, a turned brim */
+  rc(hdX - 12, top + 1, 8, 2, CP.skin[1]); rc(hdX - 13, top, 2, 2, CP.skin[2]); rc(hdX - 11, top + 3, 4, 1, CP.skin[0]); dot(hdX - 5, top + 1, CP.skin[2]);   /* the long leaf ear, swept back out from under the red cap */
   /* arms + the boat-hook and its chain */
   limb(-4 + sh, top + 9, p.off[0], p.off[1] + cr, K[1], K[3], 3); rc(p.off[0] - 1, p.off[1] + cr - 1, 3, 3, CP.leather[2]);
   limb(4 + sh, top + 9, p.hand[0], p.hand[1] + cr, K[1], K[3], 3); rc(p.hand[0] - 1, p.hand[1] + cr - 1, 3, 3, CP.leather[3]); dot(p.hand[0], p.hand[1] + cr - 1, CP.skin[2]);
