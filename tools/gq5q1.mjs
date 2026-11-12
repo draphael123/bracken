@@ -6,7 +6,7 @@
 //   H  hoists     bell ring -> THE HOISTS RISE; rise 0.6 s, up to 8.0 s, vanish tell from 6.5 s, sink to 8.5 s; riders carried up and SET DOWN (never below the floor); tiles restored;
 //                 bell cooldown 16 s (STILL SWINGING), a ring inside it does nothing; 4 seats ride together
 //   F  fire       tell 2.5 s (grille step 1-3, THE FLOOR BURNS), burn 3.0 s, 6 per 0.5 s up to 36, no stagger (noKnock), a hoist rider is not burned; the burn's own i-frames do not swallow ticks;
-//                 NEVER starts on a bell cooldown, with the hoists up, in a wave (horn or guards in), under a geode; first at 12 s, then every 20 s; it opens each barracks wave
+//                 NEVER starts on a bell cooldown, with the hoists up, in a wave (horn or guards in), under a geode; first at Q5N.fire.first s (GQ5Q1-TUNE: 15), then every 20 s; it opens each barracks wave
 //   S  scorched   a blow / a plunge from a hoist during the burn = stunned 3.0 s x1.25, capped at 15% of her bar, the fire goes out, a told 3 s ward; all nine heroes; a floor blow never does; not in the tell
 //   L  lure       no lure, no grate, no charge; no galleries laid
 //   X  soak       600 s of everything: the bell always re-arms, the hoists always come down, the fire always ends, no rider ever below the floor (no soft-lock)
@@ -128,14 +128,14 @@ console.log('== H. the hoists');
 
 console.log('== F. THE THRONE FIRE');
 { const N = Q5N.fire; const mkw = o => { const w = make(o); w.e.mode = 'stand'; w.e.modeT = 99; w.e.hp = 2400; return w; };
-  // timing: first at 12 s, then every 20 s
+  // timing: first at N.first s, then every N.every s
   const w = mkw(); const starts = []; let prevFires = 0; w.e.modeT = 0; w.H.mech().cd = 0;
   for (let i = 0; i < 60 * 70; i++) { w.step(1); const f = w.H.q5().state().fires; if (f > prevFires) { prevFires = f; starts.push(w.st.time); } if (w.e.mode === 'stand') w.e.modeT = 0; }
-  ok(starts.length >= 3 && starts[0] >= 11.99 && starts[0] <= 15, 'the first fire starts at ' + starts[0].toFixed(2) + ' s (earliest 12 s; later only when she is mid another move)');
-  { const q = mkw(); calm(q); q.H.mech().cd = 0; let t0 = -1; for (let i = 0; i < 60 * 20 && t0 < 0; i++) { q.step(1); if (q.e.mode === 'stand') q.e.modeT = 0; if (q.e.mode === 'fireTell') t0 = q.st.time; } ok(t0 >= 11.99 && t0 < 12.2, 'calm hall: the first fire starts at exactly ' + t0.toFixed(2) + ' s'); }
+  ok(starts.length >= 3 && starts[0] >= N.first - 0.01 && starts[0] <= N.first + 3, 'the first fire starts at ' + starts[0].toFixed(2) + ' s (earliest ' + N.first + ' s; later only when she is mid another move)');
+  { const q = mkw(); calm(q); q.H.mech().cd = 0; let t0 = -1; for (let i = 0; i < 60 * (N.first + 10) && t0 < 0; i++) { q.step(1); if (q.e.mode === 'stand') q.e.modeT = 0; if (q.e.mode === 'fireTell') t0 = q.st.time; } ok(t0 >= N.first - 0.01 && t0 < N.first + 0.2, 'calm hall: the first fire starts at exactly ' + t0.toFixed(2) + ' s'); }
   ok(starts.slice(1).every((s, i) => s - starts[i] >= 19.99 && s - starts[i] <= 25), 'then every 20 s at the soonest: ' + starts.map(s => s.toFixed(1)).join(', '));
   // the tell and the burn, one by one
-  const v = mkw(); calm(v); v.H.mech().cd = 0; ok(toTell(v) && v.st.time < 12.5, 'she starts it'); ok(v.e.mode === 'fireTell' && Math.abs(v.e.modeT - N.tell) < 0.1 && v.st.said.includes('THE FLOOR BURNS') && v.st.said.includes('!!'), 'tell: fireTell ' + N.tell + ' s, "!!" + "THE FLOOR BURNS"');
+  const v = mkw(); calm(v); v.H.mech().cd = 0; ok(toTell(v) && v.st.time < N.first + 0.5, 'she starts it'); ok(v.e.mode === 'fireTell' && Math.abs(v.e.modeT - N.tell) < 0.1 && v.st.said.includes('THE FLOOR BURNS') && v.st.said.includes('!!'), 'tell: fireTell ' + N.tell + ' s, "!!" + "THE FLOOR BURNS"');
   v.st.said.length = 0; const gl = []; for (let i = 0; i < 140; i++) { v.step(1); gl.push(v.H.q5().state().fire && v.H.q5().state().fire.glow); } ok(v.st.said.includes('RING!'), 'the bell is told: "RING!" (bell ready, hoists down)'); ok(v.st.dmg.length === 0, 'nothing hurts during the tell'); ok(new Set(gl.filter(Boolean)).size >= 3, 'the floor grilles glow in three steps (glow ' + [...new Set(gl.filter(Boolean))].join('/') + ')');
   ok(toBurn(v), 'then she burns the floor'); const tB = v.H.q5().state().fire.tB; v.st.dmg.length = 0;
   v.step(Math.round(60 * 3.3)); const ticks = v.st.dmg.filter(d => d.o.name === 'THE THRONE FIRE');
@@ -150,13 +150,13 @@ console.log('== F. THE THRONE FIRE');
   const burnTotal = N.dmg * Math.round(N.burn / N.tick);
   ok(by(0) === 0 && by(1) === 0 && by(2) === burnTotal && by(3) === burnTotal, 'co-op: the two on lifts take 0, the two on the floor take ' + burnTotal + ' each (' + [0, 1, 2, 3].map(by).join('/') + ')');
   // never starts: the gates
-  const gate = (label, f) => { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * 12 - 5 - 3); f(g); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 0 && g.e.mode !== 'fireTell', 'no fire: ' + label); return g; };
+  const gate = (label, f) => { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * N.first - 5 - 3); f(g); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 0 && g.e.mode !== 'fireTell', 'no fire: ' + label); return g; };
   gate('the bell is on its cooldown', g => { g.H.mech().cd = g.st.time + 14; });
   gate('the hoists are up (rung 1 s before)', g => { g.H.mech().cd = 0; g.H.q5().onRing(g.e, g.bell); });
   gate("a wave's horn is running", g => { g.H.mech().cd = 0; g.H.mech().wave = { state: 'open', at: g.st.time + 5 }; });
   gate("a wave's guards are in", g => { g.H.mech().cd = 0; g.H.mech().wave = { state: 'in', closeAt: g.st.time + 5 }; });
   gate('her geode is in the air', g => { g.e.geodeCd = 0; g.H.test.geodeLob(); });
-  { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * 12 - 5 - 3); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 1, 'control: with the bell ready, the hoists down and nothing else, it starts'); }
+  { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * N.first - 5 - 3); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 1, 'control: with the bell ready, the hoists down and nothing else, it starts'); }
   // it opens each barracks wave: fire first, then the horn
   const wv = mkw(); calm(wv); wv.H.mech().cd = 0; wv.step(60 * 3); wv.e.hp = Math.round(2400 * 0.6); wv.e.mode = 'stand'; wv.e.modeT = 0;
   let sawFire = -1, sawWave = -1; for (let i = 0; i < 60 * 25; i++) { wv.step(1); if (sawFire < 0 && wv.e.mode === 'fireTell') sawFire = wv.st.time; if (sawWave < 0 && wv.H.mech().wave) sawWave = wv.st.time; if (wv.e.mode === 'stand') wv.e.modeT = 0; }

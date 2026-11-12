@@ -21,7 +21,7 @@ export const Q5 = gq5q1On();
 export const Q5N = {
   bellCd: 16,
   hoist: { cols: [7, 13, 20], w: 4, rows: 2, rise: 0.6, hold: 8.0, warn: 6.5, sink: 0.5 },   // the plan's h5-8 / h19-22 / h34-37, moved: see the report (the east hearth moved 84 px west; the centre lift clears the bell; the dais starts at h29)
-  fire: { tell: 2.5, burn: 3.0, tick: 0.5, dmg: 5, first: 12, every: 20, run: 260, waveWait: 17, spotW: 72 },   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 3/18 = 17% [6-39] LOW, knight/pyro zero - THE THRONE FIRE was the dominant/often sole damage source in nearly every death)
+  fire: { tell: 2.5, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 20, run: 260, waveWait: 17, spotW: 72 },   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 17%->11%, no-move, kept). knob 2: first 12 -> 15 (more time to reach a hoist before the first, currently-unanswerable, fire)
   scorch: { stun: 3.0, mul: 1.25, cap: 0.15, ward: 3.0, grace: 1.2 },
 };
 /* PURE: how far up the hoists are at `age` s after the ring (rows 0..rows). Rise = two steps over 0.6 s; sink = two steps over 0.5 s ending at hold + sink. */
