@@ -27,18 +27,18 @@ export const GP = {
   trinket: { tell: 0.5, n: [2, 3], dmg: P4 ? 6 : 9 /* (GQ4TUNE-t: 7 -> 6) (GQ4TUNE r2, flag ON only: 9 -> 7; r1 crown:mini n=12/hero 20/36 = 56%, trinkets 87 dmg a fight) */, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 6, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
-  guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
-  bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
+  guards: { at: [0.75, 0.4], gapMin: 14, horn: 3.0 /* (GQ5FIX 11-12: 6.0 -> 3.0, Daniel: the alarms hold the gates too long) */, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
+  bell: { hang: 7 /* (GQ5FIX 11-12: 4 -> 7 rows under the roof: the bell body hangs at y 236-253, a standing jump from the belfry landing (feet 304, rise 48+) reaches it; Daniel could not hit it at 176+) */, cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: P4 ? 14 : 18 /* (GQ4TUNE-t, flag ON only: 18 -> 14) */, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: P4 ? 16 : 20 /* (GQ4TUNE r4, flag ON only: 20 -> 16) */, speed: 220 },
   /* (claude/gq4p-d, GQ4 plan sec 2) THE GATES: 'GUARDS!' tell 1.0 s, the open gates' lanterns burn 3.5 s, then one goblin per open gate (never more than maxAlive alive); THE KEY (tell 1.2 s; a blow in it = STAGGERED 1.5 s);
      'ALL GATES!' (tell 1.5 s, 4 ads +1 per extra seat, cap 6; she is INVINCIBLE until the last one falls, 40 s failsafe), then DAZED 2.0 s x1.15 and phase 2 */
-  gate: { callTell: 1.0, lantern: 3.5, cd: [14, 11], firstCall: 7, maxAlive: 2 /* (GQ4TUNE-t: 3 -> 2) */, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 15 /* (GQ4TUNE-t: 30 -> 15; r4: 40 -> 30) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
+  gate: { callTell: 1.0, lantern: 2.0 /* (GQ5FIX 11-12: 3.5 -> 2.0: the called goblins come through sooner) */, cd: [14, 11], firstCall: 7, maxAlive: 2 /* (GQ4TUNE-t: 3 -> 2) */, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 15 /* (GQ4TUNE-t: 30 -> 15; r4: 40 -> 30) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
   dazeMul: 1.15, dizzyMul: 1.0,
   /* THE PIROUETTE (phase 2): tell 0.7 s, a skid line drawn along her path, two spinning passes at 260 px/s, rapier at shin height (jump it or roll through), then DIZZY 1.4 s; cd 9 s */
   pir: { tell: 0.7, speed: 260, len: 300, min: 120, dmg: 10, /* (GQ4TUNE r1: 14 -> 10; baseline n=6/hero 8/18 = 44%) */ h: 10, reach: 9, dizzy: 1.4, cd: 9 },
   tantrum: 1.0, escape: 2.0, dying: { reel: 0.3, ring: 0.9, collapse: 0.6, answer: 0.4 },   /* (gq3 item 2) she DIES: reels, kneels and rings her brass handbell 3 weak times, collapses; the Great Hall's bell answers 0.4 s later */
-  chase: { lead: 150, run: 175, hold: 260, ring: 0.6, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
+  chase: { lead: 150, run: 175, hold: 260, ring: 0.6, horn: 3.0 /* (GQ5FIX 11-12: 6.0 -> 3.0: the alarm towers' guard gate waits 3 s, not 6) */, crank: 3, win: 2.0, closeAfter: 1.0 },
   reh: { cd: 12, queue: 1.0, glow: 0.9, walk: 110, walkMax: 3.5, pin: 2.5, pinMul: 1.15, under: 14, hornAfter: 4, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
 };
 export const CHAINS = P4 ? {   /* (claude/gq4p-d) the key joins phase one; the pirouette twice in phase two */
@@ -109,7 +109,7 @@ export function makeGoblinPrincessHands(ctx) {
   const mkGates = Ar => { if (!P4 || !Ar || !Ar.gq4Gates) return null; const o = {}, floor = Ar.floor;
     for (const k of ['W', 'E', 'U']) { const d = Ar.gq4Gates[k], G = BW.gateNew(k, k !== 'E');
       Object.assign(G, { x: d.x * TS + 8, top: d.y0 * TS, bot: (d.y1 + 1) * TS, pinX: d.pin[0] * TS + 8, pinY: d.pin[1] * TS + 8, spawnCol: d.x, spawnRow: k === 'U' ? d.y1 : Math.floor(floor / TS) - 1, face: k === 'W' ? 1 : -1, col: k === 'W' ? '#e0c04a' : k === 'E' ? '#e04a6a' : '#4ac0e0' });
-      G.box = { l: G.pinX - 10, r: G.pinX + 10, t: (k === 'U' ? d.pin[1] : d.pin[1] - 2) * TS, b: floor }; G.keyX = Math.max(Ar.x0 + 14, Math.min(Ar.x1 - 3 * TS - 12, G.x + (k === 'W' ? -22 : k === 'E' ? 22 : -40))); o[k] = G; }
+      G.ceil = (Ar.y0 || 0) + TS /* (GQ5FIX 11-12) the pin's chain hangs from the ROOF's underside (its ring-plate used to hang in open air, row 17 / 12) */; G.box = { l: G.pinX - 10, r: G.pinX + 10, t: (k === 'U' ? d.pin[1] : d.pin[1] - 2) * TS, b: floor }; G.keyX = Math.max(Ar.x0 + 14, Math.min(Ar.x1 - 3 * TS - 12, G.x + (k === 'W' ? -22 : k === 'E' ? 22 : -40))); o[k] = G; }
     return o; };
   H.spawn = base => {
     const Ar = A();
@@ -241,7 +241,7 @@ export function makeGoblinPrincessHands(ctx) {
   function phaseTwo(e, cracked) {
     const t = now(); F.ph = 2; e.phase = 2; F.chain = CHAINS[2][0].slice(); F.step = 0; F.cycle = 0; F.bolt = null; F.addDone = true; F.add = null; F.callAt = t + GP.gate.cd[1];
     for (const k in F.G) BW.gateSlam(F.G[k], t); sfx('gateDrop'); ctx.shake(5);
-    set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'THE GATES SLAM SHUT: A TANTRUM!', '#ff6b6b'); ctx.music && ctx.music('goblinroyal');
+    set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'THE GATES SLAM SHUT: A TANTRUM!', '#ff6b6b'); ctx.music && ctx.music('king');
   }
   /* 'GUARDS!': the handbell at 70 / 35 %; her guardroom door rises and the horn runs; the winch by it keeps them in */
   function guardsCall(e, idx) {
@@ -278,7 +278,8 @@ export function makeGoblinPrincessHands(ctx) {
   /* THE TOWER BELL: the rope on the floor's west side; any seat's blow rings it */
   function stepBell(e) {
     const Ar = F.A; if (!Ar.rope) return; const t = now();
-    if (blowOn({ l: Ar.rope - 8, r: Ar.rope + 8, t: fl() - 34, b: fl() }, F.ropeKey)) { F.ropeKey = {};
+    const bb = Ar.grate ? { l: Ar.grate.col * TS + 8 - 12, r: Ar.grate.col * TS + 8 + 13, t: (Ar.grate.gy0 + GP.bell.hang) * TS, b: (Ar.grate.gy0 + GP.bell.hang) * TS + 30 } : null;   /* (GQ5FIX) the BELL itself is a target too: a jump blow from the belfry landing */
+    if (blowOn({ l: Ar.rope - 8, r: Ar.rope + 8, t: fl() - 34, b: fl() }, F.ropeKey) || (bb && blowOn(bb, F.bellKey || (F.bellKey = {})))) { F.ropeKey = {}; F.bellKey = {};
       if (BW.ringBell(F.M, t, GP.bell.cd, GP.bell.queue) === 'swinging') { ctx.number(Ar.rope, fl() - 40, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); }
       else { F.n.rings++; ctx.number(Ar.rope, fl() - 40, 'YOU RING THE TOWER BELL', '#ffd36b'); sfx('seaBell'); sfx('clank'); ctx.shake(2); } }
     if (!F.bolt && SAFE.has(e.mode) && BW.ringFresh(F.M, t)) { F.M.queued = 0; boltBegin(e); }
@@ -316,7 +317,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (e.mode === 'escape') { stepEscape(e, dt); return; }
     if (e.mode === 'dying') { stepDying(e, dt); return; }
     if (F.ph === 1 && e.hp <= e.maxHp * 0.5 && F.G && !F.add && !F.addDone) addBegin(e);
-    else if (F.ph === 1 && !F.G && e.hp <= e.maxHp * 0.5) { F.ph = 2; e.phase = 2; F.chain = CHAINS[2][0].slice(); F.step = 0; F.cycle = 0; F.bolt = null; set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'SHE THROWS A TANTRUM: NOT FAIR!', '#ff6b6b'); ctx.shake(4); ctx.music && ctx.music('goblinroyal'); }
+    else if (F.ph === 1 && !F.G && e.hp <= e.maxHp * 0.5) { F.ph = 2; e.phase = 2; F.chain = CHAINS[2][0].slice(); F.step = 0; F.cycle = 0; F.bolt = null; set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'SHE THROWS A TANTRUM: NOT FAIR!', '#ff6b6b'); ctx.shake(4); ctx.music && ctx.music('king'); }
     for (let i = 0; i < GP.guards.at.length; i++) if (e.hp <= e.maxHp * GP.guards.at[i] && !F.waves.has(i) && t - F.lastWaveT >= GP.guards.gapMin && SAFE.has(e.mode) && !F.wave && !F.G) { F.waves.add(i); guardsCall(e, i); break; }
     stepGems(e, dt); stepTiara(e, dt); stepRipples(e, dt); stepRelease(e); stepWave(e); stepBell(e); if (F.G) stepGates(e);
     e.hiding = SAFE.has(e.mode) && hidingNow(e, P); if (e.hiding && !F.said.hide) { F.said.hide = 1; F.n.hides++; ctx.number(e.x, e.y - 50, 'SHE HIDES BEHIND HER GUARD', '#c9c9d6'); }
@@ -543,7 +544,7 @@ export function makeGoblinPrincessHands(ctx) {
       guardSet(g, W, Q.door, Q.winch, fy, GP.reh.horn, cx, time);
       if (RH && RH.glowK > 0) HC2A.drawGrateFx(g, { gate: Q.grate.col, gy0: Q.grate.gy0, gy1: Q.grate.gy1 }, cx, cy, TS, time, RH.glowK); }
     const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx), ceil = R((Ar.y0 || 0) - cy) + TS, sw = swingOf(F && F.M, time), e = live();
-      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); const by0 = R((Ar.grate.gy0 + 4) * TS - cy); g.fillStyle = '#8a8aa0'; for (let yy = ceil + 3; yy < by0; yy += 3) g.fillRect(bx, yy, 1, 2); HC3A.drawBellAt(g, bx, by0, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time);   /* (claude/hc3art) hung 4 rows down on a chain so the camera sees it */ g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
+      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); const by0 = R((Ar.grate.gy0 + GP.bell.hang) * TS - cy); g.fillStyle = '#8a8aa0'; for (let yy = ceil + 3; yy < by0; yy += 3) g.fillRect(bx, yy, 1, 2); HC3A.drawBellAt(g, bx, by0, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time);   /* (claude/hc3art) hung 4 rows down on a chain so the camera sees it */ g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
       HC3A.drawRope(g, rx, ceil, fy, sw, time);
       if (Ar.door && !(P4 && Ar.gq4Gates)) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
       else if (Ar.winch) HC3A.drawWinchBox(g, R(Ar.winch - cx), fy, R(Ar.door - cx), 0, 0, GP.guards.crank, false, time);   /* (gq4p-d) the guardroom door is retired (the gates replace it); the winch is the grate's release */

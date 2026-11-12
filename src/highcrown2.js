@@ -383,7 +383,7 @@ export function highcrownThree(R, { T, TS, insertColumns }) {
   R.calm.push([b0, b1, 0, B.BT_ROOF]);
   R.hcDeco.push({ k: 'bellrope', x: B.ROPE, y: S - 3 }, ...(P4 && G4 ? [] : [{ k: 'guarddoor', x: B.DOOR, y: S, id: 'bt' }]), { k: 'gpwinch', x: B.WINCH, y: S, id: 'bt' }, { k: 'hatch', x: B.HATCH, y: B.BT_ROOF + 1 });
   R.mini = { x0: (b0 + 1) * TS, x1: b1 * TS, floor: (S + 1) * TS, y0: B.BT_ROOF * TS, y1: (S + 2) * TS, trigger: (b0 + 4) * TS, wallL: b0, wallR: b1, gate: b1, boss: 'gprincess',
-    name: 'THE GOBLIN PRINCESS', music: 'goblinroyal', start: [b0 + 2, S],
+    name: 'THE GOBLIN PRINCESS', music: 'king' /* (GQ5FIX 11-12, Daniel: the Princess's fight music does not fit) the synth 'goblinroyal' -> 'king' ("Great Boss", Spring Spring, CC0: heavy, regal, percussive; was the Goblin King's own theme) */, start: [b0 + 2, S],
     land: { x0: B.LAND[0] * TS, x1: (B.LAND[1] + 1) * TS, y: B.LAND_ROW * TS }, grate: { col: B.GRATE, gy0: B.BT_ROOF + 1, gy1: B.LAND_ROW - 1 },
     rope: B.ROPE * TS + 8, door: B.DOOR * TS + 8, doorCol: B.DOOR, winch: B.WINCH * TS + 8, hatch: B.HATCH * TS + 8,
     gq4Gates: G4 ? B.ROOM46.gates : null };   /* (claude/gq4p-d) THE THREE GATES (tile coords: portcullis col x rows y0-y1, chain pin tile): src/goblin-princess.js reads them when GQ4P_SHIPS is on */

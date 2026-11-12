@@ -3216,7 +3216,7 @@ function highcrown() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 1, y: 63 }, pools: [], falls: [], moversExtra: [], interiors,
     reachExact: true, // the carts are the Forgemaster's props, not a way around the castle
-    duskStart: -1, duskLen: 1, music: 'highcrown', night: true, glowNight: true, nightA: 0.3,   /* (L.mini is laid with his armoury, in highcrownWhole) */
+    duskStart: -1, duskLen: 1, music: 'warcairn' /* (GQ5FIX 11-12, Daniel: the climb music does not fit) 'highcrown' ("Throne Room", slow and hall-like) -> 'warcairn' ("war theme", Spring Spring, CC0: a martial, driving level track); 'highcrown' stays in the table */, night: true, glowNight: true, nightA: 0.3,   /* (L.mini is laid with his armoury, in highcrownWhole) */
 
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'beam', haze: 'rgba(150,140,190,0.14)',   /* three hundred ledges inside a castle, and every one of them was a log off the forest floor */
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',

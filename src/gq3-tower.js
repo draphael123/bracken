@@ -106,7 +106,9 @@ export function towerLay(R, { T, TS }) {
   const lr = G4 ? F[1] - 3 : 66; plat((787 + d), (792 + d), lr); (R.routeSupports).push({ x: (787 + d), y: lr, bottom: lr + 3, kind: 'hcpier' }, { x: (792 + d), y: lr, bottom: lr + 3, kind: 'hcpier' });
   for (const [t, x, y] of TW.FOES) { const o = { face: -1 }; if (t === 'gobgeo') Object.assign(o, { leash: 8, sight: 300 });
     if (t === 'gobknight') ent('hedgeknight', x, y, { ...o, cnSkin: 'gobknight' }); else if (t === 'firemage') ent('gobmage', x, y, { ...o, cnSkin: 'firemage' }); else ent(t, x, y, o); }
-  for (let k = 0; k < F.length; k++) { ent('torch', s0 + 3, F[k] - 1); ent('torch', s1 - 3, F[k] - 1); }
+  /* (GQ5FIX 11-12) a torch stands on its storey's floor: where the stairwell gap or a ladder column is under it, it slides one column in until there is plank under it (they hung in the air beside the ladders) */
+  const ladCols = new Set(TW.LADDERS.map(l => l[0])), stand = (x, row, dir) => { let c = x; for (let i = 0; i < 8; i++, c += dir) { const v = R.grid[(row + 1) * R.W + c]; if (v !== T.AIR && v !== T.NET && !ladCols.has(c)) return c; } return x; };
+  for (let k = 0; k < F.length; k++) { ent('torch', stand(s0 + 3, F[k] - 1, 1), F[k] - 1); ent('torch', stand(s1 - 3, F[k] - 1, -1), F[k] - 1); }
   if (G4) for (let k = 0; k < F.length; k++) coins([790 + d, F[k] - 2], [800 + d, F[k] - 2]);
   else coins([(790 + d), 79], [(800 + d), 79], [(800 + d), 67], [(790 + d), 55], [(800 + d), 43], [(790 + d), 31], [(800 + d), 31]);
   if (G4) gq4Outside(R, TW, { T, TS, fill, air, block, plat, rungs, ent, coins });

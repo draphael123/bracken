@@ -8793,11 +8793,12 @@ function dcHazard(x, y) {
 /* THE LAST SAFE FOOTING: standing still on something that stays, for a fifth of a second. A bundle with no foe to carry it is put HERE when
    the place you died is not a place to lie (a pit, spikes, water, the air, a raft), and if there is none the shrine you woke at. */
 function dcNoteFooting() {
-  if (P.ground && !P.onMover && !P.dead && !(P.down > 0) && !P.swim && !dcHazard(P.x, P.y)) { P.dcGT = (P.dcGT || 0) + 1; if (P.dcGT > 12) P.dcSafe = { x: P.x, y: P.y, L }; }
+  if (P.ground && !dcRung(P) && !P.onMover && !P.dead && !(P.down > 0) && !P.swim && !dcHazard(P.x, P.y)) { P.dcGT = (P.dcGT || 0) + 1; if (P.dcGT > 12) P.dcSafe = { x: P.x, y: P.y, L }; }
   else if (!P.ground) P.dcGT = 0;
 }
+const dcRung = p => !!p.climb || (tileAt(Math.floor(p.x / TS), Math.floor((p.y + 2) / TS)) === T.NET && !isSolid(Math.floor(p.x / TS), Math.floor((p.y + 2) / TS)));   /* on a ladder (a rung is no footing) */
 function dcSpot(p) {
-  if (((p.ground && !p.onMover) || p.swim) && !dcHazard(p.x, p.y)) return { x: p.x, y: p.y };   /* (in a swimming water a place is where he was: he swam there, and can again) */
+  if (((p.ground && !dcRung(p) && !p.onMover) || p.swim) && !dcHazard(p.x, p.y)) return { x: p.x, y: p.y };   /* (GQ5LOOK 11-12) a rung is no footing: a hero felled mid-ladder left the bundle hanging in the air (Daniel 11-12, Highcrown B4): it goes to the last footing */   /* (in a swimming water a place is where he was: he swam there, and can again) */
   if (p.dcSafe && p.dcSafe.L === L && !dcHazard(p.dcSafe.x, p.dcSafe.y)) return { x: p.dcSafe.x, y: p.dcSafe.y };
   return { x: checkpoint.x, y: checkpoint.y };
 }

@@ -15,7 +15,7 @@ export const BELLGATE_SAY = { rung: 'THE BELL: THEY RUN TO IT', drop: 'THE BELL-
 
 /* the prop, from its level ent: { t: 'gatebell', x, y, id, gate, gy0, gy1 } (tiles) */
 export function makeGateBell(e, px, py, TS) {
-  return { t: 'gatebell', x: px, y: py, id: e.id, gate: e.gate, gx: e.gate * TS + 8, gy0: e.gy0, gy1: e.gy1, ringT: -1, tolled: 0, rewind: 0, rings: [], down: 0, up: false, took: 0 };
+  return { t: 'gatebell', x: px, y: py, id: e.id, gate: e.gate, gx: e.gate * TS + 8, gy0: e.gy0, gy1: e.gy1, ringT: -1, tolled: 0, rewind: 0, rings: [], down: 0, hold: e.hold > 0 ? e.hold : BELLGATE.hold, up: false, took: 0 };
 }
 /* is this foe under the gate's column (its feet in the gate's rows)? */
 export const underGate = (e, pr, TS) => !!e && e.alive && Math.abs(e.x - pr.gx) < BELLGATE.catchX + (e.w || 10) / 2 && e.y > pr.gy0 * TS && e.y - (e.h || 12) < (pr.gy1 + 1) * TS;
@@ -32,7 +32,7 @@ export function gateBellStep(pr, dt, io) {
     if (ev === 'toll') { io.sfx('seaBell'); continue; }
     /* THE THIRD TOLL: the gate drops on whoever stands under it. Not on you - you rang it: a hero in its column is put beside it */
     const P = io.P; if (P && !P.dead && Math.abs(P.x - pr.gx) < 12 && P.y > pr.gy0 * TS && P.y - 14 < (pr.gy1 + 1) * TS) P.x = pr.gx + (P.x < pr.gx ? -13 : 13);
-    io.closeGate(pr.gate, pr.gy0, pr.gy1); pr.down = BELLGATE.hold; let n = 0;
+    io.closeGate(pr.gate, pr.gy0, pr.gy1); pr.down = pr.hold ?? BELLGATE.hold; let n = 0;
     for (const e of io.enemies) if (!e.maxHp && underGate(e, pr, TS)) { io.crush(e, pr.gx); n++; }
     for (const e of io.enemies) if (e.answerX === pr.gx) e.answerT = Math.min(e.answerT || 0, 0.4);   /* the bell is done: the rest stop running and turn on you */
     pr.took += n; io.sfx('crack'); io.say(pr.gx, pr.gy0 * TS - 20, n ? BELLGATE_SAY.takes(n) : BELLGATE_SAY.drop, n ? '#8fd160' : '#ffd36b');
