@@ -2002,6 +2002,7 @@ const CAST = {
   spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
   wight: { kit: 'zom', rate: 0.9, lp: 2200 }, drowned: { kit: 'zom', rate: 0.8, lp: 1600 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
 };
+CAST.hookjack = { kit: 'm2', rate: 1.0, mat: 'cloth', human: true }; CAST.skyhook = { kit: 'm4', rate: 0.82, lp: 1500, mat: 'mail', human: true, boss: true };   /* (claude/hllive) THE HOOKJACK and SKYHOOK are MEN (the line crews): the human kits (a rigger's bark; the captain's low, plated one), so both have a hurt and a death voice */
 /* (claude/audiovoices 10-18) THE ~120 FOES THAT HAD NO VOICE: every bestiary type now has a hurt AND a death, by family. People take the men's kits
    (m1-m6, hd) or the pack's evil voices (ev, for priests, mystics, snuffers); the dead take the zombie takes (zb, Little Robot); scorpions, scarabs,
    spiders and little things take sc; big beasts and the worm take di; imps and djinn take dm; goblins keep the goblin throats (gobbig); the wooden,

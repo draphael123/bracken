@@ -39,7 +39,7 @@ ok(/!roadKept\(PROG, lv\)/.test(main), "levelLocked reads roadKept (the migratio
 ok(/\(LEVELS\.find\(l => l\.id === 'highlines'\) \|\| \{\}\)\.needs\) \{ CRAG_NODES\.splice/.test(main), 'the map node goes in only while the row has `needs` (the road is open at import)');
 ok(/if \(ROAD_OPEN\.highlines\) \{ BOSS_T\.push\('skyhook'\); BEASTS\.push\(/.test(main) && /if \(ROAD_OPEN\.highlines\) Object\.assign\(SPR, bakeLineCrewCards\(/.test(main), 'the two bestiary cards and their portraits are behind the flag');
 
-if (ci < 0) {
+if (ci < 0 && !ROAD_OPEN.highlines) {   /* (run bare: both halves; run under tools/hl-on.mjs: the flag-on half only) */
   console.log('== THE HIGH LINES ROAD, FLAG OFF (ROAD_OPEN.highlines = ' + ROAD_OPEN.highlines + ')');
   ok(ROAD_OPEN.highlines === false && HL_SHIPS === false, 'the ship flag is off and nothing turns it on here (ROAD_OPEN.highlines false)');
   ok(hl.hidden === true && hl.dev === true && !hl.needs, 'flag OFF: the High Lines are hidden + dev with no needs (reached by ?level=highlines)');
@@ -144,4 +144,5 @@ for (const [name, P0] of CASES) {
     ok(s.w > 26 && s.h <= 52 && s.ay <= s.h && s.ax <= s.w, k + ': ' + s.w + 'x' + s.h + ' is drawn x1 by the page (width > 26) and fits its 46-px box with the feet at ' + s.ay);
     ok(s.R.every(c => bbox(c).y1 <= s.ay + 2), k + ': nothing is drawn more than a boot sole (2 px) below the feet line'); }
   ok(Object.keys(S).join() === 'hookjackCard,skyhookCard', 'the keys the page reads: SPR.hookjackCard, SPR.skyhookCard'); }
+{ const { SFX } = await import('../src/audio.js'); for (const t of ['hookjack', 'skyhook']) ok(!!SFX.hurtOf(t) && !!SFX.dieOf(t), t + ' has a hurt and a death voice (src/audio.js CAST: the human kits)'); }
 console.log('THE HIGH LINES ROAD (flag on): ' + n + ' checks so far');
