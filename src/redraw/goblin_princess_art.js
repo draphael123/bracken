@@ -15,8 +15,8 @@ import { OUT } from '../art.js';
 
 export const GPF = { stand: 0, stand2: 1, run: 2, lungeTell: 6, lunge: 7, flurryTell: 8, poke: 9, trinketTell: 11, trinket: 12, fanTell: 13, fan: 14, hopTell: 15, hop: 16, tiaraTell: 17, tiara: 18,
   stompTell: 19, stomp: 20, preen: 21, pinned: 23, stunned: 24, stagger: 25, bolt: 26, hide: 28, perch: 29, escape: 30, defeat: 31, bell: 32,
-  reel: 33, kneelRing: 34, collapse: 36, hurt: 38, body: 39 };   /* (gq3art) 33 reel, 34-35 kneel-ringing, 36-37 collapse, 38 hurt (moved up: main.js shows length-2 as the hurt frame), 39 the body (last) */
-export const GP_FRAMES = 40;
+  reel: 33, kneelRing: 34, collapse: 36, keyTurn: 38, keyTurn2: 39, pirTell: 40, pir1: 41, pir2: 42, dizzy: 43, dizzy2: 44, hurt: 45, body: 46 };   /* (gq4art) 38-44 the Gates pass: key-turn x2, pirouette (tell + 2 spins), dizzy x2; hurt and body move to length-2 / last again */   /* (gq3art) 33 reel, 34-35 kneel-ringing, 36-37 collapse, 38 hurt (moved up: main.js shows length-2 as the hurt frame), 39 the body (last) */
+export const GP_FRAMES = 47;
 export const GPC = { skin: '#6faa4a', skinL: '#92cf63', skinD: '#4f8236', gown: '#b02a78', gownL: '#d84a9c', gownD: '#7a1f5a', gold: '#e0c04a', goldL: '#fff6c8', goldD: '#a8841c',
   hair: '#241434', hairL: '#5a3a78', purple: '#7a3aa0', shoe: '#f6a8d0', steel: '#c9d1dc', steelL: '#ffffff', fan: '#f6d6e8', fanD: '#d890b8', gem: ['#ff4a6a', '#4ad0ff', '#7aff8a', '#ffd04a', '#c97aff'],
   eye: '#fff6e8', pupil: '#2a1020', blush: '#e86a8a', tear: '#9ad8ff' };
@@ -300,8 +300,32 @@ function handbell(g, x, y) {
   for (const [dx, dy] of [[-10, 0], [-11, 5], [10, 0], [11, 5], [-9, -4], [9, -4]]) { rect(g, bx + dx, by2 + dy, 1, 2, '#fff6c8'); }
 }
 
+
+/* (gq4art) THE GATES PASS: THE KEY (she crouches at a gate and turns a great iron key twice), THE PIROUETTE (heel-click tell, two passes of a spin, rapier out low at shin height), DIZZY (spiral eyes, stars, a wobble) */
+function ironKey(g, x, y, turn) {   // a big wards-and-bow key, drawn in her hand: turn 0 upright, 1 quarter-turned (the bow flat)
+  if (!turn) { rect(g, x - 1, y - 13, 3, 12, '#4a4a5a'); rect(g, x - 1, y - 13, 1, 12, '#9a9ab0'); rect(g, x - 3, y - 16, 7, 5, '#2a2030'); rect(g, x - 2, y - 15, 5, 3, '#b0a070'); rect(g, x - 1, y - 14, 3, 1, '#2a2030');
+    rect(g, x + 2, y - 4, 4, 2, '#4a4a5a'); rect(g, x + 2, y - 8, 3, 2, '#4a4a5a'); px(g, x - 1, y - 15, '#fff6c8'); }
+  else { rect(g, x - 8, y - 4, 13, 3, '#4a4a5a'); rect(g, x - 8, y - 4, 13, 1, '#9a9ab0'); rect(g, x - 12, y - 6, 5, 7, '#2a2030'); rect(g, x - 11, y - 5, 3, 5, '#b0a070'); rect(g, x + 3, y - 1, 2, 4, '#4a4a5a'); rect(g, x, y - 1, 2, 3, '#4a4a5a'); px(g, x - 11, y - 5, '#fff6c8'); } }
+function pose4(f) {
+  switch (f) {
+    case 38: return { crouch: 4, lean: 5, legs: [5, -4], fa: [11, 3], ba: [-5, 6], blade: null, eyes: 'wide', mouth: 'grin', ears: 1, skirt: 2, fx: (g, o) => ironKey(g, o.fhx + 1, o.fhy + 3, 0) };
+    case 39: return { crouch: 4, lean: 6, legs: [5, -4], fa: [11, 4], ba: [-5, 6], blade: null, eyes: 'smug', mouth: 'smirk', ears: 1, skirt: 2, fx: (g, o) => { ironKey(g, o.fhx + 1, o.fhy + 3, 1); px(g, o.fhx + 12, o.fhy - 6, '#fff6c8'); rect(g, o.fhx + 10, o.fhy - 3, 3, 1, '#ffd36b'); } };
+    case 40: return { crouch: 1, lean: 0, legs: [2, -2], fa: [6, 2], ba: [-6, 2], blade: [8, 2, 22, 4], eyes: 'angry', mouth: 'grin', ears: 1, flush: 1, skirt: 3, flare: 2, fx: (g, o) => { rect(g, o.hx - 7, G - 3, 5, 1, '#fff'); rect(g, o.hx + 4, G - 3, 5, 1, '#fff'); px(g, o.hx - 2, G - 5, '#ffd36b'); px(g, o.hx + 3, G - 5, '#ffd36b'); } };
+    case 41: return { lean: 3, legs: [4, -6], fa: [13, 4], ba: [-12, 4], blade: [9, 4, 25, 9], eyes: 'shut', mouth: 'shout', ears: 1, skirt: 7, flare: 6, fly: 2, tilt: -1, ph: 0.2,
+      fx: (g, o) => { g.globalAlpha = 0.55; for (let i = 0; i < 5; i++) rect(g, o.hx - 28 - i * 2, o.hy + 6 + i * 6, 16 + i * 2, 1, '#fff'); g.globalAlpha = 1; rect(g, o.fhx + 12, o.fhy + 5, 6, 1, '#ffffff'); } };
+    case 42: return { lean: -3, legs: [-5, 5], fa: [-13, 3], ba: [12, 4], blade: [-9, 4, -25, 9], eyes: 'shut', mouth: 'shout', ears: 1, skirt: -7, flare: 6, fly: 2, tilt: 1, ph: 0.6,
+      fx: (g, o) => { g.globalAlpha = 0.55; for (let i = 0; i < 5; i++) rect(g, o.hx + 14 + i * 2, o.hy + 6 + i * 6, 16 + i * 2, 1, '#fff'); g.globalAlpha = 1; } };
+    case 43: return { crouch: 2, lean: -2, legs: [-3, 3], fa: [4, 5], ba: [-4, 4], blade: null, eyes: 'spiral', mouth: 'wail', ears: 2, tilt: -2, skirt: 3, flare: 3, tiara: 'crooked',
+      fx: (g, o) => { for (let i = 0; i < 4; i++) { const a = i * 1.6, x = Math.round(o.hx + Math.cos(a) * 14), y = Math.round(o.hy - 18 + Math.sin(a) * 4); rect(g, x - 1, y, 4, 1, C.gold); rect(g, x, y - 1, 1, 3, C.goldL); } } };
+    case 44: return { crouch: 3, lean: 2, legs: [-4, 4], fa: [6, 4], ba: [-3, 5], blade: null, eyes: 'spiral', mouth: 'pout', ears: 2, tilt: 2, skirt: 2, flare: 3, tiara: 'crooked',
+      fx: (g, o) => { for (let i = 0; i < 4; i++) { const a = i * 1.6 + 0.8, x = Math.round(o.hx + Math.cos(a) * 14), y = Math.round(o.hy - 18 + Math.sin(a) * 4); rect(g, x - 1, y, 4, 1, C.gold); rect(g, x, y - 1, 1, 3, C.goldL); } } };
+  }
+}
+
 /* the pose of every frame */
 function pose(f) {
+  if (f >= 38 && f <= 44) return pose4(f);
+  if (f === 45) f = 38; else if (f === 46) f = 39;
   const rp = (i) => ({ by: i & 1 ? 2 : 0, legs: [[6, -6], [2, -2], [-6, 6], [-2, 2]][i], lean: 3 + (i & 1), skirt: [-3, -1, -3, -1][i], flare: 2 + (i & 1), fa: [[6, 3], [6, 4], [7, 5], [6, 4]][i], ba: [[-7, 2], [-6, 4], [-4, 5], [-6, 4]][i], blade: [8, -2, 17, -7], fan: 0, fly: 2 + (i & 1), lift: [0, 3, 5, 0][i], liftB: [5, 0, 0, 3][i], hemTilt: [2, 0, -2, 0][i], mouth: 'smirk', eyes: 'smug', ph: i * 0.25 });
   switch (f) {
     case 0: return { legs: [1, -1], fa: [6, 4], ba: [-5, 6], blade: [8, -2, 18, -8], fan: 0, ears: 0, eyes: 'smug', mouth: 'smirk', browUp: 1 };
@@ -385,6 +409,8 @@ export function gpFrame(e) {
     case 'hopTell': return GPF.hopTell; case 'hop': return GPF.hop;
     case 'tiaraTell': return GPF.tiaraTell; case 'tiara': case 'tiaraWait': return GPF.tiara;
     case 'stompTell': return GPF.stompTell; case 'stomp': return GPF.stomp;
+    case 'keyTell': return GPF.keyTurn; case 'keyTurn': return GPF.keyTurn + (Math.floor(a * 7) & 1);   /* (gq4art) */
+    case 'pirouetteTell': return GPF.pirTell; case 'pirouette': return GPF.pir1 + (Math.floor(a * 14) & 1); case 'dizzy': return GPF.dizzy + (Math.floor(a * 4) & 1);
     case 'preen': return GPF.preen + (Math.floor(a * 3) & 1);
     case 'pinned': return GPF.pinned; case 'stunned': return GPF.stunned; case 'stagger': return GPF.stagger;
     case 'bolt': return GPF.bolt + (A & 1); case 'escape': return GPF.escape; case 'dying': { const t = e.dyT || 0; if (t < 0.3) return GPF.reel; if (t < 1.2) return GPF.kneelRing + ((((t - 0.3) % 0.3) < 0.13) ? 1 : 0); return t < 1.5 ? GPF.collapse : GPF.collapse + 1; }   /* (gq3art) reel, kneel-ringing (a ring every 0.3 s: the bell swings out for 0.13 s), collapse */ case 'hide': case 'ducked': return GPF.hide; case 'perch': return GPF.perch;

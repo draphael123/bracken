@@ -9,6 +9,7 @@
 //   struck), and him: STAGGERED, his orbit dropped. Walls stop it. Nothing here writes the grid except a smashed rocklock (as the game's other broken things: kept for the attempt).
 // main.js calls: load, clear, owns, spawn, foeUpdate, take, frame, update, drawWorld, drawOver, read.
 import { GG, GG_SAY, newGeo, geoStep, lob, fan, homeVel, geoTake, geoStruck, sweep, inBox } from './gob-geomancer.js';
+import { Q4 } from './gq4q.js'; import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) any blow or hero shot sends a rock back */
 import * as GGA from './redraw/gob_geomancer_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the counterweights, the pivot slabs, the geode grille */
 import { BELLGATE } from './bell-gate.js';
 import { LANCE4, bellStrike } from './lance-support.js';
@@ -33,7 +34,7 @@ export function makeGobGeoHands(ctx) {
 
   /* ---------- HIS BODY ---------- */
   H.spawn = (base, e) => { const hp = (ctx.EHP && ctx.EHP.gobgeo) || GG.hp;
-    return { ...base, t: 'gobgeo', w: GG.w, h: GG.h, hp, maxHp0: hp, speed: GG.speed, face: e.face || -1, perch: !!e.perch, sight: e.sight || 0, sealId: e.seal || null, cd: GG.first,
+    return { ...base, t: 'gobgeo', w: GG.w, h: GG.h, hp, maxHp0: hp, speed: GG.speed, face: e.face || -1, perch: !!e.perch, early: !!e.early, sight: e.sight || 0, sealId: e.seal || null, cd: GG.first,
       ...newGeo({ post: e.leash === 0 ? null : base.x, leash: e.leash || GG.leash }) }; };
   const standable = (tx, ty) => ctx.standable ? ctx.standable(tx, ty) : false;
   H.foeUpdate = (e, dt) => {
@@ -76,6 +77,7 @@ export function makeGobGeoHands(ctx) {
   H.frame = e => GGA.ggFrame(e);
 
   /* ---------- HIS STONE IN FLIGHT ---------- */
+  const HSX = { eachSeat: fn => seats(fn), hero: () => ctx.hero(), attackBox: () => (ctx.attackBox ? ctx.attackBox() : null), overlap: (a, b) => ctx.overlap(a, b), players: () => (typeof ctx.players === 'function' ? ctx.players() : ctx.players) || [] };   /* (claude/gq4q) fallback for a tool's fake world */
   const rockBox = r => ({ l: r.x - r.r, r: r.x + r.r, t: r.y - r.r, b: r.y + r.r });
   const solid = (x, y) => ctx.solidAt(x, y);
   function sendBack(r, how) { const s = st(); r.back = true; r.g = 0; r.t = 0; r.life = GG.back.life; r.how = how; s.n.back++; if (how === 'parry') s.n.parried++; else s.n.struck++;
@@ -112,7 +114,8 @@ export function makeGobGeoHands(ctx) {
   function dropLamp(pr) { const s = st(); pr.state = 'fall'; pr.fy = pr.y + pr.len; pr.vy = 0; pr.hitE = null; pr.hitP = false; s.n.lamps++; s.lamps.push({ pr, t: 0, done: false }); sfx('crack'); sfx('clank');
     ctx.number(pr.x, pr.y + pr.len - 20, GG_SAY.lamp, '#ffd36b'); }
   function struck(r, e) { const s = st();
-    if (e.t === 'gobgeo') { const h = geoStruck(e, r.kind === 'slate'); s.n.staggers++; ctx.hurtAs('reflect', e, h.dmg, r.x - sign(r.vx) * 6); if (e.alive) { e.stagger = Math.max(e.stagger || 0, h.stagger); ctx.number(e.x, e.y - e.h - 16, GG_SAY.stagger, '#ffd36b'); }
+    if (e.t === 'gobgeo') { const h = geoStruck(e, r.kind === 'slate'); s.n.staggers++; ctx.hurtAs('reflect', e, h.dmg, r.x - sign(r.vx) * 6); if (e.alive) { e.stagger = Math.max(e.stagger || 0, h.stagger); ctx.number(e.x, e.y - e.h - 16, GG_SAY.stagger, '#ffd36b');
+        if (Q4 && e.early && e.perch) { e.perch = false; e.early = false; e.vx = -e.face * 80; e.vy = -120; e.stagger = Math.max(e.stagger, 2.0); ctx.number(e.x, e.y - e.h - 30, 'KNOCKED OFF HIS PERCH', '#8fd160'); } /* (claude/gq4q) E1/E2: his own rock sent back drops him off his crag / loft, STUNNED 2 s */ }
       ctx.burst(e.x, e.y - 14, 10, ['#5c5c6e', '#868698', '#c99aff'], 90, 0.6); for (let k = 0; k < 3; k++) s.fx.push({ k: 'chunk', x: e.x + (k - 1) * 8, y: e.y - 20, vx: (k - 1) * 40, vy: -80, t: 0, id: k }); return; }
     if (e.t === 'shield' && e.face === -sign(r.vx) && !(e.broken > 0)) { s.n.shields++; ctx.offBalance(e, GG.shieldAside); ctx.number(e.x, e.y - e.h - 30, GG_SAY.shield, '#8fd160'); sfx('clank'); ctx.burst(e.x + e.face * 8, e.y - 9, 8, ['#c9d1dc', '#ffffff'], 80, 0.4); return; }
     s.n.foes++; ctx.hurtAs('reflect', e, GG.back.foe, r.x - sign(r.vx) * 6); if (e.alive) e.stagger = Math.max(e.stagger || 0, GG.back.foeStagger); ctx.burst(r.x, r.y, 8, ['#5c5c6e', '#868698'], 70, 0.4); sfx('thud'); }
@@ -133,12 +136,13 @@ export function makeGobGeoHands(ctx) {
     if (solid(nx, ny)) { r.dead = true; ctx.burst(nx, ny, 5, ['#5c5c6e', '#868698'], 50, 0.3); ctx.dust(nx, ny, 2); return; }
     r.x = nx; r.y = ny;
     /* THE RANGER's tap is a bow shot, not a blade: an arrow of hers IN FLIGHT that meets the rock knocks it back the same way (as src/battering-beast-hands.js reads her arrows) */
-    for (const pp of ctx.players || []) for (const ar of pp.rgArrows || []) { if (r.back || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - r.x) < r.r + 10 && Math.abs(ar.y - r.y) < r.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(r, 'blow'); } }
+    if (Q4) { const hs = heroStrikes(rockBox(r), 'gg' + r.id, HSX); if (hs) { sendBack(r, 'blow'); if (once('blowTeach')) ctx.number(r.x, r.y - 24, 'A BLOW OR A SHOT SENDS IT BACK TOO', '#8fd160'); } }
+    else for (const pp of ctx.players || []) for (const ar of pp.rgArrows || []) { if (r.back || ar.state !== 'fly' || ar.ggHit) continue; if (Math.abs(ar.x - r.x) < r.r + 10 && Math.abs(ar.y - r.y) < r.r + 8) { ar.ggHit = true; ar.state = 'drop'; sendBack(r, 'blow'); } }
     if (r.back) return;
     /* a hero's blow that meets it (his swing, once a blow) sends it back; else it lands on him: a parry sends it back, a block breaks it, a hit hurts */
     seats(P1 => { if (r.dead || r.back || P1.dead) return;
       const hb = ctx.attackBox(); const key = 'gg' + r.id;
-      if (hb && P1.hitSet && !P1.hitSet.has(key) && ctx.overlap(hb, rockBox(r))) { P1.hitSet.add(key); sendBack(r, 'blow'); if (once('blowTeach')) ctx.number(P1.x, P1.y - 40, 'A BLOW SENDS IT BACK TOO', '#8fd160'); return; }
+      if (!Q4 && hb && P1.hitSet && !P1.hitSet.has(key) && ctx.overlap(hb, rockBox(r))) { P1.hitSet.add(key); sendBack(r, 'blow'); if (once('blowTeach')) ctx.number(P1.x, P1.y - 40, 'A BLOW SENDS IT BACK TOO', '#8fd160'); return; }
       if (!ctx.overlap(rockBox(r), ctx.hurtBox())) return;
       const n0 = ctx.parries(); const res = ctx.damagePlayer(r.x - sign(r.vx) * 8, r.dmg, { who: r.owner, name: r.kind === 'slate' ? 'A SLATE' : 'A GEOMANCER\'S ROCK' });
       if (ctx.parries() > n0) { sendBack(r, 'parry'); return; }

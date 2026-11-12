@@ -4309,10 +4309,10 @@ export function bakeGoblinQueen() {
     else { line(g, hx - 6, hy + 6, hx + 6, hy + 6, C.k, 1); for (const [a, b] of [[-5, 5], [5, 5], [-5, 4], [5, 4]]) px(g, hx + a, hy + b, C.t); }
     px(g, hx - 9, hy + 3, C.d); px(g, hx + 8, hy - 4, C.d);
     // the crown: iron, five points, a red stone in each
-    if (crown === 'on') { g.save(); g.translate(hx, hy - 4); g.rotate(tilt); g.scale(1.3, 1);
+    if (crown === 'on' || crown === 'cracked') { g.save(); g.translate(hx, hy - 4); g.rotate(tilt); g.scale(1.3, 1);
     fillPoly(g, [[-8, 0], [8, 0], [9, -3], [-9, -3]], C.I); fillPoly(g, [[-8, -3], [8, -3], [8, -5], [-8, -5]], C.y);
     for (const k of [-8, -4, 0, 4, 8]) { fillPoly(g, [[k - 2, -5], [k + 2, -5], [k, -11 - (k === 0 ? 3 : 0)]], C.i); px(g, k, -7, C.m); }
-    g.restore(); } else { for (const [a, b] of [[-5, -3], [-2, -4], [2, -4], [5, -3]]) px(g, hx + a, hy + b, C.k); px(g, hx - 4, hy - 4, C.G); px(g, hx + 3, hy - 4, C.G); }   /* bare-headed: a few wisps */
+    g.restore(); if (crown === 'cracked') { for (const [a, b] of [[-3, -7], [-2, -6], [-3, -5], [4, -8], [3, -6], [4, -5], [0, -6]]) px(g, hx + a, hy + b, C.r); for (const [a, b] of [[-3, -6], [4, -7], [1, -9]]) px(g, hx + a, hy + b, C.m); px(g, hx + 6, hy - 12, C.k); px(g, hx + 7, hy - 12, C.k); } } else { for (const [a, b] of [[-5, -3], [-2, -4], [2, -4], [5, -3]]) px(g, hx + a, hy + b, C.k); px(g, hx - 4, hy - 4, C.G); px(g, hx + 3, hy - 4, C.G); }   /* bare-headed: a few wisps */
     if (stars) for (let i = 0; i < 3; i++) { const a = i * 2.1 + stars; P1(hx + Math.cos(a) * 11, hy - 12 + Math.sin(a) * 3, 'e'); }
     // the near arm and the sceptre in it: a sleeve of the gown to the wrist, and a great deal of arm in the sleeve
     if (!rod || rod[4] !== 'back') rodDraw();
@@ -4373,6 +4373,24 @@ export function bakeGoblinQueen() {
     frame({ arm: [34, 26, 46, 40], arm2: [22, 26, 12, 40], rod: [14, 52, 10, 20, 'back'], head: 'shout', lean: 3, dy: 1, flare: 6, feet: [[16, 58], [40, 58]] }),   /* 40 INTRO RAGE: both fists clenched low, the whole bulk thrown forward, roaring (MY DAUGHTER) */
     frame({ arm: [34, 28, 46, 40], arm2: [22, 28, 14, 38], rod: [36, 36, 38, 58], head: 'shout', glow: 1, dy: 4, lean: -2, flare: 4, feet: [[22, 56], [34, 56]] }),   /* 41 TOWER HOP a (claude/gq3tune): crouched at the lip of her portal, the sceptre planted, both fists coiled, a violet spark in the sceptre-head */
     frame({ arm: [34, 20, 44, -2], arm2: [22, 22, 10, 6], rod: [46, 2, 50, -14], head: 'shout', glow: 2, dy: -5, lean: 4, flare: 8, feet: [[26, 46], [32, 48]] }),   /* 42 TOWER HOP b: sprung up into the portal, legs tucked, one fist and the blazing sceptre reaching up, the gown blown out below her */
+    /* (claude/gq4art) THE HOP IN VIEW, 43-50 (the greybox borrowed 4/5, 41, 42, 25, 3, 1, 12 for these: the stand frame is what read as 'standing still') */
+    frame({ arm: [34, 24, 44, 30], rod: [46, 40, 60, 24], feet: [[16, 58], [38, 58]], lean: 6, flare: 4, head: 'shout', glow: 1 }),   /* 43 STRIDE: a purposeful lunge of a step, the sceptre carried out ahead of her at the portal she is about to enter */
+    frame({ arm: [34, 22, 46, 6], arm2: [22, 26, 16, 36], rod: [46, 8, 52, -8], feet: [[28, 48], [36, 58]], lean: 4, dy: 1, flare: 5, head: 'shout', glow: 2 }),   /* 44 STEP-IN a: one boot lifted over the lip of the ring, the sceptre blazing, the portal's light on her gown */
+    frame({ arm: [34, 28, 40, 44], arm2: [22, 28, 34, 44], rod: [38, 34, 40, 58], feet: [[30, 56], [36, 56]], lean: 1, dy: 7, flare: 10, head: 'shout', glow: 2 }),   /* 45 STEP-IN b: swallowed to the waist, only the hem and the boots out */
+    frame({ arm: [34, 20, 40, 0], arm2: [22, 22, 12, 4], rod: [44, 4, 46, -10], feet: [[24, 46], [34, 54]], lean: -3, dy: -3, flare: 8, head: 'shout', glow: 2 }),   /* 46 STEP-OUT a: coming out of a ring above her, the head and the sceptre first, the gown streaming up */
+    frame({ arm: [34, 26, 46, 40], arm2: [22, 26, 14, 38], rod: [34, 28, 38, 58], feet: [[16, 58], [40, 58]], lean: 3, dy: 4, flare: 6, head: 'shout', glow: 1 }),   /* 47 STEP-OUT b: landed hard, knees bent, the sceptre planted, the violet spark dying in its head */
+    frame({ arm: [34, 28, 44, 44], arm2: [22, 28, 38, 46], rod: [36, 34, 40, 56], feet: [[20, 58], [38, 58]], lean: 7, dy: 3, flare: 3, head: 'grin', tilt: 0.12 }),   /* 48 LOOK DOWN: hunched over the lip of the storey with both hands on the sceptre, grinning at you down the shaft */
+    frame({ arm: [34, 24, 58, 22], arm2: [22, 25, 18, 34], rod: [46, 24, 70, 18], feet: [[20, 58], [36, 58]], lean: 4, flare: 3, head: 'grin', glow: 1 }),   /* 49 TAUNT: the sceptre levelled at you at arm's length, the other hand beckoning */
+    frame({ arm: [34, 26, 50, 34], arm2: [22, 26, 16, 34], rod: [44, 32, 62, 54], feet: [[18, 58], [38, 58]], lean: 5, flare: 3, head: 'shout', glow: 2 }),   /* 50 CAST AT THE BRAZIER: the sceptre dipped at the iron basket, its head spitting violet sparks */
+    /* (claude/gq4art) THE HALL AND THE ROOF, 51-58 (the greybox wore 6/7/2/3/19/7 for these) */
+    frame({ arm: [34, 24, 52, 24], arm2: [22, 24, 18, 4], rod: [46, 26, 68, 24], feet: [[18, 58], [38, 58]], lean: -3, flare: 4, head: 'shout', glow: 2 }),   /* 51 HEARTH JET tell: the sceptre levelled at the grate, the off fist raised to the roof, the gown beginning to lift in the draught */
+    frame({ arm: [34, 26, 56, 36], arm2: [22, 26, 12, 38], rod: [48, 34, 70, 40], feet: [[16, 58], [40, 58]], lean: 8, dy: 3, flare: 7, head: 'shout', glow: 2 }),   /* 52 HEARTH JET release: thrown forward onto the front foot, the sceptre driven low across the floor, the whole gown blown back */
+    frame({ arm: [34, 28, 30, 46], arm2: [22, 24, 18, 12], rod: [26, 44, 22, 58], feet: [[20, 58], [38, 58]], lean: -2, dy: 2, flare: 3, head: 'grin', glow: 2 }),   /* 53 REACH tell: the sceptre plunged point-down into a ring at her side, a sly grin, her eyes on you */
+    frame({ arm: [34, 26, 62, 24], arm2: [22, 25, 18, 34], rod: [30, 24, 4, 22, 'back'], feet: [[16, 58], [40, 58]], lean: 9, dy: 1, flare: 2, head: 'shout' }),   /* 54 REACH jab: the near arm shot out to its full length, the shoulder thrown after it, the sceptre gone into the ring */
+    frame({ sit: 8, dy: 4, feet: [[22, 52], [34, 52]], arm: [34, 26, 46, 44], arm2: [22, 26, 20, 40], rod: [10, 50, 50, 48, 'back'], head: 'daze', stars: 2, tilt: 0.5, lean: -3, crown: 'off', flare: 5 }),   /* 55 DAZED a: knocked off her feet and sitting in the gown, the crown gone, the stars wheeling */
+    frame({ sit: 8, dy: 4, feet: [[20, 52], [36, 52]], arm: [34, 26, 40, 46], arm2: [22, 26, 28, 46], rod: [12, 52, 52, 50, 'back'], head: 'daze', stars: 1, tilt: -0.5, lean: 3, crown: 'off', flare: 5 }),   /* 56 DAZED b: rocking the other way, both hands on the floor */
+    frame({ arm: [34, 22, 54, 4], arm2: [22, 22, 2, 4], rod: [44, 6, 50, -12], feet: [[14, 58], [42, 58]], flare: 9, head: 'shout', glow: 2, crown: 'cracked' }),   /* 57 RAGE a: both arms flung wide, the crown split, red in the cracks, 'MY CASTLE' */
+    frame({ arm: [34, 28, 50, 44], arm2: [22, 28, 8, 44], rod: [38, 40, 40, 58], feet: [[14, 58], [42, 58]], lean: 2, dy: 3, flare: 8, head: 'shout', glow: 2, crown: 'cracked' }),   /* 58 RAGE b: stamping, the sceptre driven down, fists clenched, the aura at its fullest */
   ];
   return pack(F, CX, 70, 68, 50);
 }
