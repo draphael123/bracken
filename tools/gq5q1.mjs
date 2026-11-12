@@ -147,7 +147,8 @@ console.log('== F. THE THRONE FIRE');
   c.heroes[0].x = hA.cx; c.heroes[1].x = hB.cx; c.heroes[2].x = c.A.x0 + 30 * TS; c.heroes[3].x = c.A.x0 + 4 * TS; ok(toTell(c), 'co-op: the fire starts');
   c.ring(); c.step(60 * 1); const riding = c.heroes[0].y === c.A.floor - 32 && c.heroes[1].y === c.A.floor - 32; ok(riding, 'two seats ring and ride a lift');
   toBurn(c); c.st.dmg.length = 0; c.step(60 * 3.4); const by = n => c.st.dmg.filter(d => d.who === c.heroes[n]).reduce((a, d) => a + d.d, 0);
-  ok(by(0) === 0 && by(1) === 0 && by(2) === 36 && by(3) === 36, 'co-op: the two on lifts take 0, the two on the floor take 36 each (' + [0, 1, 2, 3].map(by).join('/') + ')');
+  const burnTotal = N.dmg * Math.round(N.burn / N.tick);
+  ok(by(0) === 0 && by(1) === 0 && by(2) === burnTotal && by(3) === burnTotal, 'co-op: the two on lifts take 0, the two on the floor take ' + burnTotal + ' each (' + [0, 1, 2, 3].map(by).join('/') + ')');
   // never starts: the gates
   const gate = (label, f) => { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * 12 - 5 - 3); f(g); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 0 && g.e.mode !== 'fireTell', 'no fire: ' + label); return g; };
   gate('the bell is on its cooldown', g => { g.H.mech().cd = g.st.time + 14; });
