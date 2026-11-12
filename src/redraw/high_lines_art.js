@@ -5,6 +5,7 @@
 // hangs in two frayed halves; the cab's hangers go slack when it falls; the weight pair's sheave turns with them; a gust is a streak, told as a faint shiver.
 //   drawLines(g, kit, cx, cy, VW, VH, time, riders)     riders: [{ id, x, haul, sway }] (who hangs on what: the winch turns for them)
 //   drawGrip(g, kit, r, cx, cy, time)                    the rider's grip over his hands
+//   drawPrompt(g, p, X, Y, time, words, text)            (claude/hlfix) an in-world key prompt: UP at a grab point, the attack key on a winch's grip
 //   dress(decor, L, at, T)                               the Lee Hut and the lee rocks (static sprites)
 import { canvas, rect } from '../px.js';
 import { lineY, platforms, LK } from '../line-kit.js';
@@ -176,6 +177,20 @@ function weightPair(g, W, kit, cx, cy, time) {
   }
 }
 /* the rider's grip over his hands: a winch's crank-loop and clutch, a glide's two-wheel trolley with a swinging strap */
+/* ---------- (claude/hlfix) THE LINE PROMPTS: a small iron key plate with a tail pointing at the grab point (src/line-prompts.js says where and when; the hands pass the words for the input in use).
+   grab / points: an UP chevron and the key (JUMP+UP when the rope is out of reach); hit / post: a blade and the attack key. Iron plate, ochre mark, a 2 px bob; nothing wooden. ---------- */
+export function drawPrompt(g, p, X, Y, time, words, text) {
+  const bob = Math.round(Math.sin(time * 5 + (p.x || 0) * 0.01) * 1.5), hit = p.kind === 'hit' || p.kind === 'post', iw = 7, tw = words ? words.length * 5 + 2 : 0, w = iw + (tw ? tw + 2 : 0) + 6, h = 11;
+  const x0 = R(X - w / 2), y0 = R(Y - 22 - h + bob);
+  g.globalAlpha = 0.8 + 0.2 * Math.sin(time * 4);
+  rc(g, x0 - 1, y0 - 1, w + 2, h + 2, HP.iron[0]); rc(g, x0, y0, w, h, HP.iron[2]); rc(g, x0, y0, w, 1, HP.iron[5]); rc(g, x0, y0 + h - 1, w, 1, HP.iron[1]); dot(g, x0 + 1, y0 + 1, HP.iron[6]); dot(g, x0 + w - 2, y0 + 1, HP.iron[6]);   /* the plate, two rivets */
+  for (let k = 0; k < 3; k++) rc(g, R(X) - 2 + k, y0 + h + 1 + k, 5 - k * 2, 1, k ? HP.iron[3] : HP.iron[2]);                                                                                                              /* the tail pointing down at the grab point */
+  const ix = x0 + 3, iy = y0 + 2;
+  if (!hit) { for (let k = 0; k < 4; k++) { rc(g, ix + 3 - k, iy + k, 2 * k + 1, 1, HP.ochre[2]); rc(g, ix + 3 - k, iy + k, 1, 1, HP.ochre[3]); } rc(g, ix + 2, iy + 4, 3, 3, HP.ochre[2]); rc(g, ix + 2, iy + 4, 1, 3, HP.ochre[3]); }       /* the UP arrow: a head and a shaft */
+  else { ln(g, ix, iy + 7, ix + 6, iy, HP.iron[6]); ln(g, ix + 1, iy + 7, ix + 6, iy + 1, HP.iron[4]); rc(g, ix - 1, iy + 5, 4, 1, HP.ochre[3]); ln(g, ix + 1, iy + 5, ix - 1, iy + 8, HP.rust[2]); }                                    /* a blade, a crossguard, a grip */
+  if (tw && text) text(words, ix + iw + 2, y0 + 2, HP.ochre[3], 'left', 6);
+  g.globalAlpha = 1;
+}
 export function drawGrip(g, kit, r, cx, cy, time) {
   const z = kit.lines[r.id]; if (!z) return; const x = R(r.x - cx), y = R(lineY(z, r.x) - cy), sw = R(r.sway || 0);
   if (z.kind === 'winch') {

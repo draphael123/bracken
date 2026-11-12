@@ -190,8 +190,8 @@ export function buildHighLines({ painter, T, TS }) {
   foe('galeharpy', 44, 176, { face: -1 }); foe('galeharpy', 40, 160, { face: 1 });
   coinOn('G2', 36); coinOn('G3', 30); ent('coin', 70, 183);
   /* ---- 4 THE AMBUSH ---- */
-  sign(4, 170, 'THE LINE CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
-  sign(24, 155, 'A RIGGER WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
+  sign(4, 170, 'THE GOBLIN CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
+  sign(24, 155, 'A GOBLIN WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
   foe('crossbow', 55, 141, { face: -1 });
   coinOn('H2', 48); coinOn('S4', 36); ent('coin', 60, 141);
   /* ---- 5 THE LEE HUT (on foot) ---- */
@@ -227,6 +227,7 @@ export function buildHighLines({ painter, T, TS }) {
     line: { id: hl.id, xa: la[0] * TS, ya: la[1] * TS, xb: lb[0] * TS, yb: lb[1] * TS }, winch: { ...Ar.winch }, swingY: Ar.swingY * TS };
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: lkMovers, interiors: [],
+    reskin: { crossbow: 'hlgobbow' },   /* (claude/hlfix) the crossbowmen are goblins here (src/redraw/hl_goblin_skins.js; a reskin table is not in the level hash) */
     highlines: true, hlKit: true, routeSupports: hlSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? T.SOLID : L.grid[y * W + x]), t => t === T.SOLID), lineKit: { ...JSON.parse(JSON.stringify(D.lineKit)), ends: endSupports(D, (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? true : L.grid[y * W + x] === T.SOLID)) }, hookjacks: D.hookjacks.map(h => ({ ...h })),
     landings: D.landings.map(b => b.slice()), nets: D.nets.map(b => b.slice()), checkpoints: D.checkpoints.map(c => ({ ...c })), secrets: D.secrets.map(s => s.slice()), exit: D.exit.slice(), w: W, h: H,
     arena,

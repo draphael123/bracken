@@ -15,6 +15,7 @@
 //   drawWorld / drawRider / drawHook   the greybox pictures (art owed: docs/linekit.md, zipclimb-plan.md 6)
 import * as LKT from './line-kit.js';
 import * as HLA from './redraw/high_lines_art.js'; import { drawHookjack } from './redraw/line_crew_art.js';   /* (claude/hlart) the hand-drawn line machinery, grip and Hookjack */
+import { promptsOf, promptWords } from './line-prompts.js';   /* (claude/hlfix) the in-world key prompts at every grab point, points board, winch grip and strike-post */
 import { HK, HK_SAY, newHook, hookStep, hookTake as hkTake, drawHook as hkDraw } from './hookjack.js';
 
 export const HLX_SAY = { take: 'STRIKE TO HAUL. THE RATCHET HOLDS YOU.', glide: 'JUMP KICKS OFF. DOWN DROPS. HOLD BACK TO BRAKE.', points: 'THE POINTS: YOU TOOK THE BRANCH', parted: 'THE LINE PARTS', creak: 'THE LINE CREAKS', gust: 'THE GUST IS COMING' };
@@ -23,11 +24,13 @@ export const MOVE_SKILLS = new Set(['lunge', 'cinderStep', 'holyCharge', 'hammer
 const MV_FLAGS = ['plunge', 'lungeT', 'chargeT', 'hleapT', 'riseT', 'pounceT', 'pounceRec', 'dodge', 'dashRec'];
 const mvMask = P => { let m = 0; for (let i = 0; i < MV_FLAGS.length; i++) if (P[MV_FLAGS[i]] > 0 || P[MV_FLAGS[i]] === true) m |= 1 << i; return m; };
 export function makeHighLinesHands(c) {
-  let kit = null, lastSwipe = -9; const told = new Set();
+  let kit = null, lastSwipe = -9, prompts = []; const told = new Set(), used = new Set();   /* prompts: src/line-prompts.js; used: the ones the player has already done once (gone for the rest of the level) */
+  const postKey = p => 'post:' + p.kind + ':' + Math.round(p.x) + ',' + Math.round(p.y);
   const on = () => !!(c.L && c.L.highlines && kit);
   const sfx = k => { const S = c.sfx; const f = S && S[k]; if (f) f(); };
   const say = (t, x, y) => { if (told.has(t)) return; told.add(t); c.callout(t, x, y); };
   function lineSfx(e) {
+    if (e.t === 'take') used.add('grab:' + e.id); else if (e.t === 'stroke') used.add('hit:' + e.id); else if (e.t === 'points') used.add('points:' + e.from);   /* the prompt for it has done its job */
     switch (e.t) {
       case 'take': sfx('ratchet'); break; case 'stroke': sfx('ratchet'); break; case 'top': case 'end': sfx('pStep'); break;
       case 'kick': sfx('pJump'); break; case 'points': sfx('clank'); break; case 'creak': sfx('ratchet'); say(HLX_SAY.creak); break;
@@ -37,7 +40,7 @@ export function makeHighLinesHands(c) {
     }
   }
   function load() {
-    kit = c.L && c.L.highlines && c.L.lineKit ? LKT.lineInit(c.L) : null; told.clear(); lastSwipe = -9; for (const p of c.players()) if (p) { p.lk = null; p.lkHeld = false; p.lkSkip = null; }   /* nobody carries a grip into a level (or out of this one) */
+    kit = c.L && c.L.highlines && c.L.lineKit ? LKT.lineInit(c.L) : null; told.clear(); used.clear(); prompts = kit ? promptsOf(kit) : []; lastSwipe = -9; for (const p of c.players()) if (p) { p.lk = null; p.lkHeld = false; p.lkSkip = null; }   /* nobody carries a grip into a level (or out of this one) */
   }
   function reset() { if (!on()) return; LKT.lineRespawn(kit, c.players()); lastSwipe = -9; }
   /* a shadow of each seat for the kit's load counts (cab boarding, which side of the weight is heavier) - the kit's own carry moves the shadows, never the seats */
@@ -56,7 +59,7 @@ export function makeHighLinesHands(c) {
     if (P.dead || P.down > 0) { if (P.lk) { P.lk = null; P.lkHeld = false; } return; }
     const strike = !!pr.atk;   /* KIT Q1 (rec, accepted): ANY blow while hanging is a crank stroke - one button, every hero (the ranged ones too) */
     const hb = strike ? (P.face > 0 ? { l: P.x, r: P.x + 26, t: P.y - 22, b: P.y - 2 } : { l: P.x - 26, r: P.x, t: P.y - 22, b: P.y - 2 }) : null;
-    if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb); if (post) { lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
+    if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb); if (post) { used.add(postKey(post)); lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
     /* a jump pressed on an UP key (ArrowUp / W, main.js jumpUpKey) is the take and the points, never the kick: the kick is Z / Space / the pad's A */
     const was = P.lk ? P.lk.id : null;
     /* LET GO FIRST: a movement flag that rose AFTER he took hold (a skill, a dash, a leap, a plunge) is not a hang - the grip goes (0.6 s skip) and the move runs as on the ground */
@@ -106,6 +109,16 @@ export function makeHighLinesHands(c) {
   function drawWorld(g, cx, cy, VW, VH, time) {
     if (!on()) return;
     HLA.drawLines(g, kit, cx, cy, VW, VH, time, c.players().filter(p => p && p.lk).map(p => ({ id: p.lk.id, x: p.lk.x, haul: p.lk.haul, buf: p.lk.buf, sway: p.lk.sway })));   /* (claude/hlart) winches, ropes, anchors, points boards, posts, hopper, cab, weights, gusts (the cargo nets are tiles now) */
+    drawPrompts(g, cx, cy, VW, VH, time);   /* (claude/hlfix) over the ropes */
+  }
+  /* THE LINE PROMPTS: a grab / points prompt shows while a hero stands near it and not yet used; a hit prompt shows over the rider while he hangs on a grip-winch and has not cranked it once; a post prompt near an unstruck post */
+  function drawPrompts(g, cx, cy, VW, VH, time) {
+    if (!on() || !prompts.length || !c.text) return; const lab = c.promptLabels ? c.promptLabels() : { kind: 'kb' }, heroes = c.players().filter(p => p && !p.dead && !(p.down > 0));
+    for (const p of prompts) { if (used.has(p.key)) continue; let X = p.x, Y = p.y;
+      if (p.kind === 'hit') { const h = heroes.find(q => q.lk && q.lk.id === p.line); if (!h) continue; X = h.lk.x + (h.lk.sway || 0); Y = h.y - 12; }
+      else if (!heroes.some(q => !q.lk && Math.abs(q.x - p.x) < 150 && Math.abs(q.y - p.y) < 110)) continue;
+      if (X - cx < -40 || X - cx > VW + 40 || Y - cy < -10 || Y - cy > VH + 60) continue;
+      HLA.drawPrompt(g, p, X - cx, Y - cy, time, promptWords(p, lab), c.text); }
   }
   function drawRider(g, P, cx, cy) { if (on() && P && P.lk) HLA.drawGrip(g, kit, P.lk, cx, cy, c.time()); }
   function drawHook(g, e, cx, cy, time) { if (e.alive) drawHookjack(g, e, cx, cy, time); }

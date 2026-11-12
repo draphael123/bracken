@@ -2,7 +2,7 @@
 // (keyed once a hero a move; the yellow ones a shield turns, the red ones it does not), the HIGH LINE and the two winch lines (the line kit's own lines on
 // THE HIGH LINES, through src/highlines-hands.js kit(): cut them, read who rides them), the TENSION LEVERS (two props in main.js's foe list, so every blow
 // and every shot of every hero reaches them through hurtEnemy - like the Shriek Sisters' bodies), the hooks in flight - and the drawing.
-// GREYBOX ART (readable; the art lane draws it - see the lane report's ART OWED): a human rigger in a long tarred coat and a knitted cap, a coil of line on his
+// GREYBOX ART (readable; the art lane draws it - see the lane report's ART OWED): a goblin rigger in a long tarred coat and a knitted cap, a coil of line on his
 // shoulder, the iron boat-hook on a chain. Every move its OWN windup and release pose (B16): hooked on (both hands up on the trolley, crouched) -> riding
 // (hanging, legs swinging); the hook drawn back over his shoulder (the chain coiled in his other fist) -> thrown (arm out flat); the drop (unclipping, looking
 // down, the hook pointed down) -> the slam (crouched on the rock, the hook in it); the sweep's windup (the hook held low behind him) -> the sweep (spun round

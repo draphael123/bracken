@@ -112,6 +112,25 @@ ok(sp.downed !== sp.rise && sp.jarred !== sp.landed, 'DOWN and JARRED (the openi
 fp(g2 => { CREW.drawSkyTrolley(g2, 30, 30, 1, 0.1); CREW.drawSkyHook(g2, 30, 30, -1, 0.1); CREW.chainLine(g2, 10, 10, 80, 40, 0); CREW.drawRag(g2, 40, 40, 0.2); CREW.drawLeverArt(g2, 30, 80, 0, false, false, 0); CREW.drawLeverArt(g2, 60, 80, 1, true, true, 0.2); });
 ok(BAD.length === 0, 'crew: no NaN rects or bad colours ' + BAD.slice(0, 3)); ok(colourBad(new Set([...LIT.crew, '#ffffff', '#fff3a0', '#ffb347', '#1b1626'])).length === 0, 'crew: every colour is a literal: ' + colourBad(new Set([...LIT.crew, '#ffffff', '#fff3a0', '#ffb347', '#1b1626'])).slice(0, 4));
 
+// ---------- G. (claude/hlfix) THE LINE PROMPTS and THE GOBLINS ----------
+{ const LP = await import(URLS('line-prompts.js').href), kitP = LKT.lineInit(L), PR = LP.promptsOf(kitP), kw = { kb: { kind: 'kb', up: 'UP', jump: 'SPACE', atk: 'X' }, pad: { kind: 'pad', up: 'D-UP', jump: 'A', atk: 'X' }, touch: { kind: 'touch' } };
+  const skip = id => { const d = L.lineKit.lines.find(q => q.id === id); return d.cab || d.secret || d.npc || L.lineKit.lines.some(q => q.cab && q.cab.onto === id); };
+  for (const d of L.lineKit.lines) { if (skip(d.id)) continue; const z = kitP.lines[d.id], sx = (z.dir > 0 ? z.xa : z.xb) / 16, deck = L.landings.some(b => sx >= b[0] - 1 && sx <= b[2] + 2 && b[1] * 16 >= LKT.lineY(z, sx * 16) - 2);
+    ok(!deck || PR.some(p => p.kind === 'grab' && p.line === d.id), d.id + ': a line a player takes from a deck has its grab prompt');
+    if (d.kind === 'winch' && d.drive !== 'post') ok(PR.some(p => p.kind === 'hit' && p.line === d.id), d.id + ': a grip-winch has its hit prompt'); }
+  ok(PR.some(p => p.kind === 'grab' && p.line === 'W3' && Math.abs(p.x / 16 - 70) < 0.5), 'the first junction deck (L2, the sign by the points board): W3 has its grab prompt at its low end (70, 207)');
+  ok(PR.filter(p => p.kind === 'points').length === 2 && PR.some(p => p.kind === 'post' && p.line === 'lift'), 'both points boards and the hopper carry a prompt');
+  ok(new Set(PR.map(p => p.key)).size === PR.filter((p, i, a) => a.findIndex(q => q.key === p.key) === i).length && PR.every(p => p.key && Number.isFinite(p.x) && Number.isFinite(p.y)), 'prompt keys and places are sane');
+  const g3 = makeCtx(320, 180); reset(); for (const p of PR) for (const dev of ['kb', 'pad', 'touch']) HLA.drawPrompt(g3, p, 100, 100, 0.3, LP.promptWords(p, kw[dev]), () => {}); ok(BAD.length === 0 && colourBad(new Set([...LIT.art, '#ffffff'])).length === 0, 'prompts draw clean in the kit palette: ' + BAD.slice(0, 2));
+  const g1 = PR.find(p => p.kind === 'grab'), h1 = PR.find(p => p.kind === 'hit');
+  ok(LP.promptWords(g1, kw.kb) === 'UP' && LP.promptWords(g1, kw.pad) === 'D-UP' && LP.promptWords(g1, kw.touch) === '' && LP.promptWords(h1, kw.kb) === 'X' && LP.promptWords(h1, kw.pad) === 'X' && LP.promptWords({ kind: 'grab', jump: true }, kw.kb) === 'SPACE+UP' && LP.promptWords({ kind: 'grab', jump: true }, kw.touch) === 'JUMP', 'the key plate words follow the input in use (keyboard, pad, touch)');
+  const hh = readFileSync(URLS('highlines-hands.js'), 'utf8'); ok(hh.includes('drawPrompts(') && hh.includes("used.add('hit:'") && hh.includes("used.add('grab:'"), 'the hands draw the prompts and retire them once the line is used');
+  /* THE GOBLINS: the crew is drawn green with leaf ears (the foe palette #6faa4a); the level's crossbowmen are reskinned; no word says man */
+  ok(CREW.CP.skin[1] === '#6faa4a' && CREW.CP.eye === '#ff4030', 'the line crew wears the goblin green and red eyes (the foe palette #6faa4a)');
+  ok(L.reskin && L.reskin.crossbow === 'hlgobbow', 'the level reskins its crossbowmen as goblins (cnSkin hlgobbow)');
+  const hs = readFileSync(URLS('highlines.js'), 'utf8'), mj = readFileSync(URLS('main.js'), 'utf8'); ok(!/A RIGGER WITH A SAW|THE LINE CREWS RIDE/.test(hs) && /GOBLIN CREWS RIDE AT YOU/.test(hs) && /A GOBLIN WITH A SAW/.test(hs), 'the signs say goblins');
+  ok(/sub: 'a goblin line-rigger/.test(mj) && /desc: "The goblin line crews' captain/.test(mj) && /t: 'hlgobbow', name: 'GOBLIN CROSSBOWMAN'/.test(mj), 'the bestiary cards say goblin (Hookjack, Skyhook, the crossbowman skin)'); }
+
 // ---------- F. PALETTE DISCIPLINE and FILES ----------
 const ceil = { tiles: 190, back: 140, art: 190, crew: 190 }; for (const k in LIT) ok(LIT[k].size <= ceil[k], k + ' palette ' + LIT[k].size + ' <= ' + ceil[k]);
 for (const f of Object.values(FILES)) ok(!/(^|[\/_.-])(ad|admiral|banner|track|pixel|promo)([\/_.-]|$)/i.test(f.pathname.split('/').pop()), 'no ad-block word in ' + f.pathname.split('/').pop());
