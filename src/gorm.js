@@ -25,7 +25,7 @@ export const GORM = {
   hp1: 1075,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
   hp2: 1500,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
-  take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
+  take: { held: 1.7, open: 1.1, downed: 1.5, stung: 1.3 },
   p1take: { held: 1.4, open: 1.0 },   /* (claude/kingsfix2) P1 ONLY: with every rope free at any moment his hall needs a little less per opening (P2's take is unchanged) */
   ward: 3,               /* B3: after an opening, seconds the hangings glance off him (told WARDED, a pale shell) */
   /* P1: THE COURT */
