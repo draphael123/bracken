@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 167,
+    "lines": [
+      { "s": "The Goblin Princess's tower is bigger: three gates, a guard bell and a spinning blade.", "lv": ["crown"] },
+      { "s": "The Highcrown wall walk is longer: a gatehouse, a lead roof and wind to cross.", "lv": ["crown"] },
+      { "s": "The Queen's Stair has an armoury landing and a roof with stilt-walkers and fire mages.", "lv": ["crown"] },
+      { "s": "Knights in black and gold, stilt-walkers and fire mages now guard the castle.", "lv": ["crown"] },
+      { "s": "The Goblin Queen has a hearth fire jet, a sceptre reach and a mountain that falls.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 166,
     "lines": [
       { "s": "Big skills now hit with real weight: a heavier freeze and kick on every capstone.", "lv": [] },

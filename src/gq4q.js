@@ -2,7 +2,7 @@
 // ON: P1 gets THE HEARTH JET + THE SCEPTRE REACH in THE GEODE THRONE hall, her geode and portal shards can be knocked out by ANY blow or hero shot (src/hero-strikes.js),
 // and P2 is rebuilt Gorm-like: stone shards knocked home are the damage (3% each, 6 inside 10 s = DAZED then a ward), shard volley / portal boulder / rockfall / bombardment, blink = movement only,
 // an ENRAGE at 25% (THE MOUNTAIN FALLS). The override for review and the lanes: ?gq4q=1 on the page, globalThis.BRACKEN_GQ4Q = true (tools/cdp.mjs forwards BRACKEN_GQ4Q=1), or BRACKEN_GQ4Q=1 in a Node tool's env.
-export const GQ4Q_SHIPS = false;
+export const GQ4Q_SHIPS = true;
 export function gq4qOn() {
   if (GQ4Q_SHIPS) return true;
   try { if (globalThis.BRACKEN_GQ4Q === true || globalThis.BRACKEN_GQ4Q === '1') return true; } catch { /* no global */ }
