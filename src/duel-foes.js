@@ -7,8 +7,8 @@ export const DUEL_FOES = DUEL_FOES_FLAG || (typeof globalThis !== 'undefined' &&
 
 export const GOBLIN_CHOICES = ['off', 'few', 'many'];
 /* THE NUMBERS. max: goblins alive (and told) at once; every: seconds between entries; first: the first entry on the FIGHT clock; tell: how long the '!' stands before he walks in;
-   minSeat: never within this many tiles of a seat; blow: a goblin blow's cost as a share of the seat's duel health (flat, scaled by HEALTH because it is a share) */
-export const FOE = { few: { max: 2, every: 14 }, many: { max: 4, every: 8 }, first: 10, tell: 1.0, minSeat: 6, blow: 0.06, flee: 70, popRetry: 0.25, popTries: 8 };
+   minSeat: a door needs at least this many tiles from every upright seat (a goblin enters from the door FARTHEST from the nearest one; no door qualifies = retry a second later); blow: a goblin blow's cost as a share of the seat's duel health (flat, scaled by HEALTH because it is a share) */
+export const FOE = { few: { max: 2, every: 14 }, many: { max: 4, every: 8 }, first: 10, tell: 1.0, minSeat: 3, blow: 0.06, flee: 70, popRetry: 0.25, popTries: 8 };
 /* PER ARENA: the wall-edge floor columns he walks in from (doors), and the Act 1 fodder he may be (never brute, pike, mage or sapper). Only the Pit now; a later arena adds a line.
    doors are columns from the arena's left edge; a negative column counts from the right (W + col). */
 export const FOE_ARENAS = { pit: { doors: [2, -3], kinds: ['sprig', 'shield'], weights: [0.65, 0.35] } };

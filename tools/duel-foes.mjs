@@ -1,6 +1,6 @@
 // tools/duel-foes.mjs - THE DUEL PIT's GOBLINS setting + FRIENDLY FIRE (claude/duelfoes; src/duel-foes.js the pure schedule + doors, src/pvp-duel.js the runtime).
 //   NODE ONLY, no browser. Runs the flag-ON proofs here and spawns itself once with 'off' for the flag-OFF identity proofs (the flag is read once at import).
-//   ON : settings clean + remembered; foePlan (FEW max 2 / 14 s, MANY max 4 / 8 s, first at 10 s) + cap; doors (never within 6 tiles of a seat, farthest door); the told spawn,
+//   ON : settings clean + remembered; foePlan (FEW max 2 / 14 s, MANY max 4 / 8 s, first at 10 s) + cap; doors (>= 3 tiles from every upright seat, the door farthest from the nearest one); the told spawn,
 //        first-of-match banner; none during the count / K.O. / winner screen / sudden death; flee at sudden death; cleared between rounds; a goblin blow = flat 6% of the duel health
 //        (HEALTH scales it), never below 1, never a K.O., duel grace + anti-juggle hold; a goblin kill gives nothing (no heal, no points) but counts; teams neutral;
 //        friendly fire both ways; bot targeting; a long simulated match always ends; the main.js hooks are present and the kill branch pays nothing.
@@ -63,7 +63,7 @@ if (MODE === 'on') {
     ok(FD.foePlan('off', { next: 10 }, 99, 0).tell === false, "mode 'off' never tells");
     { const st = { next: 10 }; ok(!FD.foePlan('few', st, 8.9, 0).tell && FD.foePlan('few', st, 9.0, 0).tell && st.next === 24, 'the tell starts 1.0 s before the entry (first at 9.0 s, walks in at 10 s); the next entry is one interval on'); }
     { const st = { next: 10 }, p = FD.foePlan('many', st, 12, 0, false); ok(!p.tell && st.next > 12, 'no free door: nothing is told and it tries again a moment later'); }
-    ok(FD.FOE.few.max === 2 && FD.FOE.few.every === 14 && FD.FOE.many.max === 4 && FD.FOE.many.every === 8 && FD.FOE.first === 10 && FD.FOE.tell === 1.0 && FD.FOE.minSeat === 6 && FD.FOE.blow === 0.06, 'the numbers are the plan\'s'); }
+    ok(FD.FOE.few.max === 2 && FD.FOE.few.every === 14 && FD.FOE.many.max === 4 && FD.FOE.many.every === 8 && FD.FOE.first === 10 && FD.FOE.tell === 1.0 && FD.FOE.minSeat === 3 && FD.FOE.blow === 0.06, 'the numbers are the plan\'s'); }
   ok(FD.foeAllowed('fight', 5, 90) && !FD.foeAllowed('count', 0, 90) && !FD.foeAllowed('ko', 5, 90) && !FD.foeAllowed('over', 5, 90) && !FD.foeAllowed('fight', 90, 90) && FD.foeAllowed('fight', 1000, Infinity), 'allowed only in the fight before sudden death (never the count, the K.O. banner, the winner screen)');
 
   console.log('doors + distance');
@@ -72,9 +72,9 @@ if (MODE === 'on') {
     const L = buildDuelPit({ painter, T }); ok(cols.every(c => L.grid[(DP.FLOOR - 1) * L.W + c] === T.AIR && L.grid[DP.FLOOR * L.W + c] === T.SOLID), 'each door is open air standing on the floor, inside the walls');
     const rnd = (() => { let a = 99; return () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; })(); let bad = 0, picked = 0, none = 0;
     for (let i = 0; i < 20000; i++) { const n = 2 + Math.floor(rnd() * 3), xs = Array.from({ length: n }, () => (2 + rnd() * 22) * TS), di = FD.pickDoor(cols, xs, TS);
-      if (di < 0) { none++; if (cols.some(c => FD.doorFree(c, xs, TS))) bad++; } else { picked++; if (xs.some(q => Math.abs(q - (cols[di] * TS + 8)) < 6 * TS)) bad++; const dists = cols.map(c => Math.min(...xs.map(q => Math.abs(q - (c * TS + 8))))); if (dists[di] < Math.max(...dists) - 1e-9) bad++; } }
-    ok(bad === 0 && picked > 100 && none > 100, 'doors over 20000 random seat layouts: a door is only ever picked at 6+ tiles from every seat, it is the FARTHEST one, and -1 when none is free (' + picked + ' picked, ' + none + ' blocked)');
-    ok(FD.pickDoor(cols, [5 * TS + 8, 20 * TS + 8], TS) === -1, 'the round-start seats (cols 5 / 20) block both doors: no goblin walks in until a seat moves off its start'); }
+      if (di < 0) { none++; if (cols.some(c => FD.doorFree(c, xs, TS))) bad++; } else { picked++; if (xs.some(q => Math.abs(q - (cols[di] * TS + 8)) < 3 * TS)) bad++; const dists = cols.map(c => Math.min(...xs.map(q => Math.abs(q - (c * TS + 8))))); if (dists[di] < Math.max(...dists) - 1e-9) bad++; } }
+    ok(bad === 0 && picked > 100 && none > 100, 'doors over 20000 random seat layouts: a door is only ever picked at 3+ tiles from every seat, it is the FARTHEST one, and -1 when none is free (' + picked + ' picked, ' + none + ' blocked)');
+    ok(FD.pickDoor(cols, [5 * TS + 8, 20 * TS + 8], TS) >= 0, 'the round-start seats (cols 5 / 20) are exactly 3 tiles from the doors: a door is free (a goblin enters while the seats stand still)'); ok(FD.pickDoor(cols, [3 * TS + 8, 24 * TS], TS) === -1 && FD.pickDoor(cols, [4 * TS, 17 * TS + 8], TS) === 1, 'a seat within 3 tiles blocks that door (both blocked = -1, retried a second later)'); }
   { const txt = text('../src/duel-foes.js').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, ''); ok(!/\b(item|items|loot|drop|drops|coin|coins|xp)\b/i.test(txt), 'foePlan and the door data carry no item / loot / drop / coin / xp hooks (a later item drop reuses the doors and the told spawn)');
     ok(FD.FOE_ARENAS.pit.kinds.every(k => ['sprig', 'shield'].includes(k)) && !FD.FOE_ARENAS.pit.kinds.some(k => /brute|pike|mage|sapper|archer/.test(k)), 'the Pit\'s goblins are sprig + shield only (no archer, no brute, no pike, no mage, no sapper)');
     ok(FD.foeKind(0) === 'sprig' && FD.foeKind(0.99) === 'shield', 'foeKind rolls both kinds'); }
@@ -86,11 +86,11 @@ if (MODE === 'on') {
     ok(g.sfx.includes('hornBlast') && D.st.banner && D.st.banner.txt === 'GOBLINS IN THE PIT', 'the horn sounds and the FIRST of the match says GOBLINS IN THE PIT');
     g.stepTo(9.9); ok(g.gobs().length === 0, '...and he is not in before the second is up'); g.stepTo(10.05);
     const e1 = g.gobs()[0]; ok(g.gobs().length === 1 && e1 && (e1.x === 2 * TS + 8 || e1.x === 23 * TS + 8) && e1.duelFoe === true && ['sprig', 'shield'].includes(e1.t), 'at 10 s he walks in at a DOOR (col ' + (e1 && (e1.x - 8) / TS) + ', a ' + (e1 && e1.t) + ')');
-    ok(D.st.seats.every(p => Math.abs(p.x - e1.x) >= 6 * TS), 'and never within 6 tiles of any seat');
+    ok(D.st.seats.every(p => Math.abs(p.x - e1.x) >= 3 * TS), 'and never within 3 tiles of any seat');
     D.st.banner = null; g.stepTo(17.05); ok(D.st.banner === null || D.st.banner.txt !== 'GOBLINS IN THE PIT', 'the second goblin does not say it again (once per match)');
     g.stepTo(18.5); ok(g.gobs().length === 2, 'MANY: the second walks in at 18 s'); g.stepTo(40); ok(g.gobs().length === 4 && D.debug().foe.alive === 4, 'MANY: four alive by 34 s and no more (cap 4) - checked at 40 s'); g.stepTo(80); ok(g.gobs().length === 4, '...still 4 at 80 s'); }
   { const g = mockGame(); g.fresh(S({ goblins: 'few' })); g.step(DUEL.round.count + 0.1); g.place(10, 14); g.stepTo(60); ok(g.gobs().length === 2, 'FEW: two alive and no more at 60 s'); }
-  { const g = mockGame(); g.fresh(S({ goblins: 'many' })); g.step(DUEL.round.count + 0.1); g.stepTo(12); ok(g.gobs().length === 0 && g.D.debug().foe.pend === 0, 'seats still on their start cols 5 / 20 (both doors inside 6 tiles): nothing walks in'); g.place(10, 14); g.stepTo(14); ok(g.gobs().length === 1, '...the moment a seat clears the doors he is told and enters'); }
+  { const g = mockGame(); g.fresh(S({ goblins: 'many' })); g.step(DUEL.round.count + 0.1); g.stepTo(12); ok(g.gobs().length === 1 && g.gobs().every(e => g.D.st.seats.every(p => Math.abs(p.x - e.x) >= 3 * TS)), 'seats still on their start cols 5 / 20 (3 tiles from each door): a goblin enters at 10 s all the same'); const n0 = g.gobs().length; g.place(3, 24); g.stepTo(30); ok(g.gobs().length === n0 && g.D.debug().foe.pend === 0, '...seats within 3 tiles of both doors: nobody new walks in (retried each second)'); }
   { const g = mockGame(), D = g.D; g.fresh(S({ goblins: 'many' })); g.place(10, 14); g.step(DUEL.round.count - 0.5); ok(D.debug().m.phase === 'count' && D.debug().foe.pend === 0 && g.gobs().length === 0, 'none during the count'); }
 
   console.log('runtime: forbidden phases, sudden death, between rounds');

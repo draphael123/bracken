@@ -286,7 +286,7 @@ export function makeDuel(api) {
     for (let i = F.list.length - 1; i >= 0; i--) if (!F.list[i].alive) F.list.splice(i, 1);
     if (m.phase !== 'fight') return;
     if (!foeAllowed(m.phase, m.clock, m.fightT)) { if (!F.flee) { F.flee = true; F.pend.length = 0; for (const e of F.list) e.duelFlee = true; } return; }   /* sudden death: the live ones run for the doors, none are told */
-    const xs = st.seats.map(p => p.x), cols = foeCols(), TS = api.TS;
+    const xs = st.seats.filter(p => api.upright(p)).map(p => p.x), cols = foeCols(), TS = api.TS;
     for (let i = F.pend.length - 1; i >= 0; i--) { const q = F.pend[i]; if (m.clock < q.at) continue;   /* the '!' has stood its second: in he walks - unless a seat has since come within 6 tiles of that door */
       if (!doorFree(cols[q.door], xs, TS)) { q.at = m.clock + FOE.popRetry; if (++q.tries > FOE.popTries) F.pend.splice(i, 1); continue; }
       F.pend.splice(i, 1); const e = api.foeSpawn(cols[q.door], L.duelPit.floor - 1, q.kind, q.door === 0 ? 1 : -1); if (e) { e.duelFoe = true; F.list.push(e); bump('gobSpawned'); } }
