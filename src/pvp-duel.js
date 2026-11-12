@@ -17,7 +17,7 @@
 
 import { setPvpEvenTraits } from './traits.js';
 import { DUEL_FOES, FOE, GOBLIN_CHOICES, GOB_NAME, GOB_LINE, FF_LINE, foeModeOf, foeDoorCols, foeAllowed, foePlan, pickDoor, doorFree, foeKind, foeWound } from './duel-foes.js';   /* (claude/duelfoes) THE GOBLINS setting + FRIENDLY FIRE: pure schedule + door data in src/duel-foes.js, behind DUEL_FOES (default OFF) */
-import { DUEL_ARENAS, ARENA_CHOICES, arenaName, arenaLine, cleanArena, arenaOfLevel, hopGoal } from './duel-arenas.js';   /* (claude/duelarenas) THE ARENA setting + the bots' climb: pure data in src/duel-arenas.js, behind DUEL_ARENAS (default OFF) */
+import { DUEL_ARENAS, ARENA_CHOICES, arenaName, arenaLine, cleanArena, arenaOfLevel, hopGoal, ventGoal } from './duel-arenas.js';   /* (claude/duelarenas) THE ARENA setting + the bots' climb: pure data in src/duel-arenas.js, behind DUEL_ARENAS (default OFF) */
 import { makeRoster } from './duel-roster.js';   /* (claude/duelroster) the Smash-Bros-style pick screen: the DUEL entry (the interim settings card stays as ?duelcard / __DUELCARD) */
 const PVP_SHIP_FLAG = true;   /* THE SHIP SWITCH (one line): true = every player sees DUEL (BETA) - FLIPPED 11-06 (Daniel 11:53: the duel goes public in the SAT demo cut, labelled BETA) */
 export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && (!!globalThis.__DUELBETA || (!!globalThis.location && /[?&]duelbeta(=|&|$)/.test(String(globalThis.location.search)))));   /* (pvpduel2) DEV/URL SWITCH: open the game with ?duelbeta (or a tool sets window.__DUELBETA) to see the mode while the ship flag is off */
@@ -158,7 +158,7 @@ export function forgetSlot(ls, i) { const R = loadRanks(ls); delete R.rows['slot
 export const BOT_RANGE = { pyro: 72, ranger: 96, warden: 34, geomancer: 26, paladin: 22, knight: 20, pirate: 24, reaper: 24, berserker: 18 };
 export const freshBot = (diff = 'normal') => ({ think: 0, cd: 0.5, blockT: 0, dodgeCd: 1, skillCd: 3, jumpCd: 1, stuckT: 0, lastX: null, held: {}, diff: BOT_DIFF[diff] ? diff : 'normal', swSeen: 0 });
 /* me/foe: { x, y, vx, face, ground, atk, hp, hero, block, dodge }; s: freshBot(); rnd: () => 0..1; dt. Returns { keys, press } */
-export function botThink(me, foe, s, rnd, dt, hops) {   /* hops (duelarenas): the arena's climbing map (src/duel-arenas.js hopGoal); undefined = nothing to climb (the Pit) */
+export function botThink(me, foe, s, rnd, dt, hops, vents) {   /* hops (duelarenas): the arena's climbing map (src/duel-arenas.js hopGoal); undefined = nothing to climb (the Pit) */
   const keys = { left: false, right: false, up: false, down: false, jump: false, atk: false, block: false, dodge: false, throw: false }, press = {};
   s.cd -= dt; s.dodgeCd -= dt; s.skillCd -= dt; s.jumpCd -= dt; s.blockT -= dt; s.think -= dt;
   if (!foe) return { keys, press };
@@ -176,12 +176,14 @@ export function botThink(me, foe, s, rnd, dt, hops) {   /* hops (duelarenas): th
     else if (sees && dist < 40 && rnd() < D.block) s.blockT = 0.25 + rnd() * 0.2;
     if (s.blockT <= 0 && dist <= want + 12 && s.cd <= 0) { press.atk = true; s.held.face = dir; s.cd = D.cd + rnd() * D.cdJ; }
     if (s.skillCd <= 0 && dist < 110 && rnd() < 0.5) { press.throw = true; s.held.face = dir; s.skillCd = 3 + rnd() * 3; }
-    if (s.jumpCd <= 0 && ((foe.y < me.y - 28 && dist < 90 && !(hops && hops.length && s.hopSeen >= 0.45)) || s.stuckT > 0.6 || rnd() < 0.02)) { press.jump = true; s.jumpCd = 0.8 + rnd(); s.stuckT = 0; }
+    if (s.jumpCd <= 0 && ((foe.y < me.y - 28 && dist < 90 && !(hops && hops.length && s.hopSeen >= 0.45)) || s.stuckT > 0.6 || rnd() < 0.02) && !s.ventWait) { press.jump = true; s.jumpCd = 0.8 + rnd(); s.stuckT = 0; }
     if (foe.y > me.y + 28 && me.ground && rnd() < 0.3) s.held.drop = true;   /* he is under the plank: down through it */
     if (hops && hops.length) {   /* (duelarenas) HOPS: he is a tier or more up and there is a board we can jump from here: walk under it, jump, and steer onto it in the air */
-      if (me.ground) s.hopB = null;
+      if (me.ground) { s.hopB = null; if (!(s.hopSeen >= 0.45)) s.ventWait = false; }
       if (!me.ground && s.hopB) { s.held.move = me.x < s.hopX - 3 ? 1 : me.x > s.hopX + 3 ? -1 : 0; }   /* in the air: steer for the middle of where we mean to land (the board's own middle if it is narrow) */
-      else if (s.hopSeen >= 0.45) { const hg = hopGoal(me, foe, hops); if (hg) { const ddx = hg.tx - me.x; s.held.move = Math.abs(ddx) > 5 ? Math.sign(ddx) : 0; if (hg.jump && s.jumpCd <= 0) { press.jump = true; s.jumpCd = 0.8 + rnd() * 0.4; s.stuckT = 0; s.hopB = hg.board; const bw = hg.board[2] - hg.board[1] + 1; s.hopX = bw >= 3 ? Math.max(hg.board[1] * 16 + 16, Math.min((hg.board[2] + 1) * 16 - 16, hg.tx)) : (hg.board[1] + hg.board[2] + 1) * 8; } } } }
+      else if (s.hopSeen >= 0.45 && vents && vents.length && (s.vg = ventGoal(me, foe, vents, hops))) {   /* (duelarenas-b) A SPORE VENT: walk onto it and WAIT for the puff (no jump), then steer to stay over it in the air */
+        const vg = s.vg, ddx = vg.tx - me.x; s.held.move = vg.ok ? 0 : Math.abs(ddx) > 4 ? Math.sign(ddx) : 0; s.ventWait = vg.ok; s.hopB = vg.board; s.hopX = vg.tx; }
+      else if (s.hopSeen >= 0.45) { s.ventWait = false; const hg = hopGoal(me, foe, hops); if (hg) { const ddx = hg.tx - me.x; s.held.move = Math.abs(ddx) > 5 ? Math.sign(ddx) : 0; if (hg.jump && s.jumpCd <= 0) { press.jump = true; s.jumpCd = 0.8 + rnd() * 0.4; s.stuckT = 0; s.hopB = hg.board; const bw = hg.board[2] - hg.board[1] + 1; s.hopX = bw >= 3 ? Math.max(hg.board[1] * 16 + 16, Math.min((hg.board[2] + 1) * 16 - 16, hg.tx)) : (hg.board[1] + hg.board[2] + 1) * 8; } } } }
   }
   if (s.blockT > 0) keys.block = true;
   const mv = s.held.face || s.held.move || 0;
@@ -402,7 +404,7 @@ export function makeDuel(api) {
       if (gob && s.diff === 'easy') { s.gobT = (s.gobT || 0) - 1 / 60; if (s.gobT <= 0) { s.gobT = 1; s.gobIgn = st.rnd() < 0.5; } if (s.gobIgn) gob = null; } }
     const P = api.P(), me = { x: P.x, y: P.y, vx: P.vx, face: P.face, ground: !!P.ground, atk: P.atk, hero: p.hero };
     const f = gob ? { x: gob.x, y: gob.y, atk: -1, plunge: false, hero: 'goblin' } : foe ? { x: foe.x, y: foe.y, atk: foe.atk, plunge: foe.plunge, hero: foe.hero } : null;
-    const out = botThink(me, f, s, st.rnd, 1 / 60, DUEL_ARENAS && api.L().duelPit.hops);
+    const out = botThink(me, f, s, st.rnd, 1 / 60, DUEL_ARENAS && api.L().duelPit.hops, DUEL_ARENAS && api.L().duelPit.vents);
     api.keysWrite(out.keys); api.pressWrite(out.press);
   }
   function rematch() { const bh = st.seats.filter(p => p.duelBot).map(p => p.hero), pl = st.plan; begin({ settings: pl || undefined, botHeroes: bh.length ? bh : undefined, seed: st.seed + 1 }); }
