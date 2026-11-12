@@ -7,7 +7,7 @@ const { CF3 } = C;
 const near = (a, b, m, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, m + ': ' + a + ' vs ' + b);
 
 /* the flag ships OFF; the setter flips it */
-assert.equal(C.CF3_SHIPS, false, 'CF3_SHIPS ships false'); C.setCF3(true); assert.equal(C.CF3_SHIPS, true); C.setCF3(false); assert.equal(C.CF3_SHIPS, false);
+assert.equal(C.CF3_SHIPS, true, 'CF3_SHIPS ships true'); C.setCF3(false); assert.equal(C.CF3_SHIPS, false); C.setCF3(true); assert.equal(C.CF3_SHIPS, true);
 
 /* 1. FLASH CURVE: white 0.05 s, then a 40% tint fading to 0 at the end of the flash; Flashes slider scales the white; Flashes 0 = tint only; small flashes never white */
 {
