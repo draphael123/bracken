@@ -23,17 +23,17 @@ export const GP = {
   resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0, shotUp: 0.85,
   gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
   lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 31, reach: 30, stagger: 1.0 },
-  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: 13, reach: 30, preen: 1.2 },
-  trinket: { tell: 0.5, n: [2, 3], dmg: P4 ? 7 : 9 /* (GQ4TUNE r2, flag ON only: 9 -> 7; r1 crown:mini n=12/hero 20/36 = 56%, trinkets 87 dmg a fight) */, life: 1.5, fly: 0.7, g: 520, r: 4 },
+  flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: P4 ? 11 : 13 /* (GQ4TUNE-t, flag ON only) */, reach: 30, preen: 1.2 },
+  trinket: { tell: 0.5, n: [2, 3], dmg: P4 ? 6 : 9 /* (GQ4TUNE-t: 7 -> 6) (GQ4TUNE r2, flag ON only: 9 -> 7; r1 crown:mini n=12/hero 20/36 = 56%, trinkets 87 dmg a fight) */, life: 1.5, fly: 0.7, g: 520, r: 4 },
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 6, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
   bell: { cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
-  tiara: { tell: 0.6, out: 220, speed: 300, dmg: 18, stun: 2.5 },
+  tiara: { tell: 0.6, out: 220, speed: 300, dmg: P4 ? 14 : 18 /* (GQ4TUNE-t, flag ON only: 18 -> 14) */, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: P4 ? 16 : 20 /* (GQ4TUNE r4, flag ON only: 20 -> 16) */, speed: 220 },
   /* (claude/gq4p-d, GQ4 plan sec 2) THE GATES: 'GUARDS!' tell 1.0 s, the open gates' lanterns burn 3.5 s, then one goblin per open gate (never more than maxAlive alive); THE KEY (tell 1.2 s; a blow in it = STAGGERED 1.5 s);
      'ALL GATES!' (tell 1.5 s, 4 ads +1 per extra seat, cap 6; she is INVINCIBLE until the last one falls, 40 s failsafe), then DAZED 2.0 s x1.15 and phase 2 */
-  gate: { callTell: 1.0, lantern: 3.5, cd: [14, 11], firstCall: 7, maxAlive: 3, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 30 /* (GQ4TUNE r4: 40 -> 30) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
+  gate: { callTell: 1.0, lantern: 3.5, cd: [14, 11], firstCall: 7, maxAlive: 2 /* (GQ4TUNE-t: 3 -> 2) */, keyTell: 1.2, keyStagger: 1.5, dash: 240, keyTurn: 0.35, allTell: 1.5, failsafe: 15 /* (GQ4TUNE-t: 30 -> 15; r4: 40 -> 30) */, daze: 2.0, shimTrinket: 5, slam: 0.6 },
   dazeMul: 1.15, dizzyMul: 1.0,
   /* THE PIROUETTE (phase 2): tell 0.7 s, a skid line drawn along her path, two spinning passes at 260 px/s, rapier at shin height (jump it or roll through), then DIZZY 1.4 s; cd 9 s */
   pir: { tell: 0.7, speed: 260, len: 300, min: 120, dmg: 10, /* (GQ4TUNE r1: 14 -> 10; baseline n=6/hero 8/18 = 44%) */ h: 10, reach: 9, dizzy: 1.4, cd: 9 },
