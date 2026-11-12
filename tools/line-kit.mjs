@@ -332,8 +332,9 @@ function sweep(hero, seats, lab = labOK) {
     ok(LK.CLIMB_FOOT > 0.68 && LK.CLIMB_EASE === 0.4, 'the foot line moves down the screen from the 0.68 default; eased over 0.4 s'); }
   /* (f) THE FLAG: OFF now (hidden + dev + no needs, the Ore Road behind the Sky Road); ON in a stub (the needs chain, no cycle) */
   { const { LEVELS, ROAD_OPEN, HL_SHIPS } = await import('../src/level.js'), hl = LEVELS.find(l => l.id === 'highlines'), ore = LEVELS.find(l => l.id === 'oreroad'), idx = id => LEVELS.findIndex(l => l.id === id);
+    if (HL_SHIPS) { ok(ROAD_OPEN.highlines === true && hl && !hl.hidden && hl.needs === 'skyroad' && ore.needs === 'highlines', 'flag ON (claude/hllive: ?hl=1 / hl-on.mjs / the release flip): the High Lines need the Sky Road, the Ore Road needs them (tools/hl-road.mjs holds the rest)'); } else {
     ok(ROAD_OPEN.highlines === false && HL_SHIPS === false, 'flag OFF: ROAD_OPEN.highlines is false (the level ships only with the release lane)');
-    ok(hl && hl.hidden === true && hl.dev === true && !hl.needs, 'flag OFF: THE HIGH LINES is hidden + dev with no needs (reached by ?level=highlines only)'); ok(ore.needs === 'skyroad', 'flag OFF: oreroad.needs stays skyroad');
+    ok(hl && hl.hidden === true && hl.dev === true && !hl.needs, 'flag OFF: THE HIGH LINES is hidden + dev with no needs (reached by ?level=highlines only)'); ok(ore.needs === 'skyroad', 'flag OFF: oreroad.needs stays skyroad'); }
     ok(idx('lesson') >= 0 && idx('lesson') < idx('highlines') && idx('highlines') === LEVELS.length - 1, 'highlines is appended AFTER lesson, and last (saves count levels by index)');
     const stub = LEVELS.map(l => ({ id: l.id, needs: l.needs })); stub.find(l => l.id === 'highlines').needs = 'skyroad'; stub.find(l => l.id === 'oreroad').needs = 'highlines';
     const chain = id => { const out = [], seen = new Set(); for (let l = stub.find(q => q.id === id); l; l = l.needs ? stub.find(q => q.id === l.needs) : null) { ok(!seen.has(l.id), 'flag ON stub: no needs cycle at ' + l.id); seen.add(l.id); out.push(l.id); } return out; };

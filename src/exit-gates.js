@@ -27,7 +27,7 @@ export const KIND_OF = {
   marsh: 'marsh', fenroad: 'marsh', stockade: 'marsh', burning: 'marsh',
   spore: 'fungus', rootway: 'fungus', kings: 'fungus', underleaf: 'fungus',
   scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', rookery: 'crag', skyroad: 'crag',
-  oreroad: 'mine', minecart: 'mine',
+  oreroad: 'mine', minecart: 'mine', highlines: 'mine',   /* (claude/hllive) THE HIGH LINES ends at the ropeway's head station: the lift cage in its headframe, on the way into the mines */
   storm: 'storm', crown: 'storm', undercrown: 'storm', kitchengate: 'storm', warcairn: 'storm',
   longwater: 'coast', reef: 'coast', flotilla: 'coast', hurricane: 'coast', lamplit: 'coast', deep: 'coast', keep: 'coast', causeway: 'coast', harbor: 'coast',
   waymeet: 'canal', towpath: 'canal', canal: 'canal', theatre: 'canal', fair: 'canal',

@@ -179,3 +179,15 @@ export function drawLeverArt(g, x, y, swing, hot, now, time) {
   g.fillStyle = hot ? CP.gold : CP.iron[4]; g.fillRect(lx - 2, ly - 2, 5, 5); g.fillStyle = CP.iron[0]; g.fillRect(lx, ly, 1, 1);                                                               /* the grip */
   if (hot) { g.globalAlpha = now ? 0.6 + 0.4 * Math.sin(time * 24) : 0.45; g.fillStyle = now ? '#fff3a0' : '#ffb347'; g.fillRect(x - 10, y - 28, 20, 1); g.fillRect(x - 10, y - 1, 20, 1); g.fillRect(x - 10, y - 28, 1, 28); g.fillRect(x + 9, y - 28, 1, 28); g.globalAlpha = 1; }
 }
+
+/* =============================================================== BESTIARY CARDS (claude/hllive) =============================================================== */
+/* The Hookjack and Skyhook are drawn live from the functions above, so the bestiary page needs a baked SET ({ R, L, white, ax, ay, w, h }, the shape main.js drawSet reads, as SPR[t + 'Card']).
+   The Hookjack stands on his feet (the four foot frames: a slow walk, the hook over his shoulder); Skyhook stands in his two perch poses (src/skyhook-hands.js POSE.perch / POSE.wake, copied here so this file
+   stays free of the fight's imports). Each is cut tight to its pixels (the Hookjack 30x40, Skyhook 34x50: both under the 26-px-wide x2 / 46-px-high box rule of the page, so the page draws them at x1), the feet kept as `ay`. */
+const CARD_SKY = [{ crouch: 0, lean: 0, hand: [8, -18], off: [-6, -14], hook: [10, -40], legs: 'stand' }, { crouch: 0, lean: 0.06, hand: [8, -18], off: [-6, -15], hook: [11, -40], legs: 'stand' }];
+export function bakeLineCrewCards(mk, flip, white) {
+  const set = (frames, ax, ay) => { const w = frames[0].width, h = frames[0].height; return { R: frames, L: frames.map(flip), white: { R: frames.map(c => white(c)), L: frames.map(c => white(flip(c))) }, ax, ay, w, h }; };
+  const hj = [0, 1, 2, 3].map(k => { const [c, g] = mk(30, 40); drawHookjack(g, { x: 14, y: 36, face: 1, mode: 'foot', vx: 1, anim: 0.04 + k * 0.2, flash: 0 }, 0, 0, k * 0.4); return c; });
+  const sk = CARD_SKY.map((p, k) => { const [c, g] = mk(34, 50); drawRiggerArt(g, p, false, k * 0.5, 1, 12, 47, 1); return c; });
+  return { hookjackCard: set(hj, 14, 36), skyhookCard: set(sk, 12, 47) };
+}
