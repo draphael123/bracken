@@ -15,8 +15,8 @@ const { Q4, Q4N } = await imp('src/gq4q.js');
 const HSm = await imp('src/hero-strikes.js');
 const { SH_HALL: HC } = await imp('src/gq4l.js'); const HS = HC * 16;
 if (!Q4) { ok(GQ3.hp2 === 1775 && GQ3.p2.resist === 0.5, 'flag OFF: hp2 1775 and the 0.5x resist are master\'s'); console.log(fails ? 'FAIL gq4q' : 'ok  gq4q (flag off: nothing to prove)'); process.exit(fails ? 1 : 0); }
-ok(GQ3.hp2 === Q4N.p2.hp && GQ3.p2.resist === 0.4, 'hp2 1775 -> the tuned Q4N.p2.hp (' + Q4N.p2.hp + ') and the P2 chip 0.5 -> 0.4');
-ok(Q4N.p2.shardPct === 0.05 && Q4N.p2.dazeN === 4 && Q4N.p2.dazeWin === 10 && Q4N.p2.daze === 2.5 && Q4N.p2.dazeMul === 1.25 && Q4N.p2.dazeCap === 0.08 && Q4N.p2.ward === 3, 'the shard rule (tuned r4): 5%, four inside 10 s = DAZED 2.5 s x1.25 (cap 8%), then a 3 s ward');
+ok(GQ3.hp2 === Q4N.p2.hp && GQ3.p2.resist === Q4N.p2.chip && Q4N.p2.chip >= 0.4, 'hp2 1775 -> the tuned Q4N.p2.hp (' + Q4N.p2.hp + ') and the P2 chip 0.5 -> ' + Q4N.p2.chip + ' (GQ4TUNE-t: 0.5, floor 0.4)');
+ok(Q4N.p2.shardPct === 0.08 && Q4N.p2.dazeN === 4 && Q4N.p2.dazeWin === 10 && Q4N.p2.daze === 2.5 && Q4N.p2.dazeMul === 1.25 && Q4N.p2.dazeCap === 0.08 && Q4N.p2.ward === 3, 'the shard rule (tuned GQ4TUNE-t): 8%, four inside 10 s = DAZED 2.5 s x1.25 (cap 8%), then a 3 s ward');
 ok(Q4N.p2.volley.tell === 0.6 && Q4N.p2.volley.v === 240 && Q4N.p2.volley.dmg === 4 && Q4N.p2.volley.cd === 2.5 && Q4N.p2.boulder.dmg === 9 && Q4N.p2.rockfall.dmg === 6 && Q4N.p2.rockfall.cd === 10 && Q4N.p2.capLive === 9, 'volley 0.6 s / 240 px/s / 4 / cd 2.5; boulder 9; rockfall 6 / cd 10; 9 shards live at most');
 const make = (opt = {}) => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W;
