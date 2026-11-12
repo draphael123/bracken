@@ -32,7 +32,8 @@ try {
            mk(P => { clr(P, upTo('skyroad')); }) ] }; })()`, 60000);
   pg.close();
 } catch (e) { console.log('page 1 failed: ' + e.message); try { pg.close(); } catch {} process.exit(2); }
-assert.equal(saves.road, false, 'page 1 must be the road-shut page');
+/* (rel164) AFTER THE FLIP (ROAD_OPEN.highlines literal true) no road-shut page exists: page 1 would build its 'old' saves with the High Lines in the chain, not the shape a player has today. The migration was proven green BEFORE the flip (rel164 ran this tool on claude/prephl, flag false: 13/13 ok); flip it back to false to re-run. */
+if (saves.road !== false) { console.log('SKIP hl-save-page: the High Lines flag is live, there is no road-shut page to write old-shape saves from (proven green pre-flip; node tools/hl-road.mjs still runs the rule with the real progDefaults line)'); process.exit(0); }
 console.log('page 1 (road shut): ROAD_OPEN.highlines=' + saves.road + ', highlines visible=' + saves.hasHL + ', oreroad needs ' + saves.oreNeeds + ', level after the Ore Road: ' + saves.after);
 
 const READ = `(async (raw, openFirst) => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const ls = localStorage; ls.clear();
