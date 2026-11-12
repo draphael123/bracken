@@ -75,7 +75,7 @@ near(kickFor('heavy', 1), 1.5, 'heavy kick'); near(kickFor('finish', -1), -2, 'f
 const J = await import('../src/juice.js'); assert.equal(J.JUICE2.light.stop, 0.065); assert.equal(J.JUICE2.heavy.stop, 0.110); assert.equal(J.JUICE2.finish.stop, 0.130); assert.equal(J.JUICE.hurt.stop, 0.08 > 0 ? J.JUICE.hurt.stop : 0);
 
 /* (claude/cf1fix) STAGED-CHARGE HEROES: each hero's own tier path reaches the cue exactly once at half and once at full (ON), never OFF; the plain path (pyro/warden/paladin) is glintDue above */
-{ const heroes = { knight: [2, 3, [0, 2, 3]], ranger: [2, 3, [0, 1, 2, 3]], berserker: [2, 3, [0, 1, 2, 3]], geomancer: [2, 3, [0, 1, 2, 3]], reaper: [3, 5, [0, 1, 2, 3, 4, 5]] };
+{ const heroes = { knight: [2, 3, [0, 2, 3]], ranger: [1, 2, [0, 1, 2]], berserker: [2, 3, [0, 1, 2, 3]], geomancer: [2, 3, [0, 1, 2, 3]], reaper: [3, 5, [0, 1, 2, 3, 4, 5]] };
   const run = (hs, fs_, seq) => { const s = {}; let g = 0, f = 0, gAt = -1, fAt = -1; seq.forEach((st, i) => { for (let rep = 0; rep < 30; rep++) { const c = C.stageCue(st, hs, fs_, s); if (c.glint) { g++; gAt = st; } if (c.flash) { f++; fAt = st; } } }); return { g, f, gAt, fAt, s }; };
   for (const [h, [hs, fs_, seq]] of Object.entries(heroes)) {
     setCF1(true); const on = run(hs, fs_, seq); assert.equal(on.g, 1, h + ' glint once'); assert.equal(on.f, 1, h + ' flash once'); assert.equal(on.gAt, hs, h + ' glint at its half tier'); assert.equal(on.fAt, fs_, h + ' flash at its top tier');
@@ -84,7 +84,7 @@ const J = await import('../src/juice.js'); assert.equal(J.JUICE2.light.stop, 0.0
   }
   setCF1(false);
   const M2 = read('src/main.js'); const seg = (a, b) => { const u = M2.indexOf('if (P.charge > 0) { P.vx *= 0.86;'), i = M2.indexOf(a, u), j = M2.indexOf(b, i); assert.ok(i > 0 && j > i, 'segment ' + a); return M2.slice(i, j); };
-  const paths = { ranger: ['if (rgDrawing()) { const st = rgTier();', 'if (isBz()) { const st = bzTierNow();', 'cf1Stage(st, 2, 3,'], berserker: ['if (isBz()) { const st = bzTierNow();', 'if (isGeo() && GEO) {', 'cf1Stage(st, 2, 3,'], geomancer: ['if (isGeo() && GEO) {', 'if (isReaper()) { const st = bkTier();', 'cf1Stage(st, 2, 3,'], reaper: ['if (isReaper()) { const st = bkTier();', 'const k = Math.min(1, P.charge / heavyWind());', 'cf1Stage(st, 3, 5,'], knight: ["if (hero() === 'knight') { const st = cutStage(P.atkHeld);", 'if (CF1_SHIPS) { if (cfGlintDue(k, P.cf1Half))', 'cf1Stage(st, 2, 3,'] };
+  const paths = { ranger: ['if (rgDrawing()) { const st = rgTier();', 'if (isBz()) { const st = bzTierNow();', 'cf1Stage(st, 1, 2,'], berserker: ['if (isBz()) { const st = bzTierNow();', 'if (isGeo() && GEO) {', 'cf1Stage(st, 2, 3,'], geomancer: ['if (isGeo() && GEO) {', 'if (isReaper()) { const st = bkTier();', 'cf1Stage(st, 2, 3,'], reaper: ['if (isReaper()) { const st = bkTier();', 'const k = Math.min(1, P.charge / heavyWind());', 'cf1Stage(st, 3, 5,'], knight: ["if (hero() === 'knight') { const st = cutStage(P.atkHeld);", 'if (CF1_SHIPS) { if (cfGlintDue(k, P.cf1Half))', 'cf1Stage(st, 2, 3,'] };
   for (const [h, [a, b, call]] of Object.entries(paths)) { const s = seg(a, b); assert.equal(s.split('if (CF1_SHIPS) ' + call).length - 1, 1, h + ' path calls the CF1 cue once, flag-guarded'); assert.ok(s.indexOf('if (CF1_SHIPS) ' + call) < s.indexOf('return;'), h + ' cue runs before the path returns'); }
   assert.match(M2, /function cf1Stage\(st, halfSt, fullSt, x, y\) \{ const c = cfStageCue\(st, halfSt, fullSt, P\)/); assert.match(M2, /P\.chargeFull = false; P\.cf1Half = false; P\.cf1Full = false;/);
 }

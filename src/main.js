@@ -10388,7 +10388,7 @@ function updateCharge(dt) {
       if (st > (P.rgShown || 0)) { P.rgShown = st; P.rgTierAt = time; const T = RG_K.tiers, tx = P.x + P.face * 10, ty = P.y - 14, col = T.cols[st];
         if (SFX.rgTier) SFX.rgTier(st, RGK.focusFull()); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tx, ty, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tx, ty, 2 + 3 * st, [col, '#ffffff'], 50, 0.3, -30, 1); if (st === 3) shakeCam(1.5); }
-      if (CF1_SHIPS) cf1Stage(st, 2, 3, P.x + P.face * 10, P.y - 14);   /* (claude/cf1fix) the glint at the middle tier, the flash at the top */
+      if (CF1_SHIPS) cf1Stage(st, 1, 2, P.x + P.face * 10, P.y - 14);   /* (claude/cf1fix, rel165b) rgTier tops out at 2 (the steady window), so the glint is the full draw (1) and the flash the steady window (2); 3 was unreachable */
       if (rgShaky() && !P.rgShakeSaid) { P.rgShakeSaid = true; number(P.x, P.y - 28, 'SHAKING', '#9aa39a'); shakeCam(1, 0); }   /* (claude/rangerid) held past the steady window: the hand shakes */
       if (P.atkHeld >= rgWinEnd(rgQuick(), HEAVY_START, RGK.focusFull()) + RG_K.tiers.auto * rgQuick()) { P.rgTierWant = 1; P.rgShakyWant = 1; P.rgShown = 0; fireHeavy(); }   /* held past the window long enough, it goes by itself (shaky) */
       return; }
