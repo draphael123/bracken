@@ -84,7 +84,7 @@ const M = read('src/main.js'), A = read('src/audio.js');
 assert.match(M, /from '\.\/cf-impact\.js'/); assert.match(M, /if \(q\.get\('cf1'\) === '1'\) setCF1\(true\)/);
 assert.match(M, /const blowKind = \(e, dmg, tag\) => CF1_SHIPS \? cfClass\(blowKind0\(e, dmg, tag\)/, 'blowKind OFF = blowKind0 (batch158 body)');
 assert.match(M, /const blowKind0 = \(e, dmg, tag\) => IMPACT === 'heavy'/);
-assert.match(M, /if \(CF1_SHIPS\) \{ const g0 = cfStopGate\(cf1Lim/); assert.match(M, /if \(!CF1_SHIPS\) hitstop\(TIP_K\.stop\); else cfTipFx\(e\)/, 'the old tip stop stays OFF-path');
+assert.match(M, /if \(CF1_SHIPS\) \{ cls = cf1Cls\(e, dmg, tag, cls\)/); assert.match(M, /cfStopGate\(cf1Lim, e, cls, time,/);   /* (cf1proof) the limiter runs on the game's time, never the wall clock */ assert.ok(!/cfStopGate\(cf1Lim[^)]*performance\.now/.test(M) && !/cfJetGate\(cf1Lim[^)]*performance\.now/.test(M)); assert.match(M, /if \(!CF1_SHIPS\) hitstop\(TIP_K\.stop\); else cfTipFx\(e\)/, 'the old tip stop stays OFF-path');
 assert.match(M, /if \(CF1_SHIPS\) \{ P\.cf1Skill = k; P\.cf1SkillAt = time; \}/); assert.match(M, /P\.jetHit && cfJetGate\(cf1Lim/); assert.match(M, /e\.cf1ShaftT = time/);
 assert.match(M, /cfLeanPx\(P, key, frame, SET\.reduceMotion\)/); assert.match(M, /if \(am \|\| cfLx\) g\.restore\(\)/); assert.match(M, /cfFlashAlpha\(time, P\.cf1FlashAt/); assert.match(M, /if \(CF1_SHIPS\) P\.cf1RelAt = time/); assert.match(M, /cfRelSmearHit\(P, time\)/);
 assert.match(M, /if \(CF1_SHIPS && jc !== 'light'\) shakeCam\(0, cfKickFor\(jc, dir\), 'land'\)/); assert.match(M, /if \(CF1_SHIPS\) shakeCam\(0, cfKickFor\('finish', dir\), 'land'\)/); assert.match(M, /SFX\.cfBoom\(\)/);

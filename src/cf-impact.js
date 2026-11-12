@@ -8,7 +8,7 @@ export let CF1_SHIPS = false;
 export const setCF1 = on => { CF1_SHIPS = !!on; };
 
 export const CF1 = {
-  tickGap: 0.12,          /* real seconds: at most ONE light stop per foe in this window (5 hits in 0.3 s -> 3 stops) */
+  tickGap: 0.12,          /* game seconds (main.js passes `time`; a reset clock = expired): at most ONE light stop per foe in this window (5 hits in 0.3 s -> 3 stops) */
   heavyGap: 0.30,         /* a skill-upgraded heavy: a second one on the same foe inside this window lands as a light (a whirlwind's rings do not freeze 110 ms each) */
   skillWindow: 1.5,       /* s after the skill went off in which a blow counts as the skill's (the same window main.js rpSkillBlow uses) */
   jet: { sparks: 2, flash: 0.06, gap: 0.12, cols: ['#ff9a5c', '#ffd36b'] },   /* a flame tick: flash + 2 sparks + a soft sizzle, NO stop */
@@ -50,13 +50,13 @@ export function cfClass(base, skillId, age, tag) {
 export function makeLimiter() { return { lastAny: new WeakMap(), lastHeavy: new WeakMap(), lastJet: new WeakMap() }; }
 export function stopGate(lim, foe, cls, now, upgraded = false) {
   if (!CF1_SHIPS || !foe) return { stop: true, cls };
-  if (cls === 'heavy' && upgraded) { const h = lim.lastHeavy.get(foe); if (h !== undefined && now - h < CF1.heavyGap) cls = 'light'; else lim.lastHeavy.set(foe, now); }
-  if (cls === 'light') { const t = lim.lastAny.get(foe); if (t !== undefined && now - t < CF1.tickGap - 1e-9) return { stop: false, cls }; }
+  if (cls === 'heavy' && upgraded) { const h = lim.lastHeavy.get(foe); if (h !== undefined && now - h >= 0 && now - h < CF1.heavyGap) cls = 'light'; else lim.lastHeavy.set(foe, now); }
+  if (cls === 'light') { const t = lim.lastAny.get(foe); if (t !== undefined && now - t >= 0 && now - t < CF1.tickGap - 1e-9) return { stop: false, cls }; }
   lim.lastAny.set(foe, now);
   return { stop: true, cls };
 }
 /* a flame tick (P.jetHit / burn): no stop ever, at most one feedback per foe per jet.gap */
-export function jetGate(lim, foe, now) { if (!CF1_SHIPS || !foe) return false; const t = lim.lastJet.get(foe); if (t !== undefined && now - t < CF1.jet.gap - 1e-9) return false; lim.lastJet.set(foe, now); return true; }
+export function jetGate(lim, foe, now) { if (!CF1_SHIPS || !foe) return false; const t = lim.lastJet.get(foe); if (t !== undefined && now - t >= 0 && now - t < CF1.jet.gap - 1e-9) return false; lim.lastJet.set(foe, now); return true; }
 
 /* 3. WARDEN TIP / SHAFT (matrix #7): what the point and the middle of the shaft do (the spear's tipPay stamps the foe with the kind) */
 export const tipRead = kind => !CF1_SHIPS ? null : kind === 'tip' ? { stop: CF1.tip.stop, star: CF1.tip.star, ring: CF1.tip.ring, gain: 1, pitch: 1 } : kind === 'shaft' ? { stop: 'light', star: null, ring: 0, gain: CF1.shaft.gain, pitch: CF1.shaft.pitch } : null;
