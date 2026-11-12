@@ -69,8 +69,28 @@ function parted(g, X0, Y0, X1, Y1, time) {
 const windOn = w => (w.grace > 0 ? { blow: false, told: w.grace <= w.told } : { blow: w.t < w.on, told: w.t >= w.period - w.told });
 
 /* ---------- THE KIT, DRAWN ---------- */
+/* ---------- (claude/hlfix) THE END SUPPORTS: no rope end hangs in the air (Daniel 11-12). kit.ends (src/line-kit.js endSupports) says what holds each end: a lattice MAST down to the deck it stands on
+   (with a foot beam to the deck's end when the deck is beside it), a HANGER up to a deck's underside (with an outrigger beam when the deck ends short of it), or an ARM bolted to a cliff wall ---------- */
+function lattice(g, x, y0, y1, w) {
+  if (y1 - y0 < 3) return; const l = Math.round(x - w / 2), r = l + w - 1, h = y1 - y0;
+  rc(g, l, y0, 1, h, HP.iron[4]); rc(g, l + 1, y0, 1, h, HP.iron[3]); rc(g, r, y0, 1, h, HP.iron[1]); if (w > 5) { rc(g, r - 1, y0, 1, h, HP.iron[2]); }   /* the rails: a lit edge, a dark one */
+  for (let yy = y0 + 2, k = 0; yy < y1 - 4; yy += 5, k++) { ln(g, l + 1, k & 1 ? yy + 4 : yy, r - 1, k & 1 ? yy : yy + 4, HP.iron[2]); if (k % 3 === 0) rc(g, l, yy, w, 1, HP.iron[1]); }   /* the zig-zag bracing and a rung */
+}
+function mastBase(g, x, y, w) { const l = Math.round(x - w / 2); rc(g, l - 2, y - 3, w + 4, 3, HP.iron[2]); rc(g, l - 2, y - 3, w + 4, 1, HP.iron[5]); dot(g, l - 1, y - 2, HP.iron[0]); dot(g, l + w, y - 2, HP.iron[0]); }   /* a base plate on the deck, two bolts */
+function beam(g, x0, x1, y) { const l = Math.min(x0, x1), n = Math.abs(x1 - x0); if (n < 1) return; rc(g, l, y, n, 3, HP.iron[3]); rc(g, l, y, n, 1, HP.iron[5]); rc(g, l, y + 2, n, 1, HP.iron[1]); const s = x1 > x0 ? 1 : -1; ln(g, x1, y + 3, x1 - s * Math.min(n, 9), y + 3 + Math.min(n, 9), HP.iron[2]); }   /* an I-beam with a knee brace under its far end */
+function endSupport(g, r, X, Y, cx, cy) {
+  const x = Math.round(X), yTop = Y + 6;
+  if (r.kind === 'deck') { const yb = Math.round(r.toY * 16 - cy), w = r.tall ? 6 : 4, fx = Math.round(r.foot * 16 - cx); lattice(g, x, yTop, yb - 3, w); mastBase(g, x, yb, w); if (Math.abs(fx - x) > 2) beam(g, x, fx, yb - 3); }
+  else if (r.kind === 'hang') { const yt = Math.round(r.toY * 16 - cy), fx = Math.round(r.foot * 16 - cx); lattice(g, x, yt + 2, Y - 6, 4); rc(g, x - 3, yt, 7, 3, HP.iron[2]); rc(g, x - 3, yt, 7, 1, HP.iron[5]); if (Math.abs(fx - x) > 2) beam(g, fx, x, yt); }
+  else if (r.kind === 'wall') { const wx = Math.round(r.wallX * 16 - cx); beam(g, x, wx, Y + 3); rc(g, wx - (r.side < 0 ? -1 : 4), Y - 6, 4, 14, HP.iron[2]); rc(g, wx - (r.side < 0 ? -1 : 4), Y - 6, 4, 1, HP.iron[5]); dot(g, wx + (r.side < 0 ? 1 : -2), Y - 3, HP.iron[0]); dot(g, wx + (r.side < 0 ? 1 : -2), Y + 3, HP.iron[0]); }
+}
+export function drawEndSupports(g, kit, cx, cy, VW, VH) {
+  for (const r of kit.ends || []) { const z = kit.lines[r.line]; if (!z || r.kind === 'none') continue; const X = (r.end === 'a' ? z.x0 : z.x1) - cx, Y = (r.end === 'a' ? z.y0 : z.y1) - cy;
+    if (X < -60 || X > VW + 60 || Math.max(Y, r.toY !== undefined ? r.toY * 16 - cy : Y) < -40 || Math.min(Y, r.toY !== undefined ? r.toY * 16 - cy : Y) > VH + 40) continue; endSupport(g, r, X, Y, cx, cy); }
+}
 export function drawLines(g, kit, cx, cy, VW, VH, time, riders = []) {
   const hauled = id => riders.find(r => r.id === id);
+  drawEndSupports(g, kit, cx, cy, VW, VH);   /* (claude/hlfix) the masts, hangers and wall arms under every rope end, behind the ropes */
   for (const z of kit.list) {
     if (z.xb < cx - 60 || z.xa > cx + VW + 60) continue;
     const X0 = R(z.x0 - cx), Y0 = R(z.y0 - cy), X1 = R(z.x1 - cx), Y1 = R(z.y1 - cy);
@@ -79,7 +99,7 @@ export function drawLines(g, kit, cx, cy, VW, VH, time, riders = []) {
     if (z.cut > 0) { parted(g, X0, Y0, X1, Y1, time); anchor(g, X0, Y0, X1 > X0 ? 1 : -1); anchor(g, X1, Y1, X1 > X0 ? -1 : 1); continue; }
     rope(g, z, X0, Y0, X1, Y1, time, !!rider || z.run > 0, z.tell > 0);
     if (z.snapX != null && z.tell > 0) fray(g, R(z.snapX - cx), R(lineY(z, z.snapX) - cy), time);
-    if (z.kind === 'winch') { anchor(g, lx, ly, hx > lx ? 1 : -1); winchMachine(g, hx - (hx > lx ? 12 : -12), hy + 2, hx > lx ? -1 : 1, ph, !!rider || z.run > 0); rc(g, hx - (hx > lx ? 4 : -4) - 1, hy - 1, 6, 3, HP.iron[3]); }
+    if (z.kind === 'winch') { anchor(g, lx, ly, hx > lx ? 1 : -1); { const hr = (kit.ends || []).find(q => q.line === z.id && q.end === (hi ? 'b' : 'a')); if (hr && hr.kind === 'deck' && !hr.tall && Math.abs(hr.foot - hr.x) <= 1) { const mx = hx - (hx > lx ? 12 : -12), yb = Math.round(hr.toY * 16 - cy); lattice(g, mx, hy + 5, yb - 3, 8); mastBase(g, mx, yb, 8); } } winchMachine(g, hx - (hx > lx ? 12 : -12), hy + 2, hx > lx ? -1 : 1, ph, !!rider || z.run > 0); rc(g, hx - (hx > lx ? 4 : -4) - 1, hy - 1, 6, 3, HP.iron[3]); }
     else { anchor(g, X0, Y0, X1 > X0 ? 1 : -1); anchor(g, X1, Y1, X1 > X0 ? -1 : 1); if (z.kind === 'glide') { stopBlock(g, X0, Y0, X1 > X0 ? 1 : -1); stopBlock(g, X1, Y1, X1 > X0 ? -1 : 1); } else { sheave(g, hx, hy - 2, ph); } }
     if (z.kind === 'winch') sheave(g, lx, ly + 1, ph);
     for (const p of z.points) { const x = R(p.at - cx), y = R(lineY(z, p.at) - cy), tz = kit.lines[p.to], s = tz ? (tz.xa + tz.xb) / 2 > p.at ? 1 : -1 : 1; pointsBoard(g, x, y, s, false); }

@@ -87,6 +87,7 @@ export function lineInit(L) {
   }
   for (const d of D.winds || []) kit.winds.push({ id: d.id, d, B: boxPx(d.box), dir: d.dir || 1, period: d.period || 4, on: d.on ?? 2, told: d.told ?? 1.2,
     shove: Math.min(LK.SHOVE_CAP, d.shove ?? 240), sway: d.sway ?? LK.SWAY, t: d.phase ?? (d.on ?? 2), grace: 0, was: '' });
+  kit.ends = D.strictEnds ? (D.ends || endSupports(L)) : [];   /* (claude/hlfix) what holds each rope end (drawn by high_lines_art.js; D.ends is the level's own, with its real walls) */
   return kit;
 }
 function cabHome(kit, c, z) {   /* the cab waits at its line's start (the end it runs from), floor level with the station */
@@ -347,6 +348,30 @@ function endAnchored(L, ex, ey) {   /* tiles: on a landing's span with the rope 
   if (((L.lineKit || {}).anchors || []).some(([ax, ay]) => Math.abs(ax - ex) <= 1 && Math.abs(ay - ey) <= 1)) return true;
   return landingsOf(L).some(({ b }) => ex >= b[0] - 1 && ex <= b[2] + 1 && ey <= b[1] && ey >= b[1] - 5);
 }
+/* (claude/hlfix, Daniel 11-12: "a lot of the line connectors are floating") WHAT HOLDS EACH ROPE END. Every end of every line must sit on a drawn iron mast that reaches a deck (or hang from the deck above, or bolt to a cliff wall).
+   endSupports(L, solid) -> [{ line, end: 'a'|'b', x, y (tiles), kind: 'deck'|'hang'|'wall'|'none', toY (tile row of the deck top / underside), foot (tile x the mast's base beam runs to), side, wallX, tall }]
+   Order: 1 a deck under it (its span +-1, up to REACH rows down: a mast stands on it)  2 a cliff wall within 4 tiles (an arm)  3 a deck above (span +-HANG_X: a hanger from its underside)
+          4 a deck beside, below (within HANG_X: a mast with a foot beam to the deck's end)  5 a deck far below at its own x (TALL rows: a tall guyed pylon).   'none' = floating: lintLines reds it.
+   solid(tx, ty) is the level's own wall test (optional: without it no wall is found). Pure data: the drawing and the lint both read this. */
+export const SUP = { REACH: 24, HANG_X: 6, TALL: 48 };
+export function endSupports(L, solid) {
+  const D = L.lineKit || {}, decks = (L.landings || []).map(b => ({ x0: b[0], x1: b[2], top: b[1] })), out = [];
+  const near = (lo, hi, x) => Math.max(lo, Math.min(hi, x));
+  for (const d of D.lines || []) for (const end of ['a', 'b']) {
+    const [x, y] = d[end], r = { line: d.id, end, x, y, kind: 'none' }; out.push(r);
+    const under = decks.filter(k => x >= k.x0 - 1 && x <= k.x1 + 1 && k.top >= y - 0.5).sort((p, q) => p.top - q.top)[0];
+    if (under && under.top - y <= SUP.REACH) { Object.assign(r, { kind: 'deck', toY: under.top, foot: near(under.x0, under.x1 + 1, x) }); continue; }
+    if (solid) { let w = null; for (let dx = 1; dx <= 4 && !w; dx++) for (const sd of [-1, 1]) if (solid(Math.floor(x) + (sd < 0 ? -dx : dx), Math.round(y))) { w = { side: sd, wallX: Math.floor(x) + (sd < 0 ? -dx + 1 : dx) }; break; }
+      if (w) { Object.assign(r, { kind: 'wall', ...w }); continue; } }
+    const above = decks.filter(k => x >= k.x0 - SUP.HANG_X && x <= k.x1 + 1 + SUP.HANG_X && k.top + 1 <= y - 0.5 && y - k.top <= SUP.REACH).sort((p, q) => q.top - p.top)[0];
+    if (above) { Object.assign(r, { kind: 'hang', toY: above.top + 1, foot: near(above.x0, above.x1 + 1, x) }); continue; }
+    const beside = decks.filter(k => x >= k.x0 - SUP.HANG_X && x <= k.x1 + 1 + SUP.HANG_X && k.top >= y - 0.5 && k.top - y <= SUP.REACH).sort((p, q) => p.top - q.top)[0];
+    if (beside) { Object.assign(r, { kind: 'deck', toY: beside.top, foot: near(beside.x0, beside.x1 + 1, x) }); continue; }
+    const far = decks.filter(k => x >= k.x0 - 1 && x <= k.x1 + 1 && k.top >= y - 0.5 && k.top - y <= SUP.TALL).sort((p, q) => p.top - q.top)[0];
+    if (far) Object.assign(r, { kind: 'deck', toY: far.top, foot: near(far.x0, far.x1 + 1, x), tall: true });
+  }
+  return out;
+}
 /* the first thing under (x, y) px straight down: a landing / net top, or a hand line a falling body would touch */
 export function catchBelow(L, kit, x, y, skip) {
   let best = null;
@@ -365,7 +390,8 @@ export function lintLines(L) {
     const z = kit.lines[d.id]; if (!z) continue;
     if (Math.abs(d.b[0] - d.a[0]) < 2) bad.push(id + ': shorter than 2 tiles across (a line needs a run)');
     if (Math.abs(z.slope) > 1.5) bad.push(id + ': slope ' + z.slope.toFixed(2) + ' is steeper than 1.5');
-    for (const [nm, e] of [['a', d.a], ['b', d.b]]) if (!endAnchored(L, e[0], e[1])) bad.push(id + ': end ' + nm + ' (' + e + ') hangs from nothing (no landing under it, no anchor)');
+    if (D.strictEnds) { for (const nm of ['a', 'b']) { const r = (D.ends || endSupports(L)).find(q => q.line === d.id && q.end === nm); if (!r || r.kind === 'none') bad.push(id + ': end ' + nm + ' (' + d[nm] + ') hangs from nothing (no deck under or beside it, no deck above to hang from, no wall: draw it a mast)'); } }   /* (claude/hlfix) every end is held by a drawn mast, hanger or wall bracket - a bare 'anchor' no longer counts */
+    else for (const [nm, e] of [['a', d.a], ['b', d.b]]) if (!endAnchored(L, e[0], e[1])) bad.push(id + ': end ' + nm + ' (' + e + ') hangs from nothing (no landing under it, no anchor)');
     if (z.kind === 'winch') {
       const [hx, hy] = highEnd(z).map(v => v / TS);
       if (!lands.some(({ b, net }) => !net && hx >= b[0] - 1 && hx <= b[2] + 1 && hy <= b[1] && hy >= b[1] - 5)) bad.push(id + ': the winch\'s high end has no landing to step off onto');
