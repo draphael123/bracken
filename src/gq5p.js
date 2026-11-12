@@ -17,4 +17,5 @@ export const G5 = {
   curtsy: { tell: 0.5, dmg1: 12, w1: 32, h1: 10, t1: 0.3 /* hit 1 -> hit 2 */, dmg2: 13 /* (GQ5P-TUNE knob 2: 16 -> 13; knob 1 alone was no move) */, w2: 24, h2: 32, t2: 0.3, stagger: 1.5 },
   tantrum: { tell: 0.5, dmg: 10, reach: 24, gap: 0.25, overTell: 0.35, overDmg: 22, overW: 24, overH: 32, overT: 0.2, recover: 0.6, stagger: 1.5 },
 };
-export const GAP5 = [0.5, 0.4];   /* (the plan keeps her gap; the first tune-back lever is [0.6, 0.5]) */
+export const GAP5 = [0.5, 0.4];   /* (GQ5P-TUNE knob 3, REVERTED: [0.6,0.5] moved the WRONG way, n=6 61% -> 50%. gap[F.ph-1] only sets her 'recover' state length (main.js after()); recover is not a scored opening, so a longer one just stretches the fight without giving the player any more safe damage - it does not lower pressure the way the plan assumed. Back to the plan's own number; knob 4 (hp) tried next instead. See gq5p-tune.md. */
+export const GP5_HP = 980;   /* (GQ5P-TUNE knob 4) the plan's last tune-back lever: 1080 -> 980, applied in src/goblin-princess.js only under P5 */

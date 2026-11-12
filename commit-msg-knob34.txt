@@ -1,0 +1,16 @@
+GQ5P-TUNE knob 3 reverted + knob 4: GAP5 back to [0.5,0.4], hp 1080 -> 980
+
+n=6/hero crown:mini, flag ON, human profile WITH flasks, practiced bare, L22, --jobs=1:
+  knob 3 (GAP5 [0.6,0.5]): 1/6 6/6 2/6 = 9/18 50% [29-71] (kn/wa/py) - WRONG DIRECTION (61% -> 50%)
+
+GP.gap[F.ph-1] only sets the length of her 'recover' state (main.js after()). recover is ordinary
+idle time, not a scored opening (it is not in the resist-floor opening list), so lengthening it does
+not hand the player any extra safe damage - it just stretches the fight out, and over a longer fight
+the same per-second pressure from RAPIER/CURTSY-hit1/TIARA/STOMP/PIROUETTE adds up to more total
+damage taken before she is dead. The plan's assumption (a bigger gap = less pressure = easier) does
+not hold for this boss's actual recover mechanic. Reverted to the plan's own [0.5,0.4].
+
+Knob 4 (the plan's last lever, tried in its place): GP.hp 1080 -> 980 under the flag only (wired
+through a new GP5_HP export in src/gq5p.js; OFF and GQ4P-only keep 1000/1080 exactly as before).
+This is the one unambiguous lever left: less total health to cut through directly shortens every
+fight's exposure window, independent of which move is dealing the damage.
