@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 169,
+    "lines": [
+      { "s": "The Goblin Princess's bell can now be reached and rung.", "lv": ["crown"] },
+      { "s": "Shorter waits on the alarm and the tower gates.", "lv": ["crown"] },
+      { "s": "The Goblin Queen keeps her staff in hand while she casts.", "lv": ["crown"] },
+      { "s": "Floating props in the castle were set back on the ground.", "lv": ["crown"] },
+      { "s": "A death bundle dropped on a ladder no longer hangs in the air.", "lv": [] },
+      { "s": "New music on the castle climb and for the Princess.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 168,
     "lines": [
       { "s": "On The High Lines, rope ends now sit on iron masts instead of hanging in the air.", "lv": ["highlines"] },
