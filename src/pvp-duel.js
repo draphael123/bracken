@@ -16,6 +16,7 @@
 // BOTS: botThink (pure) drives a 'duelbot' seat - the opponent when one person duels alone, and the hands of tools/pvp-duel.mjs's AI-vs-AI runs.
 
 import { setPvpEvenTraits } from './traits.js';
+import { DUEL_FOES, FOE, GOBLIN_CHOICES, GOB_NAME, GOB_LINE, FF_LINE, foeModeOf, foeDoorCols, foeAllowed, foePlan, pickDoor, doorFree, foeKind, foeWound } from './duel-foes.js';   /* (claude/duelfoes) THE GOBLINS setting + FRIENDLY FIRE: pure schedule + door data in src/duel-foes.js, behind DUEL_FOES (default OFF) */
 import { makeRoster } from './duel-roster.js';   /* (claude/duelroster) the Smash-Bros-style pick screen: the DUEL entry (the interim settings card stays as ?duelcard / __DUELCARD) */
 const PVP_SHIP_FLAG = true;   /* THE SHIP SWITCH (one line): true = every player sees DUEL (BETA) - FLIPPED 11-06 (Daniel 11:53: the duel goes public in the SAT demo cut, labelled BETA) */
 export const PVP_SHIPS = PVP_SHIP_FLAG || (typeof globalThis !== 'undefined' && (!!globalThis.__DUELBETA || (!!globalThis.location && /[?&]duelbeta(=|&|$)/.test(String(globalThis.location.search)))));   /* (pvpduel2) DEV/URL SWITCH: open the game with ?duelbeta (or a tool sets window.__DUELBETA) to see the mode while the ship flag is off */
@@ -38,7 +39,7 @@ export const BOT_HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'rea
      rounds 1|3|5 (best of), teams bool (2v2: seats 1+2 vs 3+4 by default; teammates cannot hurt each other; the team wins), level 'even'|'your',
      timeLimit 0|60|90|120 seconds a round (0 = off), then SUDDEN DEATH = everyone on 1 health, one hit; botDifficulty 'easy'|'normal'|'hard' (the default
      for a bot seat), seats: [{ hero: id | 'random' | '' (= as he is), isBot, botDifficulty, team 1|2 }] (2-4; humans first) } */
-export const SETTING_CHOICES = { lives: [1, 2, 3, 4, 5], health: [50, 100, 150], stamina: ['normal', 'unlimited'], rounds: [1, 3, 5], teams: [false, true], level: ['even', 'your'], timeLimit: [0, 60, 90, 120], botDifficulty: ['easy', 'normal', 'hard'] };
+export const SETTING_CHOICES = { lives: [1, 2, 3, 4, 5], health: [50, 100, 150], stamina: ['normal', 'unlimited'], rounds: [1, 3, 5], teams: [false, true], level: ['even', 'your'], timeLimit: [0, 60, 90, 120], botDifficulty: ['easy', 'normal', 'hard'], goblins: GOBLIN_CHOICES, friendlyFire: [false, true] };   /* (duelfoes) goblins 'off'|'few'|'many', friendlyFire bool (teams only): both forced to off / false unless DUEL_FOES */
 export const SET_KEY = 'bracken.duelSettings';
 const pick = (v, list, d) => list.includes(v) ? v : d;
 const defTeam = (k, n) => n >= 4 ? (k < 2 ? 1 : 2) : (k === 0 ? 1 : 2);
@@ -47,7 +48,7 @@ export function cleanSettings(raw) {
   const r = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}, C = SETTING_CHOICES;
   const lives = Math.max(1, Math.min(5, Math.floor(+r.lives || 1))), teams = r.teams === true;
   const out = { v: 1, lives, health: pick(+r.health, C.health, 100), stamina: pick(r.stamina, C.stamina, 'normal'), rounds: pick(+r.rounds, C.rounds, 3), teams,
-    level: pick(r.level, C.level, 'even'), timeLimit: pick(r.timeLimit === undefined ? 90 : +r.timeLimit, C.timeLimit, 90), botDifficulty: pick(r.botDifficulty, C.botDifficulty, 'normal'), seats: [] };
+    level: pick(r.level, C.level, 'even'), timeLimit: pick(r.timeLimit === undefined ? 90 : +r.timeLimit, C.timeLimit, 90), botDifficulty: pick(r.botDifficulty, C.botDifficulty, 'normal'), goblins: DUEL_FOES ? foeModeOf(r.goblins) : 'off', friendlyFire: DUEL_FOES && r.friendlyFire === true, seats: [] };   /* (duelfoes) flag OFF: always 'off' / false (an old save with them set still loads clean) */
   const src = Array.isArray(r.seats) ? r.seats.slice(0, DUEL.seats.max) : [];
   const n = Math.max(DUEL.seats.min, teams ? 4 : 0, src.length);   /* teams = 2v2: always four seats */
   for (let k = 0; k < n; k++) { const q = src[k] && typeof src[k] === 'object' ? src[k] : {}, human = k === 0 || (q.isBot === false && k < src.length);
@@ -195,7 +196,7 @@ export function rng(seed) { let a = (seed >>> 0) || 1; return () => { a |= 0; a 
           (pvpduel3) hand(p) -> { base, add } (his blow's L1 weight and what his level adds), setSeatHero(p, hero) } */
 export const isBotSeat = p => !!p && (!!p.duelBot || !!(p.src && p.src.kind === 'duelbot'));
 export function makeDuel(api) {
-  const st = { m: null, seats: [], prox: new Map(), hits: new Map(), norm: new Map(), bots: new Map(), card: null, ranks: false, result: null, rnd: rng(7), cfg: cleanSettings(null), plan: null, lvl: new Map(), settings: null, stats: { blows: 0, landed: 0, blocked: 0, self: 0, nobody: 0, kos: 0, breaks: 0, rounds: 0, matches: 0 }, banner: null, seed: 7 };
+  const st = { m: null, seats: [], prox: new Map(), hits: new Map(), norm: new Map(), bots: new Map(), card: null, ranks: false, result: null, rnd: rng(7), cfg: cleanSettings(null), plan: null, lvl: new Map(), settings: null, stats: { blows: 0, landed: 0, blocked: 0, self: 0, nobody: 0, kos: 0, breaks: 0, rounds: 0, matches: 0 }, banner: null, seed: 7, foe: null };
   const on = () => PVP_SHIPS && !!api.L() && !!api.L().duelPit && !!st.m;
   const idOf = p => p.n;
   const seatById = id => st.seats.find(p => p.n === id) || null;
@@ -232,7 +233,7 @@ export function makeDuel(api) {
     const att = attackerOf({ victim, pass: api.passOn(), fromX, fromY: victim.y - 10, owned, seats: st.seats, upright: api.upright });
     st.stats.blows++;
     if (!att) { if (api.passOn() === victim) st.stats.self++; else st.stats.nobody++; return true; }
-    if (st.cfg.teams && att !== victim && att.duelTeam === victim.duelTeam) { st.stats.friendly = (st.stats.friendly || 0) + 1; return true; }   /* (pvpduel3) TEAMS: a teammate's blow is nothing (no damage, no knock) */
+    if (st.cfg.teams && !st.cfg.friendlyFire && att !== victim && att.duelTeam === victim.duelTeam) { st.stats.friendly = (st.stats.friendly || 0) + 1; return true; }   /* (pvpduel3) TEAMS: a teammate's blow is nothing (no damage, no knock) */
     const pd = pvpDamage(dmg * (st.lvl.get(att) ?? 1), (st.norm.get(att) ?? 1) * (DUEL.heroMul[att.hero] ?? 1), st.m.clock, st.m.fightT);
     const { r, landed } = api.damage(victim, fromX, DUEL.probe, proxyOf(att));
     if (r === 'blocked') { st.stats.blocked++; return true; }
@@ -271,6 +272,58 @@ export function makeDuel(api) {
       api.asPlayer(p, () => { const P = api.P(); Object.assign(P, { x: cx, y: fy, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, block: false, dodge: 0, drinkT: 0, flasks: 0, face: cx < mid ? 1 : -1, killer: null }); if (P.hitSet) P.hitSet.clear(); });
       p.duelHp = maxOf(p); p.duelGrace = 0; p.duelKoBy = 0; p.duelLives = st.cfg.lives; p.duelRespawn = 0; st.hits.set(p, []); });
   }
+  /* ===== (claude/duelfoes) GOBLINS: a told entry, wound-only blows, NOTHING for a kill (Daniel 11-12). All dormant at goblins 'off' / flag OFF. The schedule and doors are pure (src/duel-foes.js). ===== */
+  const bump = k => { st.stats[k] = (st.stats[k] || 0) + 1; };
+  const foeMode = () => DUEL_FOES ? foeModeOf(st.cfg && st.cfg.goblins) : 'off';
+  const foeReady = () => foeMode() !== 'off' && !!st.foe && !!api.foeSpawn;
+  const foeFresh = () => ({ next: FOE.first, pend: [], list: [], said: false, flee: false });
+  const foeCols = () => foeDoorCols((api.L() && api.L().W) || 26);
+  /* every goblin out of the Pit with no death, no reward (between rounds, a K.O., the end) */
+  function foeClear() { const F = st.foe; if (!F) return; for (const e of F.list) { e.alive = false; e.dying = 0; e.duelDone = true; } F.list.length = 0; F.pend.length = 0; F.next = FOE.first; F.flee = false; }
+  /* once a frame, after the match step: prune the dead, flee at sudden death, tell and send the next one */
+  function foeTick() {
+    const F = st.foe; if (!F || !foeReady()) return; const m = st.m, L = api.L();
+    for (let i = F.list.length - 1; i >= 0; i--) if (!F.list[i].alive) F.list.splice(i, 1);
+    if (m.phase !== 'fight') return;
+    if (!foeAllowed(m.phase, m.clock, m.fightT)) { if (!F.flee) { F.flee = true; F.pend.length = 0; for (const e of F.list) e.duelFlee = true; } return; }   /* sudden death: the live ones run for the doors, none are told */
+    const xs = st.seats.map(p => p.x), cols = foeCols(), TS = api.TS;
+    for (let i = F.pend.length - 1; i >= 0; i--) { const q = F.pend[i]; if (m.clock < q.at) continue;   /* the '!' has stood its second: in he walks - unless a seat has since come within 6 tiles of that door */
+      if (!doorFree(cols[q.door], xs, TS)) { q.at = m.clock + FOE.popRetry; if (++q.tries > FOE.popTries) F.pend.splice(i, 1); continue; }
+      F.pend.splice(i, 1); const e = api.foeSpawn(cols[q.door], L.duelPit.floor - 1, q.kind, q.door === 0 ? 1 : -1); if (e) { e.duelFoe = true; F.list.push(e); bump('gobSpawned'); } }
+    const di = pickDoor(cols, xs, TS), pl = foePlan(foeMode(), F, m.clock, F.list.length + F.pend.length, di >= 0);
+    if (pl.tell) { F.pend.push({ door: di, at: pl.at, kind: foeKind(st.rnd()), tries: 0 }); api.sfx('hornBlast'); if (!F.said) { F.said = true; banner('GOBLINS IN THE PIT', '#8fd160', 2.2); } }
+  }
+  /* main.js updateEnemies hands a fleeing goblin here instead of its AI: along the floor to the nearest door and out (no death, no reward) */
+  function foeFlee(e, dt) {
+    const L = api.L(), TS = api.TS, cols = foeCols(), fy = L.duelPit.floor * TS; let tx = cols[0] * TS + TS / 2, best = 1e9;
+    for (const c of cols) { const x = c * TS + TS / 2, d = Math.abs(x - e.x); if (d < best) { best = d; tx = x; } }
+    const dir = Math.sign(tx - e.x) || 1; e.face = dir; e.vx = 0; if (e.y < fy) e.y = Math.min(fy, e.y + 160 * dt);
+    if (best <= 3) { e.alive = false; e.dying = 0; e.duelDone = true; return; }
+    e.x += dir * FOE.flee * dt;
+  }
+  /* A GOBLIN'S BLOW on a seat (main.js damagePlayer hands it here): through the victim's own guard chain, then a flat share of his duel health, NEVER below 1 - a goblin wounds, only a hero K.O.s.
+     null = not a duel goblin's blow (damagePlayer carries on as before); otherwise the result damagePlayer would give. */
+  function foeBlow(victim, src, fromX, o) {
+    if (!src || !src.duelFoe || !on() || !api.foeProbe) return null;
+    if (st.m.phase !== 'fight' || !api.upright(victim) || !(victim.duelHp > 0) || (victim.duelGrace || 0) > api.time()) return false;   /* the grace that follows ANY landed blow covers a goblin's too: no chain-lock */
+    const { r, landed } = api.foeProbe(victim, fromX, DUEL.probe, o);
+    if (r === 'blocked') { bump('foeBlocked'); return r; }
+    if (r !== 'hit' || !(landed > 0)) return r;
+    const w = foeWound(victim.duelHp, maxOf(victim)); victim.duelHp = w.hp; victim.duelFoeLoss = (victim.duelFoeLoss || 0) + w.loss; bump('foeBlows');
+    const hits = st.hits.get(victim) || []; st.hits.set(victim, hits); const g = juggleGrace(hits, api.time());   /* the same anti-juggle as a hero's blow */
+    victim.duelGrace = api.time() + g.inv; victim.inv = g.inv; mirror(victim);
+    api.float(victim.x, victim.y - 30, '-' + w.loss, '#8fd160');
+    if (g.broke) { bump('breaks'); api.float(victim.x, victim.y - 42, 'BREAK', '#bfe6f5'); }
+    return 'hit';
+  }
+  /* a goblin cut down (main.js hurtEnemy's duel branch): NO heal, NO XP, NO coins, NO drops - only the GOBLINS count on the results card. by: the seat whose blow it was (null = the nearest seat) */
+  function foeDied(e, by) {
+    if (!e || e.duelDone) return; e.duelDone = true; let who = by && st.seats.includes(by) ? by : null;
+    if (!who) { let bd = 60; for (const p of st.seats) { const d = Math.abs(p.x - e.x); if (d < bd) { bd = d; who = p; } } }
+    if (who) { who.duelGobs = (who.duelGobs || 0) + 1; bump('gobKills'); } else bump('gobOther');
+  }
+  const lineOf = (id, S) => id === 'goblins' ? GOB_LINE[foeModeOf(S.goblins)] : FF_LINE[!!S.friendlyFire];   /* the plain-words line under the row */
+
   /* ===== the settings (pvpduel3): the roster pick screen and the card both read and write these ===== */
   const slotKey = () => { try { const r = api.players().length ? api.rankOf(api.players()[0]) : null; return r && r.key || 'slot0'; } catch { return 'slot0'; } };
   const humansIn = () => api.players().filter(p => !isBotSeat(p)).length;
@@ -303,12 +356,12 @@ export function makeDuel(api) {
     st.seats = api.players().slice(0, DUEL.seats.max);
     if (st.seats.length < DUEL.seats.min) return false;
     S.teams = S.teams && st.seats.length >= 3;
-    st.seats.forEach((p, i) => { const sp = S.seats[i] || {}; p.duelDealt = 0; p.duelMax = Math.max(1, Math.round(DUEL.hp * S.health / 100)); p.duelTeam = S.teams ? (sp.team === 1 || sp.team === 2 ? sp.team : defTeam(i, st.seats.length)) : 0;
+    st.seats.forEach((p, i) => { const sp = S.seats[i] || {}; p.duelDealt = 0; p.duelGobs = 0; p.duelFoeLoss = 0; p.duelMax = Math.max(1, Math.round(DUEL.hp * S.health / 100)); p.duelTeam = S.teams ? (sp.team === 1 || sp.team === 2 ? sp.team : defTeam(i, st.seats.length)) : 0;
       if (p.duelBot) { st.bots.set(p, freshBot(sp.botDifficulty || S.botDifficulty)); }
       else if (sp.hero && (sp.hero !== p.hero || sp.hero === 'random') && api.setSeatHero) { if (!st.restore && p === api.players()[0]) st.restore = p.hero;   /* (duelroster, Daniel 11-06) the campaign's equipped hero is put back when the duel ends */ api.setSeatHero(p, sp.hero === 'random' ? pickHeroes(1, st.seats.filter(q => q !== p).map(q => q.hero), p === api.players()[0] && api.owns ? api.owns : null)[0] : sp.hero); }   /* a human's pick: where the game lets him (a hero he owns) */
       resolved.push({ ...sp, hero: p.hero, isBot: !!p.duelBot }); });
     if (S.teams && !(st.seats.some(p => p.duelTeam === 1) && st.seats.some(p => p.duelTeam === 2))) st.seats.forEach((p, i) => { p.duelTeam = defTeam(i, st.seats.length); });
-    st.cfg = S; st.plan = { ...S, seats: resolved };
+    st.cfg = S; st.plan = { ...S, seats: resolved }; st.foe = DUEL_FOES ? foeFresh() : null;   /* (duelfoes) a fresh goblin clock for the match */
     /* THE LEVEL: EVEN = every seat at its L1 hand (today's duel); YOUR = each at his own level, a bot at the highest human's */
     setPvpEvenTraits(S.level !== 'your');   /* (claude/traitframe) EVEN L1 = core only, no traits; YOUR LEVEL = each seat's worn traits (inert while TRAITS_SHIP is off) */
     st.norm.clear(); st.lvl.clear();
@@ -321,7 +374,7 @@ export function makeDuel(api) {
     placeAll(); sync(null); api.sfx('bell');
     return true;
   }
-  function end() { setPvpEvenTraits(false); clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; if (st.restore) { const h = st.restore; st.restore = null; try { if (api.players()[0] && api.players()[0].hero !== h && api.restoreHero) api.restoreHero(h); } catch {} }   /* (duelroster, Daniel 11-06) player one's campaign hero comes back (after the bots leave, so none wears him) */ }
+  function end() { setPvpEvenTraits(false); foeClear(); st.foe = null; clearProxies(); for (const p of api.players().slice()) if (isBotSeat(p) && p !== api.players()[0]) api.seatDrop(p); for (const p of api.players()) { p.duelBot = false; p.duelHp = 0; p.duelTeam = 0; p.duelRespawn = 0; p.duelLives = 0; } st.bots.clear(); st.lvl.clear(); st.m = null; st.seats = []; if (st.restore) { const h = st.restore; st.restore = null; try { if (api.players()[0] && api.players()[0].hero !== h && api.restoreHero) api.restoreHero(h); } catch {} }   /* (duelroster, Daniel 11-06) player one's campaign hero comes back (after the bots leave, so none wears him) */ }
 
   /* ===== hands: once a frame per seat, in his own pass, BEFORE the buffers read the presses ===== */
   function hands(p) {
@@ -336,8 +389,11 @@ export function makeDuel(api) {
     if (!p.duelBot || !api.upright(p)) return;
     const s = st.bots.get(p) || freshBot(); st.bots.set(p, s);
     let foe = null, fd = 1e9; for (const q of st.seats) { if (q === p || !api.upright(q) || (st.cfg.teams && q.duelTeam === p.duelTeam)) continue; const d = Math.abs(q.x - p.x) + Math.abs(q.y - p.y) * 0.5; if (d < fd) { fd = d; foe = q; } }
+    /* (duelfoes) A GOBLIN WITHIN 40 PX that is closer than the nearest enemy seat is the target for now (same distance as the seat pick); an EASY bot ignores goblins half the time (re-rolled each second) */
+    let gob = null; if (foeReady()) { let gd = 1e9; for (const e of st.foe.list) { if (!e.alive || e.duelFlee) continue; const d = Math.abs(e.x - p.x) + Math.abs(e.y - p.y) * 0.5; if (d <= 40 && d < fd && d < gd) { gd = d; gob = e; } }
+      if (gob && s.diff === 'easy') { s.gobT = (s.gobT || 0) - 1 / 60; if (s.gobT <= 0) { s.gobT = 1; s.gobIgn = st.rnd() < 0.5; } if (s.gobIgn) gob = null; } }
     const P = api.P(), me = { x: P.x, y: P.y, vx: P.vx, face: P.face, ground: !!P.ground, atk: P.atk, hero: p.hero };
-    const f = foe ? { x: foe.x, y: foe.y, atk: foe.atk, plunge: foe.plunge, hero: foe.hero } : null;
+    const f = gob ? { x: gob.x, y: gob.y, atk: -1, plunge: false, hero: 'goblin' } : foe ? { x: foe.x, y: foe.y, atk: foe.atk, plunge: foe.plunge, hero: foe.hero } : null;
     const out = botThink(me, f, s, st.rnd, 1 / 60);
     api.keysWrite(out.keys); api.pressWrite(out.press);
   }
@@ -374,6 +430,8 @@ export function makeDuel(api) {
     else if (ev === 'draw') { st.stats.rounds++; banner('DRAW: ROUND ' + m.last.round + ' AGAIN', '#fff6e0', DUEL.round.ko); }
     else if (ev === 'round') placeAll();
     else if (ev === 'over') finish();
+    if (st.foe && m.phase !== 'fight') foeClear();   /* (duelfoes) cleared at every K.O. / time / draw / the winner screen, so the next round starts with none */
+    foeTick();
     sync(null);
   }
   function banner(txt, c, t) { st.banner = { txt, c, t, at: api.time() }; }
@@ -383,7 +441,7 @@ export function makeDuel(api) {
     const rows = st.seats.map(p => { const id = idOf(p), kk = keyOf(p), rk = practice ? null : api.rankOf(p); return { p, id, won: m.winner === kk, rounds: m.wins[kk] || 0, pts: matchPoints(m, kk), key: rk ? rk.key : null, name: rk ? rk.name : null, hero: p.hero }; });
     const ls = api.ls(); let ranked = false;
     if (ls) { const R = recordMatch(loadRanks(ls), rows.map(r => ({ key: r.key, name: r.name, hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts }))); ranked = saveRanks(ls, R); }
-    st.result = { practice, winner: m.winner, teams: !!st.cfg.teams, rows: rows.map(r => ({ n: r.id, tag: api.tagOf(r.p), hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts, ranked: !!r.key, name: r.name, dealt: r.p.duelDealt || 0 })), ranked };
+    st.result = { practice, winner: m.winner, teams: !!st.cfg.teams, rows: rows.map(r => ({ n: r.id, tag: api.tagOf(r.p), hero: r.hero, won: r.won, rounds: r.rounds, pts: r.pts, ranked: !!r.key, name: r.name, dealt: r.p.duelDealt || 0, gobs: r.p.duelGobs || 0 })), ranked, foes: foeMode() !== 'off' };
     banner(m.winner ? winName(m.winner) + ' WINS THE DUEL' : 'A DRAWN DUEL', m.winner ? winCol(m.winner) : '#fff6e0', 999); api.sfx('win');
   }
 
@@ -399,12 +457,14 @@ export function makeDuel(api) {
     { id: 'level', name: 'LEVEL', fmt: v => v === 'your' ? 'YOUR LEVEL' : 'EVEN - LEVEL 1' },
     { id: 'teams', name: 'TEAMS', fmt: v => v ? '2 VS 2' : 'OFF' },
     { id: 'seats', name: 'FIGHTERS', fmt: v => String(v) },
+    { id: 'goblins', name: 'GOBLINS', fmt: v => GOB_NAME[foeModeOf(v)], foes: true },
+    { id: 'friendlyFire', name: 'FRIENDLY FIRE', fmt: v => v ? 'ON' : 'OFF', foes: true },   /* (duelfoes) only with DUEL_FOES */
     { id: 'botDifficulty', name: 'BOT SKILL', fmt: v => v.toUpperCase(), bots: true },
     { id: 'botHero', name: 'BOT HERO', fmt: v => v === 'random' ? 'RANDOM' : api.heroName(v), bots: true },
   ];
   const foeIdx = S => S.teams ? 2 : Math.min(S.seats.length - 1, humansIn());
   const optVal = (o, S) => o.id === 'seats' ? S.seats.length : o.id === 'botHero' ? (S.seats[foeIdx(S)] && S.seats[foeIdx(S)].hero) || 'random' : S[o.id];
-  const cardRows = () => { const S = getSettings(), bots = S.seats.length > humansIn(); return ['FIGHT', ...OPTS.filter(o => !o.bots || bots).map(o => o.id), 'RANKINGS', 'CLOSE']; };
+  const cardRows = () => { const S = getSettings(), bots = S.seats.length > humansIn(); return ['FIGHT', ...OPTS.filter(o => (!o.bots || bots) && (!o.foes || DUEL_FOES)).map(o => o.id), 'RANKINGS', 'CLOSE']; };
   function cycleOpt(id, dir) {
     const S = getSettings(), C = SETTING_CHOICES;
     if (id === 'seats') { if (S.teams) return false; setSeatCount(S.seats.length + dir > DUEL.seats.max ? Math.max(DUEL.seats.min, humansIn()) : S.seats.length + dir < Math.max(DUEL.seats.min, humansIn()) ? DUEL.seats.max : S.seats.length + dir); return true; }
@@ -417,7 +477,7 @@ export function makeDuel(api) {
     getSettings, setSettings, setSeat, setSeatCount, cycleOpt, submit: S => { const bi = S.seats.findIndex((q, i) => i >= humansIn()); st.want = { k: 'enter', bot: bi >= 0 ? S.seats[bi].hero : 'random', settings: S }; st.card = null; },
     close: () => { st.card = null; }, sfx: k => api.sfx(k), text: (s, x, y, c, a, z) => api.text(s, x, y, c, a, z), board: (x, y, w, h) => api.board(x, y, w, h),
     icon: (h, x, y, cw, ch, k, a) => api.heroBig && api.heroBig(h, x, y, cw, ch, k, a), rect: (x, y, w, h, c) => api.rect && api.rect(x, y, w, h, c), frame: (x, y, w, h, c) => api.frame && api.frame(x, y, w, h, c),
-    fit: (s, w, z) => api.fit ? api.fit(s, w, z) : s, inkW: (s, z) => api.inkW ? api.inkW(s, z) : String(s).length * 5, key: a => api.keyLabel ? api.keyLabel(a) : a.toUpperCase() });
+    foes: () => DUEL_FOES, ruleLine: (id, S) => lineOf(id, S), fit: (s, w, z) => api.fit ? api.fit(s, w, z) : s, inkW: (s, z) => api.inkW ? api.inkW(s, z) : String(s).length * 5, key: a => api.keyLabel ? api.keyLabel(a) : a.toUpperCase() });
   const useRoster = () => !(typeof globalThis !== 'undefined' && (globalThis.__DUELCARD || (globalThis.location && /[?&]duelcard(=|&|$)/.test(String(globalThis.location.search)))));
   function openCard(p) { if (!PVP_SHIPS) return false; if (api.heroPick && useRoster()) { st.card = { p, roster: true }; roster.open(); api.sfx('uiSel'); return true; } st.card = { p, row: 0, top: 0, ranks: false }; getSettings(); api.sfx('uiSel'); return true; }
   function cardHands(p, pr, keys) {
@@ -444,6 +504,7 @@ export function makeDuel(api) {
     if (!on()) return;
     for (const p of st.seats) { const x = Math.round(p.x - cx) - 11, y = Math.round(p.y - cy) - 40, sh = Math.max(0, Math.min(1, (p.duelHp || 0) / maxOf(p)));
       g.fillStyle = 'rgba(10,8,16,0.8)'; g.fillRect(x - 1, y - 1, 24, 5); g.fillStyle = '#3a2a2a'; g.fillRect(x, y, 22, 3); g.fillStyle = col(p); g.fillRect(x, y, Math.round(22 * sh), 3); }
+    if (foeReady()) { const cols = foeCols(), TS = api.TS, F = st.foe; for (const q of F.pend) { const bob = Math.round(Math.sin(api.time() * 12) * 1.5); api.text('!', Math.round(cols[q.door] * TS + TS / 2 - cx), Math.round(api.L().duelPit.floor * TS - 46 - cy) + bob, '#ffd36b', 'center', 16); } }   /* (duelfoes) THE TELL: a '!' over the door for the second before he walks in */
   }
   function drawRanks(x, y, w, n = 6) {
     const rows = rankRows(api.ls() ? loadRanks(api.ls()) : null).slice(0, n), T = api.text;
@@ -469,6 +530,7 @@ export function makeDuel(api) {
       rows.slice(c.top, c.top + VIS).forEach((r, i) => { const k = c.top + i, sel = k === c.row, o = OPTS.find(q => q.id === r), v = o ? '< ' + o.fmt(optVal(o, S)) + ' >' : '';
         T((sel ? '> ' : '  ') + (o ? o.name : r), x + 8, yy, sel ? '#a8e06e' : '#c2c9c2', 'left', 8); if (v) T(v, x + w - 8, yy, sel ? '#fff6e0' : '#c2c9c2', 'right', 8); yy += 9; });
       if (c.top > 0) T('^', x + w - 8, y + 4, '#8a8f80', 'right', 8); if (c.top + VIS < rows.length) T('v', x + w - 8, y + h - 20, '#8a8f80', 'right', 8);
+      const sr = rows[c.row]; if (DUEL_FOES && (sr === 'goblins' || sr === 'friendlyFire')) T(api.fit ? api.fit(lineOf(sr, S), w - 12, 8) : lineOf(sr, S), x + w / 2, y + h - 10, '#c2c9c2', 'center', 8);   /* (duelfoes) the plain-words line */ else
       T('LEFT/RIGHT: CHANGE   JUMP: SELECT', x + w / 2, y + h - 10, '#8a8f80', 'center', 8);
       return;
     }
@@ -492,14 +554,16 @@ export function makeDuel(api) {
       const w = 220, h = 72 + st.result.rows.length * 9 + 80, x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
       api.board(x, y, w, h);
       T(st.result.winner ? winName(st.result.winner) + ' WINS' : 'A DRAWN DUEL', x + w / 2, y + 5, st.result.winner ? winCol(st.result.winner) : '#fff6e0', 'center', 8);
-      if (st.result.practice) T('PRACTICE: UNRANKED', x + w / 2, y + 15, '#9aa39a', 'center', 8); T('ROUNDS  DEALT  POINTS', x + w - 6, y + 25, '#9aa39a', 'right', 8);   /* (proof146b) the two lines each had a row: side by side they overran the 220 px board */
-      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 35 + k * 9; T(r.tag + ' ' + api.heroName(r.hero) + (r.ranked || st.result.practice ? '' : ' (GUEST)'), x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); });
+      if (st.result.practice) T('PRACTICE: UNRANKED', x + w / 2, y + 15, '#9aa39a', 'center', 8); if (!st.result.foes) T('ROUNDS  DEALT  POINTS', x + w - 6, y + 25, '#9aa39a', 'right', 8);
+      else { const hx = [x + w - 6, x + w - 50, x + w - 96, x + w - 144]; ['POINTS', 'GOBLINS', 'DEALT', 'ROUNDS'].forEach((hd, i) => T(hd, hx[i], y + 25, '#9aa39a', 'right', 8)); }   /* (duelfoes) the GOBLINS column: four right-aligned columns, the name fitted to what is left */   /* (proof146b) the two lines each had a row: side by side they overran the 220 px board */
+      st.result.rows.forEach((r, k) => { const p = seatById(r.n), yy = y + 35 + k * 9; const nm = r.tag + ' ' + api.heroName(r.hero) + (r.ranked || st.result.practice ? '' : ' (GUEST)'); if (!st.result.foes) { T(nm, x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); T(r.rounds + '   ' + r.dealt + '   +' + r.pts, x + w - 6, yy, '#fff6e0', 'right', 8); }
+        else { T(api.fit ? api.fit(nm, w - 170, 8) : nm, x + 6, yy, p ? col(p) : '#c2c9c2', 'left', 8); [['+' + r.pts, 6], [String(r.gobs), 50], [String(r.dealt), 96], [String(r.rounds), 144]].forEach(([v, o]) => T(v, x + w - o, yy, '#fff6e0', 'right', 8)); } });
       const ry = y + 41 + st.result.rows.length * 9; drawRanks(x + 6, ry, w - 12, 5);
       T('JUMP: REMATCH    E: BACK TO THE INN', x + w / 2, y + h - 10, '#a8e06e', 'center', 8);
     }
   }
   const g2 = (x, y, w, h, sh, c) => api.bar(x, y, w, h, sh, c);
 
-  function debug() { return { on: on(), m: st.m ? JSON.parse(JSON.stringify({ ...st.m })) : null, seats: st.seats.map(p => ({ n: p.n, hero: p.hero, hp: p.duelHp, max: p.duelMax, lives: p.duelLives, team: p.duelTeam, diff: (st.bots.get(p) || {}).diff, bot: !!p.duelBot, up: api.upright(p), x: Math.round(p.x), dealt: p.duelDealt || 0 })), result: st.result, stats: { ...st.stats }, card: st.card ? { n: st.card.p.n, row: st.card.row, ranks: st.card.ranks } : null, cfg: st.cfg, lvl: st.seats.map(p => st.lvl.get(p) ?? 1), proxies: [...st.prox.values()].map(e => ({ n: e.pvpSeat.n, alive: e.alive, x: Math.round(e.x) })) }; }
-  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, roster, rosterOpen: () => !!(st.card && st.card.roster && roster.isOpen()), rosterMouse: (x, y, d) => roster.mouse(x, y, d), rosterEsc: () => roster.esc(), drawWorld, drawHud, drawRoster: (VW, VH) => { if (st.card && st.card.roster && api.L() && api.L().tavern) roster.draw(VW, VH); }, debug, clearProxies, rematch, cardOpen: () => !!st.card };
+  function debug() { return { on: on(), m: st.m ? JSON.parse(JSON.stringify({ ...st.m })) : null, seats: st.seats.map(p => ({ n: p.n, hero: p.hero, hp: p.duelHp, max: p.duelMax, lives: p.duelLives, team: p.duelTeam, diff: (st.bots.get(p) || {}).diff, bot: !!p.duelBot, up: api.upright(p), x: Math.round(p.x), dealt: p.duelDealt || 0 })), result: st.result, foe: st.foe ? { next: st.foe.next, pend: st.foe.pend.length, alive: st.foe.list.filter(e => e.alive).length, said: st.foe.said, flee: st.foe.flee } : null, stats: { ...st.stats }, card: st.card ? { n: st.card.p.n, row: st.card.row, ranks: st.card.ranks } : null, cfg: st.cfg, lvl: st.seats.map(p => st.lvl.get(p) ?? 1), proxies: [...st.prox.values()].map(e => ({ n: e.pvpSeat.n, alive: e.alive, x: Math.round(e.x) })) }; }
+  return { st, on, sync, hit, begin, end, getSettings, setSettings, setSeat, setSeats, setSeatCount, seatList, defaultSettings, cycleOpt, hands, tick, post, openCard, cardHands, roster, rosterOpen: () => !!(st.card && st.card.roster && roster.isOpen()), rosterMouse: (x, y, d) => roster.mouse(x, y, d), rosterEsc: () => roster.esc(), drawWorld, drawHud, drawRoster: (VW, VH) => { if (st.card && st.card.roster && api.L() && api.L().tavern) roster.draw(VW, VH); }, debug, clearProxies, rematch, foeBlow, foeDied, foeFlee, foeTick, foeClear, cardOpen: () => !!st.card };
 }

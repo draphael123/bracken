@@ -12,10 +12,12 @@ export const TEAM_COL = { 1: '#6ec1ff', 2: '#ff9a6e' };
 export const GRID_COLS = 5;
 export const SEAT_ROWS = ['HERO', 'TYPE', 'SKILL', 'TEAM'];
 export const RULE_ROWS = ['lives', 'health', 'stamina', 'rounds', 'timeLimit', 'level', 'teams'];
-export const RULE_NAME = { lives: 'LIVES', health: 'HEALTH', stamina: 'STAMINA', rounds: 'ROUNDS', timeLimit: 'ROUND TIME', level: 'LEVEL', teams: 'TEAMS' };
+export const RULE_NAME = { lives: 'LIVES', health: 'HEALTH', stamina: 'STAMINA', rounds: 'ROUNDS', timeLimit: 'ROUND TIME', level: 'LEVEL', teams: 'TEAMS', goblins: 'GOBLINS', friendlyFire: 'FRIENDLY FIRE' };
+export const FOE_RULE_ROWS = ['goblins', 'friendlyFire'];   /* (claude/duelfoes) two more rows on the RULES tab, only when the duel hands ctx.foes() = true (DUEL_FOES) */
 export const RULE_FMT = {
   lives: v => String(v), health: v => v + '%', stamina: v => v === 'unlimited' ? 'UNLIMITED' : 'NORMAL', rounds: v => 'BEST OF ' + v,
   timeLimit: v => v ? v + ' S, THEN 1 HIT' : 'OFF', level: v => v === 'your' ? 'YOUR LEVEL' : 'EVEN - LEVEL 1', teams: v => v ? '2 VS 2' : 'OFF',
+  goblins: v => v === 'few' ? 'FEW' : v === 'many' ? 'MANY' : 'OFF', friendlyFire: v => v ? 'ON' : 'OFF',
 };
 export const FIGHT_BANNER_S = 1.3;
 const SKILLS = ['easy', 'normal', 'hard'];
@@ -24,6 +26,7 @@ export function makeRoster(ctx) {
   const R = { open: false, tab: 0, cur: new Map(), ready: new Map(), fightT: 0, rrow: 0, msg: '', msgT: 0, hits: [], seatsBox: null };
   const N = () => ctx.heroes.length;                  /* tile N is the '?' */
   const humans = () => ctx.humans();
+  const rows = () => ctx.foes && ctx.foes() ? RULE_ROWS.concat(FOE_RULE_ROWS) : RULE_ROWS;   /* (duelfoes) flag OFF: exactly the seven rows */
   const seatOfHuman = p => humans().findIndex(q => q.n === p.n);
   const key = k => (k + 1);                           /* a seat's colour key (seat 1 = player one) */
   const cur = p => { let c = R.cur.get(p.n); if (!c) { c = { idx: 0, drive: -1, focus: 'grid', scol: 0, srow: 0 }; R.cur.set(p.n, c); } return c; };
@@ -93,9 +96,10 @@ export function makeRoster(ctx) {
     if (boss && pr.talk) { setTab(R.tab ? 0 : 1); return eat(); }
     if (R.tab === 1) {   /* RULES: player one's */
       if (boss) {
-        if (pr.down) { R.rrow = (R.rrow + 1) % RULE_ROWS.length; ctx.sfx('ui'); }
-        if (pr.up) { R.rrow = (R.rrow + RULE_ROWS.length - 1) % RULE_ROWS.length; ctx.sfx('ui'); }
-        if (pr.left) ruleStep(RULE_ROWS[R.rrow], -1); else if (pr.right || pr.jump || pr.atk) ruleStep(RULE_ROWS[R.rrow], 1);
+        const RR = rows(); if (R.rrow >= RR.length) R.rrow = 0;
+        if (pr.down) { R.rrow = (R.rrow + 1) % RR.length; ctx.sfx('ui'); }
+        if (pr.up) { R.rrow = (R.rrow + RR.length - 1) % RR.length; ctx.sfx('ui'); }
+        if (pr.left) ruleStep(RR[R.rrow], -1); else if (pr.right || pr.jump || pr.atk) ruleStep(RR[R.rrow], 1);
       }
       return eat();
     }
@@ -127,7 +131,7 @@ export function makeRoster(ctx) {
     if (hit.k === 'tab') setTab(hit.i);
     else if (hit.k === 'tile') { c.focus = 'grid'; pick(p, hit.i); }
     else if (hit.k === 'seat') { c.focus = 'strip'; c.scol = hit.seat; c.srow = SEAT_ROWS.indexOf(hit.row); seatEdit(p, hit.seat, hit.row); }
-    else if (hit.k === 'rule') { R.rrow = hit.i; ruleStep(RULE_ROWS[hit.i], hit.dir || 1); }
+    else if (hit.k === 'rule') { R.rrow = hit.i; ruleStep(rows()[hit.i], hit.dir || 1); }
     else if (hit.k === 'back') back(p);
     else return false;
     return true;
@@ -203,11 +207,13 @@ export function makeRoster(ctx) {
   function drawRules(VW, VH, S) {
     const T = ctx.text, x = 20, w = VW - 40; let y = 28;
     T('MATCH RULES', x, y - 6, '#9aa39a', 'left', 6);
-    RULE_ROWS.forEach((id, i) => { const sel = R.rrow === i, yy = y + 6 + i * 13;
+    const RR = rows();
+    RR.forEach((id, i) => { const sel = R.rrow === i, yy = y + 6 + i * 13;
       if (sel) ctx.rect && ctx.rect(x - 4, yy - 3, w + 8, 12, '#4a4431');
       T((sel ? '> ' : '  ') + RULE_NAME[id], x, yy, sel ? '#a8e06e' : '#c2c9c2', 'left', 8);
       T('< ' + ctx.fit(RULE_FMT[id](S[id]), 110, 8) + ' >', x + w, yy, sel ? '#fff6e0' : '#c2c9c2', 'right', 8);
       R.hits.push({ k: 'rule', i, dir: 1, x: x - 4, y: yy - 3, w: w + 8, h: 12 }); });
+    const sid = RR[R.rrow]; if (ctx.ruleLine && FOE_RULE_ROWS.includes(sid)) T(ctx.fit(ctx.ruleLine(sid, S), VW - 20, 6), VW / 2, VH - 27, '#c2c9c2', 'center', 6);   /* (duelfoes) the plain-words line under the rows */
     T(ctx.fit('UP/DOWN: ROW   LEFT/RIGHT: CHANGE   ' + ctx.key('talk') + ': BACK TO FIGHTERS', VW - 20, 6), VW / 2, VH - 16, '#8a8f80', 'center', 6);
   }
   const state = () => ({ open: R.open, tab: R.tab, fightT: R.fightT, rrow: R.rrow, ready: Object.fromEntries(R.ready), cur: Object.fromEntries([...R.cur].map(([n, c]) => [n, { ...c }])), hits: R.hits.length, msg: R.msg });
