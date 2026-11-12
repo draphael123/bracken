@@ -71,6 +71,8 @@ export function leanPx(st, key, frame, reduce) {
 
 /* 5. HEAVY CHARGE READ: the glint fires once as the charge crosses half; the full-charge flash is a time window the draw reads */
 export const glintDue = (k, already) => CF1_SHIPS && !already && k >= CF1.glintAt;
+/* (claude/cf1fix) staged-charge heroes (knight, ranger, berserker, geomancer, reaper): st = the tier now reached; the glint once at halfSt, the flash once at fullSt. s = {cf1Half, cf1Full}, reset when the charge ends. Flag off = nothing. */
+export const stageCue = (st, halfSt, fullSt, s) => { const o = { glint: false, flash: false }; if (!CF1_SHIPS) return o; if (st >= halfSt && !s.cf1Half) { s.cf1Half = true; o.glint = true; } if (st >= fullSt && !s.cf1Full) { s.cf1Full = true; o.flash = true; } return o; };
 export const flashAlpha = (now, at, flashesOn, reduce) => (!CF1_SHIPS || !flashesOn || reduce || at == null) ? 0 : Math.max(0, 1 - (now - at) / CF1.flashFull) * 0.7;
 /* the heavy release's smear: true for the first releaseSmear s of the swing (atk clock) so the crescent is at full alpha for about two frames */
 export const releaseSmearHit = (st, now) => !!CF1_SHIPS && !!st && st.cf1RelAt != null && now - st.cf1RelAt < 0.3 && st.atk >= 0 && st.atk < CF1.releaseSmear + 0.04;

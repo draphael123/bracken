@@ -172,7 +172,7 @@ const EGSFX = { light: () => SFX.lightFull(), open: () => SFX.gateOpen() };
 const EG_QUIET = { light: () => {}, open: () => {} };   /* (claude/maker) the START gate makes no sound */
 import * as NDSP from './num-display.js'; const numTxt = n => NDSP.shownLabel(n.txt, n.col);   /* (claude/hpdisplay, Daniel 11-07) every HEALTH / DAMAGE number the player reads is the internal number / 10: src/num-display.js, the one helper */
 import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';   /* (claude/airmotion) the air frame leans and stretches with the arc - art only */ import * as SV from './survival.js'; import * as SKK from './skill-k.js';   /* (claude/lategamea) the one skill damage rule: swordDmg x k x amul */  import * as F2 from './flasks2.js';   /* FLASKS 2 (claude/flasks2, Daniel 10-08): the flask row, the drink, the store's FLASKS tab, the finds and objectives */   /* SURVIVAL (claude/survival, Daniel 10-07): the flask, dry shrines, % hazards and the exams' deadly spikes - the numbers live there */
-import { CF1_SHIPS, setCF1, cfClass, makeLimiter as cfMakeLimiter, stopGate as cfStopGate, jetGate as cfJetGate, tipRead as cfTipRead, leanPx as cfLeanPx, glintDue as cfGlintDue, flashAlpha as cfFlashAlpha, releaseSmearHit as cfRelSmearHit, thwackOpts as cfThwackOpts, kickFor as cfKickFor, CF1 as CF1_K } from './cf-impact.js';   /* (claude/cf1) CF1 IMPACT: the blow's weight, the tick limiter, the warden's tip, the lean (CF1_SHIPS, default OFF; ?cf1=1 previews) */
+import { CF1_SHIPS, setCF1, cfClass, makeLimiter as cfMakeLimiter, stopGate as cfStopGate, jetGate as cfJetGate, tipRead as cfTipRead, leanPx as cfLeanPx, glintDue as cfGlintDue, stageCue as cfStageCue, flashAlpha as cfFlashAlpha, releaseSmearHit as cfRelSmearHit, thwackOpts as cfThwackOpts, kickFor as cfKickFor, CF1 as CF1_K } from './cf-impact.js';   /* (claude/cf1) CF1 IMPACT: the blow's weight, the tick limiter, the warden's tip, the lean (CF1_SHIPS, default OFF; ?cf1=1 previews) */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf, JUICE2, JUICE2_SHIPS, setJuice2, j2row, stopFor2, weaponStopMul, landShakeShare, recoilEase, glanceStop, jitterFor, starSize, starAlpha, starCols, capParts, hitBudget, makeDuty, coopStop } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
@@ -10388,6 +10388,7 @@ function updateCharge(dt) {
       if (st > (P.rgShown || 0)) { P.rgShown = st; P.rgTierAt = time; const T = RG_K.tiers, tx = P.x + P.face * 10, ty = P.y - 14, col = T.cols[st];
         if (SFX.rgTier) SFX.rgTier(st, RGK.focusFull()); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tx, ty, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tx, ty, 2 + 3 * st, [col, '#ffffff'], 50, 0.3, -30, 1); if (st === 3) shakeCam(1.5); }
+      if (CF1_SHIPS) cf1Stage(st, 2, 3, P.x + P.face * 10, P.y - 14);   /* (claude/cf1fix) the glint at the middle tier, the flash at the top */
       if (rgShaky() && !P.rgShakeSaid) { P.rgShakeSaid = true; number(P.x, P.y - 28, 'SHAKING', '#9aa39a'); shakeCam(1, 0); }   /* (claude/rangerid) held past the steady window: the hand shakes */
       if (P.atkHeld >= rgWinEnd(rgQuick(), HEAVY_START, RGK.focusFull()) + RG_K.tiers.auto * rgQuick()) { P.rgTierWant = 1; P.rgShakyWant = 1; P.rgShown = 0; fireHeavy(); }   /* held past the window long enough, it goes by itself (shaky) */
       return; }
@@ -10395,12 +10396,14 @@ function updateCharge(dt) {
       if (st > (P.bzShown || 0)) { P.bzShown = st; P.bzTierAt = time; const T = BZ_K.tiers, tx = P.x + P.face * 4, ty = P.y - 30, col = T.cols[st];
         if (SFX.bzTier) SFX.bzTier(st); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tx, ty, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tx, ty, 2 + 3 * st, [col, '#ffd0a0'], 50, 0.3, -30, 1); if (st >= 2) shakeCam(0.5 + st * 0.5); }
+      if (CF1_SHIPS) cf1Stage(st, 2, 3, P.x + P.face * 4, P.y - 30);   /* (claude/cf1fix) */
       if (P.atkHeld >= bzTierAt(3, bzQuick(), HEAVY_START) + BZ_K.tiers.hold) { P.bzTierWant = 3; P.bzShown = 0; fireHeavy(); }   /* held at T3 long enough, the ground-splitter comes down by itself */
       return; }
     if (isGeo() && GEO) { const st = geoTierNow(); P.chargeFull = st >= 2;   /* (her old full wind is T2) */   /* (claude/chargetiers) THE GEOMANCER'S THREE-TIER STAVE: each tier arrives with a stone note that deepens (SFX.geoTier), a ring at the geode, grit lifting off the floor, the meter's segment + name (drawGeoMeter) */
       if (st > (P.geoShown || 0)) { P.geoShown = st; P.geoTierAt = time; const T = GEO_K.tiers, col = T.cols[st], tip = (GEO.staffTip && GEO.staffTip()) || { x: P.x + P.face * 6, y: P.y - 30 };
         if (SFX.geoTier) SFX.geoTier(st); else SFX.cutStage(st); P.rpTintT = Math.max(P.rpTintT || 0, 0.05 + 0.015 * st);
         ringAt(tip.x, tip.y, 5 + 3 * st, col, 0.3); if (st >= 2) ringAt(P.x, P.y - 14, 10 + 4 * st, col, 0.22); burst(tip.x, tip.y, 2 + 3 * st, [col, '#e8a83a'], 50, 0.3, -30, 1); dust(P.x, P.y, 2 + st); if (st === 3) shakeCam(1.5); }
+      if (CF1_SHIPS) cf1Stage(st, 2, 3, P.x + P.face * 6, P.y - 30);   /* (claude/cf1fix) */
       if (P.atkHeld >= geoTierAt(3, geoQuick(), HEAVY_START) + GEO_K.tiers.hold) { P.geoTierWant = 3; P.geoShown = 0; fireHeavy(); }   /* held at T3 long enough, the pillar comes by itself */
       return; }
     if (isReaper()) { const st = bkTier();   /* (claude/bloodknight) THE FIVE TIERS: a deeper glow and a tick at the blade as each arrives; T4/T5 only on a debt */
@@ -10409,6 +10412,7 @@ function updateCharge(dt) {
         ringAt(tip.x, tip.y, 5 + 3 * st, T.cols[st], 0.3); if (st >= 3) ringAt(P.x, P.y - 14, 10 + 4 * st, T.cols[st], 0.22); burst(tip.x, tip.y, 2 + 3 * st, [T.cols[st], '#ffd0d0'], 50, 0.3, -30, 1); if (st >= 4) shakeCam(1 + 0.5 * (st - 3)); P.dkBladeT = 0.25;
         if (fed) for (let i = 0; i < 6 + 2 * st; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 6, vx: (tip.x - P.x) * 1.6, vy: (tip.y - P.y) * 1.6 - 10, life: 0.4, max: 0.4, col: i % 2 ? '#ff2a3a' : '#7a1020', size: 1, grav: 0 });   /* BLOOD-FED: the debt runs up the blade */
         if (st === 5 && SET.flashes) killFlash = Math.max(killFlash, 0.025); }
+      if (CF1_SHIPS) cf1Stage(st, 3, 5, P.x + P.face * 8, P.y - 20);   /* (claude/cf1fix) the top of the five */
       if (P.atkHeld >= BKIT.BLOOD.tiers.auto) { P.bkShown = 0; P.bkWant = Math.max(1, st); fireHeavy(); }
       return; }
     const k = Math.min(1, P.charge / heavyWind());
@@ -10416,13 +10420,14 @@ function updateCharge(dt) {
       parts.push({ x: P.x + P.face * (isPyro() ? 10 : 2) + (Math.random() - 0.5) * 10, y: P.y - 18 - Math.random() * 14, vx: 0, vy: -30, life: 0.3, max: 0.3, col, size: 1, grav: -20 }); }
     if (hero() === 'knight') { const st = cutStage(P.atkHeld);   /* THE HEAVY CUT'S STAGES: a ring and a note at the blade as each one arrives */
       if (st > (P.cutShown || 0)) { P.cutShown = st; const tip = cutTip(); SFX.cutStage(st); ringAt(tip.x, tip.y, 6 + 4 * st, CUT_COL[st], 0.3); burst(tip.x, tip.y, 3 + 3 * st, [CUT_COL[st], '#ffffff'], 50, 0.3, -30, 1); if (st === 3) shakeCam(1.5); }
+      if (CF1_SHIPS) cf1Stage(st, 2, 3, P.x + P.face * 11, P.y - 17);   /* (claude/cf1fix) stage 2 = the guard-break chop, stage 3 = the full charge */
       if (P.atkHeld >= CUT_AUTO) { P.cutShown = 0; P.cutWant = cutStage(P.atkHeld); fireHeavy(); }
       return; }
     if (CF1_SHIPS) { if (cfGlintDue(k, P.cf1Half)) { P.cf1Half = true; parts.push({ x: P.x + P.face * 11, y: P.y - 17, vx: 0, vy: -10, life: 0.12, max: 0.12, col: '#ffffff', size: 2, grav: 0 }); } if (k >= 1 && !P.chargeFull) P.cf1FlashAt = time; }   /* (claude/cf1) a glint at half charge; a white flash on him at full (drawn by the hero draw) */
     if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
     if (isPaladin()) verdictMark();   /* (PALADIN 3) a SIGIL a beat on the nearest foes ahead */
     if (k >= 1 && !isReaper() && !(isRg() && RGK && RGK.bowReady() && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold) && !(isPaladin() && P.atkHeld < HEAVY_START + HG.verdict.hold)) fireHeavy();   /* (VERDICT is held: up to four sigils, then it goes) */   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
-  } else { P.chargeFull = false; P.cf1Half = false; }
+  } else { P.chargeFull = false; P.cf1Half = false; P.cf1Full = false; }
 }
 let bloodBolts = [];
 let dkTrail = [], dkArcs = [], dkGraves = [];   /* (claude/dkfeel: dkGraves = THE GRAVE BURST's spikes, hands and shockwave) */   /* (claude/dk2art) THE DEATH KNIGHT's blood trail (the blade's tip, fading) and the crescent's arcs */
@@ -11019,6 +11024,8 @@ function reloadPistol(why) {
   SFX.ui(); ringAt(P.x, P.y - 12, 12, '#ffd36b', 0.22);
   if (why) number(P.x, P.y - 28, why, '#ffd34a');
 }
+/* (claude/cf1fix) the staged-charge heroes' CF1 read: the same glint particle + white flash the plain path gives, once per charge, from each hero's own tier */
+function cf1Stage(st, halfSt, fullSt, x, y) { const c = cfStageCue(st, halfSt, fullSt, P); if (c.glint) parts.push({ x, y, vx: 0, vy: -10, life: 0.12, max: 0.12, col: '#ffffff', size: 2, grav: 0 }); if (c.flash) P.cf1FlashAt = time; }
 function fireHeavy() { noteVerb('heavy'); P.amHeavyAt = time; if (CF1_SHIPS) P.cf1RelAt = time;   /* (claude/cf1) the release: the smear at full alpha for ~2 frames */ P.amHeavyHit = false;   /* (claude/difficulty) a heavy that lands on nothing is a WHIFF (MASTER punishes one in a boss's reach) */
   if (isPirate()) { P.atkHeld = 0; P.charge = 0; P.chargeFull = false; firePistol(); return; }
   if (isRg() && RGK && RGK.bowReady()) { const w = Math.min(1, (P.charge || 0) / heavyWind()); P.atkHeld = 0; P.charge = 0; P.chargeFull = false;   /* (claude/ranger) THE DRAW, LET GO: the arrow (src/ranger.js release) - empty, the knife's heavy below */
