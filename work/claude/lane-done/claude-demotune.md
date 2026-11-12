@@ -1,4 +1,4 @@
-# DEMOTUNE (11-11) - branch claude/demotune tip 16121e588 (pushed; NOT merged, NOT deployed). Base master df501ad26 (batch162).
+# DEMOTUNE (11-11) - branch claude/demotune tip aa7e6505d (pushed; NOT merged, NOT deployed). Base master df501ad26 (batch162).
 Method = juice2tune's: tools/boss-rates.mjs, human profile, WITH flasks (kit), clock 420 s, NORMAL, knight/warden/pyro x seeds, ONE headless at a time. n = fights pooled over the 3 heroes. "practiced" (bare build, THE standard way the band is read; it is what juice2tune's 0-2/6 and 5-6/6 were) is the tuning target. "built" (typical card+skills) is the secondary read: your brief said "built bot" but its quoted numbers are practiced, so I measured both. Raw logs: scratch/demotune/*.log (tab.mjs tabulates).
 ## Baseline (master)
 | row | practiced n=36 (seeds 1-12, run on master) | built n=18 |
