@@ -106,7 +106,7 @@ export function makeGQ5Q2(env) {
   /* any blow or hero shot on the rope (src/hero-strikes.js: one rule) */
   function ropeStep(dt) {
     const rp = E.rope(), Pc = st.perch, tt = tn(); if (!rp) return; if (st.ropeCd > 0) st.ropeCd -= dt;
-    const hit = env.strikes(rp.box, 'q52rope'); if (!hit) return;
+    let hit = null; try { hit = env.strikes(rp.box, 'q52rope'); } catch (err) { hit = null; }   /* a tool's fake world may have no attack box */ if (!hit) return;
     if (Pc.phase === 'perched') { ringRope(hit); return; }
     if (st.ropeCd <= 0) { st.ropeCd = 0.8; st.ropeBell = tt + 0.6; ctx.number(rp.x, rp.box.t - 8, Pc.phase === 'idle' ? 'NOTHING IN THE BELL' : 'THE BELL TOLLS', '#8a7fa0'); env.sfx('seaBell'); }
   }
