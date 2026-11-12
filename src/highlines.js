@@ -172,7 +172,7 @@ export function buildHighLines({ painter, T, TS }) {
   for (const [sx, sy] of D.secrets) ent('silver', sx, sy);
   ent('gate', 38, 47);
   /* ---- 1 FOOTHOLD ---- */
-  sign(6, 231, 'THE HIGH LINES. HANG ON (UP), THEN STRIKE: EVERY BLOW HAULS THE LINE UP. THE RATCHET HOLDS YOU.');
+  sign(6, 231, 'HANG ON (UP), THEN STRIKE: EVERY BLOW HAULS THE LINE UP.');
   sign(36, 219, 'A MISS COSTS A CLIMB: THE NETS CATCH YOU.');
   foe('goat', 35, 219, { face: 1 });                               /* a crag ram on the first station: weight on foot before the lines */
   foe('crossbow', 71, 207, { face: -1 });                          /* the first bolt at a rider: he leads you up W2 */
@@ -183,7 +183,7 @@ export function buildHighLines({ painter, T, TS }) {
   foe('harpy', 14, 190, { face: 1 });                              /* a crag harpy dives at the glide riders */
   coinOn('S2', 55); coinOn('F2', 14); ent('coin', 30, 188);
   /* ---- 3 THE WIND GORGE ---- */
-  sign(9, 176, 'THE GORGE WIND IS TOLD. RIDE WITH IT AND YOU FLY; AGAINST IT YOU CRAWL. THE LEE ROCKS ARE CALM.');
+  sign(9, 176, 'THE WIND IS TOLD. RIDE WITH IT AND YOU FLY. THE LEE ROCKS ARE CALM.');
   foe('crossbow', 33, 188, { face: 1 });
   foe('galeharpy', 44, 176, { face: -1 }); foe('galeharpy', 40, 160, { face: 1 });
   coinOn('G2', 36); coinOn('G3', 30); ent('coin', 70, 183);
