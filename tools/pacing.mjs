@@ -62,6 +62,18 @@ export function pacing(lv, o = {}) {   /* o.hero (claude/reachcore, opt-in): the
       for (let k = 2; k <= 10; k++) for (let dy = -3; dy <= 4; dy++) { const x = ux + gu.dir * k, y = uy + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue; const v = y * W + x; if (foot[v] && !stamp.has(v)) { stamp.add(v); a.push(v, k); } } }
     adjCache.set(u, a); return a; };
   const bridges = new Map();   /* u -> [[v, w]]: a way on the model cannot see (a gust, a creature chain, a ride it does not know) */
+  /* THE LINE KIT'S LINES ARE WAYS (claude/linekit, plan D3): a level with L.lineKit (src/line-kit.js) has ropes the reach fill cannot follow. Each kit line is an edge of the route:
+     glide / free = its high end -> its low end, a winch = both ways (the stroke up, the drop down), a points branch = the parent's start -> the branch's far end. A side line (secret: true)
+     is the way to a secret and so OFF the route: it adds no edge, and what only it reaches stays off the route. Only a level that has L.lineKit; no other level's fill moves. */
+  if (L.lineKit && Array.isArray(L.lineKit.lines)) {
+    const near = (tx, ty, ry0, ry1) => { let best = -1, bd = 1e9; for (let y = Math.max(0, Math.floor(ty) + ry0); y <= Math.min(H - 1, Math.floor(ty) + ry1); y++) for (let x = Math.max(0, Math.round(tx) - 3); x <= Math.min(W - 1, Math.round(tx) + 3); x++) {
+      if (!foot[y * W + x]) continue; const d = Math.abs(x - tx) * 2 + Math.abs(y - ty); if (d < bd) { bd = d; best = y * W + x; } } return best; };
+    const lines = L.lineKit.lines, byId = Object.fromEntries(lines.map(z => [z.id, z])), link = (u, v, w) => { if (u < 0 || v < 0 || u === v) return; if (!bridges.has(u)) bridges.set(u, []); bridges.get(u).push([v, Math.min(16, Math.max(1, Math.round(w)))]); };
+    const startOf = z => { const hi = z.a[1] <= z.b[1] ? z.a : z.b; return near(hi[0], hi[1], -1, 5); }, landOf = z => { const lo = z.a[1] > z.b[1] ? z.a : z.b; return near(lo[0], lo[1], 0, 14); };
+    for (const z of lines) { if (z.secret || z.npc || z.cab) continue; const len = Math.hypot(z.b[0] - z.a[0], z.b[1] - z.a[1]), s = startOf(z), e = landOf(z);
+      if (z.kind === 'winch') { link(e, s, len); link(s, e, len / 2); } else link(s, e, len / 4);
+      for (const p of z.points || []) { const to = byId[p.to]; if (to && !to.secret) link(s, to.kind === 'winch' ? startOf(to) : landOf(to), len / 4); } }
+  }
   const gate = ents.find(e => e.t === 'gate'), A = L.lastArena || L.arena;   /* (claude/gorm2) L.lastArena: a fight in two rooms ends in the second (KING GORM: his hall, the burning wood, his glade) - the route runs to where it ends */
   let s0 = settle(L.START.x, L.START.y);
   /* THE END IS THE FIGHT. Several levels stand their gate at the arena door, so a route to the gate stops short of the boss */

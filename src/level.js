@@ -23,7 +23,7 @@ import { buildUnderleaf3, UL3_RULE } from './underleaf3.js'; import { buildRootw
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
-import { buildOreRoad } from './ore-road.js';
+import { buildOreRoad } from './ore-road.js'; import { buildHighLines, RULE as HL_RULE } from './highlines.js';   /* THE HIGH LINES (claude/highlines1, the greybox, DEV ONLY) */
 import { reworkScree } from './scree-rework.js';
 import { applyReachGaps, GAPS } from './reach-gaps.js';
 import { chaseScree } from './scree-chase.js';
@@ -8024,7 +8024,9 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
    lane flips this, the level keeps its old place exactly (a secret fork off Highcrown at 80% put down) and Highcrown still needs Stormhold. Flipped:
    needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
    Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
-export const ROAD_OPEN = { undercrown: true };
+export const ROAD_OPEN = { undercrown: true, highlines: false };
+/* (claude/linekit, plan B) THE HIGH LINES' switch, the Undercrown's own pattern. OFF (now): the level is hidden + dev, no needs, reached only with ?level=highlines, and the Ore Road stays behind the Sky Road. ON (the release lane): Sky Road -> High Lines -> Ore Road; the CRAG map node, RUSH row, EHP/bestiary/foe-cast rows and the LQ GATE row ride the same word. */
+export const HL_SHIPS = ROAD_OPEN.highlines;
 /* (claude/yardswap, Daniel 11-03) A RETIRED TRAINING YARD: the row stays (LEVELS is an append log - indices never shift, and an old id in a save, a bookmark or a tool must never be a hole), but it BUILDS THE ARENA YARD. */
 const retiredYard = id => ({ id, name: 'THE ARENA YARD', sub: 'the old yard is gone: this is the Arena Yard', build: () => buildArenaYard({ painter, T }), hidden: true, retired: 'arena_yard' });
 export const LEVELS = [
@@ -8083,7 +8085,7 @@ export const LEVELS = [
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: withBanner(()=>buildWitchlight({painter,T,TS}), 'witchlight', ...LOST_BANNERS.witchlight), needs: 'burial' },
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
-  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
+  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: HL_SHIPS ? 'highlines' : 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
   /* THE UNBURIED FIELD (Lane C, 2026-09-23/25): the optional Death Knight class level, a spur off THE WITCHLIGHT STAIR.
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
@@ -8174,6 +8176,8 @@ LEVELS.push({ id: 'arena_yard', name: 'THE ARENA YARD', sub: 'every verb, straw 
 LEVELS.push({ id: 'duel_pit', name: 'THE DUEL PIT', sub: 'hero against hero, best of three', build: () => buildDuelPit({ painter, T }), hidden: true });
 /* THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): APPENDED (saves count levels by index). The short generic opening a NEW save starts in (and the inn's training yard replays); it ends at the inn's door. src/opening-tutorial.js */
 LEVELS.push({ id: 'lesson', name: 'THE TUTORIAL', sub: 'the basics, before the inn', build: () => buildLesson({ painter, T }), hidden: true });
+/* THE HIGH LINES (claude/highlines1, the OPUS GREYBOX, 11-05): APPENDED (saves count levels by index). DEV ONLY - on no road, in no demo slice: hidden, no needs, reached with ?level=highlines - until its art lane and proof land (art before live; Daniel 11-05 15:27: Sky Road -> THE HIGH LINES -> Ore Road). src/highlines.js, src/highlines-hands.js, src/hookjack.js */
+LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to the cave mouth', rule: HL_RULE, build: () => buildHighLines({ painter, T, TS }), ...(HL_SHIPS ? { needs: 'skyroad' } : { hidden: true, dev: true }) });
 /* THE GREAT DUNE (claude/greatdune, the OPUS GREYBOX, 11-06; plan-desert-1105 s1.9, brief-greatdune-1014): the board road between the Buried City and the Sealed Pyramid.
    BEHIND ITS FLAG (src/great-dune.js gdOn: ?gd=1, GD=1): OFF (as shipped) this row is NOT appended - LEVELS is master's array, no index or save moves. ON it is appended
    HIDDEN (no map node), needing the Buried City: ?gd=1&level=greatdune. THE ROAD INSERT (the Sealed Pyramid needs it) is src/route-insert.js's, live with GD_SHIPS (art before live). */

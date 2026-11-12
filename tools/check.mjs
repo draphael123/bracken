@@ -343,6 +343,12 @@ if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/l
 /* THE ROOKERY and THE SHRIEK SISTERS (claude/rookery, Node): the road and the old-save unlock, the five areas, every required cracked rock a LOCK, the hands in a fake world
    (bait, aim, dive, break; a dead roost sends another; the shrieker's mark), the sisters pure (B15 floors, the stun off a dive into cracked rock, the team changing) */
 if (take('rookery')) results.push(run('rookery', process.execPath, ['tools/rookery.mjs']));
+/* THE LINE KIT (claude/highlines-kit, Node; src/line-kit.js, docs/linekit.md): grip/post winches, glide + brake, points, kicks, snap, the gondola set piece, counterweights, told wind + lee, foe hooks, respawn; every hero x 1-4 seats soft-lock sweep of the lab room; every drop lands; lintLines + broken cases */
+if (take('line-kit')) results.push(run('line-kit', process.execPath, ['tools/line-kit.mjs']));
+/* THE HIGH LINES greybox + THE HOOKJACK (claude/highlines1, Node; src/highlines.js, src/hookjack.js, src/highlines-hands.js): the level lints clean, grid = data, every band present, every drop lands, every hero x1 + knight x2-4 soft-lock sweep, the Hookjack's guard/tell/parry/swipe/noStack/saw/cut/foot and the counter row */
+if (take('highlines')) results.push(run('highlines', process.execPath, ['tools/highlines.mjs']));
+if (take('hl-art-lint')) results.push(run('hl-art-lint', process.execPath, ['tools/hl-art-lint.mjs']));   // (claude/linekit) THE HIGH LINES' art pass lint (hlart left it out of the suite): 4406 checks, node only
+if (take('skyhook')) results.push(run('skyhook', process.execPath, ['tools/skyhook.mjs']));   // (claude/skyhook) SKYHOOK, pure: B15 floor, both openings in both phases, tells before hits, no soft-lock, every hero, co-op, reset
 /* A FOE THE ROOM KILLS GOES DOWN (claude/flotilla4, Daniel 10-27 'dead foes stand there'): every common foe on the build killed by an untagged hurt, a blast and a round shot - dead, never alive at hp <= 0, and its body says how it goes down (c.fall; the common fall tips it onto its back) */
 if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools/room-kills.mjs']));
 /* THE POWDER MONKEY (claude/flotilla4, a shared foe: src/powder-monkey.js): small and quick, his told lob, the teach placed alone, struck back he goes down, a struck blast fires a deck gun and a keg */

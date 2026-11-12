@@ -31,6 +31,7 @@ import { gargOpen } from './gate-gargoyle.js';
 import { csOpen } from './castellan.js'; /* (claude/fix157) THE CASTELLAN'S GHOST (the Hollow Manor): his stumble / bite / wind / dizzy / knock-out openings are rules, his own number OWN_WARD (x0.45, x2 open, capped) */
 import { cmOpen } from './crypt-mother.js'; import { hmOpen as hmsOpen } from './headmistress.js'; import { wdOpen } from './lantern-widow.js';   /* (claude/nighthands) THE NIGHT ROAD's three: their openings (a knot cut, a lesson answered, the lantern taken back) are rules now - without one noteGreed counted every blow IN an opening as greed and the reprisal came down on the hero mid-opening */
 import { winchOpen } from './winchmaster.js';
+import { skyOpen } from './skyhook.js';   /* (claude/skyhook) */
 import { wormOpen } from './dune-worm.js';
 import { mageOpen, mageSoft } from './undead-mage.js';
 import { pupOpen } from './puppeteer.js';
@@ -115,6 +116,7 @@ export const OPEN_RULE = {
   deacon: e => dcOpen(e),                                                    // THE DEACON (claude/church2): his lamps out, he GROPES IN THE DARK - open
   bzchief: e => bzcOpen(e),                                                 // THE BERSERKER CHIEFTAIN (claude/warcairn): a beat in his frenzy - he LOSES THE BEAT; or his whiffed cross-chop's axes in the stone
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
+  skyhook: e => skyOpen(e),                                                  // SKYHOOK (claude/skyhook): DOWN off his slipped line, or JARRED (his drop landed on nothing)
   bogtroll: e => btOpen(e) || btStun(e),                                                  // THE BOG TROLL (claude/fenroad): STUCK in a rotten section he burst up through
   hornetqueen: e => hqOpen(e),                                               // THE HORNET QUEEN 2 (claude/hornetsnest): STUCK in comb/wood, STAGGERED off a shield, DAZED by smoke under her, PINNED under a pine or the last comb
   grubbag: e => e.mode === 'stun' || e.mode === 'hot' || e.mode === 'drop',                                        // (claude/kitchengate4: + KNOCKED OFF HIS FEET, the platter drop)  LORD GRUBBAG (claude/kitchengate): STUNNED by a bomb / TOO HOT from a chilli he gulped off the serving line (src/grubbag.js, claude/kitchengate2)
@@ -153,7 +155,7 @@ export const OPEN_RULE = {
    blows is the answer, not greed: no reprisal (claude/burnvillage2: and no chip either - he is a duelist on FULL_DAMAGE) */
 export const NO_GREED = new Set(['pyromancer']);
 /* (claude/minecart) THE GREAT DRILL is on OWN_WARD: its number is its own (src/great-drill.js takeBlow: the cab ALWAYS takes a whole blow - B13/B14, Daniel 10-07 - x2 jammed, nothing while warded); greed is still counted */
-export const OWN_WARD = new Set(['castellan', 'cryptmother', 'headmistress', 'lanternwidow', 'grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
+export const OWN_WARD = new Set(['skyhook', 'castellan', 'cryptmother', 'headmistress', 'lanternwidow', 'grubbag', 'shrieksisters', 'batteringbeast', 'mother', 'hornetqueen', 'bogtroll', 'oldtusker', 'tombking', 'scarabmother', 'hourglassking', 'greatdrill', 'puppeteer', 'wickerqueen', 'lanterneater', 'duneworm', 'colossus', 'winchmaster']);   /* (claude/duneworm2) THE DUNE WORM's ward is his CROWN PLATES (src/dune-worm.js wormTake): nothing from the front, whole from behind or on his reared belly, double tangled - B11's guard by angle, not a chip to wait out (B13) */
 /* NO OPENING IN CODE, OR NO BLADE EVER REACHES THE BODY: left at full damage (a boss-wave TODO), never made unbeatable */
 export const NO_OPENING = {
   /* (claude/sporewood2) mother: off this list - THE MOTHER CAP 2 has an opening (her knot) and her own number (OWN_WARD: 0.4 sealed, x2 open) */
