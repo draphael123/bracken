@@ -3,7 +3,7 @@
 //   BRACKEN_GQ5Q1=1 node tools/gq5q1.mjs      flag ON:
 //   G  geometry   every hoist column has floor under it and 4 rows of air over it; clear of the bell and of her two spots; the three decks hold on the hall's floor level
 //   R  reach      each hero's real base jump (src/reach-hero.js) tops the 2-tile deck from the floor; ceiling clearance above the deck
-//   H  hoists     bell ring -> THE HOISTS RISE; rise 0.6 s, up to 8.0 s, vanish tell from 6.5 s, sink to 8.5 s; riders carried up and SET DOWN (never below the floor); tiles restored;
+//   H  hoists     bell ring -> THE HOISTS RISE; rise 0.6 s, up to Q5N.hoist.hold s (GQ5Q1-TUNE: 7.0), vanish tell from 6.5 s, sink 0.5 s later; riders carried up and SET DOWN (never below the floor); tiles restored;
 //                 bell cooldown 16 s (STILL SWINGING), a ring inside it does nothing; 4 seats ride together
 //   F  fire       tell 2.5 s (grille step 1-3, THE FLOOR BURNS), burn 3.0 s, 6 per 0.5 s up to 36, no stagger (noKnock), a hoist rider is not burned; the burn's own i-frames do not swallow ticks;
 //                 NEVER starts on a bell cooldown, with the hoists up, in a wave (horn or guards in), under a geode; first at Q5N.fire.first s (GQ5Q1-TUNE: 15), then every 20 s; it opens each barracks wave
@@ -106,14 +106,14 @@ console.log('== R. reach (real base jumps, src/reach-hero.js)');
 
 console.log('== H. the hoists');
 { const N = Q5N.hoist; const w = make(), fl = floorOf(w), g = w.Lw.grid, W = w.W, fr = w.fr, gridBefore = Uint8Array.from(g);
-  ok(hoistRowsAt(0.1) === 0 && hoistRowsAt(0.35) === 1 && hoistRowsAt(0.7) === 2 && hoistRowsAt(7.9) === 2 && hoistRowsAt(8.3) === 1 && hoistRowsAt(8.6) === 0 && hoistTotal() === 8.5, 'timeline: rise 0.6 s (2 steps), up to 8.0 s, sink to 8.5 s');
+  ok(hoistRowsAt(0.1) === 0 && hoistRowsAt(0.35) === 1 && hoistRowsAt(0.7) === 2 && hoistRowsAt(N.hold - 0.1) === 2 && hoistRowsAt(N.hold + N.sink / 2 + 0.1) === 1 && hoistRowsAt(N.hold + N.sink + 0.1) === 0 && hoistTotal() === N.hold + N.sink, 'timeline: rise 0.6 s (2 steps), up to ' + N.hold.toFixed(1) + ' s, sink to ' + (N.hold + N.sink).toFixed(1) + ' s');
   const h1 = w.hoist(0), hero = w.heroes[0]; hero.x = h1.cx; w.e.mode = 'stand'; w.e.modeT = 99; const gx = h1.cx;
   w.ring(); ok(w.st.said.includes('THE HOISTS RISE') && w.H.q5().state().phase === 'rise', 'the ring: "THE HOISTS RISE"');
   let ys = [hero.y], saidLow = false; const tAt = t => Math.round(t * 60) - 1;
   w.step(tAt(0.7)); ys.push(hero.y); ok(w.H.q5().state().step === 2 && hero.y === fl - 32 && g[(fr - 2) * W + w.x0t + Q5N.hoist.cols[0]] === T.ONEWAY && g[(fr - 1) * W + w.x0t + Q5N.hoist.cols[0]] === T.AIR, 'at 0.7 s the deck is 2 tiles up (one-way tiles at row ' + (fr - 2) + ') and its rider rode up (y ' + hero.y + ' = floor - 32)');
   let minY = 1e9, maxY = -1e9; for (let i = 0; i < 60 * 8; i++) { w.step(1); minY = Math.min(minY, hero.y); maxY = Math.max(maxY, hero.y); if (w.st.said.includes('LOWERING')) saidLow = true; if (w.st.time > 6.4 && !saidLow && w.st.time < 6.45) ok(true, 'no LOWERING before 6.5 s'); if (hero.y > fl) { ok(false, 'a rider fell below the floor at ' + w.st.time.toFixed(2)); break; } }
   ok(saidLow, 'vanish tell: "LOWERING" (rattle + red flash from 6.5 s)');
-  ok(w.H.q5().state().phase === 'down' && w.H.q5().state().step === 0 && hero.y === fl && maxY <= fl, 'at 8.5 s the hoists are down and the rider was SET DOWN on the floor (y ' + hero.y + ', never below it: max y ' + maxY + ')');
+  ok(w.H.q5().state().phase === 'down' && w.H.q5().state().step === 0 && hero.y === fl && maxY <= fl, 'at ' + hoistTotal().toFixed(1) + ' s the hoists are down and the rider was SET DOWN on the floor (y ' + hero.y + ', never below it: max y ' + maxY + ')');
   ok(Uint8Array.from(g).every((v, i) => v === gridBefore[i]), 'every laid tile is gone: the grid is as before the ring');
   // the bell cooldown
   const w2 = make(); w2.e.mode = 'stand'; w2.e.modeT = 99; w2.ring(); const t1 = w2.st.time; w2.step(60 * 9); w2.st.said.length = 0; w2.ring(); w2.step(2);
