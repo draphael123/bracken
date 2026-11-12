@@ -13,7 +13,7 @@ export function gq5pOn() {
 export const P5 = gq5pOn();
 /* the plan's numbers (px; 1 tile = 16). Tune back in the plan's order: heel.dmg 18 -> 14; curtsy.dmg2 16 -> 13; gap [0.5,0.4] -> [0.6,0.5] (GAP5); hp 1080 -> 980 last. */
 export const G5 = {
-  heel: { tell: 0.6, tiles: 5, speed: 300, boxW: 16, boxH: 24, dmg: 18, stumble: 0.8, minDist: 64 /* 4 tiles: she dashes only when you are further than this */, stagger: 1.0, push: 120 },
+  heel: { tell: 0.6, tiles: 5, speed: 300, boxW: 16, boxH: 24, dmg: 14 /* (GQ5P-TUNE knob 1: 18 -> 14; n=6 baseline 61% [39-80], under 70-80) */, stumble: 0.8, minDist: 64 /* 4 tiles: she dashes only when you are further than this */, stagger: 1.0, push: 120 },
   curtsy: { tell: 0.5, dmg1: 12, w1: 32, h1: 10, t1: 0.3 /* hit 1 -> hit 2 */, dmg2: 16, w2: 24, h2: 32, t2: 0.3, stagger: 1.5 },
   tantrum: { tell: 0.5, dmg: 10, reach: 24, gap: 0.25, overTell: 0.35, overDmg: 22, overW: 24, overH: 32, overT: 0.2, recover: 0.6, stagger: 1.5 },
 };

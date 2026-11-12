@@ -72,7 +72,7 @@ console.log('== GQ5P ON half ==');
   ok(CHAINS[2].some(c => c.includes('pirouette')) && CHAINS[2].some(c => c.includes('stomp') && c.includes('tiara')), 'ON: the pirouette, tiara and stomp stay in phase 2');
   ok(['heelTell', 'curtsyTell', 'tantrumTell', 'overTell'].every(k => GP_MODES[k] === '!' || GP_MODES[k] === '!!'), 'ON: GP_MODES carries a mark for heelTell, curtsyTell, tantrumTell, overTell (' + ['heelTell', 'curtsyTell', 'tantrumTell', 'overTell'].map(k => k + ' ' + GP_MODES[k]).join(', ') + ')'); }
 /* ---- 2. the plan's numbers ---- */
-ok(G5.heel.tell === 0.6 && G5.heel.tiles === 5 && G5.heel.speed === 300 && G5.heel.boxW === 16 && G5.heel.boxH === 24 && G5.heel.dmg === 18 && G5.heel.stumble === 0.8 && G5.heel.minDist === 4 * TS, 'HEEL DASH: tell 0.6 s, 5 tiles at 300 px/s, box 1 x 1.5 tiles, 18 dmg, stumble 0.8 s, used beyond 4 tiles');
+ok(G5.heel.tell === 0.6 && G5.heel.tiles === 5 && G5.heel.speed === 300 && G5.heel.boxW === 16 && G5.heel.boxH === 24 && G5.heel.dmg === 14 && G5.heel.stumble === 0.8 && G5.heel.minDist === 4 * TS, 'HEEL DASH: tell 0.6 s, 5 tiles at 300 px/s, box 1 x 1.5 tiles, 14 dmg (GQ5P-TUNE knob 1: plan 18 -> 14), stumble 0.8 s, used beyond 4 tiles');
 ok(G5.curtsy.tell === 0.5 && G5.curtsy.w1 === 32 && G5.curtsy.dmg1 === 12 && G5.curtsy.t1 === 0.3 && G5.curtsy.w2 === 24 && G5.curtsy.h2 === 32 && G5.curtsy.dmg2 === 16 && G5.curtsy.stagger === 1.5, 'CURTSY CUT: tell 0.5 s, low sweep 2 tiles 12 dmg, 0.3 s later a rising cut 1.5 x 2 tiles 16 dmg, parry staggers 1.5 s');
 ok(G5.tantrum.tell === 0.5 && G5.tantrum.dmg === 10 && G5.tantrum.reach === 24 && G5.tantrum.gap === 0.25 && G5.tantrum.overTell === 0.35 && G5.tantrum.overDmg === 22 && G5.tantrum.overW === 24 && G5.tantrum.overH === 32 && G5.tantrum.stagger === 1.5 && G5.tantrum.recover === 0.6, 'TANTRUM COMBO: tell 0.5 s, two slashes 1.5 tiles x 10, 0.25 s apart, overhead tell 0.35 s 2 x 1.5 tiles 22 dmg, parry staggers 1.5 s, recovery 0.6 s');
 ok(GP.gap[0] === 0.5 && GP.gap[1] === 0.4 && GP.hp === 1080 && GP.resist === 0.4, 'unchanged: gap [0.5, 0.4], hp 1080, resist 0.4');
@@ -97,7 +97,7 @@ const NC = await imp('tools/node-canvas.mjs'); NC.install();
   const t0 = st.time; w.until(() => e.mode === 'heel'); const tell = st.time - t0; ok(tell >= 0.55 && tell <= 0.7, 'HEEL: tell lasts ' + tell.toFixed(2) + ' s (0.6)');
   const x0 = e.x, t1 = st.time; w.until(() => e.mode !== 'heel', 120); const dash = st.time - t1, dist = Math.abs(e.x - x0);
   ok(dist <= 5 * TS + 3 && dist >= 5 * TS - 14, 'HEEL: dashes ' + (dist / TS).toFixed(2) + ' tiles (5), in ' + dash.toFixed(2) + ' s (~0.27)');
-  const hh = st.dmg.filter(d => d.name === 'HER HEEL DASH'); ok(hh.length === 1 && hh[0].d === 18 && !hh[0].o.unblockable, 'HEEL: hits once for 18, blockable (' + hh.length + ' hit, ' + (hh[0] && hh[0].d) + ')');
+  const hh = st.dmg.filter(d => d.name === 'HER HEEL DASH'); ok(hh.length === 1 && hh[0].d === 14 && !hh[0].o.unblockable, 'HEEL: hits once for 14 (GQ5P-TUNE knob 1), blockable (' + hh.length + ' hit, ' + (hh[0] && hh[0].d) + ')');
   ok(e.mode !== 'stumble', 'HEEL: a hit that lands is not a stumble');
   { const f = make(); f.heroes[0].x = f.e.x + 7 * TS; f.chain(['heel', 'lunge']); f.until(() => f.e.mode === 'stumble', 60 * 3); ok(f.e.mode === 'stumble' && !f.st.dmg.some(d => d.name === 'HER HEEL DASH'), 'HEEL: you beyond its reach (7 tiles) take nothing and she stumbles'); }
   /* a miss: the hero rolls through (damagePlayer says no) */
