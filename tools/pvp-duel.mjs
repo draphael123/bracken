@@ -179,12 +179,13 @@ if (WANT.includes('duel')) {
   const { openPage } = await import('./cdp.mjs');
   const N = +(process.env.N || 2), CAP_S = 6 * 60;
   const pairs = process.env.PAIRS ? process.env.PAIRS.split(',').map(p => p.split(':')) : BOT_HEROES.flatMap((a, i) => BOT_HEROES.slice(i + 1).map(b => [a, b]));
-  let pg = await openPage({ duelBeta: true, audio: false, fonts: false, seed: 5 }); const E = e => pg.evalp(e);   /* (proof146b) a fresh page every RECYCLE matches (one page crashed after ~10 matches), and one retry on a crashed page */
-  const RECYCLE = +(process.env.RECYCLE || 6); let nPage = 0; const openDI = () => E(`(async()=>{const {LEVELS}=await import('/src/level.js');window.__DI=LEVELS.findIndex(l=>l.id==='duel_pit');return window.__DI;})()`);
+  let pg; const E = e => pg.evalp(e);   /* (proof146b) a fresh page every RECYCLE matches (one page crashed after ~10 matches), and one retry on a crashed page */
+  const ARENA = process.env.ARENA || 'pit', ARENA_LEVEL = { pit: 'duel_pit', stockade: 'duel_stockade' }[ARENA] || 'duel_pit', FLAGS = { duelBeta: true, duelArenas: ARENA !== 'pit', duelFoes: !!process.env.GOBLINS, audio: false, fonts: false, seed: 5 };   /* (duelarenas) ARENA=stockade runs the AI-vs-AI duel in that arena's level (its flag on); GOBLINS=1 turns the foes flag on too */
+  const RECYCLE = +(process.env.RECYCLE || 6); let nPage = 0; const openDI = () => E(`(async()=>{const {LEVELS}=await import('/src/level.js');window.__DI=LEVELS.findIndex(l=>l.id==='${ARENA_LEVEL}');return window.__DI;})()`); pg = await openPage(FLAGS);
   const won = {}, played = {};
   try {
     await openDI();
-    const fresh = async () => { try { await pg.close?.(); } catch (e) {} pg = await openPage({ duelBeta: true, audio: false, fonts: false, seed: 5 }); nPage = 0; await openDI(); };
+    const fresh = async () => { try { await pg.close?.(); } catch (e) {} pg = await openPage(FLAGS); nPage = 0; await openDI(); };
     for (const [a, b] of pairs) for (let s = 1; s <= N; s++) {
       if (nPage >= RECYCLE) await fresh(); nPage++;
       const run1 = () => E(`(async()=>{BK.manualSimulation=true;for(const k in BK.keys)BK.keys[k]=false;BK.setHero('${a}');BK.reset({fresh:true});BK.applyUpgrades();BK.load(__DI);BK.start();BK.coopStart('${b}',false);BK.sim(10);
