@@ -190,7 +190,7 @@ export function buildHighLines({ painter, T, TS }) {
   foe('galeharpy', 44, 176, { face: -1 }); foe('galeharpy', 40, 160, { face: 1 });
   coinOn('G2', 36); coinOn('G3', 30); ent('coin', 70, 183);
   /* ---- 4 THE AMBUSH ---- */
-  sign(4, 170, 'THE GOBLIN CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
+  sign(4, 170, 'GOBLIN CREWS RIDE AT YOU. HIT ONE WHEN HE DRAWS HIS HOOK BACK, OR TURN THE SWIPE.');
   sign(24, 155, 'A GOBLIN WITH A SAW: IF HE CUTS YOUR LINE YOU DROP A LEVEL.');
   foe('crossbow', 55, 141, { face: -1 });
   coinOn('H2', 48); coinOn('S4', 36); ent('coin', 60, 141);
