@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
 const RUNS = +(process.argv[2] || 6), SECS = 30;
-const ROOMS = [['fallingtower', 'sexton'], ['burial', 'gravewarden'], ['witchlight', 'hedgewarden'], ['unburied', 'barrowrider']];
+const ROOMS = [['fallingtower', 'sexton'], ['burial', 'gravewarden'], ['witchlight', 'hedgewarden'], ['unburied', 'barrowrider'], ['buriedcity', 'glassblower']];   /* (claude/bc5d) THE GLASSBLOWER'S hall, same M.trigger/M.floor/M.x0/M.x1 shape */
 const pg = await openPage({ audio: false, fonts: false });
 const bad = [], seen = []; let leaps = 0;
 try {
