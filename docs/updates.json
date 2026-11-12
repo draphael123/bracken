@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 170,
+    "lines": [
+      { "s": "Foes flinch and flash when you hit them.", "lv": [] },
+      { "s": "A hard hit makes a foe pop and stagger.", "lv": [] },
+      { "s": "Dizzy stars now show above a staggered enemy.", "lv": [] },
+      { "s": "Foes die with a bigger pop when you finish them.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 169,
     "lines": [
       { "s": "The Goblin Princess's bell can now be reached and rung.", "lv": ["crown"] },
