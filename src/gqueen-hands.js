@@ -934,7 +934,7 @@ export function makeGQueenHands(ctx) {
     if (L().grid && L().grid[row * L().W + x0t + 4] === 0) { ctx.tiles(row, x0t + 2, x0t + 7, 'lay'); ctx.tiles(row, x1t - 7, x1t - 2, 'lay');
       const fr = Math.round(A.floor / TS); for (const lx of [x0t + 8, x1t - 8]) for (let r = row; r < fr; r++) ctx.tiles(r, lx, lx, 'ladder'); }   /* (claude/gq4art) a ladder at each gallery's inner end (GQ4Q built them 4 rows up with none) */
   }
-  const hearthXs = () => { const A = L().arena; return [A.x0 + 3 * TS + 8, A.x1 - 3 * TS - 8]; };
+  const hearthXs = () => { const A = L().arena, e = q(), tx = e && e.throneX; let ex = A.x1 - 3 * TS - 8; if (tx && Math.abs(ex - tx) < 84) ex = tx - 84; return [A.x0 + 3 * TS + 8, ex]; };   /* (GQ5FIX 11-12, Daniel still b: the geode throne's crystals were drawn over the east hearth gate - both stood at tile 858; the east hearth now stands 84 px (5 tiles) clear of the throne) */
   function hearthStart(e) {
     const A = L().arena, h4 = g4(), [wx, ex] = hearthXs(); h4.side = -h4.side; const src = h4.side > 0 ? wx : ex;
     h4.hearth = { src, far: src === wx ? A.x1 - 8 : A.x0 + 8 }; h4.hearthCd = Q4N.hearth.cd; h4.gapUntil = now() + 2.5;

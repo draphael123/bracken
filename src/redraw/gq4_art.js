@@ -76,7 +76,7 @@ export function drawGate(g, G, cx, cy, t, fy) {
 }
 let PIN_T = new Map();   // per gate: the time its pin was last struck (read off the open -> shut change, drawing side only)
 export function drawPin(g, G, cx, cy, t, fy) {   // the chain pin: a ring in the vault, a chain to a pull-weight; idle = dull iron, glow = ringed in the gate's colour (a call is live), struck = swung out with sparks
-  const px0 = ri(G.pinX - cx), py = ri(G.pinY - cy), ty = ri(G.box.t - cy), live = G.lit > 0 && G.open && !G.lock, was = PIN_T.get(G);
+  const px0 = ri(G.pinX - cx), py = ri(G.pinY - cy), ty = ri((G.ceil !== undefined ? G.ceil : G.box.t) - cy), live = G.lit > 0 && G.open && !G.lock, was = PIN_T.get(G);
   if (was === undefined) PIN_T.set(G, G.open ? -9 : t - 9); else if (G._po === true && !G.open) PIN_T.set(G, t); G._po = G.open;
   const age = t - (PIN_T.get(G) ?? -9), struck = age >= 0 && age < 0.45, sw = struck ? ri(Math.sin(age * 30) * 3 * (1 - age / 0.45)) : 0;
   if (px0 < -20 || px0 > 340) return;

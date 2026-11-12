@@ -57,8 +57,8 @@ console.log('== GUARDS! (the call, the lanterns, the goblins)');
   ok(said && w.st.said.includes('GUARDS!'), 'her handbell call: GUARDS! (tell mode callTell, 1.0 s)'); ok(F.call && F.call.phase === 'tell', 'a call is live');
   for (let i = 0; i < 90 && F.call && F.call.phase !== 'lit'; i++) w.step(1);
   ok(F.call && F.call.phase === 'lit' && gm(w).W.lit === 1 && gm(w).U.lit === 1 && gm(w).E.lit === 0, "the OPEN gates' lanterns light (W, U), the shut one does not");
-  w.step(60 * 3.3); ok(w.st.spawned.length === 0, 'nobody before 3.5 s');
-  w.step(60 * 0.5); ok(w.st.spawned.length === 2 && w.st.spawned.some(s => s.t === 'soldier' && s.x === gm(w).W.spawnCol) && w.st.spawned.some(s => s.t === 'javelin' && s.x === gm(w).U.spawnCol && s.y === 13), '3.5 s later one goblin per open gate (soldier at W, javelin at U on the gallery)'); }
+  w.step(60 * 1.8); ok(w.st.spawned.length === 0, 'nobody before 2.0 s');   /* (GQ5FIX 11-12: the lantern burn 3.5 -> 2.0 s) */
+  w.step(60 * 0.5); ok(w.st.spawned.length === 2 && w.st.spawned.some(s => s.t === 'soldier' && s.x === gm(w).W.spawnCol) && w.st.spawned.some(s => s.t === 'javelin' && s.x === gm(w).U.spawnCol && s.y === 13), '2.0 s later one goblin per open gate (soldier at W, javelin at U on the gallery)'); }
 { const w = make(3); const F = w.H.fight(); free(w); F.callAt = 1e9; gm(w).E.open = true; F.call = { phase: 'lit', at: w.st.time + 0.1 }; w.step(10); ok(w.st.spawned.length === 2, '3 seats, 3 open gates: capped at maxAlive 2 alive (GQ4TUNE-t: 3 -> 2) (' + w.st.spawned.length + ')'); }
 { const w = make(); const F = w.H.fight(); F.guards = [1, 2, 3].map(() => ({ alive: true, x: 0 })); F.callAt = 0; free(w); w.e.modeT = 0.01; w.step(30); ok(!F.call && w.e.mode !== 'callTell', 'never more than 3 goblins alive: no call while 3 stand'); }
 

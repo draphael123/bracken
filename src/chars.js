@@ -4265,7 +4265,7 @@ export function bakeGoblinQueen() {
     const rodDraw = () => { if (!rod) return; const [x0, y0, x1, y1] = rod; line(g, x0, y0, x1, y1, C.I, 3); line(g, x0, y0, x1, y1, C.i, 1);
       circle(g, x1, y1, 4, C.I); circle(g, x1, y1, 3, C.j); px(g, x1, y1, C.n); px(g, x1 + 1, y1 - 1, C.q); if (glow) { circle(g, x1, y1, 2 + glow, '#e8dcff'); circle(g, x1, y1, 1 + glow, '#b28cff'); for (const [a, b] of [[-6, 0], [6, 0], [0, -6], [0, 6]]) px(g, x1 + a * glow, y1 + b * glow, '#e8dcff'); }
       for (const [a, b] of [[-5, 0], [5, 0], [0, -5], [0, 5]]) px(g, x1 + a, y1 + b, C.I); };
-    if (rod && rod[4] === 'back') rodDraw();
+    /* (GQ5FIX 11-12, Daniel: the staff vanishes when she casts with her hand) a 'back' sceptre was drawn BEFORE the gown and the body, so the torso hid it; it is now drawn over the body and UNDER the arms (below), held in / beside the off hand */
     for (const [fx, fy] of feet) rect(g, fx - 3, fy - 1, 6, 2, C.k);
     // THE GOWN: it starts at the hips, and the hips are wide, so it is a tent before it is a bell
     const hem = 55 - sit, hw = 36 + flare * 0.8, hws = hw * SX;
@@ -4291,6 +4291,7 @@ export function bakeGoblinQueen() {
     poly([[CX - 18, 13], [CX + 18, 13], [CX + 26, 16], [CX + 30, 21], [CX + 22, 23], [CX + 10, 22], [CX, 28], [CX - 10, 22], [CX - 22, 23], [CX - 30, 21], [CX - 26, 16]], 'w'); /* the ermine across shoulders like a yoke, and a deep neckline in it */
     for (const [x, y] of [[-19, 17], [-12, 19], [12, 19], [19, 17], [-25, 18], [25, 18], [0, 16], [-6, 16], [6, 16]]) P1(CX + x, y, 'k');
     for (let q = -4; q <= 4; q++) { const nx = CX + q * 2, ny = 21 + Math.abs(q); P1(nx, ny, q === 0 ? 'm' : 'y'); if (q === 0) P1(nx, ny + 1, 'r'); } /* the stones at her throat */
+    if (rod && rod[4] === 'back') rodDraw();   /* (GQ5FIX) the staff in her off hand / planted at her side: over the body, under the arms */
     // the far arm, as thick as a leg
     if (arm2) { const [x0, y0, x1, y1] = arm2, wx = x0 + (x1 - x0) * 0.55, wy = y0 + (y1 - y0) * 0.55; circle(g, x0, y0, 7.5, C.P); line(g, x0, y0, x1, y1, C.P, 14); line(g, wx, wy, x1, y1, C.G, 10); circle(g, x1, y1, 5.5, C.G); }
     // the head: the same big green head - bat ears, a hook of a nose, yellow eyes, two tusks - on a neck that is all chin

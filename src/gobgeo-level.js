@@ -79,7 +79,7 @@ export function gobgeoLay(R, { T, TS }) {
   const T2 = B.T2;
   R.ents = R.ents.filter(e => !((e.t === 'pike' && e.x === T2.shield) || (e.t === 'heavy' && e.x === T2.heavy)) || e.y !== 21);
   ent('shield', T2.shield, 21, { face: -1, answers: 'gg-t2' }); ent('heavy', T2.heavy, 21, { face: -1, answers: 'gg-t2' });
-  ent('gatebell', T2.bell, T2.bellRow, { id: 'gg-t2', gate: T2.gate, gy0: T2.gy[0], gy1: T2.gy[1] });
+  ent('gatebell', T2.bell, T2.bellRow, { hold: 3 /* (GQ5FIX 11-12: 6 -> 3 s the dropped grate stays down) */, id: 'gg-t2', gate: T2.gate, gy0: T2.gy[0], gy1: T2.gy[1] });
   ent('gobgeo', T2.geo, 6, { face: -1, perch: true, leash: 16 });
   ent('sign', 586, 21, { text: 'HIS ROCK RINGS THE TOWER BELL: THE GUARDS RUN UNDER ITS GATE, AND IT DROPS ON THEM.' });
   if (G4) {   // ============ (claude/gq4l) THE EARLY SIGHTINGS: E1 THE ROAD'S CRAG, E2 THE CHAPEL LOFT (optional, gentle: a rock goes back, he is hurt, nothing is sealed) ============

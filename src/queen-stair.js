@@ -76,7 +76,7 @@ export function queenStairLay(R, { T, TS, insertColumns }) {
     R.reachSpans.push([a, b, B.SLAB_ROW]);
   });
   ent('sign', (686 + a), 8, { text: 'HIS ROCK, SENT BACK, DROPS THE FIRST WEIGHT: A SLAB SWINGS LEVEL. THREE MAKE A BRIDGE.' });
-  ent('torch', (687 + a), 4); ent('torch', (703 + a), 8); coins([(691 + a), 8], [(695 + a), 8], [(699 + a), 8]);
+  ent('torch', (684 + a), 4); ent('torch', (703 + a), 8);   /* (GQ5FIX 11-12: the torch at 687+a, row 4 hung in open air over the geode store; it now stands on the ledge at 684+a) */ coins([(691 + a), 8], [(695 + a), 8], [(699 + a), 8]);
 
   // ---- (gq4l) B3b THE ARMOURY LANDING + B3c THE ROOF LEADS (the 36 columns the stair gained: between the geode store's far ledge and the gallery over her door) ----
   if (G4) {
