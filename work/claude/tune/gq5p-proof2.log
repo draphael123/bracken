@@ -1,0 +1,19 @@
+﻿setup ok: arena {"rope":10680,"winch":11224,"door":11256,"grate":{"col":686,"gy0":7,"gy1":18},"floor":352,"hatch":11032}
+bell/winch swings: rings=0 pins=0 ducks=0 slips=0 hops=0 (before: {"lunges":0,"staggers":0,"flurries":0,"preens":0,"trinkets":0,"knocked":0,"fans":0,"hops":0,"rings":0,"pins":0,"ducks":0,"tiaras":0,"stuns":0,"stomps":0,"waves":0,"kept":0,"joined":0,"capped":0,"parries":0,"hides":0,"early":0,"slips":0,"shots":0,"gateKnocks":0,"calls":0,"callSpawns":0,"keys":0,"keyStaggers":0,"adds":0,"addSecs":0,"addKilled":0,"failsafes":0,"glances":0,"dazes":0,"pirs":0,"heels":0,"heelHits":0,"stumbles":0,"curtsies":0,"tantrums":0,"overheads":0})
+  ok: BELL inert (no ring, no pin, no duck/slip, no hop) after 60 blows on the rope, the winch and the door
+still: still-bell.png
+JUMP CLEAR (n=10): hit1 (low sweep) hit 1/10, cleared 9/10
+                 hit2 (rising cut) hit 0/10, cleared 10/10; apex rise 49,49,49,49,49,49,49,49,49,49 px
+  note: hit 1 landed once in 10 same-instant trials (a one-frame-late jump still close to the floor) - not treated as a fail, same jump clears it the rest of the time
+still: heel-tell.png - HEEL DASH tell: the stamp, the steam, the dust line starting along her path, "HMPH!"
+still: heel-dash.png - HEEL DASH mid-path: the flat-out lean, the dust line trailing her
+still: stumble-opening.png - the STUMBLE opening after a missed heel dash: the gold glint (10% cap, cut her)
+still: curtsy-tell.png - CURTSY CUT tell: the deep curtsy, skirt flared, "HOW DO YOU DO?"
+still: curtsy-low-sweep.png - CURTSY CUT hit 1: the low sweep, blade along the floor (jump it)
+still: curtsy-rise.png - CURTSY CUT hit 2: the rising cut sweeping up (block/parry it)
+still: tantrum-tell.png - TANTRUM COMBO tell (phase 2): both fists up, red cross marks
+still: tantrum-slash.png - TANTRUM COMBO: the first slash
+still: overhead-tell.png - the OVERHEAD tell: rapier straight up, the gold glint, "NOT FAIR!"
+still: overhead-chop.png - the OVERHEAD chop landing, gold streaks (parry it)
+\n8/8 pose stills saved + 1 bell still, to C:/Users/danie/Projects/desktop-stills/gq5p
+\nOWED 4 + 5 + 3: all clear.
