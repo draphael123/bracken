@@ -23,7 +23,7 @@ import { buildUnderleaf3, UL3_RULE } from './underleaf3.js'; import { buildRootw
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
 import { buildMaskwrightTheatre } from './maskwright-theatre.js';   /* THE MASKWRIGHT'S THEATRE (docs/briefs/maskwright-theatre.md): between WAYMEET and THE HARVEST FAIR; its machinery is src/theatre-rig.js */
-import { buildOreRoad } from './ore-road.js';
+import { buildOreRoad } from './ore-road.js'; import { buildHighLines, RULE as HL_RULE } from './highlines.js';   /* THE HIGH LINES (claude/highlines1, the greybox, DEV ONLY) */
 import { reworkScree } from './scree-rework.js';
 import { applyReachGaps, GAPS } from './reach-gaps.js';
 import { chaseScree } from './scree-chase.js';
@@ -8024,7 +8024,12 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
    lane flips this, the level keeps its old place exactly (a secret fork off Highcrown at 80% put down) and Highcrown still needs Stormhold. Flipped:
    needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
    Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
-export const ROAD_OPEN = { undercrown: true };
+const hlForced = () => { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false; if (g.__HL === true) return true; return !!g.location && /[?&]hl=1(&|#|$)/.test(String(g.location.search || '')); };   /* (claude/hllive) a test door: globalThis.__HL = true (node --import ./tools/hl-on.mjs) or ?hl=1 shows the road with the flag off; never true in the live game */
+export const ROAD_OPEN = { undercrown: true, highlines: true || hlForced() };   /* (claude/hllive) THE ONE LINE TO FLIP: false -> true */
+/* (claude/linekit, plan B) THE HIGH LINES' switch, the Undercrown's own pattern. OFF (now): the level is hidden + dev, no needs, reached only with ?level=highlines, and the Ore Road stays behind the Sky Road. ON (the release lane): Sky Road -> High Lines -> Ore Road; the CRAG map node, RUSH row, EHP/bestiary/foe-cast rows and the LQ GATE row ride the same word. */
+export const HL_SHIPS = ROAD_OPEN.highlines;
+/* (claude/hllive) THE ROAD INSERT (src/route-insert.js's one rule, the High Lines' own row, the Academy's pattern): the High Lines need the Sky Road, the Ore Road needs the High Lines (the spreads on the two rows below); a save that had the Ore Road open keeps it (PROG.roadOpen.oreroad), once. main.js progDefaults runs roadMigrate(PROG, HL_INSERT) while ROAD_OPEN.highlines. `live` is true here: the caller asks the flag. */
+export const HL_INSERT = [{ id: 'highlines', after: 'skyroad', before: 'oreroad', live: true }];
 /* (claude/yardswap, Daniel 11-03) A RETIRED TRAINING YARD: the row stays (LEVELS is an append log - indices never shift, and an old id in a save, a bookmark or a tool must never be a hole), but it BUILDS THE ARENA YARD. */
 const retiredYard = id => ({ id, name: 'THE ARENA YARD', sub: 'the old yard is gone: this is the Arena Yard', build: () => buildArenaYard({ painter, T }), hidden: true, retired: 'arena_yard' });
 export const LEVELS = [
@@ -8083,7 +8088,7 @@ export const LEVELS = [
   { id: 'witchlight', name: 'THE WITCHLIGHT STAIR', sub: 'the road up the tower hill', rule: 'SLABS DRIFT, RUNES LIFT, GLYPHS TURN YOU OVER. CLIMB TO THE GATE.', build: withBanner(()=>buildWitchlight({painter,T,TS}), 'witchlight', ...LOST_BANNERS.witchlight), needs: 'burial' },
   /* THE ORE ROAD (2026-09-23): the castle's supply line, a cableway over the gorge between Stormhold and Highcrown. Appended so no
      index moves; Highcrown needs it now */
-  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
+  { id: 'oreroad', name: 'THE ORE ROAD', sub: "the castle's supply line", rule: 'THE BUCKETS ARE THE FLOOR. STEP ON, STEP OFF, AND DO NOT STAND ON RUST.', build: ()=>buildOreRoad({painter,T,TS}), needs: HL_SHIPS ? 'highlines' : 'skyroad' },   /* (claude/skyroad: THE SKY ROAD comes between it and Gale Moor now - Daniel 10-03, "right after Gale Moor") */
   /* THE UNBURIED FIELD (Lane C, 2026-09-23/25): the optional Death Knight class level, a spur off THE WITCHLIGHT STAIR.
      Appended so no index moves; brief .claude/briefs/unburied-field.md, gate on hero 'reaper' via coinNeeds: 'unburied'
      in src/main.js's hero table. Map node NOT placed here (docs/briefs/map-redesign.md 4.2: node (158,46), spur: true) -
@@ -8198,6 +8203,8 @@ if (mnOn()) { const wl = LEVELS.find(l => l.id === 'witchlight'); LEVELS.push({ 
 /* THE MAGE ACADEMY (claude/academy, the OPUS GREYBOX; scratch/brief-academy-1016.md): APPENDED (saves count levels by index), and ONLY WHILE ACADEMY_SHIPS / ?ac=1 is on (src/ac-flag.js) -
    then THE WITCHLIGHT STAIR -> THE MAGE ACADEMY -> THE MAGE'S FOLLY by src/route-insert.js's one rule with the Academy's own row (AC_INSERT): the Folly needs it */
 if (acOn()) { LEVELS.push({ id: 'academy', name: 'THE MAGE ACADEMY', sub: "the archmage's school", rule: AC_RULE, build: () => buildAcademy({ painter, T, TS }), needs: 'witchlight' }); applyInserts(LEVELS, AC_INSERT); }
+/* THE HIGH LINES (claude/highlines1, the OPUS GREYBOX, 11-05): APPENDED (saves count levels by index). DEV ONLY - on no road, in no demo slice: hidden, no needs, reached with ?level=highlines - until its art lane and proof land (art before live; Daniel 11-05 15:27: Sky Road -> THE HIGH LINES -> Ore Road). src/highlines.js, src/highlines-hands.js, src/hookjack.js. (prephl) KEPT AFTER the shipped wispwood/silk/manor/academy rows: their indices are live, so highlines takes the next free one and is last. */
+LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to the cave mouth', rule: HL_RULE, build: () => buildHighLines({ painter, T, TS }), ...(HL_SHIPS ? { needs: 'skyroad' } : { hidden: true, dev: true }) });
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
    creature from elsewhere, standing on the same spot, so the second half of a level asks something the first did

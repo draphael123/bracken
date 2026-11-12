@@ -12,6 +12,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ACTS, actOf } from '../src/foe-react.js';
+import { ROAD_OPEN } from '../src/level.js';   /* (claude/hlproof) the High Lines' CURVE_REPORT_ONLY row exists only while the road is open (curve-gate fails a listed level that is not a campaign level) */
 
 export const RULE = { near: 10, min: 2 };
 /* THE BANDS (level-1 knight, no abilities, 3 runs; lostPct = health lost per run, deaths = summed over the 3). Act I is where a fresh hero learns; each
@@ -28,6 +29,7 @@ export const CURVE_BANDS = {
    tools/curve-gate.mjs (and level-quality for a gated level); a listed level that is back in its band fails too - take it out, as MASH_REPORT_ONLY.
    Each entry: what it measured, and which way it misses. */
 export const CURVE_REPORT_ONLY = {
+  ...(ROAD_OPEN.highlines ? { highlines: 'act 2: the pilot bots have no line hook (no hang-and-strike, no kick, no ride): the level-1 pilot is LIFTED over every winch (22 lifts a run), meets no Hookjack and reads 0% lost, 0 deaths. A bot artifact, not an easy level: the page route (tools/hl-route.mjs) plays it with real keys for every hero. Report-only until the pilot gets a line hand (claude/hlproof 11-12)' } : {}),
   /* (claude/pilotmovers, 10-18: flotilla is back in its act III band - the level pilot now waits for, rides and steps off the benches and yards (tools/mover-hands.mjs) and its lifts keep out of the harm bilge: 335% lost, 8 deaths in 3 runs (was 775% / 20) - gated by the curve again) */
   /* (claude/underleafroad, 10-08: underleaf is act I now - the road puts it between Kingswood and the Scree Path - and its 45% lost / 0 deaths is inside act I's band) */
   /* (claude/sweepact12, 10-20: storm is back in its act II band - the foe pass is live there (pursuit, lead, affixes) and the level-1 pilot reads 80% lost, 0 deaths (was 14%, a stale row): gated by the curve again) */

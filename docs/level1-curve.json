@@ -845,5 +845,45 @@
   "walked": 100,
   "bare": true,
   "lostPct": 234
+ },
+ "highlines": {
+  "hash": "fd7f43340bb9",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 6,
+  "hits": 0,
+  "deaths": 0,
+  "kills": 0,
+  "lifts": 132,
+  "walked": 100,
+  "bare": true,
+  "seed": 1,
+  "lostPct": 0,
+  "lostRuns": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "lostSd": 0,
+  "lostSe": 0,
+  "deathsRuns": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "hitsRuns": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
  }
 }
