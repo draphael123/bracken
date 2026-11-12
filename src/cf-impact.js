@@ -4,7 +4,7 @@
    sweet spot, the hero leans into the cut (DRAW ONLY), the heavy wind-up shows its half and full, the thwack gets material + combo pitch, a kill gets a low boom.
    FEEL ONLY: no damage, hp, AI, commit window, real knockback or hit box. The JUICE / JUICE2 rows are never edited here; everything below layers on them.
    Pure functions + tables; main.js only calls in (tools/cf1.mjs asserts all of it, node only). Preview: ?cf1=1 (main.js, next to ?traits=). */
-export let CF1_SHIPS = false;
+export let CF1_SHIPS = true;
 export const setCF1 = on => { CF1_SHIPS = !!on; };
 
 export const CF1 = {
