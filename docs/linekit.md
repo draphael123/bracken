@@ -83,6 +83,16 @@ if (L.lineKitState) { const kit = L.lineKitState, seats = partySeats();         
 // draw: LKT.drawLines(g, kit, cx, cy, VW, VH, time) beside ZL.drawZips (~34221); LKT.drawRider(g, kit, S, cx, cy) after each seat (~35361)
 ```
 
+## THE SWITCH RULE (claude/hlswitch, flag HL_SWITCH - level side not built yet; the kit is dormant until a level sets the rule)
+`L.lineKit.rule = 'switch'` turns on ONE BLOW, THE WHOLE WAY and lever switches. Rule absent = every frame as before (the stroke rules above).
+- **Latch.** The first blow while hanging on a winch sets `r.latch` and fires `latch`; the rider then runs at `LK.LATCH_SPEED` (120 px/s, or the line's own `speed`) to the high end and the usual top hop. Later blows are `swing`s (they can strike levers and posts, `kitStrike(kit, hb, 'line')`). Only a cut, hit, kick or drop takes him off; a new take needs a new blow (`r.latch` starts false). No blow = he hangs still (the ratchet). `STROKE`/`STROKE_T`/`STROKE_BUF` are unused under the rule.
+- **Post lines.** A struck post sets `z.posted`: every seat on that line runs while any seat is on it, then `LK.POST_IDLE` (1 s). A hanging blow also latches the striker, so no walk back to the post. `POST_RUN` is unused under the rule.
+- **Held glide.** `{ kind: 'glide', hold: true }` parks the trolley until one blow, then it is a normal glide. Lint: `hold` only on a glide, only under the rule.
+- **Switches.** `lineKit.switches: [{ id, at: [tx, ty], states: 2, init: 0, from: 'foot'|'line'|'both', spring: 0, tag }]`; `lines[].points: [{ at, to, sw, on }]` is live iff `kit.sw[sw].state === on`. A `sw` point ignores UP (hold-UP is retired); the branch is decided when the rider crosses `at`. A point with no `sw` is a lint error under the rule. Each lever is a post of kind `'lever'` (foot blow / line swing per `from`).
+- **API.** `kitThrow(kit, id)` toggles / advances the state (`states` > 2 wraps), cools `LK.SW_COOL` (0.4 s), returns `{ t: 'throw', id, state }` or null; a `spring` s > 0 returns the lever to `init` after that long (event has `spring: true`). A blow's throw is reported by the next `kitStep`. The level's `hllever` props (slice L) call `kitThrow` directly for shots. `lineRespawn` puts every lever at `init` and clears post runs. `switchConfigs(L)` + `setSwitches(kit, state)` give the soft-lock sweep its configurations (init, each switch in each other state, all thrown).
+- **Lint** (`lintSwitches`): unique ids, `points.sw` names a switch, `on`/`init` < `states`, every switch drives a board, a foot lever stands on a landing / a line lever is within swing reach of a line, lever-to-board within `SW_REACH` (22 tiles across, 10 rows), no two switches on one board, no sw-less points, `hold` only on a glide, switches need the rule.
+- **Foes never throw levers** (nothing in the kit lets them); `leadPoint` for a latched rider is `v*t`.
+
 ## Owed (not this lane)
 - **Browser:** nothing here has run in the page. The greybox lane wires it and proves per hero in the page that the line swing, tap C and the
   stroke work while hanging (zipclimb-plan.md 2c: whether main.js starts swings while `P.cling` is set is UNPROVEN).

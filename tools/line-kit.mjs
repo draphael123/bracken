@@ -7,9 +7,10 @@
    10  every device back at rest on its own within 15 s (what the sweep assumes)
    11  THE SWEEP: every hero x 1-4 seats, from every checkpoint the exit is reached; from every state reached the exit is still reachable
        (or a pit = respawn) - no soft-lock, no stuck state; a drop from every point of every hand line lands on something
-   12  lintLines: the lab is clean; every broken case is caught. */
+   12  lintLines: the lab is clean; every broken case is caught.
+   19  (claude/hlswitch, HL_SWITCH) THE SWITCH RULE: one blow latches a line (1-4 seats independent), a post runs every seat, levers set points (UP ignored), springs, respawn, the lint rules, flag-off parity */
 import assert from 'node:assert/strict';
-import { LK, TS, lineInit, riderStep, kitStep, kitStrike, windAt, windPush, platforms, lineRespawn, lineCut, foeRide, ridersOn, leadPoint, riderHit, lintLines, lineY, weightTops, cabFloor, releaseRider, climbLook } from '../src/line-kit.js';
+import { LK, TS, lineInit, riderStep, kitStep, kitStrike, windAt, windPush, platforms, lineRespawn, lineCut, foeRide, ridersOn, leadPoint, riderHit, lintLines, lineY, weightTops, cabFloor, releaseRider, climbLook, kitThrow, switchConfigs, setSwitches } from '../src/line-kit.js';
 import { LINEKIT_LAB } from '../src/linekit-lab.js';
 import { MOVE, HERO_MOVE_IDS, heroRunMul } from '../src/hero-move.js';
 
@@ -373,5 +374,96 @@ function sweep(hero, seats, lab = labOK) {
   /* the climb camera: the hands gate it on L.climbCam and on a seat on a winch */
   { const S = mk(); hang(S, 'W1', 14 * TS); ok(S.H.climbCam() && S.H.climbCam().foot === LK.CLIMB_FOOT, 'hands: climbCam on a winch'); const G = mk(); hang(G, 'LO', 40 * TS); ok(G.H.climbCam() === null, 'hands: climbCam null on a glide');
     const N = mk(); N.L.climbCam = false; hang(N, 'W1', 14 * TS); ok(N.H.climbCam() === null, 'hands: a level without L.climbCam never moves the camera'); } }
+
+/* 19. (claude/hlswitch) ONE BLOW, THE WHOLE WAY + LEVERS. The lab with lineKit.rule = 'switch': W2's points at 52 are lever J1's board (on:1 = the silver glide S1). */
+{ const mkSw = (f) => { const L = lab(), K = L.lineKit; K.rule = 'switch'; K.switches = [{ id: 'J1', at: [42, 61], from: 'foot', init: 0 }];
+    K.lines.find(d => d.id === 'W2').points = [{ at: 52, to: 'S1', sw: 'J1', on: 1 }]; if (f) f(L, K); return L; };
+  const has = (L, re) => lintLines(L).some(m => re.test(m));
+  const POSTHB = { l: 13 * TS, r: 15 * TS, t: 75 * TS - 20, b: 75 * TS };
+  ok(lintLines(mkSw()).length === 0, 'switch lab: lint clean: ' + lintLines(mkSw()));
+  /* flag-off parity: the same lab with no rule still strokes */
+  { const L = lab(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS); const x0 = b.lk.x; run(kit, [b], 1 / 60, () => ({ strike: true }), S); run(kit, [b], 0.6, () => ({}), S);
+    ok(kit.rule === null && Math.abs(b.lk.x - x0) < 41 && Math.abs(b.lk.x - x0) > 39, 'flag OFF (no rule): a blow is still one ' + LK.STROKE + ' px stroke (' + Math.abs(b.lk.x - x0).toFixed(1) + ')'); }
+  /* the latch */
+  { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS); const x0 = b.lk.x; run(kit, [b], 5, () => ({}), S); ok(b.lk.x === x0, 'rule: no blow, no ride (5 idle s, not a pixel)');
+    const ev = []; run(kit, [b], 1 / 60, () => ({ strike: true }), S, ev); ok(ev.filter(e => e.t === 'latch').length === 1 && b.lk.latch, 'rule: the first blow latches (one latch event)');
+    const x1 = b.lk.x; run(kit, [b], 1, () => ({}), S, ev); const sp = b.lk.x - x1; ok(Math.abs(sp - LK.LATCH_SPEED) < 3, 'rule: latched at ' + sp.toFixed(1) + ' px/s (LK.LATCH_SPEED ' + LK.LATCH_SPEED + ')');
+    run(kit, [b], 1 / 60, () => ({ strike: true }), S, ev); ok(ev.filter(e => e.t === 'latch').length === 1, 'rule: later blows are swings, not new latches'); ok(ev.some(e => e.t === 'swing'), 'rule: a later blow is a told line swing');
+    const ev2 = []; run(kit, [b], 14, () => ({}), S, ev2); ok(ev2.some(e => e.t === 'top' && e.id === 'W1'), 'rule: ONE blow carried him to the top with nobody touching anything');
+    run(kit, [b], 1, () => ({}), S); ok(!b.lk && b.ground && b.on && b.on.i === 1, 'rule: and the hop lands him on L1'); }
+  for (let seats = 1; seats <= 4; seats++) { const L = mkSw(), S = statics(L), kit = lineInit(L), bs = []; for (let i = 0; i < seats; i++) bs.push(onLine(kit, 'W1', 12 * TS + 6 + i * 3));
+    const x0 = bs.map(b => b.lk.x); run(kit, bs, 1 / 60, (b) => (b === bs[0] ? { strike: true } : {}), S); run(kit, bs, 1, () => ({}), S);
+    ok(bs[0].lk.x - x0[0] > 100 && bs.slice(1).every((b, i) => b.lk.x === x0[i + 1]), seats + ' seat(s): only the seat that struck rides; the others hang (a latch is per rider)'); }
+  /* knocked off */
+  { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS); run(kit, [b], 1 / 60, () => ({ strike: true }), S); run(kit, [b], 0.5, () => ({}), S);
+    ok(riderHit(kit, b, { from: b.x - 20 }) === 'knocked' && !b.lk, 'rule: a hit knocks the latched rider off'); const z = kit.lines.W1; b.x = 20 * TS; b.y = lineY(z, b.x) + z.hang + 20; b.ground = false; b.lkRel = 0; b.lkHard = false; b.lkSkip = null; b.vx = b.vy = 0; b.hurt = 0;
+    kit.lines.W1.cut = 0; const ev = []; for (let i = 0; i < 30 && !b.lk; i++) { b.y = lineY(z, b.x) + z.hang + 8; riderStep(kit, b, { up: true }, DT).forEach(e => ev.push(e)); }
+    ok(b.lk && b.lk.id === 'W1' && !b.lk.latch, 'rule: taking the line again starts un-latched'); const xs = b.lk.x; run(kit, [b], 2, () => ({ up: true }), S); ok(b.lk && b.lk.x === xs, 'rule: and he hangs still until a new blow'); }
+  /* cut + kick */
+  { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS); run(kit, [b], 1 / 60, () => ({ strike: true }), S); run(kit, [b], 0.3, () => ({}), S); lineCut(kit, 'W1', 2); const ev = []; run(kit, [b], 0.1, () => ({}), S, ev); ok(!b.lk && ev.some(e => e.t === 'parted'), 'rule: a cut line drops a latched rider');
+    const k = onLine(kit, 'W2', 45 * TS); run(kit, [k], 1 / 60, () => ({ strike: true }), S); run(kit, [k], 1 / 60, () => ({ jumpPress: true }), S); ok(!k.lk, 'rule: JUMP kicks a latched rider off'); }
+  /* a post line under the rule */
+  { const mk = () => mkSw((L, K) => { const d = K.lines.find(q => q.id === 'W1'); d.drive = 'post'; d.posts = [[14, 75]]; }); ok(lintLines(mk()).length === 0, 'rule: a post winch is clean: ' + lintLines(mk()));
+    for (let seats = 1; seats <= 4; seats++) { const L2 = mk(), S = statics(L2), kit = lineInit(L2), bs = []; for (let i = 0; i < seats; i++) bs.push(onLine(kit, 'W1', 12 * TS + 6 + i * 3));
+      const x0 = bs.map(b => b.lk.x); run(kit, bs, 1, () => ({}), S); ok(bs.every((b, i) => b.lk.x === x0[i]), seats + ' seat(s), post line: no strike, no run');
+      ok(kitStrike(kit, POSTHB) !== null && kit.lines.W1.posted, seats + ' seat(s): the post struck');
+      run(kit, bs, 2, () => ({}), S); ok(bs.every((b, i) => b.lk && b.lk.x - x0[i] > 2 * LK.LATCH_SPEED - 10), seats + ' seat(s): every seat rides past the old ' + LK.POST_RUN + ' s run (2 s: ' + (bs[0].lk.x - x0[0]).toFixed(0) + ' px)'); }
+    { const S = statics(mk()), kit = lineInit(mk()), b = onLine(kit, 'W1', 30 * TS); kitStrike(kit, POSTHB); run(kit, [b], 14, () => ({}), S); ok(!b.lk, 'rule: a post line carries a rider up to the top');
+      run(kit, [], LK.POST_IDLE + 0.2, () => ({}), S); ok(kit.lines.W1.posted === false, 'rule: with nobody on it the post line idles ' + LK.POST_IDLE + ' s and stops'); }
+    { const kb = lineInit(mk()), hb = onLine(kb, 'W1', 14 * TS), Sb = statics(mk()); run(kb, [hb], 1 / 60, () => ({ strike: true }), Sb); run(kb, [hb], 1, () => ({}), Sb); ok(hb.lk.latch && hb.lk.x > 14 * TS + 100, 'rule: one blow while hanging latches a post line too (no walk back to the post)'); } }
+  /* levers */
+  { const L = mkSw(), kit = lineInit(L); ok(kit.sw.J1.state === 0, 'lever: starts at init');
+    const t1 = kitThrow(kit, 'J1'); ok(t1 && t1.t === 'throw' && t1.state === 1 && kit.sw.J1.state === 1, 'lever: a throw sets state 1 and reports it'); ok(kitThrow(kit, 'J1') === null && kit.sw.J1.state === 1, 'lever: a second throw inside ' + LK.SW_COOL + ' s does nothing');
+    kitStep(kit, [], LK.SW_COOL + 0.05); ok(kitThrow(kit, 'J1').state === 0, 'lever: after the cooldown it throws back (toggle)'); ok(kitThrow(kit, 'nope') === null, 'lever: unknown id is null'); }
+  { const run1 = (state, up) => { const L = mkSw(), S = statics(L), kit = lineInit(L); setSwitches(kit, { J1: state }); const b = onLine(kit, 'W2', 45 * TS), ev = [];
+      run(kit, [b], 1 / 60, () => ({ strike: true, up }), S, ev); run(kit, [b], 4, () => ({ up }), S, ev); return { b, ev, kit }; };
+    let r = run1(0, false); ok(!r.ev.some(e => e.t === 'points'), 'lever 0: no points event (he rides W2)');
+    r = run1(0, true); ok(!r.ev.some(e => e.t === 'points'), 'lever 0 + UP held: UP is ignored on a lever point (hold-UP is retired)');
+    r = run1(1, false); ok(r.ev.some(e => e.t === 'points' && e.to === 'S1'), 'lever 1: the points take him onto S1 with no UP held');
+    { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W2', 45 * TS), ev = []; run(kit, [b], 1 / 60, () => ({ strike: true }), S, ev);
+      while (b.lk && b.lk.x < 52 * TS - 12) run(kit, [b], 1 / 60, () => ({}), S, ev); ok(b.lk && b.lk.id === 'W2', 'a rider just short of the board still rides W2');
+      kitThrow(kit, 'J1'); run(kit, [b], 1, () => ({}), S, ev); ok(ev.some(e => e.t === 'points'), 'a throw BEFORE the board changes his route'); }
+    { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W2', 53 * TS), ev = []; run(kit, [b], 1 / 60, () => ({ strike: true }), S, ev); kitThrow(kit, 'J1'); run(kit, [b], 3, () => ({}), S, ev); ok(!ev.some(e => e.t === 'points'), 'a throw AFTER the board changes nothing for him'); } }
+  /* a blow on the lever */
+  { const hbAt = (tx, ty) => ({ l: tx * TS, r: tx * TS + 16, t: ty * TS, b: (ty + 1) * TS }), L = mkSw(), kit = lineInit(L);
+    ok(kitStrike(kit, hbAt(42, 61), 'line') === null && kit.sw.J1.state === 0, 'a foot lever ignores a line swing'); const p = kitStrike(kit, hbAt(42, 61), 'foot'); ok(p && p.kind === 'lever' && kit.sw.J1.state === 1, 'a foot blow on the lever throws it');
+    const ev = kitStep(kit, [], DT); ok(ev.some(e => e.t === 'throw' && e.id === 'J1' && e.state === 1), "kitStep reports the blow's throw"); ok(kitStrike(kit, hbAt(42, 61), 'foot') === null && kit.sw.J1.state === 1, 'a second blow inside the cooldown is not a throw');
+    const L2 = mkSw((l, K) => { K.switches[0].from = 'line'; K.switches[0].at = [52, 54]; }), k2 = lineInit(L2); ok(kitStrike(k2, hbAt(52, 54), 'foot') === null && kitStrike(k2, hbAt(52, 54), 'line') && k2.sw.J1.state === 1, 'a line lever takes a line swing and ignores a foot blow'); ok(lintLines(L2).length === 0, 'a line lever beside W2 is clean: ' + lintLines(L2));
+    const L3 = mkSw((l, K) => { K.switches[0].from = 'both'; }), k3 = lineInit(L3); ok(kitStrike(k3, hbAt(42, 61), 'foot') && (kitStep(k3, [], 1), kitStrike(k3, hbAt(42, 61), 'line')), "a 'both' lever takes either"); }
+  /* a riding hero's swing reaches a lever beside his line */
+  { const L = mkSw((l, K) => { K.switches[0].from = 'line'; K.switches[0].at = [47, 56]; }), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W2', 44 * TS); b.face = 1;
+    ok(lintLines(L).length === 0, 'lever beside W2 at 47,56: clean: ' + lintLines(L)); run(kit, [b], 1 / 60, () => ({ strike: true }), S);
+    for (let i = 0; i < 600 && kit.sw.J1.state === 0 && b.lk; i++) run(kit, [b], 1 / 60, () => (Math.abs(b.lk.x - 47 * TS) < 20 ? { strike: true } : {}), S);
+    ok(kit.sw.J1.state === 1, 'a line swing at the lever as he passes it throws it'); }
+  /* spring, respawn */
+  { const L = mkSw((l, K) => { K.switches[0].spring = 2; }), kit = lineInit(L), ev = []; kitThrow(kit, 'J1'); for (let i = 0; i < 100; i++) ev.push(...kitStep(kit, [], DT)); ok(kit.sw.J1.state === 1 && !ev.some(e => e.spring), 'spring: still thrown at 1.7 s');
+    for (let i = 0; i < 40; i++) ev.push(...kitStep(kit, [], DT)); ok(kit.sw.J1.state === 0 && ev.some(e => e.t === 'throw' && e.spring), 'spring: back to init after 2 s, reported');
+    kitThrow(kit, 'J1'); kitStep(kit, [], 0.5); kitThrow(kit, 'J1'); ok(kit.sw.J1.state === 0 && kit.sw.J1.springT === 0, 'spring: thrown back by hand clears the timer');
+    const L2 = mkSw(), k2 = lineInit(L2); kitThrow(k2, 'J1'); k2.lines.W1.posted = true; lineRespawn(k2, []); ok(k2.sw.J1.state === 0 && k2.sw.J1.cool === 0 && k2.lines.W1.posted === false, 'respawn: every lever back to init, post runs cleared'); }
+  /* 3 states, sweep configs */
+  { const L = mkSw((l, K) => { K.switches[0].states = 3; }), kit = lineInit(L); kitThrow(kit, 'J1'); kitStep(kit, [], 1); kitThrow(kit, 'J1'); kitStep(kit, [], 1); ok(kit.sw.J1.state === 2, '3 states: 0 -> 1 -> 2'); kitThrow(kit, 'J1'); ok(kit.sw.J1.state === 0, '3 states: wraps to 0');
+    ok(switchConfigs(L).length === 3 && switchConfigs(mkSw()).length === 2, 'switchConfigs: init + each other state (' + switchConfigs(L).map(c => c.label).join(', ') + ')'); }
+  /* a held glide + lead point */
+  { const L = mkSw((l, K) => { K.lines.find(d => d.id === 'G1').hold = true; }), S = statics(L), kit = lineInit(L); ok(lintLines(L).length === 0, 'hold:true on a glide is clean: ' + lintLines(L));
+    const b = onLine(kit, 'G1', 71 * TS), x0 = b.lk.x; run(kit, [b], 3, () => ({}), S); ok(b.lk && b.lk.x === x0, 'a held glide: parked until a blow'); run(kit, [b], 1 / 60, () => ({ strike: true }), S); const x1 = b.lk.x; run(kit, [b], 0.25, () => ({}), S);
+    ok(Math.abs(Math.abs(b.lk.x - x1) / 0.25 - LK.GLIDE) < 12, 'one blow then a normal glide (' + (Math.abs(b.lk.x - x1) / 0.25).toFixed(0) + ' px/s)'); const lp = leadPoint(kit, b, 0.25); ok(Math.abs(Math.abs(lp.x - b.lk.x) - LK.GLIDE * 0.25) < 12, 'leadPoint on a glide: v*t'); }
+  { const L = mkSw(), S = statics(L), kit = lineInit(L), b = onLine(kit, 'W1', 14 * TS); run(kit, [b], 1 / 60, () => ({ strike: true }), S); run(kit, [b], 0.2, () => ({}), S); const lp = leadPoint(kit, b, 1); ok(Math.abs(Math.abs(lp.x - b.lk.x) - LK.LATCH_SPEED) < 4, 'leadPoint on a latched winch: v*t, so crossbows lead him the whole way (' + Math.abs(lp.x - b.lk.x).toFixed(0) + ' px in 1 s)'); }
+  /* LINT: every rule broken */
+  { const bad = (name, re, f) => ok(has(mkSw(f), re), 'lint: ' + name + ' is caught');
+    bad('a duplicate switch id', /duplicate switch id/, (l, K) => K.switches.push({ ...K.switches[0] }));
+    bad('points naming a missing switch', /missing switch/, (l, K) => { K.lines.find(d => d.id === 'W2').points[0].sw = 'XX'; });
+    bad('a switch that drives no board', /drives no board/, (l, K) => K.switches.push({ id: 'J9', at: [42, 61], init: 0 }));
+    bad('init >= states', /init 2 is not a state/, (l, K) => { K.switches[0].init = 2; });
+    bad('a points on: beyond the states', /reads state 5/, (l, K) => { K.lines.find(d => d.id === 'W2').points[0].on = 5; });
+    bad('a foot lever off any landing', /must stand on a landing/, (l, K) => { K.switches[0].at = [30, 30]; });
+    bad('a line lever out of reach of any line', /within reach of a line/, (l, K) => { K.switches[0].from = 'line'; K.switches[0].at = [2, 2]; });
+    bad('a lever too far from its board', /too far from the board/, (l, K) => { K.switches[0].at = [20, 76]; });
+    bad('points with no switch under the rule', /has no switch/, (l, K) => { K.lines.find(d => d.id === 'W2').points = [{ at: 52, to: 'S1' }]; });
+    bad('two switches on one board', /drive one board/, (l, K) => { K.switches.push({ id: 'J2', at: [42, 61], init: 0 }); K.lines.find(d => d.id === 'W2').points.push({ at: 52, to: 'F_r', sw: 'J2', on: 1 }); });
+    bad('hold on a winch', /hold:true is only for a glide/, (l, K) => { K.lines.find(d => d.id === 'W1').hold = true; });
+    bad('switches without the rule', /without lineKit.rule/, (l, K) => { delete K.rule; K.lines.find(d => d.id === 'W2').points = []; });
+    bad('an unknown rule', /is not a rule/, (l, K) => { K.rule = 'stroke'; });
+    bad('a switch with 1 state', /at least 2 states/, (l, K) => { K.switches[0].states = 1; }); }
+}
 
 console.log('line-kit: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');
