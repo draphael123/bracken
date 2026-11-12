@@ -35,12 +35,12 @@ export const HL_DATA = {
     [24, 189, 34, 190],  // 6  L5
     [1, 177, 12, 178],   // 7  L6  the gorge's west lee rock
     [60, 184, 78, 185],  // 8  L7  the gorge's east lee rock
-    [59, 165, 66, 166],  // 9  L8  the east lee, high
+    [59, 165, 66, 166],  // 9  L8  the east lee, high (checkpoint 2)
     [1, 171, 11, 172],   // 10 L9  the west lee, high (the ambush begins)
     [19, 156, 30, 157],  // 11 L10
     [24, 143, 31, 144],  // 12 Ls4 SILVER TWO's ledge (the side winch)
     [54, 142, 62, 143],  // 13 L11 the cutter's station
-    [68, 134, 78, 135],  // 14 THE LEE HUT (checkpoint 2)
+    [68, 134, 78, 135],  // 14 THE LEE HUT (no shrine now: claude/hllive moved checkpoint 2 to L8)
     [62, 132, 66, 133],  // 15 the crevice: rock lips
     [68, 130, 72, 131],  // 16
     [62, 128, 66, 129],  // 17
@@ -65,7 +65,7 @@ export const HL_DATA = {
     [35, 40, 39, 41],    // 36 THE EAST GALLERY (claude/skyhook: his perch by the gate; the high line's high end, the east winch's top)
   ],
   nets: [[15, 234, 33, 235], [41, 222, 60, 223]],   /* the cargo nets under band 1 (rope nets: art owed). The exam has none */
-  checkpoints: [{ x: 4, y: 232 }, { x: 75, y: 134 }, { x: 5, y: 58 }],
+  checkpoints: [{ x: 4, y: 232 }, { x: 62, y: 165 }, { x: 5, y: 58 }],   /* (claude/hllive) the middle one moved from THE LEE HUT (route 230: 230 tiles of walking from the start broke tools/checkpoint-gaps.mjs, max 200) to L8, the east lee, high (route 160: 160 / 176 either side, 19 tiles before the ambush begins at L9) */
   secrets: [[49, 203], [27, 142]],
   exit: [30, 44, 40, 48],
   /* (claude/skyhook) THE HEAD STATION: SKYHOOK's fight (src/skyhook.js). The stub (40 x 18) is shrunk to 32 x 18 inside a rock arch (cols 7 and 40 hang from the roof to row 41;
