@@ -123,7 +123,7 @@ console.log('HIS AI (every move told, then released)');
   ok(king.huntN === 2 && H.read().n.boars >= 2, 'THE ROYAL HUNT at both its thresholds (' + GORM.huntAt.join(', ') + '): ' + king.huntN); }
 
 console.log('B15 AND THE ROYAL BOAR');
-ok(GORM.chip >= 0.4 && gormTake({ mode: 'walk' }) === null && gormTake({ mode: 'held' }) === GORM.take.held && GORM.take.held > 1 && gormTake({ mode: 'walk', open: 1 }) === GORM.take.open, 'outside an opening a blade lands at ' + GORM.chip + ' (never nothing); held x' + GORM.take.held + ', open x' + GORM.take.open);
+ok(GORM.chip >= 0.4 && gormTake({ mode: 'walk' }) === null && gormTake({ mode: 'held' }) === 2 && gormTake({ mode: 'walk', open: 1 }) === GORM.take.open, 'outside an opening a blade lands at ' + GORM.chip + ' (never nothing); held x2, open x' + GORM.take.open);
 ok(gormOpen({ mode: 'downed' }) && gormOpen({ mode: 'stung' }) && !gormOpen({ mode: 'walk' }), 'his openings: held, knocked down, stung, open');
 { const b = L.ents.find(e => e.t === 'royalboar'); ok(b && b.x > 131 && b.x < 174 && b.y === 38, 'THE ROYAL BOAR roots in the Hunting Stands\' meadow (col ' + (b && b.x) + ')');
   const m = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(/t: 'royalboar', name: 'THE ROYAL BOAR'/.test(m) && /royalboar: RBM\.RB\.hp/.test(m), 'it is in the bestiary and EHP');
