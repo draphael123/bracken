@@ -1778,7 +1778,7 @@ function coopRegroup() {
    third of his health with a moment of grace. If the clock runs out with nobody there, or both of them are down
    at once, the pair of them wake at the last shrine and each is charged a death. */
 /* (claude/cooppr, Daniel 11-04) PING / MARK. The press is read in the pinger's own pass: a foe ahead of him, else the floor a few steps ahead; a downed hero marks HELP on himself. One per seat, a few seconds, in the seat's colour (drawPings); the host draws it, so online guests see it in the stream. The AI reads a person's ping in allyTick. */
-const pingFoeOk = e => e.alive && !e.harmless && !(e.dying > 0) && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'dummy';
+const pingFoeOk = e => e.alive && !e.harmless && !(e.dying > 0) && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'dummy' && e.t !== 'hllever';
 function pingFloor(x, y) { const tx = Math.max(0, Math.min(LW - 1, Math.floor(x / TS))), t0 = Math.max(0, Math.floor(y / TS) - 2); for (let ty = t0; ty < Math.min(LH, t0 + 10); ty++) if (isSolid(tx, ty) || isOneWay(tileAt(tx, ty))) return ty * TS; return y; }
 function pingRead() {
   if (!pingPress) return; pingPress = false;
@@ -2334,7 +2334,7 @@ function allyTick() {
   /* FOUR. THE FOE */
   let foe = null, best = 1e9;
   for (const e of enemies) {
-    if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
+    if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy' || e.t === 'hllever') continue;
     const dy = Math.abs(e.y - p.y), dx0 = Math.abs(e.x - p.x), ranged = h === 'ranger' || h === 'pyro', isPing = e === pinged;   /* (claude/coopai, coopaudit fix 2) a foe a ledge up or down: a ranged kit shoots ~96 px, the rest hop to ~56 when he is close */
     if (!isPing && (dy > (ranged ? 96 : 56) || (dy > 40 && !ranged && dx0 > 60))) continue;
     if (isPing && dy > 96) continue;
@@ -3439,7 +3439,8 @@ function spawnEnt(e) {
       case 'galeharpy': enemies.push({ ...base, t: 'galeharpy', hx: px, hy: py, w: 12, h: 8, hp: EHP.galeharpy, mode: 'hover', modeT: 0, face: -1, cd: 0, ...GHM.newGale() }); break;   /* THE GALE HARPY (claude/rookery2, src/gale-harpy.js): a shared foe module - THE ROOKERY's hands step her */
       case 'shrieker': enemies.push({ ...base, t: 'shrieker', hx: px, hy: py, w: 12, h: 7, hp: EHP.shrieker, mode: 'hover', modeT: 0, face: -1, cd: 0, rkShriek: true }); break;   /* THE HARPY SHRIEKER (claude/rookery): a crag harpy's body, her own machine (src/rookery-hands.js) */
       case 'skyhook': { const a = SKYH ? SKYH.spawnBoss(base) : null; if (a) { boss = a; enemies.push(a, ...SKYH.props()); } break; }   /* (claude/skyhook) SKYHOOK on his gallery, and his two TENSION LEVERS as props (any blow, any shot) */
-      case 'hookjack': if (typeof HLX !== 'undefined' && HLX && HLX.on()) enemies.push({ ...base, ...HLX.spawn(e), x: px, y: py }); break;   /* (claude/highlines1) THE HOOKJACK (src/hookjack.js): a rider on his line, or a cutter at his station */
+      case 'hookjack': if (typeof HLX !== 'undefined' && HLX && HLX.on()) enemies.push({ ...base, ...HLX.spawn(e), x: px, y: py }); break;
+      case 'hllever': if (typeof HLX !== 'undefined' && HLX && HLX.on()) enemies.push({ ...base, ...HLX.leverSpawn(e), x: px, y: py }); break;   /* (claude/hlswitch) A LEVER PROP (src/highlines-hands.js): any blow or shot throws it (the HL_SWITCH rule; the level only places it with the flag on) */   /* (claude/highlines1) THE HOOKJACK (src/hookjack.js): a rider on his line, or a cutter at his station */
       case 'goat': enemies.push({ ...base, t: 'goat', w: 14, h: 11, hp: EHP.goat, speed: 30, mode: 'patrol', modeT: 0, rider: true, timer: 0, air: false, hitT: 0 }); break;
       case 'ramlord': boss = { ...base, t: 'ram', w: 48, h: 32, hp: EHP.ram, maxHp: EHP.ram, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, n: 0 }; enemies.push(boss); break;
       case 'guest': props.push({ t: 'guest', x: px, y: py, v: e.v || 0, face: e.face || 1, anim: Math.random() * 7 }); break;   /* THE BEER GARDEN: drinkers, not creatures */
@@ -9561,6 +9562,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   if(e.t==='magechase')return;
   if (e.t === 'shrieksister') { if (SSH) SSH.hit(e, dmg, fromX, pl); return; }   /* (claude/rookery) A SISTER takes her own blow (B15: ON THE WING 0.4, low whole, STUNNED x2 capped, WARDED 0.4) - src/shriek-sisters.js */
   if (e.t === 'shrieksisters') { if (!e.ssPass && !e.passThrough) return; e.ssPass = false; e.passThrough = false; }   /* THE ANCHOR: no blade reaches it; the last sister's fall is handed through so it dies the way every boss does */
+  if (e.t === 'hllever') { if (typeof HLX !== 'undefined' && HLX) HLX.lever(e, fromX); return; }   /* (claude/hlswitch) A HIGH LINES LEVER: any blow or shot throws it; never harmed */
   if (e.t === 'skylever') { if (SKYH) SKYH.lever(e, fromX); return; }   /* (claude/skyhook) A TENSION LEVER: any blow or shot works it (while he rides, his line slips); it is never harmed */
   if (e.t === 'wickling') { if (WKH) WKH.struck(e); return; }   /* (claude/lamplit3) THE WICKLING: any blow and it swells and bursts into fire (told) - the blow itself does nothing else */   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing (kept first: tools/tower-chase.mjs reads the head of this function) */
   if (e.t === 'drillgear') { if (GDH) GDH.takeGear(e, dmg, fromX); return; }   /* (claude/deeprails4) THE GREAT DRILL's GEAR BANKS: src/great-drill-hands.js takes the blow (whole; broken, that attack is gone for the phase) */
@@ -12713,7 +12715,7 @@ function attractHands() {
   if (P.dead || P.down > 0 || waking) return;
   if (!A.walk) { A.walk = PTMOD.makeBot(window.BK, { fightThrough: true }); A.walk.drink = false; A.read = WDMOD.makeEliteRead({}); }
   let foe = null, best = 1e9;
-  for (const e of enemies) { if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
+  for (const e of enemies) { if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy' || e.t === 'hllever') continue;
     if (Math.abs(e.y - P.y) > 40) continue; const d = Math.abs(e.x - P.x); if (d > (fightOn && e.maxHp ? 520 : 120)) continue; if (d < best) { best = d; foe = e; } }
   if (foe) { LABMOD.labDuelFrame(window.BK, hero(), foe, A.f, 'human', A.read);
     if ((keys.left || keys.right) && allySafeGoal(P.x + (keys.right ? 12 : -12)) === P.x) keys.left = keys.right = false; return; }
@@ -29834,7 +29836,7 @@ function updateEnemies(dt) {
   if (CMH && CMH.owns(e)) { if (bossActive && e === boss) { beastSeen('cryptmother'); CMH.update(e, dt); } continue; }   /* (claude/silk) THE CRYPT MOTHER (src/crypt-mother-hands.js) */
   if (DNH && DNH.owns(e)) { DNH.foeUpdate(e, dt); continue; }
   if (ASH && ASH.owns(e)) { if (e.t === 'thunderwyrm') { if (bossActive && e === boss) { beastSeen('thunderwyrm'); ASH.bossUpdate(e, dt); } } else ASH.foeUpdate(e, dt); continue; }   /* (claude/airship) */   /* (claude/greatdune) THE SAND-SKIFF BANDIT / THE SKIFF CHIEF */
-  if (SKYH && SKYH.owns(e)) { if (bossActive && e === boss) { beastSeen('skyhook'); SKYH.update(e, dt); } continue; }   /* (claude/hllive) the bestiary page opens on meeting him */   if (e.t === 'skylever') continue;   /* (claude/skyhook) SKYHOOK (src/skyhook-hands.js); his levers stand still */
+  if (SKYH && SKYH.owns(e)) { if (bossActive && e === boss) { beastSeen('skyhook'); SKYH.update(e, dt); } continue; }   /* (claude/hllive) the bestiary page opens on meeting him */   if (e.t === 'skylever') continue; if (e.t === 'hllever') { if (typeof HLX !== 'undefined' && HLX) HLX.leverTick(e, dt); continue; }   /* (claude/hlswitch) the HIGH LINES levers stand still */   /* (claude/skyhook) SKYHOOK (src/skyhook-hands.js); his levers stand still */
   if (BTH && BTH.owns(e)) { if (bossActive && e === boss) { beastSeen('bogtroll'); BTH.update(e, dt); } continue; }   /* THE BOG TROLL (src/bog-troll-hands.js) */   /* OLD TUSKER (src/old-tusker-hands.js) */
   if (CSH && CSH.owns(e)) { if (bossActive && e === boss) { beastSeen('castellan'); CSH.update(e, dt); } continue; }   /* (claude/hollowmanor) THE CASTELLAN'S GHOST (src/castellan-hands.js) */
   if (TKH && TKH.owns(e)) { if (bossActive && e === boss) { beastSeen('tombking'); TKH.update(e, dt); } continue; }
@@ -35769,6 +35771,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (CMH && CMH.owns(e)) { if (e.alive) CMH.drawBoss(g, e, cx, cy, time); continue; } if (e.t === 'silklurker' && SKH) { if (e.alive) SKH.drawFoe(g, e, cx, cy, time); continue; }   /* (claude/silk) greybox: src/crypt-mother-hands.js, src/silk-hands.js */
   if (DNH && DNH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) DNH.drawFoe(g, e, cx, cy, time); continue; }
   if (ASH && ASH.owns(e)) { if (e.alive && e.x > cx - 260 && e.x < cx + VW + 260) ASH.drawFoe(g, e, cx, cy, time); continue; }   /* (claude/airship) greybox wyrmlings + the wyrm's head and coils */   /* (claude/greatdune) greybox skiffs */
+  if (e.t === 'hllever') continue;   /* (claude/hlswitch) a lever prop draws nothing: the kit's post is its iron (src/redraw/high_lines_art.js) */
   if (SKYH && (SKYH.owns(e) || SKYH.ownsProp(e))) { if (e.alive && e.x > cx - 120 && e.x < cx + VW + 120) SKYH.drawBoss(g, e, cx, cy, time); continue; }   /* (claude/skyhook) SKYHOOK and his levers (greybox) */
   if (BTH && BTH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) BTH.drawBoss(g, e, cx, cy, time); continue; }
   if (TKH && TKH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) TKH.drawBoss(g, e, cx, cy, time); continue; }

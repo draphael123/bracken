@@ -50,6 +50,22 @@ function pointsBoard(g, x, y, s, now) { rc(g, x - 1, y - 14, 2, 14, HP.iron[3]);
   rc(g, x - 5, y - 19, 9, 1, HP.iron[0]); if (s > 0) { rc(g, x + 2, y - 21, 1, 5, HP.iron[0]); rc(g, x + 3, y - 20, 1, 3, HP.iron[0]); rc(g, x + 4, y - 19, 1, 1, HP.iron[0]); } else { rc(g, x - 3, y - 21, 1, 5, HP.iron[0]); rc(g, x - 4, y - 20, 1, 3, HP.iron[0]); rc(g, x - 5, y - 19, 1, 1, HP.iron[0]); }   /* the arrow head */
 }
 
+/* (claude/hlswitch) THE SWITCH RULE'S GREYBOX: a board's LAMP (lit = this branch is live, dark = shut), a closed GATE ARM across a shut board, and a LEVER post that shows its state (greybox: slice A draws the real pieces).
+   Same colour plate (tag 'amber' = ochre) on the lever and its boards, so the player can pair them. */
+const swLive = (kit, p) => !!(kit.sw && kit.sw[p.sw] && kit.sw[p.sw].state === p.on);
+function swLamp(g, x, y, live, s, time) {
+  rc(g, x - 8, y - 28, 5, 5, HP.iron[0]); rc(g, x - 7, y - 27, 3, 3, live ? HP.lamp[2] : HP.lamp[0]); if (live) { dot(g, x - 6, y - 26, HP.lamp[3]); if (((time * 3) | 0) % 2) { dot(g, x - 9, y - 26, HP.lamp[1]); dot(g, x - 3, y - 26, HP.lamp[1]); } }   /* the lamp on the board's corner */
+  if (!live) { rc(g, x - 9, y - 21, 18, 2, HP.rust[1]); rc(g, x - 9, y - 21, 18, 1, HP.rust[2]); dot(g, x - 9, y - 20, HP.iron[0]); dot(g, x + 8, y - 20, HP.iron[0]); }   /* the closed gate arm across the shut branch's board */
+}
+function leverPost(g, x, y, p, kit, time) {   /* y = the base (the deck, or the pylon's foot); the arm is down-left at rest, up-right when thrown */
+  const S = kit.sw && kit.sw[p.sw], on = !!S && S.state > 0, sw = p.swing > 0;
+  if (p.from !== 'foot') { lattice(g, x, y - 12, y + 30, 6); mastBase(g, x, y + 30, 6); rc(g, x - 6, y - 14, 12, 3, HP.iron[3]); }   /* a line lever hangs on a short pylon beside its line */
+  rc(g, x - 3, y - 18, 6, 18, HP.iron[2]); rc(g, x - 3, y - 18, 1, 18, HP.iron[5]); rc(g, x + 2, y - 18, 1, 18, HP.iron[0]); rc(g, x - 5, y - 2, 10, 3, HP.iron[3]);   /* the iron stand, bolted to the deck */
+  rc(g, x - 4, y - 21, 8, 4, HP.iron[1]); rc(g, x - 3, y - 20, 6, 2, on ? HP.lamp[2] : HP.lamp[0]);                                                                    /* the lamp plate: lit when thrown */
+  const ax = on ? 1 : -1; for (let k = 0; k < 9; k++) rc(g, x + ax * (1 + k * 0.8), y - 12 - (on ? k * 0.8 : -k * 0.5), 2, 2, k % 3 === 0 ? HP.ochre[3] : HP.ochre[2]);   /* the lever arm */
+  rc(g, x + ax * 8 - 2, y - 12 - (on ? 7 : -4) - 2, 5, 5, HP.ochre[1]); rc(g, x + ax * 8 - 1, y - 12 - (on ? 7 : -4) - 1, 3, 3, HP.ochre[3]);                          /* the knob */
+  if (sw) for (let k = 0; k < 3; k++) dot(g, x - 8 + k * 7, y - 24 - ((time * 20 + k * 3) % 4 | 0), HP.ochre[3]);
+}
 /* the rope itself: hemp (winch), steel (glide), hemp (free) */
 function rope(g, z, X0, Y0, X1, Y1, time, hauling, shake) {
   const n = Math.max(2, Math.abs(X1 - X0)), hemp = z.kind !== 'glide', phase = hauling ? time * 40 : z.run > 0 ? time * 30 : 0;
@@ -91,6 +107,7 @@ export function drawEndSupports(g, kit, cx, cy, VW, VH) {
 }
 export function drawLines(g, kit, cx, cy, VW, VH, time, riders = []) {
   const hauled = id => riders.find(r => r.id === id);
+  const dim = new Set(); if (kit.rule === 'switch') for (const z of kit.list) for (const p of z.points) if (p.sw !== undefined && !swLive(kit, p)) dim.add(p.to);   /* (claude/hlswitch) a branch whose board is shut is drawn dim */
   drawEndSupports(g, kit, cx, cy, VW, VH);   /* (claude/hlfix) the masts, hangers and wall arms under every rope end, behind the ropes */
   for (const z of kit.list) {
     if (z.xb < cx - 60 || z.xa > cx + VW + 60) continue;
@@ -98,16 +115,16 @@ export function drawLines(g, kit, cx, cy, VW, VH, time, riders = []) {
     if (Math.min(Y0, Y1) > VH + 70 || Math.max(Y0, Y1) < -70) continue;
     const hi = z.y0 <= z.y1 ? 0 : 1, hx = hi ? X1 : X0, hy = hi ? Y1 : Y0, lx = hi ? X0 : X1, ly = hi ? Y0 : Y1, rider = hauled(z.id), ph = rider ? (rider.haul || 0) + time * 0.9 : (z.run > 0 ? time * 1.4 : 0);
     if (z.cut > 0) { parted(g, X0, Y0, X1, Y1, time); anchor(g, X0, Y0, X1 > X0 ? 1 : -1); anchor(g, X1, Y1, X1 > X0 ? -1 : 1); continue; }
-    rope(g, z, X0, Y0, X1, Y1, time, !!rider || z.run > 0, z.tell > 0);
+    const dm = dim.has(z.id); if (dm) g.globalAlpha = 0.4; rope(g, z, X0, Y0, X1, Y1, time, !!rider || z.run > 0, z.tell > 0); if (dm) g.globalAlpha = 1;
     if (z.snapX != null && z.tell > 0) fray(g, R(z.snapX - cx), R(lineY(z, z.snapX) - cy), time);
     if (z.kind === 'winch') { anchor(g, lx, ly, hx > lx ? 1 : -1); { const hr = (kit.ends || []).find(q => q.line === z.id && q.end === (hi ? 'b' : 'a')); if (hr && hr.kind === 'deck' && !hr.tall && Math.abs(hr.foot - hr.x) <= 1) { const mx = hx - (hx > lx ? 12 : -12), yb = Math.round(hr.toY * 16 - cy); lattice(g, mx, hy + 5, yb - 3, 8); mastBase(g, mx, yb, 8); } } winchMachine(g, hx - (hx > lx ? 12 : -12), hy + 2, hx > lx ? -1 : 1, ph, !!rider || z.run > 0); rc(g, hx - (hx > lx ? 4 : -4) - 1, hy - 1, 6, 3, HP.iron[3]); }
     else { anchor(g, X0, Y0, X1 > X0 ? 1 : -1); anchor(g, X1, Y1, X1 > X0 ? -1 : 1); if (z.kind === 'glide') { stopBlock(g, X0, Y0, X1 > X0 ? 1 : -1); stopBlock(g, X1, Y1, X1 > X0 ? -1 : 1); } else { sheave(g, hx, hy - 2, ph); } }
     if (z.kind === 'winch') sheave(g, lx, ly + 1, ph);
-    for (const p of z.points) { const x = R(p.at - cx), y = R(lineY(z, p.at) - cy), tz = kit.lines[p.to], s = tz ? (tz.xa + tz.xb) / 2 > p.at ? 1 : -1 : 1; pointsBoard(g, x, y, s, false); }
+    for (const p of z.points) { const x = R(p.at - cx), y = R(lineY(z, p.at) - cy), tz = kit.lines[p.to], s = tz ? (tz.xa + tz.xb) / 2 > p.at ? 1 : -1 : 1; pointsBoard(g, x, y, s, false); if (p.sw !== undefined) swLamp(g, x, y, swLive(kit, p), s, time); }
   }
   /* the strike-posts: the hopper and any post-driven winch; the lever swings when struck */
   for (const p of kit.posts) { const x = R(p.x - cx), y = R(p.y - cy); if (x < -30 || x > VW + 30) continue;
-    if (p.kind === 'hopper') hopper(g, x, y + 12, p, kit, time); else if (p.kind === 'winch') post(g, x, y + 12, p, time); else post(g, x, y + 12, p, time); }
+    if (p.kind === 'lever') leverPost(g, x, y + 12, p, kit, time); else if (p.kind === 'hopper') hopper(g, x, y + 12, p, kit, time); else if (p.kind === 'winch') post(g, x, y + 12, p, time); else post(g, x, y + 12, p, time); }
   /* the moving floors: THE GONDOLA's cab and the counterweight pair */
   for (const pl of platforms(kit)) { if (pl.cab) cab(g, pl, kit, cx, cy, time); }
   for (const W of kit.weights) weightPair(g, W, kit, cx, cy, time);

@@ -20,7 +20,14 @@
 // Landings are ONE-WAY decks (iron gantries / rock lips, art owed) so the node sweep (tools/highlines.mjs) and the page agree: nothing bonks a rider from below.
 import { endSupports } from './line-kit.js';   /* (claude/hlfix) what holds each rope end (a drawn mast, hanger or wall bracket) */
 export const HL = { W: 80, H: 240 };
-export const RULE = 'HANG ON AND STRIKE: EVERY BLOW HAULS A WINCH LINE UP AND THE RATCHET HOLDS YOU. MISS A LINE AND YOU DROP A LEVEL.';
+/* (claude/hlswitch, 11-12) THE SWITCH RULE, behind HL_SWITCH (default OFF: with it off every byte of this level is as before). ON: ONE BLOW starts a line and carries it the whole way (the kit's latch,
+   src/line-kit.js rule 'switch'), and LEVERS - never hold-UP - set the points (Daniel 11-12: levers only). A test door: globalThis.__HLSW = true (node) or ?hlsw=1 (page). */
+const hlswForced = () => { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false; if (g.__HLSW === true) return true; return !!g.location && /[?&]hlsw=1(&|#|$)/.test(String(g.location.search || '')); };
+export const HL_SWITCH_DEFAULT = false;   /* THE ONE LINE TO FLIP (after Daniel plays it and slice A's art + browser proofs land) */
+export const HL_SWITCH = HL_SWITCH_DEFAULT || hlswForced();
+const RULE_OLD = 'HANG ON AND STRIKE: EVERY BLOW HAULS A WINCH LINE UP AND THE RATCHET HOLDS YOU. MISS A LINE AND YOU DROP A LEVEL.';
+export const RULE_SW = 'STRIKE ONCE AND THE LINE CARRIES YOU UP. THE LEVERS SET THE POINTS: READ THE LAMPS. MISS A LINE AND YOU DROP A LEVEL.';
+export const RULE = HL_SWITCH ? RULE_SW : RULE_OLD;
 export const SECTIONS = [['FOOTHOLD', 206, 240], ['JUNCTIONS', 188, 206], ['THE WIND GORGE', 164, 188], ['THE AMBUSH', 133, 171], ['THE LEE HUT', 118, 134], ['THE COUNTERWEIGHT', 102, 118], ['THE GONDOLA', 85, 102], ['THE EXAM', 57, 104], ['THE CAVE MOUTH', 30, 58]];   /* [name, rowTop, rowBottom] - a TALL level's sections are row bands */
 
 /* THE LEVEL'S DATA (tiles): what the line kit, the Hookjack and the node proof read. Pure data: tools/highlines.mjs imports it without a painter. */
@@ -129,6 +136,39 @@ export const HL_DATA = {
   ],
 };
 
+/* ---------------- (claude/hlswitch) THE SWITCH PATCH: what HL_SWITCH changes in the data (a patched deep copy; HL_DATA itself, the flag-off level, is never touched) ----------------
+   BAND 2: J1, a foot lever on L2, sets W3's points at 58 (main way, or the silver line S2). BAND 3: G2 / G3 are HELD glides (parked until you strike). BAND 4: J3, a lever on a pylon beside H2 (a line swing, or
+   a shot from the rider), sets H2's points at 40 onto S4 - the way off the cutter's saw - and S5 (a glide from SILVER TWO's ledge to L11) makes that branch a longer, safe route, not a dead end.
+   BAND 8: J4, a foot lever on L16, sets E2's points at 64 (the gale line with two Hookjacks, or EL: a steep winch to the NEW landing LE in the lee) and EG, a held glide west from LE to L17 in the gale.
+   (The plan drew EG from (70,79) to (47,74.6): that is UPHILL going west and a glide runs downhill, so LE stands higher than L17 - top 70 against 74 - and EL climbs to it.) */
+const PATCH_LANDINGS = [[71, 70, 78, 71]];   /* 37 LE: the exam's east lee, high (EL tops onto it; the held glide EG leaves it). Appended: every landing index above is unchanged */
+const PATCH_LINES = [
+  { id: 'S5', kind: 'glide', a: [31, 142.4], b: [54, 141.6] },                 /* SILVER TWO's ledge (Ls4) -> L11: the safe way round the cutter once S4 has taken you off H2 */
+  { id: 'EL', kind: 'winch', a: [63, 86.46], b: [75, 68.9] },                  /* the exam's lee branch: off E2 at 64 (J4 = 1) up to LE */
+  { id: 'EG', kind: 'glide', a: [72, 69.2], b: [47, 73], hold: true },         /* a held glide LE -> L17 over the gale: parked until one blow, so you pick your gust */
+];
+export const SWITCHES = [
+  { id: 'J1', at: [66, 207], states: 2, init: 0, from: 'foot', spring: 0, tag: 'amber' },
+  { id: 'J3', at: [34, 152], states: 2, init: 0, from: 'both', spring: 0, tag: 'amber' },
+  { id: 'J4', at: [75, 91], states: 2, init: 0, from: 'foot', spring: 0, tag: 'amber' },
+];
+export function applySwitchPatch(src) {
+  const D = JSON.parse(JSON.stringify(src)), K = D.lineKit, L = id => K.lines.find(d => d.id === id);
+  K.rule = 'switch'; K.switches = SWITCHES.map(s => ({ ...s, at: s.at.slice() }));
+  L('W3').points = [{ at: 58, to: 'S2', sw: 'J1', on: 1 }];
+  L('H2').points = [{ at: 40, to: 'S4', sw: 'J3', on: 1 }];
+  L('E2').points = [{ at: 64, to: 'EL', sw: 'J4', on: 1 }];
+  L('G2').hold = true; L('G3').hold = true;
+  K.lines.push(...PATCH_LINES.map(d => JSON.parse(JSON.stringify(d))));
+  K.lee = K.lee.map(b => (b[0] === 71 && b[1] === 87 ? [71, 66, 78, 96] : b));   /* the east lee runs up to LE */
+  D.landings.push(...PATCH_LANDINGS.map(b => b.slice()));
+  return D;
+}
+export const HL_DATA_SW = applySwitchPatch(HL_DATA);
+/* the sign texts the flag changes: 'x,y' -> text (the lever's own sign stands at 62 instead of 66: see buildHighLines) */
+export const SIGNS_SW = { '6,231': 'HANG ON (UP), THEN STRIKE ONCE: THE LINE CARRIES YOU ALL THE WAY UP.', '66,207': 'A LEVER SETS THE POINTS. THE LIT LAMP IS THE WAY THE LINE GOES.',
+  '9,176': 'THE GORGE LINES WAIT FOR YOUR BLOW. LAUNCH WITH THE WIND, NOT INTO IT.', '24,155': 'A GOBLIN WITH A SAW. STRIKE THE LEVER AND THE POINTS TAKE YOU CLEAR.', '66,103': 'NO NETS FROM HERE. THE LEVER PICKS THE GALE OR THE LEE.' };
+
 /* ---------------- THE DRAWN SUPPORTS (claude/hlart): every deck stands on the line crews' iron or the cliff's own stone ---------------- */
 /* L.routeSupports kind 'hlgantry' (drawn by src/redraw/high_lines_tiles.js drawGantry through src/route-art.js): per landing / net run, posts at both ends and every 8 tiles. The rock lips (ROCK_LANDINGS) stand on granite
    CORBELS; an iron deck beside rock (a cliff wall, the head station's arch) hangs from a wall BRACKET (an I-beam from a bolted plate, a knee brace and a tie rod at the tip); a deck in the open shaft stands on a lattice PYLON
@@ -153,9 +193,9 @@ export function hlSupports(D, at, solid) {
 }
 
 /* ---------------- THE GAME'S LEVEL (src/level.js calls this) ---------------- */
-export function buildHighLines({ painter, T, TS }) {
-  const { W, H } = HL, D = HL_DATA, L = painter(W, H), { set, block, ent } = L;
-  const sign = (x, y, text) => ent('sign', x, y, { text });
+export function buildHighLines({ painter, T, TS, sw = HL_SWITCH }) {   /* sw: the HL_SWITCH flag (a node proof passes it in) */
+  const { W, H } = HL, D = sw ? HL_DATA_SW : HL_DATA, L = painter(W, H), { set, block, ent } = L;
+  const sign = (x, y, text) => ent('sign', x, y, { text: sw && SIGNS_SW[x + ',' + y] !== undefined ? SIGNS_SW[x + ',' + y] : text });   /* flag on: the switch rule's words at the same spots */
   const foe = (t, x, y, o) => ent(t, x, y, o || {});
   const lineAt = (id, tx) => { const d = D.lineKit.lines.find(q => q.id === id), k = (tx - d.a[0]) / (d.b[0] - d.a[0]); return d.a[1] + (d.b[1] - d.a[1]) * k; };
   const coinOn = (id, tx) => ent('coin', tx, Math.floor(lineAt(id, tx)));   /* a coin on a rider's path (taken as you ride by) */
@@ -180,7 +220,7 @@ export function buildHighLines({ painter, T, TS }) {
   foe('crossbow', 71, 207, { face: -1 });                          /* the first bolt at a rider: he leads you up W2 */
   coinOn('W1', 22); coinOn('W2', 50); ent('coin', 64, 207);
   /* ---- 2 JUNCTIONS ---- */
-  sign(66, 207, 'POINTS: HOLD UP AS YOU PASS THE BOARD AND YOU TAKE THE BRANCH.');
+  sw ? sign(62, 207, SIGNS_SW['66,207']) : sign(66, 207, 'POINTS: HOLD UP AS YOU PASS THE BOARD AND YOU TAKE THE BRANCH.');   /* (hlswitch) the lever stands at 66 */
   sign(41, 194, 'THE GLIDE IS FAST. JUMP TO KICK OFF ACROSS TO THE NEXT LINE.');
   foe('harpy', 14, 190, { face: 1 });                              /* a crag harpy dives at the glide riders */
   coinOn('S2', 55); coinOn('F2', 14); ent('coin', 30, 188);
@@ -212,6 +252,8 @@ export function buildHighLines({ painter, T, TS }) {
   sign(9, 57, 'THE CAVE MOUTH. THE ORE ROAD RUNS INTO THE MOUNTAIN FROM HERE.');
   sign(4, 47, 'THE HEAD STATION. SKYHOOK WORKS THE HIGH LINE HERE.');
   ent('skyhook', 37, 39, { face: -1 });                           /* (claude/skyhook) SKYHOOK on his east gallery (src/skyhook.js) */
+  /* (claude/hlswitch) THE LEVERS as props in main.js's foe list (src/highlines-hands.js leverSpawn): any blow or shot throws one; never harmed, never a kill. Their iron is drawn by the kit (the post) */
+  if (sw) for (const s of D.lineKit.switches) ent('hllever', s.at[0], s.at[1], { sw: s.id, from: s.from, tag: s.tag });
   /* THE HOOKJACKS as foes in main.js's list (src/highlines-hands.js spawn): a rider hangs on his line; a cutter stands at his station */
   for (const hj of D.hookjacks) { const d = D.lineKit.lines.find(q => q.id === hj.line), k = (hj.x - d.a[0]) / (d.b[0] - d.a[0]), ly = d.a[1] + (d.b[1] - d.a[1]) * k;
     const land = hj.role === 'cutter' ? D.landings.find(b => hj.x >= b[0] && hj.x <= b[2] && b[1] >= ly && b[1] - ly <= 3) : null;
@@ -238,12 +280,13 @@ export function buildHighLines({ painter, T, TS }) {
     sections: SECTIONS.map(([name, y0, y1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, y0, y1, x0: 0, x1: W - 1 })),
     /* what L.unlocks names, as data (tools/level-quality.mjs reads L[kind]): the winches, the points boards, the hopper, the gondola */
     winch: D.lineKit.lines.filter(d => d.kind === 'winch').map(d => ({ x: d.a[0], row: Math.round((d.a[1] + d.b[1]) / 2), id: d.id })),
-    points: D.lineKit.lines.flatMap(d => (d.points || []).map(p => ({ x: p.at, id: d.id, to: p.to }))),
+    points: D.lineKit.lines.flatMap(d => (d.points || []).map(p => ({ x: p.at, id: d.id, to: p.to, ...(sw ? { sw: p.sw, on: p.on } : {}) }))),
+    ...(sw ? { lever: D.lineKit.switches.map(s => ({ x: s.at[0], row: s.at[1], id: s.id, from: s.from })) } : {}),
     hopper: D.lineKit.weights.map(w => ({ x: w.hopper[0], row: w.hopper[1], id: w.id })),
     gondola: D.lineKit.lines.filter(d => d.cab).map(d => ({ x: d.a[0], row: Math.round(d.a[1]), id: d.id, onto: d.cab.onto })),
     unlocks: [
-      { kind: 'winch', opens: 'the way up: every blow while hanging hauls the line', hud: 'STRIKE TO HAUL' },
-      { kind: 'points', opens: 'the side line to a silver (hold UP at the board)', hud: 'HOLD UP AT THE BOARD' },
+      sw ? { kind: 'winch', opens: 'the way up: one blow while hanging and the line carries you', hud: 'STRIKE ONCE TO RIDE' } : { kind: 'winch', opens: 'the way up: every blow while hanging hauls the line', hud: 'STRIKE TO HAUL' },
+      sw ? { kind: 'points', opens: 'a lever sets which branch is live', hud: 'A LEVER SETS THE POINTS' } : { kind: 'points', opens: 'the side line to a silver (hold UP at the board)', hud: 'HOLD UP AT THE BOARD' },
       { kind: 'hopper', opens: 'the cage up to the gondola station', hud: 'THE STONE GOES DOWN, THE CAGE GOES UP' },
       { kind: 'gondola', opens: 'the ride over the gap to the far station (it snaps, it holds)', hud: 'HOLD ON' },
     ],

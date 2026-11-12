@@ -83,7 +83,10 @@ if (L.lineKitState) { const kit = L.lineKitState, seats = partySeats();         
 // draw: LKT.drawLines(g, kit, cx, cy, VW, VH, time) beside ZL.drawZips (~34221); LKT.drawRider(g, kit, S, cx, cy) after each seat (~35361)
 ```
 
-## THE SWITCH RULE (claude/hlswitch, flag HL_SWITCH - level side not built yet; the kit is dormant until a level sets the rule)
+## THE SWITCH RULE (claude/hlswitch, flag HL_SWITCH; slice K the kit, slice L THE HIGH LINES' level + hands)
+- **Level side (slice L).** `src/highlines.js`: `HL_SWITCH` (default OFF; `?hlsw=1` / `globalThis.__HLSW`), `applySwitchPatch(HL_DATA)` -> `HL_DATA_SW` (a patched COPY: rule, levers J1/J3/J4, the new lines S5/EL/EG, held glides G2/G3, the new landing LE), `SIGNS_SW`. `buildHighLines({ sw })`. Flag off = the data and the built level are exactly as before.
+  Hands (`src/highlines-hands.js`): `hllever` props (`leverSpawn`/`lever`/`leverTick`; main.js only routes spawn, hurtEnemy0, update, draw, aim/ping skips), foot blows pass `'foot'` to kitStrike, `latch`/`throw` events -> sound + told-once callouts, the AI partner presses attack once after taking hold. Greybox art: board lamps, a closed gate arm and a dim rope on a shut branch, a lever post that shows its state (`src/redraw/high_lines_art.js`).
+  Proof: `node tools/highlines.mjs --sw` (the whole proof on the flag-on level + one hit per winch, held glides, each lever's branch with UP held, lever geometry, the soft-lock sweep over every lever combination).
 `L.lineKit.rule = 'switch'` turns on ONE BLOW, THE WHOLE WAY and lever switches. Rule absent = every frame as before (the stroke rules above).
 - **Latch.** The first blow while hanging on a winch sets `r.latch` and fires `latch`; the rider then runs at `LK.LATCH_SPEED` (120 px/s, or the line's own `speed`) to the high end and the usual top hop. Later blows are `swing`s (they can strike levers and posts, `kitStrike(kit, hb, 'line')`). Only a cut, hit, kick or drop takes him off; a new take needs a new blow (`r.latch` starts false). No blow = he hangs still (the ratchet). `STROKE`/`STROKE_T`/`STROKE_BUF` are unused under the rule.
 - **Post lines.** A struck post sets `z.posted`: every seat on that line runs while any seat is on it, then `LK.POST_IDLE` (1 s). A hanging blow also latches the striker, so no walk back to the post. `POST_RUN` is unused under the rule.

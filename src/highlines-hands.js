@@ -18,6 +18,8 @@ import * as HLA from './redraw/high_lines_art.js'; import { drawHookjack } from 
 import { promptsOf, promptWords } from './line-prompts.js';   /* (claude/hlfix) the in-world key prompts at every grab point, points board, winch grip and strike-post */
 import { HK, HK_SAY, newHook, hookStep, hookTake as hkTake, drawHook as hkDraw } from './hookjack.js';
 
+/* (claude/hlswitch) the switch rule's words (said instead of the stroke rule's while the kit's rule is 'switch'; each is told once) */
+export const HLX_SAY_SW = { take: 'ONE BLOW: THE LINE CARRIES YOU UP.', hold: 'STRIKE ONCE TO LAUNCH. PICK YOUR GUST.', points: 'THE POINTS TAKE YOU ON', throw: 'THE LEVER THROWS: THE LAMP FLIPS' };
 export const HLX_SAY = { take: 'STRIKE TO HAUL. THE RATCHET HOLDS YOU.', glide: 'JUMP KICKS OFF. DOWN DROPS. HOLD BACK TO BRAKE.', points: 'THE POINTS: YOU TOOK THE BRANCH', parted: 'THE LINE PARTS', creak: 'THE LINE CREAKS', gust: 'THE GUST IS COMING' };
 /* movement skills (a lunge, a dash, a vault, a leap, a rising cut) - pressing one on a line lets go FIRST */
 export const MOVE_SKILLS = new Set(['lunge', 'cinderStep', 'holyCharge', 'hammerLeap', 'harrier', 'boarding', 'rgLeap', 'risingCut']);
@@ -30,9 +32,10 @@ export function makeHighLinesHands(c) {
   const sfx = k => { const S = c.sfx; const f = S && S[k]; if (f) f(); };
   const say = (t, x, y) => { if (told.has(t)) return; told.add(t); c.callout(t, x, y); };
   function lineSfx(e) {
-    if (e.t === 'take') used.add('grab:' + e.id); else if (e.t === 'stroke') used.add('hit:' + e.id); else if (e.t === 'points') used.add('points:' + e.from);   /* the prompt for it has done its job */
+    if (e.t === 'take') used.add('grab:' + e.id); else if (e.t === 'stroke' || e.t === 'latch') used.add('hit:' + e.id); else if (e.t === 'points') used.add('points:' + e.from);   /* the prompt for it has done its job */
+    if (e.t === 'throw') { const lp = kit && kit.posts.find(q => q.kind === 'lever' && q.sw === e.id); if (lp) { used.add(postKey(lp)); lp.swing = 1; if (!e.spring) say(HLX_SAY_SW.throw, lp.x, lp.y - 20); } }   /* (hlswitch) a lever thrown: its own prompt is done, the plate swings, told once */
     switch (e.t) {
-      case 'take': sfx('ratchet'); break; case 'stroke': sfx('ratchet'); break; case 'top': case 'end': sfx('pStep'); break;
+      case 'take': sfx('ratchet'); break; case 'stroke': sfx('ratchet'); break; case 'latch': sfx('ratchet'); break; case 'throw': sfx('clank'); break;   /* (hlswitch) latch = the one blow that starts a line; throw = a lever */ case 'top': case 'end': sfx('pStep'); break;
       case 'kick': sfx('pJump'); break; case 'points': sfx('clank'); break; case 'creak': sfx('ratchet'); say(HLX_SAY.creak); break;
       case 'snap': case 'parted': sfx('crack'); if (e.t === 'parted') say(HLX_SAY.parted); break; case 'restrung': sfx('ratchet'); break;
       case 'gustTell': sfx('gustRise'); break; case 'cabBoard': case 'cabGo': case 'cabDock': sfx('clank'); break; case 'cabCatch': sfx('crack'); c.shake && c.shake(4); break;
@@ -40,7 +43,7 @@ export function makeHighLinesHands(c) {
     }
   }
   function load() {
-    kit = c.L && c.L.highlines && c.L.lineKit ? LKT.lineInit(c.L) : null; told.clear(); used.clear(); prompts = kit ? promptsOf(kit) : []; lastSwipe = -9; for (const p of c.players()) if (p) { p.lk = null; p.lkHeld = false; p.lkSkip = null; }   /* nobody carries a grip into a level (or out of this one) */
+    kit = c.L && c.L.highlines && c.L.lineKit ? LKT.lineInit(c.L) : null; told.clear(); used.clear(); prompts = kit ? promptsOf(kit).filter(p => !(kit.rule === 'switch' && p.kind === 'points')) : [];   /* (hlswitch) no 'hold UP at the board' prompt under the switch rule: a lever sets the points */ lastSwipe = -9; for (const p of c.players()) if (p) { p.lk = null; p.lkHeld = false; p.lkSkip = null; }   /* nobody carries a grip into a level (or out of this one) */
   }
   function reset() { if (!on()) return; LKT.lineRespawn(kit, c.players()); lastSwipe = -9; }
   /* a shadow of each seat for the kit's load counts (cab boarding, which side of the weight is heavier) - the kit's own carry moves the shadows, never the seats */
@@ -59,7 +62,7 @@ export function makeHighLinesHands(c) {
     if (P.dead || P.down > 0) { if (P.lk) { P.lk = null; P.lkHeld = false; } return; }
     const strike = !!pr.atk;   /* KIT Q1 (rec, accepted): ANY blow while hanging is a crank stroke - one button, every hero (the ranged ones too) */
     const hb = strike ? (P.face > 0 ? { l: P.x, r: P.x + 26, t: P.y - 22, b: P.y - 2 } : { l: P.x - 26, r: P.x, t: P.y - 22, b: P.y - 2 }) : null;
-    if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb); if (post) { used.add(postKey(post)); lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
+    if (hb && !P.lk) { const post = LKT.kitStrike(kit, hb, 'foot'); if (post) { used.add(postKey(post)); lineSfx({ t: 'strike' }); if (post.kind === 'hopper') say('THE STONE DROPS: THE CAGE GOES UP', post.x, post.y); } }
     /* a jump pressed on an UP key (ArrowUp / W, main.js jumpUpKey) is the take and the points, never the kick: the kick is Z / Space / the pad's A */
     const was = P.lk ? P.lk.id : null;
     /* LET GO FIRST: a movement flag that rose AFTER he took hold (a skill, a dash, a leap, a plunge) is not a hang - the grip goes (0.6 s skip) and the move runs as on the ground */
@@ -70,8 +73,8 @@ export function makeHighLinesHands(c) {
     for (const e of ev) { lineSfx(e);
       if (e.t === 'drop') { P.abuf = 0; P.abufDown = false; P.plunge = false; }   /* a DOWN never does anything else: it drops - no plunge rides the same press */
       if (e.t === 'tuck') sfx('pStep');
-      if (e.t === 'take') { const z = kit.lines[e.id]; say(z.kind === 'winch' ? HLX_SAY.take : HLX_SAY.glide); }
-      if (e.t === 'points') say(HLX_SAY.points); }
+      if (e.t === 'take') { const z = kit.lines[e.id], S = kit.rule === 'switch'; say(z.kind === 'winch' ? (S ? HLX_SAY_SW.take : HLX_SAY.take) : S && z.hold ? HLX_SAY_SW.hold : HLX_SAY.glide); }
+      if (e.t === 'points') say(kit.rule === 'switch' ? HLX_SAY_SW.points : HLX_SAY.points); }
     if (P.lk) { c.eatJump(); P.climb = false; P.onMover = null; }   /* hanging: the jump was the kick, and nothing else stands him anywhere */
     else if (was && !P.lk) P.lkHeld = false;
     if (!P.lk) LKT.windPush(kit, P, dt);
@@ -85,12 +88,19 @@ export function makeHighLinesHands(c) {
   /* THE AI PARTNER (no new brain): it takes a line the leader is holding when one is in reach (UP), cranks a winch every 0.3 s, and otherwise rides the leash. true = this frame is the line's */
   function allyLine(p, lead, keys, press, t) {
     if (!on() || !p) return false;
+    if (p.lk && kit.rule === 'switch') { const z = kit.lines[p.lk.id]; if (z && (z.kind === 'winch' || z.hold) && !p.lk.latch && t - (p.aiCrank || -9) >= 0.3) { p.aiCrank = t; press('atk'); } return true; }   /* (hlswitch) ONE BLOW starts the line: it presses attack once after taking hold (until latched); it never throws a lever */
     if (p.lk) { const z = kit.lines[p.lk.id]; if (z && z.kind === 'winch' && z.d.drive !== 'post' && t - (p.aiCrank || -9) >= LKT.LK.STROKE_T) { p.aiCrank = t; press('atk'); } return true; }
     if (lead && lead.lk && !p.dead && !(p.down > 0)) { const z = LKT.findLine(kit, p, true, false); if (z) { keys.up = true; return true; } }
     return false;
   }
   /* ---------- THE HOOKJACK ---------- */
   const owns = e => !!e && e.t === 'hookjack';
+  /* ---------- THE LEVERS (hlswitch): props in main.js's foe list - any blow, any shot throws one (kitThrow); never harmed, never a kill; foes never reach them ---------- */
+  const ownsLever = e => !!e && e.t === 'hllever';
+  const leverSpawn = e => ({ t: 'hllever', sw: e.sw, from: e.from || 'foot', w: 12, h: 22, hp: 9999, maxHp: 9999, noGrav: true, alive: true, face: 1, mode: 'idle', modeT: 0, prop: true, markH: 26, xpKey: undefined, swing: 0, cool: 0 });
+  function leverTick(e, dt) { e.cool = Math.max(0, (e.cool || 0) - dt); e.hp = e.maxHp; }
+  /* A LEVER STRUCK (main.js hurtEnemy0 hands every blow and shot on an 'hllever' here): the same throw a foot blow / a line swing does through kitStrike; the 0.4 s cooldown in kitThrow stops a blow that reaches both */
+  function lever(e, fromX) { if (!e || !on()) return; e.hp = e.maxHp; if (e.cool > 0) return; const ev = LKT.kitThrow(kit, e.sw); if (!ev) return; e.cool = 0.25; e.swing = 0.35; lineSfx(ev); }
   function spawn(e) { const o = newHook({ line: e.line || null, role: e.role, dir: e.dir || -1 }); if (kit && e.line && kit.lines[e.line] && e.role !== 'cutter') { const z = kit.lines[e.line]; o.lx = Math.max(z.xa + 8, Math.min(z.xb - 8, e.x * c.TS + 8)); } return o; }
   function hkWorld() {
     return { kit, LK: LKT, heroes: () => c.players().filter(p => !p.dead && !(p.down > 0)), time: () => c.time(), lastSwipe: () => lastSwipe, swiped: t => { lastSwipe = t; },
@@ -122,5 +132,5 @@ export function makeHighLinesHands(c) {
   }
   function drawRider(g, P, cx, cy) { if (on() && P && P.lk) HLA.drawGrip(g, kit, P.lk, cx, cy, c.time()); }
   function drawHook(g, e, cx, cy, time) { if (e.alive) drawHookjack(g, e, cx, cy, time); }
-  return { on, load, reset, world, seat, held, letGoFirst, moveSkill, climbCam, allyLine, mover, owns, spawn, hookUpdate, hookTake, shoveRider, drawWorld, drawRider, drawHook, kit: () => kit, HK, HK_SAY };
+  return { on, load, reset, world, seat, held, letGoFirst, moveSkill, climbCam, allyLine, mover, owns, ownsLever, leverSpawn, leverTick, lever, spawn, hookUpdate, hookTake, shoveRider, drawWorld, drawRider, drawHook, kit: () => kit, HK, HK_SAY };
 }
