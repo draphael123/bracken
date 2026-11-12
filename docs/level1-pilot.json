@@ -289,13 +289,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 37,
-  "deaths": 4,
-  "kills": 51,
-  "lifts": 238,
+  "hits": 36,
+  "deaths": 3,
+  "kills": 43,
+  "lifts": 237,
   "walked": 100,
   "bare": true,
-  "seed": 2
+  "seed": 1
  },
  "reef": {
   "hash": "c614482bd7ef",
