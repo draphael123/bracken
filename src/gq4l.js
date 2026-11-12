@@ -3,7 +3,7 @@
 // (B3b THE ARMOURY LANDING, B3c THE ROOF LEADS), the early Geomancers (E1 the switchback crag, E2 the chapel loft), the new foes (stilt-walkers, fire mages, castle hounds,
 // THE QUEEN'S KNIGHT = cnSkin 'gobknight' on the hedge knight), the burning tower 5 -> 7 storeys with the OUTSIDE stretch up its face (src/gq3-tower.js, gqueen-hands.js TOWER section).
 // The override for review and the lanes: ?gq4l=1 on the page, globalThis.BRACKEN_GQ4L = true (tools/cdp.mjs sets it from the env BRACKEN_GQ4L=1), or BRACKEN_GQ4L=1 in a Node tool's env.
-export const GQ4L_SHIPS = false;
+export const GQ4L_SHIPS = true;
 export function gq4lOn() {
   if (GQ4L_SHIPS) return true;
   try { if (globalThis.BRACKEN_GQ4L === true || globalThis.BRACKEN_GQ4L === '1') return true; } catch { /* no global */ }
