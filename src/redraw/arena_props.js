@@ -89,6 +89,14 @@ function gate(near) {
 /* a glow of firelight: stacked rects round (x, y) */
 function glow(g, x, y, r, a, col) { g.fillStyle = col; for (let i = r; i > 0; i -= 4) { g.globalAlpha = a * (1 - i / r) * 0.5 + 0.015; g.fillRect(Math.round(x - i), Math.round(y - i * 0.7), i * 2, Math.round(i * 1.4)); } g.globalAlpha = 1; }
 
+/* THE PLANK STANDS (duelarenas-b, draw only): an oak post under a plank end, from the deck down to the sand, with a cap bracket under the board and a footing. stands: [[col, deck row, bottom row]], drawn behind the tiles. */
+export function drawPlankStands(g, stands, cx, cy) {
+  for (const [col, row, bottom] of stands) {
+    const x = col * TS + 6 - cx, y0 = row * TS + 5 - cy, h = bottom * TS - (row * TS + 5);
+    post(g, x, y0, 4, h); rect(g, x - 2, y0, 8, 2, A.o6); rect(g, x - 2, y0 + 2, 8, 1, A.o1);   /* the post, the bracket cap under the board */
+    rect(g, x - 2, y0 + h - 3, 8, 3, A.o2); rect(g, x - 2, y0 + h - 3, 8, 1, A.o4);                   /* the footing in the sand */
+  }
+}
 export function drawArenaProps(g, ents, cx, cy, VW, VH, time, o = {}) {
   const near = o.near || new Set(), cheer = o.cheer || 0;
   for (const e of ents) {
