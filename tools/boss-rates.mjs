@@ -7,10 +7,10 @@
                 in the slots his level has (src/bot-profile.js typicalCard / TYPICAL_SKILLS), cast by the lab's skill hands
    ("bare" is practiced: the floor.)  (claude/botbuilt, Daniel 11-03 Q2) built now runs the SAME n as practiced (--built-seeds still overrides) and the table prints a built-minus-bare column: the band is read on the built way as a one-off report, bare is the printed floor, NO automatic retune. Every built row carries the cast counts (casts.ult = ultimates fired) and a !!BUILD-GAP flag when the hero's kit has a skill with no SKILL_RANGE entry or no typical skills at all.
      PORT=8644 node tools/boss-rates.mjs <level>[:mini][,<level>[:mini]..] | --all  [--ways=practiced,first,built] [--seeds=6] [--first-seeds=N]
-        [--built-seeds=N] [--adaptive [--cap=20] [--step=6]] [--band-way=practiced] [--heroes=knight,warden,pyro] [--profile=human] [--secs=240] [--jobs=2] [--out=file.json] [--level=N]
+        [--built-seeds=N] [--adaptive [--cap=20] [--step=6]] [--band-way=practiced] [--heroes=knight,warden,pyro] [--profile=human] [--secs=240] [--jobs=2] [--out=file.json [--resume]] [--level=N]
    --all: every live boss and mini (BOSS_ROWS below). --jobs: pages run side by side (each its own headless Chrome). Prints a row a fight
    and a table: boss, hero level, then per way the wins per hero and overall, and the band (bosses 60-70%, minis 75-85% with flasks; no hero at 0). */
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, renameSync, existsSync, readFileSync } from 'node:fs';
 import { runFights, line, won } from './boss-run.mjs';
 import { STANDARD } from '../src/bot-profile.js';
 import { BOSS_ROWS } from './boss-rows.mjs';
@@ -24,7 +24,15 @@ const seedsOf = { practiced: seeds, first: +opt('first-seeds', Math.max(2, Math.
 const fights = [];
 for (const r of rowsArg) for (const way of ways) for (const h of heroes) for (let s = 1 + (+process.env.SEED0 || 0); s <= (+process.env.SEED0 || 0) + seedsOf[way]; s++) fights.push({ r, way, h, s, profile: prof, flasks });
 const t0 = Date.now();
-let out = await runFights(fights, { jobs, secs, onRow: (x, all) => { console.log(line(x)); if (OUT && all.length % 6 === 0) writeFileSync(OUT, JSON.stringify(all)); } });
+/* (claude/browserleak 11-12) A KILL COSTS ONE FIGHT, NOT THE TABLE: every finished fight is written to --out at once (temp file + rename, so a kill mid-write cannot corrupt it), and --resume reads
+   that file first and plays only the fights it does not hold a finished row for (error rows are played again). Same fight key = row|way|hero|seed|tag. Without --resume the file is started afresh, as before. */
+const keyOf = x => [x.row ?? x.r, x.way, x.hero ?? x.h, x.seed ?? x.s, x.tag ?? ''].join('|');
+let done = [];
+if (OUT && args.includes('--resume') && existsSync(OUT)) { try { done = JSON.parse(readFileSync(OUT, 'utf8')).filter(x => x && !x.err); } catch (e) { console.log('resume: ' + OUT + ' unreadable (' + e.message + '), starting afresh'); } }
+const have = new Set(done.map(keyOf)), todo = fights.filter(f => !have.has(keyOf(f)));
+if (done.length) console.log('resume: ' + done.length + ' finished rows kept from ' + OUT + ', ' + todo.length + ' of ' + fights.length + ' fights to play');
+const save = rows => { if (!OUT) return; try { writeFileSync(OUT + '.tmp', JSON.stringify(rows)); renameSync(OUT + '.tmp', OUT); } catch (e) { console.log('save failed: ' + e.message); } };
+let out = done.concat(await runFights(todo, { jobs, secs, onRow: (x, all) => { console.log(line(x)); save(done.concat(all)); } }));
 /* (claude/botstats, Daniel 11-03) ADAPTIVE N: every rate is printed with its 95% interval, and a boss is called IN BAND / LOW / HIGH only when the interval says so.
    --adaptive adds --step fights a hero (new seeds) to every row whose BAND-WAY pooled interval still spans a band edge, until it clears or --cap a hero (20) is reached. --band-way picks the way the band is read on (default practiced, the standing way; Q2 'which build' is undecided: any way can be read). */
 const BAND_WAY = opt('band-way', 'practiced'), ADAPT = args.includes('--adaptive'), CAP = +opt('cap', 20), STEP = Math.max(1, +opt('step', 6));
@@ -37,9 +45,9 @@ if (ADAPT && ways.includes(BAND_WAY)) for (let round = 0; ; round++) {
     const add = Math.min(STEP, CAP - perHero); console.log('adaptive: ' + r + ' ' + BAND_WAY + ' ' + fmtRate(w, n) + ' spans a band edge: +' + add + ' a hero');
     for (const h of heroes) for (let s = used + 1; s <= used + add; s++) more.push({ r, way: BAND_WAY, h, s: s + (+process.env.SEED0 || 0), profile: prof, flasks }); }
   if (!more.length) break;
-  out = out.concat(await runFights(more, { jobs, secs, onRow: x => console.log(line(x)) })); if (OUT) writeFileSync(OUT, JSON.stringify(out));
+  { const base = out; out = base.concat(await runFights(more, { jobs, secs, onRow: (x, all) => { console.log(line(x)); save(base.concat(all)); } })); save(out); }
 }
-if (OUT) writeFileSync(OUT, JSON.stringify(out));
+save(out);
 export function summarize(rows) {
   const by = {}; for (const x of rows) { if (x.err) continue; const k = x.row; const B = by[k] = by[k] || { row: k, lvl: x.lvl, ways: {} }; const W = B.ways[x.way] = B.ways[x.way] || {};
     const H = W[x.hero] = W[x.hero] || { w: 0, n: 0 }; H.n++; if (won(x)) H.w++; }
