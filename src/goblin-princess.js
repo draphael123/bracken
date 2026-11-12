@@ -15,13 +15,13 @@
 //                   it drops he is pinned; the servery door horns, and its winch keeps the garrison in. No boss: a puzzle.
 // Resist 0.5x outside openings (0.4x hiding behind a guard: never less, never invulnerable). A single opening takes no more than GP.capK of her bar.
 // main.js calls makeGoblinPrincessHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read, level, drawWorld, clear, load, labDuty.
-import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js';   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
+import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js'; import { P5, G5, GAP5 } from './gq5p.js';   /* (claude/gq5p) the Princess's blade: flag GQ5P_SHIPS, default OFF = gq5fix's move for move */   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
 import * as GQ4A from './redraw/gq4_art.js'; import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
   hp: P4 ? 1080 : 1000, w: 12, h: 20, markH: 34, walk: 80, back: 160, keep: 30,
-  resist: 0.4, hideResist: 0.4, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0, shotUp: 0.85,
-  gap: [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
+  resist: 0.4, hideResist: 0.4, stumbleMul: 1.15 /* (GQ5P) the missed heel dash */, preenMul: 1.0, staggerMul: 1.0, stunMul: 1.15, pinMul: 1.15, capK: 0.10, endAt: 0, shotUp: 0.85,
+  gap: P5 ? GAP5 : [0.5, 0.4],                                                         /* between her moves; phase two x0.8 */
   lunge: { tell: 0.55, t: 0.18, dist: 70, dmg: 31, reach: 30, stagger: 1.0 },
   flurry: { tell: 0.4, gap: 0.16, n: [3, 4], dmg: P4 ? 11 : 13 /* (GQ4TUNE-t, flag ON only) */, reach: 30, preen: 1.2 },
   trinket: { tell: 0.5, n: [2, 3], dmg: P4 ? 6 : 9 /* (GQ4TUNE-t: 7 -> 6) (GQ4TUNE r2, flag ON only: 9 -> 7; r1 crown:mini n=12/hero 20/36 = 56%, trinkets 87 dmg a fight) */, life: 1.5, fly: 0.7, g: 520, r: 4 },
@@ -41,7 +41,10 @@ export const GP = {
   chase: { lead: 150, run: 175, hold: 260, ring: 0.6, horn: 3.0 /* (GQ5FIX 11-12: 6.0 -> 3.0: the alarm towers' guard gate waits 3 s, not 6) */, crank: 3, win: 2.0, closeAfter: 1.0 },
   reh: { cd: 12, queue: 1.0, glow: 0.9, walk: 110, walkMax: 3.5, pin: 2.5, pinMul: 1.15, under: 14, hornAfter: 4, horn: 6.0, crank: 3, win: 2.0, closeAfter: 1.0 },
 };
-export const CHAINS = P4 ? {   /* (claude/gq4p-d) the key joins phase one; the pirouette twice in phase two */
+export const CHAINS = P5 ? {   /* (claude/gq5p, plan sec 2) no hop; HEEL DASH replaces it; the CURTSY CUT second after the lunge / fan; the TANTRUM COMBO (phase two) replaces the fan */
+  1: [['lunge', 'curtsy', 'flurry', 'key', 'trinket'], ['fan', 'curtsy', 'lunge', 'heel'], ['flurry', 'trinket', 'key', 'lunge', 'curtsy', 'fan']],
+  2: [['lunge', 'curtsy', 'tiara', 'pirouette', 'flurry', 'stomp'], ['trinket', 'tantrum', 'tiara', 'pirouette', 'heel'], ['stomp', 'lunge', 'curtsy', 'tantrum', 'flurry', 'tiara', 'trinket']],
+} : P4 ? {   /* (claude/gq4p-d) the key joins phase one; the pirouette twice in phase two */
   1: [['lunge', 'flurry', 'key', 'trinket'], ['fan', 'lunge', 'hop'], ['flurry', 'trinket', 'key', 'lunge', 'fan']],
   2: [['lunge', 'tiara', 'pirouette', 'flurry', 'stomp'], ['trinket', 'fan', 'tiara', 'pirouette', 'hop'], ['stomp', 'lunge', 'flurry', 'tiara', 'trinket']],
 } : {
@@ -49,10 +52,10 @@ export const CHAINS = P4 ? {   /* (claude/gq4p-d) the key joins phase one; the p
   2: [['lunge', 'tiara', 'flurry', 'stomp'], ['trinket', 'fan', 'tiara', 'hop'], ['stomp', 'lunge', 'flurry', 'tiara', 'trinket']],
 };
 /* the told marks (src/marks.js reads these: tools/tells) */
-export const GP_MODES = { lungeTell: '!', flurryTell: '!', trinketTell: '!', fanTell: '!!', hopTell: '!', tiaraTell: '!', stompTell: '!!', pirouetteTell: '!!', keyTell: '!', callTell: '!', allGatesTell: '!!' };
+export const GP_MODES = { lungeTell: '!', flurryTell: '!', trinketTell: '!', fanTell: '!!', hopTell: '!', tiaraTell: '!', stompTell: '!!', pirouetteTell: '!!', keyTell: '!', callTell: '!', allGatesTell: '!!', ...(P5 ? { heelTell: '!!', curtsyTell: '!', tantrumTell: '!', overTell: '!!' } : {}) };   /* (GQ5P) heel dash, curtsy cut, tantrum combo + its overhead */
 const SAFE = new Set(['walk', 'recover', 'preen', 'perch', 'stand', 'hide']);
-export const gpOpen = e => !!e && (e.mode === 'pinned' || e.mode === 'stunned' || e.mode === 'preen' || e.mode === 'stagger' || e.mode === 'dizzy' || e.mode === 'dazed');
-export const gpMul = e => !e ? GP.resist : e.mode === 'pinned' ? GP.pinMul : e.mode === 'stunned' ? GP.stunMul : e.mode === 'preen' ? GP.preenMul : e.mode === 'stagger' ? GP.staggerMul : e.mode === 'dizzy' ? GP.dizzyMul : e.mode === 'dazed' ? GP.dazeMul : e.hiding ? GP.hideResist : GP.resist;
+export const gpOpen = e => !!e && (e.mode === 'stumble' || e.mode === 'pinned' || e.mode === 'stunned' || e.mode === 'preen' || e.mode === 'stagger' || e.mode === 'dizzy' || e.mode === 'dazed');
+export const gpMul = e => !e ? GP.resist : e.mode === 'pinned' ? GP.pinMul : e.mode === 'stunned' ? GP.stunMul : e.mode === 'preen' ? GP.preenMul : e.mode === 'stagger' ? GP.staggerMul : e.mode === 'dizzy' ? GP.dizzyMul : e.mode === 'dazed' ? GP.dazeMul : e.mode === 'stumble' ? GP.stumbleMul : e.hiding ? GP.hideResist : GP.resist;
 
 /* ---------- THE BOT'S READING (src/lab.js) ----------
    s = { P: { x, y, face, ground, atk }, e, F, reach, shield, t, mem } -> { gx, face, atk, jump, block, dodge, why }. Parry/block the lunge and the tiara on their tell,
@@ -63,6 +66,11 @@ export function gpPlan(s) {
   const clamp = x => Math.max(A.x0 + 12, Math.min(A.xMax - 4, x));
   if (gpOpen(e)) { out.gx = clamp(e.x - toHer * Math.max(8, reach * 0.6)); out.face = toHer; out.atk = ad < reach + 10 && P.atk < 0; if (m === 'pinned' && Math.abs(P.y - e.y) > 20 && P.ground) out.jump = true; out.why = 'cut her: ' + m; return out; }
   if ((m === 'pirouetteTell' || m === 'pirouette') && ad < 110) { if (P.ground) out.jump = true; out.why = 'jump the pirouette'; return out; }   /* (gq4p-d) shin height: jump it */
+  if (P5) {   /* (claude/gq5p) the blade moves: block / parry the heel dash, jump the curtsy's low sweep then parry its rising cut, block the tantrum and PARRY its overhead */
+    if (m === 'heelTell' || m === 'heel') { out.face = toHer; if (m === 'heel' && ad < 56 && P.ground) { out.dodge = true; out.why = 'roll the heel dash'; } else if (ad < 150) { out.block = true; out.why = 'block the heel dash'; } return out; }
+    if (m === 'curtsyTell' || m === 'curtsy1') { out.face = toHer; if (ad < 70 && P.ground && (m === 'curtsy1' || e.modeT < 0.12)) { out.jump = true; out.why = 'jump the low sweep'; } else if (ad < 90) { out.why = 'hold for the sweep'; } return out; }
+    if (m === 'curtsy2' || m === 'overTell' || m === 'overhead' || m === 'tantrumTell' || m === 'tantrumA' || m === 'tantrumB') { if (ad < 90) { out.face = toHer; out.block = true; out.why = 'parry the ' + m; return out; } }
+  }
   if (m === 'stompTell' || m === 'stomp') { if (P.ground && (m === 'stomp' || e.modeT < 0.15)) out.jump = true; out.why = 'jump the ripple'; return out; }
   if ((m === 'lungeTell' || m === 'tiaraTell' || m === 'flurryTell' || m === 'flurry') && ad < 90) { out.face = toHer; out.block = true; out.why = 'parry / block'; return out; }
   if (m === 'fanTell' && ad < GP.fan.reach) { out.block = true; out.face = toHer; out.why = 'brace the fan'; return out; }
@@ -115,7 +123,7 @@ export function makeGoblinPrincessHands(ctx) {
     const Ar = A();
     F = { G: mkGates(Ar), call: null, callAt: now() + GP.gate.firstCall, key: null, add: null, addDone: false, pir: null, pirAt: 0, A: Ar ? { ...Ar, xMax: Ar.x1 - 3 * TS - 8 } : { x0: base.x - 200, x1: base.x + 200, xMax: base.x + 150, floor: base.y }, ph: 1, cycle: 0, step: 0, chain: CHAINS[1][0].slice(), act: 0, gems: [], tiara: null, ripples: [],
       M: { cd: 0, queued: 0, rings: 0 }, bolt: null, wave: null, waves: new Set(), guards: [], lastWaveT: -99, openTaken: 0, idN: 0, said: {}, ropeKey: {}, winchKey: {}, gemKeys: new WeakMap(),
-      n: { lunges: 0, staggers: 0, flurries: 0, preens: 0, trinkets: 0, knocked: 0, fans: 0, hops: 0, rings: 0, pins: 0, ducks: 0, tiaras: 0, stuns: 0, stomps: 0, waves: 0, kept: 0, joined: 0, capped: 0, parries: 0, hides: 0, early: 0, slips: 0, shots: 0, gateKnocks: 0, calls: 0, callSpawns: 0, keys: 0, keyStaggers: 0, adds: 0, addSecs: 0, addKilled: 0, failsafes: 0, glances: 0, dazes: 0, pirs: 0 }, hurt: {}, t0: now() };
+      n: { lunges: 0, staggers: 0, flurries: 0, preens: 0, trinkets: 0, knocked: 0, fans: 0, hops: 0, rings: 0, pins: 0, ducks: 0, tiaras: 0, stuns: 0, stomps: 0, waves: 0, kept: 0, joined: 0, capped: 0, parries: 0, hides: 0, early: 0, slips: 0, shots: 0, gateKnocks: 0, calls: 0, callSpawns: 0, keys: 0, keyStaggers: 0, adds: 0, addSecs: 0, addKilled: 0, failsafes: 0, glances: 0, dazes: 0, pirs: 0, heels: 0, heelHits: 0, stumbles: 0, curtsies: 0, tantrums: 0, overheads: 0 }, hurt: {}, t0: now() };
     return { ...base, t: 'gprincess', w: GP.w, h: GP.h, hp: ctx.EHP.gprincess, maxHp: ctx.EHP.gprincess, mini: true, noGrav: true, markH: GP.markH, face: -1, mode: 'sleep', modeT: 0, phase: 1, hiding: false };
   };
   const set = (e, m, t) => { e.mode = m; e.modeT = t; };
@@ -132,7 +140,7 @@ export function makeGoblinPrincessHands(ctx) {
       if (F) { globalThis.__gpHurt = F.hurt; globalThis.__gpN = F.n; }   /* (hcproof) the per-move damage tally, read by tools/boss-run.mjs */
       const parried = !!(ctx.parries && ctx.parries() > n0); if (parried && F) F.n.parries++;
       if (o.push && !P.dead) { const dir = sign(P.x - (o.fromX ?? e.x)), k = r === 'blocked' || parried ? 0.5 : 1; P.vx = dir * o.push * 2 * k; }
-      out.push({ pp, r, parried }); });
+      out.push({ pp, r, parried, hurt: h0 > P.hp }); });
     return out;
   }
   const fl = () => F.A.floor;
@@ -148,9 +156,18 @@ export function makeGoblinPrincessHands(ctx) {
     if (k === 'flurry') { F.cur.n = GP.flurry.n[F.ph - 1]; return tell(e, 'flurryTell', GP.flurry.tell); }
     if (k === 'trinket') return tell(e, 'trinketTell', GP.trinket.tell);
     if (k === 'fan') return tell(e, 'fanTell', GP.fan.tell);
+    if (k === 'heel') return heelBegin(e);
+    if (k === 'curtsy') { tell(e, 'curtsyTell', G5.curtsy.tell); ctx.number(e.x, e.y - 40, 'HOW DO YOU DO?', '#ff9ad0'); return; }
+    if (k === 'tantrum') { F.n.tantrums++; tell(e, 'tantrumTell', G5.tantrum.tell); ctx.number(e.x, e.y - 40, 'TANTRUM!', '#ff6b6b'); return; }
     if (k === 'hop') { if (!F.A.land) return set(e, 'walk', 0.2); return tell(e, 'hopTell', GP.hop.tell); }
     if (k === 'tiara') return tell(e, 'tiaraTell', GP.tiara.tell);
     if (k === 'stomp') return tell(e, 'stompTell', GP.stomp.tell);
+  }
+  /* (claude/gq5p) HEEL DASH: only when you stand more than 4 tiles off; the path is told (a dust line), 5 tiles at 300 px/s; a miss = STUMBLE */
+  function heelBegin(e) {
+    const P = nearest(e), A0 = F.A, d = P.x - e.x; if (Math.abs(d) <= G5.heel.minDist) return next(e);   /* too close: skip it (the chain moves on) */
+    const dir = sign(d), lo = A0.x0 + 14, hi = A0.xMax, x1 = Math.max(lo, Math.min(hi, e.x + dir * G5.heel.tiles * TS));
+    F.heel = { x0: e.x, x1, hit: false, dir }; tell(e, 'heelTell', G5.heel.tell); e.face = dir; ctx.number(e.x, e.y - 40, 'HMPH!', '#ffd36b'); sfx('thud');
   }
   const after = (e, extra = 0) => set(e, 'recover', GP.gap[F.ph - 1] * (F.ph === 2 ? 0.8 : 1) + extra);
   const front2 = (e, r, top = 26) => (e.face || 1) > 0 ? [e.x - 6, e.x + r, e.y - top, e.y] : [e.x - r, e.x + 6, e.y - top, e.y];
@@ -319,7 +336,7 @@ export function makeGoblinPrincessHands(ctx) {
     if (F.ph === 1 && e.hp <= e.maxHp * 0.5 && F.G && !F.add && !F.addDone) addBegin(e);
     else if (F.ph === 1 && !F.G && e.hp <= e.maxHp * 0.5) { F.ph = 2; e.phase = 2; F.chain = CHAINS[2][0].slice(); F.step = 0; F.cycle = 0; F.bolt = null; set(e, 'tantrum', GP.tantrum); ctx.number(e.x, e.y - 56, 'SHE THROWS A TANTRUM: NOT FAIR!', '#ff6b6b'); ctx.shake(4); ctx.music && ctx.music('king'); }
     for (let i = 0; i < GP.guards.at.length; i++) if (e.hp <= e.maxHp * GP.guards.at[i] && !F.waves.has(i) && t - F.lastWaveT >= GP.guards.gapMin && SAFE.has(e.mode) && !F.wave && !F.G) { F.waves.add(i); guardsCall(e, i); break; }
-    stepGems(e, dt); stepTiara(e, dt); stepRipples(e, dt); stepRelease(e); stepWave(e); stepBell(e); if (F.G) stepGates(e);
+    stepGems(e, dt); stepTiara(e, dt); stepRipples(e, dt); if (!P5) { stepRelease(e); } stepWave(e); if (!P5) { stepBell(e); } if (F.G) stepGates(e);   /* (GQ5P) the bell fight is retired: no rope, no ring, no bolt, no grate pin */
     e.hiding = SAFE.has(e.mode) && hidingNow(e, P); if (e.hiding && !F.said.hide) { F.said.hide = 1; F.n.hides++; ctx.number(e.x, e.y - 50, 'SHE HIDES BEHIND HER GUARD', '#c9c9d6'); }
     const fx = e.face || 1;
     switch (e.mode) {
@@ -335,7 +352,27 @@ export function makeGoblinPrincessHands(ctx) {
       case 'lunge': { e.x += fx * GP.lunge.dist / GP.lunge.t * dt; const r = hit(e, front2(e, GP.lunge.reach), GP.lunge.dmg, 'HER RAPIER', { key: 'gpl' + F.act, blockable: true });
         if (r.some(q => q.parried)) { set(e, 'stagger', GP.lunge.stagger); F.openTaken = 0; F.n.staggers++; ctx.number(e.x, e.y - 46, 'PARRIED: SHE STAGGERS', '#8fd160'); sfx('parry'); break; }
         if (e.modeT <= 0) after(e); break; }
-      case 'stagger': case 'stunned': case 'pinned': if (e.modeT <= 0) after(e, 0.2); break;
+      case 'stagger': case 'stunned': case 'pinned': case 'stumble': if (e.modeT <= 0) after(e, 0.2); break;
+      /* (claude/gq5p) THE BLADE MOVES */
+      case 'heelTell': { const Hh = F.heel; if (!Hh) { after(e); break; } if (e.modeT <= 0) { set(e, 'heel', Math.abs(Hh.x1 - e.x) / G5.heel.speed + 0.1); Hh.hit = false; F.n.heels++; sfx('slash'); sfx('throwWhoosh'); } break; }
+      case 'heel': { const Hh = F.heel; if (!Hh) { after(e); break; } const dx = Hh.x1 - e.x; e.face = Hh.dir; e.x += sign(dx) * Math.min(Math.abs(dx), G5.heel.speed * dt);
+        const r = hit(e, [e.x - G5.heel.boxW / 2, e.x + G5.heel.boxW / 2, e.y - G5.heel.boxH, e.y], G5.heel.dmg, 'HER HEEL DASH', { key: 'gph' + F.act, blockable: true, push: G5.heel.push });
+        if (r.some(q => q.parried)) { F.heel = null; set(e, 'stagger', G5.heel.stagger); F.openTaken = 0; F.n.staggers++; ctx.number(e.x, e.y - 46, 'PARRIED: SHE STAGGERS', '#8fd160'); sfx('parry'); break; }
+        if (r.some(q => q.hurt || q.r === 'blocked' || (q.r !== false && q.r !== undefined && q.r !== null))) { Hh.hit = true; F.n.heelHits++; }
+        if (Math.abs(dx) < 2 || e.modeT <= 0) { F.heel = null; if (Hh.hit) after(e); else { set(e, 'stumble', G5.heel.stumble); F.openTaken = 0; F.n.stumbles++; ctx.number(e.x, e.y - 46, 'SHE TRIPS ON HER OWN HEELS: CUT HER', '#8fd160'); sfx('clank'); ctx.burst(e.x, e.y - 4, 8, ['#c9c9d6', '#8a8aa0'], 40, 0.4); } } break; }
+      case 'curtsyTell': if (e.modeT <= 0) { set(e, 'curtsy1', G5.curtsy.t1); F.n.curtsies++; sfx('slash'); } break;
+      case 'curtsy1': { const w = G5.curtsy.w1; hit(e, fx > 0 ? [e.x - 6, e.x + w, e.y - G5.curtsy.h1, e.y] : [e.x - w, e.x + 6, e.y - G5.curtsy.h1, e.y], G5.curtsy.dmg1, 'HER CURTSY CUT', { key: 'gpc1-' + F.act, blockable: false, noKnock: true });   /* a low sweep: jump it */
+        if (e.modeT <= 0) { set(e, 'curtsy2', G5.curtsy.t2); sfx('slash'); ctx.number(e.x, e.y - 40, '!', '#ffd36b'); } break; }
+      case 'curtsy2': { const w = G5.curtsy.w2, r = hit(e, fx > 0 ? [e.x - 6, e.x + w, e.y - G5.curtsy.h2, e.y] : [e.x - w, e.x + 6, e.y - G5.curtsy.h2, e.y], G5.curtsy.dmg2, 'HER RISING CUT', { key: 'gpc2-' + F.act, blockable: true });
+        if (r.some(q => q.parried)) { set(e, 'stagger', G5.curtsy.stagger); F.openTaken = 0; F.n.staggers++; ctx.number(e.x, e.y - 46, 'PARRIED: SHE STAGGERS', '#8fd160'); sfx('parry'); break; }
+        if (e.modeT <= 0) after(e); break; }
+      case 'tantrumTell': if (e.modeT <= 0) { set(e, 'tantrumA', G5.tantrum.gap); sfx('slash'); } break;
+      case 'tantrumA': case 'tantrumB': { const k = e.mode === 'tantrumA' ? 'a' : 'b'; hit(e, front2(e, G5.tantrum.reach), G5.tantrum.dmg, 'HER TANTRUM', { key: 'gpt' + k + F.act, blockable: true });
+        if (e.modeT <= 0) { if (e.mode === 'tantrumA') { set(e, 'tantrumB', G5.tantrum.gap); sfx('slash'); } else { tell(e, 'overTell', G5.tantrum.overTell); ctx.number(e.x, e.y - 40, 'NOT FAIR!', '#ffd36b'); } } break; }
+      case 'overTell': if (e.modeT <= 0) { set(e, 'overhead', G5.tantrum.overT); F.n.overheads++; sfx('slash'); ctx.shake(3); } break;
+      case 'overhead': { const w = G5.tantrum.overW, r = hit(e, fx > 0 ? [e.x - 6, e.x + w, e.y - G5.tantrum.overH, e.y] : [e.x - w, e.x + 6, e.y - G5.tantrum.overH, e.y], G5.tantrum.overDmg, 'HER OVERHEAD', { key: 'gpo' + F.act, blockable: true });
+        if (r.some(q => q.parried)) { set(e, 'stagger', G5.tantrum.stagger); F.openTaken = 0; F.n.staggers++; ctx.number(e.x, e.y - 46, 'PARRIED: SHE STAGGERS', '#8fd160'); sfx('parry'); break; }
+        if (e.modeT <= 0) set(e, 'recover', G5.tantrum.recover); break; }
       case 'flurryTell': if (e.modeT <= 0) { if (!F.cur || F.cur.k !== 'flurry') F.cur = { k: 'flurry', id: ++F.act, n: GP.flurry.n[F.ph - 1] }; set(e, 'flurry', GP.flurry.gap); F.cur.poke = 0; F.n.flurries++; } break;
       case 'flurry': if (e.modeT <= 0) { F.cur.poke++; hit(e, front2(e, GP.flurry.reach), GP.flurry.dmg, 'HER POKES', { key: 'gpf' + F.act + '-' + F.cur.poke, blockable: true }); sfx('slash');
         if (F.cur.poke >= F.cur.n) { set(e, 'preen', GP.flurry.preen); F.n.preens++; F.openTaken = 0; if (!F.said.preen) { F.said.preen = 1; ctx.number(e.x, e.y - 50, 'SHE PREENS: CUT HER', '#8fd160'); } } else e.modeT = GP.flurry.gap; } break;
@@ -420,7 +457,7 @@ export function makeGoblinPrincessHands(ctx) {
   /* (gq4p-d) greybox poses for the new modes on her existing sheet (the art lane draws the real ones): the call and ALL GATES ring her handbell, the key rattles like a trinket toss, the pirouette is the fan's spin, dizzy / dazed are her stagger and stun */
   const FRAME_AS = { keyRun: 'walk', dazed: 'stunned', addHop: 'hop', shimmer: 'perch' };
   H.frame = e => (e.mode === 'callTell' || e.mode === 'callRing' || e.mode === 'allGatesTell') ? GPA.GPF.bell : FRAME_AS[e.mode] ? GPA.gpFrame({ ...e, mode: FRAME_AS[e.mode] }) : GPA.gpFrame(e);   /* (claude/hc3art) a pose for every move (src/redraw/goblin_princess_art.js): B16 */
-  H.barName = e => 'THE GOBLIN PRINCESS' + (e.mode === 'pinned' ? '  PINNED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'preen' ? '  PREENING' : e.mode === 'stagger' ? '  STAGGERED' : e.shimmer ? '  SHIMMERING' : e.mode === 'dizzy' ? '  DIZZY' : e.mode === 'dazed' ? '  DAZED' : e.hiding ? '  HIDING' : '');
+  H.barName = e => 'THE GOBLIN PRINCESS' + (e.mode === 'pinned' ? '  PINNED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'preen' ? '  PREENING' : e.mode === 'stagger' ? '  STAGGERED' : e.mode === 'stumble' ? '  STUMBLING' : e.shimmer ? '  SHIMMERING' : e.mode === 'dizzy' ? '  DIZZY' : e.mode === 'dazed' ? '  DAZED' : e.hiding ? '  HIDING' : '');
   H.end = () => { if (F) { F.gems = []; F.tiara = null; F.ripples = []; F.wave = null; F.bolt = null; } };
   H.read = () => F && { n: { ...F.n }, ph: F.ph, rings: F.M.rings, wave: F.wave ? F.wave.state : null, gems: F.gems.length, tiara: !!F.tiara, ripples: F.ripples.length, hurt: { ...F.hurt }, secs: now() - F.t0, chaseDone, chase: C ? C.state : null, gates: F.G ? Object.fromEntries(Object.entries(F.G).map(([k, G]) => [k, G.lock ? 'locked' : G.open ? 'open' : 'shut'])) : null, call: F.call ? F.call.phase : null, add: F.add ? F.add.state : (F.addDone ? 'done' : null), ads: F.guards.filter(g => g.alive).length };
   H.test = { gates: () => F && F.G, addBegin: e => addBegin(e), callBegin: e => callBegin(e), keyBegin: e => keyBegin(e), pirBegin: e => pirBegin(e), boltBegin: e => boltBegin(e), escape: e => escapeBegin(e), dying: e => dyingBegin(e), guards: (e, i) => guardsCall(e, i), stun: e => stun(e), chase: () => C, towers: () => TW, rehearsal: () => RH };
@@ -437,11 +474,14 @@ export function makeGoblinPrincessHands(ctx) {
       if (e && (e.mode === 'keyTell' || e.mode === 'keyTurn') && F.key) { const kg = F.key.G; if (kg) GQ4A.drawKeyFx(g, R(kg.x - cx), R(kg.top - cy) + 10, e.mode === 'keyTurn' ? 1 : Math.max(0, 1 - e.modeT / 1.2), time); }
       if (e && !e.hidden && (F.add && F.add.state !== 'dazed' || e.mode === 'allGatesTell') && F.G) { const gs = ['W', 'E', 'U'].map(k => F.G[k]).filter(Boolean); if (gs.length) GQ4A.drawMasterChain(g, { xs: gs.map(G => R(G.x - cx)), drum: Ar.land ? R((Ar.land.x0 + Ar.land.x1) / 2 - cx) : R(e.x - cx), y: R(((Ar.y0 || 0) + 2) - cy) + TS, k: e.mode === 'allGatesTell' ? Math.min(1, 1 - e.modeT / GP.gate.allTell) : 1, t: time, lit: e.mode === 'allGatesTell' || (F.add && F.add.state === 'ads') }); }
     }
+    if (P5 && e && !e.hidden) { const hv = F.heel;   /* (GQ5P) the heel dash's told path (a dust line) and the overhead's gold glint */
+      if (hv && (e.mode === 'heelTell' || e.mode === 'heel')) GPA.drawHeelDust(g, R(hv.x0 - cx), R(hv.x1 - cx), f0, time, e.mode === 'heelTell' ? 1 - Math.max(0, e.modeT) / G5.heel.tell : 1, e.mode === 'heel');
+      if (e.mode === 'overTell') GPA.drawGoldGlint(g, R(e.x - cx) + (e.face || 1) * 4, R(e.y - cy) - 50, time, 1 - Math.max(0, e.modeT) / G5.tantrum.overTell); }
     for (const q of F.gems) GPA.drawGem(g, q.x - cx, q.y - cy, q.col, time, q.id || 0);
     if (F.tiara) GPA.drawTiaraFlying(g, F.tiara.x - cx, F.tiara.y - cy, time, F.tiara.home);
     for (const w of F.ripples) GPA.drawRipple(g, w.x - cx, f0, time);
     if (Ar.grate && F.glowK > 0 && F.bolt) HC2A.drawGrateFx(g, { gate: Ar.grate.col, gy0: Ar.grate.gy0, gy1: Ar.grate.gy1 }, cx, cy, TS, time, F.glowK);   /* the told grate: the column lit before it drops */
-    if (Ar.rope && BW.bellReady(F.M, now()) && !F.said.ropeHint && R(Ar.rope - cx) > 14 && f0 - 40 > 8) { ctx.text && ctx.text('RING', R(Ar.rope - cx), f0 - 40, '#ffd36b', 'center', 6); }   /* (claude/hcfix, textfit OFFSCREEN) only while the rope is in the picture */
+    if (!P5 && Ar.rope && BW.bellReady(F.M, now()) && !F.said.ropeHint && R(Ar.rope - cx) > 14 && f0 - 40 > 8) { ctx.text && ctx.text('RING', R(Ar.rope - cx), f0 - 40, '#ffd36b', 'center', 6); }   /* (claude/hcfix, textfit OFFSCREEN) only while the rope is in the picture */
     if (F.M.rings) F.said.ropeHint = true;
   };
 
@@ -543,10 +583,10 @@ export function makeGoblinPrincessHands(ctx) {
       HC3A.drawBellAt(g, rx, bTop, sw, RH && BW.bellReady(RH.M, now()) ? 0.6 : 0, time); HC3A.drawRope(g, rx, bTop + 31, fy, sw, time);
       guardSet(g, W, Q.door, Q.winch, fy, GP.reh.horn, cx, time);
       if (RH && RH.glowK > 0) HC2A.drawGrateFx(g, { gate: Q.grate.col, gy0: Q.grate.gy0, gy1: Q.grate.gy1 }, cx, cy, TS, time, RH.glowK); }
-    const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx), ceil = R((Ar.y0 || 0) - cy) + TS, sw = swingOf(F && F.M, time), e = live();
-      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); const by0 = R((Ar.grate.gy0 + GP.bell.hang) * TS - cy); g.fillStyle = '#8a8aa0'; for (let yy = ceil + 3; yy < by0; yy += 3) g.fillRect(bx, yy, 1, 2); HC3A.drawBellAt(g, bx, by0, sw, F && BW.bellReady(F.M, now()) ? 0.6 : 0, time);   /* (claude/hc3art) hung 4 rows down on a chain so the camera sees it */ g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
-      HC3A.drawRope(g, rx, ceil, fy, sw, time);
-      if (Ar.door && !(P4 && Ar.gq4Gates)) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
+    const Ar = A(); if (Ar && Ar.rope) { const fy = R(Ar.floor - cy), rx = R(Ar.rope - cx), ceil = R((Ar.y0 || 0) - cy) + TS, sw = P5 ? 0 : swingOf(F && F.M, time), e = live();
+      if (Ar.grate) { const bx = R(Ar.grate.col * TS + 8 - cx); const by0 = R((Ar.grate.gy0 + GP.bell.hang) * TS - cy); g.fillStyle = '#8a8aa0'; for (let yy = ceil + 3; yy < by0; yy += 3) g.fillRect(bx, yy, 1, 2); HC3A.drawBellAt(g, bx, by0, sw, !P5 && F && BW.bellReady(F.M, now()) ? 0.6 : 0, time);   /* (claude/hc3art) hung 4 rows down on a chain so the camera sees it */ if (!P5) { g.fillStyle = '#a0885a'; for (let xx = rx; xx < bx - 10; xx += 3) g.fillRect(xx, ceil + 4, 2, 1); } }   /* THE TOWER BELL over its grate; its rope runs along the ceiling to the pull at the west wall */
+      if (!P5) HC3A.drawRope(g, rx, ceil, fy, sw, time);   /* (GQ5P) no rope: the bell is dressing */
+      if (P5) { /* no winch: it released the grate, which is retired */ } else if (Ar.door && !(P4 && Ar.gq4Gates)) guardSet(g, F && F.wave, Ar.door, Ar.winch, fy, GP.guards.horn, cx, time);
       else if (Ar.winch) HC3A.drawWinchBox(g, R(Ar.winch - cx), fy, R(Ar.door - cx), 0, 0, GP.guards.crank, false, time);   /* (gq4p-d) the guardroom door is retired (the gates replace it); the winch is the grate's release */
       { const rm = Lv.gq4Room; if (P4 && rm && rm.galleries && !gateArtOff) { try { for (const k of ['W', 'E']) { const gl = rm.galleries[k]; GQ4A.drawGalleryTrim(g, gl[0] * TS, (gl[1] + 1) * TS, rm.galleries.row * TS, cx, cy, 340); } } catch (err) { /* nothing */ } } }
       if (F && F.G) for (const k of ['W', 'E', 'U']) drawGate(g, F.G[k], cx, cy, time);
@@ -564,9 +604,9 @@ export function makeGoblinPrincessHands(ctx) {
       if (F.call && !F.add && (F.call.phase === 'tell' || F.call.phase === 'lit')) { const og = Object.values(F.G).filter(G => G.open && !G.lock).sort((a, b) => Math.abs(a.pinX - P0.x) - Math.abs(b.pinX - P0.x))[0]; if (og && Math.abs(og.pinX - P0.x) < 260) return go(og.pinX, 'knock the gate shut'); }
     }
     if (F.wave && F.wave.state === 'open' && Ar.winch) return { x: Ar.winch, face: sign(Ar.winch - P0.x), swing: true, why: 'winch' };
-    if (F.bolt && Ar.winch) { const B = F.bolt, ranged = !!P0.rgArrows && P0.rgStance !== 'knife' && P0.rgQ > 0, s0 = P0.x < Ar.winch ? -1 : 1, x = Ar.winch + s0 * (ranged ? 70 : 8);   /* (claude/hcfix) to the winch (the ranger shoots it from 70 px), and strike it in the blaze after a human's reaction - never before */
+    if (!P5 && F.bolt && Ar.winch) { const B = F.bolt, ranged = !!P0.rgArrows && P0.rgStance !== 'knife' && P0.rgQ > 0, s0 = P0.x < Ar.winch ? -1 : 1, x = Ar.winch + s0 * (ranged ? 70 : 8);   /* (claude/hcfix) to the winch (the ranger shoots it from 70 px), and strike it in the blaze after a human's reaction - never before */
       return { x, face: -s0, swing: B.state === 'ready' && now() - B.readyT >= B.react, why: 'release the grate' }; }
-    if (Ar.rope && BW.bellReady(F.M, now()) && SAFE.has(e.mode) && !gpOpen(e)) return { x: Ar.rope + 10, face: -1, swing: true, why: 'bell' };
+    if (!P5 && Ar.rope && BW.bellReady(F.M, now()) && SAFE.has(e.mode) && !gpOpen(e)) return { x: Ar.rope + 10, face: -1, swing: true, why: 'bell' };
     /* (claude/hcfix) UP ONTO THE LANDING: pinned, stunned or perched up there she is out of a bow's line from the floor - the ranger jumps up (one-way, a plain jump) and shoots her along it */
     if (P0.rgArrows && P0.rgStance !== 'knife' && Ar.land && onLanding(e) && (gpOpen(e) || e.mode === 'perch')) { const sd = P0.x < e.x ? -1 : 1, x = Math.max(Ar.land.x0 + 8, Math.min(Ar.land.x1 - 8, e.x + sd * 50)), up = Math.abs(P0.y - Ar.land.y) < 4;
       F.n.upT = (F.n.upT || 0) + 1; if (up) F.n.upOn = (F.n.upOn || 0) + 1;

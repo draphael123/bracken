@@ -12,11 +12,13 @@
 //   31 defeat (sat down, crying) | 32 the chase's handbell | 33 reel | 34-35 kneel-ringing | 36-37 collapse | 38 hurt | 39 body
 import { canvas, px, rect, line, ellipse, circle, outline, flipX, whiten, fillPoly, shade } from '../px.js';
 import { OUT } from '../art.js';
+import { P5 } from '../gq5p.js';   /* (claude/gq5p) the blade moves' ten extra frames exist only with the flag on: OFF = gq5fix's 47-frame sheet, byte for byte */
 
 export const GPF = { stand: 0, stand2: 1, run: 2, lungeTell: 6, lunge: 7, flurryTell: 8, poke: 9, trinketTell: 11, trinket: 12, fanTell: 13, fan: 14, hopTell: 15, hop: 16, tiaraTell: 17, tiara: 18,
   stompTell: 19, stomp: 20, preen: 21, pinned: 23, stunned: 24, stagger: 25, bolt: 26, hide: 28, perch: 29, escape: 30, defeat: 31, bell: 32,
-  reel: 33, kneelRing: 34, collapse: 36, keyTurn: 38, keyTurn2: 39, pirTell: 40, pir1: 41, pir2: 42, dizzy: 43, dizzy2: 44, hurt: 45, body: 46 };   /* (gq4art) 38-44 the Gates pass: key-turn x2, pirouette (tell + 2 spins), dizzy x2; hurt and body move to length-2 / last again */   /* (gq3art) 33 reel, 34-35 kneel-ringing, 36-37 collapse, 38 hurt (moved up: main.js shows length-2 as the hurt frame), 39 the body (last) */
-export const GP_FRAMES = 47;
+  reel: 33, kneelRing: 34, collapse: 36, keyTurn: 38, keyTurn2: 39, pirTell: 40, pir1: 41, pir2: 42, dizzy: 43, dizzy2: 44, hurt: P5 ? 55 : 45, body: P5 ? 56 : 46,
+  ...(P5 ? { heelTell: 45, heel: 46, curtsyTell: 47, curtsyLow: 48, curtsyRise: 49, tantrumTell: 50, slashA: 51, slashB: 52, overTell: 53, overhead: 54 } : {}) };   /* (GQ5P) 45-54 the blade moves: heel dash told + dash, curtsy told + low sweep + rising cut, tantrum told + two slashes, overhead told (gold glint) + chop; hurt and body move to 55 / 56 */   /* (gq4art) 38-44 the Gates pass: key-turn x2, pirouette (tell + 2 spins), dizzy x2; hurt and body move to length-2 / last again */   /* (gq3art) 33 reel, 34-35 kneel-ringing, 36-37 collapse, 38 hurt (moved up: main.js shows length-2 as the hurt frame), 39 the body (last) */
+export const GP_FRAMES = P5 ? 57 : 47;
 export const GPC = { skin: '#6faa4a', skinL: '#92cf63', skinD: '#4f8236', gown: '#b02a78', gownL: '#d84a9c', gownD: '#7a1f5a', gold: '#e0c04a', goldL: '#fff6c8', goldD: '#a8841c',
   hair: '#241434', hairL: '#5a3a78', purple: '#7a3aa0', shoe: '#f6a8d0', steel: '#c9d1dc', steelL: '#ffffff', fan: '#f6d6e8', fanD: '#d890b8', gem: ['#ff4a6a', '#4ad0ff', '#7aff8a', '#ffd04a', '#c97aff'],
   eye: '#fff6e8', pupil: '#2a1020', blush: '#e86a8a', tear: '#9ad8ff' };
@@ -322,10 +324,38 @@ function pose4(f) {
   }
 }
 
+/* (claude/gq5p) THE BLADE MOVES: a wind-up and a release for each. Blade rows are [x0, y0, x1, y1] from her hand (y up is negative); q() scales to the sheet. */
+const slashFx = (pts, col = '#ffffff') => (g, o) => { g.globalAlpha = 0.7; for (const [dx, dy, w, h] of pts) rect(g, o.fhx + q(dx), o.fhy + q(dy), w, h, col); g.globalAlpha = 1; };
+function pose5(f) {
+  switch (f) {
+    case 45: return { crouch: 4, lean: -3, legs: [-6, 3], lift: 5, fa: [-3, 5], ba: [-7, 3], blade: [8, -2, 17, -7], eyes: 'angry', mouth: 'grin', ears: 2, flush: 1, skirt: 2, flare: 2,   // HEEL DASH told: she stamps ('HMPH!'), steam from the ears, dust at the heel
+      fx: (g, o) => { rect(g, o.hx - 9, G - 3, 5, 1, '#fff'); rect(g, o.hx - 12, G - 5, 3, 1, '#d8d8e0'); rect(g, o.hx + 6, G - 3, 4, 1, '#fff'); px(g, o.hx - 3, G - 6, '#ffd36b'); px(g, o.hx + 8, o.hy - 10, '#fff'); px(g, o.hx - 10, o.hy - 10, '#fff'); rect(g, o.hx + 9, o.hy - 13, 2, 1, '#fff'); rect(g, o.hx - 12, o.hy - 13, 2, 1, '#fff'); } };
+    case 46: return { crouch: 3, lean: 9, legs: [11, -9], fa: [12, 3], ba: [-10, 2], blade: [4, 1, 21, -1], eyes: 'angry', mouth: 'shout', skirt: 8, flare: 1, fly: 3, ph: 0.35,   // the dash: leaning flat out, a dust line behind the heels
+      fx: (g, o) => { g.globalAlpha = 0.6; for (let i = 0; i < 4; i++) rect(g, o.hx - 30 - i * 4, G - 5 - i, 18 - i * 2, 1, '#e8e8f0'); rect(g, o.hx - 20, G - 3, 14, 1, '#c9c9d6'); for (let i = 0; i < 3; i++) rect(g, o.hx - 26 - i * 5, o.hy + 8 + i * 7, 12 - i * 2, 1, '#fff'); g.globalAlpha = 1; } };
+    case 47: return { crouch: 6, lean: 0, legs: [-2, 2], fa: [-3, 6], ba: [7, 5], blade: null, eyes: 'smug', mouth: 'smirk', ears: 1, tilt: 1, skirt: 3, flare: 6, browUp: 1,   // CURTSY told: a deep curtsy, skirt flared wide, one hand lifting the hem
+      fx: (g, o) => { px(g, o.hx - 14, o.hemY - 8, C.goldL); px(g, o.hx + 15, o.hemY - 10, C.goldL); px(g, o.hx - 17, o.hemY - 4, '#fff'); px(g, o.hx + 18, o.hemY - 5, '#fff'); } };
+    case 48: return { crouch: 9, lean: 4, legs: [8, -6], fa: [10, 9], ba: [-6, 4], blade: [3, 2, 26, 5], eyes: 'angry', mouth: 'grin', ears: 1, skirt: 6, flare: 5,   // the low sweep: blade along the flagstones at shin height
+      fx: slashFx([[14, 5, 12, 1], [20, 7, 10, 1], [26, 4, 8, 1]]) };
+    case 49: return { crouch: 1, lean: 4, legs: [5, -4], fa: [8, -10], ba: [-6, 4], blade: [4, -3, 12, -26], eyes: 'angry', mouth: 'shout', ears: 1, skirt: 3, fly: 2,   // the rising cut: blade sweeping up and forward
+      fx: slashFx([[8, -6, 1, 6], [10, -14, 1, 6], [11, -22, 1, 6], [6, -2, 4, 1]]) };
+    case 50: return { crouch: 1, lean: 0, legs: [4, -4], lift: 4, fa: [3, -11], ba: [-3, -11], blade: [2, -3, 8, -16], eyes: 'angry', mouth: 'shout', ears: 2, flush: 1, tilt: 1, skirt: 3, flare: 3, tiara: 'crooked',   // TANTRUM told: both fists up, stamping, red cross-marks over her head
+      fx: (g, o) => { for (const [dx, dy] of [[-12, -22], [12, -24], [0, -30]]) { rect(g, o.hx + dx - 1, o.hy + dy, 4, 1, '#ff6b6b'); rect(g, o.hx + dx, o.hy + dy - 1, 1, 3, '#ff6b6b'); } rect(g, o.hx - 7, G - 3, 5, 1, '#fff'); rect(g, o.hx + 4, G - 3, 5, 1, '#fff'); } };
+    case 51: return { lean: 5, crouch: 1, legs: [6, -5], fa: [12, -4], ba: [-8, 3], blade: [4, -3, 19, 7], eyes: 'angry', mouth: 'shout', ears: 2, skirt: 5, flare: 2,   // slash one: down and across
+      fx: slashFx([[8, -8, 4, 1], [13, -4, 4, 1], [17, 0, 4, 1], [20, 5, 3, 1]]) };
+    case 52: return { lean: 3, crouch: 1, legs: [5, -4], fa: [11, 4], ba: [-8, 2], blade: [4, 4, 19, -9], eyes: 'angry', mouth: 'shout', ears: 2, skirt: 4, flare: 2,   // slash two: the back-cut, up and across
+      fx: slashFx([[8, 4, 4, 1], [13, 0, 4, 1], [17, -4, 4, 1], [20, -9, 3, 1]]) };
+    case 53: return { crouch: 2, lean: -2, legs: [-3, 3], fa: [2, -14], ba: [-5, -6], blade: [0, -4, 3, -22], glint: 1, eyes: 'angry', mouth: 'grin', ears: 1, flush: 1, skirt: 2, flare: 2,   // OVERHEAD told: the rapier straight up, a GOLD glint at its tip
+      fx: (g, o) => { const x = o.fhx + q(3), y = o.fhy - q(22); rect(g, x - 5, y, 11, 1, C.gold); rect(g, x, y - 5, 1, 11, C.gold); rect(g, x - 1, y - 1, 3, 3, C.goldL); px(g, x - 3, y - 3, C.goldL); px(g, x + 3, y + 3, C.goldL); px(g, x + 3, y - 3, C.goldL); px(g, x - 3, y + 3, C.goldL); } };
+    case 54: return { crouch: 4, lean: 8, legs: [9, -7], fa: [11, 7], ba: [-8, 4], blade: [4, 1, 13, 22], eyes: 'shut', mouth: 'shout', ears: 2, skirt: 7, flare: 3, fly: 2, ph: 0.3,   // the overhead chop: the whole body behind a downward cut
+      fx: (g, o) => { g.globalAlpha = 0.75; for (let i = 0; i < 5; i++) rect(g, o.fhx + 4 + i * 2, o.fhy - 24 + i * 6, 1, 6, C.gold); rect(g, o.fhx + 12, o.fhy + 10, 8, 1, C.goldL); g.globalAlpha = 1; } };
+  }
+}
+
 /* the pose of every frame */
 function pose(f) {
   if (f >= 38 && f <= 44) return pose4(f);
-  if (f === 45) f = 38; else if (f === 46) f = 39;
+  if (P5 && f >= 45 && f <= 54) return pose5(f);
+  if (f === (P5 ? 55 : 45)) f = 38; else if (f === (P5 ? 56 : 46)) f = 39;
   const rp = (i) => ({ by: i & 1 ? 2 : 0, legs: [[6, -6], [2, -2], [-6, 6], [-2, 2]][i], lean: 3 + (i & 1), skirt: [-3, -1, -3, -1][i], flare: 2 + (i & 1), fa: [[6, 3], [6, 4], [7, 5], [6, 4]][i], ba: [[-7, 2], [-6, 4], [-4, 5], [-6, 4]][i], blade: [8, -2, 17, -7], fan: 0, fly: 2 + (i & 1), lift: [0, 3, 5, 0][i], liftB: [5, 0, 0, 3][i], hemTilt: [2, 0, -2, 0][i], mouth: 'smirk', eyes: 'smug', ph: i * 0.25 });
   switch (f) {
     case 0: return { legs: [1, -1], fa: [6, 4], ba: [-5, 6], blade: [8, -2, 18, -8], fan: 0, ears: 0, eyes: 'smug', mouth: 'smirk', browUp: 1 };
@@ -409,6 +439,9 @@ export function gpFrame(e) {
     case 'hopTell': return GPF.hopTell; case 'hop': return GPF.hop;
     case 'tiaraTell': return GPF.tiaraTell; case 'tiara': case 'tiaraWait': return GPF.tiara;
     case 'stompTell': return GPF.stompTell; case 'stomp': return GPF.stomp;
+    case 'heelTell': return GPF.heelTell; case 'heel': return GPF.heel; case 'stumble': return GPF.stagger;   /* (GQ5P) */
+    case 'curtsyTell': return GPF.curtsyTell; case 'curtsy1': return GPF.curtsyLow; case 'curtsy2': return GPF.curtsyRise;
+    case 'tantrumTell': return GPF.tantrumTell; case 'tantrumA': return GPF.slashA; case 'tantrumB': return GPF.slashB; case 'overTell': return GPF.overTell; case 'overhead': return GPF.overhead;
     case 'keyTell': return GPF.keyTurn; case 'keyTurn': return GPF.keyTurn + (Math.floor(a * 7) & 1);   /* (gq4art) */
     case 'pirouetteTell': return GPF.pirTell; case 'pirouette': return GPF.pir1 + (Math.floor(a * 14) & 1); case 'dizzy': return GPF.dizzy + (Math.floor(a * 4) & 1);
     case 'preen': return GPF.preen + (Math.floor(a * 3) & 1);
@@ -437,6 +470,20 @@ export function drawRipple(g, x, fy, time, k = 0) {                             
   rect(g, X - 8, fy - 1, 3, 1, '#3a3a44'); rect(g, X + 5, fy - 1, 3, 1, '#3a3a44'); px(g, X - 7, fy - 2, '#c9c9d6'); px(g, X + 6, fy - 3, '#c9c9d6'); void k; }
 export function drawFanGust(g, x, y, face, time, len = 60) {                                             // a gust of pink feather-light air: three streaks and fluttering down
   for (let i = 0; i < 3; i++) { const xx = Math.round(x + face * (8 + ((time * 120 + i * 17) % len))), yy = Math.round(y - 8 + i * 5 + Math.sin(time * 20 + i) * 1.5); rect(g, face > 0 ? xx : xx - 6, yy, 6, 1, i & 1 ? C.fan : '#ffffff'); px(g, xx + face * 6, yy + 1, C.fanD); } }
+
+/* (claude/gq5p) the HEEL DASH's told path: a dust line from where she stands to where she will stop (it fills as the tell runs), puffs while she runs */
+export function drawHeelDust(g, x0, x1, fy, time, k = 1, going = false) {
+  const lo = Math.min(x0, x1), hi = Math.max(x0, x1), len = hi - lo, d = x1 >= x0 ? 1 : -1, reach = going ? len : Math.max(6, len * Math.min(1, k)), blink = going || (Math.floor(time * 14) & 1);
+  g.save(); g.globalAlpha = going ? 0.55 : 0.9;
+  for (let xx = 0; xx < reach; xx += 8) { const X = Math.round(x0 + d * xx); if (blink || xx % 16 === 0) { rect(g, X - 2, fy - 1, 5, 1, '#e8e8f0'); if (!going) px(g, X, fy - 2, '#ffd36b'); } }
+  if (going) for (let i = 0; i < 4; i++) { const X = Math.round(x0 + d * ((time * 220 + i * 23) % Math.max(10, len))); rect(g, X - 3, fy - 4 - (i & 1) * 2, 6, 3, '#c9c9d6'); rect(g, X - 2, fy - 6 - (i & 1) * 2, 3, 2, '#e8e8f0'); }
+  g.restore();
+  const hx = Math.round(x1); rect(g, hx - 1, fy - 5, 3, 1, '#ffd36b'); rect(g, hx, fy - 6, 1, 3, '#ffd36b'); }
+/* the OVERHEAD's gold glint over her raised blade (grows through the 0.35 s tell, then it falls) */
+export function drawGoldGlint(g, x, y, time, k = 1) {
+  const r = 3 + Math.round(5 * k), X = Math.round(x), Y = Math.round(y), tw = Math.floor(time * 18) & 1;
+  g.save(); g.globalAlpha = 0.95; rect(g, X - r, Y, 2 * r + 1, 1, '#e0c04a'); rect(g, X, Y - r, 1, 2 * r + 1, '#e0c04a'); rect(g, X - 1, Y - 1, 3, 3, '#fff6c8');
+  if (tw) { px(g, X - r + 2, Y - r + 2, '#fff6c8'); px(g, X + r - 2, Y + r - 2, '#fff6c8'); px(g, X + r - 2, Y - r + 2, '#fff6c8'); px(g, X - r + 2, Y + r - 2, '#fff6c8'); } g.restore(); }
 
 /* ONE sheet for the whole game: main.js SPR.gprincess and src/goblin-princess.js's chase actor share it */
 let SHEET = null;
