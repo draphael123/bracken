@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 168,
+    "lines": [
+      { "s": "On The High Lines, rope ends now sit on iron masts instead of hanging in the air.", "lv": ["highlines"] },
+      { "s": "Grab and hit prompts now show on screen where you use them.", "lv": ["highlines"] },
+      { "s": "The Hookjack, Skyhook and crossbow crews up there are goblins now.", "lv": ["highlines"] },
+      { "s": "A bestiary name on The High Lines was corrected.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 167,
     "lines": [
       { "s": "The Goblin Princess's tower is bigger: three gates, a guard bell and a spinning blade.", "lv": ["crown"] },
