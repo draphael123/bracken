@@ -109,7 +109,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 console.log('level            bare  allowed  LEFT   islands (kinds x tiles @ x,y)');
   for (const r of rows) { if (r.stale) console.log('  !! ' + r.stale); if (!r.total && !all) continue;
     console.log(r.id.padEnd(16), String(r.total).padStart(4), String(r.allowed).padStart(7), String(r.left).padStart(5), '  ' + (only.length || all ? r.listed.map(s => s.kinds.join('+') + ' x' + s.n + ' @' + box(s)).join('; ') : r.listed.slice(0, 6).map(s => '@' + box(s)).join(' ') + (r.listed.length > 6 ? ' ...' : ''))); }
-  for (const id of Object.keys(ALLOW)) if (!used.has(id) && (!only.length || only.includes(id))) { console.log('STALE allowlist entry (no such level): ' + id); fails++; }
+  for (const id of Object.keys(ALLOW)) if (!used.has(id) && !LEVELS.some(d => d.id === id && d.hidden) /* (prephl) a flag-off level (highlines: hidden + dev until HL_SHIPS) keeps its allowance, it is not stale */ && (!only.length || only.includes(id))) { console.log('STALE allowlist entry (no such level): ' + id); fails++; }
   if (fails) { console.log('solid-islands: ' + fails + ' undrawn-support island(s)/stale entries'); process.exit(1); }
   console.log('ok  solid-islands  every island of every level has a drawn support or a reasoned allowance');
 }
