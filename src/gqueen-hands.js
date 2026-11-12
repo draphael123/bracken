@@ -4,7 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
-import * as GQ4A from './redraw/gq4_art.js'; import { Q4, Q4N } from './gq4q.js'; import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
+import * as GQ4A from './redraw/gq4_art.js'; import { Q4, Q4N } from './gq4q.js'; import { Q5, Q5N, makeGQ5Q1 } from './gq5q1.js'; import { grateTiles as hcGrateTiles } from './redraw/highcrown2_art.js';   /* (claude/gq5q1) THE BELL HOISTS + THE THRONE FIRE, behind src/gq5q1.js's switch (Q5) */ import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
 import * as GA from './redraw/gqueen_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the GQ3 art: royal portal, geode, tower, roof, stair */ import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
@@ -36,6 +36,7 @@ GQ3.tower = { catch: 2.0, smoke: 1.0, beamEvery: [6, 8], beamFirst: 5, beamTell:
 GQ3.mech = { bellCd: 10, lureMax: 3.2, speed: 250, tell: 0.9, under: 13, pin: 3.5, pinMul: 1.1, pinCap: 0.15,   /* (claude/hcqueen: pin 4.0 x1.35 uncapped -> 3.5 s x1.1, a pin's blows at most 15% of her bar (main.js gqPinCap). The tally put 50-80% of her hall bar in the lured pin, a pyro 1000+ a pin. Band 75% -> 70% n=108) */ contact: 14, contactR: 26, wind: 0.6, grateHold: 3.5, queue: 1.5,
   addAt: [0.66, 0.33], delay: 5.5, closeAfter: 1.5, crank: 3, crankWin: 2.0, winchCol: 9, guards: [['soldier'], ['soldier', 'javelin']] };
 if (Q4) { GQ3.hp2 = Q4N.p2.hp; GQ3.p2.resist = Q4N.p2.chip; GQ3.roof.addAt = [...Q4N.p2.addAt, Q4N.p2.rage.at]; GQ3.p2.bayEvery = Q4N.p2.bayEvery; GQ3.p2.addMax = 1; /* (GQ4TUNE r3: 2 -> 1 reinforcement alive; soldiers were 15% of P2 damage) */ GQ3.p2.desperate = 0; GQ3.portal.dmg = 8; GQ3.crown.dmg = 13; /* (GQ4TUNE-t, flag ON only: portal shard 10 -> 8, crown 16 -> 13; q1: P1 hall deaths 5 -> 2) */ }   /* (claude/gq4q) P2: 1500, chips at 0.4, reinforcements 80 / 55 % + the enrage's pair, bays every 12 s, no desperation storm (the enrage replaces it) */
+if (Q5) GQ3.mech.bellCd = Q5N.bellCd;   /* (claude/gq5q1) the bell cools down 16 s: it raises the hoists for 8 s */
 export const GQ_SAY = { healed: 'FULLY HEALED', flee: 'SHE FLEES', step: 'STEP INTO HER PORTAL', check: 'SHRINE', crowned: 'CROWNED', clank: 'CLANK', fetch: 'SHE FETCHES HER CROWN' };
 
 import { makeTowerClimb } from './tower-climb.js';   /* (claude/gq4l) THE BURNING TOWER's seven storeys + the outside stretch (only when the level carries TW.OUT: GQ4L_SHIPS) */
@@ -43,6 +44,7 @@ export function makeGQueenHands(ctx) {
   const TS = ctx.TS, H = {};
   const L = () => ctx.L;
   let S = null;
+  let G5 = null;   /* (claude/gq5q1) THE BELL HOISTS + THE THRONE FIRE (src/gq5q1.js makeGQ5Q1), null when the flag is off */
   const q = () => { const b = ctx.boss(); return b && b.t === 'gqueen' && b.alive ? b : null; };
   const now = () => ctx.time();
   const sfx = k => { const f = ctx.sfx[k]; if (f) f(); };
@@ -75,7 +77,7 @@ export function makeGQueenHands(ctx) {
   H.reset = () => {
     musicLift(0);   /* (claude/gqmusic) a death / retry / load: the tower top's lifted track is let go (the next track starts at x1 anyway) */
     if (!H.on()) { S = null; return; }
-    S = fresh(); restoreHall();
+    S = fresh(); restoreHall(); if (G5) G5.reset();
     const e = ctx.boss();
     if (persist && e && e.t === 'gqueen') { toEscape(e); ctx.layEscape(); ctx.shutWest(); startEscape(persist.stage === 'roof'); }
   };
@@ -751,6 +753,7 @@ export function makeGQueenHands(ctx) {
       case 'geodeTell': return geodeTellStep(e, dt);
       case 'geodeThrow': e.vx = 0; if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; } return 0;
       case 'lure': return lureStep(e, dt);
+      case 'fireTell': case 'fireBurn': return G5 ? G5.mode(e, dt) : undefined;   /* (claude/gq5q1) THE THRONE FIRE */
       case 'portalTell':
         e.face = sign(P0.x - e.x) || e.face;
         if (Math.random() < dt * 30) ctx.part({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 10, y: e.y - 66 - Math.random() * 10, vx: 0, vy: -24, life: 0.4, max: 0.4, col: '#b28cff', size: 2, grav: 0, glow: true });
@@ -773,7 +776,7 @@ export function makeGQueenHands(ctx) {
       case 'stunned':
         e.vx = 0;
         if (Math.random() < dt * 12) ctx.part({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 60 - Math.random() * 8, vx: 0, vy: -16, life: 0.5, max: 0.5, col: '#ffd36b', size: 2, grav: 0, glow: true });
-        if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; ctx.shake(3); sfx('bellow'); }
+        if (e.modeT <= 0) { e.mode = 'rec'; e.modeT = 0.6; ctx.shake(3); sfx('bellow'); if (G5 && e.scorch) G5.scorchEnd(e); }
         return 0;
     }
     return undefined;
@@ -782,6 +785,7 @@ export function makeGQueenHands(ctx) {
   H.choose = (e, ad) => {
     if (!S || e.crownOut || (e.stage && e.stage !== 'hall')) return false;
     const p2 = e.phase >= 2;
+    if (G5 && inHall(e) && G5.fireWanted(e)) { G5.fireStart(e); return true; }   /* (claude/gq5q1) THE THRONE FIRE: the bell ready, the hoists down, no horn, first at 12 s then every 20 s */
     if (Q4 && inHall(e)) { const h4 = g4(), free = !S.mech.wave && !S.mech.lure && !S.geode && now() >= h4.gapUntil;   /* (claude/gq4q) the two new P1 moves, spaced by gapUntil */
       if (free && h4.hearthCd <= 0 && e.modeT <= 0 && ad > 40 && !p2) { hearthStart(e); return true; }
       if (free && h4.reachCd <= 0 && ad > Q4N.reach.minDist) { reachStart(e); return true; } }
@@ -806,9 +810,9 @@ export function makeGQueenHands(ctx) {
   /* a blow on the bell: she hears it (queued up to GM.queue s if she is mid-move) */
   function ringIt(e, b) {
     const M = S.mech, tt = now();
-    if (BW.ringBell(M, tt, GM.bellCd, GM.queue) === 'swinging') { ctx.number(b.x, b.y - 30, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); return; }
+    if (BW.ringBell(M, tt, GM.bellCd, G5 ? 0 : GM.queue) === 'swinging') { ctx.number(b.x, b.y - 30, 'STILL SWINGING', '#c9c9d6'); sfx('clank'); return; }
     b.swingT = 1.4; b.swing = 0.8;
-    ctx.number(b.x, b.y - 30, 'YOU RING THE BELL', '#ffd36b'); sfx('seaBell'); sfx('clank'); ctx.shake(2);
+    if (G5) { G5.onRing(e, b); ctx.number(b.x, b.y - 30, 'THE HOISTS RISE', '#ffd36b'); } else ctx.number(b.x, b.y - 30, 'YOU RING THE BELL', '#ffd36b'); sfx('seaBell'); sfx('clank'); ctx.shake(2);
   }
   function lureBegin(e, b) {
     const M = S.mech, gx = b.gate * TS + 8;
@@ -871,12 +875,12 @@ export function makeGQueenHands(ctx) {
     if (b && !b.broken) {
       const box = { l: b.x - 7, r: b.x + 7, t: b.y - 22, b: b.y };
       seats(P1 => { if (hit(P1, box, M.bellObj)) ringIt(e, b); });
-      if (!M.lure && BW.ringFresh(M, tt) && safeToLure(e) && !(b.open > 0)) lureBegin(e, b);
+      if (!G5 && !M.lure && BW.ringFresh(M, tt) && safeToLure(e) && !(b.open > 0)) lureBegin(e, b);   /* (claude/gq5q1) flag ON: the lure, the grate and her charge are gone */
     }
     /* THE BARRACKS GATE */
     const W0 = M.wave;
     if (!W0) {
-      for (const k of GM.addAt) if (e.hp <= e.maxHp * k && !M.waves.has(k) && e.mode !== 'sleep' && e.mode !== 'wake') { M.waves.add(k); startWave(e, k); break; }
+      for (const k of GM.addAt) if (e.hp <= e.maxHp * k && !M.waves.has(k) && e.mode !== 'sleep' && e.mode !== 'wake') { if (G5 && !G5.waveMayOpen(e, k)) break; M.waves.add(k); startWave(e, k); break; }   /* (claude/gq5q1) THE THRONE FIRE opens each wave: its horn starts after the fire */
       return;
     }
     const A = L().arena, wx = winchAt();
@@ -915,6 +919,7 @@ export function makeGQueenHands(ctx) {
     const A = L().arena, w = winchAt(), gx = b.gate * TS + 8;
     if (M.wave && M.wave.state === 'open') return { x: w.x, face: sign(w.x - P0.x), swing: true, why: 'winch' };
     if (M.lure) return { x: Math.max(A.x0 + 24, Math.min(A.x1 - 24, gx + (P0.x < gx ? -80 : 80))), face: sign(e.x - P0.x), swing: false, why: 'clear' };
+    if (G5) return G5.labDuty(P0, e, b, M);   /* (claude/gq5q1) ring on the fire's tell, climb the hoist beside her, plunge onto her */
     if (now() >= M.cd && safeToLure(e) && !(b.open > 0)) return { x: b.x + 18, face: -1, swing: true, why: 'bell' };
     return null;
   };
@@ -930,10 +935,14 @@ export function makeGQueenHands(ctx) {
   function addShard(o) { if (liveShards() >= Q4N.p2.capLive) return false; S.rocks.push({ x: 0, y: 0, vx: 0, vy: 0, t: 0, dead: false, home: false, cast: null, esc: false, p2: true, id: 'r' + (++S.rid), ...o }); return true; }
   /* her hall's galleries (one-way, 4 rows over the floor): the jet's answer. Laid at the boss's wake (and again after a reset clears them). */
   function layGalleries() {
-    const e = q(); if (!Q4 || !e || !inHall(e)) return; const A = L().arena, row = Math.round(A.floor / TS) - 4, x0t = Math.round(A.x0 / TS), x1t = Math.round(A.x1 / TS) - 1;
+    const e = q(); if (!Q4 || Q5 || !e || !inHall(e)) return; const A = L().arena, row = Math.round(A.floor / TS) - 4, x0t = Math.round(A.x0 / TS), x1t = Math.round(A.x1 / TS) - 1;
     if (L().grid && L().grid[row * L().W + x0t + 4] === 0) { ctx.tiles(row, x0t + 2, x0t + 7, 'lay'); ctx.tiles(row, x1t - 7, x1t - 2, 'lay');
       const fr = Math.round(A.floor / TS); for (const lx of [x0t + 8, x1t - 8]) for (let r = row; r < fr; r++) ctx.tiles(r, lx, lx, 'ladder'); }   /* (claude/gq4art) a ladder at each gallery's inner end (GQ4Q built them 4 rows up with none) */
   }
+  G5 = Q5 ? makeGQ5Q1({ TS, ctx, L, q, now, seats, sfx, gqRed: (...a) => gqRed(...a), inHall, hearthXs: () => hearthXs(), mech: () => (S ? S.mech : null), geodeOn: () => !!(S && S.geode), bossOn: () => ctx.bossActive(),
+    guard: v => (v === undefined ? (S ? S.stunGuardUntil : 0) : (S.stunGuardUntil = Math.max(S.stunGuardUntil, v))), markStun: d => { S.stunUntil = now() + d; }, gap: t => { const h4 = g4(); h4.gapUntil = Math.max(h4.gapUntil, t); },
+    bell: bellProp, hearth: (g, x, fy, live, t) => GQ4A.drawHearth(g, x, fy, live, t, false), ward: (g, x, y, t) => GQ4A.drawWardShell(g, x, y, t), grate: () => hcGrateTiles(1) }) : null;   /* (claude/gq5q1) */
+  H.q5 = () => G5; H.q5Scorch = (e, plunge) => (G5 ? G5.onHurt(e, plunge) : false); H.q5Take = (e, dmg) => (G5 ? G5.take(e, dmg) : dmg);
   const hearthXs = () => { const A = L().arena, e = q(), tx = e && e.throneX; let ex = A.x1 - 3 * TS - 8; if (tx && Math.abs(ex - tx) < 84) ex = tx - 84; return [A.x0 + 3 * TS + 8, ex]; };   /* (GQ5FIX 11-12, Daniel still b: the geode throne's crystals were drawn over the east hearth gate - both stood at tile 858; the east hearth now stands 84 px (5 tiles) clear of the throne) */
   function hearthStart(e) {
     const A = L().arena, h4 = g4(), [wx, ex] = hearthXs(); h4.side = -h4.side; const src = h4.side > 0 ? wx : ex;
@@ -1167,7 +1176,7 @@ export function makeGQueenHands(ctx) {
     if (S.esc && S.esc.on) escapeStep(dt);
     if (S.rocks.length) rockStep(dt);
     if (!ctx.bossActive() || !q()) { S.crown = null; S.geode = null; S.geodeBits = []; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }
-    crownStep(dt); portalStep(dt); geodeStep(dt); bitsStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt); if (Q4) q4Update(dt);
+    crownStep(dt); portalStep(dt); geodeStep(dt); bitsStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt); if (G5) G5.update(dt); if (Q4) q4Update(dt);
   };
 
   /* ---------------- DRAW ---------------- */
@@ -1288,6 +1297,7 @@ export function makeGQueenHands(ctx) {
   H.drawWorld = (g, cx, cy, t) => {
     if (!S) return;
     try { mechDraw(g, cx, cy, t); geodeDraw(g, cx, cy, t); roofDraw(g, cx, cy, t); } catch (err) { /* greybox only */ }
+    if (G5) { try { G5.draw(g, cx, cy, t); } catch (err) { /* greybox only */ } }   /* (claude/gq5q1) the hoists, the floor fire */
     if (Q4) { if (!art4Off) { try { q4DrawArt(g, cx, cy, t); } catch (err) { art4Off = true; console.warn('gq4 art off (greybox):', err && err.message); } } if (art4Off) { try { q4Draw(g, cx, cy, t); } catch (err) { /* greybox only */ } } }
     if (artOff) return greyWorld(g, cx, cy, t);
     try { artWorld(g, cx, cy, t); } catch (err) { artOff = true; console.warn('gqueen art off (greybox):', err && err.message); greyWorld(g, cx, cy, t); }
