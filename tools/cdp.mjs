@@ -121,13 +121,13 @@ export async function openPage(opts = {}) {
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
-  await send('Page.navigate', { url: URL0 });
+  await send('Page.navigate', { url: opts.blank ? 'about:blank' : URL0 });   /* (claude/browserleak) opts.blank: a browser that only OWNS the server/profile and lends contexts (tools/boss-run.mjs keeper) must not carry a loaded game (~1.5 GB) for the whole run */
   let ready = false;
-  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
-  if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+  for (let i = 0; i < 480 && !ready && !opts.noWait && !opts.blank; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
+  if (!ready && !opts.noWait && !opts.blank) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
-  const port = await evalp('location.port', 10000);
+  const port = opts.blank ? String(PORT) : await evalp('location.port', 10000);
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
   gcLive = gcOn;
   const reload = async () => {
@@ -146,6 +146,6 @@ export async function openPage(opts = {}) {
   };
   /* (claude/botmem) killedByGuard(): the memguard2 kill-log entry for THIS page's profile (or null); dead: why the page stopped answering; infra: either */
   const profName = run ? basename(run.prof) : '';
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, get dead() { return deadWhy; }, killedByGuard: () => profName ? killedByGuard({ profile: profName, sinceMs: t00 }) : null, get infra() { return !!(deadWhy && INFRA_RE.test(deadWhy)) || !!(profName && killedByGuard({ profile: profName, sinceMs: t00 })); }, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, profile: profName, reload, get dead() { return deadWhy; }, killedByGuard: () => profName ? killedByGuard({ profile: profName, sinceMs: t00 }) : null, get infra() { return !!(deadWhy && INFRA_RE.test(deadWhy)) || !!(profName && killedByGuard({ profile: profName, sinceMs: t00 })); }, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }

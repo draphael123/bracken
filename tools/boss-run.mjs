@@ -42,16 +42,36 @@ export const diffJs = () => 'BK.difficulty&&BK.difficulty.setOverride(' + JSON.s
 /* a page, tried three times: under a loaded machine a first navigate can miss its 15 s */
 export async function openRetry(opts = {}) { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false, ...opts }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
 export const won = x => x.outcome === 'win' || x.outcome === 'trade';
+/* (claude/browserleak 11-12) THE KEEPER BROWSER IS KEPT SMALL AND RENEWED. memguard killed 8+ test Chromes a morning at ~1.8-2.2 GB. What the numbers say (memguard.log, leakhunt-1110, loadleak):
+   a game page is ~1.3-1.5 GB the moment it has booted (the bake), a fight adds a few hundred MB, and a fresh browser context per fight already throws each fight's renderer away. What this runner
+   itself added on top: (1) the keeper's OWN first tab loaded the whole game and sat idle for the entire table (a third of the tree) - it now opens about:blank (cdp.mjs opts.blank);
+   (2) the keeper's browser-side processes (browser, GPU, network, storage) were never renewed - they are measured after every fight (tools/proc-rss.mjs, the same working set memguard judges) and the keeper
+   is replaced, once no fight is in flight, every BOSS_KEEPER_EVERY fights (default 12; 0 = never) or when they pass BOSS_KEEPER_MB (default 700); (3) a fight whose page the machine killed (memguard, a crash) is
+   rerun ONCE on a fresh page, labelled infraRetry, instead of becoming a red/err row. BOSS_RSS_LOG=1 prints the tree after every fight and puts it on the row as .rss. BRACKEN_LITE=1 opens the keeper with
+   cdp.mjs LITE_ARGS (state-only: boss rows read no pixels) - opt-in, default off, because it can change raster paths. onRow gets every finished fight AT ONCE (boss-rates writes its file from it). */
+import { treeRss } from './proc-rss.mjs';
+import { INFRA_RE } from './infra-kill.mjs';
+const sleepMs = ms => new Promise(r => setTimeout(r, ms));
 export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {}) {
   if (!list.length) return [];
-  const queue = list.slice(), out = [], keeper = await openRetry();
+  const KEEP_EVERY = process.env.BOSS_KEEPER_EVERY === undefined ? 12 : +process.env.BOSS_KEEPER_EVERY, KEEP_MB = +(process.env.BOSS_KEEPER_MB || 700), RSS_LOG = process.env.BOSS_RSS_LOG === '1';
+  const keeperOpts = { blank: true, ...(process.env.BRACKEN_LITE === '1' ? { lite: true } : {}) };
+  const queue = list.slice(), out = [];
+  let keeper = await openRetry(keeperOpts), inflight = 0, served = 0, browserMb = 0, recycling = null, renewals = 0;
   /* One browser owns the server and profile. Each seed gets a fresh, disposable browser context,
      so no fight inherits localStorage or page state and we skip the old page's extra reload. */
-  const worker = async () => { for (;;) { const F = queue.shift(); if (!F) return; let row, pg; const { lvl, js } = fightJs(F, secs);
-    try { pg = await openRetry({ browserPort: keeper.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
-    catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; }
-    finally { if (pg) await pg.close(); }
-    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...row }; out.push(rec); if (onRow) onRow(rec, out); } };
+  const need = () => (KEEP_EVERY > 0 && served >= KEEP_EVERY) || (KEEP_MB > 0 && browserMb > KEEP_MB);
+  /* renewal waits for the fights in flight, closes the old browser FIRST (it may own the dev server, which its close kills), then opens the next one */
+  const renew = () => recycling = (async () => { while (inflight > 0) await sleepMs(300); const old = keeper; await old.close().catch(() => {}); keeper = await openRetry(keeperOpts); served = 0; browserMb = 0; renewals++; })().finally(() => { recycling = null; });
+  const gate = async () => { for (;;) { if (recycling) { await recycling; continue; } if (need()) { await renew(); continue; } break; } inflight++; served++; };
+  const worker = async () => { for (;;) { if (!queue.length) return; await gate(); const F = queue.shift(); if (!F) { inflight--; return; } let row, pg, again = false; const { lvl, js } = fightJs(F, secs), kp = keeper;
+    try { pg = await openRetry({ browserPort: kp.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
+    catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; if (!F.infraTried && ((pg && pg.infra) || INFRA_RE.test(String(e.message)))) again = true; }
+    finally { if (pg) await pg.close().catch(() => {}); }
+    if (again) { queue.unshift({ ...F, infraTried: true }); console.log('  [infra-retry] ' + F.r + ' ' + F.way + ' ' + F.h + ' s' + F.s + ': ' + row.err.slice(0, 80) + ' - one rerun on a fresh page'); inflight--; continue; }
+    let rss = null; try { rss = await treeRss(kp.profile); } catch {}
+    if (rss) { browserMb = Math.max(browserMb, rss.browser); if (RSS_LOG) console.log('  [rss] keeper tree total ' + rss.total + ' MB, browser-side ' + rss.browser + ', renderers ' + rss.renderers + ', biggest ' + rss.biggest + ' (' + rss.n + ' procs, fights since renewal ' + served + ', renewals ' + renewals + ')'); }
+    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...(F.infraTried ? { infraRetry: true } : {}), ...(RSS_LOG && rss ? { rss } : {}), ...row }; out.push(rec); inflight--; if (onRow) onRow(rec, out); } };
   try { await Promise.all(Array.from({ length: Math.min(jobs, list.length) }, () => worker())); } finally { await keeper.close(); }
   return out;
 }
