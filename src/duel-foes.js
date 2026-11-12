@@ -12,7 +12,9 @@ export const FOE = { few: { max: 2, every: 14 }, many: { max: 4, every: 8 }, fir
 /* PER ARENA: the wall-edge floor columns he walks in from (doors), and the Act 1 fodder he may be (never brute, pike, mage or sapper). One line per arena (src/duel-arenas.js reads the doors from here).
    doors are columns from the arena's left edge; a negative column counts from the right (W + col). */
 export const FOE_ARENAS = { pit: { doors: [2, -3], kinds: ['sprig', 'shield'], weights: [0.65, 0.35] },
-  stockade: { doors: [2, -3], kinds: ['sprig', 'archer', 'hound'], weights: [0.5, 0.25, 0.25] } };   /* (duelarenas) THE STOCKADE: the camp's own fodder (an archer's arrow carries its owner, so it is a goblin blow too) */
+  stockade: { doors: [2, -3], kinds: ['sprig', 'archer', 'hound'], weights: [0.5, 0.25, 0.25] },
+  rootway: { doors: [2, -3], kinds: ['sprig', 'javelin'], weights: [0.6, 0.4] },   /* (duelarenas-b) THE ROOTWAY HOLLOW: the goblin scout and the javelin skirmisher (Act 1 fodder, the Rootway's own goblins) */
+  kitchen: { doors: [2, -3], kinds: ['sprig', 'shield'], weights: [0.65, 0.35] } };   /* (duelarenas-b) THE KITCHEN: the same two as the Pit */   /* (duelarenas) THE STOCKADE: the camp's own fodder (an archer's arrow carries its owner, so it is a goblin blow too) */
 export const GOB_NAME = { off: 'OFF', few: 'FEW', many: 'MANY' };
 export const GOB_LINE = { off: 'NO GOBLINS IN THE PIT.', few: 'GOBLINS: FEW - THEY HURT ANYONE, BUT ONLY A HERO CAN K.O. YOU.', many: 'GOBLINS: MANY - THEY HURT ANYONE, BUT ONLY A HERO CAN K.O. YOU.' };
 export const FF_LINE = { false: 'TEAMMATES CANNOT HURT EACH OTHER.', true: 'TEAMMATES HURT EACH OTHER TOO.' };

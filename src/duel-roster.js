@@ -19,7 +19,7 @@ export const RULE_FMT = {
   lives: v => String(v), health: v => v + '%', stamina: v => v === 'unlimited' ? 'UNLIMITED' : 'NORMAL', rounds: v => 'BEST OF ' + v,
   timeLimit: v => v ? v + ' S, THEN 1 HIT' : 'OFF', level: v => v === 'your' ? 'YOUR LEVEL' : 'EVEN - LEVEL 1', teams: v => v ? '2 VS 2' : 'OFF',
   goblins: v => v === 'few' ? 'FEW' : v === 'many' ? 'MANY' : 'OFF', friendlyFire: v => v ? 'ON' : 'OFF',
-  arena: v => v === 'random' ? 'RANDOM' : v === 'stockade' ? 'THE STOCKADE' : 'THE DUEL PIT',   /* (duelarenas) the names live in src/duel-arenas.js; the picker shows what the duel's own cleanSettings handed back */
+  arena: v => v === 'random' ? 'RANDOM' : v === 'stockade' ? 'THE STOCKADE' : v === 'rootway' ? 'THE ROOTWAY HOLLOW' : v === 'kitchen' ? 'THE KITCHEN' : 'THE DUEL PIT',   /* (duelarenas) the names live in src/duel-arenas.js; the picker shows what the duel's own cleanSettings handed back */
 };
 export const FIGHT_BANNER_S = 1.3;
 const SKILLS = ['easy', 'normal', 'hard'];
