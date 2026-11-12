@@ -1,7 +1,7 @@
 [
   {
     "date": "2026-11-12",
-    "batch": 165,
+    "batch": 166,
     "lines": [
       { "s": "Big skills now hit with real weight: a heavier freeze and kick on every capstone.", "lv": [] },
       { "s": "Flames sizzle on foes instead of stuttering the fight.", "lv": [] },
@@ -9,6 +9,15 @@
       { "s": "Your hero leans into each swing, and heavy swings flash when fully charged.", "lv": [] },
       { "s": "Hits sound different on wood, bone and steel; the third cut of a combo rings higher.", "lv": [] },
       { "s": "Kills land with a low boom and a short dip in the music.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 165,
+    "lines": [
+      { "s": "Rootway's Huntmaster opens up for longer, so quick blades can land hits", "lv": ["rootway"] },
+      { "s": "His staggered openings last about 0.8 s longer than before", "lv": ["rootway"] },
+      { "s": "A little more life on the Huntmaster keeps the fight honest", "lv": ["rootway"] }
     ]
   },
   {
