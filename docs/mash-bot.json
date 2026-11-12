@@ -9369,7 +9369,7 @@
   }
  },
  "buriedcity": {
-  "hash": "e414f94b1e60",
+  "hash": "758351bcd997",
   "boss": {
    "boss": "hourglassking",
    "wins": 0,
@@ -9470,29 +9470,29 @@
    ]
   },
   "carried": {
-   "from": "09cb68eae630",
+   "from": "e414f94b1e60",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 58,
+    "deaths": 59,
     "minHpPct": 0,
-    "hpLostPct": 5800,
-    "hits": 177,
+    "hpLostPct": 5900,
+    "hits": 180,
     "walked": 100,
-    "lifts": 83,
-    "held": 171,
-    "duels": 57,
+    "lifts": 84,
+    "held": 174,
+    "duels": 58,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 56042,
+    "frames": 56907,
     "kills": 0,
-    "heroLevel": 50
+    "heroLevel": 51
    },
    "warden": {
     "deaths": 39,
@@ -9510,25 +9510,25 @@
     "machines": true,
     "frames": 122496,
     "kills": 40,
-    "heroLevel": 50
+    "heroLevel": 51
    },
    "pyro": {
     "deaths": 32,
     "minHpPct": 0,
-    "hpLostPct": 3327,
+    "hpLostPct": 3316,
     "hits": 284,
-    "walked": 70,
-    "lifts": 57,
-    "held": 93,
-    "duels": 31,
+    "walked": 71,
+    "lifts": 58,
+    "held": 97,
+    "duels": 32,
     "boardLifts": 0,
     "rides": 0,
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 121012,
+    "frames": 121017,
     "kills": 0,
-    "heroLevel": 50
+    "heroLevel": 51
    }
   }
  },

@@ -15,8 +15,8 @@ try {
     const gateCells = () => { let n = 0; for (let y = 24; y < 34; y++) { const t = BK.L.grid[y * BK.L.W + gateCol]; if (t !== T.AIR) n++; } return n; };
     BK.tp(386, 8); BK.sim(240); log.push('after kiln drop: ' + Math.round(BK.P.x / 16) + ',' + Math.round(BK.P.y / 16) + ' mini=' + !!BK.miniActive + ' gateCells=' + gateCells());
     const bot = makeBot(BK); let seenIntro = false, maxOpens = 0, f = 0, last = '', won = false, dmgFrames = 0;
-    const snap = tag => { const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); shot.push([tag, c.toDataURL('image/png')]); };
-    for (; f < 9000; f++) {
+    const snap = tag => { BK.step(1); const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); shot.push([tag, c.toDataURL('image/png')]); };
+    for (; f < (${args.includes('--shotsonly')} ? 1300 : 9000); f++) {
       const rd = BK.bc5(), en = BK.enemies().find(e => e.t === 'glassblower');
       if (BK.state === 'talk' || BK.state === 'card') BK.press('confirm');
       if (!en || !en.alive) { won = true; break; }
