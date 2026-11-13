@@ -356,6 +356,13 @@ if (take('hl-save-page')) results.push(run('hl-save-page', process.execPath, ['t
 if (take('room-kills')) results.push(run('room-kills', process.execPath, ['tools/room-kills.mjs']));
 /* THE POWDER MONKEY (claude/flotilla4, a shared foe: src/powder-monkey.js): small and quick, his told lob, the teach placed alone, struck back he goes down, a struck blast fires a deck gun and a keg */
 if (take('powder-monkey')) results.push(run('powder-monkey', process.execPath, ['tools/powder-monkey.mjs']));
+/* THE WATER KIT (claude/waterkit, Node only; docs/waterkit.md): THE TIDE KIT (the told cycle, bell/sluice/lever, floods/floats/bites/foes, respawn grace, every hero x 1-4 seats
+   out from every checkpoint at every moment of the cycle, lintTide on every level with L.tides) and THE PULL FIELD (current/toward/away/whirl, the answers - swim, post, dash,
+   brace, release window - foes/shots by weight, co-op carries, lintPulls on every level with L.pulls). Their own lines: the big list is edited by every lane */
+if (take('tide-kit')) results.push(run('tide-kit', process.execPath, ['tools/tide-kit.mjs']));
+if (take('pull-field')) results.push(run('pull-field', process.execPath, ['tools/pull-field.mjs']));
+if (take('pirate-fleet')) results.push(run('pirate-fleet', process.execPath, ['tools/pirate-fleet.mjs']));   /* (claude/water1) THE PIRATE FLEET + THE FREEBOOTER: node proofs */
+if (take('pf-art-lint')) results.push(run('pf-art-lint', process.execPath, ['tools/pf-art-lint.mjs']));   /* (claude/pfart) THE PIRATE FLEET's art: tile kit, backdrop, ship pieces, the Freebooter's poses - node only (a recording canvas stub) */
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
 if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
 /* THE DESERT KIT (claude/desertkit, Node only; docs/desertkit.md): THE SUN KIT (profiles, water cools, hot glass, SUNSTRUCK never kills, the Desert Priest's radiance feed),
