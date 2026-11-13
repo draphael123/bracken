@@ -163,6 +163,7 @@ const HEROES_C = {
 };
 import { ROW as PLUNGE_ROW } from './plunges.js';
 import { ultRow } from './ultimate.js';
+import { PAL_MACE } from './holy-ground.js';   /* (claude/paladin-d) the rework's words on the controls card */
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
   const swapped = swapZX && !isCustom(binds, 'kb', 'jump') && !isCustom(binds, 'kb', 'atk');
@@ -186,7 +187,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ...(hero === 'pyro' ? [['full bar', 'UP + ' + tk.c + ': METEOR FALL', pd('block')]] : []),   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     ...(ultRow(hero, k1('up'), tk.c, pd('up'), pd('block')) ? [ultRow(hero, k1('up'), tk.c, pd('up'), pd('block'))] : []),   /* (claude/ults) ONE ULTIMATE ROW for every hero that has one: UP + C with the meter full (src/ultimate.js) */   /* (claude/knightid) the spender; a perfect guard, then X, is the riposte whose rider is the link count */   /* (claude/pyrokit; the L10 card's UP + C row is the PAUSE > LEVEL CARD's words, not a 13th row here) */
     [cRow[0], cRow[1](tk), pd('block')],
-    ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
+    ...(hero === 'paladin' ? (PAL_MACE ? [['holy hammer', k1('up') + '+' + tk.c + '  (3-4 PIPS)', pd('up') + '+' + pd('block')], ['sunfall', k1('up') + '+' + tk.c + '  (5 PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4', pd('block')]] : [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]]) : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
     ...(hero === 'ranger' ? [['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's stance swap (her UP+C is the shared ultimate row above) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],

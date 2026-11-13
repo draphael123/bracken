@@ -763,12 +763,12 @@ const HEROES = [
    is reloaded by gold picked up (reloadPistol); the ward and the nova are DK_KEYS in fewer words. Two lines of forty-five
    at size 6: that is the hero card's plate (270 px, six a character), and the pick screen is wider. */
 /* THE PICK'S ROLE LINE (claude/onboard1, Daniel 11-06): one line a hero, written from his kit, in the weapon's own words; it takes the place of the plain weapon line on the pick card. THE KNIGHT is marked RECOMMENDED FOR FIRST RUN (the default hero, the one the roadside lesson is written for). */
-const HERO_ROLE = { knight: 'SWORD, SHIELD. TOUGH. SIMPLE.', warden: 'SPEAR. REACH. MIND YOUR SPACING.', geomancer: 'STAFF. SLOW, HEAVY. STONE.', ranger: 'BOW. RANGED. FRAGILE. TRICKY.', berserker: 'TWIN AXES. NO SHIELD. ALL ATTACK.', pyro: 'STAFF, FIRE. FRAGILE. NO SHIELD.', paladin: 'MAUL. SLOW, HEAVY. VERY TOUGH.', pirate: 'CUTLASS, PISTOL. QUICK. LIGHT.', reaper: 'GREATSWORD. RISKY. FOR EXPERTS.' };
+const HERO_ROLE = { knight: 'SWORD, SHIELD. TOUGH. SIMPLE.', warden: 'SPEAR. REACH. MIND YOUR SPACING.', geomancer: 'STAFF. SLOW, HEAVY. STONE.', ranger: 'BOW. RANGED. FRAGILE. TRICKY.', berserker: 'TWIN AXES. NO SHIELD. ALL ATTACK.', pyro: 'STAFF, FIRE. FRAGILE. NO SHIELD.', paladin: PAL_MACE ? 'MACE, SUN SHIELD. SLOW, HEAVY. TOUGH.' : 'MAUL. SLOW, HEAVY. VERY TOUGH.', pirate: 'CUTLASS, PISTOL. QUICK. LIGHT.', reaper: 'GREATSWORD. RISKY. FOR EXPERTS.' };
 const HERO_FIRST = 'knight';
 const HERO_LOOP = {
   knight: 'THE SHIELD TURNS YELLOW BLOWS; A PERFECT TURN OPENS HIM. THREE CUTS, THE THIRD HARDEST.',
   pyro: 'TAP C: THE WARD. HOLD C: A FIREBALL. HER FIRE MARKS; A FULL BAR ERUPTS THE MARKED.',   /* (claude/pyrokit) */
-  paladin: 'BLOWS AND GUARDS BUILD CONVICTION. TAP C SPENDS IT: SMITE, RADIANCE, SUNFALL. EVERY SPEND LIGHTS HIS AURA.',
+  paladin: PAL_MACE ? 'BLOWS AND GUARDS BUILD CONVICTION. TAP C SPENDS IT: SMITE, RADIANCE. UP+C: THE HOLY HAMMER, AND SUNFALL AT FIVE. EVERY SPEND LIGHTS HIS AURA.' : 'BLOWS AND GUARDS BUILD CONVICTION. TAP C SPENDS IT: SMITE, RADIANCE, SUNFALL. EVERY SPEND LIGHTS HIS AURA.',
   pirate: 'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\'S GOLD IS HIS POWDER.',
   reaper: 'A HIT ON HIM IS BLOOD DEBT: LAND BLOWS TO WIN IT BACK. HOLD X: FIVE TIERS. DOWN+C: BLOOD PRICE.',   /* (claude/bloodknight) */
   warden: 'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C TURNS A BLOW; HOLD C WINDS THE SPEAR THROW (THREE PIPS: QUICK, HEAVY, PIN).',
