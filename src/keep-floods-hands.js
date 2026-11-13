@@ -7,10 +7,11 @@
 import { gauge, kOf } from './tide-kit.js';   /* (claude/sea2) reads only: the kit is built, stepped, written and struck in src/pirate-fleet-hands.js (ctx.pfh), through H.water below */
 import { KF_CURSE } from './keep-floods.js';
 import { k2Init, k2Step, k2Take, k2Frame, k2Lever, K2 } from './drowned-king2.js';
+import * as KA from './redraw/drowned_king2_art.js'; import * as K2A from './redraw/keep2_art.js'; import * as SD from './redraw/sea_dial.js';   /* (claude/k2art) the hand-drawn pieces + the shared A3 dial; every draw below is draw-only */
 
 export function makeKeepFloodsHands(ctx) {
   const TS = ctx.TS;
-  let lvRef = null, life = -1, gate = null, shots = [], said = new Set(), lastLeverT = -9;
+  let lvRef = null, life = -1, gate = null, shots = [], said = new Set(), lastLeverT = -9, seen = null, dead = null;
   const L = () => ctx.L, on = () => !!(L() && L().keepFloods && L().tides), kitOf = () => (ctx.pfh && ctx.pfh.kit()) || null;
   const S = id => { const k = kitOf(); return k && k.tides.find(s => s.id === id); };
   const throneP = () => (L().pools || []).find(p => p.id === 'kfthrone');
@@ -36,7 +37,7 @@ export function makeKeepFloodsHands(ctx) {
     const th = S('throne'); if (th) { th.ph = 'high'; th.k = 1; }
     const cu = S('curse'); if (cu) { cu.ph = 'high'; cu.t = 1e9; cu.k = 1; }
     const tp = throneP(); if (tp) tp.tide = 'throne';
-    liftGate(); shots = [];
+    liftGate(); shots = []; seen = null; dead = null;
     capAll();
   }
   function capAll() { for (const p of L().pools || []) if (p.kfPool) { const s = S(p.tide); if (s) p.capped = s.k >= 0.999; } }
@@ -102,46 +103,64 @@ export function makeKeepFloodsHands(ctx) {
     const Lv = L(), rect = (x, y, w, h, col, a = 1) => { g.globalAlpha = a; g.fillStyle = col; g.fillRect(Math.round(x - cx), Math.round(y - cy), w, h); g.globalAlpha = 1; };
     const line = (x0, y0, x1, y1, col, a = 1, dash) => { g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = 1; if (dash) g.setLineDash(dash); g.beginPath(); g.moveTo(Math.round(x0 - cx) + 0.5, Math.round(y0 - cy) + 0.5); g.lineTo(Math.round(x1 - cx) + 0.5, Math.round(y1 - cy) + 0.5); g.stroke(); g.restore(); };
     const ring = (x, y, r, col, a = 1) => { g.save(); g.globalAlpha = a; g.strokeStyle = col; g.beginPath(); g.arc(Math.round(x - cx), Math.round(y - cy), r, 0, Math.PI * 2); g.stroke(); g.restore(); };
-    /* every lever + its water-line dial (the one A3 drawing; greybox = a bar beside the lever) */
+    /* flooded-room dressing (weed, chains, silt, motes) in each chamber and the throne room, then every lever + its water-line dial (the shared A3 dial, src/redraw/sea_dial.js, verdigris skin) */
+    const VWd = 320;
+    for (const c of Lv.kfChambers || []) K2A.drawDressing(g, cx, cy, VWd, c.x0 * TS, (c.x1 + 1) * TS, c.top * TS, c.floor * TS, time, {});
+    if (Lv.kfThrone) K2A.drawDressing(g, cx, cy, VWd, Lv.kfThrone.x0 * TS, (Lv.kfThrone.x1 + 1) * TS, Lv.kfThrone.top * TS, 59 * TS, time, { dens: 56 });
     for (const s of kitOf().tides) for (const v of s.verbs) {
-      const x = v.x * TS + 8, y = (v.y + 1) * TS, sw = v.swing || 0, k = s.k;
-      rect(x - 2, y - 4, 5, 4, '#3f6f62'); line(x, y - 4, x + (v.thrown ? 6 : -6) * (1 - sw * 0.5), y - 16, '#c9a83a');
-      rect(x + 7, y - 22, 4, 20, '#14222a', 0.8); rect(x + 7, y - 2 - Math.round(18 * k), 4, Math.round(18 * k), '#7ff0e0', 0.9);
-      const P = ctx.hero(); if (P && Math.abs(P.x - x) < 90 && Math.abs(P.y - y) < 90 && !s.T.throne) rect(x - 1, y - 30 + Math.sin(time * 4) * 2, 3, 3, '#ffd36b', 0.8);
+      const x = v.x * TS + 8, y = (v.y + 1) * TS, sw = v.swing || 0, P = ctx.hero(), near = !!(P && Math.abs(P.x - x) < 90 && Math.abs(P.y - y) < 90 && !s.T.throne);
+      SD.drawLever(g, x - cx, y - cy, { thrown: !!v.thrown, swing: sw, near }, time, 'verdigris');
+      SD.drawDial(g, x + 15 - cx, y - 24 - cy, gauge(kitOf(), s.id) || { k: s.k }, time, 'verdigris');
     }
-    /* the floodgate frames at each chamber's sumps (greybox: verdigris posts) */
-    for (const c of Lv.kfChambers || []) for (const xx of [c.x0, c.x1]) rect(xx * TS + 6, c.sump * TS, 4, (59 - c.sump) * TS, '#3f8f7d', 0.35);
+    /* the floodgate frames at each chamber's sumps */
+    for (const c of Lv.kfChambers || []) { const sk = S(c.id); for (const xx of [c.x0, c.x1]) K2A.drawFloodgate(g, xx * TS + 8 - cx, c.sump * TS - cy, (59 - c.sump) * TS, { k: sk ? sk.k : 1, t: time }); }
     const Th = Lv.kfThrone, boss = bossK();
     if (!Th) return;
     const gx = Th.gateCol * TS + 8;
-    if (gate && gate.down) for (let y = Th.top; y <= 58; y++) { rect(gx - 7, y * TS, 2, TS, '#6a7480'); rect(gx - 1, y * TS, 2, TS, '#6a7480'); rect(gx + 5, y * TS, 2, TS, '#6a7480'); if (y % 2) rect(gx - 7, y * TS + 6, 14, 2, '#4a525c'); }
+    if (gate && gate.down) K2A.drawPortcullis(g, gx - cx, Th.top * TS - cy, 59 * TS - cy, { k: 1, t: time, pin: !!gate.pin });
     if (!boss || !ctx.bossActive) return;
     const e = boss, s = e.k2, A = arena(), cyb = e.y - 16;
     /* the gate column: red while he decrees, gold while he is under it (THE LEVER, NOW) */
-    if (e.mode === 'decreeTell') rect(gx - 8, Th.top * TS, 16, (59 - Th.top) * TS, '#ff6b6b', 0.12 + 0.1 * Math.sin(time * 18));
+    if (e.mode === 'decreeTell') { rect(gx - 8, Th.top * TS, 16, (59 - Th.top) * TS, '#ff6b6b', 0.1 + 0.08 * Math.sin(time * 18)); K2A.drawGateHint(g, gx - cx, Th.top * TS - cy, 59 * TS - cy, 'decree', time); }
     if (e.underGate && !gate) { rect(gx - 8, Th.top * TS, 16, (59 - Th.top) * TS, '#ffd36b', 0.16 + 0.1 * Math.sin(time * 12)); for (const [lx, ly] of Th.levers) ring(lx * TS + 8, ly * TS + 6, 12 + 2 * Math.sin(time * 10), '#ffd36b', 0.8); }
     /* the trident: in his hand, in flight, in the wall, and the line it will come back down */
     const T = s.tr;
-    if (T.out) { line(T.x - Math.sign(T.vx || 1) * 14, T.y, T.x, T.y, '#c9d1dc'); rect(T.x - 1, T.y - 3, 3, 7, '#e8f4f0');
-      if (e.mode === 'recallTell') line(T.x, T.y, e.x, cyb, '#ffd36b', 0.7, [2, 3]); }
-    else { const ax = e.face; line(e.x + ax * 4, cyb + 8, e.x + ax * 26, cyb - 6, e.cursed ? '#8ff0dc' : '#c9a83a'); }
+    if (T.out) { if (T.stuck) K2A.drawTridentStuck(g, T.x - cx, T.y - cy, T.vx || e.face, T.vy, time, { ring: e.mode !== 'recallTell', fresh: T.t < 0.3 }); else K2A.drawTridentFlight(g, T.x - cx, T.y - cy, T.vx, T.vy, time);
+      if (e.mode === 'recallTell') line(T.x, T.y, e.x, cyb, '#ffd36b', 0.7, [2, 3]); }   /* (in his hand the trident is part of his pose: drawBoss) */
     if (e.mode === 'thrustTell' && s.aim) line(e.x, cyb, e.x + s.aim[0] * K2.thrustReach, cyb + s.aim[1] * K2.thrustReach, '#ffd36b', 0.5 + 0.3 * Math.sin(time * 20), [3, 2]);
     if (e.mode === 'hurlTell' && s.aim) line(e.x, cyb, e.x + s.aim[0] * 600, cyb + s.aim[1] * 600, '#ff6b6b', 0.5 + 0.3 * Math.sin(time * 20), [3, 2]);
     if (e.mode === 'sweepTell' || e.mode === 'sweep') { g.save(); g.globalAlpha = e.mode === 'sweep' ? 0.7 : 0.35; g.strokeStyle = '#ff6b6b'; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - 4 - cy), K2.sweepR, 8, 0, 0, Math.PI * 2); g.stroke(); g.restore(); }
-    if (s.grasp) { const G = s.grasp; rect(G.x0, A.floor - 4, G.x1 - G.x0, 4, G.live > 0 ? '#8ff0dc' : '#ff6b6b', G.live > 0 ? 0.8 : 0.35 + 0.25 * Math.sin(time * 18));
-      if (G.live > 0) for (let x = G.x0 + 6; x < G.x1; x += 12) rect(x, A.floor - 14 - 4 * Math.sin(time * 9 + x), 3, 10, '#c9d8c8', 0.9); }
-    if (s.leech) { const P = ctx.hero(); if (P) line(e.x, cyb - 6, P.x, P.y - 10, '#8fd160', 0.6 + 0.3 * Math.sin(time * 14)); }
-    for (const p of shots) { rect(p.x - 2, p.y - 2, 4, 4, '#8ff0dc', 0.9); }
+    if (s.grasp) { const G = s.grasp; K2A.drawGrasp(g, G.x0 - cx, G.x1 - cx, A.floor - cy, G.live > 0, time); }
+    if (s.leech) { const P = ctx.hero(); if (P) K2A.drawLeechLine(g, e.x - cx, cyb - 6 - cy, P.x - cx, P.y - 10 - cy, time); }
+    for (const p of shots) K2A.drawProng(g, p.x - cx, p.y - cy, p.vx, p.vy, time);
     /* the gold (open + timer), the grey (ward), the bone (shell), the green (cursed) */
     if (e.open > 0) { ring(e.x, cyb, 26, '#ffd36b', 0.9); rect(e.x - 14, e.y - e.h - 30, Math.round(28 * Math.min(1, e.open / 3)), 2, '#ffd36b'); }
     else if (s.ward > 0) ring(e.x, cyb, 26, '#9aa39a', 0.7);
     else if (!s.shell && s.k < 0.35) ring(e.x, cyb, 24, '#ffd36b', 0.45);   /* BEACHED: open x1 */
-    if (s.shell) ring(e.x, cyb, 22, '#e8dcc0', 0.9);
-    if (e.cursed) { rect(e.x - 6, e.y - e.h - 2, 2, 2, '#8fd160'); rect(e.x + 4, e.y - e.h - 2, 2, 2, '#8fd160'); }
     if (e.mode === 'curse') rect(A.x0, A.y0, A.x1 - A.x0, A.floor - A.y0, '#0c2018', 0.25 * (1 - e.modeT / K2.curseT));
     /* HIS TIDE (P2): the gauge, top-left, with its tell */
-    if (s.ph === 2) { const gg = gauge(kitOf(), 'curse'); if (gg) { g.fillStyle = '#14222a'; g.fillRect(6, 30, 6, 40); g.fillStyle = gg.tell ? (gg.coming === 'in' ? '#ff6b6b' : '#8fd160') : '#7ff0e0'; g.fillRect(6, 70 - Math.round(40 * gg.k), 6, Math.round(40 * gg.k)); } }
+    if (s.ph === 2) { const gg = gauge(kitOf(), 'curse'); if (gg) SD.drawHud(g, 6, 30, gg, time, 'verdigris'); }
     void lastLeverT;
+  }
+
+  /* ---------------- THE KING (claude/k2art: src/redraw/drowned_king2_art.js - a pose per move mode; draw-only, every number is the greybox's) ---------------- */
+  const DUR = { thrustTell: K2.thrustTell[1], thrust: K2.thrustT, sweepTell: K2.sweepTell, sweep: K2.sweepT, hurlTell: K2.hurlTell, hurl: K2.hurlLock, recallTell: K2.recallTell, decreeTell: K2.decreeTell, decree: 0.5, shellTell: K2.shellTell,
+    curse: K2.curseT, graspTell: K2.graspTell, leechTell: K2.leechTell, prongTell: K2.prongTell, recoil: K2.recoil, wake: 1 };
+  const kingState = e => { const s = e.k2 || {}, d = DUR[e.mode], dry = !(e.swimming);
+    return { mode: e.mode, k: d ? Math.max(0, Math.min(1, 1 - (e.modeT || 0) / d)) : 0, dry, wetK: s.k, open: e.open, hurtT: e.hurtT, flash: e.flash, flashT: e.flash, trOut: !!(s.tr && s.tr.out), cursed: !!e.cursed, shell: !!s.shell, shellOpenT: s.shellOpenT || 0,
+      aim: s.aim ? Math.atan2(s.aim[1], s.aim[0] * (e.face || 1)) * 180 / Math.PI : 0, trAng: s.tr && s.tr.out ? Math.atan2((s.tr.y - (e.y - 16)), (s.tr.x - e.x) * (e.face || 1)) * 180 / Math.PI : 0, tilt: e.tilt || 0, vx: e.vx, seed: 1 }; };
+  const kingK = e => ((e.k2 && e.k2.k) ?? 1);
+  const drawsSelf = e => on() && e && e.t === 'drownedking' && e.alive;
+  function drawBoss(g, e, cx, cy, t) {
+    const o = kingState(e); if (!DUR[o.mode]) o.k = kingK(e);
+    seen = { x: e.x, y: e.y, face: e.face || 1, e, cursed: o.cursed };
+    KA.drawKing2(g, Math.round(e.x - cx), Math.round(e.y - cy), e.face || 1, o, t);
+  }
+  /* his fall: noticed when the boss we have seen is no longer alive (after a death or a load `seen` is cleared in reset) */
+  function drawDead(g, cx, cy, t) {
+    if (!on()) return;
+    if (seen && !dead && seen.e && (seen.e.alive === false || seen.e.hp <= 0)) dead = { x: seen.x, y: seen.y, face: seen.face, cursed: seen.cursed, t0: t };
+    if (dead) KA.drawDeadKing2(g, Math.round(dead.x - cx), Math.round(dead.y - cy), dead.face, Math.min(1, (t - dead.t0) / 1.6), t, { cursed: dead.cursed });
   }
 
   /* THE WATER HOOKS (claude/sea2: the ONE wiring, src/pirate-fleet-hands.js header): the keep's words, pins and lever answers on the generic kit step / strike */
@@ -175,5 +194,5 @@ export function makeKeepFloodsHands(ctx) {
       return true;
     },
   };
-  return { on, update, king, water, owns, take, frame, drawOver, reset, debug: () => ({ kit: kitOf(), gate, shots }) };
+  return { on, update, king, water, owns, take, frame, drawOver, drawsSelf, drawBoss, drawDead, reset, debug: () => ({ kit: kitOf(), gate, shots }) };
 }
