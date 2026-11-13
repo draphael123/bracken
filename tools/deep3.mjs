@@ -77,7 +77,7 @@ if (opt('sim')) { duels(+opt('sim') || 6, !!opt('log')); process.exit(0); }
   ok(!off.d3 && off.boss === 'bellcrab' && off.H === 248, 'flag off: no Deep 3, the Diving Bell is the boss');
   ok(on.d3 && on.boss === 'sunkencrew' && on.H === D3.H, 'FLAG ON: Deep 3 in the same build');
   ok(on.i === off.i && on.needs === off.needs && on.n === off.n, 'the same road slot (index ' + on.i + ', needs ' + on.needs + ') - no index or save moves');
-  ok(on.checks < off.checks, 'FEWER CHECKPOINTS: ' + on.checks + ' (master ' + off.checks + ')'); }
+  ok(on.checks <= off.checks, 'NO MORE CHECKPOINTS THAN MASTER: ' + on.checks + ' (master ' + off.checks + '; the trench shrine made it 4, Daniel 11-13)'); }
 ok(deep3On(), 'DEEP3=1 turns it on');
 
 /* ---------- 2. THE LEVEL ---------- */
@@ -125,7 +125,10 @@ const lv = LEVELS.find(l => l.id === 'deep'), L = lv.build(), W = L.W, at = (x, 
   ok(R.near(D3.arena.trigger, D3.cavern.y1), 'reach: the arena\'s door');
   ok(R.near(gate.x, gate.y), 'reach: the gate');
   const checks = L.ents.filter(e => e.t === 'check');
-  ok(checks.length === 3, 'checkpoints: master\'s kelp forest + the tower\'s foot + the wreck\'s door (' + checks.map(e => e.x + ',' + e.y).join(' ') + ')');
+  ok(checks.length === 4, 'checkpoints: the trench\'s early shrine + master\'s kelp forest + the tower\'s foot + the wreck\'s door (' + checks.map(e => e.x + ',' + e.y).join(' ') + ')');
+  { const tr = checks.find(e => e.d3 === 'trench'); ok(tr && tr.x === 59 && tr.y === 63 && tr.y >= 60 && tr.y <= 100, 'the early shrine stands in rows 60-100 (the wreck stack\'s shelf, west end)');
+    ok(at(tr.x, tr.y) === T.AIR && at(tr.x, tr.y + 1) !== T.AIR && L.airRooms.some(([x0, x1, y0, y1]) => tr.x >= x0 && tr.x <= x1 && tr.y >= y0 && tr.y <= y1), 'and it stands in an AIR ROOM on footing (not underwater)');
+    ok(!L.ents.some(e => e.t !== 'check' && e.t !== 'coin' && e.t !== 'deco' && e.t !== 'sign' && Math.hypot(e.x - tr.x, e.y - tr.y) < 5), 'no foe or fixture within 5 tiles of it'); }
   ok(checks.every(e => at(e.x, e.y) === T.AIR && at(e.x, e.y + 1) !== T.AIR), 'every checkpoint stands on footing');
   ok(L.arena.x0 > checks.find(e => e.d3 === 'wreck').x * TS, 'the wreck\'s shrine is before the crew\'s door');
 }
