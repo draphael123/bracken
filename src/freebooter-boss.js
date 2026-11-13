@@ -177,6 +177,8 @@ export function fbLabPlan(s) {
   const lo = myDeck[0] + 14, hi = myDeck[1] - 14, clamp = x => Math.max(lo, Math.min(hi, x));
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), hitR = reach + 14 / 2 - 2;
   const face = Math.sign(kx - P.x) || 1;
+  /* (claude/wardenbot) THE WARDEN STANDS AT HER POINT, NOT ON HIS CUTLASS: her tip pays from 28 px EDGE TO EDGE (src/main.js tipPay, src/warden-id.js tipStart: x1.6-2.0, x2.0 in his opening), the mid-shaft is x0.7 and the haft x0.3. The old fixed 30 px from his CENTRE was 23 px edge to edge (he is 14 wide): every blow of hers paid the mid-shaft. s.tip is the lab's WARDEN_TIP (32): her near edge sits tip + 2 px out, a tip with a stride of drift to spare. */
+  const standX = s.tip ? s.tip + 2 + (e.w || FB.w) / 2 : 14;
   const roomDir = ax => { const away = P.x <= ax ? -1 : 1, room = d => (d < 0 ? P.x - lo : hi - P.x); return room(away) >= 50 ? away : -away; };
   const swing = () => { out.face = face; out.atk = P.atk < 0; };
   const m = e.mode, ti = (S.n.pistol | 0) + (S.n.cuts | 0) + (S.n.boot | 0) + (S.n.riposte | 0) + (S.n.plunge | 0) + (S.n.boards | 0);
@@ -200,11 +202,11 @@ export function fbLabPlan(s) {
   }
   if (m === 'pistolTell' || m === 'pistolFire') { out.gx = P.x; out.face = face; out.why = 'wait for the bang'; return out; }
   /* 3. OPEN (reloading, stuck in the deck): cut him */
-  if (open) { out.gx = clamp(kx + side * (s.tip ? 30 : 14)); out.face = face; if (dx < hitR + 4) swing(); out.why = 'cut him: open'; return out; }
+  if (open) { out.gx = clamp(kx + side * standX); out.face = face; if (dx < hitR + 4) swing(); out.why = 'cut him: open'; return out; }
   /* 4. HIS GUARD IS BACK: off him */
   if (S.ward > 0 && !s.rest) { out.gx = clamp(kx + side * 90); out.face = face; out.why = 'his ward: wait'; return out; }
   /* 5. HIS RECOVERIES: committed, a blow from anywhere is 0.6x - in and cut */
-  if (m === 'cutsRec' || m === 'bootRec' || m === 'riposteRec' || m === 'plungeRec' || m === 'boot') { out.gx = clamp(kx + side * (s.tip ? 30 : 14)); out.face = face; if (dx < hitR + 4 && (P.atk >= 0 || e.modeT > (s.tip ? 0.3 : 0.18))) swing(); out.why = 'cut him: recovering'; return out; }
+  if (m === 'cutsRec' || m === 'bootRec' || m === 'riposteRec' || m === 'plungeRec' || m === 'boot') { out.gx = clamp(kx + side * standX); out.face = face; if (dx < hitR + 4 && (P.atk >= 0 || e.modeT > (s.tip ? 0.3 : 0.18))) swing(); out.why = 'cut him: recovering'; return out; }
   /* 6. BAIT HIS PISTOL from a step out; never poke the guard */
   const stand = s.rest ? FB_PLAN.bait + 30 : FB_PLAN.bait;
   out.gx = clamp(kx + side * stand); out.face = face; out.why = 'bait the pistol'; return out;
