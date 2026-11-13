@@ -415,7 +415,6 @@ export const MARK = {
 // hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
 /* ANSWER:BEGIN */
 export const ANSWER = {
-  'walleel|bubble': 'block', 'sunkencrew|lungeTell': 'block', 'sunkencrew|flurryTell': 'block', 'sunkencrew|bashTell': 'block', 'sunkencrew|reelTell': 'block', 'sunkencrew|chargeTell': 'block', 'sunkencrew|throwTell': 'dodge', 'sunkencrew|slamTell': 'jump',   /* (claude/deep3) THE WALL EEL: let it strike your shield (or stop short), cut it as it hangs; THE SUNKEN CREW / THE CURSED SAILOR */
   'wyrmling|sparkTell': 'dodge', 'wyrmling|coilTell': 'block', 'thunderwyrm|strikeTell': 'dodge', 'thunderwyrm|slamTell': 'jump', 'thunderwyrm|roarTell': 'block', 'thunderwyrm|tailTell': 'jump',   /* (claude/airship) */
   'sandskiff|sweepTell': 'block', 'sandskiff|potTell': 'dodge', 'skiffchief|potTell': 'dodge',   /* (claude/greatdune) */
   'hookjack|tell': 'block', 'hookjack|footTell': 'block',   /* (claude/linekit) hit him in the tell, parry it (he spins) or guard it (no damage, pushed 24 px along the line) */
@@ -709,7 +708,6 @@ export const ANSWER = {
 // A SHOT FROM ABOVE STILL FINDS A DUCKER: a high seed passes over only while it flies near level (src/duck.js seedOver).
 /* HEIGHT:BEGIN */
 export const HEIGHT = {
-  'walleel|bubble': 'low', 'sunkencrew|lungeTell': 'low', 'sunkencrew|flurryTell': 'low', 'sunkencrew|bashTell': 'low', 'sunkencrew|reelTell': 'low', 'sunkencrew|chargeTell': 'low', 'sunkencrew|throwTell': 'low', 'sunkencrew|slamTell': 'low',   /* (claude/deep3) the wall eel reaches the floor (a curtain's eel strikes down at a walker; a wall's at a swimmer's middle): a duck does not let it over; the crew's moves all reach the floor */
   'wyrmling|sparkTell': 'low', 'wyrmling|coilTell': 'low', 'thunderwyrm|strikeTell': 'low', 'thunderwyrm|slamTell': 'low', 'thunderwyrm|roarTell': 'low', 'thunderwyrm|tailTell': 'low',   /* (claude/airship) the spark arcs onto your spot, the bite lunges low, bolts / coil / roar / tail all reach the deck (no duck under any) */
   'sandskiff|sweepTell': 'low', 'sandskiff|potTell': 'low', 'skiffchief|potTell': 'low',   /* (claude/greatdune) the sweep cuts at the shins, the pots burst on the sand */
   'hookjack|tell': 'low', 'hookjack|footTell': 'low',   /* (claude/linekit) the hook swipe is at hand height: nothing of his goes over a duck */
@@ -995,6 +993,7 @@ export const heightOf = k => HEIGHT[k] || '';
 export const laneOf = k => HEIGHT[k] === 'high' ? 'duck' : (ANSWER[k] || ANSWER['*|' + k.split('|')[1]]) === 'jump' ? 'jump' : '';
 /* (claude/longwater3) THE TIDE-POOL CRAB (src/pool-crab.js PC_TELLS) and THE TIDE HERALD 2's one new mode (src/tide-herald.js: his other tells keep master's herald rows) */
 for (const [t, m, mk, an, ht] of [['poolcrab', 'pinchTell', '!', 'block', 'low'], ['poolcrab', 'emerge', '', '', ''], ['poolcrab', 'digTell', '', '', ''], ['herald', 'seize', '', '', '']]) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
+for (const [t, m, mk, an, ht] of [['walleel', 'bubble', '!', 'block', 'low'], ['sunkencrew', 'lungeTell', '!', 'block', 'low'], ['sunkencrew', 'flurryTell', '!', 'block', 'low'], ['sunkencrew', 'bashTell', '!', 'block', 'low'], ['sunkencrew', 'reelTell', '!', 'block', 'low'], ['sunkencrew', 'chargeTell', '!', 'block', 'low'], ['sunkencrew', 'throwTell', '!!', 'dodge', 'low'], ['sunkencrew', 'slamTell', '!!', 'jump', 'low']]) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; }   /* (claude/deep3) THE WALL EEL's bubbles and THE SUNKEN CREW / THE CURSED SAILOR's told moves (src/wall-eel.js, src/sunken-crew.js): the new modules are not read by tools/tells.mjs, so the rows are by hand */
 
 export function markOf(e) {
   const mode = e.t === 'archer' && e.draw > 0.3 && !(typeof e.mode === 'string' && e.mode.endsWith('Tell')) ? 'draw' : e.mode;
