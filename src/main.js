@@ -31,7 +31,7 @@ import { bakeWitchSkins } from './redraw/witch_world.js';   /* and its own runed
 import * as SLD from './slide.js'; import * as RSL from './run-slide.js';   /* THE RUNNING SLIDE (claude/slope): down pressed at a run on the flat */   /* THE BUTT-SLIDE (claude/slide): the hit, the bounce, the dust of down held on a slope */
 import * as SCA from './scree-art.js';
 import * as RLD from './ram-lord.js';   /* THE RAM LORD, REWORKED (claude/scree2): a beast duelist, his horns guard his front; the fold's overhangs are his opening */   /* THE SCREE PATH's own stone: the quarry's blocks, derrick and face (claude/scree2) */
-import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
+import * as CF2 from './cf-platform.js';   /* (claude/cf2) PLATFORM FEEL, dark behind CF2.CF2_SHIPS: the eased short-hop cut, held-only apex hang, corner/lip nudges */ import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
 import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/highcrown2art) HIGHCROWN 2's art: stone slabs, the tall hall, piers and chains, arch rings, the hoist, the grate and the bells */
 import * as KGT from './redraw/kitchen_tiles.js'; import * as KGA from './redraw/kitchen_art.js';   /* THE KITCHEN GATE's art (claude/kitchengateart): tile kit, halls, dressing, ambient, machines, the butcher */
 import * as UCT from './redraw/undercrown_tiles.js'; import * as UCA from './redraw/undercrown_art.js';   /* THE UNDERCROWN's art (claude/undercrown2art): tile kit, walls, slabs, posts, lights */
@@ -360,6 +360,7 @@ const q = new URLSearchParams(location.search);
 if (q.get('cf1') === '1') setCF1(true);   /* (claude/cf1) preview only: CF1_SHIPS stays false in the file */
 { const cq = q.get('cf3'); if (cq) CF3.setCF3(cq !== 'off'); }   /* (claude/cf3) lab only: ?cf3=on|off (CF3_SHIPS stays false in the file) */
 { const tq = q.get('traits'); if (tq) { TRT.setTraitsShip(tq !== 'off'); TRT.setLabTraits(tq === 'on' || tq === 'off' ? null : tq === 'core' || tq === 'def' ? tq : tq.split(',').filter(Boolean)); } }   /* (claude/traitframe) lab only: ?traits=on|off|core|def|<id>,<id> (TRAITS_SHIP stays false for everyone else) */
+{ const c2 = q.get('cf2'); if (c2) CF2.setCF2(c2 !== 'off' && c2 !== '0'); }   /* (claude/cf2) preview only: ?cf2=on turns the platform-feel pass on (CF2_SHIPS stays false) */
 
 // ---------- settings + progress ----------
 /* GAME SPEED DEFAULT (Daniel 10-14): new profiles start at 60%, the tuned pace, and old saves are NOT migrated. A later lane flips SPEED_DEFAULT to 1 and SPEED_MIGRATE to true after a boss-rates re-measure at 100% (the speedV3 migration + toast below are kept behind it). */
@@ -12005,7 +12006,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   for (const k of ['coyote', 'jbuf']) { const left = P[k] - dt; P[k] = left > 1e-5 ? left : 0; }
   if (P.jbufStash > 0) { P.jbuf = P.jbufStash; P.jbufStash = 0; }
   if (jumpHeld) P.jbuf = jumpHeld;   /* (the up-key jump held for its grace: it is still asked for next frame) */
-  if (!keys.jump && P.canCut && P.vy < MOVE.JUMP_CUT && !P.plunge) P.vy = MOVE.JUMP_CUT;
+  if (!keys.jump && P.canCut && P.vy < MOVE.JUMP_CUT && !P.plunge) P.vy = CF2.CF2_SHIPS ? CF2.cutVy(P.vy, P) : MOVE.JUMP_CUT;   /* (CF2) eased over 2 frames when on */
 
   /* (claude/ranger) HER X (src/ranger.js press): a shot NOCKED (let go before the draw: the quick shot; held: the draw, updateCharge), the RISING SHOT (up), the
      DOWNWARD SHOT (down, in the air: her plunge) - in a backflip too. Point-blank, DOWN on her feet, or with an empty quiver it is the KNIFE: the swing below */
@@ -12104,7 +12105,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
     const rising = P.vy < 0, apex = Math.abs(P.vy) < MOVE.APEX_VY && !P.ground;
     const fast = !P.ground && keys.down && !P.plunge && P.vy > -40 && !(P.sandSlide && P.sandSlide.carry) ? MOVE.FAST_FALL_G : 1; // FAST FALL: ask for the ground and it comes
-    const gk = P.plunge ? 1.6 : apex ? MOVE.APEX_G : rising ? 1 : MOVE.FALL_G * fast;
+    const gk = P.plunge ? 1.6 : apex ? (CF2.CF2_SHIPS ? CF2.apexG(!!keys.jump, P) : MOVE.APEX_G) : rising ? 1 : MOVE.FALL_G * fast;
     P.vy += GRAV * dt * gk;
     if (apex && !P.hangFx) { P.hangFx = true; } else if (!apex) P.hangFx = false;
   }
@@ -12170,17 +12171,18 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     }
   }
   if (GS > 0 && r.hitY && P.vy < 0) { // CORNER CORRECTION: clipped the lip of a block on the way up, so slide past it
-    for (const dx of [-3, 3, -5, 5]) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
+    for (const dx of (CF2.CF2_SHIPS ? CF2.cornerList() : [-3, 3, -5, 5])) { const hx = Math.floor((P.x + dx) / TS), hy = Math.floor((P.y - P.h - 1) / TS);
       if (!isSolid(hx, hy) && !isSolid(hx, hy + 1)) { P.x += dx; P.vy = Math.min(P.vy, -120); break; } }
   }
-  if (r.ground) { P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; P.kicked = false; }
+  if (CF2.CF2_SHIPS && GS > 0 && r.hitX && !r.hitY && !P.ground && !P.plunge && !P.climb && move) { const ln = CF2.lipNudge(isSolid, P.x, P.y, move, P.vy, TS); if (ln) { P.y += ln.dy; P.x += ln.dx; } }   /* (CF2) rising beside a ledge by <= 3 px: step up onto it */
+  if (r.ground) { P.cfHop = false; P.ground = true; P.groundTile = r.groundTile; P.vy = 0; P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; P.kicked = false; }
   else if (r.hitY) P.vy = 0;
   if (!P.ground && wasGround) P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; // (a mover counts: walking off a raft used to give no grace at all)
   if (HPK) HPK.footLand(prevY);   /* (claude/heropassa) THE WALL PLANT's shaft is footing, as a mover is */
   /* (claude/flotilla2) A RISING MOVER CATCHES A FALLING HERO: its top swept up through his feet this frame (m.dy < 0), so he was over where it WAS - the old test allowed
      only a falling mover's travel (max(0, dy)), and a hero landing on THE GALLEY HULL's rising benches fell through them (tools/flotilla-route.mjs) */
   if (GS > 0 && !P.ground && P.vy >= 0) for (const m of movers) { if (m.broken) continue;
-    if (prevY <= m.y + 1 + Math.abs(m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
+    if (prevY <= m.y + 1 + Math.abs(m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; P.cfHop = false; }
   }
   /* THE BUD PAD throws you. Landing is the trigger, not a press: the sign says LAND ON IT, and a pad that wanted a button
      would be a jump with extra steps. -420 rises 89 px, where the jump rises 51: enough for the stages a tier over the
