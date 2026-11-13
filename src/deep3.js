@@ -15,7 +15,7 @@
 //                   the bell with your stone and she rides you down (air under her rim); WALL EELS in the shaft's walls strike at the bell as it passes
 //   rows 274-291  THE CREW'S WRECK (the intro, the boss door's shrine) and THE WRECK'S GRAVE (the arena): THE SUNKEN CREW -> THE CURSED SAILOR (src/sunken-crew.js)
 // Theme: drowned stone, rot green, the bell's brass, black-blue + bioluminescence (plan s4). Timber only where it IS a ship (the crew's wreck). No goblins.
-// Checkpoints: master had 4; Deep 3 has 4 (the trench's early shrine on the wreck stack's shelf, master's kelp-forest shrine, the tower's foot at the bell, the wreck's door shrine before the crew).
+// Checkpoints: master had 4; Deep 3 has 4 (the belfry's shrine on F1's floor, master's kelp-forest shrine, the tower's foot at the bell, the wreck's door shrine before the crew).
 
 export const DEEP3_SHIPS = false;
 export function deep3On() {
@@ -45,7 +45,7 @@ export const D3 = {
   cavern: { x0: 40, x1: 156, y0: 274, y1: 291, floor: 292 },
   arena: { x0: 104, x1: 152, wallL: 103, wallR: 153, trigger: 106 },
   wreck: { deck: [70, 96, 286] },
-  checks: [[56, 291, 'wreck'], [40, 218, 'stair'], [59, 63, 'trench']],   /* the boss door's shrine on the wreck's floor; the tower's foot (F4's west landing, under F3's crack); the trench's EARLY shrine (Daniel 11-13): the west end of the wreck stack's plank shelf (row 64), in its air room, where the route comes down from the trench */
+  checks: [[56, 291, 'wreck'], [40, 218, 'stair'], [24, 175, 'belfry']],   /* the boss door's shrine on the wreck's floor; the tower's foot (F4's west landing, under F3's crack); the BELFRY's shrine (Daniel 11-13, moved here from the trench: the middle of the 195-route-tile gap between master's kelp-forest shrine and the tower's foot): F1's floor between the stone's rack and the first vent's breath, under the roof hatch's east edge, before the first eel */
   /* the timings (s) */
   slab: { stand: 0.8, crumble: 0.35 },   /* a heavy step on a crack: it creaks for `stand`, then gives in `crumble` */
   step: { stand: 0.45, crumble: 0.25 },
@@ -72,7 +72,7 @@ export function buildDeep3(R, T, TS = 16) {
   const keepPt = p => above(p.y);
   const keepRect = r => r[3] <= K;   /* [x0,x1,y0,y1] */
   const keepZonePx = z => z.y1 <= (K + 1) * TS;
-  const ents = R.ents.filter(e => keepPt(e) && !(e.t === 'check' && e.x === 62 && e.y === 63));   /* (11-13: master's raw shrine at 62,63 is one CHECK_DROP thins on master; here it must not shadow the trench's early shrine at 59,63 - the filler keeps one check per 5x5) master's ents above the cut, every raw shrine too (src/checkpoint-thin.js CHECK_DROP thins them exactly as on master: the kelp forest's stays); its ship / cold-road shrines go with the ship */
+  const ents = R.ents.filter(keepPt);   /* master's ents above the cut, every raw shrine too (src/checkpoint-thin.js CHECK_DROP thins them exactly as on master: the kelp forest's stays); its ship / cold-road shrines go with the ship */
   const ent = (t, x, y, o = {}) => ents.push({ t, x, y, ...o });
   const D = R.deep, out = {};
   for (const k of ['vents', 'clams', 'bulbs', 'wrecks', 'jellies', 'kelp', 'fish', 'props', 'banners']) out[k] = (D[k] || []).filter(keepPt);

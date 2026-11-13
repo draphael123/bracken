@@ -125,10 +125,13 @@ const lv = LEVELS.find(l => l.id === 'deep'), L = lv.build(), W = L.W, at = (x, 
   ok(R.near(D3.arena.trigger, D3.cavern.y1), 'reach: the arena\'s door');
   ok(R.near(gate.x, gate.y), 'reach: the gate');
   const checks = L.ents.filter(e => e.t === 'check');
-  ok(checks.length === 4, 'checkpoints: the trench\'s early shrine + master\'s kelp forest + the tower\'s foot + the wreck\'s door (' + checks.map(e => e.x + ',' + e.y).join(' ') + ')');
-  { const tr = checks.find(e => e.d3 === 'trench'); ok(tr && tr.x === 59 && tr.y === 63 && tr.y >= 60 && tr.y <= 100, 'the early shrine stands in rows 60-100 (the wreck stack\'s shelf, west end)');
-    ok(at(tr.x, tr.y) === T.AIR && at(tr.x, tr.y + 1) !== T.AIR && L.airRooms.some(([x0, x1, y0, y1]) => tr.x >= x0 && tr.x <= x1 && tr.y >= y0 && tr.y <= y1), 'and it stands in an AIR ROOM on footing (not underwater)');
-    ok(!L.ents.some(e => e.t !== 'check' && e.t !== 'coin' && e.t !== 'deco' && e.t !== 'sign' && Math.hypot(e.x - tr.x, e.y - tr.y) < 5), 'no foe or fixture within 5 tiles of it'); }
+  ok(checks.length === 4, 'checkpoints: the belfry shrine + the kelp forest one + the tower foot + the wreck door (' + checks.map(e => e.x + ',' + e.y).join(' ') + ')');
+  { const tr = checks.find(e => e.d3 === 'belfry'); const F1 = D3.floors[0];
+    ok(tr && tr.x === 24 && tr.y === F1.y1 && tr.y >= 160 && tr.y <= 195, 'the early shrine stands on F1 floor (rows 160-195, the middle of the long gap: Daniel 11-13)');
+    ok(at(tr.x, tr.y) === T.AIR && at(tr.x, tr.y + 1) !== T.AIR && (L.deep.vents || []).some(v => Math.abs(v.x - tr.x) <= 4 && Math.abs(v.y - tr.y) <= 1 && !v.hot), 'and it stands on footing beside a breathing vent (the tower is flooded, the vent is its air)');
+    ok(!L.ents.some(e => e.t !== 'check' && e.t !== 'coin' && e.t !== 'deco' && e.t !== 'sign' && e.t !== 'ballast' && Math.hypot(e.x - tr.x, e.y - tr.y) < 8), 'no foe or fixture within 8 tiles of it (the first eel is 11 off, the knight 22)');
+    ok(!L.deep3.rot.some(r => r.kind === 'vent' && r.y1 >= tr.y - 12 && r.y0 <= tr.y + 3 && Math.abs(r.x - tr.x) < 30), 'no rot vent reaches it');
+    ok(!L.deep3.settle.some(c => c.onto === 'f1'), 'no settling stone over F1'); }
   ok(checks.every(e => at(e.x, e.y) === T.AIR && at(e.x, e.y + 1) !== T.AIR), 'every checkpoint stands on footing');
   ok(L.arena.x0 > checks.find(e => e.d3 === 'wreck').x * TS, 'the wreck\'s shrine is before the crew\'s door');
 }
