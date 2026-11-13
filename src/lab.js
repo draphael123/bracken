@@ -824,10 +824,10 @@ export function gqGuardBot(BK, boss, P, k, h) {
     if (P.labSdE !== s || s.modeT > (P.labSdT ?? -1) + 0.05) { P.labSdE = s; P.labSdTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); if (GSTATS) { GSTATS.sTell = (GSTATS.sTell || 0) + 1; if (P.labSdTry) GSTATS.sTry = (GSTATS.sTry || 0) + 1; } }
     P.labSdT = s.modeT; P.face = dir; k.left = k.right = false;
     if (P.labSdTry) { parryAt(BK, h, s.modeT); return { goal: null, strike: false }; }
-    if (s.modeT < 0.2 && P.ground && !(P.dodge > 0)) BK.press('dodge');
+    if (s.modeT < 0.2 && P.ground && !(P.dodge > 0)) { BK.press('dodge'); if (GSTATS) GSTATS.sRoll = (GSTATS.sRoll || 0) + 1; }
     return { goal: null, strike: false };
   }
-  if (sd <= (LAB_REACH[h] || 22) + 8 && P.atk < 0 && !(P.dodge > 0) && (s.mode === 'rest' || s.stagger > 0 || (s.cd || 0) > 0.55)) { P.face = dir; k.left = k.right = false; k.block = false; return { goal: null, strike: true }; }
+  if (sd <= (LAB_REACH[h] || 22) + 8 && P.atk < 0 && !(P.dodge > 0) && (s.mode === 'rest' || s.stagger > 0 || (s.cd || 0) > 0.55)) { P.face = dir; k.left = k.right = false; k.block = false; if (GSTATS) GSTATS.sCut = (GSTATS.sCut || 0) + 1; return { goal: null, strike: true }; }
   return null;
 }
 function gqueenReact(BK, boss, P, k, A, h) {
