@@ -197,7 +197,7 @@ console.log('== S. SCORCHED');
 { const N = Q5N.scorch; const burnW = (o) => { const w = make(o); calm(w); w.H.mech().cd = 0; for (const h of w.heroes) h.x = w.A.x0 + 18 * TS; toTell(w); w.ring(); toBurn(w); return w; };
   const onLift = (w, h, i = 0) => { const hh = w.hoist(1); h.x = hh.cx; h.y = w.A.floor - 32; h.ground = true; h.q5 = true; w.step(2); };
   { const w = burnW(); w.heroes[0].x = w.A.x0 + 18 * TS; ok(w.e.mode === 'fireBurn', 'the burn is on'); w.setCur(w.heroes[0]); const r = w.H.q5Scorch(w.e, false); ok(r === false && w.e.mode === 'fireBurn', 'a blow from the FLOOR does not scorch her'); }
-  { const w = burnW(); onLift(w, w.heroes[0]); const hp0 = w.e.hp; ok(w.H.q5Scorch(w.e, false) === true && w.e.mode === 'stunned' && w.e.scorch && Math.abs(w.e.modeT - N.stun) < 1e-9, 'a blow from a hoist: stunned ' + N.stun + ' s (SCORCHED)'); ok(w.H.q5().state().fire === null && w.st.said.includes('SCORCHED') && w.st.said.includes('THE FIRE GOES OUT'), 'the fire goes out; told SCORCHED');
+  { const w = burnW(); onLift(w, w.heroes[0]); const hp0 = w.e.hp; ok(w.H.q5Scorch(w.e, false) === true && w.e.mode === 'stunned' && w.e.scorch && Math.abs(w.e.modeT - N.stun) < 1e-9, 'a blow from a hoist: stunned ' + N.stun + ' s (SCORCHED)'); ok(w.H.q5().state().fire === null && w.st.said.includes('SCORCHED') && w.st.said.includes('HER FIRE GOES OUT'), 'the fire goes out; told SCORCHED');
     const before = w.st.dmg.length; w.step(60 * 2); ok(w.st.dmg.length === before, 'no more burn after it');
     // x1.25 and cap
     const e = w.e; const a = w.H.q5Take(e, 100); ok(a === Math.round(100 * N.mul), 'x' + N.mul + ' a blow (100 -> ' + a + ')'); let tot = a, n = 0; while (e.modeT > 0.31 && n++ < 99) tot += w.H.q5Take(e, 100);

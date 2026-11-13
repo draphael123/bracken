@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 183,
+    "lines": [
+      { "s": "The Goblin Queen's roof fight starts at once: she stands in front of you.", "lv": ["crown"] },
+      { "s": "Her stones now tell you to strike them back, and a hit shows how much it did.", "lv": ["crown"] },
+      { "s": "The hitch in her hall when the bell rings is gone. Arrows ring bells too.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 182,
     "lines": [
       { "s": "The Goblin Queen's fight is reworked: first the hall, then the roof.", "lv": ["crown"] },

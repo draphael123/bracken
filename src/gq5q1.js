@@ -162,7 +162,7 @@ export function makeGQ5Q1(env) {
     if (!st.fire || e.mode !== 'fireBurn' || !guardOk()) return false; const tt = tn(), S0 = N.scorch;
     fireEnd(e, 'scorch'); e.mode = 'stunned'; e.modeT = S0.stun; e.scorch = true; e.q5Taken = 0; e.vx = 0; e.crownOut = false; e.flash = 0.4; st.scorches++;
     env.guard(tt + S0.stun + S0.ward); env.markStun(S0.stun);
-    ctx.number(e.x, e.y - 70, 'SCORCHED', '#ff9a5c'); ctx.number(e.x, e.y - 86, how === 'plunge' ? 'FROM ABOVE' : 'THE FIRE GOES OUT', '#ffd36b'); ctx.ring(e.x, e.y - 40, 34, '#ff9a5c', 0.4);
+    ctx.number(e.x, e.y - 70, 'SCORCHED', '#ff9a5c'); ctx.number(e.x, e.y - 86, how === 'plunge' ? 'FROM ABOVE' : 'HER FIRE GOES OUT', '#ffd36b'); ctx.ring(e.x, e.y - 40, 34, '#ff9a5c', 0.4);
     ctx.burst(e.x, e.y - 52, 14, ['#ff9a5c', '#ffd36b', '#fff6c8'], 90, 0.7); env.sfx('golemShatter'); ctx.shake(6); ctx.zoom(1.08, 0.3); return true;
   }
   /* called on every blow that reaches her, BEFORE her resist: P1 = the hero who struck, plunge = it is a plunge (FROM ABOVE / FIREDROP) */
