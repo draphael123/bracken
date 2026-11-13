@@ -35,7 +35,7 @@ export const CALL_LINES = new Set(['BOULDER: JUMP IT', /* (claude/scree3, routed
   /* (claude/burning3) THE BURNING VILLAGE 3: a burning gate put out - the way is open (main.js putOutHeap), routed as hint-shown requires */
   'THE GATE BURNS DOWN - THE WAY IS OPEN',
   /* (claude/hanging3) THE OWL REEVE REBUILT ON ROPES (src/main.js updateOwl): her perch cut under her, her rope cuts in phase two, all three perches down - routed as hint-shown requires */
-  'DOWN WITH HER PERCH: HIT HER', 'SHE GOES FOR THE ROPES', 'SHE CUTS THE ROPE', 'NOWHERE TO SIT',
+  'DOWN WITH HER PERCH: HIT HER', 'SHE GOES FOR THE ROPES', 'SHE CUTS THE ROPE', 'NOWHERE TO SIT', /* (claude/owl4-d) THE OWL REEVE 4 + the Shadow Goblin: the stoop's, the net's, the slam's and the lamp lesson's lines, which number() was dropping (tools/hint-shown.mjs) */ 'THE STOOP: OFF THE LINE', 'PARRIED: HIT HER', 'SLAMMED: HIT HER', 'SHE GOES FOR THE NET', 'SHE PULLS THE NET', 'THE NET: OUT FROM UNDER', 'HIT THE KNOT AT HER TALONS', 'THE NET FALLS ON HER', 'NETTED: MASH TO TEAR FREE', 'THE SANDBAG HANGS OVER HER: CUT THE DECK', 'BRING IT INTO THE LIGHT', 'IT SLIPS THE BLOW',
   /* (claude/marsh3) MARSH WOOD 3's boom (src/marsh3.js, main.js stepCurrentRaft and the lever's say): the raft held, the way open - routed as hint-shown requires */
   'THE BOOM HOLDS HER',
   /* claude/lumbertrail: THE LUMBER TRAIL's felling (src/felling.js) - the first stroke and the fall, routed as hint-shown requires */

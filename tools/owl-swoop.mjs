@@ -19,6 +19,7 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { DUCK_H } from '../src/duck.js';
 import { HEIGHT, ANSWER, MARK } from '../src/marks.js';
+import { owl4On } from '../src/owl4.js';   /* (claude/owl4-d) the flag in this process (BRACKEN_OWL4=1) is the page's flag */
 
 const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer'];
 const bad = [];
@@ -104,7 +105,7 @@ else {
   if (D.lampCrash !== 40) bad.push(`a blow of 20 in her lamp crash took ${D.lampCrash}, not 40 (x2)`);
   if (!(D.boards >= 28 && D.boards <= 32)) bad.push(`a blow of 20 on her on the boards took ${D.boards}, not ~30 (x1.5)`);
   if (!(D.outside10 >= 79 && D.outside10 <= 81)) bad.push(`ten blows of 20 outside an opening took ${D.outside10}, not 80 (0.4: B15, off the twentieth)`);
-  if (D.ward !== 0) bad.push(`a blow in her ward took ${D.ward}, not 0 (B3)`);
+  if (D.ward !== (owl4On() ? 8 : 0)) bad.push(`a blow in her ward took ${D.ward}, not ${owl4On() ? '8 (OWL4 B15: the 0.4x chip, a 20 blow)' : 0} (B3)`);   /* (claude/owl4-d) the flag's ward is chipped, never invulnerable (owlTake) */
   if (!(R.wardAfter > 2.4)) bad.push(`no ward as her opening ended (${R.wardAfter})`);
   for (const [ph, c] of [[1, R.cycle1], [2, R.cycle2]]) { const n = Object.values(c).reduce((a, b) => a + b, 0); console.log('cycle ' + ph, n, JSON.stringify(c));
     if (n < 55) bad.push(`phase ${ph}: only ${n} moves drawn`); for (const [k, v] of Object.entries(c)) if (v / n > 0.35) bad.push(`phase ${ph}: ${k} is ${Math.round(100 * v / n)}% of her cycle (> 35%)`);

@@ -83,7 +83,7 @@ try {
       fresh(); m = D('cw-stair'); board(m); swing(1); until(() => m.rs === 'top', 400); BK.sim(6); note('ropes: the exam counterweight rode up to the bridge high knot', m.rs === 'top' && P().onMover === m, { rs: m.rs });
       swing(-1); BK.sim(40); note('ropes: from the deck a blow cut the bridge high knot and it swung down', R('bridge-stair').state === 'down', { state: R('bridge-stair').state });
       hold('left', 120, () => P().ground && !P().onMover && P().x < 57 * TS); note('ropes: dropped off the deck onto the bridge', P().ground && Math.floor(P().y / TS) === 38 && P().x < 58 * TS, { x: +(P().x / TS).toFixed(1), row: Math.floor(P().y / TS) });
-      fresh(); for (const e of BK.enemies()) if (e.t === 'owl') e.mode = 'sleep'; m = D('cw-crown-w'); board(m); swing(-1); until(() => m.rs === 'top', 500); BK.sim(6);
+      fresh(); for (const e of BK.enemies()) if (e.t === 'owl') e.mode = 'sleep'; m = D('cw-crown-w'); board(m); swing((((BK.L.ropes || []).find(q => q.id === 'cw-crown-w') || { knot: [44] }).knot[0] * TS + 8) > P().x ? 1 : -1);   /* (claude/owl4-d) OWL4 moves this knot 44 -> 47, to the deck's far side: blow toward wherever it hangs */ until(() => m.rs === 'top', 500); BK.sim(6);
       note('ropes: the crown deck took the hero up level with her west perch', m.rs === 'top' && P().onMover === m && Math.abs(m.y - 9 * TS) < 2, { rs: m.rs, y: m.y });
       clear(); return out; })()`, 600000);
     for (const x of r) { if (!x.ok) bad++; console.log((x.ok ? ' ok  ' : 'FAIL ') + h.padEnd(8) + x.what + (x.extra ? '  ' + JSON.stringify(x.extra) : '')); }

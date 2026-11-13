@@ -34,7 +34,7 @@ try {
     BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'hanging')); BK.state = 'play'; BK.start(); BK.god = true; BK.sim(5); BK.reset();
     const A = BK.L.arena, FL = A.floor; BK.tp(Math.round(A.trigger / 16) + 4, Math.round(FL / 16) - 1); BK.sim(150); none();
     owl = BK.enemies().find(e => e.t === 'owl' && e.alive); if (!owl) return { err: 'no owl' };
-    const lamps = BK.props().filter(p => p.owl && !p.perch).sort((a, b) => a.x - b.x), all = BK.props().filter(p => p.owl);
+    const lamps = BK.props().filter(p => p.owl && !p.perch && !p.hv).sort((a, b) => a.x - b.x), all = BK.props().filter(p => p.owl && !p.hv);
     const dark = () => { for (const p of all) { p.lit = false; p.lampT = 0; p.wasBurning = false; p.cool = 0; } };
     const calm = () => { for (const e of BK.enemies()) if (e !== owl) e.alive = false; Object.assign(owl, { mode: 'sit', modeT: 99, perchI: 1, x: owl.perches[1].x, y: owl.perches[1].y, ward: 0, eyesT: 99, hootCd: 99, douseT: 99, ropeDone: true, hp: owl.maxHp, oil: null, pel: null, pMarks: null }); };
     const at = x => { none(); BK.P.x = x; BK.P.y = FL; BK.P.vx = 0; BK.P.vy = 0; BK.P.climb = false; BK.P.hp = BK.P.maxHp; BK.P.inv = 0; BK.P.dropT = 0; };
