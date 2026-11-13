@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 180,
+    "lines": [
+      { "s": "Groundwork for a reworked Goblin Queen fight is in; it is switched off for now.", "lv": [] },
+      { "s": "Nothing changes in play yet.", "lv": [] },
+      { "s": "New test hooks for that fight were added for the developers.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 179,
     "lines": [
       { "s": "The Goblin Princess fights with her blade now. She dashes at you, curtsies, then cuts.", "lv": ["crown"] },
