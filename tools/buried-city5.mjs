@@ -169,7 +169,7 @@ ok(gr.find(e => e.x < 500).sandWait === 'great' && gr.find(e => e.x > 280 && e.x
   ok(GBM.NEW_MOVES[1].join() === 'gob,blast,flip' && GBM.NEW_MOVES[2].join() === 'bulb', 'P1 = gob, blast, flip; P2 adds the shatter bulb (the approved kit, brief-newminis-1015)');
   ok(GB.rest >= 0.4 && GB.floor >= 0.4 && GB.openMul === 1.75 && GB.openT === 4.5, 'outside the opening he takes >= 0.4x (apron ' + GB.rest + ', ward ' + GB.floor + '); the opening is x1.75 for 4.5 s (claude/bc5fix: plan s5 said 3.5; the desktop knight was 0/5)');
   ok(GB.glintT >= 8 && GB.gap[0] >= 1.2 && GB.gap[1] >= 1.0 && GB.dmg.gob <= 22 && GB.dmg.blast <= 28 && GB.dmg.bulb <= 20 && GB.dmg.spike <= 10 && GB.blastLen <= 112 && GB.capFrac <= 0.25 && GB.capFrac >= 0.15, 'conservative (claude/bc5fix): the glass glints >= 8 s, the gaps >= 1.2/1.0 s, his blows <= 22/28/20/10, the cone <= 112 px, no blow over ' + GB.capFrac + ' of a hero max HP');
-  const F = GBM.newGlassFight(GBM.gbGeom(L.mini, TS)), e = { x: 0, y: 0, hp: 1500, maxHp: 1500, mode: 'walk', open: 0, alive: true };
+  const F = GBM.newGlassFight(GBM.gbGeom(L.mini, TS)), e = { x: 0, y: 0, hp: 1350, maxHp: 1350, mode: 'walk', open: 0, alive: true };
   const c = { said: [], number(x, y, t) { this.said.push(t); }, fx() {}, sound() {}, mark() {}, shake() {}, music() {}, hit() { return false; }, flip() { return true; }, step() {} };
   ok(GBM.gbTake(e, F, 100) === 50, 'a blow outside the opening: x0.5'); F.ward = 1; ok(GBM.gbTake(e, F, 100) === 40, 'in the ward: x0.4 - never 0 (B15)'); F.ward = 0;
   ok(GBM.hourStruck(e, F, c, 'gb') === 'dull' && c.said.includes(B5.BC5_SAY.gbNotYet) && e.mode === 'walk', 'a blow on his hourglass when it does not glint: IT HOLDS (told), no punishment, no opening');
