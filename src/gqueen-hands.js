@@ -972,7 +972,7 @@ export function makeGQueenHands(ctx) {
   function shardHome(e, r) {   // a shard reached her
     const R0 = S.roof, P4 = R0 && R0.q4; if (!P4) return;
     if (now() < P4.ward) { ctx.number(e.x, e.y - 60, 'GLANCES', '#c9c9d6'); ctx.ring(e.x, e.y - 40, 26, '#c9a0ff', 0.3); sfx('clank'); return; }
-    e.hp -= Math.round(e.maxHp * Q4N.p2.shardPct); e.flash = Q6 ? 0.5 : 0.3; ctx.number(e.x, e.y - 60, Q6 ? 'STRUCK -' + Math.round(Q4N.p2.shardPct * 100) + '%' : 'STRUCK', '#ffd36b');
+    e.hp -= Math.round(e.maxHp * Q4N.p2.shardPct); e.flash = Q6 ? 0.5 : 0.3; if (!(Q6 && r && r.teach)) if (!(Q6 && r && r.teach)) ctx.number(e.x, e.y - 60, Q6 ? 'STRUCK -' + Math.round(Q4N.p2.shardPct * 100) : 'STRUCK', '#ffd36b');   /* (the teach shard's own 'STRUCK - 8%!' says it) */   /* (the teach shard's own 'STRUCK - 8%!' says it) */
     if (Q6) { ctx.ring(e.x, e.y - 40, 36, '#ffd36b', 0.5); ctx.shake(3); }   /* (claude/gq6fix) the reflected stone's hit confirm ON HER: a bigger flash, a ring, the percent she lost */ if (G52 && r && r.teach) G52.teachHome(e, r); ctx.burst(e.x, e.y - 40, 8, ['#ffd36b', '#fff6c8', '#b28cff'], 70, 0.4); sfx('parry'); P4.homes.push(now());
     if (e.mode === 'roofStand' || e.mode === 'rec') e.modeT = Math.max(e.modeT, Q4N.p2.flinch);
     P4.homes = P4.homes.filter(t => now() - t <= Q4N.p2.dazeWin); S.homeTotal = (S.homeTotal || 0) + 1;
