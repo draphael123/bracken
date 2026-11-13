@@ -1674,7 +1674,7 @@ const REVIVE_D = 12;       /* how close his partner has to stand, in pixels */
 const REVIVE_T = 1.5;      /* and for how long, in seconds */
 const COOP_RULES = [
   'DOWN, NOT DEAD: STAND BY HIM ' + REVIVE_T + 's TO LIFT HIM',
-  'LEAVE HIM ' + DOWN_T + 's AND HE WAKES AT THE SHRINE ALONE, PAYING HIS OWN COST',
+  'LEAVE HIM ' + DOWN_T + 's: HE WAKES AT THE SHRINE, PAYING HIS COST',   /* (small1113) the old 66-char line drew 359 px wide on a 320 px view (textfit OFFSCREEN, coop locked); this one is ~294 */
   'SCORED: KILLS, COINS, AND ABOVE ALL REVIVES',
 ];
 const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
