@@ -17,6 +17,7 @@ import { gauge, floatY, kOf, lineY, bites as tideBites } from './tide-kit.js';
 import { LW3 } from './longwater3.js';
 import * as PCM from './pool-crab.js';
 import * as THM from './tide-herald.js';
+import * as LA from './redraw/lw3_art.js'; import * as CAA from './redraw/pool_crab_art.js'; import * as HAA from './redraw/tide_herald_art.js'; import * as SDL from './redraw/sea_dial.js';   /* (claude/saltart) the art */
 const R = Math.round, TS = 16;
 export const LW3_HANDS = { wheelCool: 10, bellCool: 4, trapW: 12, moorW: 10, hideT: 6 };
 export const LW3_SAY = { bell: 'THE SEA BELL: THE TIDE COMES IN', sluice: 'THE SLUICE WHEEL HOLDS THE SEA OUT', wound: 'THE WHEEL IS STILL WINDING BACK', race: 'THE RACE CARRIES YOU BACK',
@@ -30,7 +31,7 @@ export function makeLongWater3Hands(ctx) {
   const on = () => !!(lv() && lv().lw3);
   H.on = on;
   H.owns = e => !!e && (e.t === 'poolcrab' || (e.t === 'herald' && !!e.lw3));
-  H.drawsSelf = e => !!e && e.t === 'poolcrab';
+  H.drawsSelf = e => !!e && (e.t === 'poolcrab' || (e.t === 'herald' && !!e.lw3));
   const tideS = id => TK() && TK().tides.find(s => s.id === id);
   const dur = (T, ph) => (T.cycle[ph] ?? 3) / (T.rate || 1);
   H.clear = () => {
@@ -170,60 +171,35 @@ export function makeLongWater3Hands(ctx) {
   /* ---------- DRAWING (GREYBOX: the art pass owes the bells, wheels, boats, traps, crabs, the village, the lighthouse and the Herald's new poses) ---------- */
   H.drawBack = (g, cx, cy, t) => {
     if (!S) return; const VW = ctx.VW(), L = lv();
-    /* THE TIDE-CLOCK LIGHTHOUSE on the headland: in view the whole level - far back (parallax), its dial the bay's tide (A3) */
-    { const wx = 645 * TS, px = R((wx - cx) * 0.12 + VW * 0.78), base = R(30 * TS - cy * 0.12 - 40); const gb = gauge(TK(), 'bay');
-      g.globalAlpha = 0.55; g.fillStyle = '#a8b4bc'; g.fillRect(px - 6, base - 70, 12, 70); g.fillStyle = '#8a969e'; g.fillRect(px - 8, base - 74, 16, 6);
-      g.fillStyle = '#e8c070'; g.fillRect(px - 4, base - 82, 8, 8);   /* the lantern: amber */
-      const dx = px, dy = base - 50; g.fillStyle = '#dfe8ec'; g.beginPath(); g.arc(dx, dy, 7, 0, Math.PI * 2); g.fill();
-      if (gb) { const a = Math.PI * (0.75 + 1.5 * gb.k); g.strokeStyle = gb.tell && Math.sin(t * 12) > 0 ? '#ffd36b' : '#2a4a5a'; g.lineWidth = 2; g.beginPath(); g.moveTo(dx, dy); g.lineTo(dx + Math.cos(a) * 6, dy + Math.sin(a) * 6); g.stroke(); g.lineWidth = 1; }
-      g.globalAlpha = 1; }
-    /* the village (props) */
+    /* THE TIDE-CLOCK LIGHTHOUSE on the headland: in view the whole level - far back (parallax), its dial the bay's tide (A3). claude/saltart: drawn (src/redraw/lw3_art.js) */
+    { const wx = 645 * TS, px = R((wx - cx) * 0.12 + VW * 0.78), base = R(30 * TS - cy * 0.12 - 40); g.globalAlpha = 0.7; LA.drawLighthouse(g, px, base, gauge(TK(), 'bay'), t, true); g.globalAlpha = 1; }
     for (const p of L.lw3Props || []) { const x = R(p.x * TS + 8 - cx), y = R((p.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;
-      if (p.kind === 'smokehouse') { g.fillStyle = '#4a4440'; g.fillRect(x - 12, y - 26, 24, 26); g.fillStyle = '#6a5e54'; g.fillRect(x - 14, y - 30, 28, 5); g.fillStyle = '#e8c070'; g.fillRect(x - 3, y - 14, 6, 6);
-        if (Math.random() < 0.15) ctx.parts().push({ x: p.x * TS + 8 + (Math.random() - 0.5) * 6, y: (p.y + 1) * TS - 32, vx: 6 + Math.random() * 6, vy: -14 - Math.random() * 8, life: 1.6, max: 1.6, col: 'rgba(220,226,230,0.5)', size: 2, grav: -2 }); }
-      if (p.kind === 'millwheel') { g.strokeStyle = '#3a3a3a'; g.lineWidth = 2; const a = t * (kOf(TK(), 'race') > 0.3 ? 1.6 : 0.1); g.beginPath(); g.arc(x, y - 22, 20, 0, Math.PI * 2); g.stroke();
-        for (let i = 0; i < 6; i++) { const b = a + i * Math.PI / 3; g.beginPath(); g.moveTo(x, y - 22); g.lineTo(x + Math.cos(b) * 20, y - 22 + Math.sin(b) * 20); g.stroke(); } g.lineWidth = 1; }
-      if (p.kind === 'lighthouse') { g.fillStyle = '#b8c4cc'; g.fillRect(x - 9, y - 120, 18, 120); g.fillStyle = '#a03a30'; g.fillRect(x - 9, y - 90, 18, 8); g.fillRect(x - 9, y - 50, 18, 8);
-        g.fillStyle = '#e8c070'; g.fillRect(x - 6, y - 134, 12, 12); const gb = gauge(TK(), 'bay'); g.fillStyle = '#eef4f6'; g.beginPath(); g.arc(x, y - 104, 9, 0, Math.PI * 2); g.fill();
-        if (gb) { const a = Math.PI * (0.75 + 1.5 * gb.k); g.strokeStyle = '#1a2a34'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y - 104); g.lineTo(x + Math.cos(a) * 8, y - 104 + Math.sin(a) * 8); g.stroke(); g.lineWidth = 1; } } }
-    for (const l of S.locals) { if (l.hide > 0) continue; const x = R(l.px - cx), y = R((l.y + 1) * TS - cy); if (x < -20 || x > VW + 20) continue; g.fillStyle = '#5a6a72'; g.fillRect(x - 3, y - 12, 6, 9); g.fillStyle = '#e0c8a8'; g.fillRect(x - 2, y - 15, 4, 3); g.fillStyle = '#3a3a3a'; g.fillRect(x - 2, y - 3, 2, 3); g.fillRect(x + 1, y - 3, 2, 3); }
-    for (const gl of S.gulls) { const x = R(gl.x * TS + 8 - cx), y = R((gl.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; g.fillStyle = '#8a7a5a'; g.fillRect(x - 3, y - 2, 6, 2);
-      for (let i = 0; i < 3; i++) { const hx = x - 8 + i * 8 + R(Math.sin(gl.t * 3 + i) * 2), hy = y - 4 - R(gl.up * (10 + i * 6)) - (gl.up > 0 ? R(Math.abs(Math.sin(gl.t * 14 + i)) * 2) : 0);
-        g.fillStyle = '#eef0f0'; g.fillRect(hx - 2, hy - 2, 4, 3); g.fillStyle = '#9aa0a4'; if (gl.up > 0.2) { g.fillRect(hx - 5, hy - 3 + R(Math.sin(gl.t * 20 + i)), 3, 1); g.fillRect(hx + 2, hy - 3 + R(Math.sin(gl.t * 20 + i)), 3, 1); } } }
+      if (p.kind === 'smokehouse') { LA.drawSmokehouse(g, x, y, t);
+        if (Math.random() < 0.15) ctx.parts().push({ x: p.x * TS + 8 + (Math.random() - 0.5) * 6, y: (p.y + 1) * TS - 42, vx: 6 + Math.random() * 6, vy: -14 - Math.random() * 8, life: 1.6, max: 1.6, col: 'rgba(220,226,230,0.5)', size: 2, grav: -2 }); }
+      if (p.kind === 'millwheel') LA.drawMillWheel(g, x, y - 22, t * (kOf(TK(), 'race') > 0.3 ? 1.6 : 0.1), kOf(TK(), 'race') > 0.3 ? 1 : 0, t);
+      if (p.kind === 'lighthouse') LA.drawLighthouse(g, x, y, gauge(TK(), 'bay'), t, false); }
+    for (const l of S.locals) { if (l.hide > 0) continue; const x = R(l.px - cx), y = R((l.y + 1) * TS - cy); if (x < -20 || x > VW + 20) continue; LA.drawLocal(g, x, y, l.t, l.dir, l.home & 1); }
+    for (const gl of S.gulls) { const x = R(gl.x * TS + 8 - cx), y = R((gl.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; LA.drawGulls(g, x, y, gl.up, gl.t); }
     /* the bells and the wheels */
     for (const T0 of TK().tides) for (const v of T0.verbs) { const x = R(v.x * TS + 8 - cx), y = R((v.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
-      if (v.t === 'bell') { g.fillStyle = '#3a3a44'; g.fillRect(x - 1, y - 24, 2, 24); g.fillRect(x - 7, y - 24, 14, 2); const sw = R(Math.sin(t * 18) * 3 * v.swing);
-        g.fillStyle = '#b08a3a'; g.fillRect(x - 5 + sw, y - 22, 10, 9); g.fillStyle = '#e0c070'; g.fillRect(x - 4 + sw, y - 21, 2, 7); }
-      if (v.t === 'sluice') { const held = T0.hold > 0, a = held ? t * 4 : 0; g.strokeStyle = '#6a6e74'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 14, 9, 0, Math.PI * 2); g.stroke();
-        for (let i = 0; i < 4; i++) { const b = a + i * Math.PI / 2; g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x + Math.cos(b) * 9, y - 14 + Math.sin(b) * 9); g.stroke(); } g.lineWidth = 1;
-        g.fillStyle = '#4a4e54'; g.fillRect(x - 2, y - 6, 4, 6);
-        if (held) { const k = T0.hold / (v.hold || 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 10, y - 28, R(20 * k), 2); }
-        else if (v.cool > 0) { g.fillStyle = '#9ab0c0'; g.fillRect(x - 10, y - 28, R(20 * Math.min(1, v.cool / LW3_HANDS.wheelCool)), 1); } } }
+      if (v.t === 'bell') LA.drawBell(g, x, y, v.swing || 0, t, v.swing || 0);
+      if (v.t === 'sluice') LA.drawSluice(g, x, y, T0.hold > 0 ? T0.hold / (v.hold || 6) : 0, !(T0.hold > 0) && v.cool > 0 ? Math.min(1, v.cool / LW3_HANDS.wheelCool) : 0, t); }
     /* the moorings */
     for (const id in S.moors) { const m = S.moors[id]; const x = R(m.x * TS + 8 - cx), y = R((m.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
-      g.fillStyle = '#5a5048'; g.fillRect(x - 2, y - 14, 4, 14); if (!m.cut) { const b = lv().moversExtra.find(q => q.fid === m.boat); if (b) { g.strokeStyle = '#c8b890'; g.beginPath(); g.moveTo(x, y - 10); g.lineTo(R(b.x + b.w - cx), R(b.y - cy) + 2); g.stroke(); } } }
+      LA.drawMooring(g, x, y, m.cut, t); if (!m.cut) { const b = lv().moversExtra.find(q => q.fid === m.boat); if (b) { g.strokeStyle = '#86734a'; g.beginPath(); g.moveTo(x, y - 10); g.lineTo(R(b.x + b.w - cx), R(b.y - cy) + 2); g.stroke(); } } }
     /* the jellies in a live bite box */
     for (const T0 of TK().tides) for (const b of T0.T.bites || []) { const live = T0.T.mode !== 'manual' && (b.when === 'high' ? T0.k >= (b.at ?? 0.85) : T0.k <= (b.at ?? 0.15)); if (!live) continue;
       const ly = lineY(TK(), T0.id); for (let i = 0; i < 8; i++) { const wx = (b.x0 + ((i * 37) % (b.x1 - b.x0 + 1))) * TS + 8, wy = Math.max(ly + 10, (b.y0 + ((i * 13) % (b.y1 - b.y0 + 1))) * TS) + Math.sin(t * 2 + i) * 6;
-        const x = R(wx - cx), y = R(wy - cy); if (x < -10 || x > VW + 10) continue; g.globalAlpha = 0.7; g.fillStyle = '#e2c8ff'; g.fillRect(x - 3, y - 2, 6, 3); g.fillStyle = '#c8a8e8'; g.fillRect(x - 2, y + 1, 1, 3); g.fillRect(x + 1, y + 1, 1, 3); g.globalAlpha = 1; } }
+        const x = R(wx - cx), y = R(wy - cy); if (x < -10 || x > VW + 10) continue; LA.drawJelly(g, x, y, t, i); } }
   };
   H.drawMover = (g, m, cx, cy) => {
-    if (m.lw3 !== 'float') return false; const x = R(m.x - cx), y = R(m.y - cy), w = R(m.w);
-    /* a tarred, barnacled fishing boat: her deck the platform (timber is right here: she IS a boat) */
-    g.fillStyle = '#2a2622'; g.beginPath(); g.moveTo(x - 2, y); g.lineTo(x + w + 2, y); g.lineTo(x + w - 4, y + 10); g.lineTo(x + 4, y + 10); g.closePath(); g.fill();
-    g.fillStyle = '#4a3e34'; g.fillRect(x, y, w, 2); g.fillStyle = '#c8c0b0'; for (let i = 4; i < w - 2; i += 7) g.fillRect(x + i, y + 6, 2, 1);
-    g.fillStyle = '#6a5a48'; g.fillRect(x + R(w / 2) - 1, y - 18, 2, 18); return true;
+    if (m.lw3 !== 'float') return false; LA.drawBoat(g, R(m.x - cx), R(m.y - cy), R(m.w), ctx.time(), { loose: !(m.moor && S && S.moors[m.moor] && !S.moors[m.moor].cut) }); return true;
   };
   H.drawEnt = (g, e, cx, cy, t) => {
-    if (e.t !== 'poolcrab') return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1;
-    if (e.mode === 'buried') { g.fillStyle = '#c8b890'; g.fillRect(x - 6, y - 1, 12, 1); g.fillStyle = '#2a2020'; g.fillRect(x - 3, y - 4, 1, 3); g.fillRect(x + 2, y - 4, 1, 3); g.fillStyle = '#f0e8d0'; g.fillRect(x - 3, y - 5, 1, 1); g.fillRect(x + 2, y - 5, 1, 1); return; }
-    if (e.mode === 'emerge' || e.mode === 'digTell') { for (let i = 0; i < 4; i++) { g.fillStyle = '#c8b890'; g.fillRect(x - 7 + R(Math.random() * 14), y - 2 - R(Math.random() * 4), 2, 2); } }
-    const flip = e.mode === 'flipped', sink = e.mode === 'emerge' ? R(6 * Math.max(0, e.modeT / PCM.PC.emerge)) : e.mode === 'digTell' ? R(6 * (1 - Math.max(0, e.modeT / PCM.PC.dig))) : 0;
-    g.fillStyle = flip ? '#e8c8a8' : '#b8483a'; g.fillRect(x - 7, y - 7 + sink, 14, 6); g.fillStyle = '#e07060'; g.fillRect(x - 6, y - 8 + sink, 12, 2);
-    g.fillStyle = '#7a2a22'; for (const dx of [-6, -3, 3, 6]) g.fillRect(x + dx, y - 2 + sink, 1, 2);
-    if (!flip) { const up = e.mode === 'pinchTell', open = e.mode === 'rec'; g.fillStyle = open ? '#ffd36b' : '#c9563d';
-      g.fillRect(x + f * 7 - (f < 0 ? 4 : 0), y - (up ? 14 : 8) + sink, 4, 4); g.fillRect(x - f * 7 - (f > 0 ? 3 : 0), y - 7 + sink, 3, 3);
-      g.fillStyle = '#1a1414'; g.fillRect(x - 2, y - 10 + sink, 1, 2); g.fillRect(x + 1, y - 10 + sink, 1, 2); }
+    const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1;
+    if (e.t === 'herald') { HAA.drawHerald(g, x, y, f, { mode: e.mode, hurtT: e.hurtT, flash: e.flash, vx: e.vx, seed: 0 }, t); return; }
+    if (e.t !== 'poolcrab') return;
+    CAA.drawCrab(g, x, y, f, { mode: e.mode, hurtT: e.hurtT, flash: e.flash, seed: (e.home % 97) * 0.13, k: e.mode === 'emerge' ? 1 - Math.max(0, e.modeT / PCM.PC.emerge) : e.mode === 'digTell' ? 1 - Math.max(0, e.modeT / PCM.PC.dig) : 1 }, t);
     if (PCM.pcOpen(e) && Math.sin(t * 10) > 0) { g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 5, 10, 0, Math.PI * 2); g.stroke(); }
   };
   H.drawOver = (g, cx, cy, t) => {
@@ -232,9 +208,7 @@ export function makeLongWater3Hands(ctx) {
     for (const r of L.lw3Races || []) { if (kOf(TK(), r.id) < 0.3) continue; const ly = lineY(TK(), r.id); for (let i = 0; i < 10; i++) { const wx = (r.x0 + ((i * 7 + R(t * 9)) % (r.x1 - r.x0 + 1))) * TS, wy = ly + 12 + (i * 11) % 80;
       const x = R(wx - cx), y = R(wy - cy); if (x < -20 || x > VW) continue; g.fillStyle = 'rgba(223,242,248,0.5)'; g.fillRect(x, y, 8, 1); } }
     /* the traps (over the water: a basket on one rope) */
-    for (const tr of S.traps) { const x = R(tr.x * TS + 8 - cx), y = R(tr.py - cy); if (x < -20 || x > VW + 20) continue;
-      if (tr.st === 'hang') { g.strokeStyle = '#c8b890'; g.beginPath(); g.moveTo(x, R((tr.y - 3) * TS - cy)); g.lineTo(x, y); g.stroke(); g.fillStyle = '#3a3a34'; g.fillRect(x - 10, R((tr.y - 3) * TS - cy) - 2, 20, 2); }
-      g.fillStyle = '#6a5e48'; g.fillRect(x - 6, y, 12, 12); g.fillStyle = '#8a7e64'; for (let i = 0; i < 12; i += 3) g.fillRect(x - 6 + i, y, 1, 12); if (tr.kind === 'coins' && tr.st === 'hang') { g.fillStyle = '#ffd34a'; g.fillRect(x - 2, y + 4, 4, 3); } }
+    for (const tr of S.traps) { const x = R(tr.x * TS + 8 - cx), y = R(tr.py - cy); if (x < -20 || x > VW + 20) continue; LA.drawTrap(g, x, y, tr.st === 'hang', tr.st === 'hang' ? R((tr.y - 3) * TS - cy) - y : null, tr.kind, t); }
     /* THE HERALD's reads: gold ring + timer open, grey warded, the move's word, the wave's crest, the water spears, the undertow */
     const B = ctx.boss; if (Q && B && B.lw3 && B.alive) { const x = R(B.x - cx), y = R(B.y - cy);
       if (THM.thOpen(B)) { const k = B.open / (B.mode === 'mired' ? (Q.ph === 2 ? THM.TH.mireP2 : THM.TH.mire) : THM.TH.thrust.reel); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 18, 26, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
@@ -242,10 +216,10 @@ export function makeLongWater3Hands(ctx) {
       else if (Q.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 18, 26, 0, Math.PI * 2); g.stroke(); }
       if (B.mode === 'callTell') { g.strokeStyle = 'rgba(124,200,200,' + (0.4 + 0.4 * Math.sin(t * 12)) + ')'; g.beginPath(); g.arc(x, y - 30, 10 + ((t * 30) % 16), 0, Math.PI * 2); g.stroke(); }
       if (WORD && ctx.text) { const M = THM.MOVES[WORD.k]; if (M) ctx.text(THM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 66, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
-      if (Q.wave) { const wx = R(Q.wave.x - cx), top = R(lineY(TK(), 'square') - cy) - 20, bot = R(L.arena.floor - cy) + 2; g.globalAlpha = 0.85; g.fillStyle = '#7cc8c8'; g.beginPath(); g.moveTo(wx - Q.wave.dir * 30, bot); g.quadraticCurveTo(wx - Q.wave.dir * 4, top - 2, wx + Q.wave.dir * 6, top + 4); g.lineTo(wx + Q.wave.dir * 4, bot); g.closePath(); g.fill(); g.globalAlpha = 1; }
+      if (Q.wave) LA.drawWave(g, R(Q.wave.x - cx), R(lineY(TK(), 'square') - cy) - 20, R(L.arena.floor - cy) + 2, Q.wave.dir, t);
       for (const s of Q.spears) { const sx = R(s.x - cx), fy = R(L.arena.floor - cy); if (s.t < 0) { if (Math.sin(t * 30) > 0) { g.fillStyle = '#7cc8c8'; g.fillRect(sx - 6, fy - 3, 12, 2); } continue; }
-        const hh = R(54 * Math.min(1, s.t / 0.12) * (1 - Math.max(0, s.t - 0.35) / 0.2)); g.globalAlpha = 0.85; g.fillStyle = '#4aa0a8'; g.fillRect(sx - 5, fy - hh, 10, hh); g.fillStyle = '#e8f4f0'; g.fillRect(sx - 2, fy - hh, 4, Math.min(8, hh)); g.globalAlpha = 1; }
-      if (Q.pull > 0) { for (let i = 0; i < 12; i++) { const a = t * 4 + i, r = 30 + ((t * 80 + i * 13) % 140); g.fillStyle = '#7cc8c8'; g.fillRect(x + R(Math.cos(a) * r), y - 6 - (i % 3) * 4, 3, 1); } } }
+        LA.drawSpear(g, sx, fy, 54 * Math.min(1, s.t / 0.12) * (1 - Math.max(0, s.t - 0.35) / 0.2), t); }
+      if (Q.pull > 0) LA.drawSwirl(g, x, y, t, 150); }
   };
   /* ---------- THE WATER HOOKS (the generic wiring's ctx.hooks(): this level's words, sounds, verbs, the Herald's flats, the foam and the gauge on the one kit) ---------- */
   H.water = {
@@ -274,13 +248,10 @@ export function makeLongWater3Hands(ctx) {
     miss(hb) { if (!S) return;
       for (const T0 of TK().tides) for (const q of T0.verbs) if (q.t === 'sluice' && q.cool > 1.3) { const x = q.x * TS + 8, y = (q.y + 1) * TS;
         if (hb.l < x + 11 && hb.r > x - 11 && hb.t < y - 4 && hb.b > y - 30 && !S.told.wound) { S.told.wound = 1; ctx.number(x, y - 34, LW3_SAY.wound, '#9ab0c0'); } } },
-    foam(g, x0, x1, y, t, ph) { if (!S || x1 <= x0) return; y -= 1; g.fillStyle = ph === 'warn' ? 'rgba(255,255,255,0.85)' : 'rgba(223,242,248,0.6)'; for (let x = x0 - (x0 % 6) + R(t * 20) % 6; x < x1; x += 6) g.fillRect(x, y, 3, 1); },
+    foam(g, x0, x1, y, t, ph) { if (!S || x1 <= x0) return; LA.drawFoam(g, x0, x1, y, t, ph); },
     /* THE A3 GAUGE: the tide you are by (the bay, the race, the harbour, the flats) - art owed: the dial */
     gauge(g, t, P) { if (!S) return; const L = lv(), T0 = TK().tides.find(q => (q.T.pools || []).some(id => { const p = L.pools.find(pp => pp.id === id); return p && P.x >= p.x0 - 200 && P.x <= p.x1 + 40; })); if (!T0) return;
-      const gg = gauge(TK(), T0.id), x = 6, y = 30, h = 24; g.fillStyle = 'rgba(10,14,22,0.7)'; g.fillRect(x, y, 10, h + 4);
-      g.fillStyle = gg.tell && Math.sin(t * 16) > 0 ? '#ffffff' : '#7cc8e8'; const fh = R(h * gg.k); g.fillRect(x + 2, y + 2 + h - fh, 6, Math.max(1, fh));
-      if (gg.coming === 'in') { g.fillStyle = '#ffd36b'; g.fillRect(x + 11, y + 2, 3, 3); } if (gg.coming === 'out') { g.fillStyle = '#9ab0c0'; g.fillRect(x + 11, y + h - 2, 3, 3); }
-      if (gg.held) { g.fillStyle = '#ffd36b'; g.fillRect(x, y + h + 6, R(10 * Math.min(1, gg.holdLeft / 10)), 2); } },
+      SDL.drawHud(g, 6, 30, gauge(TK(), T0.id), t, LA.SALT_SKIN); },
   };
   H.barName = e => 'THE TIDE HERALD' + (e.mode === 'mired' && e.open > 0 ? '  IN THE MUD' : e.mode === 'reel' && e.open > 0 ? '  PARRIED' : Q && Q.ward > 0 ? '  WARDED' : Q && Q.ph === 2 && Q.sea === 'his' ? '  THE SEA IS HIS' : e.mode === 'callTell' ? '  CALLING THE SEA' : '');
   H.end = e => { if (Q && e && (!e.alive || e.hp <= 0)) { Q.dead = true; Q.wave = null; Q.spears = []; Q.pull = 0; ctx.number(e.x, e.y - 70, THM.TH_SAY.down, '#7cc8c8'); }

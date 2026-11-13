@@ -207,7 +207,7 @@ export function buildLongWater3(R, T, TS = 16) {
   const out = {
     ...R, W, H, grid, ents, pools, falls, moversExtra: movers, calm,
     bore: { ...R.bore, x1: Math.min(R.bore.x1, X0 * TS) }, fresh: [0, 370], turn: [300, 420],
-    music: 'longwater', rule: LW3_RULE, lw3: true, checkRun: 280,   /* two shrines in Saltreach (Daniel: fewer): the auto-placer must not put one back between them */
+    music: 'longwater', rule: LW3_RULE, lw3: true, lw3Kit: true, checkRun: 280,   /* two shrines in Saltreach (Daniel: fewer): the auto-placer must not put one back between them */
     tides, lw3Bells: bells, lw3Sluices: sluices, lw3Traps: traps, lw3Moors: moors, lw3Props: props, lw3Races: races, lw3Boats: Object.values(floats).flat().map(f => ({ ...f, x: f.x0 })),
     rigBands: (R.rigBands || []).concat(rigBands), routeSupports: supports,
     sections: LW3.sections.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
