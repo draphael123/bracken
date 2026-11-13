@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 172,
+    "lines": [
+      { "s": "Groundwork for a new Buried City stretch is in; it is switched off for now.", "lv": [] },
+      { "s": "A crash when a Glassblower or Sand Grasper dies was fixed.", "lv": [] },
+      { "s": "Nothing else changes in play yet.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 171,
+    "lines": [
+      { "s": "Groundwork for a new Goblin Princess fight is in; it is switched off for now.", "lv": [] },
+      { "s": "Nothing changes in play yet.", "lv": [] },
+      { "s": "A new test hook for that fight was added for the developers.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 170,
     "lines": [
       { "s": "Foes flinch and flash when you hit them.", "lv": [] },
