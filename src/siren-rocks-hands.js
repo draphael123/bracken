@@ -9,7 +9,7 @@
 //   THE TIDES        L.tides through the tide kit (no respawn reset: the cove and the spire start at their first phase, as before): the cove (pumice rafts float on it, the tide bell calls it in) and the spire (THE NAGA QUEEN floods it).
 //   BLOWHOLES        L.srBlowholes: quiet -> BOOM (the tell, spray) -> SPOUT (whoever stands over it is thrown up the chimney: vy = SPOUT.vy).
 //   THE NAGA GUARD   (src/naga-guard.js) and THE NAGA QUEEN (src/naga-queen.js): spawn, step, every blow on them, the drawing.
-// main.js calls: on, clear, spawnEnt, owns, updateEnt, take, update, strike, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
+// main.js calls: on, clear, spawnEnt, owns, updateEnt, take, update, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
 import { gauge, floatY, kOf } from './tide-kit.js';
 import { SPOUT, SR } from './siren-rocks.js';
 import * as NGM from './naga-guard.js';
@@ -124,15 +124,12 @@ export function makeSirenRocksHands(ctx) {
   };
   const near = (x, r) => { const P = ctx.hero(); return !!(P && Math.abs(P.x - x) < r); };
 
-  /* ---------- A BLOW: a stone, the tide bell ---------- */
-  H.strike = hb => {
-    if (!K() || !S || !hb) return;   /* (a blow on the tide bell is the wiring's tideStrike: the sound and the word are H.water.verb) */
-    for (const id in S.stones) { const s = S.stones[id]; if (s.broken) continue;
-      const x = stoneX(s), feet = stoneFeet(s);
-      if (!(hb.l < x + SR_HANDS.stoneW / 2 + 2 && hb.r > x - SR_HANDS.stoneW / 2 - 2 && hb.t < feet - 2 && hb.b > feet - SR_HANDS.stoneH)) continue;
-      breakStone(s);
-    }
-  };
+  /* ---------- THE GADGETS: a singing stone (claude/seagadget: declared to the one hook, src/sea-gadget.js - a blow AND any hero's shot / spell / thrown weapon shatters it; the tide bell is a kit verb the same hook strikes) ---------- */
+  H.gadgets = () => { if (!K() || !S) return []; const out = [];
+    for (const id in S.stones) { const s = S.stones[id];
+      out.push({ id: 'stone:' + id, box: () => { if (s.broken) return null; const x = stoneX(s), feet = stoneFeet(s);
+        return { l: x - SR_HANDS.stoneW / 2 - 2, r: x + SR_HANDS.stoneW / 2 + 2, t: feet - SR_HANDS.stoneH, b: feet - 2 }; }, strike: () => breakStone(s) }); }
+    return out; };
   function breakStone(s) {
     s.broken = true; s.quietT = s.quiet; s.hum = false; const f = field(s.id); if (f) f.still = true;
     const x = stoneX(s), feet = stoneFeet(s);
@@ -236,6 +233,7 @@ export function makeSirenRocksHands(ctx) {
 
   /* THE WATER HOOKS (claude/sea3: the ONE wiring, src/pirate-fleet-hands.js header): this level's sounds, the stones' song events, the bell, the Queen's two songs and the stones that ride a float */
   H.water = {
+    gadgets: () => H.gadgets(),   /* (claude/seagadget) the singing stones, struck by a blow or any hero's shot through the ONE hook */
     noRespawn: true,   /* the cove and the spire never reset to a safe phase on a death (they never did here) */
     quiet: true, noStreaks: true, noPosts: true, flow: true, foam() {}, gauge() {},   /* the greybox draws its own foam and its own A3 gauge */
     foes: e => e !== ctx.boss && !e.mini,   /* a song takes every loose foe (an anchored naga or a noPull one is skipped by the field itself) */

@@ -12,7 +12,7 @@
 //   THE JELLIES   a tide's `bites` box while it is live: a swimmer in it is stung (LW3.stingers) - the jellies come in with the tide.
 //   THE TIDE-POOL CRAB (src/pool-crab.js) and THE TIDE HERALD 2 (src/tide-herald.js): spawn, step, every blow on them; the crab's drawing (the Herald keeps master's
 //                 sheet - his mode names are master's - and gets his reads drawn over him here).
-// main.js calls: on, owns, clear, spawnEnt, updateEnt, take, update, strike, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
+// main.js calls: on, owns, clear, spawnEnt, updateEnt, take, update, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
 import { gauge, floatY, kOf, lineY, bites as tideBites } from './tide-kit.js';
 import { LW3 } from './longwater3.js';
 import * as PCM from './pool-crab.js';
@@ -148,14 +148,14 @@ export function makeLongWater3Hands(ctx) {
   const tideNear = id => { const P = ctx.hero(); if (!P) return false; const T = lv().tides.find(t => t.id === id); if (!T) return false;
     const ps = lv().pools.filter(p => (T.pools || []).includes(p.id)); return ps.some(p => P.x > p.x0 - 400 && P.x < p.x1 + 400); };
 
-  /* ---------- A BLOW: a bell, a wheel, a trap's rope, a mooring ---------- */
-  H.strike = hb => {
-    if (!TK() || !S || !hb) return;   /* (a bell / a wheel is the generic wiring's strike, through H.water.verb; the traps and the moorings are ours) */
-    for (const t of S.traps) { if (t.st !== 'hang') continue; const x = t.x * TS + 8;
-      if (hb.l < x + LW3_HANDS.trapW / 2 + 2 && hb.r > x - LW3_HANDS.trapW / 2 - 2 && hb.t < t.py + 12 && hb.b > t.py - 10) { t.st = 'fall'; t.vy = 0; ctx.sound('snip'); if (!S.told.trap) { S.told.trap = 1; ctx.number(x, t.py - 16, LW3_SAY.trap, '#e8d8b0'); } } }
-    for (const id in S.moors) { const m = S.moors[id]; if (m.cut) continue; const x = m.x * TS + 8, y = (m.y + 1) * TS;
-      if (hb.l < x + LW3_HANDS.moorW && hb.r > x - LW3_HANDS.moorW && hb.t < y && hb.b > y - 26) { m.cut = true; ctx.sound('snip'); ctx.burst(x, y - 10, 8, ['#c8b890', '#8a7a5a'], 60, 0.4, -40); ctx.number(x, y - 34, LW3_SAY.moor, '#bfe6f5'); } }
-  };
+  /* ---------- THE GADGETS: a trap's rope, a mooring (claude/seagadget: declared to the one hook, src/sea-gadget.js - a blow AND any hero's shot / spell / thrown weapon cuts them; a bell / a wheel is a kit verb the same hook strikes, through H.water.verb) ---------- */
+  H.gadgets = () => { if (!TK() || !S) return []; const out = [];
+    for (const t of S.traps) out.push({ id: 'trap:' + t.id, box: () => { if (t.st !== 'hang') return null; const x = t.x * TS + 8; return { l: x - LW3_HANDS.trapW / 2 - 2, r: x + LW3_HANDS.trapW / 2 + 2, t: t.py - 10, b: t.py + 12 }; },
+      strike: () => { const x = t.x * TS + 8; t.st = 'fall'; t.vy = 0; ctx.sound('snip'); if (!S.told.trap) { S.told.trap = 1; ctx.number(x, t.py - 16, LW3_SAY.trap, '#e8d8b0'); } } });
+    for (const id in S.moors) { const m = S.moors[id];
+      out.push({ id: 'moor:' + id, box: () => { if (m.cut) return null; const x = m.x * TS + 8, y = (m.y + 1) * TS; return { l: x - LW3_HANDS.moorW, r: x + LW3_HANDS.moorW, t: y - 26, b: y }; },
+        strike: () => { const x = m.x * TS + 8, y = (m.y + 1) * TS; m.cut = true; ctx.sound('snip'); ctx.burst(x, y - 10, 8, ['#c8b890', '#8a7a5a'], 60, 0.4, -40); ctx.number(x, y - 34, LW3_SAY.moor, '#bfe6f5'); } }); }
+    return out; };
 
   /* ---------- A MOVER OF OURS: a boat where her tide puts her (held under at her mooring until it is cut) ---------- */
   H.mover = (m, dt) => {
@@ -249,6 +249,7 @@ export function makeLongWater3Hands(ctx) {
   };
   /* ---------- THE WATER HOOKS (the generic wiring's ctx.hooks(): this level's words, sounds, verbs, the Herald's flats, the foam and the gauge on the one kit) ---------- */
   H.water = {
+    gadgets: () => H.gadgets(),   /* (claude/seagadget) the trap ropes and the moorings, struck by a blow or any hero's shot through the ONE hook */
     noRespawn: true,   /* (kept from the level's own wiring: a load starts the tides at their first phase, not tideRespawn's safe phase) */
     tide(ev) { if (!S) return false; const P = ctx.hero();
       if (ev.t === 'toll' && tideNear(ev.id)) ctx.sound(ev.turn ? 'tollTurn' : 'toll');

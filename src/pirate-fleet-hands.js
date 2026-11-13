@@ -13,6 +13,7 @@
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
 import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
 import { pullInit, pullStep, pullBodies, pullShots, flowParts, postNear } from './pull-field.js';
+import { makeGadgetField, kitGadgets } from './sea-gadget.js';   /* (claude/seagadget) the ONE hook: a blow or any hero shot strikes a declared sea gadget */
 const R = Math.round;
 export const PFH = { haulT: 2.2, lineT: 0.45, haulKey: id => 'pf:haul:' + id, farScale: 0.45, farLift: 70 };
 export const PF_SAY = { haul: 'THE LINE BITES: SHE COMES ALONGSIDE', hauled: 'ALONGSIDE: BOARD HER', rising: 'THE SWELL COMES UP', grab: 'HOLD ON', slack: 'IT SLACKS: SWIM OUT',
@@ -26,7 +27,7 @@ export function makePirateFleetHands(ctx) {
   const hooks = () => (ctx.hooks ? ctx.hooks() : null);
   H.kit = () => TK; H.pulls = () => PF;
   H.clear = () => {
-    const L = lv(); TK = null; PF = null; S = null; if (!on()) return;
+    const L = lv(); TK = null; PF = null; S = null; GF.clear(); log.length = 0; if (!on()) return;
     const marks = ctx.marks();
     TK = tideInit(L, { off: marks }); if (!(hooks() && hooks().noRespawn)) tideRespawn(TK);   /* a load or a respawn: every swell to its safe phase with its grace (docs: a party wipe / checkpoint reload) */
     PF = pullInit(L, { off: marks });
@@ -52,6 +53,7 @@ export function makePirateFleetHands(ctx) {
   /* ---------- ONE FRAME ---------- */
   H.update = dt => {
     if (!TK || !S) return; const L = lv();
+    GF.tick(dt); H.shots();   /* (claude/seagadget) every hero shot in flight strikes a gadget it is on (a lever struck here is read by the kit's step just below) */
     const hk = hooks();
     for (const e of tideStep(TK, dt)) {
       if (hk && hk.tide && hk.tide(e)) continue;
@@ -96,16 +98,36 @@ export function makePirateFleetHands(ctx) {
     m.dx = m.x - ox; m.dy = m.broken ? 0 : m.y - oy; return true;
   };
 
-  /* ---------- A BLOW ---------- */
+  /* ---------- A BLOW, A SHOT: THE ONE GADGET HOOK (claude/seagadget, src/sea-gadget.js) ----------
+     Every sea gadget is declared, not hand-coded: the kit's verbs (lever / sluice / bell), the grapple winches, whatever the level's hooks.gadgets() lists (nerves, egg sacs,
+     singing stones, trap ropes, moorings) and ctx.gadgets() (a boss's: the Kraken's barnacles). The melee box strikes them in H.strike(hb); any hero's shot / spell / thrown
+     weapon strikes them in H.update (ctx.shotStrike = src/hero-strikes.js shotStrikes). A level adds a gadget by listing it: no blow code of its own. */
+  const log = []; H.log = log;   /* what was struck since the last clear ({ id, how }, the newest 200): the node proofs and the lab read it */
+  const note = r => { for (const e of r) log.push(e); if (log.length > 200) log.splice(0, log.length - 200); };
+  const GF = makeGadgetField({ shot: (b, k) => (ctx.shotStrike ? ctx.shotStrike(b, k) : null) });
+  function kitBlow(how, hb) {   /* (the old PFH.strike body for a verb: the level's pre / verb hooks, the lever mark, the clank) */
+    const hk = hooks(), pre = hk && hk.pre ? hk.pre(hb) : undefined, v = tideStrike(TK, hb);
+    if (!v) return false; void how;
+    const claimed = !!(hk && hk.verb && hk.verb(v, hb, pre));
+    if (!claimed) { if (v.t === 'lever') ctx.marks().add(v.key); ctx.sound('clank'); }
+    return true; }
+  const winchGadget = w => ({ id: 'winch:' + w.id,
+    box: () => { const p = winchAt(w); return { l: p.x - 10, r: p.x + 10, t: p.y - 24, b: p.y - 2 }; },
+    strike: () => { const p = winchAt(w), pr = S.prizes[w.hauls];
+      if (!pr || pr.k >= 1 || pr.hauling) { if (!S.last[w.id] || ctx.time() - S.last[w.id] > 1) { S.last[w.id] = ctx.time(); ctx.sound('clank'); } return true; }
+      if (startHaul(w.hauls, p)) { ctx.sparks && ctx.sparks(p.x, p.y - 10, 1, 6); ctx.shake(2); } return true; } });
+  H.gadgets = () => { if (!TK || !S) return []; const hk = hooks(), L = lv(), list = kitGadgets(TK, TS, kitBlow);
+    for (const w of L.pfWinches || []) list.push(winchGadget(w));
+    if (hk && hk.gadgets) for (const g of hk.gadgets() || []) list.push(g);
+    if (ctx.gadgets) for (const g of ctx.gadgets() || []) list.push(g);
+    return list; };
   H.strike = hb => {
-    if (!TK || !hb) return; const L = lv();
-    const hk = hooks(), pre = hk && hk.pre ? hk.pre(hb) : undefined, v = tideStrike(TK, hb), claimed = v ? !!(hk && hk.verb && hk.verb(v, hb, pre)) : (hk && hk.miss && hk.miss(hb), false);
-    if (v && !claimed) { if (v.t === 'lever') ctx.marks().add(v.key); ctx.sound('clank'); }
-    for (const w of L.pfWinches || []) { const p = winchAt(w);
-      if (!(hb.l < p.x + 10 && hb.r > p.x - 10 && hb.t < p.y - 2 && hb.b > p.y - 24)) continue;
-      const pr = S.prizes[w.hauls]; if (!pr || pr.k >= 1 || pr.hauling) { if (!S.last[w.id] || ctx.time() - S.last[w.id] > 1) { S.last[w.id] = ctx.time(); ctx.sound('clank'); } continue; }
-      if (startHaul(w.hauls, p)) { ctx.sparks && ctx.sparks(p.x, p.y - 10, 1, 6); ctx.shake(2); } }
+    if (!TK || !hb) return; const hk = hooks();
+    const hit = GF.blow(H.gadgets(), hb); note(hit.map(id => ({ id, how: 'blow' })));
+    if (!hit.some(id => id.startsWith('kit:')) && hk && hk.miss) hk.miss(hb);
+    return hit;   /* (a blow that found no verb: the level may tell why - the sluice is still wound) */
   };
+  H.shots = () => { const r = TK && S && ctx.shotStrike ? GF.shots(H.gadgets()) : []; note(r); return r; };
 
   /* ---------- DRAWING (claude/pfart: src/redraw/pirate_fleet_art.js - tarred hulls in five liveries, rigged and sailed prizes, the capstan winch + grapnel line, mast-stump and anchor-chain posts, foam, gauge, flow streaks) ---------- */
   const zoneAt = m => PFT.zoneOf(R(m.x0 / TS) + 2, 30), seedOf = m => (m.fid || '').split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) & 255;

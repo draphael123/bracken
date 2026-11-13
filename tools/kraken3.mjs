@@ -203,7 +203,7 @@ for (const [k, v] of [['arm slam', KR3.arms.tell], ['arm lash', KR3.arms.lashTel
 { const fs = await import('node:fs'); const M = fs.readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   for (const [k, re] of [['import', /import \{ makeKraken3Hands \} from '\.\/kraken3-hands\.js'/], ['construction', /K3H = makeKraken3Hands\(\{/], ['clear', /if \(K3H\) K3H\.clear\(\)/], ['tick + resume', /if \(K3H\.owns\(e\)\) \{ K3H\.bossTick\(e, dt\); return; \} if \(K3H\.resume\(e\)\) return;/],
     ['hand-over at p2At', /K3H\.p2At\(\)\)\) \{ K3H\.begin\(e, false\); return; \}/], ['hurt', /return K3H\.hurt\(e, dmg, fromX, plunge, tag\)/], ['draw', /K3H\.drawBoss\(g, cx, cy, time\)/], ['advice', /if \(K3H && K3H\.owns\(boss\)\) return K3H\.advice\(\)/],
-    ['mover', /if \(m\.k3\) \{ m\.dx = 0; m\.dy = 0; continue; \}/], ['mover draw', /if \(m\.k3\) continue;/], ['strike', /K3H\.strike\(hb\)/], ['sky', /K3H\.drawSky\(/], ['back', /K3H\.drawBack\(/], ['over', /K3H\.drawOver\(/]]) check(re.test(M), 'main.js: ' + k);
+    ['mover', /if \(m\.k3\) \{ m\.dx = 0; m\.dy = 0; continue; \}/], ['mover draw', /if \(m\.k3\) continue;/], ['gadgets (claude/seagadget: the one hook strikes the barnacles)', /K3H\.gadgets\(\)/], ['sky', /K3H\.drawSky\(/], ['back', /K3H\.drawBack\(/], ['over', /K3H\.drawOver\(/]]) check(re.test(M), 'main.js: ' + k);
   const i1 = M.indexOf('K3H.begin(e, false)'), i2 = M.indexOf("e.mode = 'rise2'; e.modeT = 3.8; e.stage = 3;"); check(i1 > 0 && i2 > i1, 'main.js: the hand-over runs before stage 3 (the maw, the climb, the EYE never come under the flag)');
   const L = fs.readFileSync(new URL('../src/lab.js', import.meta.url), 'utf8'); check(/KA\.duck && P\.ground/.test(L), 'lab.js: the lab ducks when the raft advice says so'); }
 

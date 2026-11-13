@@ -22,9 +22,14 @@ export function heroStrikes(box, key, alt) {   // alt: the caller's own ctx-shap
     if (found || !P1) return; const hb = C.attackBox ? C.attackBox() : null;
     if (hb && P1.hitSet && !P1.hitSet.has(key) && C.overlap(hb, box)) { P1.hitSet.add(key); found = { how: 'blow', P1 }; } });
   if (found) return found;
+  return shotStrikes(box, key, alt);
+}
+/* ONLY the projectiles (no swing): the sea gadgets (src/sea-gadget.js) take the melee box through their own hook, so a blow is never counted twice. all = true skips the gq4q gate: every hero's shot strikes (the sea act ships on its own flag). */
+export function shotStrikes(box, key, alt, all) {
+  const C = C0 || alt; if (!C) return null;
   for (const pp of (C.players ? C.players() : []) || []) {   // 2. the ranger's arrow in flight (legacy rule)
     for (const ar of pp.rgArrows || []) { if (ar.state !== 'fly' || ar.ggHit) continue; if (near(ar, box, 10)) { ar.ggHit = true; ar.state = 'drop'; return { how: 'arrow' }; } } }
-  if (!gq4qOn()) return null;
+  if (!all && !gq4qOn()) return null;
   for (const em of (C.embers ? C.embers() : [])) {   // 3. the pyro's embers (every kind: the tap ember, the lobbed fireball, the cone)
     if (em.life <= 0 || !unseen(em, key) || !near(em, box, em.r || 3)) continue; mark(em, key); em.life = Math.min(em.life, 0.03); return { how: 'ember' }; }
   for (const tr of (C.tracers ? C.tracers() : [])) {   // 4. a pistol ball / a hitscan line (pirate, warden): its tracer lives a breath

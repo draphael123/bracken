@@ -104,18 +104,18 @@ const waitPh = (W, ph, max = 20) => { let t = 0; while (master(W).ph !== ph && t
 /* ---------- 3. THE NERVE ---------- */
 { const W = world(fresh()), n1 = W.L.whNerves.find(q => q.id === 'n1');
   ok(master(W).ph === 'low', 'the whale wakes HOLDING (a respawn too: safe = low)');
-  W.H.strike(hbAt(n1.x, n1.y)); const st = W.H.state().nerves.n1;
+  W.pfh.strike(hbAt(n1.x, n1.y)); const st = W.H.state().nerves.n1;
   ok(st.flare > 0 && master(W).ph === 'low', 'struck at HOLD: it FLARES first (told), the breath has not moved yet');
   W.step(WH.nerve.flare - 0.05); ok(master(W).ph === 'low', 'still holding inside the flare (' + WH.nerve.flare + ' s told)');
   W.step(0.1); ok(master(W).ph === 'warn', 'then it CALLS THE EXHALE: the kit bell (the quickening starts now, still told)');
   ok(W.H.kit().tides.filter(s => s.T.breath).every(s => s.ph === 'warn'), 'every breath tide called at once');
-  W.H.strike(hbAt(n1.x, n1.y)); ok(W.H.state().nerves.n1.flare === 0, 'a spent nerve does nothing (cooling ' + WH.nerve.cool + ' s)');
+  W.pfh.strike(hbAt(n1.x, n1.y)); ok(W.H.state().nerves.n1.flare === 0, 'a spent nerve does nothing (cooling ' + WH.nerve.cool + ' s)');
   ok(waitPh(W, 'rise'), 'the exhale comes'); W.step(1);
-  const n2 = W.L.whNerves.find(q => q.id === 'n2'); W.H.strike(hbAt(n2.x, n2.y)); W.step(WH.nerve.flare + 0.05);
+  const n2 = W.L.whNerves.find(q => q.id === 'n2'); W.pfh.strike(hbAt(n2.x, n2.y)); W.step(WH.nerve.flare + 0.05);
   ok(master(W).ph === 'fall' || master(W).ph === 'low', 'struck in the EXHALE: it CALLS THE INHALE (the kit sluice turns the bile back): ' + master(W).ph);
   ok(master(W).hold > 0, 'and holds it drawn in a while (' + WH.nerve.hold + ' s)');
   const W2 = world(fresh()); ok(waitPh(W2, 'fall', 30), 'an inhale comes'); const n3 = W2.L.whNerves.find(q => q.id === 'n3');
-  W2.H.strike(hbAt(n3.x, n3.y)); ok(W2.H.state().nerves.n3.flare === 0 && W2.H.state().nerves.n3.cool === 0, 'struck in the INHALE: "it is drawing in already" - nothing spent');
+  W2.pfh.strike(hbAt(n3.x, n3.y)); ok(W2.H.state().nerves.n3.flare === 0 && W2.H.state().nerves.n3.cool === 0, 'struck in the INHALE: "it is drawing in already" - nothing spent');
   for (const [ph, does] of Object.entries(NERVE_DOES)) ok(does === (ph === 'low' ? 'exhale' : ph === 'turn' || ph === 'fall' ? 'already' : 'inhale'), 'nerve at ' + ph + ' -> ' + does); }
 
 /* ---------- 4. THE MEMBRANES ---------- */
@@ -128,7 +128,7 @@ const waitPh = (W, ph, max = 20) => { let t = 0; while (master(W).ph !== ph && t
   W.P.x = 0; W.step(0.1); ok(cellsAre(W.L, m1, T.PORT), 'it shuts when the body is out');
   /* THE REQUIRED STRIKE */
   const nr = W.L.whNerves.find(q => q.id === 'nreq'); W.P.x = 0; W.P.y = 0;
-  ok(waitPh(W, 'high', 30), 'rest (flooded)'); W.H.strike(hbAt(nr.x, nr.y)); W.step(WH.nerve.flare + 0.1);
+  ok(waitPh(W, 'high', 30), 'rest (flooded)'); W.pfh.strike(hbAt(nr.x, nr.y)); W.step(WH.nerve.flare + 0.1);
   ok(cellsAre(W.L, car, T.AIR), 'a FORCED inhale opens the cardia (the one required strike)'); ok(W.said.includes('THE CARDIA OPENS'), 'and says so');
   ok(waitPh(W, 'rise', 40), 'the next exhale'); W.step(0.1); ok(cellsAre(W.L, car, T.PORT), 'seals it again (call it again if you come back)'); }
 
@@ -270,7 +270,7 @@ ok(L.arena.nerves.length === 3 && L.whNerves.filter(q => q.arena).every(q => q.t
   const ht = () => W.H.kit().tides.find(s => s.id === 'heart');
   W.step(2, () => W.H.updateEnt(B, DT)); ok(B.mode !== 'wake' && B.mode !== 'sleep', 'she wakes and fights (' + B.mode + ')');
   let t = 0; while (!(ht().ph === 'low' && !/Tell$/.test(B.mode) && !PQM.COMMITTED.has(B.mode)) && t < 40) { W.step(DT, () => W.H.updateEnt(B, DT)); t += DT; }
-  const a1 = W.L.whNerves.find(q => q.id === 'A1'); W.H.strike(hbAt(a1.x, a1.y)); W.step(WH.nerve.flare + 0.05, () => W.H.updateEnt(B, DT));
+  const a1 = W.L.whNerves.find(q => q.id === 'A1'); W.pfh.strike(hbAt(a1.x, a1.y)); W.step(WH.nerve.flare + 0.05, () => W.H.updateEnt(B, DT));
   ok(PQM.pqOpen(B) && B.mode === 'flushed', 'a chamber nerve struck while the heart holds: FLUSHED (through the hands: flare -> the heart tide bell -> her): ' + B.mode);
   ok(ht().ph === 'warn', 'the chamber nerve drives the heart\'s own breath (' + ht().ph + ')');
   ok(W.H.take(B, 100, 'slash') === 150, 'a blow on her open: x1.5 through the hands');

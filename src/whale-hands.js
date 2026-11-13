@@ -10,7 +10,7 @@
 //                  in L.pulls (id 'constrict'): this file moves its ring onto the Queen and wakes it only while her tendrils pull (H.water.step).
 //   THE GUT LEECH  the Bog Leech (src/bog-leech.js) under L.reskin 'gutleech': THE INHALE TEARS IT LOOSE (a latched one drops off as the breath draws in).
 //   THE GASTRIC POLYP (src/gastric-polyp.js) and THE PARASITE QUEEN (src/parasite-queen.js): spawn, step, every blow on them, the drawing (GREYBOX).
-// main.js calls: water (the hooks), on, clear, spawnEnt, owns, updateEnt, take, update, strike, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
+// main.js calls: water (the hooks), on, clear, spawnEnt, owns, updateEnt, take, update, mover, drawBack, drawMover, drawEnt, drawOver, barName, end, read.
 import { tideStrike, gauge, floatY, liftY, TS as KTS } from './tide-kit.js';
 import { WH, BREATH_NAME, WH_HEART } from './whale.js';
 import * as GPM from './gastric-polyp.js';
@@ -161,21 +161,22 @@ export function makeWhaleHands(ctx) {
   };
   const near = (x, r) => { const P = ctx.hero(); return !!(P && Math.abs(P.x - x) < r); };
 
-  /* ---------- A BLOW: a nerve, an egg sac ---------- */
-  H.strike = hb => {
-    if (!K() || !S || !hb) return;
-    for (const id in S.nerves) { const n = S.nerves[id]; const x = nerveX(n), feet = nerveFeet(n);
-      if (!(hb.l < x + WH_HANDS.nerveW / 2 + 2 && hb.r > x - WH_HANDS.nerveW / 2 - 2 && hb.t < feet && hb.b > feet - WH_HANDS.nerveH - 4)) continue;
-      if (n.flare > 0) continue;
-      if (n.cool > 0) { if (!n.saidCool) { n.saidCool = 1; ctx.number(x, feet - 24, WH_SAY.cool, '#9ab0c0'); } continue; }
-      const s = n.tides === 'breath' ? master() : heartTide(), does = NERVE_DOES[s ? s.ph : 'low'];
-      if (does === 'already') { if (!n.saidAlready || ctx.time() - n.saidAlready > 2) { n.saidAlready = ctx.time(); ctx.number(x, feet - 24, WH_SAY.already, '#e8c0c8'); } continue; }
-      n.kind = does; n.flare = WH.nerve.flare; n.cool = WH.nerve.flare + (n.arena ? WH.nerve.coolArena : WH.nerve.cool); n.saidCool = 0;
-      ctx.sound('squelch'); ctx.shake(2); ctx.burst(x, feet - 6, 14, ['#fff0f4', '#f4b0c0', '#ffffff'], 90, 0.5, -50);
-      ctx.number(x, feet - 26, does === 'exhale' ? WH_SAY.exhale : WH_SAY.inhale, '#f4d0d8');
-    }
-    if (Q && Q.eggs.length) { const k = PQM.cutEggs(Q, hb); if (k) ctx.sound('squelch'); }
-  };
+  /* ---------- THE GADGETS: a nerve, an egg sac (claude/seagadget: DECLARED to the one hook, src/sea-gadget.js - a blow AND any hero's shot / spell / thrown weapon strikes them) ---------- */
+  function nerveStruck(n) {
+    const x = nerveX(n), feet = nerveFeet(n);
+    if (n.cool > 0) { if (!n.saidCool) { n.saidCool = 1; ctx.number(x, feet - 24, WH_SAY.cool, '#9ab0c0'); } return; }
+    const s = n.tides === 'breath' ? master() : heartTide(), does = NERVE_DOES[s ? s.ph : 'low'];
+    if (does === 'already') { if (!n.saidAlready || ctx.time() - n.saidAlready > 2) { n.saidAlready = ctx.time(); ctx.number(x, feet - 24, WH_SAY.already, '#e8c0c8'); } return; }
+    n.kind = does; n.flare = WH.nerve.flare; n.cool = WH.nerve.flare + (n.arena ? WH.nerve.coolArena : WH.nerve.cool); n.saidCool = 0;
+    ctx.sound('squelch'); ctx.shake(2); ctx.burst(x, feet - 6, 14, ['#fff0f4', '#f4b0c0', '#ffffff'], 90, 0.5, -50);
+    ctx.number(x, feet - 26, does === 'exhale' ? WH_SAY.exhale : WH_SAY.inhale, '#f4d0d8');
+  }
+  H.gadgets = () => { if (!K() || !S) return []; const out = [];
+    for (const id in S.nerves) { const n = S.nerves[id];
+      out.push({ id: 'nerve:' + id, box: () => { if (n.flare > 0) return null; const x = nerveX(n), feet = nerveFeet(n);   /* (a flaring nerve is spent: a shot flies on through it) */
+        return { l: x - WH_HANDS.nerveW / 2 - 2, r: x + WH_HANDS.nerveW / 2 + 2, t: feet - WH_HANDS.nerveH - 4, b: feet }; }, strike: () => nerveStruck(n) }); }
+    if (Q) Q.eggs.forEach((egg, i) => { if (egg.hp > 0) out.push({ id: 'egg:' + (egg.id !== undefined ? egg.id : i), box: () => (egg.hp > 0 ? { l: egg.x - 6, r: egg.x + 6, t: egg.y - 10, b: egg.y } : null), strike: () => { egg.hp = 0; ctx.sound('squelch'); } }); });
+    return out; };
   const nerveX = n => n.x * TS + 8;
   const nerveFeet = n => { if (n.on && K()) { const y = floatY(K(), n.on); if (y != null) return y; } return (n.y + 1) * TS; };
 
@@ -269,6 +270,7 @@ export function makeWhaleHands(ctx) {
 
   /* THE WATER HOOKS (claude/sea3: the ONE wiring, src/pirate-fleet-hands.js header): this level's sounds, the Queen's heart-rise, the constrict field and the gusts' foes on the generic step */
   H.water = {
+    gadgets: () => H.gadgets(),   /* (claude/seagadget) the nerves and the egg sacs, struck by a blow or any hero's shot through the ONE hook */
     built() { if (S) K(); },   /* the kit has just been (re)built: the first sight makes this level's state ready (prep) */
     noRespawn: true,   /* a death does not reset the breath (it never did: the whale clears its own state and the kit is rebuilt at its first phase) */
     quiet: true, noStreaks: true, noPosts: true, flow: '#f0d0d8', foam() {}, gauge() {},   /* the greybox draws its own lung and bile; the flow specks are the flesh pink */

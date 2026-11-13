@@ -4,7 +4,7 @@
 // ents (k3arm / k3krak: every skip-list that knows his arms knows them), the lab's advice, and the draw (his head and arm discs from src/redraw/kraken.js,
 // the raft / kraklings / barnacles / wreckage / rock from src/redraw/kraken3_art.js).
 // ONLY Causeway 2 (L.cw3) with k3On(): inert everywhere else - on() is false and main.js's hooks do nothing, so master's Kraken is untouched.
-// main.js calls: on, owns(e), p2At, begin(e), resume(e), bossTick(e, dt), hurt(e, dmg, fromX), strike(hb), advice(), clear, drawSky, drawBack, drawBoss, drawOver, read.
+// main.js calls: on, owns(e), p2At, begin(e), resume(e), bossTick(e, dt), hurt(e, dmg, fromX), gadgets(), advice(), clear, drawSky, drawBack, drawBoss, drawOver, read.
 import { KR3, k3On, k3New, k3Step, k3HitFace, k3HitArm, k3HitKrak, k3PopBarn, k3Advice, k3Read, inkSpans, extent, faceX, faceHittable, plankX, rawW } from './kraken3.js';
 import { bakeRaft, bakeKrakling, bakeBarnacle, bakeWreck, bakeRock } from './redraw/kraken3_art.js';
 const R = Math.round, TS = 16;
@@ -116,7 +116,11 @@ export function makeKraken3Hands(ctx) {
     if (S.face.st !== 'reel') { ctx.sound('clank'); if (!(e.shutSaid > 0) || ctx.time() - e.shutSaid > 0.9) { e.shutSaid = ctx.time(); ctx.number(e.x, e.y - 52, S.face.st === 'ward' ? 'WARDED' : 'CUT HIS ARMS - THEN HIS FACE', '#9aa39a'); } }
     return d > 0 ? d : false;
   };
-  H.strike = hb => { const e = ctx.boss(); if (!hb || !G || !H.owns(e) || !e.alive) return; if (hb.b < G.deckY - 30 || hb.t > G.deckY + 4) return; k3PopBarn(e.k3, hb.l - G.rx0, hb.r - G.rx0); };
+  /* THE BARNACLES (claude/seagadget: declared to the ONE hook, src/sea-gadget.js via main.js's PFH ctx.gadgets - a blade AND any hero's shot knocks a stuck one off the raft before it bursts) */
+  const gids = new WeakMap(); let gidN = 0;
+  H.gadgets = () => { const e = ctx.boss(); if (!G || !H.owns(e) || !e.alive || !e.k3) return [];
+    return e.k3.barns.filter(b => b.st === 'stuck').map(b => { if (!gids.has(b)) gids.set(b, ++gidN);
+      return { id: 'barn:' + gids.get(b), box: () => (b.st === 'stuck' && G ? { l: G.rx0 + b.x - 4, r: G.rx0 + b.x + 4, t: G.deckY - 30, b: G.deckY + 4 } : null), strike: () => { k3PopBarn(e.k3, b.x, b.x); } }; }); };
 
   /* ---------- THE LAB (BK.krak while he is on the raft) ---------- */
   H.advice = () => { const e = ctx.boss(), P = ctx.hero(); if (!H.owns(e) || !e.alive || !P) return null; const S = e.k3;

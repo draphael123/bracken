@@ -140,7 +140,7 @@ function stubWorld(o = {}) {
   let W = null; Object.defineProperty(ctx, 'pfh', { get: () => W });
   const C3 = makeLongWater3Hands(ctx), marks = new Set(), pctx = Object.create(ctx);
   Object.assign(pctx, { hooks: () => C3.water, marks: () => marks, holding: () => false, sparks: () => {}, time: () => 0 }); W = makePirateFleetHands(pctx);
-  const H = Object.assign(Object.create(C3), { clear() { C3.clear(); W.clear(); }, strike(hb) { W.strike(hb); C3.strike(hb); }, update(dt) { C3.update(dt); W.update(dt); } });
+  const H = Object.assign(Object.create(C3), { clear() { C3.clear(); W.clear(); }, strike(hb) { W.strike(hb); }, update(dt) { C3.update(dt); W.update(dt); } });
   H.clear();
   const he = Lw.ents.find(e => e.t === 'lw3herald');
   boss = H.spawnEnt({ x: he.x * TS + 8, y: (he.y + 1) * TS, vx: 0, vy: 0, face: -1, alive: true }, he); enemies.push(boss);
