@@ -3,6 +3,7 @@
 //   and every way out lets it go (lift(false)): her death, every hero down, a death / retry / level load (H.reset, H.load), the fight ending, the stage left.
 //   node tools/gqmusic.mjs
 import { readFileSync } from 'node:fs';
+const { Q4: Q4M } = await import('../src/gq4q.js');   /* (rel167) the flag, not the env: GQ4Q ships ON */
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,9 +37,11 @@ console.log('== the roof stage lifts the track once her wake card is done');
 
   console.log('== the final stretch (DESPERATION: the portal storm, under 25%) steps it up');
   w.e.hp = w.e.maxHp * 0.2; w.e.mode = 'roofStand'; w.e.modeT = 0; w.step(1);
-  ok(w.e.mode === 'stormTell', 'under 25%: the portal storm is told');
+  if (Q4M) { ok(w.e.mode === 'rageTell', 'GQ4Q: under 25% the ENRAGE is told (MY CASTLE!)'); w.step(60); }
+  else { ok(w.e.mode === 'stormTell', 'under 25%: the portal storm is told');
   ok(w.st.lifts.join() === '1', 'the step waits for the storm itself, not the tell');
-  w.step(60); ok(w.st.lifts.join() === '1,2' && w.H.musicLevel() === 2, 'the portal storm begins: lift(2) (x1.10, the second stinger) - gq3 moved it here from the retired crown storm');
+  w.step(60); }
+  ok(w.st.lifts.join() === '1,2' && w.H.musicLevel() === 2, 'the portal storm begins: lift(2) (x1.10, the second stinger) - gq3 moved it here from the retired crown storm');
   w.step(60 * 4); ok(w.st.lifts.join() === '1,2', 'one step up, no re-fire');
   console.log('== the storm ending does not drop the tension (monotonic)');
   w.H.test.roof().pstorm = null; w.step(60); ok(w.H.musicLevel() === 2 && last(w) === 2, 'storm gone, level still 2');

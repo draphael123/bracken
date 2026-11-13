@@ -1,5 +1,184 @@
 [
   {
+    "date": "2026-11-13",
+    "batch": 179,
+    "lines": [
+      { "s": "The Goblin Princess fights with her blade now. She dashes at you, curtsies, then cuts.", "lv": ["crown"] },
+      { "s": "Her tower bell is just a bell now: no more ringing it to bring down the gate.", "lv": ["crown"] },
+      { "s": "In her angry phase she throws a tantrum: two slashes, then a big overhead chop.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "batch": 178,
+    "lines": [
+      { "s": "The Hexed Fields: no more knight dropping in on the Headless Ploughman fight.", "lv": ["fields"] },
+      { "s": "A hedge knight that used to walk off the roof into the arena now waits on the road.", "lv": ["fields"] },
+      { "s": "A few foes along the Fields road stand in new spots.", "lv": ["fields"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "batch": 177,
+    "lines": [
+      { "s": "The Glassblower is a little fairer.", "lv": ["buriedcity"] },
+      { "s": "He has less health than before.", "lv": ["buriedcity"] },
+      { "s": "His opening after you shatter glass lasts a bit longer.", "lv": ["buriedcity"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "batch": 176,
+    "lines": [
+      { "s": "Buried City: race the hourglass. Doors, bridges and lifts stand only while the sand runs.", "lv": ["buriedcity"] },
+      { "s": "Meet the Glassblower: strike his glass when it glints, then cut him down.", "lv": ["buriedcity"] },
+      { "s": "New foe: the Sand Grasper, rising from the sand.", "lv": ["buriedcity"] },
+      { "s": "Rangers can strike a glass with a knife tap (X) or E.", "lv": ["buriedcity"] },
+      { "s": "A new shrine before the Glassblower's hall.", "lv": ["buriedcity"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "batch": 175,
+    "lines": [
+      { "s": "Smoother title screen on phones.", "lv": [] },
+      { "s": "Co-op rule text fits the screen.", "lv": [] },
+      { "s": "Small text fixes in What's New.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 174,
+    "lines": [
+      { "s": "Clearer combat feedback: damage numbers pop, health bars drain smoothly.", "lv": [] },
+      { "s": "Low health pulses the screen edge so you notice it sooner.", "lv": [] },
+      { "s": "Coins chime up a scale as you grab them in a row.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 173,
+    "lines": [
+      { "s": "THORNROAD jumping feels crisper: short hops ease out and land sooner.", "lv": [] },
+      { "s": "Ledge corners and low lips forgive more, so you catch edges you used to miss.", "lv": [] },
+      { "s": "Fully held jumps are unchanged.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 172,
+    "lines": [
+      { "s": "Groundwork for a new Buried City stretch is in; it is switched off for now.", "lv": [] },
+      { "s": "A crash when a Glassblower or Sand Grasper dies was fixed.", "lv": [] },
+      { "s": "Nothing else changes in play yet.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 171,
+    "lines": [
+      { "s": "Groundwork for a Goblin Princess fight is in, switched off.", "lv": [] },
+      { "s": "Nothing changes in play yet.", "lv": [] },
+      { "s": "A new test hook for that fight was added for the developers.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 170,
+    "lines": [
+      { "s": "Foes flinch and flash when you hit them.", "lv": [] },
+      { "s": "A hard hit makes a foe pop and stagger.", "lv": [] },
+      { "s": "Dizzy stars now show above a staggered enemy.", "lv": [] },
+      { "s": "Foes die with a bigger pop when you finish them.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 169,
+    "lines": [
+      { "s": "The Goblin Princess's bell can now be reached and rung.", "lv": ["crown"] },
+      { "s": "Shorter waits on the alarm and the tower gates.", "lv": ["crown"] },
+      { "s": "The Goblin Queen keeps her staff in hand while she casts.", "lv": ["crown"] },
+      { "s": "Floating props in the castle were set back on the ground.", "lv": ["crown"] },
+      { "s": "A death bundle dropped on a ladder no longer hangs in the air.", "lv": [] },
+      { "s": "New music on the castle climb and for the Princess.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 168,
+    "lines": [
+      { "s": "On The High Lines, rope ends now sit on iron masts instead of hanging in the air.", "lv": ["highlines"] },
+      { "s": "Grab and hit prompts now show on screen where you use them.", "lv": ["highlines"] },
+      { "s": "The Hookjack, Skyhook and crossbow crews up there are goblins now.", "lv": ["highlines"] },
+      { "s": "A bestiary name on The High Lines was corrected.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 167,
+    "lines": [
+      { "s": "The Goblin Princess's tower is bigger: three gates, a guard bell and a spinning blade.", "lv": ["crown"] },
+      { "s": "The Highcrown wall walk is longer: a gatehouse, a lead roof and wind to cross.", "lv": ["crown"] },
+      { "s": "The Queen's Stair has an armoury landing and a roof with stilt-walkers and fire mages.", "lv": ["crown"] },
+      { "s": "Knights in black and gold, stilt-walkers and fire mages now guard the castle.", "lv": ["crown"] },
+      { "s": "The Goblin Queen has a hearth fire jet, a sceptre reach and a mountain that falls.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 166,
+    "lines": [
+      { "s": "Big skills now hit with real weight: a heavier freeze and kick on every capstone.", "lv": [] },
+      { "s": "Flames sizzle on foes instead of stuttering the fight.", "lv": [] },
+      { "s": "The Warden's spear tip now pops with a star; hit with the shaft and it thuds dull.", "lv": [] },
+      { "s": "Your hero leans into each swing, and heavy swings flash when fully charged.", "lv": [] },
+      { "s": "Hits sound different on wood, bone and steel; the third cut of a combo rings higher.", "lv": [] },
+      { "s": "Kills land with a low boom and a short dip in the music.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 165,
+    "lines": [
+      { "s": "Rootway's Huntmaster opens up for longer, so quick blades can land hits", "lv": ["rootway"] },
+      { "s": "His staggered openings last about 0.8 s longer than before", "lv": ["rootway"] },
+      { "s": "A little more life on the Huntmaster keeps the fight honest", "lv": ["rootway"] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 164,
+    "lines": [
+      { "s": "New level: THE HIGH LINES, up the mountain on ropeways and winches", "lv": ["highlines"] },
+      { "s": "Grab a line to glide. Tuck with dodge to slip past a swing.", "lv": ["highlines"] },
+      { "s": "Cut a rope to drop a rider. Ride the gondola and the counterweight.", "lv": ["highlines"] },
+      { "s": "Meet the Hookjack: his hook guards his front and reaches far.", "lv": ["highlines"] },
+      { "s": "New boss SKYHOOK: strike his levers, then strike him when he falls.", "lv": ["highlines"] },
+      { "s": "The Ore Road now comes after it. A save with the Ore Road open keeps it.", "lv": ["oreroad"] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
+    "batch": 163,
+    "lines": [
+      { "s": "The Palisadewood battering beast stays stuck a little longer after it rams the wall", "lv": ["palisadewood"] },
+      { "s": "You get a bigger window to hit the beast while it is stuck", "lv": ["palisadewood"] },
+      { "s": "Gorm's second half is tougher: fewer openings to strike", "lv": ["kings"] },
+      { "s": "Gorm's sceptre hits harder", "lv": ["kings"] }
+    ]
+  },
+  {
+    "date": "2026-11-11",
+    "batch": 162,
+    "lines": [
+      { "s": "FOE VARIETY: the desert, canal road and fair mix up the foes you already know", "lv": ["caravan","underwell","glasssea","ksar","buriedcity","sealedpyramid","towpath","canal","fair"] },
+      { "s": "Fire, oil and thirst scorpions, Ksar raptors, vultures and drowned in the pyramid", "lv": ["underwell","glasssea","ksar","buriedcity","sealedpyramid"] },
+      { "s": "Order paladins at Waymeet and Warcairn: wait for the gleam, then parry", "lv": ["waymeet","warcairn"] },
+      { "s": "Goblin kites in the Rookery, club goblins in the Kitchen Gate, mimics in the Tower", "lv": ["rookery","kitchengate","fallingtower"] }
+    ]
+  },
+  {
     "date": "2026-11-11",
     "batch": 161,
     "lines": [

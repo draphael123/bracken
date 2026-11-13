@@ -13,6 +13,7 @@ import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
+const SHH = (await imp('src/gq4l.js')).SH_HALL * 16;   /* (gq4tune-d) GQ4L slides the Queen's hall, her escape and the tower top east by SH_HALL columns: every hard-coded x below rides it (0 with the flag off) */
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 
 const { LEVELS, T } = await imp('src/level.js');
@@ -22,8 +23,8 @@ const { gqLabState, gqLabStep, gqLabRow, GQ_ESC_STALL } = await imp('src/lab-gqu
 const make = () => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W;
   const st = { time: 0, parries: 0, dmg: [], called: [], active: true, spawned: [], checkpoint: null };
-  const P = { x: 11774, y: 320, hp: 50, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 };
-  const e = { t: 'gqueen', alive: true, x: 11924, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
+  const P = { x: (11774 + SHH), y: 320, hp: 50, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 };
+  const e = { t: 'gqueen', alive: true, x: (11924 + SHH), y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
   const noop = () => {};
   const ctx = { L: Lw, TS: 16, T, sfx: new Proxy({}, { get: () => noop }), P: () => P, boss: () => e, bossActive: () => st.active, enemies: () => [e], props: () => [], time: () => st.time,
     number: noop, burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
@@ -83,7 +84,7 @@ console.log('== WIRING (src/lab.js, tools/boss-run.mjs)');
 { const lab = rd('src/lab.js'), run = rd('tools/boss-run.mjs');
   ok(/import \{ gqLabState, gqLabStep, gqLabRow \} from '\.\/lab-gqueen\.js'/.test(lab), 'lab.js imports the stage clocks');
   const loop = lab.indexOf("for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;");
-  ok(loop > 0 && /const GQS = boss\.t === 'gqueen' \? gqLabState\(\)/.test(lab.slice(loop - 400, loop)) && /if \(GQS\) gqLabStep\(/.test(lab.slice(loop, loop + 400)), 'bossLab steps them every frame of the row, before the hands');
+  ok(loop > 0 && /const GQS = boss\.t === 'gqueen' \? gqLabState\(\)/.test(lab.slice(loop - 400, loop)) && /if \(GQS\) \{[^]{0,160}gqLabStep\(/.test(lab.slice(loop, loop + 500)), 'bossLab steps them every frame of the row, before the hands');
   ok(/\.\.\.\(GQS \? \{ gq: gqLabRow\(GQS, boss, f, gqSpf\) \} : \{\}\)/.test(lab), 'the row carries gq');
   ok(/gq:r\.gq\|\|null/.test(run) && /x\.gq \? ' gq '/.test(run), 'boss-run returns and prints gq');
   const { ROW_MIN_SECS } = await imp('tools/boss-run.mjs'); ok(ROW_MIN_SECS.crown >= 300, 'her row never runs under ' + ROW_MIN_SECS.crown + ' s (P1 + escape + P2)');
@@ -112,9 +113,9 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
 { /* two seats: ctx.P() is whoever's call it is (main.js's global P, swapped by eachHero / allHeroes); the boss's own frame means the nearer */
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W, noop = () => {};
   const mk = (x, hp) => ({ x, y: 320, hp, maxHp: 100, st: 5, maxSt: 20, flasks: 0, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0 });
-  const A = mk(11524, 40), B = mk(11774, 30), seatsL = [A, B]; let cur = A;
+  const A = mk((11524 + SHH), 40), B = mk((11774 + SHH), 30), seatsL = [A, B]; let cur = A;
   const st = { time: 0, parries: 0, mode: 'hit', dmg: [], called: [], active: true, spawned: [], checkpoint: null, flask: { a: 3, b: 5 } };
-  const e = { t: 'gqueen', alive: true, x: 11924, y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
+  const e = { t: 'gqueen', alive: true, x: (11924 + SHH), y: 320, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99 };
   const swap = (p, fn) => { const w = cur; cur = p; try { return fn(p); } finally { cur = w; } };
   const ctx = { L: Lw, TS: 16, T, sfx: new Proxy({}, { get: () => noop }), P: () => cur, boss: () => e, bossActive: () => st.active, enemies: () => [e], props: () => [], time: () => st.time,
     number: noop, burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
@@ -130,7 +131,7 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
   st.mode = 'parry'; e.mode = 'crownTossTell'; e.modeT = 0.8; step(60 * 3);
   ok(st.dmg.length >= 1 && st.dmg[0].who === 'B' && H.read().stuns === 1, 'the crown meets seat TWO (the world frame runs as seat one) and his parry stuns her (stuns ' + H.read().stuns + ', hit ' + st.dmg.map(d => d.who).join('') + ')');
   /* a portal shard fan aims at the hero she means (target), and a shard can hit seat two */
-  st.mode = 'hit'; st.dmg.length = 0; e.mode = 'portalTell'; e.modeT = 1.0; e.stunned = 0; step(60 * 4);
+  st.mode = 'hit'; st.dmg.length = 0; e.mode = 'portalTell'; e.modeT = 1.0; e.stunned = 0; step(60 * 8);   /* (small1113) tell 1.0 + glow 0.9 + gap 0.35 + the far-wall flight (~480 px at 210 px/s = 2.3 s) is ~4.6 s: the random portal picks (both on the east wall = ~20% of casts) outran the old 4 s window, so it failed ~2 runs in 6. 8 s covers every anchor pair. */
   ok(st.dmg.some(d => d.who === 'B'), 'her portal shards fly at seat two and hit him (' + st.dmg.map(d => d.who).join('') + ')');
   /* the flee heals the whole party, each to his own flask count */
   A.hp = 10; B.hp = 5; e.hp = 0; H.spare(e);
@@ -140,14 +141,14 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
   const E = Lw.gqEscape, RA = Lw.arenaRoof, F = E.tower.FLOORS;
   A.x = E.portal.x * 16 + 8 - 300; A.y = (E.portal.y + 1) * 16; B.x = E.portal.x * 16 + 8; B.y = (E.portal.y + 1) * 16; step(60);
   ok(H.read().esc.inTower && A.y === (E.start.y + 1) * 16 && B.y === (E.start.y + 1) * 16 && A.x !== B.x && Math.abs(A.x - (E.start.x * 16 + 8)) < 60 && Math.abs(B.x - (E.start.x * 16 + 8)) < 60, 'seat two steps into her portal: BOTH heroes are set down at the foot of the tower, a step apart');
-  A.x = 790 * 16; B.x = 792 * 16; A.y = B.y = F[1] * 16; A.ground = B.ground = true; step(60 * 2.6);
+  A.x = (790 + SHH / 16) * 16; B.x = (792 + SHH / 16) * 16;   /* (gq4tune-d) the shaft rides the GQ4L shift */ A.y = B.y = F[1] * 16; A.ground = B.ground = true; step(60 * 2.6);
   A.y = B.y = F[0] * 16; st.dmg.length = 0; for (let i = 0; i < 60 * 3; i++) { A.y = B.y = F[0] * 16; A.ground = B.ground = true; step(1); }   /* (the fake world has no gravity: each frame lands them again) */
   ok(st.dmg.filter(d => d.o.spare && d.who === 'A').length >= 2 && st.dmg.filter(d => d.o.spare && d.who === 'B').length >= 2, 'the burning floor ticks BOTH seats (A ' + st.dmg.filter(d => d.who === 'A').length + ', B ' + st.dmg.filter(d => d.who === 'B').length + ')');
   H.skipRoof();   /* the lab's skip: the tower top begins with the party at its hatch top */
   ok(e.stage === 'roof', 'the tower top begins for the whole party');
 
   /* the banner lash hits every seat in front of her */
-  H.test.begin(); e.x = 12956; e.y = Lw.arena.floor; A.x = 12906; B.x = 12886; A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; e.face = -1; e.crownCd = e.portalCd = 99; st.dmg.length = 0;
+  H.test.begin(); e.x = (12956 + SHH); e.y = Lw.arena.floor; A.x = (12906 + SHH); B.x = (12886 + SHH); A.y = B.y = Lw.arena.floor; A.ground = B.ground = true; e.face = -1; e.crownCd = e.portalCd = 99; st.dmg.length = 0;
   e.mode = 'lashLowTell'; e.modeT = 0.7; step(60);
   ok(st.dmg.filter(d => d.d === GQ3.roof.lashDmg).map(d => d.who).sort().join('') === 'AB', 'the LOW lash catches BOTH seats on the floor in front of her (' + st.dmg.map(d => d.who).join('') + ')');
   B.dead = true; st.dmg.length = 0; e.mode = 'lashLowTell'; e.modeT = 0.7; step(60);

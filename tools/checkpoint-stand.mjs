@@ -20,9 +20,10 @@ import { ksarOpened } from './ksar-locks.mjs';   /* the Ksar's winch, arches, wa
 
 const ACROSS = 5, VW = 320, VH = 180, TS = 16, SPRITE = 32;
 /* GAPS IN THE MODEL, each with its reason. Not levels that are wrong: rides the fill cannot follow with a shorter jump. */
+const { SH_HALL: SH_HALLX } = await import('../src/gq4l.js');
 const MODEL_GAPS = {
   /* (batch156 integ, claude/gq3) HIGHCROWN's BURNING TOWER shrine (795,19, the roof deck): the tower is entered THROUGH the Queen's fight (her portal / the hatch ladder, toEscape), never walked to, so the fill from the level start never stands there. tools/gqueen3.mjs and tools/gq3fix-ladder.mjs walk it. */
-  crown: [[795, 19, 'the Burning Tower deck is entered through the Queen fight, not walked to']],
+  crown: [[795 + SH_HALLX, 19, 'the Burning Tower deck is entered through the Queen fight, not walked to']],   /* (rel167) the deck shrine slides east with the Queen's hall: +96 with GQ4L (0 off) */
   /* (claude/windcaller4 + batch127 integ) THE GALE STAIR's Landing: the six-row summit wall (cols 693-695) is crossed only on the stair's TOLD GUST (its gale updraft is the one required ride, A4); the reach fill has no gust, so it never gets over the wall to the Landing's checkpoint */
   /* (batch135 integ, deeprails6) THE LEADING BORE (cols 1286-1355): the high line is TORN (rubble to the rock), so the ONLY way on is to strike the points OPEN and drop to the low line (a required, told verb; tools/minecart.mjs walks it). The fill reads the points SET (the high line), hits the rubble and never drops - so it cannot reach STATION NINE at the bore's mouth. */
   minecart: [[1358, 29, 'the Leading Bore: the torn high line is passed only by opening the points and dropping to the low line; the fill reads the points set']],
@@ -32,6 +33,8 @@ const MODEL_GAPS = {
   oreroad: [[470, 12, "a real breakable wall (src/breakable-walls.js) stands solid at column 468, between THE DRUM YARD's fight and this checkpoint, until struck - the fill has no pick, so it can never get past it. A player does: tools/ore-exam.mjs pins the wall is there and opens for real, and it resets on death (wallsMendAll), so the checkpoint stays genuinely gated by it every attempt"]],
   /* (batch156 merge of claude/scree3, NOT VERIFIED BY EYE) the Ram Lord's fold checkpoint: after scree3 turned the gorge mill's arch into a rock stack down to the gorge floor (two pockets, each with its own rope ladder out) the reach fill no longer gets here; the real walker (tools/level-quality.mjs scree: pilot walked 100%, mash walked 100%) still reaches the boss room. If a browser walk shows a real trap, fix the level and delete this line */
   scree: [[592, 7, 'the fill cannot follow the gorge pockets rope ladders after the scree3 mill stack; the playtest walker walks the whole level']],
+  /* (rel164, the High Lines road opened) THE HIGH LINES' shrines 2 (L8 east lee, 62,164) and 3 (the cave mouth, 5,57): both are reached only up the winches/glides (E1-E3, G3, the counterweight, the gondola), verbs the reach fill has no model for. The page proves them: tools/hl-route.mjs lights each shrine after the real route, and a death on G3 / E2 / at the cave mouth wakes at the last lit one, whole (57/57 legs for 9 heroes). Shrine 1 (the start) the fill stands at. */
+  highlines: [[62, 164, 'the lee shrine is reached by the winches and glides; the fill has no line verb (tools/hl-route.mjs lights it in the page)'], [5, 57, 'the cave-mouth shrine is reached by the winch exam and the crevice hops; the fill has no line verb (tools/hl-route.mjs lights it in the page)']],
   church: [[82, 18, "THE BROKEN LOFT (cols 97-105): nine columns of the gallery floor are gone and the only way over is THE KEY DESK's told gust (E holds a chord, a wind blows west along the gallery) - a ride the fill has no verb for (tools/pacing.mjs and src/lit-church.js L.reachGusts model it; tools/lit-church.mjs pins it: all seven heroes walk the route with base movement, this checkpoint on it)"]],
 };
 /* THE RULE BITES: a made-up flight arena with a lantern under its floor, one far below it, one inside it */

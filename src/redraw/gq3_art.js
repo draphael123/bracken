@@ -254,7 +254,8 @@ export function drawRoofBack2(g, cx, cy, VW, VH, t, hx, deckY) {
 }
 
 // ====================================================================================== THE QUEEN'S STAIR
-const QS = { gate: [661, 667, 14, 19], steps: [[654, 656, 17], [657, 658, 15], [659, 660, 13]], catwalk: [[670, 673, 6], [674, 680, 6]], alcove: [686, 688, 17, 19], gallery: { x0: 704, x1: 715, row: 12 }, banners: [706, 710, 714] };
+import { SH_STAIR, SHIFT } from '../gq4l.js'; const qa = SH_STAIR, qb = SH_STAIR + SHIFT.stair;   /* (claude/gq4l) the stair's columns slide with GQ4L_SHIPS: B1-B3 by qa, the gallery by qb */
+const QS = { gate: [661 + qa, 667 + qa, 14, 19], steps: [[654 + qa, 656 + qa, 17], [657 + qa, 658 + qa, 15], [659 + qa, 660 + qa, 13]], catwalk: [[670 + qa, 673 + qa, 6], [674 + qa, 680 + qa, 6]], alcove: [686 + qa, 688 + qa, 17, 19], gallery: { x0: 704 + qb, x1: 715 + qb, row: 12 }, banners: [706 + qb, 710 + qb, 714 + qb] };
 // the dropped portcullis: a round arch of voussoirs with a gold crown boss, the barred iron gate in it (vertical bars, three cross-bands, spikes sunk in the sill), the chains up into the winch slot, torn banners either side
 function drawGate(g, cx, cy, t) {
   const [a, b, r0, r1] = QS.gate, X0 = ri(a * 16 - cx), W = (b - a + 1) * 16, Y0 = ri(r0 * 16 - cy), H = (r1 - r0 + 1) * 16, mid = X0 + (W >> 1);
@@ -326,7 +327,7 @@ function bakeStore(w, h) {
 }
 export function paintStore(g, sx, sy, w, h, tx0, ty0, time) {
   g.drawImage(bakeStore(w, h), sx, sy);
-  for (const wc of [691, 695, 699]) { const x = ri(sx + (wc - tx0) * 16 + 8); R(g, x - 8, sy + 8, 16, 7, '#3a3a46'); R(g, x - 8, sy + 8, 16, 1, '#9a9ab0'); R(g, x - 4, sy + 15, 8, 5, '#5a6270'); px(g, x, sy + 17, '#14151d'); }   // the pulley blocks over the three weights
+  for (const wc of [691 + qa, 695 + qa, 699 + qa]) { const x = ri(sx + (wc - tx0) * 16 + 8); R(g, x - 8, sy + 8, 16, 7, '#3a3a46'); R(g, x - 8, sy + 8, 16, 1, '#9a9ab0'); R(g, x - 4, sy + 15, 8, 5, '#5a6270'); px(g, x, sy + 17, '#14151d'); }   // the pulley blocks over the three weights
   alpha(g, 0.07 + 0.04 * wave(time, 3)); R(g, sx, sy + 22, w, h - 28, '#b28cff'); alpha(g, 1);
 }
 // the princess's hoard in the alcove (cols 686..688, rows 17..19): a niche, a small altar of upturned crates, a toy crown, ribbons, a doll, gems winking
@@ -342,7 +343,7 @@ function drawAlcove(g, cx, cy, t) {
 // the gallery over her door (cols x0..x1 at row `row`): a low balustrade and a gold-edged rail, and the banners hung from the corbels down the face (they stir)
 function drawGallery(g, cx, cy, t) {
   const G = QS.gallery, X0 = ri(G.x0 * 16 - cx), W = (G.x1 - G.x0 + 1) * 16, Y = ri(G.row * 16 - cy);
-  for (let x = X0 + 3; x < X0 + W - 3; x += 6) { if (Math.abs(x - ri(712 * 16 + 8 - cx)) < 12) continue; R(g, x, Y - 11, 3, 11, S.e); R(g, x, Y - 11, 1, 11, S.g); R(g, x + 2, Y - 11, 1, 11, S.b); R(g, x - 1, Y - 6, 5, 2, S.d); }
+  for (let x = X0 + 3; x < X0 + W - 3; x += 6) { if (Math.abs(x - ri((712 + qb) * 16 + 8 - cx)) < 12) continue; R(g, x, Y - 11, 3, 11, S.e); R(g, x, Y - 11, 1, 11, S.g); R(g, x + 2, Y - 11, 1, 11, S.b); R(g, x - 1, Y - 6, 5, 2, S.d); }
   R(g, X0, Y - 14, W, 3, S.d); R(g, X0, Y - 14, W, 1, S.g); R(g, X0, Y - 12, W, 1, '#e0b040');
   for (const bx of QS.banners) { const x = ri(bx * 16 - cx) + 4, sw = ri(Math.sin(t * 1.8 + bx) * 3), sw2 = ri(Math.sin(t * 1.8 + bx + 1.5) * 4);
     R(g, x - 1, Y + 6, 10, 2, '#3a3a46'); R(g, x + sw * 0, Y + 8, 8, 6, '#5a2a7a'); R(g, x + sw, Y + 14, 8, 14, '#5a2a7a'); R(g, x + sw2, Y + 28, 8, 8, '#5a2a7a'); R(g, x + sw2 + 1, Y + 36, 3, 4, '#5a2a7a'); R(g, x + sw2 + 5, Y + 36, 3, 2, '#5a2a7a');
@@ -350,7 +351,7 @@ function drawGallery(g, cx, cy, t) {
 }
 // the whole section's dressing, over the tiles and under the creatures (cx = the camera's left edge, VW the view's width)
 export function drawStairSet(g, cx, cy, t, VW) {
-  if (cx > 718 * 16 || cx + VW < 650 * 16) return;
+  if (cx > (718 + qb) * 16 || cx + VW < (650 + qa) * 16) return;
   drawGate(g, cx, cy, t); drawFlights(g, cx, cy, t); drawCatwalks(g, cx, cy, t); drawAlcove(g, cx, cy, t); drawGallery(g, cx, cy, t);
 }
 // main.js drawRoomPaint calls this for the two room styles this pass added ('gq3shaft', 'gq3store'); true = painted

@@ -1,0 +1,9 @@
+﻿crown: level hash changed: the old LEVEL row is dropped (it measured other data); re-run: node tools/mash-bot.mjs <id> --level <id> --write
+crown MINI expected L22 knight#1: DEAD 47.8s, hero lost 100%, boss left 80%, 17/1605 blows
+crown MINI expected L22 knight#2: DEAD 47.8s, hero lost 100%, boss left 80%, 17/1605 blows
+crown MINI expected L22 warden#1: DEAD 49.7s, hero lost 100%, boss left 87%, 16/1678 blows
+crown MINI expected L22 warden#2: DEAD 49.7s, hero lost 100%, boss left 87%, 16/1678 blows
+crown MINI expected L22 pyro#1: DEAD 57.6s, hero lost 100%, boss left 69%, 73/1887 blows
+crown MINI expected L22 pyro#2: DEAD 57.6s, hero lost 100%, boss left 69%, 73/1887 blows
+wrote raw rows to work/claude/tune/gq5p-mash.json
+errors [] pages {"opened":2,"retries":0,"infraKilled":0}

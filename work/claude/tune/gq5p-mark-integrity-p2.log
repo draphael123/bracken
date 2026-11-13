@@ -1,0 +1,12 @@
+﻿mini gprincess      gprincess|allGatesTell        !!  seen 1, landed 1, posed 0/0
+mini gprincess      gprincess|trinketTell         !   seen 10, landed 10, posed 10/10 (px 2273-51571)
+mini gprincess      gprincess|lungeTell           !   seen 2, landed 2, posed 2/2 (px 2626-2633)
+mini gprincess      gprincess|curtsyTell          !   seen 2, landed 2, posed 2/2 (px 2545-2550)
+mini gprincess      gprincess|tiaraTell           !   seen 2, landed 2, posed 2/2 (px 2831-2835)
+mini gprincess      gprincess|pirouetteTell       !!  seen 2, landed 2, posed 2/2 (px 2910-2981)
+mini gprincess      gprincess|flurryTell          !   seen 2, landed 2, posed 2/2 (px 2789-2869)
+mini gprincess      gprincess|stompTell           !!  seen 2, landed 2, posed 2/2 (px 2504-2527)
+mini gprincess      gprincess|tantrumTell         !   seen 2, landed 2, posed 2/2 (px 3014-3018)
+mini gprincess      gprincess|overTell            !!  seen 2, landed 2, posed 2/2 (px 2871-2902)
+
+every mark seen belongs to a windup that is drawn and lands.

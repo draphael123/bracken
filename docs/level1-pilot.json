@@ -24,28 +24,30 @@
   "bare": true
  },
  "fair": {
-  "hash": "1910666f87ff",
+  "hash": "50629f973411",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 59,
-  "deaths": 20,
-  "kills": 4,
-  "lifts": 104,
+  "hits": 53,
+  "deaths": 16,
+  "kills": 9,
+  "lifts": 100,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "canal": {
-  "hash": "3e4445d07050",
+  "hash": "66d381e7b86c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 89,
-  "deaths": 14,
-  "kills": 14,
-  "lifts": 113,
+  "hits": 64,
+  "deaths": 12,
+  "kills": 17,
+  "lifts": 85,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "welltown": {
   "hash": "9fd89c05c44b",
@@ -84,16 +86,17 @@
   "bare": true
  },
  "underwell": {
-  "hash": "ffa3aee05062",
+  "hash": "b6d228149e78",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 50,
-  "deaths": 13,
-  "kills": 6,
-  "lifts": 117,
+  "hits": 66,
+  "deaths": 18,
+  "kills": 37,
+  "lifts": 126,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "skyroad": {
   "hash": "b47d6c62c7a0",
@@ -108,28 +111,30 @@
   "bare": true
  },
  "glasssea": {
-  "hash": "19662ab324ba",
+  "hash": "4f28f0d327f8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 31,
-  "deaths": 6,
-  "kills": 18,
-  "lifts": 100,
+  "hits": 30,
+  "deaths": 7,
+  "kills": 27,
+  "lifts": 104,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "ksar": {
-  "hash": "248ad37248ed",
+  "hash": "36b241f32e01",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 36,
-  "deaths": 13,
-  "kills": 17,
-  "lifts": 146,
+  "hits": 41,
+  "deaths": 18,
+  "kills": 16,
+  "lifts": 147,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "rootway": {
   "hash": "5bbfb3df304e",
@@ -180,26 +185,27 @@
   "bare": true
  },
  "towpath": {
-  "hash": "a494972ad32b",
+  "hash": "cf4b7d404f55",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 33,
-  "deaths": 9,
+  "hits": 23,
+  "deaths": 8,
   "kills": 5,
-  "lifts": 77,
+  "lifts": 75,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "underleaf": {
   "hash": "3aece68e2c9d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
+  "hits": 25,
   "deaths": 0,
-  "kills": 42,
-  "lifts": 88,
+  "kills": 37,
+  "lifts": 89,
   "walked": 100,
   "bare": true,
   "seed": 1
@@ -229,28 +235,30 @@
   "bare": true
  },
  "buriedcity": {
-  "hash": "09cb68eae630",
+  "hash": "8f287b9fc898",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
-  "deaths": 6,
-  "kills": 9,
-  "lifts": 168,
+  "hits": 20,
+  "deaths": 4,
+  "kills": 6,
+  "lifts": 178,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "fallingtower": {
-  "hash": "7cf9269bbf41",
+  "hash": "762098290e4f",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 61,
-  "deaths": 18,
-  "kills": 11,
-  "lifts": 150,
+  "hits": 65,
+  "deaths": 17,
+  "kills": 14,
+  "lifts": 160,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "hanging": {
   "hash": "9142ce6eeb62",
@@ -277,17 +285,17 @@
   "bare": true
  },
  "crown": {
-  "hash": "85a25396d5d2",
+  "hash": "3e2c11ae45a2",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 31,
-  "deaths": 0,
-  "kills": 50,
-  "lifts": 213,
+  "hits": 44,
+  "deaths": 3,
+  "kills": 43,
+  "lifts": 240,
   "walked": 100,
   "bare": true,
-  "seed": 1
+  "seed": 2
  },
  "reef": {
   "hash": "c614482bd7ef",
@@ -302,16 +310,17 @@
   "bare": true
  },
  "waymeet": {
-  "hash": "43e5775a43a4",
+  "hash": "ce4a1dccec48",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 9,
-  "kills": 11,
-  "lifts": 154,
+  "hits": 19,
+  "deaths": 3,
+  "kills": 6,
+  "lifts": 165,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "fields": {
   "hash": "9bbe759e073b",
@@ -326,16 +335,17 @@
   "bare": true
  },
  "caravan": {
-  "hash": "2dda566562c6",
+  "hash": "406bff5b8050",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 18,
+  "hits": 21,
   "deaths": 6,
-  "kills": 6,
-  "lifts": 93,
+  "kills": 12,
+  "lifts": 96,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "wood": {
   "hash": "8fa8cf5836f8",
@@ -363,16 +373,17 @@
   "seed": 1
  },
  "sealedpyramid": {
-  "hash": "60a8498518ab",
+  "hash": "20778322442b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
-  "deaths": 15,
-  "kills": 35,
-  "lifts": 195,
+  "hits": 48,
+  "deaths": 13,
+  "kills": 39,
+  "lifts": 200,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "stockade": {
   "hash": "66a5ca67af78",
@@ -525,40 +536,55 @@
   "seed": 1
  },
  "kitchengate": {
-  "hash": "d31d263b68be",
+  "hash": "ac325d6c4211",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
+  "hits": 41,
   "deaths": 3,
-  "kills": 37,
-  "lifts": 59,
+  "kills": 34,
+  "lifts": 62,
   "walked": 100,
   "bare": true,
   "seed": 1
  },
  "rookery": {
-  "hash": "5d6586808301",
+  "hash": "810ebc483cc8",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
+  "hits": 45,
   "deaths": 6,
-  "kills": 31,
-  "lifts": 81,
+  "kills": 38,
+  "lifts": 80,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
  },
  "warcairn": {
-  "hash": "79d686debf12",
+  "hash": "4de97a64f7ff",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 23,
-  "deaths": 4,
-  "kills": 23,
-  "lifts": 93,
+  "hits": 27,
+  "deaths": 5,
+  "kills": 19,
+  "lifts": 95,
   "walked": 100,
-  "bare": true
+  "bare": true,
+  "seed": 1
+ },
+ "highlines": {
+  "hash": "b165e11737da",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 0,
+  "deaths": 0,
+  "kills": 0,
+  "lifts": 66,
+  "walked": 100,
+  "bare": true,
+  "seed": 1
  }
 }

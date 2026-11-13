@@ -17,6 +17,7 @@
 // main.js hooks: poseOf (toldPose instead of the shared windKeys for a signature), the tell queue's lane (laneFor: the parry shield), the
 // release beat in updateEnemies (released) and once a frame (frame).
 
+import { gq4lOn } from './gq4l.js';
 export const TOLD = {
   overreach: 0.6,      // of its bar, added at once to a foe whose JUMP / DUCK signature was answered (a light bar: a break)
   reach: 52,           // px: the hero within this of it (and 40 up/down) when it comes down counts as answering it, not standing off it
@@ -41,6 +42,7 @@ export const SIG = {
   badger: { mode: 'chargeTell', answer: 'parry' }, crow: { mode: 'diveTell', answer: 'duck' },      heavy: { mode: 'slashTell', answer: 'parry' },
   soldier: { mode: 'slashTell', answer: 'parry' }, berserker: { mode: 'flailTell', answer: 'parry' }, cutter: { mode: 'raise', answer: 'parry' },
   swornsword: { mode: 'cutTell', answer: 'parry' }, hearthgob: { mode: 'raise', answer: 'parry' },
+  ...(gq4lOn() ? { hedgeknight: { mode: 'swingTell', answer: 'parry' } } : {}),   /* (claude/gq4l, GQ4L_SHIPS) THE QUEEN'S KNIGHT (cnSkin gobknight on the hedge knight) stands in Highcrown, an act I-II level: its poleaxe round the side is the one ! mark a shield turns */
   forgemaster: { mode: 'tongsTell', answer: 'parry' },   /* (batch125 integ, foe-pass) THE FORGEMASTER's HAMMER AND TONGS is a ! block (the shield turns it) */
   shrieker: { mode: 'aim', answer: 'parry' }, galeharpy: { mode: 'galeTell', answer: 'parry' },   /* (claude/rookery2) THE GALE HARPY: her gust told by wings back (a ! the shield braces) */ butcher: { mode: 'wind', answer: 'parry' },   /* (BATCH123 integ, foe-pass) THE ROOKERY's SHRIEKER aims like the harpy it is (a ! block), THE KITCHEN GATE's BUTCHER winds a ! cleaver chop (block) before his red !! raise */
   hornsman: { mode: 'maulTell', answer: 'parry' },   /* (batch122, claude/palisadefoe) THE HORNSMAN's MAUL: a shield turns it (the horn is no blow) */
@@ -66,8 +68,8 @@ export const SIG = {
 /* THE FAMILIES OF ACTS I-II WHOSE EVERY BLOW IS A RED !! (dodge) - no blow they have can be parried, jumped or ducked. Each needs a NEW told attack
    with its own windup pose, built by its act's sweep lane. This list may only shrink (tools/foe-pass.mjs). */
 export const TOLD_TODO = {};   /* EMPTY (claude/sweepact12): thief, spitcap, sapper, emberwisp, stormshaman, clinger and shardling each have a signature now */
-/* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage */
-export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord']);
+/* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage, the order's paladins (rel162: their own AI, src/order-paladin.js, with its own told GLEAM + parry-to-break, not a SIG row) */
+export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord', 'orderpaladin', 'deadpaladin', 'hookjack']);   /* (claude/hllive) THE HOOKJACK (src/hookjack.js): his own AI with its own told hook-draw (he is OPEN in it) and parry-to-spin, like the paladins - not a SIG row */
 
 /* is e in its family's signature windup right now? (the row, or null). base: the kind its AI runs on (a cnSkin body is its kind) */
 export const sigOf = e => { const r = e && SIG[e.t]; return r && !e.elite && !e.maxHp && !e.mini && e.mode === r.mode ? r : (r && e.t === 'archer' && r.mode === 'draw' && e.draw > 0.3 && !e.elite ? r : null); };

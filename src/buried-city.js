@@ -11,6 +11,7 @@
 // Main road: ksar > BURIED CITY > THE SEALED PYRAMID (scratch/brief-sealedpyramid.md: it needs 'buriedcity'; the throne room's far door is its road).
 //
 // THE RULE: PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.
+// THE RULE: PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD. SOME DOORS, BRIDGES AND LIFTS HOLD ONLY WHILE A GLASS RUNS: STRIKE IT AND RUN.   (claude/bc5, behind ?bc5=1: BURIED CITY 5, RACE THE GLASS)
 // A SAND ROOM (L.rooms) has a floor-gate and holes in its roof the city's sand pours through. Its SAND-GATE LEVER (E, src/buried-city-hands.js) works the gate:
 // OPEN, the room drains (its sand runs out through the floor); SHUT, the pour fills it a row at a time. Sand is footing: it RISES UNDER YOU AND CARRIES YOU UP -
 // and whatever stands on it goes down with it when it drains. A SAND-FALL from a crack in the roof can be SWUNG by its CHUTE LEVER (E): the sand piles up
@@ -45,6 +46,7 @@
 //                                            construct the fall holds and a slinger; open, a fall is the end), THE THRONE'S WARDEN (ELITE, gate), the vault
 //   702-741  THE THRONE ROOM        BOSS     THE HOURGLASS KING (src/hourglass-king.js stageHourglassKing), at the foot of the Hourglass Tower
 import { stageHourglassKing, HK_STAGE } from './hourglass-king.js';
+import { bc5On, RACE, ARCS_BC5, BC5_SAY, RULE5 } from './buried-city5.js'; import { GB_STAGE } from './glassblower.js';   /* (claude/bc5) RACE THE GLASS + THE GLASSBLOWER: behind BC5_SHIPS / ?bc5=1 (src/buried-city5.js); OFF = this file as master built it, cell for cell */
 
 /* THE ROWS BELOW ARE LOGICAL: the city is laid on them and the build sets it ONE ROW LOWER in the grid (DY: one more row of sand roof over everything), so every
    street's feet stand on the top row of a four-row height band (the dunes' 24, the street's 36, the upper street's 28, the halls' corridor 32, the old street's 44)
@@ -52,7 +54,7 @@ import { stageHourglassKing, HK_STAGE } from './hourglass-king.js';
 export const DY = 1;
 export const BC = { W: 887, H: 49, dune: 24, base: 36, upper: 28, hall: 38, corr: 32, sluice: 42, quarter: 36, low: 44, throne: 32 };
 export const SECTIONS = [['THE DUNES', 0], ['THE SAND STAIR', 48], ['THE BURIED BAZAAR', 112], ['THE SINKING STREET', 200], ['THE HOURGLASS HALLS', 237], ['THE GLASS WORKS', 337], ['THE SAND-FALL', 409], ['THE DROWNED QUARTER', 468], ['THE THRONE STREET', 585], ['THE ROOFTOPS', 702], ['THE ANTECHAMBER', 822], ['THE THRONE ROOM', 845]];   /* (claude/buriedcity4: THE GLASS WORKS and THE ANTECHAMBER are new) */
-export const RULE = 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.';   /* (claude/buriedcity3: THE FLIP is the rule's second half - the line says what the code does, A1) */
+export const RULE = bc5On() ? RULE5 : 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.';   /* (claude/buriedcity3: THE FLIP is the rule's second half - the line says what the code does, A1) */
 /* each use's arc (tile columns) - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/buried-city.mjs */
 export const ARCS = {
   drain: { teach: [56, 74], test: [274, 292], remix: [468, 539], exam: [585, 598], boss: [845, 884] },   /* the first room; the upper bulb; THE GREAT SAND-GATE (required); the shaft's drop back; the king's glass */
@@ -68,6 +70,7 @@ export const ARCS = {
   bound: { teach: [370, 377], test: [404, 408], remix: [747, 752], exam: [811, 821] },
   slab: { exam: [822, 843] },   /* (claude/buriedcity3) THE FLIP: a roof rises (safe, required); a bank runs out; the fall flows up + the chain of two glasses; the glass that sinks one roof and raises the rest over the end; the king's great glass */
 };
+if (bc5On()) Object.assign(ARCS, ARCS_BC5);   /* (claude/bc5) the race arc: taught, the mini, tested, remixed, examined */
 /* the sand rooms: x0..x1 the interior, floor the surface row under the sand (the sand stands on rows floor-full .. floor-1), full its rows, init its state on a
    fresh load ('full' or 'empty'), levers [x, feet row, chain rows (a CHAIN up the wall: pulled anywhere on its length - the lever inside a room you may be
    standing on the sand of)], need (the route must cross it full: the reach model counts it full), pour (the roof feeds it while its gate is shut), into (its sand
@@ -109,6 +112,7 @@ export const SUN = [{ x0: 0, x1: 37 }, { x0: 52, x1: 55 }, { x0: 124, x1: 129 },
 
 export function buildBuriedCity({ painter, T, TS }) {
   const { W, H, dune: DU, base: B, upper: U, hall: LH, corr: CO, sluice: SL, quarter: QS, low: LO, throne: TH } = BC;
+  const BC5 = bc5On();   /* (claude/bc5) RACE THE GLASS: every new beat below is inside an `if (BC5)`; OFF builds exactly what master builds */
   const L = painter(W, H), set0 = L.set, block0 = L.block, ent0 = L.ent;
   /* THE PAINTER ON LOGICAL ROWS (DY, above): every row given here lands DY lower in the grid; the roof and the shafts reach up to the grid's top row */
   const set = (x, y, v) => set0(x, y + DY, v), block = (x0, x1, y0, y1) => block0(x0, x1, y0 + DY, y1 + DY), ent = (t, x, y, o) => ent0(t, x, y + DY, o);
@@ -123,6 +127,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   const sandBound = (x, y, glassId, squad, o) => foe('ambusher', x, y, squad, Object.assign({ cnSkin: 'sandbound', glass: glassId }, o || {}));   /* (claude/buriedcity4) THE SAND-BOUND: the drowned's machine, bound to a glass (the variant: the level keeps ONE new foe, the construct) */
   const slinger = (x, y, squad, o) => foe('slinger', x, y, squad, Object.assign({ cnSkin: 'sandslinger' }, o || {}));                       /* THE SAND-FOLK SLINGER: the ranged one (a man of the city's last folk) */
   const scorpion = (x, y, squad, o) => foe('scorpion', x, y, squad, Object.assign({ cnSkin: 'brassscorpion' }, o || {}));                   /* THE BRASS SCORPION: the city's clockwork vermin */
+  const grasper = (x, y, squad, o) => foe('sandgrasper', x, y, squad, Object.assign({ cnSkin: 'sanddrowned' }, o || {}));   /* (claude/bc5) THE SAND GRASPER (src/sand-grasper.js): the sand's own hands - rises when its room drains / when you come near */
   const gear = (x, y) => ent('stray', x, y, { kind: 'gear' });
   /* (claude/bc4fix, brief item 3 - Daniel 10-15 found a way under an elite: every elite exam is a GATE he holds now - it opens when he falls - and behind it a COIN CACHE:
      a heap of coin spilled from a casket (decor 'coincache', drawn by src/redraw/buried_city_fix_art.js) with five coins on it; told when you first see it (the hands) */
@@ -149,8 +154,9 @@ export function buildBuriedCity({ painter, T, TS }) {
      the sand). bank: a drift wall (sand as the hands write it) that runs out while its glass runs. dfall: a sand-fall off a dune's lip that flows UP while its
      glass runs (a body in it is carried up; idle it beats you down). sea: THE SAND SEA - deep sand between the rooftops (a void under its drawn surface: who sinks
      into it is swallowed - a bite of him and back to his last footing, or in the exam the end). sinker: footing that stands as built and SINKS while its glass runs */
-  const glasses = [], risers = [], banks = [], dfalls = [], seas = [];
-  const glass = (id, x, y, dur) => glasses.push({ id, x, y, dur });
+  const glasses = [], risers = [], banks = [], dfalls = [], seas = [], doors = [];
+  const glass = (id, x, y, dur, o) => glasses.push(Object.assign({ id, x, y, dur }, o || {}));   /* (claude/bc5: o.also - the glasses this one turns with it: the lift chain's second glass, a re-strike pad) */
+  const door = (g, x0, x1, y0, y1) => doors.push({ glass: g, x0, x1, y0, y1 });   /* (claude/bc5) A RACE DOOR: stone, open while its glass runs, shut when it has run out - never onto a body (src/buried-city-flip.js) */
   const riser = (g, x0, x1, top, rows, kind, o) => { risers.push(Object.assign({ glass: g, x0, x1, top, rows, kind: kind || 'roof' }, o || {})); plats.push({ kind: kind || 'house', x0, x1, y: top, y1: top + rows - 1, riser: true }); };
   const sinker = (g, x0, x1, top, rows, kind) => { block(x0, x1, top, top + rows - 1); riser(g, x0, x1, top, rows, kind, { sinks: true }); plats[plats.length - 1].riser = false;
     structures.push({ kind: 'bcBuried', x0, x1, top, floor: top + rows - 1 }); };
@@ -311,12 +317,30 @@ export function buildBuriedCity({ painter, T, TS }) {
   deep('house', 383, 388, 10);                                                 /* THE HIGH KILN (row 10) */
   /* THE EXAM - THE RELAY: the high kiln's glass raises two roofs down to a chimney stub; ITS glass raises the last roof over the pit and buries the sand-bound
      waiting on the floor; a slinger on the balcony over the floor throws at the relay. Then a shrine */
+  let gbMini = null;
+  if (!BC5) {
   sign(383, 9, 'THE RELAY: EACH GLASS RAISES THE WAY TO THE NEXT.');
   glass('works4', 385, 9, 8); sea(389, 397, 40); riser('works4', 390, 392, 13, 2, 'house'); riser('works4', 394, 396, 17, 2, 'dome');
   deep('minaret', 398, 400, 21); glass('works5', 399, 20, 6);
   sea(401, 403, 40); riser('works5', 401, 403, 26, 2, 'house');
   ground(404, 408, CO); plat('balcony', 406, 408, 28); slinger(407, 27, 'worksSling', { face: -1 });
   sandBound(405, CO - 1, 'works5', 'worksFloor');
+  } else {
+  /* (claude/bc5) THE GLASSBLOWER'S HALL replaces the relay exam in place (plan s3: columns 389-407; the shrine at 408 stays). The way in is a DROP off the high kiln (a shrine on the
+     kiln first: a death walks back two columns), two KILN STUBS (a cover from his blowpipe), two of the city's glasses with the hall's own risers and sinkers on them (his FLIP
+     drives them), the portcullis at 407 lifts when he falls. No sea in the hall: a hole is two rows and a body climbs out of it */
+  const S = GB_STAGE, sx = S.sx, R = S.R, ex = sx + S.W;
+  sign(383, 9, 'BELOW: THE GLASSBLOWER. THE SHRINE IS BEHIND YOU. STRIKE HIS HOURGLASS WHEN IT GLINTS.'); ent('check', 386, 9);
+  ground(sx, ex + 2, R); block(ex, ex, 5, R - 7);   /* (claude/rel176) ex + 2: the shrine at 408 needs floor on BOTH sides to stand there; with 409 open air the build nudged it to 406, INSIDE the mini's walls (tools/checkpoints) */ for (let y = R - 6; y <= R - 1; y++) set(ex, y, T.PORT);
+  S.cover.forEach(([a, b], i) => { const rows = (S.coverRows || [])[i] || 3; block(sx + a, sx + b, R - rows, R - 1); decor.push({ kind: 'kiln', x0: sx + a, x1: sx + b, y: R - rows, rows }); });   /* (claude/bc5art) drawn: src/redraw/buried_city_bc5_art.js */
+  decor.push({ kind: 'gbhall', x0: sx, x1: ex - 1, y: R });   /* (claude/bc5art) the hall's floor: cullet, slag, a furnace glow (draw only) */   /* (claude/bc5fix: the stub near him is two rows) */
+  for (const sk of S.sink) sinker(sk.glass, sx + sk.c[0], sx + sk.c[1], R, 2, 'house');
+  for (const rs of S.riser) riser(rs.glass, sx + rs.c[0], sx + rs.c[1], rs.top, rs.rows, 'house');
+  for (const g of S.glass) glass(g.id, sx + g.c, R - 1, g.dur);
+  ent('glassblower', sx + S.him, R - 1, { face: -1, mini: true });
+  gbMini = { name: 'THE GLASSBLOWER', x0: sx * TS, x1: ex * TS, floor: (R + DY) * TS, y0: (R + DY - 18) * TS, y1: (R + DY + 1) * TS, trigger: (sx + 4) * TS, wallL: sx - 1, wallR: ex, gate: ex, boss: 'glassblower', music: 'banditking',
+    start: [sx + 2, R - 1 + DY], gb: { sx, R: R + DY } };
+  }
   ent('check', 408, CO - 1);                                                        /* THE GLASS WORKS' SHRINE, after its exam (A10b: one a section) */
   ground(409, 412, LH); roof(409, 412, 27);                                        /* (the corridor's end drops to the sluice's door) */
 
@@ -349,7 +373,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   decor.push({ kind: 'greatgate', x0: 510, x1: 514, y: LO }); plat('pipe', 510, 514, 40); plat('beam', 491, 495, 37); plat('beam', 515, 519, 37);   /* the great gate's housing: a step over its grille */
   /* the quarter's dormant watch and its drowned: under the sand on a fresh load - the hands stand them up when the sand has gone off them (sandWait) */
   construct(512, LO - 1, 'quarterWatch', { sandWait: 'great', dormant: true }); construct(536, LO - 1, 'quarterWatch2', { sandWait: 'great' });
-  drowned(488, LO - 1, 'quarterDrift', { sandWait: 'great' }); drowned(522, LO - 1, 'quarterDrift2', { sandWait: 'great' }); slinger(527, 34, 'quarterSling', { sandWait: 'great' });
+  if (BC5) grasper(489, LO - 1, 'quarterGrasp', { sandWait: 'great' }); else drowned(488, LO - 1, 'quarterDrift', { sandWait: 'great' }); drowned(522, LO - 1, 'quarterDrift2', { sandWait: 'great' }); slinger(527, 34, 'quarterSling', { sandWait: 'great' });
   /* THE FOUNDRY YARD (540-584): the old street east of the quarter, brass pipes overhead */
   ground(540, 584, LO); roof(540, 584, 32);
   plat('pipe', 541, 545, 41); plat('pipe', 547, 551, 38); plat('pipe', 559, 563, 41); plat('pipe', 565, 569, 38); plat('balcony', 575, 579, 41);
@@ -374,19 +398,19 @@ export function buildBuriedCity({ painter, T, TS }) {
   drowned(591, LO - 1, 'shaftDrift');                                              /* a drowned in the shaft's floor: it rides the sand up with you */
   /* THE THRONE STREET (599-701, row 32) */
   ground(599, 617, TH); roof(599, 701, 20);
-  plat('balcony', 603, 607, 29);
+  if (!BC5) plat('balcony', 603, 607, 29);   /* (claude/bc5: the span's pit is under it - a balcony over it would be a way round the race) */
   /* THE TRAP HALL (THE EXAM, REQUIRED): its floor-gate is OPEN - a drop to the end - and the roof's SAND-FALL lands on the lip, where a construct stands held in it.
      SHUT THE FLOOR-GATE (616) AND SWING THE FALL INTO THE HALL (610): only then does it fill, and you walk over. Swing it first and the sand falls through into the
      dark; and the moment it leaves the lip, the construct it held is free */
   air(618, 631, TH, H - 1); interiors.push([618, 631, TH, 45, 'bcTrap']);
-  sign(608, TH - 1, 'THE CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL.');
+  sign(BC5 ? 609 : 608, TH - 1, 'THE CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL.');
   sign(615, TH - 1, 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: A FALL HERE IS THE END.');
   ent('sandchute', 610, TH - 1, { chute: 'trapfall' });
   ent('sandlever', 616, TH - 1, { room: 'trap' }); ent('sandlever', 634, TH - 1, { room: 'trap' });
   construct(613, TH - 1, 'trapLip', { face: 1 }); drowned(615, TH - 1, 'trapLip');   /* THE EXAM's construct on the lip, in the fall (JAMMED while it holds him), and a drowned on the lip's edge: a heavy blow throws him OFF THE EDGE */
   ground(632, 701, TH); plat('balcony', 637, 641, 29); slinger(639, 28, 'trapSling', { face: -1 });   /* across the hall: a slinger on a balcony */
   /* THE KING'S COURT: his kneeling courtiers (the drowned of his court, stone now), his statues, and THE THRONE'S WARDEN */
-  decor.push({ kind: 'courtiers', x0: 635, x1: 651, y: TH - 1 }, { kind: 'kingstatue', x: 665, y: TH - 1, h: 9 }, { kind: 'kingstatue', x: 684, y: TH - 1, h: 9 });
+  decor.push({ kind: 'courtiers', x0: 635, x1: 651, y: TH - 1 }, { kind: 'kingstatue', x: BC5 ? 652 : 665, y: TH - 1, h: 9 }, { kind: 'kingstatue', x: 684, y: TH - 1, h: 9 });   /* (claude/bc5: the lift chain stands where the first statue did - it steps back to 652) */
   drift(647, 649, TH); plat('balcony', 648, 652, 29);
   construct(654, TH - 1, 'throneGuard', { elite: true, gate: 661 }); scorpion(658, TH - 1, 'throneGuard');
   block(661, 661, 21, 21);   /* (claude/bc4fix: the street is eleven rows tall and his gate ten - a hero (fourteen px) could go over its top under the roof, off the balcony: a lintel shuts it) */
@@ -402,6 +426,27 @@ export function buildBuriedCity({ painter, T, TS }) {
   ent('check', 693, TH - 1);                                                        /* CHECKPOINT FOUR, before the king (after the exam) */
   lamp(697, 26, 'brazier');
   decor.push({ kind: 'relief', x0: 688, x1: 700, y: 26 });                         /* (the next road) THE SEALED PYRAMID carved over the throne door: a tomb with a scarab on its seal */
+
+  // ================= BURIED CITY 5 (claude/bc5): RACE THE GLASS - R1 the hung gallery over the first construct, R2 the span at the throne street's mouth, R3 the lift chain past the
+  //    warden (required: a wall too tall to jump), the SAND GRASPERS (one a room, never in a race). R4 and THE GLASSBLOWER are in the antechamber and the Glass Works below. =================
+  if (BC5) {
+    { const R1 = RACE.r1;   /* R1 TEACH: a hung gallery over the street's first construct; its door holds while the glass runs. Miss it: the street (the old way). Optional */
+      plat('beam', R1.gallery[0], R1.gallery[1], R1.gallery[2]); glass(R1.glass, R1.gx, 24, R1.dur); door(R1.glass, R1.door.x0, R1.door.x1, R1.door.y0, R1.door.y1);
+      sign(171, 24, BC5_SAY.door); }
+    { const R2 = RACE.r2;   /* R2 TEST: a pit of sand at the throne street's mouth; two crumbling slabs over it; a fall is a bite and back to the glass. Required */
+      air(R2.pit[0], R2.pit[1], TH, H - 2 - DY); sea(R2.pit[0], R2.pit[1], TH);
+      for (const s of R2.slabs) tplat(R2.glass, s.x0, s.x1, TH, s.life);
+      glass(R2.glass, R2.gx, TH - 1, R2.dur); sign(599, TH - 1, BC5_SAY.span); }
+    { const R3 = RACE.r3;   /* R3 REMIX: A raises the stairs; B on the fixed pier raises the last step and turns A again. Required (the pier is six rows up, the wall four more) */
+      glass(R3.a.glass, R3.a.gx, TH - 1, R3.a.dur); sign(R3.a.gx + 1, TH - 1, BC5_SAY.lift);
+      riser(R3.a.glass, R3.s1[0], R3.s1[1], R3.s1[2], R3.s1[3], 'house'); riser(R3.a.glass, R3.s2[0], R3.s2[1], R3.s2[2], R3.s2[3], 'house');
+      solidPlat('house', R3.pier[0], R3.pier[1], R3.pier[2], TH - 1);
+      glass(R3.b.glass, R3.b.gx, R3.pier[2] - 1, R3.b.dur, { also: R3.b.also.slice() }); sign(R3.pier[0] - 1, R3.pier[2] - 1, BC5_SAY.chain);
+      riser(R3.b.glass, R3.s3[0], R3.s3[1], R3.s3[2], R3.s3[3], 'house');
+      solidPlat('house', R3.wall[0], R3.wall[1], R3.wall[2], TH - 1); }
+    /* THE SAND GRASPERS: the Hourglass Halls' upper bulb (it rises when the bulb drains) and the throne street's court (it rises when you come near) - one a room */
+    grasper(289, CO - 1, 'bulbGrasp', { sandWait: 'upperbulb' }); grasper(643, TH - 1, 'courtGrasp');
+  }
 
   // ================= 8. THE ROOFTOPS (702-821, claude/buriedcity3): OUTSIDE - out through a breach in the sand roof onto the open desert city: its rooftops,
   //    domes and minaret stubs stand up out of THE SAND SEA under THE SUN (A13: the drain; shade under the awnings). REMIX: the sand-fall that flows up, the
@@ -473,10 +518,23 @@ export function buildBuriedCity({ painter, T, TS }) {
   sign(823, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
   glass('ante', 824, TH - 1, 7);
   tplat('ante', 827, 829, 31, 3.4); tplat('ante', 831, 833, 30, 4.6); tplat('ante', 835, 837, 31, 5.8);
+  if (BC5) { const R4 = RACE.r4;   /* R4 EXAM: a RACE DOOR at the hall's end on the SAME glass, a re-strike pad on a pier midway (it turns the glass again: slabs and door hold longer), a pad by the door for a hero who came late (no soft lock) */
+    block(R4.pad.gx, R4.pad.gx, R4.pad.y + 1, H - 1 - DY); glass(R4.pad.glass, R4.pad.gx, R4.pad.y, R4.dur, { also: R4.pad.also.slice() }); glass(R4.far.glass, R4.far.gx, R4.far.y, R4.dur, { also: R4.far.also.slice() });
+    block(R4.door.x0, R4.door.x1, 22, R4.door.y0 - 1); door('ante', R4.door.x0, R4.door.x1, R4.door.y0, R4.door.y1); }
   cache(839, TH, 821);   /* (claude/bc4fix) the courtyard elite's purse: by the throne room's door, past his gate and the slabs */
   decor.push({ kind: 'mural', x0: 840, x1: 843, y: 25 });                          /* (B8: the art lane draws HIM raising slabs of sand toward himself - foreshadowing his fight) */
-  lamp(841, 24, 'brazier');
+  lamp(BC5 ? 843 : 841, 24, 'brazier');   /* (claude/bc5: the race door's lintel is at 841) */
   ent('check', 842, TH - 1);                                                        /* CHECKPOINT FIVE, past the exam before the throne, at the throne room's door */
+  if (BC5) {   /* (claude/bc5fix) THE THIN STRETCHES (the laptop walk, bc5walk.md: BC ~3 foes per 40 columns, THE MAGE'S FOLLY ~8): the Glass Works' approach and the throne street's run-in to the rooftops and the king
+    get squads of the city's OWN cast (drowned, brass scorpion, sand-folk slinger - no new foe, no goblin, nothing of wood) and a few coin arcs on the ground a hero stands on. Every one stands on solid footing off the races, the
+    mini's floor, the glasses and the checkpoints (tools/buried-city5.mjs asserts it); OFF builds none of them. */
+    const arc = (x, y) => { ent('coin', x, y); ent('coin', x + 1, y - 1); ent('coin', x + 2, y); };
+    slinger(331, 27, 'hallsEndSling'); scorpion(334, 31, 'hallsEndB'); scorpion(343, 31, 'worksA'); drowned(366, 25, 'worksC');   /* the Glass Works' approach (320-399: 1 foe -> 5) */
+    scorpion(683, 31, 'runInA'); slinger(697, 28, 'runInSling'); drowned(715, 13, 'roofA');                                       /* the throne street's run-in and the first roof (680-719: 1 -> 4) */
+    slinger(724, 13, 'roofB'); scorpion(738, 5, 'roofC'); drowned(788, 11, 'farBank');                                           /* the rooftops (720-799: 1 -> 4) */
+    sign(597, 27, 'THE SPAN AHEAD CRUMBLES. STRIKE THE GLASS ON ITS LIP, THEN RUN.');   /* (R1 is optional: the player who skipped the balcony meets R2 cold - a second teach, on the shaft's exit ledge, 3 columns before the lip's own sign) */
+    arc(338, 31); arc(346, 31); arc(712, 13); arc(735, 5); arc(792, 11);
+  }
 
   // ================= THE HOURGLASS KING's THRONE ROOM (src/hourglass-king.js), at the foot of the Hourglass Tower =================
   const AX = 845;
@@ -506,6 +564,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   for (const z of structures) { z.top += DY; z.floor += DY; } for (const p of plats) { p.y += DY; if (p.y1 !== undefined) p.y1 += DY; } for (const lp of lamps) lp.y += DY;
   for (const it of interiors) { it[2] += DY; it[3] += DY; } for (const v of vaultDoors) { v.y0 += DY; v.y1 += DY; }
   for (const q of glasses) q.y += DY; for (const r of risers) r.top += DY; for (const b of banks) { b.y0 += DY; b.y1 += DY; } for (const f of dfalls) { f.top += DY; f.bottom += DY; } for (const q of seas) { q.row += DY; if (q.bottom !== undefined) q.bottom += DY; } for (const t of tilts) { t.lo += DY; t.floor += DY; } for (const p of tplats) p.y += DY;
+  for (const d of doors) { d.y0 += DY; d.y1 += DY; }   /* (claude/bc5) */
   const masonry = []; { const roofEnd = x => { let y = 0; while (y < H && L.grid[y * W + x] === T.AIR) y++; while (y < H && L.grid[y * W + x] !== T.AIR) y++; return y; };   /* (claude/buriedcity3: past the open sky over a column, the first air under its roof - the dune over the throne room has sky over it now) */
     for (let x = 38; x < W; ) { if (x >= OUT.x0 && x <= OUT.x1) { x = OUT.x1 + 1; continue; } const y0 = roofEnd(x); let x1 = x; while (x1 + 1 < W && !(x1 + 1 >= OUT.x0 && x1 + 1 <= OUT.x1) && roofEnd(x1 + 1) === y0) x1++; if (y0 < H) masonry.push([x, x1, y0, H - 1]); x = x1 + 1; } }
   const START = { x: 3, y: DU - 1 + DY };
@@ -524,6 +583,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     sun: SUN.map(z => ({ ...z })), shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes and in the shafts only (the city is under its roof): src/buried-city-hands.js sunAt */
     loopDoor: { x: 810, y0: 28 + DY, y1: TH - 1 + DY, lever: [812, TH - 1 + DY] },   /* (claude/buriedcity4) THE OLD STREET's sand-gate: opened from the courtyard (E), it stays open (brief 10, the loop back to the fourth shrine) */
     clouds,
+    ...(BC5 ? { bc5: true, doors, mini: gbMini, reachDoors: [{ x0: GB_STAGE.sx + GB_STAGE.W, x1: GB_STAGE.sx + GB_STAGE.W, y0: GB_STAGE.R - 6 + DY, y1: GB_STAGE.R - 1 + DY }] } : {}),   /* (claude/bc5) the race doors, THE GLASSBLOWER's mini, his portcullis (the reach model reads it open: his death lifts it) */
     glasses, risers, banks, dfalls, seas, tilts, tplats, outside: [{ ...OUT }], outMasonry: [[702, 709, 0, H - 1], [811, 820, 0, H - 1]],   /* THE FLIP (claude/buriedcity3): the hourglasses and what each turns; THE SAND SEA; THE ROOFTOPS are OUTSIDE (the backdrop's sky: src/redraw/buried_city_backdrop.js) */
     noSkyRays: true,   /* (the sky's rays are the dunes' and the shafts' only: src/redraw/buried_city_backdrop.js draws the shafts' light) */
     quest: { n: 5, item: 'gear', name: 'GEARS', done: 'FIVE GEARS: THE CLOCKWORK VAULT OPENS', thanks: 'THE CLOCKWORK VAULT OPENS' },

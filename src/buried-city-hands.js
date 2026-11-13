@@ -16,6 +16,7 @@ import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { isSlope, surfaceY } from './slopes.js';   /* (claude/bc4fix) a body on a slope stands on its SURFACE, not on its tile's top */
 import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js'; import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) */
+import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the Glassblower's hall: kiln stubs, floor (draw only, L.bc5) */
 import * as FIXA from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the coin caches */
 import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
@@ -26,6 +27,7 @@ const RULE_SAID = { first: 1, granary: 1, street: 1, cellar: 1, upperbulb: 1, ya
 export function makeBuriedCityHands(ctx) {
   let K = null;
   const H = {};
+  H.struckHooks = [];   /* (claude/bc5) THE GLASSBLOWER listens for a hero's blow on a glass (src/glassblower-hands.js pushes its hook here) */
   let FL = null;   /* THE FLIP (src/buried-city-flip.js), made on the first reset (it needs the hands' unburyIn) */
   const TS = () => ctx.TS, T = () => ctx.T;
   const once = k => { if (K.said[k]) return false; K.said[k] = 1; return true; };
@@ -68,7 +70,7 @@ export function makeBuriedCityHands(ctx) {
     K.waiting = (L.ents || []).map((e, k) => ({ e, k })).filter(q => q.e.sandWait && H.waits(q.e));
     { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].bc) arr.splice(i, 1); for (const lp of (L.lamps || [])) arr.push({ x: lp.x * TS() + 8, y: lp.y * TS() + (lp.kind === 'brazier' ? 2 : 4), r: lp.kind === 'brazier' ? 64 : 44, torch: true, bare: true, warm: true, bc: true }); } }   /* (the lamps are lights the game blooms) */
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.leverFx = {};
-    if (!FL) FL = makeFlip({ ctx, number, once, unburyIn: (a, b, r) => unburyIn(a, b, r) }); FL.reset(K, fresh); H.flip = FL;
+    if (!FL) FL = makeFlip({ ctx, number, once, unburyIn: (a, b, r) => unburyIn(a, b, r), struck: (g, P) => { for (const f of H.struckHooks) f(g, P); } }); FL.reset(K, fresh); H.flip = FL;
     for (const pp of ctx.players) { pp.bcJam = 0; pp.bcFall = 0; }
     if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { buriedCity: () => K, buriedCityHands: () => H, walkHint: () => H.walkHint(ctx.hero()), flipAll: () => FL && FL.flipAll(), flip: () => FL && FL.read() });
   };
@@ -360,6 +362,8 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'kinghead') SET.drawKingHead(V, d.x * ts + 8, (d.y + 1) * ts);
       else if (d.kind === 'kingstatue') SET.drawKingStatue(V, d.x * ts + 8, (d.y + 1) * ts, d.h);
       else if (d.kind === 'mural') { if (d.x0 >= 822) A4.drawKingMural(V, d.x0, d.x1, d.y * ts - 42, 'slabs'); else SET.drawMural(V, d); }   /* (claude/bc4art: the antechamber's mural is HIM raising slabs of sand toward himself - the fight foretold) */
+      else if (d.kind === 'kiln') A5.drawHallKiln(V, R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, (d.rows || 3) * ts, time);   /* (claude/bc5art) */
+      else if (d.kind === 'gbhall') A5.drawHallFloor(V, R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, time);
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);

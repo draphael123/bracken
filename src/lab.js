@@ -17,7 +17,7 @@ import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR }
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
 import { gbPlan, gbOpen, PLAN as RT_GB } from './grubbag.js'; import { bzcPlan, bzcOpen } from './bzchief.js';   /* THE BERSERKER CHIEFTAIN (claude/warcairn): the bot reads his tells, the hatchet, the split - and works the drums in his frenzy - off his own module */   /* LORD GRUBBAG THE GLUTTON (claude/kitchengate): the bot reads his tells, the rings, the belch's waves, the gravy, the grab - and works the pie oven - off his own module */
 import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the volley lanes, the timbers and the clearing's scaffolds off his own module */
-import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
+import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; import { skyPlan, skyOpen } from './skyhook.js';   /* (claude/skyhook) SKYHOOK: the bot waits by a lever and strikes it while he rides */ const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 import { ssPlan, ssOpen, PLAN as RT_SS } from './shriek-sisters.js';   /* THE SHRIEK SISTERS (claude/rookery): the bot reads the red lines (and their lock), the rocks' rings, the marks, the wave, the snatch off their own module */
 const PLAN_CLOCKS = [RT_SS, RT_GB, RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE, PARRY_TELLS } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
@@ -819,8 +819,25 @@ function gqEscapeBot(BK, P, k) {
 function gqueenReact(BK, boss, P, k, A, h) {
   const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
   if (stage === 'escape') return gqEscapeBot(BK, P, k);
+  /* (claude/gq4q) THE SHARD FIGHT: her P2 stone shards are STRUCK HOME - face the shard and swing / shoot (every hero's attack key: a blow, an arrow, an ember, a shot); a hanging one (a boulder's burst, the great geode's) is walked to and struck. */
+  if (stage === 'roof' && !P.dead) {
+    let tgt = null, td = 1e9, hang = null, hd = 1e9;
+    for (const q of shots) { if (!q.p2 || q.home) continue; const dx = q.x - P.x, dy = q.y - (P.y - 9), d = Math.hypot(dx, dy);
+      if (q.hang) { if (d < hd && d < 260) { hd = d; hang = q; } continue; }
+      if ((q.vx || 0) * (P.x - q.x) <= 0) continue; if (d < td) { td = d; tgt = q; } }
+    if (tgt && td < 44) { P.face = Math.sign(tgt.x - P.x) || P.face; k.left = k.right = false; return { goal: null, strike: true }; }
+    if (hang && !tgt) { const toward = Math.sign(hang.x - P.x) || P.face; P.face = toward; if (hd < 40) { k.left = k.right = false; return { goal: null, strike: true }; } return { goal: hang.x - toward * 14, strike: false }; }
+  }
+  /* (claude/gq4q) THE NEW TELLS, as a player answers them: the hearth jet is JUMPED on its release, the sceptre reach DUCKED, a rockfall shadow ROLLED through, a boulder's landing ring left, THE MOUNTAIN's gap stood in. */
+  { const m0 = boss.mode, Hq = BK.gqHands && BK.gqHands(), q4 = Hq && Hq.test && Hq.test.q4 ? Hq.test.q4() : null;
+    if (m0 === 'hearthTell') { if (boss.modeT < 0.12 && P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 12; } return { goal: null, strike: false }; }
+    if (m0 === 'reachTell') { if (boss.modeT < 0.4) k.down = true; return { goal: null, strike: false }; }
+    if (q4) { const tn = BK.time, fl = (q4.fall || []).find(f => !f.done && Math.abs(f.x - P.x) < 20 && f.at - tn < 0.35 && f.at - tn > -0.1);
+      if (fl && P.ground) { k.left = k.right = false; BK.press('dodge'); return { goal: null, strike: false }; }
+      if (q4.mtn && q4.mtn.gapX !== undefined) return { goal: q4.mtn.gapX, strike: false };
+      const Bq = q4.boulder; if (Bq && Bq.tx !== undefined && Math.abs(Bq.tx - P.x) < 36) return { goal: Bq.tx + (P.x >= Bq.tx ? 60 : -60), strike: false }; } }
   let best = null, bt = 9;
-  for (const q of shots) { if (q.home) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
+  for (const q of shots) { if (q.home || q.hang) continue; const sp = Math.hypot(q.vx || 0, q.vy || 0) || 1, dx = P.x - q.x; if ((q.vx || 0) * dx <= 0) continue; const tt = (Math.hypot(dx, (P.y - 9) - q.y) - 8) / sp; if (tt < bt) { bt = tt; best = q; } }
   if (best && bt < 0.6) {
     if (parryShot(BK, h, best)) return { goal: null, strike: false };
     if (best.kind === 'crown') k.down = bt < 0.5; else if (bt < 0.22 && P.ground) BK.press('dodge');   /* not trying this one: the crown is ducked, a shard rolled */
@@ -996,7 +1013,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     const GQS = boss.t === 'gqueen' ? gqLabState() : null, gqSpf = (BK.SET.speed || 1) / 60;   /* (claude/gq2) her hall, the escape, the tower top: the stage clocks + stuns (src/lab-gqueen.js) */
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
-      if (GQS) gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf);   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
+      if (GQS) { if (PERC) PERC.restore(); const gqSk = gqLabStep(BK, boss, f, GQS, opts.gqEscape || LABP.gqEscape || 'play', gqSpf); if (PERC) { if (gqSk) PERC.update(); PERC.apply(); } }   /* (gq4tune-d) the skip runs on the REAL state: with the eyes applied, the perception's restore() wrote the pre-skip mode (gone) back over her wake and she never began P2 (bar 100% for 240 s) */   /* (claude/gq2) 'skip' = straight to the tower top (gormSkipRun precedent); a played escape stalled past GQ_ESC_STALL s is skipped and flagged */
       if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
@@ -1005,7 +1022,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='batteringbeast'&&boss.t!=='grubbag'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='cryptmother'&&boss.t!=='headmistress'&&boss.t!=='lanternwidow'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='admiral'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='shrieksisters'&&boss.t!=='batteringbeast'&&boss.t!=='grubbag'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='skyhook'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='cryptmother'&&boss.t!=='headmistress'&&boss.t!=='lanternwidow'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='admiral'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1951,6 +1968,24 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(smOpen(boss)&&!wasOpen)opened++;wasOpen=smOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:smOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='skyhook'){
+        /* SKYHOOK (claude/skyhook): src/skyhook.js skyPlan reads what a player sees - the hook's aim line and the hook in the air (a shield blocks it, the rest roll or jump),
+           the drop's ring (amber, then red: out of it), the sweep (jump it), the low swing's red arc (to a wall, or jump him at the bottom), his rise - and works THE RULE:
+           wait by a lever, strike it while he rides his line; strike him while he is DOWN or JARRED. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;
+        const SKH2=BK.skyhookHands&&BK.skyhookHands(),S=SKH2&&SKH2.show();
+        if(f===0||!P.labSkMem)P.labSkMem={};
+        const pl=S?skyPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,ranged:h==='ranger'||h==='pirate'||h==='pyro',P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk,lk:P.lk?P.lk.id:null},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labSkMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.down)k.down=true;
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(skyOpen(boss)&&!wasOpen)opened++;wasOpen=skyOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:skyOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='bogtroll'){
         /* THE BOG TROLL (claude/fenroad): src/bog-troll.js btPlan reads what a player sees - the bubbles where he swims, the bulge (amber while it follows, red when it sets), his tells a reaction late,
