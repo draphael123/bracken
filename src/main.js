@@ -11172,6 +11172,8 @@ function gadgetInKnifeReach(p, reach) { const hit = (x, y, lo, hi) => { const dx
   for (const q of props) if (q.t === 'lancebell' && hit(q.x, q.y, 0, 26)) return true;
   if (L && L.zipLines) for (const z of L.zipLines) if (z.signal !== undefined && z.post && hit(z.post[0], z.post[1], 0, 24)) return true;
   if (boss && boss.t === 'lance' && boss.lz) for (const sp of boss.lz.spears) if (sp.stuck > 0 && hit(sp.x, sp.y, 0, 26)) return true;
+  /* (claude/bc5proof) BURIED CITY 5: a race glass in knife reach is point-blank for the ranger too - plain X knifes it (the glass is struck by a blow or by E; an arrow never trips one), so her tap strikes the race triggers like every other hero's */
+  if (L && L.bc5 && L.glasses) for (const q of L.glasses) { const dx = (q.x * TS + 8 - p.x) * p.face, fy = (q.y + 1) * TS; if (dx > -8 && dx < 24 && fy >= p.y - 22 && fy <= p.y + 24) return true; }
   return false; }
 function attackBox0() {
   if (CA && (P.caTrip || P.caPoke) && P.swingKind === 'sweep') { const b = CA.box(); if (b) return b === 'none' ? null : b; }   /* THE SHIELD TRIP and THE LOW POKE (src/crouch-a.js) */

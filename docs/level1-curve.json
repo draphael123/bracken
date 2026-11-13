@@ -668,17 +668,44 @@
   "lostPct": 432
  },
  "buriedcity": {
-  "hash": "09cb68eae630",
+  "hash": "6604eaf0c9f8",
   "hero": "knight",
   "steps": 30000,
-  "runs": 3,
-  "hits": 20,
-  "deaths": 6,
-  "kills": 3,
-  "lifts": 160,
+  "runs": 6,
+  "hits": 40,
+  "deaths": 8,
+  "kills": 6,
+  "lifts": 391,
   "walked": 100,
   "bare": true,
-  "lostPct": 349
+  "seed": 1,
+  "lostPct": 339,
+  "lostRuns": [
+   324,
+   333,
+   357,
+   457,
+   332,
+   233
+  ],
+  "lostSd": 71.8,
+  "lostSe": 29.3,
+  "deathsRuns": [
+   1,
+   2,
+   1,
+   2,
+   1,
+   1
+  ],
+  "hitsRuns": [
+   8,
+   7,
+   6,
+   7,
+   6,
+   6
+  ]
  },
  "minecart": {
   "hash": "4020966545d3",

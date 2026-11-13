@@ -22,7 +22,7 @@ try {
         BK.keys.left = false; BK.keys.right = P.x < endX; BK.keys.jump = !P.ground && P.vy < 0 && f - jf < 40;   /* a hop is HELD while he rises (a tap is a short hop) */
         if (P.ground && (solid(col, row) || solid(col, row - 1) || !(solid(col, row + 1) || [T.ONEWAY, T.PLANK].includes(cell(col, row + 1))))) { BK.keys.jump = true; jf = f; BK.press('jump'); }
         const near = (BK.L.glasses || []).some(q => { const st = fl && fl.glasses.find(z => z.id === q.id); return Math.abs(q.x * 16 + 8 - P.x) < 30 && Math.abs(q.y * 16 - P.y) < 40 && !(st && st.t > 0.3); });
-        if (near && f % 14 === 5) { P.face = 1; BK.press(${JSON.stringify(hero)} === "ranger" ? "talk" : "atk"); }   /* (claude/bc5proof) a ranger strikes a glass with E (an arrow never trips one: strikes() reads the knife box or E) */
+        if (near && f % 14 === 5) { P.face = 1; BK.press(${JSON.stringify(hero)} === "ranger" && ${!args.includes("--xtap")} ? "talk" : "atk"); }   /* (claude/bc5proof) a ranger strikes a glass with E (an arrow never trips one: strikes() reads the knife box or E) */
         BK.sim(1); if (t0 >= 0) ran = f - t0;
         if (${args.includes('--trace')} && f % 15 === 0 && f < 900) tr.push(f + ':' + (P.x / 16).toFixed(1) + ',' + (P.y / 16).toFixed(1) + (P.ground ? 'g' : 'a') + (fl && fl.risers.filter(z => z.x0 >= 660 && z.x0 <= 674).map(z => ' R' + z.x0 + '=' + z.up + (z.solid ? 's' : '')).join('')));
         if (P.x >= endX && P.y <= ${R.ey} * 16 + 40) { got = f; break; } if (BK.stats().deaths > d0) break; }
