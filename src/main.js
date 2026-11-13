@@ -38713,7 +38713,7 @@ window.BK = { setView: m => setView(m), env: () => ({ hurt: (e, d, x) => hurtEne
     for (const pr of props) { const x = Math.round(pr.x), y = Math.round(pr.y);
       if (pr.t === 'brazier') out.push({ what: 'brazier', c: PROP.brazier[1], x: x - 7, y: y - 16, stand: true });
       else if (pr.t === 'lantern' && pr.city) out.push({ what: 'streetlamp', c: PROP.city.lamp[0], x: x - 9, y: y - 55, stand: true });
-      else if (pr.t === 'lantern' && !pr.perch) out.push({ what: 'lantern', c: PROP.crownLantern[0], x: x - 6, y: y - 36, stand: true });
+      else if (pr.t === 'lantern' && !pr.perch && !pr.cord) out.push({ what: 'lantern', c: PROP.crownLantern[0], x: x - 6, y: y - 36, stand: true });
       else if (pr.t === 'bell') out.push({ what: 'bell', c: PROP.bell[0], x: x - 8, y: y - 24, stand: true });
       else if (pr.t === 'seabell') out.push({ what: 'seabell', c: PROP.reef.shipBell, x: x - 8, y: y - 18, stand: true }); }
     return out; },
