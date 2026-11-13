@@ -9,6 +9,7 @@ import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
+process.env.BRACKEN_GQ5Q1 ??= '0'; process.env.BRACKEN_GQ5Q2 ??= '0';   /* (batch182) this proof asserts the OLD hall bell (the lure + the grate drop); the Queen rework ships ON now, so it pins the lab-OFF fight, as gq5p's old-default proofs did */
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const { LEVELS, T } = await imp('src/level.js');
 const { makeGQueenHands, GQ3 } = await imp('src/gqueen-hands.js');

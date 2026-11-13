@@ -12,6 +12,7 @@
 //   poise     a boss outside his opening: a tap fills nothing of his bar, a held heavy blow does
 //   minicap   (node) a mini's opening shuts after a third of him (src/boss-greed.js miniCap): the rest is his outside value, until it ends
 // PROVED RED FIRST on master 2423ff42 (no gate, bell, rune or cap there: every row of the page fails, and the node rows throw).
+process.env.BRACKEN_GQ5Q1 ??= '0';   /* (batch182) the Queen rework ships ON; this row asserts the OLD hall bell pin, so it pins the lab-OFF fight (as prepgq5p did) */
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import * as GB from '../src/boss-greed.js';
