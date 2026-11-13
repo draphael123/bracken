@@ -1,3 +1,4 @@
+import { gobgeoLate } from './gobgeo-level.js';   /* (claude/gq6geo) three more Geomancers on the finished Highcrown, flag GQ6GEO_SHIPS */
 import { CAST_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
@@ -8932,3 +8933,4 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && CAST_SWAPS[lv.id]) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && lv.id === 'crown') lv.build = (...a) => gobgeoLate(b(...a), { T, TS }); }   /* (claude/gq6geo) THE LAST WRAPPER: three more Geomancers laid on the finished level (flag GQ6GEO_SHIPS, default OFF: returns the level untouched) */
