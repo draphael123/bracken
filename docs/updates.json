@@ -30,7 +30,7 @@
     "date": "2026-11-12",
     "batch": 171,
     "lines": [
-      { "s": "Groundwork for a new Goblin Princess fight is in; it is switched off for now.", "lv": [] },
+      { "s": "Groundwork for a Goblin Princess fight is in, switched off.", "lv": [] },
       { "s": "Nothing changes in play yet.", "lv": [] },
       { "s": "A new test hook for that fight was added for the developers.", "lv": [] }
     ]
