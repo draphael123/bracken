@@ -21,6 +21,12 @@ try {
         for (let i = 0; i < 90; i++) { act(i); hold(); BK.step(1); if ((bell.swing || 0) > seen.swing) seen.swing = bell.swing; const s = G5 && G5.state ? G5.state() : null; if (s && s.phase !== st0 && seen.phase === st0) { seen.phase = s.phase; seen.ringAt = i; } if (H.mech && H.mech().cd !== cd0) { seen.cd = H.mech().cd; if (!seen.cdAt) seen.cdAt = i; } if (bell.rung) seen.rung = true; }
         BK.keys.atk = false; r[label] = seen; if (seen.phase !== st0 || seen.cdAt) { /* rung: wait out the cooldown so the next probe is fresh */ for (let i = 0; i < 60 * 17; i++) { hold(); BK.step(1); } } }
       out.push('HALL ' + JSON.stringify(r)); }
+    if (mode === 'props' || mode === 'all') for (const [bi, b0] of bellsAll().entries()) for (const h of heroes) { fresh(h); const bell = BK.props().filter(p => p.t === 'bell')[bi]; const P = BK.P; const sec = (BK.L.alarms || []).find(x => x.id === bell.section);
+      for (const [label, dx] of [['near', -14], ['far', -64]]) { if (label === 'far' && h !== 'ranger' && h !== 'pyro') continue;
+        BK.tp(Math.round((bell.x + dx) / 16), Math.round(bell.y / 16) - 1); P.x = bell.x + dx; P.y = bell.y; P.vx = 0; P.vy = 0; P.face = 1; P.ground = true; run(3);
+        const hp0 = bell.hp, rung0 = !!bell.rung, on0 = !!(sec && sec.on); const act = i => { if (h === 'ranger') { BK.keys.atk = i < 40; } else if (i === 0) BK.press('atk'); }; let sw = 0;
+        for (let i = 0; i < 80; i++) { act(i); hold(); BK.step(1); if ((bell.swing || 0) > sw) sw = bell.swing; } BK.keys.atk = false;
+        out.push('PROP ' + JSON.stringify({ bell: bell.section, lure: bell.lure, hero: h, at: label, swing: +sw.toFixed(2), hpLost: hp0 - bell.hp, broken: !!bell.broken, rung: !!bell.rung, alarmOn: !!(sec && (sec.on || sec.done)) })); } }
     return out.join('|'); })()`, 900000);
   console.log(res.split('|').join('\n')); console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }
