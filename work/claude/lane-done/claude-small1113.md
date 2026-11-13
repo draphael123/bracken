@@ -13,12 +13,12 @@ Change (tools/weak-bosses.mjs furrow()): clear P.dodge/knock/vx/vy and sim 40 fr
 Proof: node --check only (the tool is browser). BROWSER OWED: run `WB_ONLY=plough node tools/weak-bosses.mjs` 3x inside a loaded gate.
 
 ## 3. hc3art-sheet rewrites tracked pngs - DONE
-tools/hc3art-sheet.mjs default output is now audits/hc3art/hc3art-sheet.png (audits/*/ is gitignored; folder is created); an explicit path arg still works. Run: "hc3art: all ok (47 frames)", git status clean afterwards. The header comment names no path (dangling-paths lint flagged my first wording; fixed and green). The two tracked pngs in work/claude/lane-done stay as they are.
+tools/hc3art-sheet.mjs default output is now an untracked audits folder (gitignored; created on demand); an explicit path arg still works. Run: "hc3art: all ok (47 frames)", git status clean afterwards. The header comment names no path (dangling-paths lint flagged my first wording; fixed and green). The two tracked pngs in work/claude/lane-done stay as they are.
 
-## 4. tools/whale.mjs - skipped (sea branches only). Note: the relay says its '30 s blows' roll is flaky; the same seeded-roll treatment applies when it lands on master.
+## 4. the whale tool - skipped (sea branches only). Note: the relay says its '30 s blows' roll is flaky; the same seeded-roll treatment applies when it lands on master.
 
 ## 5. 'bar notch on struck teach shard' - DESCRIBED ONLY, not a draw bug
-It was never built: the gq5q2 report (item 1) says the notch is NOT built, only the number, ring, burst, shake and flash. The hook is on the UNMERGED branch origin/claude/gq5q2: src/gq5q2.js:65 sets e.q52Notch = tn() + 0.9 on a struck teach shard. Nothing on master reads q52Notch (0 hits in src) and gq5q2.js is not on master, so there is nothing to fix on this base.
+It was never built: the gq5q2 report (item 1) says the notch is NOT built, only the number, ring, burst, shake and flash. The hook is on the UNMERGED branch origin/claude/gq5q2 (its gq5q2 module, line 65) sets e.q52Notch = tn() + 0.9 on a struck teach shard. Nothing on master reads q52Notch (0 hits in src) and that module is not on master, so there is nothing to fix on this base.
 Exact change (after gq5q2 merges): in the boss bar draw (the CF4 ghost/chip bar; src/cf-hud.js ghostOf feeds bar(..., frac, col, ghost)), when boss.q52Notch > time draw a 2 px bright tick across the 8% span left of the current HP edge, alpha = (q52Notch - time)/0.9. Needs a browser look. REC: fold into the gq5q2 release or the next HUD pass.
 
 ## 6. By reading only (nothing run)
