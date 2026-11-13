@@ -8544,10 +8544,10 @@ function garrison(L, id) {
     L.ents.push({ t: kind, x: put[0], y: put[1], face: rnd() < 0.5 ? -1 : 1, garrison: true });
   }
   /* (claude/demofoes 11-03) A SPRINKLED FOE THAT LANDED IN SPRINKLED DRESSING: GARRISON_NUDGE[id] = [[x, y, newX]] slides that one creature a column AFTER the sprinkle (a garrison foe, or a hand-placed archer / sprig: moving a hand-placed foe BEFORE the sprinkle frees its held tile and reshuffles the garrison) */
-  for (const [fx, fy, nx] of GARRISON_NUDGE[id] || []) { const g0 = L.ents.find(e => e.t !== 'deco' && e.x === fx && e.y === fy && (e.garrison || NUDGE_ANY.has(e.t))); if (g0) g0.x = nx; }
+  for (const [fx, fy, nx, ny] of GARRISON_NUDGE[id] || []) { const g0 = L.ents.find(e => e.t !== 'deco' && e.x === fx && e.y === fy && (e.garrison || NUDGE_ANY.has(e.t))); if (g0) { g0.x = nx; if (ny !== undefined) g0.y = ny; } }
   return L;
 }
-const NUDGE_ANY = new Set(['archer', 'sprig']), GARRISON_NUDGE = { marsh: [[210, 17, 211], [62, 15, 63], [100, 15, 101]] };   /* the Marsh hopper that stood in a sprinkled fence */
+const NUDGE_ANY = new Set(['archer', 'sprig']), GARRISON_NUDGE = { marsh: [[210, 17, 211], [62, 15, 63], [100, 15, 101]], harbor: [[316, 17, 343, 29]] };   /* (claude/roofsweep, a 4th number moves the row too) harbor: the sprinkled tideguard on the roof over the Salvage Captain's hold (316,17) walked off its west end into the mini room (tools/arena-intruders.mjs); he stands on the road past the sea gate instead, 8 columns outside the room where the arena hold keeps him. A calm box there reshuffled the whole level's garrison, so the one foe is moved after the draw */   /* the Marsh hopper that stood in a sprinkled fence */
 /* GOBLIN THINGS PUT DOWN BY HAND, where the sprinkler cannot know to put them: a warning at the way in, a standard
    and a totem on the boss approach, the takings behind a gate. [kind, x, y, v, hang]. Grounded kinds snap to the floor
    they are given; a hung one is given the row just under its rock. Checked against signs, doors, checkpoints and the
