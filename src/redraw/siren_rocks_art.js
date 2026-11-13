@@ -126,9 +126,33 @@ export function drawWreck(g, cx, cy, t, VW) {
 }
 function line_(g, x0, y0, x1, y1, c, th = 1) { const n = Math.max(1, R(Math.hypot(x1 - x0, y1 - y0))); g.fillStyle = c; for (let i = 0; i <= n; i += 2) g.fillRect(R(ox_ + x0 + (x1 - x0) * i / n), R(oy_ + y0 + (y1 - y0) * i / n), th, th); }
 
+/* THE ROCK TEXTURE (claude/d3art, job B): the Reef tiles under the dressing were flat blocks. This lays, per solid tile (deterministic, world-aligned so it runs unbroken across tiles): STRATA (dark seam + pale lip lines
+   at staggered rows, a few broken), PITTING + mineral flecks, hairline cracks, a WET EDGE (a dark teal sheen along every exposed top and side face, a bright waterline glint that moves), drip streaks under overhangs, and BARNACLE CRUSTS
+   on the exposed lower and side faces. Draw-only, over whatever tile art is there (semi-transparent), isSolid(tx, ty) = the level. */
+function drawRockTex(g, cx, cy, t, VW, VH, isSolid, W) {
+  const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(W - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(10, Math.floor(cy / TS) - 1), ty1 = Math.min(39, Math.ceil((cy + VH) / TS) + 1);
+  for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
+    if (!isSolid(tx, ty)) continue; const h = hash(tx * 3 + 1, ty * 5 + 2), x = tx * TS - cx, y = ty * TS - cy, top = !isSolid(tx, ty - 1), below = !isSolid(tx, ty + 1), left = !isSolid(tx - 1, ty), right = !isSolid(tx + 1, ty);
+    /* strata: three seams per tile, their rows wandering with the column so the bands look laid down, not tiled */
+    for (let k = 0; k < 3; k++) { const hk = hash(tx >> 1, ty * 7 + k), sy = 3 + k * 5 + (hk % 3) + ((tx + k) & 1), x0 = (hk >> 5) % 5, ln = 7 + (hk >> 9) % 9;
+      if (top && sy < 3) continue; rect(x + x0, y + sy, Math.min(ln, TS - x0), 1, SRK.rock[0], 0.55); rect(x + x0 + 1, y + sy + 1, Math.min(ln - 2, TS - x0 - 1), 1, SRK.rock[3], 0.22);
+      if (hk % 3 === 0) rect(x + ((x0 + ln) % TS), y + sy - 1, 2, 1, SRK.rock[0], 0.4); }
+    /* pitting, mineral flecks, a hairline crack */
+    for (let k = 0; k < 4; k++) { const hp = hash(h + k, 9); rect(x + hp % 15, y + (hp >> 4) % 15, 1, 1, k & 1 ? SRK.rock[3] : SRK.rock[0], k & 1 ? 0.5 : 0.7); }
+    if (h % 5 === 0) { const cxx = x + 3 + (h >> 4) % 9, cyy = y + 2 + (h >> 8) % 4; for (let k = 0; k < 7; k++) rect(cxx + (k % 3 === 1 ? 1 : 0) - (k >> 2), cyy + k, 1, 1, SRK.out, 0.55); }
+    if (h % 9 === 4) { const px = x + 2 + (h >> 5) % 11, py = y + 4 + (h >> 9) % 8; rect(px, py, 2, 1, SRK.pearl[1], 0.55); rect(px + 1, py + 1, 1, 1, SRK.pearl[3], 0.5); }
+    /* the wet edge */
+    if (top) { rect(x, y, TS, 1, SRK.foam[1], 0.55); rect(x, y + 1, TS, 1, '#1b3a46', 0.5); rect(x, y + 2, TS, 1, '#1b3a46', 0.25); const gl = (Math.sin(t * 2.4 + tx * 0.9 + (h & 7)) + 1) / 2; rect(x + (h >> 3) % 12, y, 3, 1, SRK.foam[0], 0.25 + 0.55 * gl); }
+    if (left) { rect(x, y, 2, TS, '#1b3a46', 0.45); rect(x, y, 1, TS, SRK.foam[2], 0.3); } if (right) { rect(x + TS - 2, y, 2, TS, '#1b3a46', 0.45); rect(x + TS - 1, y, 1, TS, SRK.foam[2], 0.3); }
+    if (below) { rect(x, y + TS - 2, TS, 2, '#0c1822', 0.5); for (let k = 0; k < 2; k++) { const hd = hash(h + k, 21); if (hd % 3 === 0) { const dx = x + 2 + (hd >> 3) % 12, ln = 3 + (hd >> 7) % 5, fall = (t * 0.7 + (hd & 15) / 15) % 1; rect(dx, y + TS - 2, 1, ln, SRK.foam[2], 0.4); rect(dx, y + TS + ln * fall, 1, 1, SRK.foam[0], 0.7 * (1 - fall)); } } }
+    /* barnacle crusts on the exposed lower and side faces: a clutch of grey cones with a pale cap each */
+    if ((below || left || right) && h % 3 === 1) { const bx = below ? x + 2 + (h >> 4) % 9 : left ? x : x + TS - 4, by = below ? y + TS - 4 : y + 3 + (h >> 4) % 8;
+      for (let k = 0; k < 4; k++) { const ox = bx + (k % 2) * 3 + ((h >> (k + 3)) & 1), oy = by + (k >> 1) * 2 - ((h >> (k + 7)) & 1); rect(ox, oy, 3, 2, SRK.barn[0]); rect(ox, oy, 3, 1, SRK.barn[2]); rect(ox + 1, oy - 1, 1, 1, SRK.barn[3]); } }
+  }
+}
 /* THE DRESSING: kelp tufts hung off a rock lip, barnacle clusters on its face, a bone, a pearl glint - on every rock-top tile in view. isSolid(tx, ty) = the level; row range 18..38. Deterministic per tile. */
 export function drawDressing(g, cx, cy, t, VW, VH, isSolid, W = 410) {
-  g_ = g; ox_ = 0; oy_ = 0; const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(W - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(10, Math.floor(cy / TS) - 1), ty1 = Math.min(39, Math.ceil((cy + VH) / TS) + 1);
+  g_ = g; ox_ = 0; oy_ = 0; drawRockTex(g, cx, cy, t, VW, VH, isSolid, W); g_ = g; ox_ = 0; oy_ = 0; const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(W - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(10, Math.floor(cy / TS) - 1), ty1 = Math.min(39, Math.ceil((cy + VH) / TS) + 1);
   for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
     if (!isSolid(tx, ty)) continue; const h = hash(tx, ty), x = tx * TS - cx, y = ty * TS - cy, top = !isSolid(tx, ty - 1), below = !isSolid(tx, ty + 1), left = !isSolid(tx - 1, ty), right = !isSolid(tx + 1, ty);
     if (top) { if (h % 5 === 0) { const hh = 4 + (h >> 4) % 4; for (let k = 0; k < 3; k++) { rect(x + 3 + k * 4, y - 2 - (k & 1), 1, hh - (k & 1) * 2, SRK.kelp[1 + (k & 1)]); rect(x + 4 + k * 4, y - 1, 1, 2, SRK.kelp[2]); } }   /* a tuft of weed on the lip */

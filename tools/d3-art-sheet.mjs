@@ -72,3 +72,23 @@ const KA = await import(new URL('../src/redraw/deep3_art.js', import.meta.url).h
   modes.forEach(([m, e], i) => { g.fillStyle = '#2a343c'; g.fillRect(i * 80 + 4, 82, 48, 12); KA.drawEel(g, i * 80 + 28, 94, 0, 1, e, m, 0.3 + i * 0.05, 30); });
   modes.forEach(([m, e], i) => { g.fillStyle = '#2a343c'; g.fillRect(i * 80 + 58, 152, 14, 56); KA.drawEel(g, i * 80 + 58, 180, -1, 0, e, m, 0.3 + i * 0.05, 48); });
   png(c, 4, 'd3-eel.png'); }
+
+/* ---- composed rooms: the drowned tower (floor, crack, eel, vent, settling stone, the bell), the crew's grave (phase 1 mid-fight), the Cursed Sailor (phase 2) ---- */
+{ const VW = 320, VH = 180, [c, g] = mk(VW * 3 + 8, VH, '#0a1218');
+  const wall = (ox, bgc) => { g.fillStyle = bgc; g.fillRect(ox, 0, VW, VH); for (let j = 0; j < VH; j += 16) for (let i = 0; i < VW; i += 16) { g.fillStyle = ((i / 16 + j / 16) & 1) ? '#0e1a22' : '#101e28'; g.fillRect(ox + i, j, 16, 16); } };
+  const block = (ox, x, y, w, h) => { for (let j = 0; j < h; j += 16) for (let i = 0; i < w; i += 16) { g.fillStyle = ((i + j) / 16 & 1) ? '#2a343c' : '#26303a'; g.fillRect(ox + x + i, y + j, 16, 16); g.fillStyle = '#1a2228'; g.fillRect(ox + x + i, y + j + 15, 16, 1); } g.fillStyle = '#566670'; g.fillRect(ox + x, y, w, 1); };
+  /* panel 1: the tower */
+  wall(0, '#0b1620'); block(0, 0, 136, 320, 44); KA.drawCrack(g, 96, 136, 64, 'whole', 5, 0.3, false); KA.drawCrack(g, 200, 136, 48, 'creak', 9, 0.3, false);
+  block(0, 0, 40, 30, 80); block(0, 250, 40, 70, 20); KA.drawEel(g, 30, 80, 1, 0, 1, 'hang', 0.3, 48); KA.drawEel(g, 280, 60, 0, 1, 0.9, 'strike', 0.3, 30);
+  KA.drawVent(g, 8, 90, 40, 1, 'on', 0.3); KA.drawRot(g, 8, 90, 60, 130, 'on', 0.3); KA.drawSettling(g, 140, 56, 32, 32, 20, 'hang', 0.3);
+  KA.drawBell(g, 252, 136, 56, true, 0.3, 66); CA.drawCrew(g, 280, 136, -1, { role: 'cutlass', mode: 'circle', seed: 2 }, 0.3);
+  /* panel 2: the crew's grave */
+  const o2 = VW + 4; wall(o2, '#0a1620'); block(o2, 0, 150, 320, 30);
+  CA.drawCrew(g, o2 + 60, 150, 1, { role: 'cutlass', mode: 'lungeTell', seed: 1 }, 0.3); CA.drawCrew(g, o2 + 120, 150, -1, { role: 'shield', mode: 'guard', seed: 2 }, 0.3);
+  CA.drawCrew(g, o2 + 190, 150, -1, { role: 'harpoon', mode: 'throwTell', seed: 3 }, 0.3); CA.drawCrew(g, o2 + 260, 150, -1, { role: 'heavy', mode: 'slamTell', seed: 4 }, 0.3);
+  CA.drawCrew(g, o2 + 160, 150, 1, { role: 'harpoon', pose: 'crewCorpse', alpha: 0.78, still: true }, 0); KA.drawLantern(g, o2 + 150, 134, 0.55, 0.3); KA.drawWave(g, o2 + 30, 150, 1, 0.3);
+  /* panel 3: the Cursed Sailor, a slam-stance window */
+  const o3 = VW * 2 + 8; wall(o3, '#0a1620'); block(o3, 0, 150, 320, 30);
+  CA.drawCrew(g, o3 + 200, 150, -1, { role: 'sailor', stance: 'anchor', mode: 'swap', seed: 3 }, 0.3); KA.drawOpenRing(g, o3 + 200, 124, 38, 0.3);
+  CA.drawCrew(g, o3 + 70, 150, 1, { role: 'sailor', stance: 'shield', mode: 'guard', seed: 3 }, 0.3);
+  png(c, 2, 'd3-room.png'); }
