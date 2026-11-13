@@ -108,6 +108,36 @@ const FL = L => flush(L, rc, D.out);
 const sq = (x, y, c, a = 1) => rc(x, y, 1, 1, c, a);
 
 /* the forward kinematics of a pose at build scale sc */
+/* THE FUSED SAILOR's extra men (claude/seaart2): three more skulls (the cutlass man's tricorn on the far shoulder, the shield man's helm in the chest, the heavy's gaping face in the belly), each with its own soul-coloured eye,
+   and two more arms (a green oilskin one that hangs a cutlass, a bare grey one reaching out of the coat) - drawn ON the one big body so the silhouette is four men, not a sailor */
+function miniHead(cx, cy, kind, sc, open, tm) {
+  const L = new Layer(), SK = D.skin, rx = 5, ry = 5.3, col = D.soul[kind];
+  if (kind === 'harpoon') ell(L, cx - 1.2, cy - 0.6, rx + 1.4, ry + 1.1, D.harpoon.hood);
+  ell(L, cx, cy, rx, ry, SK);
+  if (open > 0.5) { for (let j = 0; j < 3; j++) for (let i = -1; i <= 2; i++) pset(L, cx + i, cy + ry * 0.45 + j, D.mouth); pset(L, cx - 1, cy + ry * 0.45, D.teeth); pset(L, cx + 2, cy + ry * 0.45, D.teeth); }
+  else for (let i = -1; i < 3; i++) pset(L, cx + i, cy + ry * 0.55, (i & 1) ? D.teeth : D.mouth);
+  for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) pset(L, cx + 1 + i, cy - 0.6 + j, D.socket);
+  pset(L, cx + 1, cy - 0.6, col); pset(L, cx + 2, cy - 0.6, Math.sin(tm * 6 + cx) > 0.2 ? D.eyeHot : col);
+  pset(L, cx - 3, cy - 0.6, D.socket); pset(L, cx - 2, cy - 0.6, D.eyeDim);
+  pset(L, cx + rx * 0.8, cy + 1, D.socket);
+  if (kind === 'cutlass') { const hc = D.cutlass.hat; poly(L, [[cx - 5, cy - ry + 1], [cx - 3, cy - ry - 3], [cx + 3, cy - ry - 3], [cx + 5, cy - ry + 1]], [hc[2], hc[1]]); line(L, cx - 5, cy - ry + 1, cx + 5, cy - ry + 1, D.cutlass.trim[1], 1); }
+  else if (kind === 'shield') { ell(L, cx, cy - 1.5, rx + 0.8, ry * 0.8, D.shield.coat); for (let i = 0; i < 3; i++) pset(L, cx + 1 + i, cy - 1, D.socket); poly(L, [[cx - 1, cy - ry - 1], [cx + 1, cy - ry - 1], [cx + 1, cy - ry - 4], [cx - 1, cy - ry - 4]], D.shield.trim[2]); }
+  else if (kind === 'heavy') { for (let k = 0; k < 3; k++) pset(L, cx - 1 + k * 1.5, cy - ry + 1, D.barn[1 + (k & 1)]); }
+  FL(L);
+}
+function fusedExtras(rig, sc, tm, P, phase) {
+  if (phase === 'back') {
+    miniHead(rig.S[0] - 11, rig.S[1] - 5, 'cutlass', sc, 0, tm);   /* the tricorn peeking over the far shoulder */
+    { const L = new Layer(), sw = Math.sin(tm * 1.7) * 3, E = [rig.S[0] - 9 * sc / 1.7, rig.S[1] + 3 * sc / 1.7 + sw * 0.3], Wr = [E[0] - 4 + sw, E[1] + 8 * sc / 1.7];   /* a green oilskin arm hung out behind, a cutlass drooping from it */
+      cap(L, rig.S[0] - 2, rig.S[1] + 1, E[0], E[1], 2.4, 2, D.harpoon.coat); cap(L, E[0], E[1], Wr[0], Wr[1], 2, 1.6, D.harpoon.coat); ell(L, Wr[0], Wr[1], 2, 2, [D.skin[1], D.skin[2], D.skin[2]]);
+      line(L, Wr[0], Wr[1], Wr[0] - 3, Wr[1] + 12, D.iron[3], 1); FL(L); }
+  } else {
+    miniHead(rig.M[0] + 7, rig.M[1] - 3, 'shield', sc, 0, tm);   /* the shield man's helm in the chest */
+    miniHead(rig.B[0] + 6, rig.B[1] - 2, 'heavy', sc, 1, tm);    /* the heavy's open mouth in the belly */
+    { const L = new Layer(), a = Math.sin(tm * 2.3) * 0.25, E = [rig.B[0] + 10 * sc / 1.7, rig.B[1] - 5 * sc / 1.7 + a * 4], Wr = [E[0] + 8 * sc / 1.7, E[1] - 3 + a * 6];   /* a bare grey arm reaching out of the belly of the coat */
+      cap(L, rig.B[0] + 3, rig.B[1] - 4, E[0], E[1], 2.3, 1.9, D.skin); cap(L, E[0], E[1], Wr[0], Wr[1], 1.9, 1.5, D.skin); ell(L, Wr[0] + 1, Wr[1], 2.3, 1.8, [D.skin[2], D.skin[3], D.skin[3]]); FL(L); }
+  }
+}
 export function crewRig(P, sc = 1, bob = 0) {
   const B = [P.b[0] * sc, P.b[1] * sc + bob], a0 = P.lean0 * Math.PI / 180, a1 = P.lean * Math.PI / 180, tl = 10 * sc;
   const M = [B[0] + Math.sin(a0) * tl * 0.5, B[1] - Math.cos(a0) * tl * 0.5], T = [M[0] + Math.sin(a1) * tl * 0.5, M[1] - Math.cos(a1) * tl * 0.5], S = [lerp(M[0], T[0], 0.7), lerp(M[1], T[1], 0.7)];
@@ -197,6 +227,7 @@ export function drawCrew(g, x, y, f, o = {}, time = 0) {
   { const L = new Layer(), dark = SB.coat.map(q => mixC(q, '#06090c', 0.4)), r = 2.1 * sc * thick;
     cap(L, rig.S[0] - 1, rig.S[1], farA.E[0], farA.E[1], r, r * 0.85, dark); cap(L, farA.E[0], farA.E[1], farA.W[0], farA.W[1], r * 0.85, r * 0.7, dark); ell(L, farA.W[0], farA.W[1], 1.8 * sc, 1.8 * sc, [D.skin[0], D.skin[1], D.skin[1]]); FL(L); }
   legDraw(rig.lgN, false);
+  if (role === 'sailor' && !body) fusedExtras(rig, sc, tm, P, 'back');
   /* ---- the torso ---- */
   { const L = new Layer(), r0 = 4.1 * sc * thick, r1 = 4.8 * sc * thick, r2 = 3.7 * sc * thick;
     if (role === 'heavy') { cap(L, rig.B[0], rig.B[1], rig.M[0], rig.M[1], r0 * 1.05, r1, D.skin, { tex: D.skin[0] }); cap(L, rig.M[0], rig.M[1], rig.T[0], rig.T[1], r1, r2 * 1.1, D.skin, { tex: D.skin[0] });
@@ -211,10 +242,13 @@ export function drawCrew(g, x, y, f, o = {}, time = 0) {
       if (role === 'sailor') { /* four coats: pale lapels in four stripes, barnacle crust on both shoulders, the rib cage with four souls */
         for (const s of [-1, 1]) for (let k = 0; k < 5; k++) pset(L, rig.S[0] + s * (3 + (k % 3)) * sc + 1, rig.S[1] - 1 + (k >> 1), D.barn[1 + (k & 1)]);
         cap(L, rig.B[0] - 5 * sc, rig.B[1] - 2, rig.B[0] + 5 * sc, rig.B[1] - 2, 1.8, 1.8, D.sailor.trim);
+        cap(L, rig.M[0] - 4, rig.M[1] - 4, rig.S[0] - 3, rig.S[1], 2.6, 2.4, D.cutlass.coat); cap(L, rig.M[0] - 4, rig.B[1] - 3, rig.M[0] - 3, rig.M[1] - 3, 2.8, 2.6, D.harpoon.coat); cap(L, rig.M[0] + 4, rig.B[1] - 5, rig.M[0] + 5, rig.M[1] - 1, 2.2, 2.2, D.shield.coat);   /* patches of four different coats: a blue cutlass coat, green oilskin, iron plate */
+        cap(L, rig.B[0] - 5 * sc, rig.B[1] + 2, rig.B[0] + 4 * sc, rig.B[1] + 3, 1.2, 1.2, D.cutlass.sash);   /* the cutlass man's red sash, wrapped round them all */
         for (let k = 0; k < 4; k++) pset(L, rig.M[0] - 4 + k * 3 + 1, rig.M[1], D.skin[3]);
         for (let k = 0; k < 4; k++) pset(L, rig.M[0] - 4.5 + k * 3 + 1, rig.M[1] + 3, D.soul[ROLES[k]]); } }   /* the four souls in the rib cage */
     FL(L); }
   /* ---- the head ---- */
+  if (role === 'sailor' && !body) fusedExtras(rig, sc, tm, P, 'front');
   headDraw(rig, P, key, tm, role, sc);
   /* ---- the weapon + the near arm ---- */
   { let hand = rig.aF.W;
@@ -252,6 +286,20 @@ function headDraw(rig, P, key, tm, role, sc) {
   else if (eye === 'dizzy') { pset(L, ex, ey, D.eyeDim); pset(L, ex + 1, ey + 1, D.eye); pset(L, ex + 2, ey, D.eyeDim); }
   else { const big = eye === 'flare', c = big ? D.eyeHot : eye === 'dim' ? D.eyeDim : D.eye; for (let j = 0; j < (big ? 2 : 1); j++) for (let i = 0; i < 2; i++) pset(L, ex + i, ey + j - (big ? 0 : 0), c); if (big || eye === 'glow') pset(L, ex + 2, ey, D.eye); }
   pset(L, ex - 1, ey - 2, D.socket); pset(L, ex, ey - 2, D.socket); pset(L, ex + 1, ey - 2, D.socket);   /* the heavy brow */
+  /* (claude/seaart2) MORE FACE: a far eye (a dim light in its own socket), a nose cavity, a cheekbone catch-light, a grin of real teeth and a role's mark, so a head reads as a face at 1x */
+  { const dead = eye === 'dead' || eye === 'closed', fx = ex - 3.4 * (sc > 1.2 ? 1.4 : 1);
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) pset(L, fx + i, ey + j, D.socket);
+    if (!dead) pset(L, fx + 1, ey, eye === 'flare' ? D.eye : D.eyeDim);
+    const nx = H[0] + rx * 0.85, ny = H[1] + 1.2 * sc; pset(L, nx, ny, D.socket); pset(L, nx, ny + 1, D.socket);   /* the nose */
+    pset(L, H[0] + 2, H[1] + 1.6 * sc, SK[3]); pset(L, H[0] + 3, H[1] + 1.6 * sc, SK[3]);   /* the cheekbone */
+    const my = H[1] + ry * 0.5 + (h.open > 0.2 ? 0 : 0);
+    if (h.open <= 0.2) for (let i = -1; i < 4; i++) pset(L, H[0] + 0.3 + i, my, (i & 1) ? D.teeth : D.mouth);   /* a closed grin: teeth between the dark */
+    else { for (let i = -1; i <= 2; i++) pset(L, H[0] + 1 + i, my - 1, D.teeth); for (let i = 0; i <= 1; i++) pset(L, H[0] + 1.5 + i * 1.5, my + Math.max(1, R(h.open * 2.4 * sc)), D.teeth); }
+    if (role === 'cutlass') { for (let k = 0; k < 4; k++) pset(L, H[0] + 1 + k, H[1] + 2 - (k >> 1), D.cutlass.sash[2]); }   /* a red scar across the cheek */
+    else if (role === 'shield') { pset(L, H[0] + rx * 0.7, H[1] + 2, D.shield.trim[3]); pset(L, H[0] + rx * 0.7, H[1] + 3, D.shield.trim[2]); }   /* a gilt nose-guard */
+    else if (role === 'harpoon') { for (let k = 0; k < 3; k++) pset(L, H[0] + 0 + k * 2, H[1] + ry * 0.35, D.rope[2]); }   /* a stitched mouth-line */
+    else if (role === 'heavy') { pset(L, H[0] + 1, H[1] + ry * 0.5 + 1, D.teeth); pset(L, H[0] + 3, H[1] + ry * 0.5 + 1, D.teeth); pset(L, H[0] + 1, H[1] + ry * 0.5 + 2, D.teeth); pset(L, H[0] + 3, H[1] + ry * 0.5 + 2, D.teeth); }   /* two tusks of an underbite */
+  }
   pset(L, H[0] - 1, H[1] + 1, SK[0]); pset(L, H[0] - 2, H[1] + 2, SK[0]);   /* a gill slit / cheek hollow */
   FL(L);
   /* the hat / helm / hair, its own mass */

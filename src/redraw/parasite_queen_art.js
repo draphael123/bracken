@@ -173,6 +173,20 @@ function headDraw(rig, P, key, tm, sc, o) {
     eye(1.4, -1.8, 5, 4, false); eye(8.2, -1.4, 3, 3, true);
     const n = at(9.4, 1.4); pset(L, n[0], n[1], C.socket);
     FL(L); }
+  /* THE MOUTH (claude/seaart2): a wide maw across the front of the face, drawn ON TOP of the mask so it reads in every idle - a dark gape, a row of fangs above and below, a red tongue when it opens,
+     and two hooked mandibles that frame it; the crown's spikes are gold-tipped (a queen, not a tick) */
+  if (key !== 'qDead') { const L = new Layer(), op = clamp(h.open, 0, 1), gape = 2.4 + op * 4.2, dead = h.eye === 'dead', cl = h.eye === 'closed' && !op;
+    const up = (dx, dy) => at(dx, dy);
+    const a = up(3.2, 3.6), b = up(9.8, 3.4), c2 = up(9.4, 3.6 + gape), d2 = up(3.8, 3.8 + gape * 0.9);
+    poly(L, [a, b, c2, d2], cl ? C.blood[0] : C.mouth);
+    if (!cl) { if (op > 0.3) { const tg = up(6.4, 3.6 + gape * 0.78); ell(L, tg[0], tg[1], 2.6 * sc, 1.2 * sc, [C.blood[1], C.tongue, C.tongue]); }
+      for (let k = 0; k < 4; k++) { const p0 = up(3.8 + k * 1.9, 3.6), p1 = up(4.3 + k * 1.9, 3.6 + 1.5 + op * 1.1 + (k & 1) * 0.5), p2 = up(4.9 + k * 1.9, 3.6); poly(L, [p0, p1, p2], C.fang); }
+      for (let k = 0; k < 3; k++) { const p0 = up(4.6 + k * 2.2, 3.7 + gape * 0.9), p1 = up(5.3 + k * 2.2, 3.7 + gape * 0.9 - 1.5 - op * 0.6), p2 = up(6 + k * 2.2, 3.7 + gape * 0.9); poly(L, [p0, p1, p2], C.fang); } }
+    else line(L, a[0], a[1], b[0], b[1], C.socket, 1);
+    for (const s2 of [0, 1]) { const m0 = up(s2 ? 9 : 1.2, 2.6), m1 = up(s2 ? 12.4 : 1.6 - op, 5.8 + op * 3 + gape * 0.3), m2 = up(s2 ? 13.6 : 0.6 - op * 1.4, 9.4 + op * 3.4 + s2 * 0.8);
+      cap(L, m0[0], m0[1], m1[0], m1[1], 1.7 * sc, 1.3 * sc, C.bone); cap(L, m1[0], m1[1], m2[0], m2[1], 1.3 * sc, 0.4, C.bone); poly(L, [[m2[0] - 0.8, m2[1] - 1.6], [m2[0] + 0.8, m2[1] - 1.6], [m2[0] + (s2 ? 1.6 : -1.6), m2[1] + 1.8]], C.fang); }
+    void dead; FL(L);
+    for (let k = 0; k < 5; k++) { const a2 = -2.6 + k * 0.55, tp = at(Math.cos(a2) * 9.8 + 0.8 + (k - 2) * 0.7, Math.sin(a2) * 9.6 - 2.4); sq(R(tp[0]), R(tp[1]) - 1, C.gold); } }
   /* a cheek-swell on the spit tell: the bile sacs under the mask, glowing */
   if (h.puff > 0.2) { const L = new Layer(), q = at(5, 4.4), gl = Math.sin(tm * 18) > 0; ell(L, q[0], q[1], 3.6 + h.puff * 1.6, 3 + h.puff * 1.2, [mixC(C.shell[1], C.bile, 0.35), mixC(C.shell[2], C.bile, 0.5), mixC(C.shell[3], C.bileHi, 0.55)]); pset(L, q[0], q[1], gl ? C.bileHi : C.bile); pset(L, q[0] + 1, q[1] + 1, C.bile); FL(L); }
 }

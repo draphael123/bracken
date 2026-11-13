@@ -19,7 +19,7 @@ function makeCtx(w, h) {
 }
 const U = f => new URL('../src/' + f, import.meta.url).href;
 const PA = await import(U('redraw/gastric_polyp_art.js')), QA = await import(U('redraw/parasite_queen_art.js')), WA = await import(U('redraw/whale_art.js')), KA = await import(U('redraw/deep3_art.js'));
-const GPM = await import(U('gastric-polyp.js')), PQM = await import(U('parasite-queen.js')), WHM = await import(U('whale.js'));
+const WB = await import(U('redraw/whale_back.js')); const GPM = await import(U('gastric-polyp.js')), PQM = await import(U('parasite-queen.js')), WHM = await import(U('whale.js'));
 const printP = (o, f = 1, t = 0.4) => { reset(); REC = []; const g = makeCtx(160, 160); PA.drawPolyp(g, 80, 110, f, { seed: 1, ...o }, t); const r = REC; REC = null; return r; };
 const printQ = (o, f = 1, t = 0.4) => { reset(); REC = []; const g = makeCtx(260, 200); QA.drawQueen(g, 130, 140, f, { seed: 1, ...o }, t); const r = REC; REC = null; return r; };
 const fp = r => r.join('|');
@@ -140,5 +140,23 @@ const drawKit = g => {
   ok(!/whale_art|gastric_polyp_art|parasite_queen_art/.test(main), 'main.js is untouched by the art (the hands own the wiring: OFF = the base)');
   ok(GPM.TELL_ROWS.length === 1 && PQM.TELL_ROWS.length === 8, 'the TELL_ROWS marks of the polyp and the Queen are unchanged (1 + 8)');
   ok(GPM.TELL_ROWS[0][2] === '!' && PQM.TELL_ROWS.filter(r => r[2] === '!!').length === 5, 'the marks themselves are unchanged (the spit !, five !!)'); }
+/* ---- G (claude/seaart2): the Queen's mouth + crown, the rib rule per tile, the backdrop and its one hook ---- */
+{ const q = printQ({ pose: 'qIdle', phase: 1 }), cnt = (r, c) => r.filter(x => x.split(',')[4] === c).length, QC = QA.QCOL;
+  ok(cnt(q, QC.fang) >= 12 && cnt(q, QC.mouth) >= 6, 'the Queen idles with a visible maw: fang pixels ' + cnt(q, QC.fang) + ', mouth ' + cnt(q, QC.mouth));
+  ok(cnt(q, QC.gold) >= 4, 'her crown spikes are gold-tipped (' + cnt(q, QC.gold) + ')');
+  ok(cnt(printQ({ pose: 'qSpitRel', phase: 1 }), QC.tongue) >= 2, 'the open mouth shows a tongue');
+  ok(cnt(printQ({ pose: 'qIdle', phase: 1 }, -1), QC.fang) === cnt(q, QC.fang), 'mirrored mouth keeps the same fang count');
+  const src = readFileSync(new URL('../src/whale.js', import.meta.url), 'utf8'), at0 = src.indexOf('THE RIBS */'), line = src.slice(src.lastIndexOf('\n', at0) + 1, at0), listed = [...line.matchAll(/\[(\d+), \d+\]/g)].map(m => +m[1]);
+  ok(JSON.stringify(listed) === JSON.stringify(WA.RIB_X0), 'the art knows the same eight rib pillars as src/whale.js (' + listed.join(',') + ')');
+  let bone = 0, wrong = 0; for (const x0 of WA.RIB_X0) for (let x = x0; x <= x0 + 2; x++) for (let y = 31; y <= 43; y++) { if (WA.isRibTile(x, y)) bone++; else wrong++; }
+  ok(wrong === 0 && bone === 8 * 3 * 13, 'every rib tile is bone');
+  let leak = 0; for (let x = 263; x <= 322; x++) for (let y = 0; y <= 47; y++) if (!WA.RIB_X0.some(x0 => x >= x0 && x <= x0 + 2) && WA.isRibTile(x, y)) leak++;
+  ok(leak === 0 && !WA.isRibTile(318, 32) && !WA.isRibTile(314, 33) && !WA.isRibTile(270, 10) && !WA.isRibTile(300, 14), 'no bone anywhere else in the chamber (shrine-two sill, ceiling, gaps between the ribs) - ' + leak + ' leaks');
+  for (const sec of ['maw', 'tongue', 'gullet', 'stomach', 'rib', 'heart']) { reset(); const g = makeCtx(320, 180); WB.drawBackdrop(g, 16 * ({ maw: 20, tongue: 90, gullet: 150, stomach: 215, rib: 285, heart: 350 })[sec], 320, 320, 180, 1.3, sec);
+    ok(!BAD.length && COLS.size >= 6, 'backdrop ' + sec + ' draws clean (' + COLS.size + ' colours, ' + BAD.length + ' bad)'); }
+  const wb = readFileSync(new URL('../src/redraw/whale_back.js', import.meta.url), 'utf8'); ok(wb.includes('WCOL as C'), 'the backdrop uses the Whale palette');
+  const hands = readFileSync(new URL('../src/whale-hands.js', import.meta.url), 'utf8'), main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  ok(hands.includes('H.drawBackdrop = (g, cx, cy, VW, VH, t) => { if (!on()) return;'), 'the hands draw the backdrop only on the whale (flag OFF = nothing)');
+  ok(main.split('WHH.drawBackdrop').length === 2 && main.includes('if (WHH && WHH.on()) WHH.drawBackdrop(g, cx, cy, VW, VH, time)'), 'main.js has exactly ONE flag-guarded backdrop hook'); }
 console.log('wh-art-lint: ' + n + ' checks, ' + (bad ? bad + ' FAILED' : 'all ok'));
 process.exit(bad ? 1 : 0);

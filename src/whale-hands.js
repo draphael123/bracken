@@ -19,6 +19,7 @@ import * as WA from './redraw/whale_art.js';   /* (claude/whaleart) the level ki
 import * as PA from './redraw/gastric_polyp_art.js';   /* (claude/whaleart) the Gastric Polyp's poses + the bile glob */
 import * as QA from './redraw/parasite_queen_art.js';   /* (claude/whaleart) the Parasite Queen's poses + her floor pieces */
 import * as KA from './redraw/deep3_art.js';   /* (claude/whaleart) the gold OPEN ring and the grey WARD ring (shared with the Deep) */
+import * as WB from './redraw/whale_back.js';   /* (claude/seaart2) the whale's inside as a backdrop (drawn under the tiles by ONE hook in main.js's backdrop chain) */
 const R = Math.round;
 export const WH_HANDS = { nerveW: 12, nerveH: 14, nerveReach: 14 };
 export const WH_SAY = { exhale: 'IT BREATHES OUT', inhale: 'IT BREATHES IN', already: 'IT IS DRAWING IN ALREADY', cool: 'THE NERVE IS SPENT', unseal: 'THE CARDIA OPENS', torn: 'THE INHALE TEARS IT LOOSE' };
@@ -194,6 +195,8 @@ export function makeWhaleHands(ctx) {
   const seen = new Map();   /* a foe we drew alive: when it is dead we play its fall (once) */
   const DEAD_T = { gastricpolyp: 0.8, parasitequeen: 2.6 };
   const K01 = v => Math.max(0, Math.min(1, v));
+  /* THE BACKDROP (claude/seaart2): called from main.js's backdrop chain, BEFORE the tiles; the section's wall, far ribs, shafts */
+  H.drawBackdrop = (g, cx, cy, VW, VH, t) => { if (!on()) return; WB.drawBackdrop(g, cx, cy, VW, VH, t); };
   H.drawBack = (g, cx, cy, t) => {
     if (!S) return; const VW = ctx.VW(), vw = ctx.view ? ctx.view() : null, VH = vw ? vw.y1 - vw.y0 : 216, A = lv().arena;
     /* THE FLESH: the section's wash, fibres, veins, wet edges and the sinew hung off every ceiling, over the level's tiles */

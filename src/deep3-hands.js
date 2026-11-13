@@ -46,7 +46,10 @@ export function makeDeep3Hands(ctx) {
     for (const r of d.rot) per.rot.push({ ...r, cd: 0 });
   }
   /* (spawnEntities: a load or a death) */
+  const seenS = new Map();   /* (claude/seaart2) the Cursed Sailor drawn alive: when he is dead his fall plays from the hands' own record (no main.js hook), as the whale lane does for the Queen */
+  const SAILOR_FALL_T = 2.4;
   H.clear = () => {
+    seenS.clear();
     S = null; A0 = null; sailorBody = null; for (const k of Object.keys(bodies)) delete bodies[k]; BOSS_PHASE.sunkencrew = 1;
     if (!D()) { per = null; return; }
     if (!per || per.L !== L()) fresh();
@@ -216,7 +219,7 @@ export function makeDeep3Hands(ctx) {
       if (c.role === 'shield' && c.mode === 'guard' && c.guarding) { const m = S.crew[c.guarding]; if (m && m.alive) { KA.drawRope(g, x, y - 14, R(m.x - cx), R(m.y - cy) - 14, time); KA.drawWardRing(g, R(m.x - cx), R(m.y - cy) - 14, 17, time); } }
       if (c.mode === 'raise') KA.dotRing(g, x, y - 14, 14 + 4 * Math.sin(time * 10), '#ff9a5c', 1, 0.9);
       void mx; return; }
-    if (e.t === 'cursedsailor' && S && S.sailor) { const s = S.sailor; drawSailorShape(g, s, cx, cy, time, e.flash > 0);
+    if (e.t === 'cursedsailor' && S && S.sailor) { const s = S.sailor; seenS.set(e, { x: s.x, y: s.y, face: s.face || 1, stance: s.stance, t0: null }); drawSailorShape(g, s, cx, cy, time, e.flash > 0);
       if (SC.sailorOpen(s)) { const t0 = s.mode === 'swap' ? SC.CREW.p2.swap : s.mode === 'stuck' ? SC.CREW.p2.stuck : 1.2; const x = R(s.x - cx), y = R(s.y - cy); KA.drawOpenRing(g, x, y - 24, 30, time);
         rect(g, x - 16, y - 66, R(32 * Math.max(0, s.modeT) / t0), 2, '#ffd36b'); }
       else if (s.ward > 0) KA.drawWardRing(g, R(s.x - cx), R(s.y - cy) - 24, 32, time);
@@ -227,6 +230,9 @@ export function makeDeep3Hands(ctx) {
     CA.drawCrew(g, c.x - cx, c.y - cy, c.face || 1, c.sailor ? { role: 'sailor', stance: c.stance, mode: c.mode, ward: c.ward > 0, flash, seed: 3 } : { role: c.role, mode: c.mode, flash, seed: c.x * 0.01 }, time);
   }
   H.drawOver = (g, cx, cy, time) => {
+    for (const [e, d] of seenS) { if (e.alive) continue; if (!(e.hp <= 0)) { seenS.delete(e); continue; }   /* THE SAILOR'S FALL: kneels, topples, the hat floats off, the souls go up */
+      if (d.t0 == null) d.t0 = time; const k = (time - d.t0) / SAILOR_FALL_T; if (k >= 1) { seenS.delete(e); continue; }
+      CA.drawCrewDead(g, R(d.x - cx), R(d.y - cy), d.face, k, time, { role: 'sailor', stance: d.stance, seed: 3 }); }
     if (!S) return;
     for (const l of S.lanterns) { const x = R(l.x - cx), y = R(l.y - cy), k = l.t / SC.CREW.lantern.t; KA.drawLantern(g, x, y, k, time);
       g.fillStyle = '#e8f4f0'; g.font = '8px monospace'; g.fillText(String(Math.ceil(l.t)), x - 3, y - 16); }

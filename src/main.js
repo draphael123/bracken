@@ -35280,6 +35280,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (KWH && KWH.on() && SET.parallax !== 'off') KWA.drawAreas(g, cx, cy, VW, VH, time, bgDY(cy), SET.parallax === 'full', L);   /* (claude/kingswood2art) the five areas' own back walls: the road's banners and gatehouse, the stands' hunting towers, the grove's hung cages, the procession's colonnade and side gate, the hall's rafters (src/redraw/kingswood_areas.js) */   /* (claude/kingswood2) THE GREAT OAK on the skyline, growing as you come (src/redraw/kingswood_oak.js) */
   if (GMH && GMH.on()) GMH.drawBack(g, cx, cy, VW, VH, time);   /* (claude/gorm2) THE GREAT OAK of his glade, behind the tiles */
   if (WWH && WWH.on()) WWH.drawBack(g, cx, cy, VW, VH, time);   /* (claude/wispwood) WISPWOOD: the pale far trunks, the black mere (greybox) */
+  if (WHH && WHH.on()) WHH.drawBackdrop(g, cx, cy, VW, VH, time);   /* (claude/seaart2) THE WHALE's inside behind the tiles: the section's wall, far ribs, light shafts (src/redraw/whale_back.js; flag-guarded: WHH.on() is L.whale) */
   if (ACH && ACH.on()) ACH.drawBack(g, cx, cy, VW, VH, time);   /* (claude/academy) THE MAGE ACADEMY: the pits' dark (greybox) */
   /* (claude/sporewood2art) THE MOTHER'S KNOT is drawn inside SW2B.drawBackdrop now (behind the mid row), not over it */
   if (L.lumberKit && SET.parallax !== 'off') LTB.drawLandmark(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* (claude/lumbertrailart) the great hive pine on the skyline, growing with the climb */

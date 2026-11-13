@@ -23,9 +23,12 @@ function at(g, x, y) { g_ = g; ox_ = R(x); oy_ = R(y); }
 const BAKE = new Map();
 function baked(g, x, y, key, build) { let r = BAKE.get(key); if (!r) { REC = []; ox_ = 0; oy_ = 0; try { build(); } finally { r = REC; REC = null; } BAKE.set(key, r); } at(g, x, y); for (const q of r) rect(q[0], q[1], q[2], q[3], q[4], q[5]); }
 export const sectionOf = tx => tx < 50 ? 'maw' : tx < 126 ? 'tongue' : tx < 171 ? 'gullet' : tx < 263 ? 'stomach' : tx < 323 ? 'rib' : 'heart';
+/* THE RIBS are bone, nothing else in the rib chamber is: the eight pillars of src/whale.js (x0..x0+2, from row 31 down) - the ceiling, the sill of shrine two and the bed stay flesh */
+export const RIB_X0 = [266, 272, 278, 284, 290, 296, 302, 308];
+export const isRibTile = (tx, ty) => ty >= 31 && ty <= 43 && RIB_X0.some(x0 => tx >= x0 && tx <= x0 + 2);
 const SEC = {
   maw: { base: '#7a2c3c', lit: C.gum[1], wash: 0.62 }, tongue: { base: '#a04456', lit: C.pale[2], wash: 0.66 }, gullet: { base: '#5e1f30', lit: C.sheen, wash: 0.66 },
-  stomach: { base: '#4a2c22', lit: C.stomach[3], wash: 0.7 }, rib: { base: '#8a8068', lit: C.bone[4], wash: 0.7 }, heart: { base: '#5a1420', lit: C.heart[4], wash: 0.68 },
+  stomach: { base: '#4a2c22', lit: C.stomach[3], wash: 0.7 }, rib: { base: '#66283a', lit: C.flesh[2], wash: 0.68 }, heart: { base: '#5a1420', lit: C.heart[4], wash: 0.68 },
 };
 
 /* ---- THE FLESH: per solid tile, world-aligned. A wash of the section's colour over whatever tile art is there, then fibres, veins, pores and the wet edges. isSolid(tx, ty) = the level. ---- */
@@ -34,7 +37,7 @@ export function drawFleshTex(g, cx, cy, t, VW, VH, isSolid, W = 400, H = 48) {
   const tx0 = Math.max(0, Math.floor(cx / TS) - 1), tx1 = Math.min(W - 1, Math.ceil((cx + VW) / TS) + 1), ty0 = Math.max(0, Math.floor(cy / TS) - 1), ty1 = Math.min(H - 1, Math.ceil((cy + VH) / TS) + 1);
   for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
     if (!isSolid(tx, ty)) continue;
-    const sec = sectionOf(tx), bone = sec === 'rib' && ty <= 43, S = SEC[sec], h = hash(tx * 3 + 1, ty * 5 + 2), x = tx * TS - cx, y = ty * TS - cy;
+    const sec = sectionOf(tx), bone = sec === 'rib' && isRibTile(tx, ty), S = SEC[sec], h = hash(tx * 3 + 1, ty * 5 + 2), x = tx * TS - cx, y = ty * TS - cy;
     const top = !isSolid(tx, ty - 1), below = !isSolid(tx, ty + 1), left = !isSolid(tx - 1, ty), right = !isSolid(tx + 1, ty);
     rect(x, y, TS, TS, bone ? C.bone[1] : S.base, bone ? 0.72 : S.wash);
     if (bone) {

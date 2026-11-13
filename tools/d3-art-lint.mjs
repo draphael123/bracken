@@ -89,5 +89,16 @@ for (const [dx, dy, reach] of [[1, 0, 48], [-1, 0, 48], [0, 1, 30]]) { reset(); 
   ok(/DEEP3_SHIPS = false/.test(readFileSync(new URL('../src/deep3.js', import.meta.url), 'utf8')), 'DEEP3_SHIPS stays false (the flag is OFF)');
   ok(!/deep3_art|drowned_crew_art/.test(main), 'main.js is untouched by the art (the hands own the wiring: OFF = the base)');
   ok(WE.TELL_ROWS.length === 1 && SC.TELL_ROWS.length === 7, 'the TELL_ROWS marks of the eel and the crew are unchanged (1 + 7)'); }
+/* ---- G (claude/seaart2): faces, the fused Sailor, his fall wired from the hands ---- */
+{ const cnt = (r, c) => r.filter(q => q.split(',')[4] === c).length, D = CA.DCOL;
+  for (const role of [...SC.ROLES, 'sailor']) { const r = print({ role, pose: role === 'sailor' ? 'sailorIdle' : 'crewSwim', still: true }); ok((cnt(r, D.teeth) >= 2 || (role === 'harpoon' && cnt(r, D.rope[2]) >= 1)) && cnt(r, D.socket) >= 7, role + ' face: teeth + sockets (nose, far eye, brow) drawn: teeth ' + cnt(r, D.teeth) + ', sockets ' + cnt(r, D.socket)); }
+  const sr = print({ role: 'sailor', pose: 'sailorIdle', still: true, stance: 'cutlass' });
+  for (const k of ['cutlass', 'shield', 'harpoon', 'heavy']) ok(cnt(sr, D.soul[k]) >= 1, 'the Sailor shows the ' + k + ' man (soul-coloured eye + soul) x' + cnt(sr, D.soul[k]));
+  ok(cnt(sr, D.eyeDim) >= 4, 'extra heads carry their own far-eye light (' + cnt(sr, D.eyeDim) + ' dim lights = four faces)');
+  for (const p of Object.keys(CA.poseTable('sailor')).filter(k => k.startsWith('sailor'))) { const r = print({ role: 'sailor', pose: p, stance: 'harpoon' }); ok(r.length > 200 && !BAD.length, 'Sailor pose ' + p + ' draws with the fused extras and no bad rect'); }
+  const hands = readFileSync(new URL('../src/deep3-hands.js', import.meta.url), 'utf8');
+  ok(hands.includes('seenS.set(e,') && hands.includes("CA.drawCrewDead(g, R(d.x - cx), R(d.y - cy), d.face, k, time, { role: 'sailor'") && hands.includes('if (e.alive) continue; if (!(e.hp <= 0))'), "the Sailor's fall plays from the hands' own seen record (no main.js hook)");
+  ok(hands.includes('seenS.clear()'), 'the seen record is cleared with the level');
+  const mainSrc = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(!mainSrc.includes('drawCrewDead') && !mainSrc.includes('seenS'), 'main.js has no Deep 3 fall hook'); }
 console.log('d3-art-lint: ' + n + ' checks, ' + (bad ? bad + ' FAILED' : 'all ok'));
 process.exit(bad ? 1 : 0);
