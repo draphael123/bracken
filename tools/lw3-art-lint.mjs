@@ -62,7 +62,7 @@ for (const S of SUITES) { const idle = mask(S, S.name === 'crab' ? 'walk' : 'idl
     if (rel) { const s2 = diffShare(mm, mask(S, rel)); b = Math.min(b, s2); ok(s2 >= SIL_STRIKE, S.name + ' ' + tell + ' BODY differs from its strike ' + rel + ' by ' + (s2 * 100).toFixed(0) + '% (>= ' + SIL_STRIKE * 100 + '%)'); } }
   console.log('  silhouette ' + S.name + ': smallest tell-vs-idle ' + (a * 100).toFixed(0) + '%, smallest tell-vs-strike ' + (b * 100).toFixed(0) + '%'); }
 /* ---- C ---- */
-for (const S of SUITES) { let out = 0; const box = S.name === 'herald' ? [-80, 80, -90, 14] : [-50, 50, -40, 10]; for (const k of Object.keys(S.POSES)) for (const r of S.print({ pose: k, k: 0.5 })) { const [x, y, w, h] = r.split(',').map(Number), dx = x - S.X, dy = y - 100; if (dx < box[0] || dx + w > box[1] || dy < box[2] || dy + h > box[3]) out++; }
+for (const S of SUITES) { let out = 0; const box = S.name === 'herald' ? [-80, 120, -90, 14] : [-50, 50, -40, 10]; for (const k of Object.keys(S.POSES)) for (const r of S.print({ pose: k, k: 0.5 })) { const [x, y, w, h] = r.split(',').map(Number), dx = x - S.X, dy = y - 100; if (dx < box[0] || dx + w > box[1] || dy < box[2] || dy + h > box[3]) out++; }
   ok(out === 0, S.name + ': every pose inside the box round its feet (' + out + ' rects outside)'); }
 const drawKit = g => {
   PA.drawBell(g, 40, 100, 0, 0.3); PA.drawBell(g, 40, 100, 1, 0.3, 1); PA.drawSluice(g, 40, 100, 0, 0, 0.3); PA.drawSluice(g, 40, 100, 0.7, 0, 0.3); PA.drawSluice(g, 40, 100, 0, 0.5, 0.3);

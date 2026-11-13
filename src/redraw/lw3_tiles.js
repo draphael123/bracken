@@ -98,7 +98,7 @@ function pixel(kind, ax, ay, lx, ly, o) {
   if (m.mortar && kind !== 'bluff') { const c = m.v === 0 ? C.joint : P[Math.max(1, v + 2)]; return tideStain(c, ax, ay, y, edge, o); }
   /* the light falls from the top left: faces turned to it brighten, the shadow side and depth darken */
   if (eL) v += lx < 2 ? 2 : lx < 4 ? 1 : 0; if (eR) v -= 15 - lx < 2 ? 2 : 0;
-  v -= d >= 6 ? 2 : d >= 3 ? 1 : 0;
+  v -= kind === 'bluff' ? (d >= 3 ? 1 : 0) : d >= 6 ? 2 : d >= 3 ? 1 : 0;   /* (claude/saltlook) the bluff's interior stays a readable slate: two steps of depth sank the whole mass to #0f171e, a black slab in the still (look-mill-bluff.png) */
   let c = P[clamp(Math.round(v), 0, 7)];
   if ((kind === 'quay' || kind === 'wall') && m.block && hash(m.block, 3) % 5 === 0) c = mixHex(c, '#a8946a', 0.22);   /* a block of warmer sandstone among the grey */
   if (kind === 'bluff') { const bh = hash(ax, ay + 3); if (bh % 13 === 0) c = P[clamp(Math.round(v) + 2, 0, 7)]; else if (bh % 37 === 0) c = C.moss[0]; else if (bh % 23 === 0) c = P[clamp(Math.round(v) - 1, 0, 7)]; }   /* mineral flecks and a trace of moss */
@@ -110,7 +110,7 @@ function pixel(kind, ax, ay, lx, ly, o) {
 /* basalt: columns 6-10 px wide with a lit left arris, a dark crack between, faint strata, a wet sheen that creeps in on lit edges */
 function bluffPx(ax, ay, o) {
   const col = Math.floor((ax + (hash(Math.floor(ay / 24), 5) % 7)) / 8) | 0, sx = ((ax + (hash(Math.floor(ay / 24), 5) % 7)) % 8 + 8) % 8, tone = (hash(col, 61) % 3) - 1;
-  let v = 3 + tone; if (sx === 0) v += 2; else if (sx === 1) v += 1; else if (sx === 7) v -= 2;
+  let v = 4 + tone; if (sx === 0) v += 2; else if (sx === 1) v += 1; else if (sx === 7) v -= 2;
   const strata = (ay % 24) < 2; if (strata) v -= 1;
   const gh = hash(ax, ay + 13); if (gh % 9 === 0) v -= 1; else if (gh % 23 === 0) v += 2;
   if (sx === 7 && (hash(col, Math.floor(ay / 5)) & 3) === 0) return { mortar: true, v: 0 };   /* a crack between columns, broken */

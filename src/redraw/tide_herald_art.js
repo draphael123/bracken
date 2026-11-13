@@ -140,6 +140,10 @@ export function drawHerald(g, x, y, f, o = {}, time = 0) {
 function fx(P, rig, t) {
   const k = P.fx, tp = rig.tip, d = rig.dir;
   if (k === 'speed') for (let i = 0; i < 4; i++) rc(-24 - i * 4, -30 + i * 3, 6, 1, HP.water[2], 0.5 - i * 0.1);
+  /* (claude/saltlook) THE THRUST'S JET: the blade is ~60 px out but the blow (src/tide-herald.js TH.thrust.r, 112) lands that far, so a streak of sea-water runs on from the point to the reach and bursts there:
+     what is drawn now ends where the hit does (the still with the hitbox outlined: look-herald-thrust-*-hitbox.png) */
+  if (k === 'speed') { const x0 = R(tp[0] + 14), x1 = 110, y0 = R(tp[1]); for (let x = x0; x < x1; x += 3) { const f = (x - x0) / (x1 - x0); rc(x, y0 - 1, 3, 1, HP.water[2], 0.95 - f * 0.35); rc(x, y0, 3, 1, HP.water[0], 0.95 - f * 0.35);   /* a pale crest over a teal keel: it reads on a peach sky too */ rc(x + 1, y0 + 2 + ((x >> 2) & 1) * 3, 2, 1, HP.water[2], 0.5 - f * 0.3); rc(x, y0 - 4 - ((x >> 1) & 3), 1, 1, HP.water[2], 0.5 - f * 0.3); }
+    for (let i = 0; i < 6; i++) rc(x1 - 2 + Math.cos(i * 1.05 + t * 14) * 5, y0 - 1 + Math.sin(i * 1.05 + t * 14) * 5, 2, 2, HP.water[2], 0.7); }
   if (k === 'smear') { for (let i = 0; i < 5; i++) { const a = -0.9 + i * 0.28; rc(tp[0] + Math.cos(a + 0.3) * 6 - 4 + i * 2, tp[1] + Math.sin(a) * 10 - 2, 6 - i, 1, HP.water[2], 0.7 - i * 0.12); } }
   if (k === 'spray') for (let i = 0; i < 9; i++) rc(8 + Math.sin(i * 2) * 10 + (i & 1 ? 4 : -4), -6 - ((t * 60 + i * 9) % 42), 1, 2, i & 1 ? HP.water[2] : HP.water[1], 0.85);
   if (k === 'surge') for (let i = 0; i < 5; i++) rc(14 + i * 4, -6 - i - Math.abs(Math.sin(t * 20 + i)) * 4, 4, 2, HP.water[(i & 1) + 1], 0.8);
