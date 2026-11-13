@@ -1,9 +1,12 @@
 // tools/hc3art-sheet.mjs - HIGHCROWN 3 + THE GOBLIN PRINCESS art, rendered and linted in Node (claude/hc3art). NO browser.
-//   node tools/hc3art-sheet.mjs [out.png]   -> contact sheet (default work/claude/lane-done/hc3art-sheet.png): the Princess's frames x2, her parts, the props, the battlements, the rooms.
+//   node tools/hc3art-sheet.mjs [out.png]   -> contact sheet (default: the gitignored audits tool-output folder, hc3art subfolder; it used to default onto the TRACKED lane-done pngs and dirtied worktrees - small1113): the Princess's frames x2, her parts, the props, the battlements, the rooms.
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
 install();
 const GPA = await import('../src/redraw/goblin_princess_art.js');
-const out = process.argv[2] || 'work/claude/lane-done/hc3art-sheet.png';
+const out = process.argv[2] || 'audits/hc3art/hc3art-sheet.png';
+mkdirSync(dirname(out), { recursive: true });
 const bad = []; const sig = c => { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let h = 0, k = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3]) { k++; h = (h * 31 + d[i] * 7 + d[i + 1] * 3 + d[i + 2] + i) >>> 0; } return { h, k }; };
 const big = (list, o, s = 2) => { const sh = sheet(list, o), c = newCanvas(sh.width * s, sh.height * s); c.getContext('2d').drawImage(sh, 0, 0, sh.width, sh.height, 0, 0, sh.width * s, sh.height * s); return c; };
 const P = GPA.bakeGoblinPrincess(); const sigs = P.R.map(sig);

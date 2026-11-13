@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-13",
+    "batch": 175,
+    "lines": [
+      { "s": "Smoother title screen on phones.", "lv": [] },
+      { "s": "Co-op rule text fits the screen.", "lv": [] },
+      { "s": "Small text fixes in What's New.", "lv": [] }
+    ]
+  },
+  {
     "date": "2026-11-12",
     "batch": 174,
     "lines": [
@@ -30,7 +39,7 @@
     "date": "2026-11-12",
     "batch": 171,
     "lines": [
-      { "s": "Groundwork for a new Goblin Princess fight is in; it is switched off for now.", "lv": [] },
+      { "s": "Groundwork for a Goblin Princess fight is in, switched off.", "lv": [] },
       { "s": "Nothing changes in play yet.", "lv": [] },
       { "s": "A new test hook for that fight was added for the developers.", "lv": [] }
     ]

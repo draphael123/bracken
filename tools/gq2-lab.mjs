@@ -131,7 +131,7 @@ console.log('== CO-OP (1-4 seats: every hero is tested, as main.js asPlayer does
   st.mode = 'parry'; e.mode = 'crownTossTell'; e.modeT = 0.8; step(60 * 3);
   ok(st.dmg.length >= 1 && st.dmg[0].who === 'B' && H.read().stuns === 1, 'the crown meets seat TWO (the world frame runs as seat one) and his parry stuns her (stuns ' + H.read().stuns + ', hit ' + st.dmg.map(d => d.who).join('') + ')');
   /* a portal shard fan aims at the hero she means (target), and a shard can hit seat two */
-  st.mode = 'hit'; st.dmg.length = 0; e.mode = 'portalTell'; e.modeT = 1.0; e.stunned = 0; step(60 * 4);
+  st.mode = 'hit'; st.dmg.length = 0; e.mode = 'portalTell'; e.modeT = 1.0; e.stunned = 0; step(60 * 8);   /* (small1113) tell 1.0 + glow 0.9 + gap 0.35 + the far-wall flight (~480 px at 210 px/s = 2.3 s) is ~4.6 s: the random portal picks (both on the east wall = ~20% of casts) outran the old 4 s window, so it failed ~2 runs in 6. 8 s covers every anchor pair. */
   ok(st.dmg.some(d => d.who === 'B'), 'her portal shards fly at seat two and hit him (' + st.dmg.map(d => d.who).join('') + ')');
   /* the flee heals the whole party, each to his own flask count */
   A.hp = 10; B.hp = 5; e.hp = 0; H.spare(e);
