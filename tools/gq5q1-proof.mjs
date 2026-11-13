@@ -6,7 +6,7 @@ import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 process.env.BRACKEN_GQ5Q1 = '1';
-const STILLS = resolve(ROOT, process.argv[2] || 'C:/Users/danie/Projects/desktop-stills/gq5q1');
+const STILLS = resolve(ROOT, process.argv[2] || join(ROOT, 'audits', 'gq5q1'));
 mkdirSync(STILLS, { recursive: true });
 const pg = await openPage({ audio: false, fonts: false });
 const PRE = `const {LEVELS}=await import('/src/level.js');

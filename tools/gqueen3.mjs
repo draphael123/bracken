@@ -19,7 +19,7 @@ const fnBody = (src, name) => { const i = src.search(new RegExp('function ' + na
 const { LEVELS, T } = await imp('src/level.js');
 const L = LEVELS.find(l => l.id === 'crown').build();
 const { SH_HALL: HC, G4 } = await import('../src/gq4l.js'); const HS = HC * 16;
-const { Q4: Q4T, Q4N: Q4NT } = await import('../src/gq4q.js'); const K1 = Q4T ? Q4NT.p1.dmgK : 1, SC1 = x => Math.max(1, Math.round(x * K1));   /* (gq4tune-d) the hall's blows ride the tuned Q4N.p1.dmgK (1 with the flag off) */
+const { Q4: Q4T, Q4N: Q4NT } = await import('../src/gq4q.js'); const { Q5: Q5T, Q5N: Q5NT } = await import('../src/gq5q1.js'); const K1 = Q4T ? (Q5T && Q5NT.hallDmgK != null ? Q5NT.hallDmgK : Q4NT.p1.dmgK) : 1, /* (prepq) the GQ5Q1 flag's own hall lever */ SC1 = x => Math.max(1, Math.round(x * K1));   /* (gq4tune-d) the hall's blows ride the tuned Q4N.p1.dmgK (1 with the flag off) */
 const A = L.arena, W = L.W, at = (x, y) => L.grid[y * W + x];
 
 /* ================= LEVEL ================= */
