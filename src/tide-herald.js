@@ -22,14 +22,14 @@
 //   THE WAVE          (!! high water only: a wave runs the flats - GET ON A STONE or jump its crest)
 //   P2 NEW: THE UNDERTOW (! he drags the sea to his feet: everything in it is pulled to him, a stone or a guard halves it; his feet bite once)
 export const TH = {
-  hp: 1300, w: 18, h: 36, markH: 56,
+  hp: 1700, w: 18, h: 36, markH: 56,
   stride: 46, wade: 26, hurry: 58, lure: 52,
   p2: 0.5,
-  sweep: { tell: 0.65, r: 70, dmg: 22, rec: 0.55 },
-  thrust: { tell: 0.55, r: 112, dmg: 18, rec: 0.45, reel: 1.2 },
-  spear: { tell: 0.7, n: 3, gap: 34, every: 0.3, dmg: 16, w: 12, h: 54 },
-  wave: { tell: 1.0, speed: 230, dmg: 20, cd: 9 },
-  undertow: { tell: 1.0, on: 2.2, pull: 80, pullHalf: 40, bite: 18, r: 180, cd: 8 },
+  sweep: { tell: 0.75, r: 70, dmg: 17, rec: 0.55 },
+  thrust: { tell: 0.62, r: 112, dmg: 15, rec: 0.45, reel: 1.2 },
+  spear: { tell: 0.7, n: 3, gap: 34, every: 0.3, dmg: 14, w: 12, h: 54 },
+  wave: { tell: 1.0, speed: 230, dmg: 17, cd: 9 },
+  undertow: { tell: 1.0, on: 2.2, pull: 80, pullHalf: 40, bite: 15, r: 180, cd: 8 },
   seize: 1.6, recall: 3.4,   /* the bell's stone to the wheel's is 13 tiles: ~2.3 s at a run */
   mire: 3.4, mireP2: 3.8, mireCap: 0.22, ward: 1.4,
   idle: [0.5, 0.9],
