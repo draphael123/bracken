@@ -1,17 +1,20 @@
 [
   {
     "date": "2026-11-13",
-    "batch": 181,
+    "batch": 182,
     "lines": [
-<<<<<<< HEAD
-      { "s": "Stormwreck Harbor: no more tideguard dropping off the roof into the Salvage Captain.", "lv": ["harbor"] },
-      { "s": "He now waits on the road past the sea gate instead.", "lv": ["harbor"] },
-      { "s": "Nothing else in the harbor changed.", "lv": ["harbor"] }
-=======
       { "s": "The Goblin Queen's fight is reworked: first the hall, then the roof.", "lv": ["crown"] },
       { "s": "In the hall, ring the bell to hoist the lifts and stand clear of the floor fire.", "lv": ["crown"] },
       { "s": "On the roof, strike her stones back, then ring the bell to shake her loose.", "lv": ["crown"] }
->>>>>>> 7ea2d82e6 (prepqon: Goblin Queen rework ships ON (GQ5Q1 hall + GQ5Q2 roof flags true together); lab OFF = ?gq5q1=0 / ?gq5q2=0 / BRACKEN_GQ5Q1=0 / BRACKEN_GQ5Q2=0; What's New batch 181; gq5q2-textfit counts world text)
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "batch": 181,
+    "lines": [
+      { "s": "Stormwreck Harbor: no more tideguard dropping off the roof into the Salvage Captain.", "lv": ["harbor"] },
+      { "s": "He now waits on the road past the sea gate instead.", "lv": ["harbor"] },
+      { "s": "Nothing else in the harbor changed.", "lv": ["harbor"] }
     ]
   },
   {
