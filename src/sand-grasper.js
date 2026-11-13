@@ -9,7 +9,7 @@
 // WHERE IT STANDS: taught alone in THE DROWNED QUARTER after the great gate drains, then once each in THE HOURGLASS HALLS and THE THRONE STREET - at most one a room - and NEVER
 //   in a race window, a run line or the Glassblower's floor (tools/buried-city5.mjs counts it).
 // Frames (greybox poses, the art lane draws them): grBoil | grRise | grWalk | grWind (arms up) | grGrab (lurched, arms closed) | grHold | grRecover | grHurt.
-export const GRASP = { hp: 170, w: 12, h: 20, speed: 20, wake: 70, wakeY: 34, boil: 0.9, rise: 0.5, sight: 150, sightY: 34, grabR: 26, grabTell: 0.6, grab: 0.26, cd: 1.1, recover: 0.9,
+export const GRASP = { hp: 170, w: 12, h: 20, speed: 20, wake: 84, wakeY: 34, boil: 1.2, rise: 0.5, sight: 150, sightY: 34, grabR: 26, grabTell: 0.6, grab: 0.26, cd: 1.1, recover: 0.9,
   hold: 1.1, tick: 0.5, flinch: 0.2, markH: 34, dmg: { grab: 22, squeeze: 10 } };
 const ev = (a, t, extra) => a.push({ t, ...extra });
 export function newGrasper(x, y, o) { return { x, y, home: x, hp: GRASP.hp, mode: 'buried', t: 0, face: (o && o.face) || -1, cd: 0.6, pose: 'grBoil', n: 0, grabs: 0 }; }

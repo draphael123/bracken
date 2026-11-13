@@ -4,7 +4,7 @@ import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 const out = process.argv[2] || 'bc5-stills'; mkdirSync(out, { recursive: true });
 const SPOTS = [['R1-door', 172, 28, 150], ['R1-gallery', 180, 28, 150], ['R2-lip', 600, 32, 150], ['R2-far', 610, 32, 150], ['R3-lift', 664, 32, 150], ['R3-wall', 671, 28, 150],
-  ['R4-door', 839, 32, 150], ['R4-pier', 834, 31, 150], ['gb-hall-in', 391, 32, 100], ['kiln-top', 386, 8, 100], ['grasper-quarter', 486, 44, 200, 1], ['grasper-court', 636, 32, 200, 1], ['grasper-bulb', 283, 32, 200, 1], ['boss-hall', 850, 32, 100, 1], ['approach-700', 700, 32, 100], ['approach-760', 760, 32, 100], ['works-350', 350, 32, 100]];
+  ['R4-door', 839, 32, 150], ['R4-pier', 834, 31, 150], ['gb-hall-in', 391, 32, 100], ['kiln-top', 386, 8, 100], ['grasper-quarter', 486, 44, 200, 1], ['grasper-court', 636, 32, 200, 1], ['grasper-bulb', 283, 32, 200, 1], ['boss-hall', 850, 32, 100, 1], ['approach-700', 700, 32, 100], ['approach-760', 760, 32, 100], ['works-350', 350, 32, 100], ['sign-597', 597, 32, 100], ['works-foes-335', 335, 32, 100, 1], ['works-foes-366', 366, 32, 100, 1], ['roof-foes-700', 700, 32, 100, 1], ['roof-foes-735', 735, 32, 100, 1]];
 const pg = await openPage();
 try {
   await pg.evalp(`import('/src/level.js').then(M => { window.__LV = M.LEVELS; return true; })`);

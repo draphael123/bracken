@@ -15,19 +15,20 @@
 //   B10), at most GB.openCap of him a window; then a told GB.wardT s ward (B3). Struck when it does not glint, a glass only says IT HOLDS (told once): never a punishment.
 // THE FLOOR (B15/B13): outside the opening his leather apron and the kiln's heat take a blow at GB.rest (0.5x) - never invulnerable; in the ward at GB.floor (0.4x).
 // PHASES: P1 (100-50%) gob / blast / flip; P2 (50-0%) + SHATTER BULB and a SECOND glass he turns in turn (the one he just turned glints; the other is dull).
-// MINI BAND (plan s5): 70-80% WITH flasks, mash 0/6, 60-120 s - the tune lane's (browser). The toy duel in tools/buried-city5.mjs is a flow sim, not the rate.
+// MINI BAND (Daniel's standard, 60-70% WITH flasks; the plan said 70-80%), mash 0/6, 60-120 s - the tune lane's (browser). The toy duel in tools/buried-city5.mjs is a flow sim, not the rate.
 import { BC5_SAY } from './buried-city5.js';
 
 export const GB = {
   hp: 1500, w: 18, h: 30, markH: 46,
-  rest: 0.5, floor: 0.4, openMul: 1.75, openT: 3.5, openCap: 0.14, wardT: 2.0, glintT: 7.0, staggerT: 0.5,
-  walk: 50, keep: 44, turn: 0.45, gap: [1.0, 0.8],
-  gobTell: 0.85, gobFly: 0.7, gobHot: 2.4, gobStep: 3.0, gobR: 7, gobH: 22,
-  blastTell: 0.95, blastT: 0.45, blastLen: 124, blastH: 26,
+  rest: 0.5, floor: 0.4, openMul: 1.75, openT: 4.5, openCap: 0.14, wardT: 2.0, glintT: 8.0, staggerT: 0.5,   /* (claude/bc5fix) openT 3.5 -> 4.5 s (a hero who strikes the glass in the pocket must hop the stub and walk to him), glintT 7 -> 8 s: the desktop knight was 0/5 */
+  walk: 50, keep: 44, turn: 0.45, gap: [1.2, 1.0],   /* (claude/bc5fix) the breath between his moves 1.0/0.8 -> 1.2/1.0 s; every windup below is 0.15-0.25 s longer (tell >= 0.3 s always) */
+  gobTell: 1.0, gobFly: 0.7, gobHot: 2.4, gobStep: 3.0, gobR: 7, gobH: 22,
+  blastTell: 1.2, blastT: 0.45, blastLen: 112, blastH: 24,   /* the desktop's knight took 118-245 a fight from THE BLOWPIPE: a longer tell (a roll fits twice), a shorter cone */
   flipTell: 1.0, flipT: 0.4,
-  bulbTell: 0.8, bulbV: 150, bulbLife: 1.5, bulbR: 4, bulbLow: 4, bulbHigh: 14, bulbHit: 2,
+  bulbTell: 0.95, bulbV: 150, bulbLife: 1.5, bulbR: 4, bulbLow: 4, bulbHigh: 14, bulbHit: 2,
   p2: 0.5,
-  dmg: { gob: 26, blast: 36, bulb: 24, spike: 14 },
+  dmg: { gob: 22, blast: 28, bulb: 20, spike: 10 },   /* (claude/bc5fix) 26/36/24/14 -> 22/28/20/10 */
+  capFrac: 0.22,   /* (claude/bc5fix) DAMAGE CAP: no blow of his takes more than this fraction of the hero's max HP (src/glassblower-hands.js hitHeroes) */
 };
 export const MOVES = {
   gobTell: { mark: '!', answer: 'move', pose: ['gbGobWind', 'gbGobRel'], sound: 'lob' },
@@ -44,10 +45,10 @@ export const CYCLES = {
 
 /* ---------- THE HALL (local columns 0..W-1 from the west edge sx; floor surface row R, he stands on R-1). The east wall at col W is the mini's portcullis; the west
    wall is the high kiln's pillar (the way in is a DROP off the kiln, the shrine is behind you: the stub covers, the sinkers, risers and the two glasses stand on the floor) ---------- */
-export const GB_STAGE = { sx: 389, W: 18, R: 32, him: 14,
-  heroFrom: 0, him0: 11,                                     /* he keeps to the east of local col 11 (the stubs stand between the dropped hero and him) */
+export const GB_STAGE = { sx: 389, W: 18, R: 32, him: 15,
+  heroFrom: 0, him0: 13,                                     /* (claude/bc5fix) he keeps to the east of local col 13: the desktop/laptop walks found him FLUSH against the second stub (him0 was 11 = INSIDE its footprint: a melee hero reached him only from the stub top). With 13 and the stub two rows there is floor to stand on west of him */
   sink: [{ glass: 'gb', c: [2, 4] }, { glass: 'gb2', c: [15, 17] }],   /* footing that sinks while his glass runs (two rows: a hole a body climbs out of) */
-  cover: [[5, 6], [10, 11]],                                   /* the kiln stubs (solid, three rows, a told cover from the blowpipe) */
+  cover: [[5, 6], [10, 11]], coverRows: [3, 2],                /* the kiln stubs (solid, a told cover from the blowpipe): the first three rows, the second (the near-him one) TWO rows - a hop, not a climb (claude/bc5fix) */
   glass: [{ id: 'gb', c: 7, dur: 6 }, { id: 'gb2', c: 12, dur: 6 }],
   riser: [{ glass: 'gb', c: [8, 9], top: 30, rows: 2 }, { glass: 'gb2', c: [13, 14], top: 30, rows: 2 }] };
 export function gbGeom(M, TS = 16) {

@@ -16,6 +16,7 @@ import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { isSlope, surfaceY } from './slopes.js';   /* (claude/bc4fix) a body on a slope stands on its SURFACE, not on its tile's top */
 import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js'; import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) */
+import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the Glassblower's hall: kiln stubs, floor (draw only, L.bc5) */
 import * as FIXA from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the coin caches */
 import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
@@ -361,6 +362,8 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'kinghead') SET.drawKingHead(V, d.x * ts + 8, (d.y + 1) * ts);
       else if (d.kind === 'kingstatue') SET.drawKingStatue(V, d.x * ts + 8, (d.y + 1) * ts, d.h);
       else if (d.kind === 'mural') { if (d.x0 >= 822) A4.drawKingMural(V, d.x0, d.x1, d.y * ts - 42, 'slabs'); else SET.drawMural(V, d); }   /* (claude/bc4art: the antechamber's mural is HIM raising slabs of sand toward himself - the fight foretold) */
+      else if (d.kind === 'kiln') A5.drawHallKiln(V, R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, (d.rows || 3) * ts, time);   /* (claude/bc5art) */
+      else if (d.kind === 'gbhall') A5.drawHallFloor(V, R(d.x0 * ts - cx), R(d.y * ts - cy), (d.x1 - d.x0 + 1) * ts, time);
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
