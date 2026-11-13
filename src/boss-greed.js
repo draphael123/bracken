@@ -144,6 +144,7 @@ export const OPEN_RULE = {
   lancer: e => e.open > 0,   // (claude/bosswave1) unhorsed, reared on a shield, or his swipe or cut answered: 3 s each (on foot or after every charge was open before)
   greathound: e => e.open > 0,   // (claude/bosswave1) its lunge taken on a shield (it skids), or its pups killed in time (it whines)
   bosun: e => e.open > 0,   // (claude/bosswave1, the mini) his belaying pin parried
+  glassblower: e => e.mode === 'buried' && (e.open || 0) > 0,   // (claude/rel176, BC5) THE GLASSBLOWER: buried to the waist by his own struck hourglass (src/glassblower.js gbOpen); his own code pays x1.75 then, x0.5 outside (never 0)
   barrowrider: e => brOpen(e), sexton: e => sextonOpen(e), hedgewarden: e => hedgeOpen(e),
   djinn: e => djOpen(e) || e.hand > 0,                                      // THE DJINN (claude/welltown5): mud, doused, bailed out by the bucket - and his slammed hand
   roc: e => rocEyrieOpen(e),                                                 // THE ROC (claude/skyroad): stuck in the nest off a dive, or knocked down - a thermal plunge, the lightning on her mast
