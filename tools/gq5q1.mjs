@@ -12,6 +12,7 @@
 //   X  soak       600 s of everything: the bell always re-arms, the hoists always come down, the fire always ends, no rider ever below the floor (no soft-lock)
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
+import fs from 'node:fs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
@@ -26,7 +27,7 @@ const make = (opt = {}) => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W, A = Lw.arena, fr = Math.round(A.floor / TS), x0t = Math.round(A.x0 / TS);
   const st = { time: 0, said: [], dmg: [], tiles: [], grate: [], parries: 0, spawned: [], pins: [], gate: [], hints: [], laidCalls: [] };
   const seats = opt.seats || 1;
-  const mk = x => ({ x, y: A.floor, hp: 100, maxHp: 100, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0, plunge: false, hitSet: new Set(), box: null });
+  const mk = x => ({ x, y: A.floor, hp: opt.maxHp || 100, maxHp: opt.maxHp || 100, dead: false, ground: true, vy: 0, vx: 0, face: 1, inv: 0, plunge: false, hitSet: new Set(), box: null });
   const heroes = Array.from({ length: seats }, (_, i) => mk(A.x0 + (10 + 2 * i) * TS)); let cur = heroes[0];
   const e = { t: 'gqueen', alive: true, x: A.x0 + 22 * TS, y: A.floor, w: 68, h: 52, hp: 2400, maxHp: 2400, mode: 'stand', modeT: 0, face: -1, phase: 1, anim: 0, vx: 0, vy: 0, crownCd: 99, portalCd: 99, geodeCd: 99, throneX: (858.5 * TS) };
   const w0 = Lw.ents.find(x => x.t === 'winch' && x.bell && x.bossGate);
@@ -34,7 +35,7 @@ const make = (opt = {}) => {
   const noop = () => {}; const laid = [];
   const ctx = { L: Lw, TS, T, sfx: new Proxy({}, { get: () => noop }), P: () => cur, boss: () => e, bossActive: () => true, enemies: () => [e], props: () => [bell], time: () => st.time,
     number: (x, y, t) => st.said.push(t), burst: noop, dust: noop, part: noop, shake: noop, zoom: noop, ring: noop,
-    damage: (x, d, o) => { if (cur.inv > 0) return false; st.dmg.push({ x, d, o: o || {}, who: cur, t: st.time }); cur.inv = 0.8; cur.hp -= d; return 'hit'; }, parries: () => st.parries,
+    damage: (x, d, o) => { if (cur.inv > 0) return false; st.dmg.push({ x, d, o: o || {}, who: cur, t: st.time }); cur.inv = 0.8; cur.hp -= d * (opt.mul || 1); return 'hit'; }, parries: () => st.parries,
     hurt: (en, d) => { en.hp -= d; }, solid: (tx, ty) => Lw.grid[ty * W + tx] === T.SOLID, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t,
     hurtBox: () => ({ l: cur.x - 5, r: cur.x + 5, t: cur.y - 14, b: cur.y }),
     endFight: noop, shutWest: noop, layEscape: noop, spawnEnt: o => st.spawned.push(o), setCheckpoint: noop, flaskMax: () => 3, music: noop, hint: m => st.hints.push(m), enterRoof: noop, wave: noop, ducking: () => false,
@@ -130,16 +131,17 @@ console.log('== F. THE THRONE FIRE');
 { const N = Q5N.fire; const mkw = o => { const w = make(o); w.e.mode = 'stand'; w.e.modeT = 99; w.e.hp = 2400; return w; };
   // timing: first at N.first s, then every N.every s
   const w = mkw(); const starts = []; let prevFires = 0; w.e.modeT = 0; w.H.mech().cd = 0;
-  for (let i = 0; i < 60 * 70; i++) { w.step(1); const f = w.H.q5().state().fires; if (f > prevFires) { prevFires = f; starts.push(w.st.time); } if (w.e.mode === 'stand') w.e.modeT = 0; }
+  for (let i = 0; i < 60 * 110; i++) { w.step(1); const f = w.H.q5().state().fires; if (f > prevFires) { prevFires = f; starts.push(w.st.time); } if (w.e.mode === 'stand') w.e.modeT = 0; }
   ok(starts.length >= 3 && starts[0] >= N.first - 0.01 && starts[0] <= N.first + 3, 'the first fire starts at ' + starts[0].toFixed(2) + ' s (earliest ' + N.first + ' s; later only when she is mid another move)');
   { const q = mkw(); calm(q); q.H.mech().cd = 0; let t0 = -1; for (let i = 0; i < 60 * (N.first + 10) && t0 < 0; i++) { q.step(1); if (q.e.mode === 'stand') q.e.modeT = 0; if (q.e.mode === 'fireTell') t0 = q.st.time; } ok(t0 >= N.first - 0.01 && t0 < N.first + 0.2, 'calm hall: the first fire starts at exactly ' + t0.toFixed(2) + ' s'); }
-  ok(starts.slice(1).every((s, i) => s - starts[i] >= 19.99 && s - starts[i] <= 25), 'then every 20 s at the soonest: ' + starts.map(s => s.toFixed(1)).join(', '));
+  ok(starts.slice(1).every((s, i) => s - starts[i] >= N.every - 0.01 && s - starts[i] <= N.every + 8), 'then every ' + N.every + ' s at the soonest: ' + starts.map(s => s.toFixed(1)).join(', '));
   // the tell and the burn, one by one
   const v = mkw(); calm(v); v.H.mech().cd = 0; ok(toTell(v) && v.st.time < N.first + 0.5, 'she starts it'); ok(v.e.mode === 'fireTell' && Math.abs(v.e.modeT - N.tell) < 0.1 && v.st.said.includes('THE FLOOR BURNS') && v.st.said.includes('!!'), 'tell: fireTell ' + N.tell + ' s, "!!" + "THE FLOOR BURNS"');
   v.st.said.length = 0; const gl = []; for (let i = 0; i < 140; i++) { v.step(1); gl.push(v.H.q5().state().fire && v.H.q5().state().fire.glow); } ok(v.st.said.includes('RING!'), 'the bell is told: "RING!" (bell ready, hoists down)'); ok(v.st.dmg.length === 0, 'nothing hurts during the tell'); ok(new Set(gl.filter(Boolean)).size >= 3, 'the floor grilles glow in three steps (glow ' + [...new Set(gl.filter(Boolean))].join('/') + ')');
   ok(toBurn(v), 'then she burns the floor'); const tB = v.H.q5().state().fire.tB; v.st.dmg.length = 0;
   v.step(Math.round(60 * 3.3)); const ticks = v.st.dmg.filter(d => d.o.name === 'THE THRONE FIRE');
-  ok(ticks.length === 6 && ticks.every(d => d.d === N.dmg && d.o.noKnock && d.o.unblockable), 'burn ' + N.burn + ' s: six ticks of ' + N.dmg + ' (' + ticks.length + ' x ' + (ticks[0] && ticks[0].d) + ' = ' + ticks.reduce((a, d) => a + d.d, 0) + '), noKnock = no stagger, even through the 0.8 s blow i-frames');
+  const capTicks = Math.min(Math.round(N.burn / N.tick), Math.ceil(N.capPct * 100 / N.dmg));   // maxHp 100 in this harness: the per-burn cap (GQ5Q1B) stops the drain once capPct x 100 hp is lost
+  ok(ticks.length === capTicks && ticks.every(d => d.d === N.dmg && d.o.noKnock && d.o.unblockable), 'burn ' + N.burn + ' s on a 100-hp seat: ' + capTicks + ' ticks of ' + N.dmg + ' then the per-burn cap (' + ticks.length + ' x ' + (ticks[0] && ticks[0].d) + ' = ' + ticks.reduce((a, d) => a + d.d, 0) + '), noKnock = no stagger, even through the 0.8 s blow i-frames');
   ok(ticks.every((d, i) => Math.abs(d.t - tB - N.tick * (i + 1)) < 0.06), 'ticks at 0.5 s intervals: ' + ticks.map(d => (d.t - tB).toFixed(2)).join(' '));
   ok(v.e.mode !== 'fireBurn' && v.H.q5().state().fire === null, 'the burn ends at 3.0 s');
   // a hoist rider is not burned; seats
@@ -147,7 +149,7 @@ console.log('== F. THE THRONE FIRE');
   c.heroes[0].x = hA.cx; c.heroes[1].x = hB.cx; c.heroes[2].x = c.A.x0 + 30 * TS; c.heroes[3].x = c.A.x0 + 4 * TS; ok(toTell(c), 'co-op: the fire starts');
   c.ring(); c.step(60 * 1); const riding = c.heroes[0].y === c.A.floor - 32 && c.heroes[1].y === c.A.floor - 32; ok(riding, 'two seats ring and ride a lift');
   toBurn(c); c.st.dmg.length = 0; c.step(60 * 3.4); const by = n => c.st.dmg.filter(d => d.who === c.heroes[n]).reduce((a, d) => a + d.d, 0);
-  const burnTotal = N.dmg * Math.round(N.burn / N.tick);
+  const burnTotal = N.dmg * Math.min(Math.round(N.burn / N.tick), Math.ceil(N.capPct * 100 / N.dmg));
   ok(by(0) === 0 && by(1) === 0 && by(2) === burnTotal && by(3) === burnTotal, 'co-op: the two on lifts take 0, the two on the floor take ' + burnTotal + ' each (' + [0, 1, 2, 3].map(by).join('/') + ')');
   // never starts: the gates
   const gate = (label, f) => { const g = mkw(); calm(g); g.H.mech().cd = 0; g.step(60 * N.first - 5 - 3); f(g); g.e.modeT = 0; g.e.mode = 'stand'; g.step(30); ok(g.H.q5().state().fires === 0 && g.e.mode !== 'fireTell', 'no fire: ' + label); return g; };
@@ -163,6 +165,31 @@ console.log('== F. THE THRONE FIRE');
   ok(sawFire >= 0 && sawWave > sawFire + N.tell + N.burn - 0.2, 'the 66% wave: the fire starts at ' + sawFire.toFixed(1) + ' s, the horn only after it (' + sawWave.toFixed(1) + ' s)');
   const wf = mkw(); calm(wf); wf.step(60 * 3); wf.H.mech().cd = wf.st.time + 999; wf.e.hp = Math.round(2400 * 0.6); wf.e.mode = 'stand'; wf.e.modeT = 0; let sw2 = -1; for (let i = 0; i < 60 * 25 && sw2 < 0; i++) { wf.step(1); if (wf.H.mech().wave) sw2 = wf.st.time; if (wf.e.mode === 'stand') wf.e.modeT = 0; }
   ok(sw2 > 0 && sw2 - 3 <= N.waveWait + 1, 'a fire that cannot start (bell dead for good) still lets the wave through after ' + N.waveWait + ' s (opened at +' + (sw2 - 3).toFixed(1) + ' s)'); }
+
+console.log('== C. GQ5Q1B: per-burn cap, even dial, tells, cover');
+{ const N = Q5N.fire;
+  // CAP: real-game tick size (17 = 5 raw x BOSS_HIT 2.15 x act dial ~1.6) on a 208-hp bar, all nine heroes
+  for (const h of HERO_MOVE_IDS) { const w = make({ mul: 17 / N.dmg, maxHp: 208 }); calm(w); w.H.mech().cd = 0; const hero = w.heroes[0]; hero.hero = h; hero.x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(Math.round(60 * 3.4));
+    const lost = 208 - hero.hp, cap = N.capPct * 208, tick = 17; if (!(lost <= cap + tick + 0.01 && lost >= cap - 1e-6)) ok(false, h + ' standing a full burn lost ' + lost + ' (cap ' + cap.toFixed(1) + ' + one tick ' + tick + ')'); }
+  { const w = make({ mul: 17 / N.dmg, maxHp: 208 }); calm(w); w.H.mech().cd = 0; const hero = w.heroes[0]; hero.x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(Math.round(60 * 3.4)); const lost = 208 - hero.hp;
+    ok(lost === 51 && lost <= N.capPct * 208 + 17 && lost < 0.30 * 208, 'CAP: an unanswered burn on a 208 bar costs ' + lost + ' (' + (100 * lost / 208).toFixed(0) + '%, was 102 = 49%); max allowed ' + (N.capPct * 208 + 17).toFixed(0)); }
+  ok(true, 'CAP: all ' + HERO_MOVE_IDS.length + ' heroes standing in the whole burn lose <= capPct x maxHp + one tick (no FAIL above)');
+  { const w = make({ mul: 17 / N.dmg, maxHp: 208, seats: 2 }); calm(w); w.H.mech().cd = 0; w.heroes[0].x = w.hoist(1).cx; w.heroes[1].x = w.A.x0 + 18 * TS; toTell(w); w.ring(); w.step(60 * 1); toBurn(w); w.step(Math.round(60 * 3.4));
+    ok(w.heroes[0].hp === 208 && w.heroes[1].hp < 208, 'CAP: 0 lost on a deck, ' + (208 - w.heroes[1].hp) + ' on the floor'); }
+  // EVEN: the engine hands every hero the same raw tick (main.js exempts THE THRONE FIRE from DUEL_HERO and CAP_HERO); the live dial is tools/gq5q1-tickdial.mjs (needs a page: not run here)
+  { const per = HERO_MOVE_IDS.map(h => { const w = make(); calm(w); w.H.mech().cd = 0; w.heroes[0].hero = h; w.heroes[0].x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(40); return w.st.dmg.filter(d => d.o.name === 'THE THRONE FIRE').map(d => d.d).join(','); });
+    ok(new Set(per).size === 1 && per[0].length > 0, 'EVEN: the raw tick is identical across all nine heroes (' + per[0] + ')');
+    const src = fs.readFileSync(path.join(ROOT, 'src/main.js'), 'utf8'); ok(/name === 'THE THRONE FIRE' \? 1/.test(src), 'EVEN: main.js damagePlayer0 exempts THE THRONE FIRE from the per-hero duel table'); }
+  // TELLS (Daniel: every tell >= 0.3 s)
+  ok(N.tell >= 0.3 && N.tell === 3.0, 'TELLS: fire.tell ' + N.tell + ' s (>= 0.3, plan 3.0)');
+  ok(N.tell / 3 >= 0.3, 'TELLS: each of the three grille glow steps lasts ' + (N.tell / 3).toFixed(2) + ' s (>= 0.3)');
+  ok(Q5N.hoist.hold - Q5N.hoist.warn >= 0.3, 'TELLS: the LOWERING warn lasts ' + (Q5N.hoist.hold - Q5N.hoist.warn).toFixed(2) + ' s (>= 0.3)');
+  { const v = make(); calm(v); v.H.mech().cd = 0; toTell(v); const gl = new Map(); let last = null; const t0 = v.st.time;
+    for (let i = 0; i < 60 * 3.2; i++) { v.step(1); const g = v.H.q5().state().fire && v.H.q5().state().fire.glow; if (g && g !== last) { gl.set(g, v.st.time); last = g; } }
+    const ts = [...gl.values()]; ok(gl.size === 3 && ts.slice(1).every((t, i) => t - ts[i] >= 0.99), 'TELLS: the three glow steps begin ' + ts.map(t => (t - t0).toFixed(2)).join(' / ') + ' s after the tell starts (1.0 s apart)'); }
+  // COVER: rung at the tell's frame 0 the hoists are still up when the burn ends
+  ok(hoistRowsAt(N.tell + N.burn) === Q5N.hoist.rows && hoistRowsAt(N.tell + N.burn + 0.4) === Q5N.hoist.rows, 'COVER: rung at the tell\'s first frame the decks are still fully up at tell + burn = ' + (N.tell + N.burn).toFixed(1) + ' s (hold ' + Q5N.hoist.hold + ', warn ' + Q5N.hoist.warn + ')');
+  ok(N.tell + N.burn < Q5N.hoist.warn, 'COVER: tell + burn ' + (N.tell + N.burn).toFixed(1) + ' < the LOWERING warn ' + Q5N.hoist.warn + ' (a ring at frame 0 never meets the rattle)'); }
 
 console.log('== S. SCORCHED');
 { const N = Q5N.scorch; const burnW = (o) => { const w = make(o); calm(w); w.H.mech().cd = 0; for (const h of w.heroes) h.x = w.A.x0 + 18 * TS; toTell(w); w.ring(); toBurn(w); return w; };
@@ -187,6 +214,29 @@ console.log('== S. SCORCHED');
   for (const h of HERO_MOVE_IDS) for (const plunge of [false, true]) { const w = burnW(); const hero = w.heroes[0]; hero.hero = h; onLift(w, hero); if (plunge) { hero.x = w.hoist(1).cx + 30; hero.y = w.A.floor - 50; hero.ground = false; hero.plunge = true; } w.setCur(hero);
     const r = w.H.q5Scorch(w.e, plunge); if (!r) ok(false, h + ' ' + (plunge ? 'plunge' : 'blow') + ' from a hoist: no SCORCHED'); }
   ok(true, 'all ' + HERO_MOVE_IDS.length + ' heroes (' + HERO_MOVE_IDS.join(', ') + '): a blow and a plunge from a hoist each scorch her' + (fails ? '' : ' (no FAIL above)')); }
+
+console.log('== B. GQ5Q1B: ranged scorch, the bot, the pyro skew');
+{ const burnW = () => { const w = make(); calm(w); w.H.mech().cd = 0; toTell(w); w.ring(); toBurn(w); return w; };
+  // RANGED: a shot from above a deck scorches; one from the floor does not
+  { const w = burnW(), hero = w.heroes[0]; hero.x = w.hoist(1).cx; hero.y = w.A.floor - 32 - 40; hero.ground = false; hero.vy = -30; w.setCur(hero); ok(w.H.q5Scorch(w.e, false) === true && w.e.scorch, 'RANGED: a shot from a jump above a deck scorches her (overHoist)'); }
+  { const w = burnW(), hero = w.heroes[0]; hero.x = w.A.x0 + 18 * TS; hero.y = w.A.floor; hero.ground = true; w.setCur(hero); const r = w.H.q5Scorch(w.e, false); ok(r === false && w.e.mode === 'fireBurn' && w.H.q5Take(w.e, 100) === 100, 'RANGED: a shot from the floor: no scorch, damage lands whole (x1.0 >= the 0.4 floor)'); }
+  { const w = burnW(), hero = w.heroes[0]; hero.x = w.A.x0 + 18 * TS; hero.y = w.A.floor - 60; hero.ground = false; w.setCur(hero); ok(w.H.q5Scorch(w.e, false) === false, 'RANGED: a jump off the floor, not over a deck: no scorch'); }
+  // BOT
+  const mkT = () => { const w = make(); calm(w); w.H.mech().cd = 0; toTell(w); return w; }; const Q = w => w.H.q5(), D = (w, P0, hid) => Q(w).labDuty(P0, w.e, w.bell, w.mech(), hid);
+  { const w = mkT(), P0 = w.heroes[0]; P0.x = w.bell.x - 100; const d = D(w, P0, 'pyro'); ok(d && d.why === 'ring-range' && d.swing && d.x === P0.x && d.face === 1, 'BOT: pyro in shot range rings the bell from where it stands (no walk): ' + (d && d.why));
+    P0.x = w.bell.x - 400; const f = D(w, P0, 'ranger'); ok(f && f.why === 'ring-walk' && f.x > P0.x && f.x < w.bell.x - 50 && !f.swing, 'BOT: ranger out of range walks only into shot range (x ' + (f && f.x | 0) + ', bell ' + (w.bell.x | 0) + ')');
+    const k = D(w, P0, 'knight'); ok(k && k.why === 'ring' && k.swing && Math.abs(k.x - (w.bell.x - 18)) < 1, 'BOT: a melee hero still walks to the bell and swings'); }
+  { const w = mkT(), P0 = w.heroes[0]; w.ring(); w.step(1); P0.x = w.hoist(2).cx + 40; P0.y = w.A.floor; Q(w).state().fire.spotX = w.A.x0 + Q5N.fire.spotW; const d = D(w, P0, 'knight');
+    ok(d && d.why === 'hoist' && Math.abs(d.x - w.hoist(2).cx) < 1, 'BOT: the deck nearest the HERO (east lift), not the one by her west spot (x ' + (d && d.x | 0) + '); decks already up skip the bell');
+    Q(w).state().fire.spotX = w.hoist(2).cx; P0.x = w.hoist(1).cx + 25; const d3 = D(w, P0, 'knight'); const dHer = Math.abs(w.hoist(2).cx - P0.x), dMine = Math.abs(w.hoist(1).cx - P0.x);
+    ok(d3 && Math.abs(d3.x - w.hoist(dHer - dMine <= 90 ? 2 : 1).cx) < 1, 'BOT: her spot\'s deck only when it costs <= 90 px more (' + dHer.toFixed(0) + ' vs ' + dMine.toFixed(0) + ' -> x ' + (d3 && d3.x | 0) + ')');
+    P0.x = w.hoist(1).cx + 55; Q(w).state().fire.spotX = w.hoist(2).cx; const d4 = D(w, P0, 'knight'); ok(d4 && Math.abs(d4.x - w.hoist(2).cx) < 1, 'BOT: ...and does take it when it is within 90 px (' + Math.abs(w.hoist(2).cx - P0.x).toFixed(0) + ' vs ' + Math.abs(w.hoist(1).cx - P0.x).toFixed(0) + ')'); }
+  { const w = burnW(), P0 = w.heroes[0]; P0.x = w.hoist(1).cx; P0.y = w.A.floor - 32; P0.ground = true; w.step(2); w.e.x = P0.x - 90; const d = D(w, P0, 'pyro'); ok(d && d.why === 'shoot' && d.swing && d.face === -1 && d.x === P0.x, 'BOT: pyro on a deck during the burn shoots from it, facing her (' + (d && d.why) + ')');
+    const m = D(w, P0, 'knight'); ok(m && m.why === 'plunge' && m.plunge, 'BOT: a melee hero on a deck beside her still plunges (' + (m && m.why) + ')'); }
+  // PYRO SKEW (flag ON 1.5; the OFF source row keeps 2.2)
+  { const src = fs.readFileSync(path.join(ROOT, 'src/main.js'), 'utf8').split('\r\n').join('\n');
+    ok(Q5N.pyroMul === 1.5 && /GQ5Q1_ON && src\.t === 'gqueen' && hero\(\) === 'pyro' \? GQ5Q1N\.pyroMul/.test(src), 'PYRO SKEW: flag ON pyro on her other moves = Q5N.pyroMul ' + Q5N.pyroMul + ' (main.js damagePlayer0)');
+    ok(/gqueen: \{ knight: 1, pyro: 2\.2 \}/.test(src), 'PYRO SKEW: DUEL_HERO.gqueen.pyro is still 2.2 (flag OFF row unchanged)'); } }
 
 console.log('== L. the lure, the grate, the galleries are gone');
 { const w = make(); w.e.mode = 'stand'; w.e.modeT = 99; w.e.x = w.bell.gate * TS + 8 + 300; w.ring(); let lure = false; for (let i = 0; i < 60 * 7; i++) { w.step(1); if (w.e.mode === 'lure') lure = true; }

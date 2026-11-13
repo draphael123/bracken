@@ -914,12 +914,12 @@ export function makeGQueenHands(ctx) {
   }
   H.mechDraw = mechDraw;
   /* the LAB BOT's duty (src/lab.js): crank the winch while a wave is up, ring the bell when it is ready and she is free, then stand clear of the grate's column while she storms. null = no duty. */
-  H.labDuty = P0 => {
+  H.labDuty = (P0, hid) => {
     const e = q(), M = S && S.mech, b = bellProp(); if (!e || !M || !inHall(e) || !b) return null;
     const A = L().arena, w = winchAt(), gx = b.gate * TS + 8;
     if (M.wave && M.wave.state === 'open') return { x: w.x, face: sign(w.x - P0.x), swing: true, why: 'winch' };
     if (M.lure) return { x: Math.max(A.x0 + 24, Math.min(A.x1 - 24, gx + (P0.x < gx ? -80 : 80))), face: sign(e.x - P0.x), swing: false, why: 'clear' };
-    if (G5) return G5.labDuty(P0, e, b, M);   /* (claude/gq5q1) ring on the fire's tell, climb the hoist beside her, plunge onto her */
+    if (G5) return G5.labDuty(P0, e, b, M, hid);   /* (claude/gq5q1) ring on the fire's tell, climb the hoist beside her, plunge onto her */
     if (now() >= M.cd && safeToLure(e) && !(b.open > 0)) return { x: b.x + 18, face: -1, swing: true, why: 'bell' };
     return null;
   };

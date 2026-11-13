@@ -21,8 +21,9 @@ export const Q5 = gq5q1On();
 export const Q5N = {
   bellCd: 16,
   hoist: { cols: [7, 13, 20], w: 4, rows: 2, rise: 0.6, hold: 7.0, warn: 6.5, sink: 0.5 },   // the plan's h5-8 / h19-22 / h34-37, moved: see the report (the east hearth moved 84 px west; the centre lift clears the bell; the dais starts at h29). GQ5Q1-TUNE knob 4 (11-12): hold 8.0 -> 7.0 (per the tune order; knobs 1-3 were no-moves)
-  fire: { tell: 2.5, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 20, run: 260, waveWait: 17, spotW: 72 },   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 17%->11%, no-move, kept). knob 2: first 12 -> 15 (more time to reach a hoist before the first, currently-unanswerable, fire)
+  fire: { tell: 3.0, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 26, run: 260, waveWait: 17, spotW: 72, capPct: 0.20 },   // GQ5Q1B REWORK (11-12, gq5q1-rework-plan.md): tell 2.5 -> 3.0 (grille steps 1.0 s each), every 20 -> 26, capPct 0.20 = one burn costs at most ~20% of the bar (+ one tick)   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 17%->11%, no-move, kept). knob 2: first 12 -> 15 (more time to reach a hoist before the first, currently-unanswerable, fire)
   scorch: { stun: 3.0, mul: 1.25, cap: 0.12, ward: 3.0, grace: 1.2 },   // GQ5Q1-TUNE knob 3 (11-12): cap 15% -> 12% (per the plan's tune-back order; knobs 1-2 were no-moves)
+  pyroMul: 1.5,   // GQ5Q1B REWORK: flag ON only - DUEL_HERO.gqueen.pyro (2.2, calibrated for her dodgeable single-target moves) -> 1.5 in this hall, the fire took away the dodge room (main.js damagePlayer0); OFF keeps 2.2
   hallHp: 2400,   // GQ5Q1-TUNE extra round (11-12), flag ON only (OFF/EHP.gqueen stays 2400 either way): TRIED 1900 (-21%) at n=6 - 17% [6-39], a step DOWN from knob 4's 22% [9-45], not an improvement (pyro still 0/6, identical death pattern to every other table). REVERTED to 2400 (the wiring stays, for a future lane): this is not the working lever gq4tune/gq5p-tune found, unlike on those bosses
 };
 /* PURE: how far up the hoists are at `age` s after the ring (rows 0..rows). Rise = two steps over 0.6 s; sink = two steps over 0.5 s ending at hold + sink. */
@@ -150,7 +151,7 @@ export function makeGQ5Q1(env) {
   /* called on every blow that reaches her, BEFORE her resist: P1 = the hero who struck, plunge = it is a plunge (FROM ABOVE / FIREDROP) */
   E.onHurt = (e, plunge, P1) => {
     if (!st || e.mode !== 'fireBurn' || !st.fire) return false; P1 = P1 || ctx.P(); if (!P1) return false;
-    const onNow = !!E.hoistOf(P1), recent = !!plunge && tn() - (P1.q5Hoist ?? -99) <= N.scorch.grace;
+    const onNow = !!E.overHoist(P1), recent = !!plunge && tn() - (P1.q5Hoist ?? -99) <= N.scorch.grace;
     if (!onNow && !recent) return false;
     return scorch(e, plunge ? 'plunge' : 'blow');
   };
@@ -190,8 +191,11 @@ export function makeGQ5Q1(env) {
       F.tickN++;
       env.seats(P1 => {
         if (P1.dead || E.overHoist(P1)) return;
+        const lost = F.lost || (F.lost = new Map()), capHp = N.fire.capPct * (P1.maxHp || 100);   // per-burn cap (GQ5Q1B): once this burn has cost capPct of the bar the rest of its ticks are skipped (<= cap + one tick)
+        if ((lost.get(P1) || 0) >= capHp - 1e-6) return;
+        const hp0 = P1.hp;
         if (P1.inv > 0 && tt - (P1.q5TickAt ?? -9) < N.fire.tick + 0.1) P1.inv = 0;   // the burn is a drain: its own 0.8 s blow-invulnerability must not swallow the next tick
-        const r = env.gqRed(P1.x, N.fire.dmg, 'THE THRONE FIRE', { noKnock: true }); if (r) { P1.q5TickAt = tt; st.burned++; }
+        const r = env.gqRed(P1.x, N.fire.dmg, 'THE THRONE FIRE', { noKnock: true }); if (r) { P1.q5TickAt = tt; st.burned++; lost.set(P1, (lost.get(P1) || 0) + Math.max(0, hp0 - P1.hp)); }
       });
     }
   }
@@ -234,15 +238,29 @@ export function makeGQ5Q1(env) {
   };
 
   /* ---- THE LAB BOT's duty (src/lab.js): ring the bell on the fire's tell, climb the hoist beside her, plunge onto her during the burn ---- */
-  E.labDuty = (P0, e, b, M) => {
+  /* GQ5Q1B: the bot's answers (the table measures the design, not the walk). hid = the hero id; ranged heroes ring from range and shoot from the deck; everyone runs to the deck nearest THEM
+     (her spot's deck only if it costs <= ~1 s more); decks already up when the tell starts are used without the bell. */
+  const RANGED = hid => hid === 'pyro' || hid === 'ranger', SHOT = 140, WALKPX = 90;
+  E.labDuty = (P0, e, b, M, hid) => {
     if (!st || !b || !e) return null; const g = G0(), tt = tn(), F = st.fire;
-    if (!F) return null;
-    const near = g.hs.reduce((a, h) => (Math.abs(h.cx - F.spotX) < Math.abs(a.cx - F.spotX) ? h : a), g.hs[0]);
-    const onNear = E.hoistOf(P0) === near;
-    if (st.phase === 'down' && F.phase === 'tell' && tt >= (M.cd || 0)) return { x: b.x - 18, face: 1, swing: true, why: 'ring' };
+    if (!F) return null; const ranged = RANGED(hid), dxe = e.x - P0.x;
+    const nearTo = x => g.hs.reduce((a, h) => (Math.abs(h.cx - x) < Math.abs(a.cx - x) ? h : a), g.hs[0]);
+    const mine = nearTo(P0.x), hers = nearTo(F.spotX);
+    const deck = (hers !== mine && Math.abs(hers.cx - P0.x) - Math.abs(mine.cx - P0.x) <= WALKPX) ? hers : mine;
+    if (st.phase === 'down' && F.phase === 'tell' && tt >= (M.cd || 0)) {
+      if (ranged) { const dxb = b.x - P0.x; if (Math.abs(dxb) <= SHOT) return { x: P0.x, face: sgn(dxb), swing: true, why: 'ring-range' }; return { x: b.x - sgn(dxb) * (SHOT - 20), face: sgn(dxb), swing: false, why: 'ring-walk' }; }
+      return { x: b.x - 18, face: 1, swing: true, why: 'ring' };
+    }
     if (st.phase !== 'down') {
-      if (onNear || E.overHoist(P0)) { if (F.phase === 'burn') return { x: e.x, face: sgn(e.x - P0.x), swing: false, jump: !!E.hoistOf(P0), plunge: true, why: 'plunge' }; return { x: near.cx, face: sgn(e.x - P0.x), swing: false, why: 'wait' }; }
-      return { x: near.cx, face: sgn(near.cx - P0.x), swing: false, jump: Math.abs(P0.x - near.cx) < 40, why: 'hoist' };
+      const on = E.hoistOf(P0) || E.overHoist(P0);
+      if (on) {
+        if (F.phase === 'burn') {
+          if (ranged) return { x: P0.x, face: sgn(dxe), swing: true, why: 'shoot' };
+          if (Math.abs(dxe) <= 120) return { x: e.x, face: sgn(dxe), swing: false, jump: !!E.hoistOf(P0), plunge: true, why: 'plunge' };
+        }
+        return { x: P0.x, face: sgn(dxe), swing: false, why: 'wait' };
+      }
+      return { x: deck.cx, face: sgn(deck.cx - P0.x), swing: false, jump: Math.abs(P0.x - deck.cx) < 40, why: 'hoist' };
     }
     return null;
   };
