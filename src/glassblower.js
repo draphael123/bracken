@@ -19,8 +19,8 @@
 import { BC5_SAY } from './buried-city5.js';
 
 export const GB = {
-  hp: 1500, w: 18, h: 30, markH: 46,
-  rest: 0.5, floor: 0.4, openMul: 1.75, openT: 4.5, openCap: 0.14, wardT: 2.0, glintT: 8.0, staggerT: 0.5,   /* (claude/bc5fix) openT 3.5 -> 4.5 s (a hero who strikes the glass in the pocket must hop the stub and walk to him), glintT 7 -> 8 s: the desktop knight was 0/5 */
+  hp: 1700, w: 18, h: 30, markH: 46,
+  rest: 0.5, floor: 0.4, openMul: 1.75, openT: 4.2, openCap: 0.14, wardT: 2.0, glintT: 8.0, staggerT: 0.5,   /* (claude/bc5proof 11-13: n=36 measured 81% > 70, so hp 1500 -> 1700 and openT 4.5 -> 4.2) (claude/bc5fix) openT 3.5 -> 4.5 s (a hero who strikes the glass in the pocket must hop the stub and walk to him), glintT 7 -> 8 s: the desktop knight was 0/5 */
   walk: 50, keep: 44, turn: 0.45, gap: [1.2, 1.0],   /* (claude/bc5fix) the breath between his moves 1.0/0.8 -> 1.2/1.0 s; every windup below is 0.15-0.25 s longer (tell >= 0.3 s always) */
   gobTell: 1.0, gobFly: 0.7, gobHot: 2.4, gobStep: 3.0, gobR: 7, gobH: 22,
   blastTell: 1.2, blastT: 0.45, blastLen: 112, blastH: 24,   /* the desktop's knight took 118-245 a fight from THE BLOWPIPE: a longer tell (a roll fits twice), a shorter cone */
