@@ -39,6 +39,7 @@ import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
 import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
 import { vaultSilver } from './relics.js';   /* WHAT A FORMER RELIC CACHE PAYS NOW: one of the level's three silvers (a 'vault' marker holds the spot through the build) */
+import { buildLongWater3, lw3On, shadowLongwater } from './longwater3.js';   /* (claude/longwater3) THE LONG WATER 3: SALTREACH on the tide kit, behind LW3_SHIPS / ?lw3=1 (src/longwater3.js) */
 import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
 import { findDeadEnds } from './deadends.js';
@@ -8046,7 +8047,7 @@ export const LEVELS = [
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
   { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: ROAD_OPEN.undercrown ? 'kitchengate' : 'storm' },   /* (claude/kitchengate, Daniel 10-24: THE KITCHEN GATE comes between THE UNDERCROWN and here - the first time inside the castle; a save that had Highcrown open keeps it: src/main.js progDefaults kitchenRoadMig, PROG.crownOpen) */   /* (claude/undercrown2: through THE UNDERCROWN once its road is open) */   /* (2026-09-23: the Ore Road is the way to her gate now) */
-  { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
+  { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: () => (lw3On() ? buildLongWater3(longWater(), T, TS) : longWater()), needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'STRIKE A BREECH AND THE GUN CLEARS ITS LINE. WHEN HIS FLAG RUNS RED, HIS GUNS CLEAR YOURS.', build: theFlotilla, needs: 'reef' },
   { id: 'hurricane', name: 'THE HURRICANE DECK', sub: 'one ship, one storm', rule: 'THE STORM TELLS YOU WHEN: JUMP WITH HER ROLL AND THE WIND, SWIM WHEN SHE FLOODS - AND CLIMB, SHE IS GOING DOWN.', build: theHurricane, needs: 'flotilla' },
@@ -8937,4 +8938,5 @@ import { STUCK as CW3_STUCK, STUCK_SIGNS as CW3_STUCK_SIGNS } from './stuck-spot
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && CAST_SWAPS[lv.id]) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
+import { STUCK as LW3_STUCK, STUCK_SIGNS as LW3_STUCK_SIGNS } from './stuck-spots.js'; shadowLongwater({ AMBUSH, ELITES, TIDE_CRABS, STUCK: LW3_STUCK, STUCK_SIGNS: LW3_STUCK_SIGNS, STASH, CHECK_DROP });   /* (claude/longwater3) with ?lw3=1 the tables that name master's Saltreach by column read LW3's rows (src/longwater3.js LW3_TABLES); off, master's */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */

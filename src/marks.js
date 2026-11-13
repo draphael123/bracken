@@ -985,6 +985,9 @@ export const tellKey = e => { const mode = e.t === 'archer' && e.draw > 0.3 && !
 export const heightOf = k => HEIGHT[k] || '';
 /* THE LANE BESIDE THE MARK: 'duck' over a high blow, 'jump' over a blow answered with a jump, '' over the rest */
 export const laneOf = k => HEIGHT[k] === 'high' ? 'duck' : (ANSWER[k] || ANSWER['*|' + k.split('|')[1]]) === 'jump' ? 'jump' : '';
+/* (claude/longwater3) THE TIDE-POOL CRAB (src/pool-crab.js PC_TELLS) and THE TIDE HERALD 2's one new mode (src/tide-herald.js: his other tells keep master's herald rows) */
+for (const [t, m, mk, an, ht] of [['poolcrab', 'pinchTell', '!', 'block', 'low'], ['poolcrab', 'emerge', '', '', ''], ['poolcrab', 'digTell', '', '', ''], ['herald', 'seize', '', '', '']]) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
+
 export function markOf(e) {
   const mode = e.t === 'archer' && e.draw > 0.3 && !(typeof e.mode === 'string' && e.mode.endsWith('Tell')) ? 'draw' : e.mode;
   if (e.elite && ('*|' + mode) in MARK) return MARK['*|' + mode];

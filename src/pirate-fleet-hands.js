@@ -8,7 +8,7 @@
 //                                    Hauled stays hauled: the mark 'pf:haul:<id>' (through death and reload). THE FREEBOOTER's sloop (boss: true) is his to haul.
 //   GRAPPLE WINCHES (ents)           a blow on the drum fires its line at its prize. A winch on a boat (on: float id) rides the boat.
 // main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawBack, drawMover, drawOver, hud, read, haul(id), unhaul(id), prizeK(id), deckY(id).
-// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, tide(ev), pull(e), verb(v, hb), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,gg,t,P), noStreaks, noPosts }
+// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, step(dt), tide(ev), pull(e), pre(hb), verb(v, hb, pre), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,t,P), noRespawn, noStreaks, noPosts }
 // (all optional; a hook that returns true has CLAIMED the event, the generic words/sounds are skipped). Nothing steps the kit but this file: no level keeps a second TK / PF.
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
 import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
@@ -28,7 +28,7 @@ export function makePirateFleetHands(ctx) {
   H.clear = () => {
     const L = lv(); TK = null; PF = null; S = null; if (!on()) return;
     const marks = ctx.marks();
-    TK = tideInit(L, { off: marks }); tideRespawn(TK);   /* a load or a respawn: every swell to its safe phase with its grace (docs: a party wipe / checkpoint reload) */
+    TK = tideInit(L, { off: marks }); if (!(hooks() && hooks().noRespawn)) tideRespawn(TK);   /* a load or a respawn: every swell to its safe phase with its grace (docs: a party wipe / checkpoint reload) */
     PF = pullInit(L, { off: marks });
     S = { L, told: {}, prizes: {}, lines: [], creak: 0, foam: {}, last: {} };
     for (const p of L.pfPrizes || []) S.prizes[p.id] = { ...p, k: !p.boss && marks.has(PFH.haulKey(p.id)) ? 1 : 0, hauling: false, lineT: 0 };
@@ -59,6 +59,7 @@ export function makePirateFleetHands(ctx) {
       if (e.t === 'phase' && e.ph === 'rise' && !S.told.rise) { const P = ctx.hero(); if (P && !P.dead && nearBoat(P)) { S.told.rise = 1; ctx.number(P.x, P.y - 40, PF_SAY.rising, '#dff2f8'); } }
     }
     for (const id in S.foam) S.foam[id] = Math.max(0, S.foam[id] - dt * 0.5);
+    if (hk && hk.step) hk.step(dt);   /* a level's own say over the sea between the step and the write (the Herald's flats) */
     tideApply(TK, L.pools, ctx.poolLevel);
     const g0 = gauge(TK, (hk && hk.signal) || L.pullSignal || 'swell');
     const pev = pullStep(PF, dt, { tidePh: g0 ? g0.ph : null });
@@ -96,7 +97,7 @@ export function makePirateFleetHands(ctx) {
   /* ---------- A BLOW ---------- */
   H.strike = hb => {
     if (!TK || !hb) return; const L = lv();
-    const v = tideStrike(TK, hb), hk = hooks(), claimed = v ? !!(hk && hk.verb && hk.verb(v, hb)) : (hk && hk.miss && hk.miss(hb), false);
+    const hk = hooks(), pre = hk && hk.pre ? hk.pre(hb) : undefined, v = tideStrike(TK, hb), claimed = v ? !!(hk && hk.verb && hk.verb(v, hb, pre)) : (hk && hk.miss && hk.miss(hb), false);
     if (v && !claimed) { if (v.t === 'lever') ctx.marks().add(v.key); ctx.sound('clank'); }
     for (const w of L.pfWinches || []) { const p = winchAt(w);
       if (!(hb.l < p.x + 10 && hb.r > p.x - 10 && hb.t < p.y - 2 && hb.b > p.y - 24)) continue;

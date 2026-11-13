@@ -107,6 +107,7 @@ const GADGET_WORD = /rune|lock|plate|glyph|lever|switch|lift|hoist|winch|carouse
 SYSTEM_ARRAYS.push('cw3Bells', 'cw3Sluices', 'cw3Levers', 'cw3Lamps', 'pulls', 'cw3Boats');   /* (claude/causeway3w) CAUSEWAY 2's bells, sluice wheels, floodgate lever, storm lamps, currents and tide boats (L.cw3*, ?cw3=1); 'causeway' is not GATED: master's misses the bar flag-off */
 const isGadget = t => ALWAYS_GADGET.has(t) || GADGET_WORD.test(t) || (t in THREAT && THREAT[t] === 0 && (kindUsers().get(t) || 0) <= 3);
 const arena = L => L.arena || null;
+SYSTEM_ARRAYS.push('lw3Boats');   /* (claude/longwater3) SALTREACH's boats (kit floats) are a system; the bells, wheels, traps and moorings are ents (lw3bell, lw3sluice, lw3trap, lw3moor). LONG WATER 3 is NOT gated here (master's longwater misses the bar with the flag off): run LW3=1 node tools/level-quality.mjs longwater */
 const setSpan = (xs, gap = 12) => { xs = [...xs].sort((a, b) => a - b); let n = 0, last = -1e9; for (const x of xs) { if (x - last > gap) n++; last = x; } return n; };
 
 /* LEVEL-SPECIFIC ENT KINDS: how many campaign levels place each kind, once, for the whole run */
