@@ -1,4 +1,4 @@
-import { CAST_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
+import { CAST_SWAPS, DM_SWAPS, castSwaps } from './cast-pass.js';   /* (claude/foecast) the cast pass: data-only foe swaps, the last-but-one wrapper */
 import { VARIETY, TIDE_CRABS, varietyPass } from './variety-pass.js';   /* (claude/variety) the sea set's shock eel: every third eel in the Keep and the Deep */
 import { SWEEP_SKINS, sweepSkins } from './goblin-sweep.js';   /* (claude/goblinsweep) NO LIVING GOBLINS past the Goblin Queen: the sprinkled snuffers and the lawn's hound wear skins */
 import { THIN, CHECK_DROP } from './checkpoint-thin.js';
@@ -8929,5 +8929,5 @@ for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.b
 import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (claude/stuckfix): a sign at the point of use, kept in src/stuck-spots.js */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
-for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && CAST_SWAPS[lv.id]) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
+for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (CAST_SWAPS[lv.id] || DM_SWAPS[lv.id])) lv.build = (...a) => castSwaps(b(...a), lv.id); }   /* (claude/foecast) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */

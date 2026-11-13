@@ -548,6 +548,17 @@ export function makeGeomancer(api) {
       api.yardSay && api.yardSay('STONES ' + standing() + '/' + cap(), STONE.rune);
       return true; }
     return false; }
+  /* (claude/dmheroes-b) THE DM ROWS' STONE SIDE (DM.on only; nothing calls these otherwise). stoneXs: the centres of her standing stones (STONE FIST erupts from the nearest). plantAtX: SLAB SLIDE plants ONE stone where the slab stopped
+     (walking back toward her to the first free floor column; a full board plants nothing - nothing is evicted, a ready AVALANCHE is never stolen; the same cell rules as the knee stone). */
+  const stoneXs = () => pieces.filter(p => p.capped && !p.gone).map(p => (p.x0 + p.x1) / 2);
+  function plantAtX(x, dir) { const P = api.P;
+    if (standing() >= cap()) return false;
+    const base = Math.floor(x / TS), d = dir >= 0 ? 1 : -1;
+    for (let k = 0; k <= 3; k++) { const tx = base - d * k, fy = floorRow(tx, Math.floor((P.y - 1) / TS), 2); if (fy === null || !freeCell(tx, fy - 1)) continue;
+      if (pieces.some(q => !q.gone && q.cells.some(c => c.tx === tx))) continue;
+      const r = erupt(tx, fy, 1, 'pillar', { noHero: true, hurt: false, noLaunch: true }); if (!r.piece) continue; r.piece.knee = true;
+      plantAt = api.time; stats.slabPlants = (stats.slabPlants || 0) + 1; api.ringAt(tx * TS + 8, fy * TS - 2, 12, STONE.rune, 0.2); blowPulse(); return true; }
+    return false; }
   /* (claude/geopop e) DETONATE. detonateReady: a stone stands, the 5 s are up, none already going. detonate() starts the slam; detFire() (tell s later) blows every stone still standing */
   /* the bot's test (src/lab.js DET_BOT): two or more stones standing and a foe within the blast radius of one of them */
   const detonateWorth = () => { if (!detonateReady() || standing() < 2 || avalancheReady()) return false; const r = GEO.detonate.r;
@@ -872,6 +883,6 @@ export function makeGeomancer(api) {
     g.fillStyle = STONE.hi; g.fillRect(x - Math.round(r / 2), y - r + 1, Math.max(2, r - 1), 1);
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
-  return { upAir, UP_AIR, shardList: () => shards, collapsing: () => col, recall, recallReady, recalls: () => recalls, stoneAt: (tx, ty) => { const g = grid(); for (const p of pieces) if (!p.gone && p.grid === g) for (const c of p.cells) if (c.tx === tx && c.ty === ty) return true; return false; }, hasStones: () => pieces.length > 0, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, blowPulse, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, lastDet: () => lastDet ? { blasts: lastDet.blasts, shards: Math.max(0, ...lastDet.tag.sh.values()) } : null, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
+  return { upAir, UP_AIR, shardList: () => shards, collapsing: () => col, recall, recallReady, recalls: () => recalls, stoneAt: (tx, ty) => { const g = grid(); for (const p of pieces) if (!p.gone && p.grid === g) for (const c of p.cells) if (c.tx === tx && c.ty === ty) return true; return false; }, hasStones: () => pieces.length > 0, tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = stats.rams = stats.gnaws = stats.topples = stats.fists = 0; }, earthfall, baseGrid, update, draw, clear, avalanche, avalancheReady, topple: avalanche, erupts: () => erupts, fistHit, fillBoard, standing, fistPlant, stoneXs, plantAtX, fistSpike, blowPulse, detonate, detonateReady, detonateWorth, detonating: () => !!det, detCd: () => detCd, plantAt: () => plantAt, decals: () => decals, lastDet: () => lastDet ? { blasts: lastDet.blasts, shards: Math.max(0, ...lastDet.tag.sh.values()) } : null, boardFill, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
     shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, shards: () => shards, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }
