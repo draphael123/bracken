@@ -14,6 +14,11 @@ import { gauge, floatY, kOf } from './tide-kit.js';
 import { SPOUT, SR } from './siren-rocks.js';
 import * as NGM from './naga-guard.js';
 import * as NQM from './naga-queen.js';
+import * as SKA from './redraw/siren_rocks_art.js';
+import * as GAA from './redraw/naga_guard_art.js';
+import * as QAA from './redraw/naga_queen_art.js';
+import * as SD from './redraw/sea_dial.js';
+import * as PFA from './redraw/pirate_fleet_art.js';
 const R = Math.round;
 export const SR_HANDS = { regrow: 1.5, stoneW: 10, stoneH: 22, spoutW: 14 };
 export const SR_SAY = { silent: 'SILENT: IT PULLS NOTHING NOW', regrow: 'THE STONE HUMS AGAIN', pulled: 'THE SONG HAS YOU', spout: 'THE BLOWHOLE THROWS YOU', bell: 'THE TIDE COMES IN' };
@@ -27,7 +32,7 @@ export function makeSirenRocksHands(ctx) {
   H.on = on;
   H.owns = e => e.t === 'nagaguard' || e.t === 'nagaqueen';
   H.clear = () => {
-    S = null; Q = null; WORD = null; if (!on()) return;
+    S = null; Q = null; WORD = null; seen.clear(); if (!on()) return;
     const L = lv();
     S = { told: {}, stones: {}, holes: (L.srBlowholes || []).map((b, i) => ({ ...b, ph: 'quiet', t: 0.6 + i * 1.3, keyed: new Set() })), foam: 0, spray: [] };
     for (const s of L.srStones || []) S.stones[s.id] = { ...s, broken: false, quietT: 0, glow: 0, hum: false };
@@ -108,6 +113,7 @@ export function makeSirenRocksHands(ctx) {
       if (s.broken) { s.quietT -= dt;
         if (s.quietT <= SR_HANDS.regrow && !s.hum) { s.hum = true; if (near(stoneX(s), 360)) ctx.sound('hum'); }
         if (s.quietT <= 0) { s.broken = false; s.hum = false; if (f) f.still = false; if (!S.told.regrow && near(stoneX(s), 240)) { S.told.regrow = 1; ctx.number(stoneX(s), stoneFeet(s) - 34, SR_SAY.regrow, '#e2c8ff'); } } }
+      if (s.struckT > 0) s.struckT = Math.max(0, s.struckT - dt);
       const fs = f ? f.s : 0, singing = s.arena ? !!(Q && Q.singing) : fs > 0.2, tell = f && f.ph === 'tell' && !f.still;
       s.glow += ((singing ? 1 : tell ? 0.45 : 0) - s.glow) * Math.min(1, dt * 6); }
     /* THE BLOWHOLES */
@@ -131,7 +137,7 @@ export function makeSirenRocksHands(ctx) {
         return { l: x - SR_HANDS.stoneW / 2 - 2, r: x + SR_HANDS.stoneW / 2 + 2, t: feet - SR_HANDS.stoneH, b: feet - 2 }; }, strike: () => breakStone(s) }); }
     return out; };
   function breakStone(s) {
-    s.broken = true; s.quietT = s.quiet; s.hum = false; const f = field(s.id); if (f) f.still = true;
+    s.broken = true; s.quietT = s.quiet; s.hum = false; s.struckT = 0.5; const f = field(s.id); if (f) f.still = true;
     const x = stoneX(s), feet = stoneFeet(s);
     ctx.sound('crack'); ctx.shake(2); ctx.burst(x, feet - 12, 18, ['#f4ecff', '#e2c8ff', '#2a2830', '#cfc0e8'], 110, 0.6, -60);
     if (!S.told.silent) { S.told.silent = 1; ctx.number(x, feet - 36, SR_SAY.silent, '#e2c8ff'); }
@@ -145,66 +151,39 @@ export function makeSirenRocksHands(ctx) {
     const oy = m.y, y = floatY(K(), m.fid); if (y != null) m.y = y; m.x = m.x0; m.dx = 0; m.dy = m.y - oy; return true;
   };
 
-  /* ---------- DRAWING (GREYBOX: the art pass owes the stones, the kelp, the pumice, the blowholes, the bell, the wreck, the naga sheets, the spire) ---------- */
+  /* ---------- DRAWING (claude/srart: the art pass - src/redraw/siren_rocks_art.js the kit, naga_guard_art.js / naga_queen_art.js the two sheets; draw-only, no number or box moved) ---------- */
+  const seen = new Map();   /* a foe we drew alive: when it is dead we play its fall (once) */
+  const DEAD_T = { nagaguard: 1.0, nagaqueen: 2.4 };
   H.drawBack = (g, cx, cy, t) => {
-    if (!S) return; const VW = ctx.VW();
+    if (!S) return; const VW = ctx.VW(), vw = ctx.view(), VH = vw.y1 - vw.y0;
+    SKA.drawWreck(g, cx, cy, t, VW); SKA.drawDressing(g, cx, cy, t, VW, VH, (x, y) => ctx.isSolid(x, y), lv().W || 410);
     for (const id in S.stones) { const s = S.stones[id], x = R(stoneX(s) - cx), y = R(stoneFeet(s) - cy); if (x < -30 || x > VW + 30) continue;
-      if (s.glow > 0.05) { g.globalAlpha = 0.25 * s.glow; g.fillStyle = '#e2c8ff'; g.beginPath(); g.arc(x, y - 12, 14 + 6 * s.glow + Math.sin(t * 8) * 2 * s.glow, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-      if (s.broken) { g.fillStyle = '#26232c'; g.fillRect(x - 5, y - 8, 10, 8); g.fillStyle = '#4a4458'; g.fillRect(x - 4, y - 9, 3, 2); g.fillRect(x + 1, y - 7, 3, 2);
-        if (s.hum) { g.globalAlpha = 0.4 + 0.4 * Math.sin(t * 14); g.fillStyle = '#e2c8ff'; g.fillRect(x - 1, y - 12, 2, 4); g.globalAlpha = 1; } continue; }
-      g.fillStyle = '#26232c'; g.fillRect(x - 5, y - 22, 10, 22); g.fillStyle = '#3a3644'; g.fillRect(x - 5, y - 22, 3, 22);
-      g.fillStyle = s.glow > 0.3 ? '#f4ecff' : '#cfc0e8'; g.fillRect(x - 1, y - 19, 2, 14); g.fillRect(x - 3, y - 13, 6, 1);   /* the pearl vein */
-      if (s.arena && Q && Q.singing && Math.sin(t * 6) > 0) { g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 30, 3, 3); }   /* strike me while she sings */ }
+      const chip = !!(s.arena && Q && Q.singing && !s.broken);
+      if (s.broken && !(s.struckT > 0)) SKA.drawStone(g, x, y, { state: s.hum ? 'regrow' : 'silent' }, t);
+      else SKA.drawStone(g, x, y, { state: s.glow > 0.7 ? 'song' : s.glow > 0.2 ? 'hum' : 'idle', glow: s.glow, struck: s.struckT > 0 ? Math.min(1, s.struckT / 0.5) : 0, chip }, t); }
+    /* THE SONGS (the reusable pull visual) and the surf's currents (the fleet's generic streaks) */
+    const pf = PF(); if (pf) for (const fs of pf.fields) { if (fs.f.song || fs.f.queen) SKA.drawSong(g, fs, cx, cy, t, VW, 'song'); else PFA.drawStreaks(g, fs, cx, cy, t, VW); }
     for (const b of S.holes) { const x = R(b.x * TS + 8 - cx), y = R((b.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
-      g.fillStyle = '#0e0c12'; g.fillRect(x - 7, y - 2, 14, 3);
-      if (b.ph === 'boom') { g.fillStyle = 'rgba(223,242,248,0.6)'; g.fillRect(x - 5, y - 4 - R(Math.sin(t * 30) * 2), 10, 2); }
-      if (b.ph === 'spout') { g.fillStyle = 'rgba(223,242,248,0.55)'; const hh = R((b.y - b.top + 1) * TS * Math.min(1, (SPOUT.spout - b.t) / 0.2)); g.fillRect(x - 6, y - hh, 12, hh); } }
-    for (const T0 of K().tides) for (const v of T0.verbs) { if (v.t !== 'bell') continue; const x = R(v.x * TS + 8 - cx), y = R((v.y + 1) * TS - cy);
-      g.fillStyle = '#3a3a44'; g.fillRect(x - 1, y - 22, 2, 22); g.fillRect(x - 6, y - 22, 12, 2); const sw = R(Math.sin(t * 18) * 3 * v.swing);
-      g.fillStyle = '#b08a3a'; g.fillRect(x - 4 + sw, y - 20, 8, 8); g.fillStyle = '#e0c070'; g.fillRect(x - 3 + sw, y - 19, 2, 6); }
+      SKA.drawBlowhole(g, x, y, b.ph, t, (b.y - b.top + 1) * TS * Math.min(1, (SPOUT.spout - b.t) / 0.2)); }
+    for (const T0 of K().tides) for (const v of T0.verbs) { if (v.t !== 'bell') continue; const x = R(v.x * TS + 8 - cx), y = R((v.y + 1) * TS - cy); SKA.drawBell(g, x - 4, y, v.swing || 0, t); }
   };
-  H.drawMover = (g, m, cx, cy) => {
-    if (!m.sr) return false; const x = R(m.x - cx), y = R(m.y - cy), w = R(m.w);
-    g.fillStyle = '#b8b4ac'; g.fillRect(x, y, w, 8); g.fillStyle = '#d8d4cc'; g.fillRect(x + 1, y, w - 2, 2); g.fillStyle = '#8a8680';
-    for (let i = 3; i < w - 2; i += 5) g.fillRect(x + i, y + 4, 2, 2); return true;
-  };
+  H.drawMover = (g, m, cx, cy, t = 0) => { if (!m.sr) return false; SKA.drawRaft(g, R(m.x - cx), R(m.y - cy), R(m.w), t); return true; };
   H.drawEnt = (g, e, cx, cy, t) => {
     const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1;
     if (e.t === 'nagaguard') {
-      const coil = e.mode === 'coilTell', lunge = e.mode === 'lunge', down = e.mode === 'spent';
-      g.fillStyle = '#2e5a4a'; if (coil) { g.beginPath(); g.ellipse(x - f * 3, y - 4, 9, 4, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(x - f * 3, y - 8, 6, 3, 0, 0, Math.PI * 2); g.fill(); }
-      else g.fillRect(x - f * (lunge || down ? 16 : 10) - (f < 0 ? 0 : 0), y - 4, lunge || down ? 18 : 12, 4);   /* the tail on the rock */
-      if (down) { g.fillStyle = '#3e7a62'; g.fillRect(x - 6, y - 8, 14, 5); g.fillStyle = '#c8b8d8'; g.fillRect(x + f * 8, y - 9, 4, 4); }
-      else { const ty = coil ? -6 : 0; g.fillStyle = '#3e7a62'; g.fillRect(x - 3, y - 20 - ty, 7, 16); g.fillStyle = '#c8b8d8'; g.fillRect(x - 3, y - 25 - ty, 7, 6); g.fillStyle = '#c9a83a'; g.fillRect(x - 3, y - 26 - ty, 7, 1);
-        /* the spear: drawn back in the tell, out in the thrust */
-        const sx = e.mode === 'spearTell' ? -10 : e.mode === 'spear' ? 14 : 4; g.fillStyle = '#a8aeb8'; g.fillRect(f > 0 ? x + sx - 6 : x - sx - 18, y - 16 - ty, 24, 2); g.fillStyle = '#e8e8f0'; g.fillRect(f > 0 ? x + sx + 18 : x - sx - 21, y - 17 - ty, 3, 4); }
-      if (NGM.ngOpen(e) && Math.sin(t * 10) > 0) { g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 12, 13, 0, Math.PI * 2); g.stroke(); }
+      seen.set(e, { x: e.x, y: e.y, face: f, t0: null, k: 'nagaguard' });
+      GAA.drawGuard(g, x, y, f, { mode: e.mode, hurtT: e.hurtT, flash: e.flash, seed: (e.x % 97) * 0.13 }, t);
+      if (NGM.ngOpen(e) && Math.sin(t * 10) > 0) { g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 12, 15, 0, Math.PI * 2); g.stroke(); }
       return;
     }
     if (e.t !== 'nagaqueen') return;
-    const m = e.mode, under = Q && Q.under && m !== 'surfaceTell', rear = m === 'songTell' || m === 'drownTell' ? 10 : m === 'song' || m === 'drown' ? 6 : 0;
-    if (under) { g.globalAlpha = 0.45; g.fillStyle = '#2a3e5a'; g.beginPath(); g.ellipse(x, y - 5, 22, 6, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-      if (m === 'drownTell' || m === 'drown') { for (let i = 0; i < 6; i++) { const a = t * 3 + i; g.fillStyle = '#dff2f8'; g.fillRect(x + R(Math.cos(a) * 20), y - 8 - R((t * 40 + i * 9) % 30), 2, 2); } } }
-    else {
-      /* THE COILS (GREYBOX): three loops on the rock, the tail out to one side (drawn back in the sweep's tell, flat out in the sweep) */
-      const lying = m === 'reel' || m === 'dragged';
-      g.fillStyle = '#2e4a6a'; g.beginPath(); g.ellipse(x, y - 5, 16, 6, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#3a5a80'; g.beginPath(); g.ellipse(x - 2, y - 10, 12, 5, 0, 0, Math.PI * 2); g.fill();
-      const tail = m === 'sweepTell' ? -1 : m === 'sweep' ? 1 : 0; g.fillStyle = '#2e4a6a';
-      if (tail < 0) g.fillRect(x - f * 34 - (f > 0 ? 0 : -18), y - 14, 16, 4); else if (tail > 0) g.fillRect(x - NQM.NQ.sweep.r, y - 4, NQM.NQ.sweep.r * 2, 3); else g.fillRect(f > 0 ? x - 30 : x + 14, y - 4, 16, 3);
-      if (lying) { g.fillStyle = '#6a5a88'; g.fillRect(x - 4, y - 16, 22, 6); g.fillStyle = '#d8c0e8'; g.fillRect(x + 16, y - 18, 7, 7); }
-      else { const ty = y - 12 - rear; g.fillStyle = '#6a5a88'; g.fillRect(x - 5, ty - 14, 10, 14); g.fillStyle = '#d8c0e8'; g.fillRect(x - 4, ty - 22, 8, 8);
-        g.fillStyle = '#1a1424'; g.fillRect(x - 6, ty - 23, 12, 3); g.fillRect(x - 6 - f * 2, ty - 20, 3, 10);   /* her hair */
-        g.fillStyle = '#c9a83a'; g.fillRect(x - 4, ty - 26, 8, 3); g.fillRect(x - 3, ty - 28, 2, 2); g.fillRect(x + 1, ty - 28, 2, 2);   /* her crown */
-        const arms = m === 'songTell' || m === 'song' ? 1 : m === 'venomTell' || m === 'surfaceTell' ? -1 : 0; g.fillStyle = '#d8c0e8';
-        if (arms > 0) { g.fillRect(x - 14, ty - 18, 9, 2); g.fillRect(x + 5, ty - 18, 9, 2); } else g.fillRect(x + f * 5 - (f < 0 ? 6 : 0), ty - 10, 6, 2);
-        if (m === 'venomTell' || m === 'surfaceTell') { g.fillStyle = '#8fd160'; g.fillRect(x + f * 3, ty - 17, 2, 2); }   /* the venom in her mouth */
-        if (m === 'song' && Math.sin(t * 10) > 0) { g.strokeStyle = 'rgba(226,200,255,0.8)'; g.beginPath(); g.arc(x, ty - 18, 12 + ((t * 40) % 20), 0, Math.PI * 2); g.stroke(); } }
-    }
+    const m = e.mode; seen.set(e, { x: e.x, y: e.y, face: f, t0: null, k: 'nagaqueen' });
+    QAA.drawQueen(g, x, y, f, { mode: m, hurtT: e.hurtT, flash: e.flash, seed: 1 }, t);
     /* THE READ: gold ring + timer when open, grey when warded */
-    if (NQM.nqOpen(e)) { const k = e.open / (m === 'dragged' ? NQM.NQ.dragged : NQM.NQ.reel); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 14, 24, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 48, R(32 * k), 2); }
-    else if (Q && Q.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 14, 24, 0, Math.PI * 2); g.stroke(); }
-    if (WORD && ctx.text) { const M = NQM.MOVES[WORD.k]; if (M) ctx.text(NQM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 62, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
+    if (NQM.nqOpen(e)) { const k = e.open / (m === 'dragged' ? NQM.NQ.dragged : NQM.NQ.reel); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 22, 34, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+      g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 66, R(32 * k), 2); }
+    else if (Q && Q.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 22, 34, 0, Math.PI * 2); g.stroke(); }
+    if (WORD && ctx.text) { const M = NQM.MOVES[WORD.k]; if (M) ctx.text(NQM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 76, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
   };
   H.drawOver = (g, cx, cy, t) => {
     if (!S) return; const L = lv(), VW = ctx.VW();
@@ -213,13 +192,16 @@ export function makeSirenRocksHands(ctx) {
       for (const p of L.pools) { if (!(T0.T.pools || []).includes(p.id)) continue; const y = R(p.y - cy) - 1, x0 = Math.max(0, R(p.x0 - cx)), x1 = Math.min(VW, R(p.x1 - cx));
         g.fillStyle = gg.ph === 'warn' ? 'rgba(255,255,255,0.85)' : 'rgba(223,242,248,0.6)'; for (let x = x0 - (x0 % 6) + R(t * 20) % 6; x < x1; x += 6) g.fillRect(x, y, 3, 1); } }
     /* the Queen's venom */
-    if (Q) { for (const gl of Q.globs) { g.fillStyle = '#8fd160'; g.fillRect(R(gl.x - cx) - 2, R(gl.y - cy) - 2, 5, 5); g.fillStyle = '#cfe8a0'; g.fillRect(R(gl.x - cx) - 1, R(gl.y - cy) - 1, 2, 2); }
-      for (const p of Q.pools) { g.globalAlpha = Math.min(1, p.t / 0.5) * 0.8; g.fillStyle = '#6a9a3a'; g.fillRect(R(p.x - cx) - 16, R(p.y - cy) - 2, 32, 2); g.globalAlpha = 1; } }
-    /* THE A3 GAUGE (one drawing for every sea level - art owed): the cove's tide while you are by it */
+    if (Q) { for (const gl of Q.globs) QAA.drawVenomGlob(g, R(gl.x - cx), R(gl.y - cy), gl.vx, gl.vy, t);
+      for (const p of Q.pools) QAA.drawVenomPool(g, R(p.x - cx), R(p.y - cy), Math.min(1, p.t / 0.5), t); }
+    /* THE FALLS: a foe we saw alive and that is now dead plays its fall once */
+    for (const [e, d] of seen) { if (e.alive) continue; if (!(e.hp <= 0)) { seen.delete(e); continue; }
+      if (d.t0 == null) d.t0 = t; const k = (t - d.t0) / DEAD_T[d.k]; if (k >= 1) { seen.delete(e); continue; }
+      const x = R(d.x - cx), y = R(d.y - cy); if (x < -80 || x > VW + 80) continue;
+      if (d.k === 'nagaguard') GAA.drawGuardDead(g, x, y, d.face, k, t); else QAA.drawQueenDead(g, x, y, d.face, k, t); }
+    /* THE A3 GAUGE (the shared dial, the reef's pearl skin): the cove's tide while you are by it */
     const P = ctx.hero(); if (P) { const T0 = K().tides.find(q => q.T.mode !== 'manual' && (q.T.pools || []).some(id => { const p = L.pools.find(pp => pp.id === id); return p && P.x >= p.x0 - 160 && P.x <= p.x1; }));
-      if (T0) { const gg = gauge(K(), T0.id), x = 6, y = 30, h = 24; g.fillStyle = 'rgba(10,14,22,0.7)'; g.fillRect(x, y, 10, h + 4);
-        g.fillStyle = gg.tell && Math.sin(t * 16) > 0 ? '#ffffff' : '#7cc8e8'; const fh = R(h * gg.k); g.fillRect(x + 2, y + 2 + h - fh, 6, Math.max(1, fh));
-        if (gg.coming === 'in') { g.fillStyle = '#ffd36b'; g.fillRect(x + 11, y + 2, 3, 3); } } }
+      if (T0) SD.drawHud(g, 6, 30, gauge(K(), T0.id), t, SKA.SR_SKIN); }
   };
   H.barName = e => 'THE NAGA QUEEN' + (e.mode === 'reel' && e.open > 0 ? '  THE SONG BREAKS' : e.mode === 'dragged' && e.open > 0 ? '  DRAGGED UP' : Q && Q.ward > 0 ? '  WARDED' : Q && Q.under ? '  UNDER THE TIDE' : '');
   H.end = e => { if (Q && e && (!e.alive || e.hp <= 0)) { Q.dead = true; Q.singing = false; ctx.number(e.x, e.y - 70, NQM.NQ_SAY.down, '#ffd36b'); }
