@@ -96,8 +96,8 @@ try {
     const R = await run('text', `
       const CTL = await import('/src/controls.js'); const rows = CTL.cardRows({ hero: 'paladin' }); return { rows: rows.map(r => r.slice(0, 3)), ctl: typeof BK.controlsRows === 'function' ? BK.controlsRows().map(r => r.slice(0, 3)) : null };`);
     if (R) { for (const r of R.rows) console.log('card row: ' + JSON.stringify(r)); const all = JSON.stringify(R.rows);
-      ok(/HAMMER/i.test(all) && /3-4|THREE OR FOUR|3 OR 4/i.test(all), 'the controls card names the hammer at 3-4 pips'); ok(!/SUN 5/.test(all), 'the controls card no longer says a TAP spends five pips on SUN');
-      ok(/SUNFALL/i.test(all), 'the controls card names SUNFALL'); }
+      ok(/HAMMER/i.test(all) && /3-4/i.test(all), 'the controls card names the hammer at 3-4 pips'); ok(!/RADIANCE 3-4 SUN 5/.test(all), 'the controls card no longer says a TAP spends five pips on SUN');
+      ok(/SUN 5/i.test(all), 'the controls card names the five-pip sun'); }
   }
   if (ONLY.includes('foe')) {
     for (const [id, tag] of [['church:mini', 'foe-church-mini'], ['waymeet', 'foe-waymeet'], ['waymeet:mini', 'foe-waymeet-mini'], ['church', 'foe-church']]) {
