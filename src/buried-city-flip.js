@@ -13,6 +13,7 @@
 import * as SET from './redraw/buried_city_set.js';
 import * as ART from './redraw/buried_city_flip_art.js';
 import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
+import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the race door and the race marker */
 import * as FIX from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the glass's link to what it moves, its STRIKE glint */
 import { BC5_SAY, DOOR, CAM5, RACE_GLASSES } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
 
@@ -206,13 +207,13 @@ export function makeFlip(api) {
     /* (claude/bc5) RACE THE GLASS: THE DRAINING BAND - a bar over every governed piece, linked to its glass: gold while it runs, red in its last FLIP.warn s, empty when it has run out (A3) */
     const band = (l, y, w, k, warn) => { if (!(k > 0)) return; const bw = Math.max(24, w), bx = R(l + (w - bw) / 2); g.fillStyle = 'rgba(24,16,8,0.75)'; g.fillRect(bx - 1, R(y) - 1, bw + 2, DOOR.band + 2); g.fillStyle = warn ? '#ff6b4a' : '#ffd36b'; g.fillRect(bx, R(y), R(bw * k), DOOR.band); };
     for (const d of K.doors) { if (!vis(d.x0, d.x1)) continue; const gl = glassOf(d.glass), run = !!gl && gl.t > 0, k = run ? gl.t / gl.dur : 0, warn = run && gl.t <= FLIP.warn, l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, top = d.y0 * ts - cy, hh = (d.y1 - d.y0 + 1) * ts, shown = hh * (1 - Math.min(1, d.open));
-      g.fillStyle = '#6e6048'; g.fillRect(R(l - 2), R(top - 4), R(w + 4), 4);   /* the lintel (greybox: stone, brass-banded) */
-      if (shown > 1) { g.fillStyle = '#a89870'; g.fillRect(R(l), R(top), R(w), R(shown)); g.fillStyle = '#7a6a48'; for (let yy = 4; yy < shown; yy += 8) g.fillRect(R(l), R(top + yy), R(w), 1); g.fillStyle = '#c9a040'; g.fillRect(R(l), R(top + shown - 2), R(w), 2); }
+      A5.drawRaceDoor(V, { l: R(l), top: R(top), w: R(w), hh: R(hh), open: Math.min(1, d.open), run, k, warn, moving: d.open > 0.02 && d.open < 0.98 });   /* (claude/bc5art) the shutter in its slots under a brass lintel (was greybox) */
       band(l, top - 12, w + 8, k, warn); }
     if (K.L.bc5) { for (const r of K.risers) { const gl = glassOf(r.glass); if (!gl || gl.t <= 0 || !vis(r.x0, r.x1) || r.sinks) continue; band(r.x0 * ts - cx, r.top * ts - cy - 9, (r.x1 - r.x0 + 1) * ts, gl.t / gl.dur, gl.t <= FLIP.warn); } }
     for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; ART.drawDuneFall(V, running(f.glass), f.x0 * ts - cx, f.top * ts - cy, (f.x1 - f.x0 + 1) * ts, (f.bottom + 1) * ts - cy); }
     for (const gq of K.glasses) { const gx = px(gq.x), gy = (gq.y + 1) * ts, x = gx - cx, y = gy - cy, run = gq.t > 0; if (x < -40 || x > vw + 40) continue;
       const k = run ? gq.t / gq.dur : (gq.back > 0 ? gq.back / FLIP.backT : 0), warn = run && gq.t <= FLIP.warn;   /* (claude/bc4fix) running: the sand left below; run out: the top's sand falls back down */
+      if (K.L.bc5 && RACE_GLASSES.includes(gq.id)) A5.drawRaceMarker(V, x, y, { run, warn });   /* (claude/bc5art) a pennant: this glass is a race */
       ART.drawGlass(V, gq, { k, warn, spin: Math.max(0, (gq.spin || 0) / FLIP.spinT), x, y });
       /* (claude/bc4fix) THE LINK TO WHAT IT MOVES: struck, a trail of gold grains runs to each thing (FLIP.linkRun s) and brackets pulse on them; it stays faint while the glass runs;
          idle and near, a pale ghost of it shows what the glass is tied to before you strike (Rootway's "shows its target first") */

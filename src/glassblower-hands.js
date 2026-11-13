@@ -2,10 +2,11 @@
 //   THE GLASSBLOWER (src/glassblower.js): the mini's fight in THE GLASSBLOWER'S HALL - his moves, his two hourglasses (the hall's risers and sinkers run on them: the level's
 //     own FLIP, src/buried-city-flip.js), the cooled gobs that are a one-row step, and the opening: a hero's blow on the glinting hourglass (the flip's hook, below).
 //   THE SAND GRASPER (src/sand-grasper.js): its machine, its boil and rise, its grab and HOLD (the mummy's, src/sealed-pyramid-hands.js stepGrabs: a blow tears you loose).
-// GREYBOX drawing only (plain shapes + pose names) until the art lane. main.js calls: on, clear, owns, spawn, update, take, tick, drawFoe, drawWorld, drawOver, read.
+// DRAWING: src/redraw/buried_city_bc5_art.js (claude/bc5art; was greybox). main.js calls: on, clear, owns, spawn, update, take, tick, drawFoe, drawWorld, drawOver, read.
 import * as GBM from './glassblower.js';
 import * as SG from './sand-grasper.js';
 import { BC5_SAY } from './buried-city5.js';
+import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the art: draw only */
 const { GB } = GBM, { GRASP } = SG;
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lob: s => (s.slingWhirl || s.tell || s.clank)(false), blast: s => (s.hiss || s.puff || s.clank)(),
   flip: s => (s.ratchet || s.gateLift || s.clank)(), shatter: s => (s.crack || s.clank)(), clank: s => (s.clank || s.parry)(), boil: s => (s.puff || s.hiss || s.tell)(false), grab: s => (s.heavy || s.thud || s.clank)() };
@@ -18,7 +19,7 @@ export function makeGlassblowerHands(ctx) {
   H.owns = e => !!e && (e.t === 'glassblower' || e.t === 'sandgrasper');
   const state = () => { const l = L(); if (!l || !l.bc5) return null; if (!K || K.L !== l) K = { L: l, F: null, gb: null, said: {}, steps: new Map(), ended: false, n: { grabs: 0, torn: 0, rises: 0, opens: 0 } }; return K; };
   const clearSteps = k => { for (const [col] of k.steps) { const row = k.L.mini.gb.R - 1; if (ctx.cellGet(col, row) === ctx.T.ONEWAY) ctx.cellSet(col, row, ctx.T.AIR); } k.steps.clear(); };
-  H.clear = () => { const k = state(); if (k) { clearSteps(k); k.F = null; k.gb = null; k.ended = false; } for (const pp of ctx.players) pp.bcGrab = null; };   /* a respawn: his fight starts again (the mini stays dead once won: PROG) */
+  H.clear = () => { const k = state(); if (k) { clearSteps(k); k.F = null; k.gb = null; k.ended = false; } for (const pp of ctx.players) pp.bcGrab = null; if (k) k.dead = null; };   /* a respawn: his fight starts again (the mini stays dead once won: PROG) */
   const say = (key, x, y, t, c) => { const k = state(); if (!k || k.said[key]) return; k.said[key] = 1; ctx.number(x, y, t, c || '#ffd36b'); };
   const snd = n => { const f = SOUND[n]; if (f) try { f(ctx.sfx); } catch { /* no sound */ } };
 
@@ -89,42 +90,36 @@ export function makeGlassblowerHands(ctx) {
     return dmg; };
   /* THE LEVEL'S FRAME: the holds; the mini's steps cleared when he falls */
   H.tick = dt => { const k = state(); if (!k) return; hook(); stepGrabs(dt);
-    if (k.gb && !k.gb.alive && !k.ended) { k.ended = true; clearSteps(k); } };
+    if (k.gb && !k.gb.alive && !k.ended) { k.ended = true; clearSteps(k); k.dead = { x: k.gb.x, y: k.gb.y, f: k.gb.face || 1, t0: ctx.time() }; } };
   H.end = () => { const k = state(); if (k) { k.ended = true; clearSteps(k); } };
 
-  /* ---------- DRAWING (GREYBOX) ---------- */
+  /* ---------- DRAWING (claude/bc5art: src/redraw/buried_city_bc5_art.js - the outlined-mass poses, the grasper's tell, the gob / cone / shards; the reads - words, bars, marks - are unchanged) ---------- */
+  const TELL_DUR = { gobTell: GB.gobTell, blastTell: GB.blastTell, flipTell: GB.flipTell, bulbTell: GB.bulbTell };
   H.drawFoe = (g, e, cx, cy, time) => {
-    if (e.t === 'sandgrasper') { const s = e.st, x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, pose = s ? s.pose : 'grWalk';
-      if (pose === 'grBoil' || e.mode === 'buried' || e.mode === 'boil') { const a = e.mode === 'boil' ? 1 : 0.35; g.globalAlpha = a; g.fillStyle = '#a87a40'; for (let i = 0; i < 4; i++) g.fillRect(x - 8 + i * 4 + R(Math.sin(time * 14 + i) * 1), y - 3 - (i % 2) * 2, 3, 3); g.globalAlpha = 1; return; }
-      g.fillStyle = '#c9b27c'; g.fillRect(x - 5, y - 16, 10, 14); g.fillStyle = '#8a6a3a'; g.fillRect(x - 5, y - 4, 10, 4); g.fillStyle = '#3a2a1a'; g.fillRect(x - 3 + f, y - 13, 6, 2);   /* a drowned body, sand to the shoulders */
-      const up = pose === 'grWind' || pose === 'grHold', out = pose === 'grGrab';   /* ARMS: up and wide in the tell, forward in the grab */
-      g.fillStyle = '#d9c28a'; if (up) { g.fillRect(x - 11, y - 24, 3, 12); g.fillRect(x + 8, y - 24, 3, 12); } else if (out) g.fillRect(f > 0 ? x + 5 : x - 18, y - 12, 13, 3); else { g.fillRect(x - 9, y - 12, 3, 8); g.fillRect(x + 6, y - 12, 3, 8); }
-      if (pose === 'grRise') { g.fillStyle = '#a87a40'; g.fillRect(x - 9, y - 6, 18, 6); }
-      if (pose === 'grRecover') { g.fillStyle = 'rgba(255,211,107,0.8)'; g.fillRect(x - 5, y - 28, 10, 2); ctx.text('OPEN', x, y - 30, '#ffd36b', 'center', 4); }
+    if (e.t === 'sandgrasper') { const s = e.st, x = R(e.x - cx), y = R(e.y - cy), pose = s ? s.pose : 'grWalk';
+      const p = e.mode === 'boil' && s ? 1 - Math.max(0, s.t) / GRASP.boil : pose === 'grRise' && s ? 1 - Math.max(0, s.t) / GRASP.rise : 0;   /* the boil's progress (the tell) and the rise's */
+      A5.drawGrasper(g, { x, y, f: e.face || 1, pose, mode: e.mode, p, t: time, flash: (e.hurt || 0) > 0.08 });
+      if (pose === 'grRecover') ctx.text('OPEN', x, y - 46, '#ffd36b', 'center', 4);
       return; }
-    if (e.t === 'glassblower') { const k = state(), x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, open = GBM.gbOpen(e), pose = e.pose || 'gbIdle';
-      g.fillStyle = '#6a4a2a'; g.fillRect(x - 9, y - 30, 18, open ? 12 : 22); g.fillStyle = '#c8b090'; g.fillRect(x - 5, y - 36, 10, 7);   /* the scorched apron, the head */
-      if (!open) { g.fillStyle = '#4a3220'; g.fillRect(x - 8, y - 8, 6, 8); g.fillRect(x + 2, y - 8, 6, 8); }
-      const up = pose === 'gbGobWind' || pose === 'gbFlipWind' || pose === 'gbBulbWind', px = x + f * (up ? 6 : 16), py = up ? y - 52 : y - 22;   /* the blowpipe: raised in a windup, out front otherwise */
-      g.fillStyle = '#8a8a8a'; g.fillRect(Math.min(x, px), py + 4, Math.abs(px - x) + 2, 2);
-      g.fillStyle = pose === 'gbGobWind' || pose === 'gbGobRel' ? '#ff9a3c' : '#c8a060'; g.fillRect(px - 3, py, 7, 7);   /* the gather on its end: glowing when he lobs */
-      if (open) { g.fillStyle = '#e6c98a'; g.fillRect(x - 14, y - 18, 28, 18); g.fillStyle = '#a87a40'; g.fillRect(x - 14, y - 18, 28, 2);   /* buried to the waist */
-        const k0 = e.open / (e.openT0 || GB.openT); g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 16, 26, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 48, R(32 * k0), 3); ctx.text('BURIED', x, y - 54, '#ffd36b', 'center', 5); }
-      else if (k && k.F && k.F.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 16, 28, 0, Math.PI * 2); g.stroke(); }
-      if (pose) ctx.text(pose, x, y + 9, '#9aa39a', 'center', 4); }
+    if (e.t === 'glassblower') { const k = state(), x = R(e.x - cx), y = R(e.y - cy), open = GBM.gbOpen(e), mode = e.mode;
+      const pose = open ? 'gbBuried' : mode === 'sleep' ? 'gbSleep' : mode === 'wake' ? 'gbWake' : (A5.GB_POSES.includes(e.pose) ? e.pose : 'gbIdle');
+      const p = mode === 'wake' ? 1 - Math.max(0, e.modeT) / 1.4 : TELL_DUR[mode] ? 1 - Math.max(0, Math.min(1, e.modeT / TELL_DUR[mode])) : 1;
+      A5.drawGlassblower(g, { x, y, f: e.face || 1, pose, p, t: time, ph: e.phase || 1, flash: (e.flash || 0) > 0, open, openK: open ? e.open / (e.openT0 || GB.openT) : 0, ward: !open && k && k.F ? k.F.ward : 0 });
+      if (open) ctx.text('BURIED', x, y - 68, '#ffd36b', 'center', 5); }
   };
   H.drawWorld = (g, cx, cy, time) => { const k = state(); if (!k || !k.F || !k.gb || !k.gb.alive) return;
-    /* HIS HOURGLASS GLINTS (the one he turned): a gold sparkle ring and a timer over it - the opening, told */
-    const G = k.F.G, gl = k.F.glint; if (!gl) return; const q = G.glasses.find(a => a.id === gl.id); if (!q) return; const x = R(q.x - cx), y = R(G.floorY - 22 - cy), a = 0.5 + 0.5 * Math.sin(time * 12);
-    g.strokeStyle = 'rgba(255,230,140,' + (0.45 + a * 0.5) + ')'; g.beginPath(); g.arc(x, y, 14 + a * 3, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y - 24, R(24 * Math.max(0, gl.t / GB.glintT)), 2); ctx.text('STRIKE', x, y - 28, '#ffd36b', 'center', 4);
+    /* HIS HOURGLASS GLINTS (the one he turned): a ring of gold sparks and a timer over it - the opening, told */
+    const G = k.F.G, gl = k.F.glint; if (!gl) return; const q = G.glasses.find(a => a.id === gl.id); if (!q) return; const x = R(q.x - cx), y = R(G.floorY - 22 - cy);
+    A5.drawGlint({ g, time }, x, y, Math.max(0, gl.t / GB.glintT), time); ctx.text('STRIKE', x, y - 32, '#ffd36b', 'center', 4);
   };
-  H.drawOver = (g, cx, cy, time) => { const k = state(); if (!k || !k.F || !k.gb || !k.gb.alive) return; const F = k.F, G = F.G;
-    for (const gb of F.gobs) { const x = R(gb.x - cx);
-      if (gb.fly) { g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(x, R(gb.y - cy), 4, 0, Math.PI * 2); g.fill(); const mk = R(gb.tx - cx), my = R(G.floorY - 2 - cy); g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.beginPath(); g.moveTo(mk - 6, my - 6); g.lineTo(mk + 6, my + 2); g.moveTo(mk + 6, my - 6); g.lineTo(mk - 6, my + 2); g.stroke(); }
-      else if (gb.hot > 0) { g.fillStyle = '#ff7a2a'; g.beginPath(); g.moveTo(x - 6, R(G.floorY - cy)); g.lineTo(x, R(G.floorY - GB.gobH - cy)); g.lineTo(x + 6, R(G.floorY - cy)); g.fill(); ctx.text('HOT', x, R(G.floorY - GB.gobH - 4 - cy), '#ff9a5c', 'center', 4); }
-      else if (gb.cooled) { g.fillStyle = '#9ac8e0'; g.fillRect(x - 6, R(G.floorY - 8 - cy), 12, 8); ctx.text('STEP', x, R(G.floorY - 12 - cy), '#bfe6f5', 'center', 4); } }
-    if (F.blast) { const B = F.blast, a = Math.min(B.x, B.far ?? B.x), b = Math.max(B.x, B.far ?? B.x); g.fillStyle = 'rgba(255,170,70,0.5)'; g.beginPath(); g.moveTo(R(B.x - cx), R(G.floorY - 4 - cy)); g.lineTo(R((B.dir > 0 ? b : a) - cx), R(G.floorY - GB.blastH - cy)); g.lineTo(R((B.dir > 0 ? b : a) - cx), R(G.floorY - cy)); g.fill(); }
-    for (const s of F.shards) { g.fillStyle = s.ht === 'low' ? '#bfe6f5' : '#ffffff'; g.fillRect(R(s.x - cx) - 3, R(s.y - cy) - 3, 6, 6); ctx.text(s.ht === 'low' ? 'JUMP' : 'BLOCK', R(s.x - cx), R(s.y - 8 - cy), '#bfe6f5', 'center', 4); }
+  H.drawOver = (g, cx, cy, time) => { const k = state(); if (!k) return; const V = { g, time };
+    if (k.dead) { const tt = time - k.dead.t0; if (tt >= 0 && tt < 2.6) A5.drawGlassblowerDeath(g, { x: R(k.dead.x - cx), y: R(k.dead.y - cy), f: k.dead.f, t: tt, time }); }   /* (claude/bc5art) the death fall, 2.4 s */
+    if (!k.F || !k.gb || !k.gb.alive) return; const F = k.F, G = F.G;
+    for (const gb of F.gobs) { A5.drawGob(V, gb, G.floorY, TS(), time, cx, cy);
+      if (!gb.fly && gb.hot > 0) ctx.text('HOT', R(gb.x - cx), R(G.floorY - GB.gobH - 6 - cy), '#ff9a5c', 'center', 4);
+      else if (gb.cooled) ctx.text('STEP', R(gb.x - cx), R(G.floorY - TS() - 4 - cy), '#bfe6f5', 'center', 4); }
+    if (F.blast) A5.drawBlast(V, F.blast, G.floorY, GB.blastH, time, cx, cy);
+    for (const s of F.shards) { A5.drawShard(V, s, cx, cy, time); ctx.text(s.ht === 'low' ? 'JUMP' : 'BLOCK', R(s.x - cx), R(s.y - 9 - cy), '#bfe6f5', 'center', 4); }
   };
   H.read = () => { const k = state(); return k && { n: { ...k.n }, gb: k.F ? { ph: k.F.ph, n: { ...k.F.n }, mode: k.gb && k.gb.mode, hp: k.gb && k.gb.hp, glint: k.F.glint && k.F.glint.id } : null }; };
   return H;

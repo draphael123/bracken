@@ -332,7 +332,8 @@ export function buildBuriedCity({ painter, T, TS }) {
   const S = GB_STAGE, sx = S.sx, R = S.R, ex = sx + S.W;
   sign(383, 9, 'BELOW: THE GLASSBLOWER. THE SHRINE IS BEHIND YOU. STRIKE HIS HOURGLASS WHEN IT GLINTS.'); ent('check', 386, 9);
   ground(sx, ex + 1, R); block(ex, ex, 5, R - 7); for (let y = R - 6; y <= R - 1; y++) set(ex, y, T.PORT);
-  S.cover.forEach(([a, b], i) => { const rows = (S.coverRows || [])[i] || 3; block(sx + a, sx + b, R - rows, R - 1); decor.push({ kind: 'kiln', x0: sx + a, x1: sx + b, y: R - rows }); });   /* (claude/bc5fix: the stub near him is two rows) */
+  S.cover.forEach(([a, b], i) => { const rows = (S.coverRows || [])[i] || 3; block(sx + a, sx + b, R - rows, R - 1); decor.push({ kind: 'kiln', x0: sx + a, x1: sx + b, y: R - rows, rows }); });   /* (claude/bc5art) drawn: src/redraw/buried_city_bc5_art.js */
+  decor.push({ kind: 'gbhall', x0: sx, x1: ex - 1, y: R });   /* (claude/bc5art) the hall's floor: cullet, slag, a furnace glow (draw only) */   /* (claude/bc5fix: the stub near him is two rows) */
   for (const sk of S.sink) sinker(sk.glass, sx + sk.c[0], sx + sk.c[1], R, 2, 'house');
   for (const rs of S.riser) riser(rs.glass, sx + rs.c[0], sx + rs.c[1], rs.top, rs.rows, 'house');
   for (const g of S.glass) glass(g.id, sx + g.c, R - 1, g.dur);
