@@ -9,6 +9,7 @@
 //     off: { prop: value }                not while the hero stands on a mover with those properties
 //     steps: [ {zone?, at/ats/mover, line, done?, when?}, ... ] }   an ordered chain: the first step that is not done
 // Columns and rows are the FINAL built tiles (the same numbers the signs and entities carry).
+import { bc5On } from './buried-city5.js';   /* (claude/bc5) BURIED CITY 5's spots are flag-gated: OFF = master's list exactly */
 import { uwX, UW_SPILL, UW_RES } from './underwell.js';   /* (claude/underwell3) THE UNDERWELL's spots are written in its columns before the two water sections were let in */
 /* an Underwell spot in the old columns, put where it stands now: its zone, its thing, and a fire.<col> key */
 const uwSpot = s => ({ ...s, ...(s.zone ? { zone: [uwX(s.zone[0]), s.zone[1], uwX(s.zone[2]), s.zone[3]] } : {}), ...(s.steps ? { steps: s.steps.map(uwSpot) } : {}),
@@ -686,8 +687,17 @@ export const STUCK_HANDS = {
     { id: 'bc-works1', zone: [341, 28, 352, 34], steps: [ { key: 'works1', is: ['glass.works1', 'idle'], at: [351, 32], line: 'THE KILN STUB: STRIKE ITS GLASS AND THE STAIR RISES' } ] },
     { id: 'bc-works2', zone: [361, 22, 368, 27], steps: [ { key: 'works2', is: ['glass.works2', 'idle'], at: [364, 26], line: 'STRIKE THE GLASS, THEN STEP INTO THE SAND-FALL' } ] },
     { id: 'bc-works3', zone: [370, 12, 383, 17], steps: [ { key: 'works3', is: ['glass.works3', 'idle'], at: [372, 15], line: 'THE DUNE IS A WALL: STRIKE THE GLASS AND IT TILTS' } ] },
+    ...(bc5On() ? [] : [   /* (claude/bc5: the relay is THE GLASSBLOWER's hall under the flag) */
     { id: 'bc-works4', zone: [383, 7, 389, 11], steps: [ { key: 'works4', is: ['glass.works4', 'idle'], at: [385, 10], line: 'THE RELAY: STRIKE THE GLASS, THEN JUMP' } ] },
-    { id: 'bc-works5', zone: [398, 18, 401, 22], steps: [ { key: 'works5', is: ['glass.works5', 'idle'], at: [399, 21], line: 'THE RELAY: ITS SECOND GLASS RAISES THE LAST ROOF' } ] },
+    { id: 'bc-works5', zone: [398, 18, 401, 22], steps: [ { key: 'works5', is: ['glass.works5', 'idle'], at: [399, 21], line: 'THE RELAY: ITS SECOND GLASS RAISES THE LAST ROOF' } ] }]),
+    /* (claude/bc5) RACE THE GLASS (grid rows): every race glass the route needs glints until it runs; the kiln's drop into THE GLASSBLOWER's hall glints after a stall */
+    ...(bc5On() ? [
+    { id: 'bc-gbdrop', zone: [383, 7, 389, 11], steps: [ { key: 'gbDrop', at: [389, 10], glint: 'stall', line: 'THE WAY ON IS DOWN: DROP TO THE GLASSBLOWER' } ] },
+    { id: 'bc-span', zone: [596, 27, 601, 33], steps: [ { key: 'span', is: ['glass.span', 'idle'], at: [600, 32], line: 'THE SPAN CRUMBLES: STRIKE THE GLASS, THEN RUN' } ] },
+    { id: 'bc-r3a', zone: [660, 27, 664, 33], steps: [ { key: 'r3a', is: ['glass.r3a', 'idle'], at: [662, 32], line: 'THE PIER IS TOO HIGH: STRIKE THE GLASS, THEN RUN UP' } ] },
+    { id: 'bc-r3b', zone: [666, 21, 670, 27], steps: [ { key: 'r3b', is: ['glass.r3b', 'idle'], at: [668, 26], line: 'THE WALL IS TOO HIGH: STRIKE THE SECOND GLASS' } ] },
+    { id: 'bc-antedoor', zone: [838, 28, 841, 33], steps: [ { key: 'anteFar', is: ['glass.antefar', 'idle'], at: [840, 32], line: 'THE DOOR IS SHUT: STRIKE THE GLASS BY IT' } ] },
+    ] : []),
     { id: 'bc-tiltdune', zone: [734, 2, 746, 12], steps: [ { key: 'tiltDune', is: ['glass.fall', 'idle'], at: [741, 6], glint: 'stall', line: 'THE DUNE TILTS WITH THE GLASS BY THE FALL: STRIKE IT AGAIN' } ] },
     { id: 'bc-ante', zone: [822, 28, 826, 33], steps: [ { key: 'ante', is: ['glass.ante', 'idle'], at: [824, 32], line: 'STRIKE THE GLASS AND CROSS THE SLABS BEFORE THEY GO' } ] },
   ],
