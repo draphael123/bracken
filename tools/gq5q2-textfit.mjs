@@ -47,19 +47,19 @@ try {
     BK.manualSimulation=true; BK.SET.speed=1; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(LEVELS.findIndex(l=>l.id==='crown')); BK.state='play'; BK.god=false; BK.step(5);
     const A=BK.L.arena; BK.tp(Math.round(A.trigger/16)+1, Math.round(A.floor/16)-1);
     for (let k=0;k<300;k++){BK.P.hp=BK.P.maxHp;BK.step(1);}
-    let q=BK.boss; q.crownCd=99;q.portalCd=99;q.geodeCd=99;q.slamT=99;q.sweepT=99;q.courtT=99;q.hLeapT=99;q.decreeT=99;q.throwT2=99;q.ringT=99;
+    let q=BK.boss;   /* (rel181: the old hall timers pinned to 99 here stopped skipRoof from ever reaching the roof, so no roof string was drawn; the probe that left them alone reads all four) */
     const P=BK.P, run=k=>{for(let i=0;i<k;i++){P.hp=P.maxHp;BK.step(1);}};   /* (GQ5Q2-TUNE textfit fix: BK.sim() updates but never render()s - src/main.js:38667 vs 38678 - so text()/number() never ran and window.__textRec stayed empty; BK.step() renders every call) */
     q.hp=2; const hu=BK.hurt||(BK.env&&BK.env().hurt); if (hu) hu(q,50,P.x); run(140);
     const H=BK.gqHands();
     const allSeen=new Set(); window.__textRec=[];   // (GQ5Q2-TUNE textfit fix: E.begin() draws the hint+plate ONCE, synchronously inside skipRoof() itself - __textRec must already be the array BEFORE calling it, not after)
-    H.skipRoof(); run(90);
-    for (const s of analyse('roof entry', window.__textRec)) allSeen.add(s); window.__textRec=null;
+    H.skipRoof(); for (let f=0;f<240;f++){ run(1); for (const s of analyse('roof entry', window.__textRec)) allSeen.add(s); window.__textRec=[]; }   /* (rel181) analyse ONE frame at a time: the rect patch pushes ~900 rects a frame and the recorder stops at 20000 entries, so a 90-frame window never reached the hint */
+    window.__textRec=null;
     const G52=H.q52();
     window.__textRec=[]; q.mode='roofStand'; q.modeT=99; G52.state().perch.phase='idle'; G52.state().perch.nextAt=0; G52.perchStart(q);
-    for (let i=0;i<60 && q.mode!=='perch'; i++) run(1); run(10);
-    for (const s of analyse('cupola warded', window.__textRec)) allSeen.add(s); window.__textRec=null;
-    window.__textRec=[]; q.mode='roofStand'; q.modeT=99; q.x=P.x+30; q.face=-1; const st=G52.state(); st.sweep.cd=0; G52.sweepStart(q); run(14);
-    for (const s of analyse('sceptre sweep tell', window.__textRec)) allSeen.add(s); window.__textRec=null;
+    for (let i=0;i<60 && q.mode!=='perch'; i++) run(1); for (let f=0;f<150;f++){ run(1); for (const s of analyse('cupola warded', window.__textRec)) allSeen.add(s); window.__textRec=[]; }
+    window.__textRec=null;
+    window.__textRec=[]; q.mode='roofStand'; q.modeT=99; q.x=P.x+30; q.face=-1; const st=G52.state(); st.sweep.cd=0; G52.sweepStart(q); for (let f=0;f<60;f++){ run(1); for (const s of analyse('sceptre sweep tell', window.__textRec)) allSeen.add(s); window.__textRec=[]; }
+    window.__textRec=null;
     for (const m in orig) G[m]=orig[m];
     return { issues, allSeen: [...allSeen], stringsSeen: [...allSeen].filter(s=>/STRIKE HER STONES BACK AT HER|AND WHEN SHE HIDES IN THE BELL, RING IT\\.|WARDED - RING THE BELL|SHE RUNS FOR THE BELL/.test(s)) };
   })()`, 120000);
