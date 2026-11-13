@@ -323,7 +323,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   const kr = R0.arena, sh = v => v + OFF * TS;
   const out = {
     ...R0, W, H, grid, ents, pools, moversExtra: movers, rigBands, falls: [], interiors: [[375, 401, 10, 19, 'chapel']], airRooms, deep: D,
-    START: { x: 3, y: 17 }, rule: CW3_RULE, cw3: true, checkRun: 320,   /* four shrines by hand (Daniel: fewer); the filler adds none between them */
+    START: { x: 3, y: 17 }, rule: CW3_RULE, cw3: true, cw3Kit: true, checkRun: 320,   /* four shrines by hand (Daniel: fewer); the filler adds none between them */
     calm: [[0, CW3.END, 0, H]],   /* every foe on the new road is placed by hand: the sprinkler leaves it alone */
     causeTide: undefined, causeCurrents: undefined, causeBreakers: undefined, tidegates: false,   /* master's own road tide is folded into the kit (waterkit Q4) */
     causeFog: { x0: 878, x1: 934, lamp: [916.5, 5] },   /* THE LIGHT's beam cutting the fog at the end of the chase (master's fog, drawn by main.js) */

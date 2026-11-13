@@ -15,6 +15,7 @@
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, kOf, lineY } from './tide-kit.js';
 import { pullInit, pullStep, pullBodies, flowParts } from './pull-field.js';
 import { CW3 } from './causeway3.js';
+import * as ART from './redraw/causeway3_art.js'; import * as BACK from './redraw/causeway3_back.js';   /* (claude/cw3art) the art pass: the pieces and the sky / lighthouse */
 const R = Math.round, TS = 16;
 export const CW3_HANDS = { wheelCool: 10, gateKey: col => 'cw3:gate:' + col };
 export const CW3_SAY = { bell: 'THE BELL: THE TIDE COMES IN', sluice: 'THE SLUICE WHEEL HOLDS THE SEA OUT', wound: 'THE WHEEL IS STILL WINDING BACK',
@@ -70,6 +71,7 @@ export function makeCauseway3Hands(ctx) {
     /* THE LAMPS: master's storm lantern lights on two blows; the gate lamp lifts the gate */
     for (const l of S.lamps) { if (l.gate === undefined) continue; if (l.open) { const pr = lampProp(l); if (pr && !pr.lit) pr.lit = true; continue; } const pr = lampProp(l); if (!pr || !pr.lit) continue;
       l.open = true; ctx.marks().add(CW3_HANDS.gateKey(l.gate)); ctx.openGateCol(l.gate); ctx.sound('gate'); ctx.shake(4); say(l.gate * TS + 8, (l.y - 4) * TS, CW3_SAY.gate, '#8fd160'); }
+    for (const T0 of TK.tides) if (T0.T.mode !== 'manual') { const k = kOf(TK, T0.id) || 0; S.wet = S.wet || {}; S.wet[T0.id] = Math.max(k, (S.wet[T0.id] || 0) - dt / 7); }   /* (claude/cw3art) the road's wetness: the tide's level, drying off over ~7 s */
     updateArms(dt); updateChase(dt);
     for (const gl of S.gulls) { gl.t += dt; gl.up = Math.max(0, Math.min(1, gl.up + (near(gl.x * TS, 60) ? 3 : -0.6) * dt)); }
   };
@@ -137,10 +139,51 @@ export function makeCauseway3Hands(ctx) {
     return true;
   };
 
+  /* ---------- THE ART PASS (claude/cw3art): src/redraw/causeway3_art.js / causeway3_back.js, called when L.cw3Kit ---------- */
+  function artBack(g, cx, cy, t, VW, L) {
+    const dusk = S.act === 'act1' ? 0 : 1;
+    for (const p of L.cw3Props || []) { const x = R(p.x * TS + 8 - cx), y = R((p.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;
+      if (p.kind === 'cottage') ART.drawCottage(g, x, y, true, t, p.x);
+      if (p.kind === 'smoke' && Math.random() < 0.12) ctx.parts().push({ x: p.x * TS + 8 + (Math.random() - 0.5) * 6, y: (p.y + 1) * TS - 40, vx: -14 - Math.random() * 10, vy: -12 - Math.random() * 8, life: 1.4, max: 1.4, col: 'rgba(200,206,212,0.5)', size: 2, grav: -6 });
+      if (p.kind === 'pilgrimStone') ART.drawWaymark(g, x, y, p.x); }
+    void dusk;
+    S.gulls.forEach((gl, i) => { const x = R(gl.x * TS + 8 - cx), y = R((gl.y + 1) * TS - cy); if (x < -30 || x > VW + 30) return; for (let q = 0; q < 3; q++) ART.drawGull(g, x - 8 + q * 8, y - 4 - R(gl.up * (10 + q * 6)), gl.t, gl.up, i + q); });
+    for (const r of L.airRooms || []) { const x0 = r[0] * TS - cx, x1 = (r[1] + 1) * TS - cx; if (x1 < -10 || x0 > VW + 10) continue; ART.drawAir(g, x0, x1, r[2] * TS - cy, r[3] * TS - cy, t); }
+    for (const T0 of TK.tides) for (const v of T0.verbs) { const x = R(v.x * TS + 8 - cx), y = R((v.y + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
+      if (v.t === 'bell') ART.drawBell(g, x, y, Math.sin(t * 18) * (v.swing || 0), v.swing || 0, t);
+      if (v.t === 'sluice') ART.drawWheel(g, x, y, T0.hold > 0 ? t * 4 : 0, T0.hold > 0, T0.hold / (v.hold || 6), (v.cool || 0) / CW3_HANDS.wheelCool);
+      if (v.t === 'lever') ART.drawLever(g, x, y, T0.ph === 'high'); }
+    for (const f of L.cw3Pulls || []) for (const [px0, py0] of f.posts || []) { const x = R(px0 * TS + 8 - cx), y = R(py0 * TS + 2 - cy); if (x < -20 || x > VW + 20) continue; ART.drawRing(g, x, y); }
+  }
+  function artOver(g, cx, cy, t, VW, L) {
+    const roadY = CW3.R * TS - cy;
+    /* THE WET ROAD: where a tide stands on it the flags darken and glint, and dry off after; only over road that is there (not the cuts) */
+    const night = S.act === 'act3';
+    for (const T0 of TK.tides) { const w = S.wet && S.wet[T0.id]; if (!w || T0.T.mode === 'manual') continue;
+      for (const p of L.pools) { if (!(T0.T.pools || []).includes(p.id)) continue; const a = Math.max(Math.floor(p.x0 / TS), Math.floor(cx / TS) - 1), b = Math.min(Math.floor(p.x1 / TS), Math.floor((cx + VW) / TS) + 1);
+        let run = -1; for (let c = a; c <= b + 1; c++) { const solid = c <= b && L.grid[CW3.R * L.W + c] === 1 && L.grid[(CW3.R - 1) * L.W + c] === 0; if (solid && run < 0) run = c; if (!solid && run >= 0) { ART.drawWet(g, run * TS - cx, c * TS - cx, roadY, w, t, night); run = -1; } } } }
+    /* foam on a turning tide's pools */
+    for (const T0 of TK.tides) { const gg = gauge(TK, T0.id); if (!gg || !(gg.ph === 'warn' || gg.ph === 'turn')) continue;
+      for (const p of L.pools) { if (!(T0.T.pools || []).includes(p.id)) continue; const y = R(p.y - cy) - 1, x0 = Math.max(0, R(p.x0 - cx)), x1 = Math.min(VW, R(p.x1 - cx)); if (x1 <= x0) continue;
+        g.fillStyle = gg.ph === 'warn' ? 'rgba(255,255,255,0.85)' : 'rgba(223,242,248,0.6)'; for (let x = x0 - (x0 % 6) + R(t * 20) % 6; x < x1; x += 6) { g.fillRect(x, y, 3, 1); if (gg.ph === 'warn' && (x + R(t * 9)) % 18 === 0) g.fillRect(x + 1, y - 2, 1, 2); } } }
+    /* THE ARMS */
+    for (const a of S.arms) { if (a.st !== 'tell' && a.st !== 'slam') continue; const x = R(a.x * TS + 8 - cx); if (x < -40 || x > VW + 40) continue;
+      if (a.st === 'tell') ART.drawArmTell(g, x, roadY, 1 - a.t / CW3.arms.tell, t); else ART.drawArm(g, x, roadY, a.t / CW3.arms.slam, t, !!a.smash); }
+    /* THE COLLAPSE */
+    const C = S.chase;
+    for (const [c, tl] of C.cracks) { const x = R(c * TS - cx); if (x < -20 || x > VW + 20) continue; ART.drawCrack(g, x, roadY, tl, t, CW3.chase.crack); }
+    if (C.st === 'run') { const fx = R(C.front - cx); if (fx > -30 && fx < VW + 30) ART.drawFront(g, fx, roadY, t);
+      if (Math.random() < 0.5) ctx.parts().push({ x: C.front + Math.random() * 16, y: CW3.R * TS + 4, vx: (Math.random() - 0.5) * 30, vy: -40 - Math.random() * 50, life: 0.6, max: 0.6, col: '#8a948e', size: 2, grav: 200 }); }
+    /* THE A3 GAUGE */
+    const P = ctx.hero(); if (P) { const T0 = TK.tides.find(q => q.T.mode !== 'manual' && (q.T.pools || []).some(id => { const p = L.pools.find(pp => pp.id === id); return p && P.x >= p.x0 - 120 && P.x <= p.x1 + 40; }));
+      if (T0) ART.drawTideGauge(g, 6, 30, gauge(TK, T0.id), t); }
+  }
+
   /* ---------- DRAWING (GREYBOX: the art pass owes all of it) ---------- */
   /* THE LIGHT ON THE HORIZON: from the first screen, nearer (bigger, higher, brighter) the further you come; its beam turns through the storm */
   H.drawSky = (g, cx, cy, t) => {
-    if (!S) return; const VW = ctx.VW(), L = lv(), END = (CW3.END - 10) * TS;
+    if (!S) return;
+    if (lv().cw3Kit) { BACK.drawLighthouse(g, cx, cy, ctx.VW(), ctx.VH(), t, 0); return; }   /* (claude/cw3art) the lighthouse, baked at three sizes, its beam and its glimmer */ const VW = ctx.VW(), L = lv(), END = (CW3.END - 10) * TS;
     const k = Math.max(0, Math.min(1, (cx + VW / 2) / END)), step = k < 0.33 ? 0 : k < 0.66 ? 1 : 2;   /* the parallax scale steps per act (brief 4) */
     const sc = [0.45, 0.7, 1.0][step] + k * 0.15, px = R(VW * 0.82 - k * VW * 0.3 - (cx % 400) * 0.01), base = R(ctx.VH() * 0.62 - k * 12);
     if (cx > (CW3.END - 30) * TS) return;   /* past here the real one stands on the holm (drawn by the tiles + main.js's lamp) */
@@ -154,6 +197,7 @@ export function makeCauseway3Hands(ctx) {
   };
   H.drawBack = (g, cx, cy, t) => {
     if (!S) return; const VW = ctx.VW(), L = lv();
+    if (L.cw3Kit) { artBack(g, cx, cy, t, VW, L); return; }
     for (const p of L.cw3Props || []) { const x = R(p.x * TS + 8 - cx), y = R((p.y + 1) * TS - cy); if (x < -60 || x > VW + 60) continue;
       if (p.kind === 'cottage') { g.fillStyle = '#4a4844'; g.fillRect(x - 12, y - 22, 24, 22); g.fillStyle = '#6a625a'; g.fillRect(x - 14, y - 26, 28, 5); g.fillStyle = '#e8c070'; g.fillRect(x - 3, y - 12, 6, 6); }
       if (p.kind === 'smoke' && Math.random() < 0.12) ctx.parts().push({ x: p.x * TS + 8 + (Math.random() - 0.5) * 6, y: (p.y + 1) * TS - 30, vx: -14 - Math.random() * 10, vy: -12 - Math.random() * 8, life: 1.4, max: 1.4, col: 'rgba(200,206,210,0.5)', size: 2, grav: -2 });
@@ -174,8 +218,9 @@ export function makeCauseway3Hands(ctx) {
     for (const f of L.cw3Pulls || []) for (const [px0, py0] of f.posts || []) { const x = R(px0 * TS + 8 - cx), y = R(py0 * TS + 2 - cy); if (x < -20 || x > VW + 20) continue;
       g.strokeStyle = '#b8b0a0'; g.beginPath(); g.arc(x, y, 4, 0, Math.PI * 2); g.stroke(); }
   };
-  H.drawMover = (g, m, cx, cy) => {
+  H.drawMover = (g, m, cx, cy, t) => {
     if (m.cw3 !== 'float') return false; const x = R(m.x - cx), y = R(m.y - cy), w = R(m.w);
+    if (lv().cw3Kit) { ART.drawBoat(g, x, y, w, t || 0, m.y < m.rest - 4); return true; }   /* (claude/cw3art) the ferry: clinker hull, red-lead wale, mast stump, stern lantern */
     /* a tarred, barnacled boat: her deck the platform (timber is right here: she IS a boat) */
     g.fillStyle = '#2a2622'; g.beginPath(); g.moveTo(x - 2, y); g.lineTo(x + w + 2, y); g.lineTo(x + w - 4, y + 10); g.lineTo(x + 4, y + 10); g.closePath(); g.fill();
     g.fillStyle = '#4a3e34'; g.fillRect(x, y, w, 2); g.fillStyle = '#c8c0b0'; for (let i = 4; i < w - 2; i += 7) g.fillRect(x + i, y + 6, 2, 1);
@@ -183,6 +228,7 @@ export function makeCauseway3Hands(ctx) {
   };
   H.drawOver = (g, cx, cy, t) => {
     if (!S) return; const L = lv(), VW = ctx.VW();
+    if (L.cw3Kit) { artOver(g, cx, cy, t, VW, L); return; }
     /* foam on a turning tide's pools */
     for (const T0 of TK.tides) { const gg = gauge(TK, T0.id); if (!gg || !(gg.ph === 'warn' || gg.ph === 'turn')) continue;
       for (const p of L.pools) { if (!(T0.T.pools || []).includes(p.id)) continue; const y = R(p.y - cy) - 1, x0 = Math.max(0, R(p.x0 - cx)), x1 = Math.min(VW, R(p.x1 - cx)); if (x1 <= x0) continue;
