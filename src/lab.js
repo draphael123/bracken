@@ -2770,7 +2770,11 @@ async function runbossLab(BK, opts) {
          strides after you, down off the stone. So the hands step 80 px off him, on the side with room, until he comes down. */
       else if (boss.t === 'herald' && boss.y < A.floor - 40 && P.y > boss.y + 30 && !open) { const side = (Math.sign(P.x - boss.x) || 1) * (P.x + (Math.sign(P.x - boss.x) || 1) * 80 > A.x1 - 18 || P.x + (Math.sign(P.x - boss.x) || 1) * 80 < A.x0 + 18 ? -1 : 1);
         goal = Math.max(A.x0 + 18, Math.min(A.x1 - 18, boss.x + side * 90)); strike = false; }
-      else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false; }
+      else if (boss.t === 'herald') { goal = boss.x; strike = true; if (open) k.block = false;
+        /* (claude/seawalk2 HERALD-2) SALTREACH'S GLAIVE SWEEP is the told low blow "!! JUMP IT" (tide-herald thPlan: jump on sweepTell). The generic herald hands never jumped it (they swung through the tell and walked
+           off a HARD-tell by dodge only while not mid-swing): the knight stood at 20 px and ate the sweep 7-8 times a fight. Jump it as a player does - once, in the tell's last 0.3 s, no swing started, held for a full hop. */
+        if (boss.lw3) { if (boss.mode === 'sweepTell' && boss.modeT < 0.3 && ad < 74 && (P.ground || P.swim) && !(P.labSwJ > 0)) { BK.press('jump'); P.labSwJ = 16; }
+          if (P.labSwJ > 0) { P.labSwJ--; k.jump = true; if (boss.mode === 'sweepTell' || boss.mode === 'sweep') strike = false; } } }
       /* THE GOBLIN QUEEN'S QUAKE (claude/gqueen2): her shadow is where she lands - off the floor as she comes down on it, and over her floor waves;
          asked before the open branch, because plate off she leaps AT you */
       else if (boss.t === 'gqueen' && (gqf = gqueenReact(BK, boss, P, k, A, h))) { goal = gqf.goal; strike = gqf.strike; }   /* (claude/gqueen3) the crown and the shards are PARRIED, the lash ducked / jumped, the escape climbed */
