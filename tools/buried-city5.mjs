@@ -27,13 +27,13 @@ const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x
 const TS = 16, DY = 1; let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 const MASTER_HASH = 'fc38b4c4791381f3', MASTER_W = 887, MASTER_ENTS = 428;   /* origin/master 03f8a36ce (the build of src/buried-city.js before this lane): sha256 of the grid, first 16 hex */
 const lv = LEVELS.find(l => l.id === 'buriedcity');
-const build = on => { if (on) process.env.BRACKEN_BC5 = '1'; else delete process.env.BRACKEN_BC5; return lv.build(); };
+const build = on => { if (on) process.env.BRACKEN_BC5 = '1'; else process.env.BRACKEN_BC5 = '0'; return lv.build(); };
 const hashOf = L => createHash('sha256').update(Buffer.from(L.grid)).digest('hex').slice(0, 16);
 const rng0 = seed => { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; };
 
 /* ---------- FLAG ---------- */
 const off = build(false), on = build(true);
-ok(B5.BC5_SHIPS === false, 'BC5_SHIPS is false on the branch: master unchanged until Daniel flips it (art before live)');
+ok(B5.BC5_SHIPS === true, 'BC5_SHIPS is true on the prep branch (claude/prepbc5); ?bc5=0 / BRACKEN_BC5=0 is the lab OFF override');
 ok(hashOf(off) === MASTER_HASH && off.W === MASTER_W && off.ents.length === MASTER_ENTS && !off.bc5 && !off.doors && !off.mini, 'flag OFF: master\'s grid hash ' + MASTER_HASH + ', ' + MASTER_W + ' wide, ' + MASTER_ENTS + ' ents, no doors, no mini - cell for cell');
 ok(on.bc5 && on.W === MASTER_W && hashOf(on) !== MASTER_HASH, 'flag ON: the same width (' + on.W + '): NO column shift (the offset constant is 0), a different grid');
 ok(hashOf(build(false)) === MASTER_HASH, 'flipping the flag back restores master exactly (no leak between the two)');

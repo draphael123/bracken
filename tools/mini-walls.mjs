@@ -13,7 +13,7 @@ const RUNS = +(process.argv[2] || 6), SECS = 30;
 const ROOMS = [['fallingtower', 'sexton'], ['burial', 'gravewarden'], ['witchlight', 'hedgewarden'], ['unburied', 'barrowrider']];
 /* (claude/bc5fix) THE GLASSBLOWER (BURIED CITY 5, flag ON only: BRACKEN_BC5=1 PORT=.. node tools/mini-walls.mjs): a STATIONARY CASTER held to the five columns east of his near kiln stub (src/glassblower.js GB_STAGE.him0..), so the 'columns visited' floor is
    2 for him, and the 'frozen, not fought' test is what he DOES: >= 4 different modes in the half minute (his gob, blast, flip and walk all come up). Flag OFF = master's four rooms. */
-if (process.env.BRACKEN_BC5 === '1') ROOMS.push(['buriedcity', 'glassblower']);
+if (process.env.BRACKEN_BC5 !== '0') ROOMS.push(['buriedcity', 'glassblower']);
 const MIN_COLS = { glassblower: 2 };
 const pg = await openPage({ audio: false, fonts: false });
 const bad = [], seen = []; let leaps = 0;

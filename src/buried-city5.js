@@ -12,8 +12,11 @@
 //   R4 EXAM   the antechamber: the existing timed slabs, a RACE DOOR at the hall's end on the same glass, one re-strike pad midway (and one at the door).
 //   FOES      THE SAND GRASPER (src/sand-grasper.js): rises when a room drains / when you come near; never in a race window, run line or the mini's floor.
 // The preview: ?bc5=1&level=buriedcity   globalThis.BRACKEN_BC5 = true   env BRACKEN_BC5=1 (Node tools).
-export const BC5_SHIPS = false;
+export const BC5_SHIPS = true;   /* (claude/prepbc5) ships ON; ?bc5=0 / BRACKEN_BC5=0 / globalThis.BRACKEN_BC5=false = the lab OFF override (the old street); ?bc5=1 still forces ON */
 export function bc5On() {
+  try { if (globalThis.BRACKEN_BC5 === false || globalThis.BRACKEN_BC5 === '0') return false; } catch { /* no global */ }
+  try { if (typeof location !== 'undefined' && /[?&]bc5=0/.test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_BC5 === '0') return false; } catch { /* no node */ }
   if (BC5_SHIPS) return true;
   try { if (globalThis.BRACKEN_BC5 === true || globalThis.BRACKEN_BC5 === '1') return true; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]bc5=1\b/.test(location.search || '')) return true; } catch { /* no page */ }
