@@ -16,7 +16,7 @@ try {
   await pg.evalp(`(() => { BK.PROG.xp = Object.assign(BK.PROG.xp || {}, { knight: 1e6 }); BK.load(__LV.findIndex(l => l.id === ${JSON.stringify(id)})); BK.start(); BK.god = true; BK.sim(60); return true; })()`);
   let n = 0;
   for (const [x, y] of pts) {
-    const d = await pg.evalp(`(() => { BK.tp(${x}, ${y}); BK.sim(30); for (let k = 0; k < 90; k++) BK.step(1);
+    const d = await pg.evalp(`(() => { BK.load(__LV.findIndex(l => l.id === ${JSON.stringify(id)})); BK.start(); BK.god = true; BK.sim(40); BK.tp(${x}, ${y}); BK.sim(30);  for (let k = 0; k < 90; k++) BK.step(1);
       const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360);
       return { png: c.toDataURL('image/png'), px: Math.round(BK.P.x / 16), py: Math.round(BK.P.y / 16), hp: Math.round(BK.P.hp) }; })()`);
     const f = tag + '-' + String(++n).padStart(2, '0') + '-x' + x + '.png'; writeFileSync(join(out, f), Buffer.from(d.png.split(',')[1], 'base64')); console.log(f, 'wp', x, y, 'hero at', d.px, d.py);
