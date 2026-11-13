@@ -179,6 +179,7 @@ import * as JF from './jump-feel.js'; import * as AIRM from './air-motion.js';  
 import { CF1_SHIPS, setCF1, cfClass, makeLimiter as cfMakeLimiter, stopGate as cfStopGate, jetGate as cfJetGate, tipRead as cfTipRead, leanPx as cfLeanPx, glintDue as cfGlintDue, stageCue as cfStageCue, flashAlpha as cfFlashAlpha, releaseSmearHit as cfRelSmearHit, thwackOpts as cfThwackOpts, kickFor as cfKickFor, CF1 as CF1_K } from './cf-impact.js';   /* (claude/cf1) CF1 IMPACT: the blow's weight, the tick limiter, the warden's tip, the lean (CF1_SHIPS, default OFF; ?cf1=1 previews) */
 import { JUICE, HEAVY_TAGS, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock, weaponOf, JUICE2, JUICE2_SHIPS, setJuice2, j2row, stopFor2, weaponStopMul, landShakeShare, recoilEase, glanceStop, jitterFor, starSize, starAlpha, starCols, capParts, hitBudget, makeDuty, coopStop } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, SECOND_SLOT_LEVEL, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, wearTrait, TRT, CARD, CARD_CAP, CARD_FULL, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, PYRO_CARDS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, techOn, upgRank, milestoneName, isTechLevel, isUpgradeLevel, techniqueById, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
+import { makeTitleBake, defaultCanvas as titleBakeCanvas } from './title-bake.js'; const TITLE_BAKE = makeTitleBake(titleBakeCanvas);   /* (claude/small1113) the title's glow + vignette gradients, baked once */
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
@@ -37645,7 +37646,7 @@ function drawTitle(cx, cy) {
   g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgba(110,90,140,0.5)'; g.fillRect(0, VH - 22, VW, 22); g.globalCompositeOperation = 'source-over';
   // the campfire, and the knight warming his hands at it
   { const fx = 138, fy = VH - 22, fl = Math.floor(time * 9) % 3;
-    g.globalCompositeOperation = 'lighter'; const gl = g.createRadialGradient(fx, fy - 6, 2, fx, fy - 6, 46 + Math.sin(time * 11) * 2); gl.addColorStop(0, 'rgba(255,170,90,0.42)'); gl.addColorStop(1, 'rgba(255,120,60,0)'); g.fillStyle = gl; g.fillRect(fx - 50, fy - 56, 100, 70); g.globalCompositeOperation = 'source-over';
+    TITLE_BAKE.glow(g, fx, fy, time);   /* (claude/small1113) baked: src/title-bake.js */
     g.drawImage(PROP.campfire[fl], fx - 7, fy - 13);
     for (let i = 0; i < 7; i++) { const ph = (time * 0.8 + i / 7) % 1, sx = fx + Math.sin(i * 3.1 + time * 2) * 4 * ph + (i % 3 - 1) * 2, sy = fy - 10 - ph * 44; g.globalAlpha = (1 - ph) * 0.9; g.fillStyle = ph < 0.4 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(sx), Math.round(sy), 1, 1); } g.globalAlpha = 1;
     // his shadow, thrown away from the fire, and the smoke of it going up into the last of the light
@@ -37666,7 +37667,7 @@ function drawTitle(cx, cy) {
   drawTitleBracken();
   for (const f of fireflies) { const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(f.t * 4)); g.globalAlpha = a; g.fillStyle = '#fff0a0'; g.fillRect(Math.round(f.x - camX), Math.round(f.y - camY), 2, 2); }
   g.globalAlpha = 1;
-  const vg = g.createRadialGradient(VW / 2, VH / 2, 60, VW / 2, VH / 2, 220); vg.addColorStop(0, 'rgba(10,6,20,0)'); vg.addColorStop(1, 'rgba(10,6,20,0.7)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH);
+  TITLE_BAKE.vignette(g, VW, VH);
 }
 // SCREEN TRANSITIONS. Every change of screen comes up out of the dark instead of cutting, and a level opens
 // on an iris round the knight. Opening a pause menu or a talk box is not a change of screen.
