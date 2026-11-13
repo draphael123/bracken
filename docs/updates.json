@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 177,
+    "lines": [
+      { "s": "The Glassblower is a little fairer.", "lv": ["buriedcity"] },
+      { "s": "He has less health than before.", "lv": ["buriedcity"] },
+      { "s": "His opening after you shatter glass lasts a bit longer.", "lv": ["buriedcity"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 176,
     "lines": [
       { "s": "Buried City: race the hourglass. Doors, bridges and lifts stand only while the sand runs.", "lv": ["buriedcity"] },
