@@ -14,11 +14,11 @@ try {
     const snap = (id, label) => { cg.drawImage(BK.buf, 0, 0, 640, 360); shots[id] = cv.toDataURL('image/png'); const x = (n % 3) * 640, y = Math.floor(n / 3) * 360; sg.drawImage(BK.buf, x, y, 640, 360);
       sg.fillStyle = 'rgba(0,0,0,0.6)'; sg.fillRect(x, y, 640, 22); sg.fillStyle = '#ffd36b'; sg.font = '15px monospace'; sg.fillText((n + 1) + '. ' + label, x + 6, y + 16); n++; };
     const hold = () => { BK.P.hp = BK.P.maxHp; };
-    BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'crown')); BK.state = 'play'; BK.god = false; BK.sim(5);
+    BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'crown')); BK.state = 'play'; BK.god = false; BK.step(5);
     const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1);
-    for (let k = 0; k < 300; k++) { hold(); BK.sim(1); }
+    for (let k = 0; k < 300; k++) { hold(); BK.step(1); }
     let q = BK.boss; q.crownCd = 99; q.portalCd = 99; q.geodeCd = 99; q.slamT = 99; q.sweepT = 99; q.courtT = 99; q.hLeapT = 99; q.decreeT = 99; q.throwT2 = 99; q.ringT = 99;
-    const P = BK.P; const run = k => { for (let i = 0; i < k; i++) { hold(); BK.sim(1); } };
+    const P = BK.P; const run = k => { for (let i = 0; i < k; i++) { hold(); BK.step(1); } };
     q.hp = 2; const hu = BK.hurt || (BK.env && BK.env().hurt); if (hu) hu(q, 50, P.x); run(140);
     const H = BK.gqHands(); H.skipRoof(); run(6);
     const G52 = H.q52();
