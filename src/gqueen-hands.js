@@ -4,7 +4,7 @@
 //   - the PARRY of either one: gqHit() asks damagePlayer and reads the shared parry counter (RP.stats.parries), so every hero's beat path covers it
 //   - STUNNED (the main opening), the flee, the escape up the burning hall, the portal step and phase two on THE TOWER TOP (later commits)
 // Starting numbers are the plan's (tune lane next week). Art = placeholders (frames 2/6/7/15/16 until the art lane).
-import * as GQ4A from './redraw/gq4_art.js'; import { Q4, Q4N } from './gq4q.js'; import { Q5, Q5N, makeGQ5Q1 } from './gq5q1.js'; import { grateTiles as hcGrateTiles } from './redraw/highcrown2_art.js';   /* (claude/gq5q1) THE BELL HOISTS + THE THRONE FIRE, behind src/gq5q1.js's switch (Q5) */ import { heroStrikes } from './hero-strikes.js'; import { Q52, Q52N, makeGQ5Q2 } from './gq5q2.js';   /* (claude/gq5q2) THE TOWER TOP, CLEAR: the teach shard, THE BELL PERCH + rope, the sceptre sweep, the hatch (src/gq5q2.js; flag off) */   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
+import * as GQ4A from './redraw/gq4_art.js'; import { Q6, Q6N } from './gq6fix.js'; import { Q4, Q4N } from './gq4q.js'; import { Q5, Q5N, makeGQ5Q1 } from './gq5q1.js'; import { grateTiles as hcGrateTiles } from './redraw/highcrown2_art.js';   /* (claude/gq5q1) THE BELL HOISTS + THE THRONE FIRE, behind src/gq5q1.js's switch (Q5) */ import { heroStrikes } from './hero-strikes.js'; import { Q52, Q52N, makeGQ5Q2 } from './gq5q2.js';   /* (claude/gq5q2) THE TOWER TOP, CLEAR: the teach shard, THE BELL PERCH + rope, the sceptre sweep, the hatch (src/gq5q2.js; flag off) */   /* (claude/gq4q) GQ4Q: the hearth jet + the reach, struck shards, the P2 shard fight */
 import * as GA from './redraw/gqueen_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the GQ3 art: royal portal, geode, tower, roof, stair */ import * as BW from './bell-winch.js';   /* (claude/highcrown3) the bell lure + the winch wave, shared with the Goblin Princess */   /* (claude/gq2art) the art */
 export const GQ3 = {
   stunGuard: 1.5, stunRoof: 3.0,       // s after a stun in which no second stun can land (no stunlock, B12); the stun a parry gives on the tower top
@@ -286,6 +286,7 @@ export function makeGQueenHands(ctx) {
     e.stage = 'roof'; e.phase = 3; e.hidden = false; e.alive = true; e.hp = e.maxHp = G.hp2; e.x = RA.x1 - 6 * TS; e.y = RA.floor; e.vx = 0; e.vy = 0; e.face = -1;
     let n = 0; everyone(P1 => { P1.x = RA.exit.x * TS + 8 + ([0, 14, 28, 42][n++] ?? 14); P1.y = (RA.exit.y + 1) * TS; P1.vx = 0; P1.vy = 0; P1.face = 1; });
     ctx.enterRoof();
+    if (Q6) { const hx = RA.exit.x * TS + 8; e.x = Math.max(RA.x0 + 40, hx - Q6N.dx); e.face = 1; e.modeT = Math.min(e.modeT, Q6N.card); everyone(P1 => { P1.face = -1; }); }   /* (claude/gq6fix) SHE IS ON THE DECK WITH YOU: the hero's side of the cupola, in front of him (she stood 470 px off at the east end, walked slowly, then blinked behind him: the hero walked to the end and back), and the name card is 1.0 s */
     roofBegin(e);
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
   }
@@ -299,7 +300,8 @@ export function makeGQueenHands(ctx) {
   function roofBegin(e) { sealHatch(true); S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
     bays: [0, 1, 2, 3].map(() => ({ state: 'idle', at: 0, until: 0 })), bayT: G.p2.bayEvery, bayNext: 0, bayN: 0 };
     if (Q4) { S.roof.geyserCd = 1e9; S.roof.q4 = { homes: [], ward: 0, volleyCd: 1.6, boulderCd: 5, rockCd: 7, mtnCd: 0, bombSeen: new Set(), rage: false, rageDone: false, vol: null, boulder: null, fall: [], bomb: null, mtn: null, volLit: null }; }   /* (claude/gq4q) the rubble geyser is retired */
-    if (G52) G52.begin(S.roof); }
+    if (G52) G52.begin(S.roof);
+    if (Q6) S.roof.blinkCd = Q6N.firstBlink; }   /* (claude/gq6fix) her first blink waits: it took her to the far west before anything had happened */
   const rings = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.RINGS : []; };
   const bays = () => { const A0 = L().arena, TWd = (A0 && A0.tower) || (L().arenaRoof && L().arenaRoof.tower); return TWd ? TWd.BAYS : []; };
   const ringPos = r => ({ x: r.x * TS + 8, y: (r.y + 1) * TS });   // feet
@@ -970,7 +972,8 @@ export function makeGQueenHands(ctx) {
   function shardHome(e, r) {   // a shard reached her
     const R0 = S.roof, P4 = R0 && R0.q4; if (!P4) return;
     if (now() < P4.ward) { ctx.number(e.x, e.y - 60, 'GLANCES', '#c9c9d6'); ctx.ring(e.x, e.y - 40, 26, '#c9a0ff', 0.3); sfx('clank'); return; }
-    e.hp -= Math.round(e.maxHp * Q4N.p2.shardPct); e.flash = 0.3; ctx.number(e.x, e.y - 60, 'STRUCK', '#ffd36b'); if (G52 && r && r.teach) G52.teachHome(e, r); ctx.burst(e.x, e.y - 40, 8, ['#ffd36b', '#fff6c8', '#b28cff'], 70, 0.4); sfx('parry'); P4.homes.push(now());
+    e.hp -= Math.round(e.maxHp * Q4N.p2.shardPct); e.flash = Q6 ? 0.5 : 0.3; ctx.number(e.x, e.y - 60, Q6 ? 'STRUCK -' + Math.round(Q4N.p2.shardPct * 100) + '%' : 'STRUCK', '#ffd36b');
+    if (Q6) { ctx.ring(e.x, e.y - 40, 36, '#ffd36b', 0.5); ctx.shake(3); }   /* (claude/gq6fix) the reflected stone's hit confirm ON HER: a bigger flash, a ring, the percent she lost */ if (G52 && r && r.teach) G52.teachHome(e, r); ctx.burst(e.x, e.y - 40, 8, ['#ffd36b', '#fff6c8', '#b28cff'], 70, 0.4); sfx('parry'); P4.homes.push(now());
     if (e.mode === 'roofStand' || e.mode === 'rec') e.modeT = Math.max(e.modeT, Q4N.p2.flinch);
     P4.homes = P4.homes.filter(t => now() - t <= Q4N.p2.dazeWin); S.homeTotal = (S.homeTotal || 0) + 1;
     if (P4.homes.length >= Q4N.p2.dazeN && e.mode !== 'dazed' && e.hp > 0) daze(e);

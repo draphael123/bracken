@@ -10,6 +10,7 @@
 //   THE HATCH ERUPTS  every 15 s after 50%: seam smoke 1.2 s + "THE HATCH!", then a fire column 2 wide x 5 rows for 2.0 s (14 + a push), the nearest bay burns with it. Never during the perch's swing / downed window.
 //   NUMBERS       SHARD VOLLEY cd 2.5 -> 2.2 s; the phase-2 dmgK 0.6 -> 0.65; her bar stays 1000.
 // The override for review and the lanes: ?gq5q2=1 on the page, globalThis.BRACKEN_GQ5Q2 = true, or BRACKEN_GQ5Q2=1 in a Node tool's env.
+import { Q6, Q6N } from './gq6fix.js';   /* (claude/gq6fix) the entry + the teach read from her, behind its own switch */
 export const GQ5Q2_SHIPS = true;   /* (claude/prepqon) ships ON together with GQ5Q1 (Daniel's call). Rollback = this one flag. ?gq5q2=0 / BRACKEN_GQ5Q2=0 / globalThis.BRACKEN_GQ5Q2=false = the lab OFF override (the old fight); ?gq5q2=1 still forces ON. */
 export function gq5q2On() {
   try { if (globalThis.BRACKEN_GQ5Q2 === false || globalThis.BRACKEN_GQ5Q2 === '0') return false; } catch { /* no global */ }
@@ -59,8 +60,8 @@ export function makeGQ5Q2(env) {
   E.begin = R0 => {
     st = fresh(); const p4 = R0 && R0.q4; if (p4) p4.volleyCd = Math.max(p4.volleyCd, N.firstVolley);
     const e = env.q(), RA = env.L().arena || env.L().arenaRoof;
-    if (RA && e) { const cx = (RA.x0 + RA.x1) / 2; ctx.number(cx, RAf() - 118, N.plate[0], '#ffd36b'); ctx.number(cx, RAf() - 100, N.plate[1], '#ffd36b'); }
-    if (ctx.hint) ctx.hint(N.hint);
+    if (RA && e && !Q6) { const cx = (RA.x0 + RA.x1) / 2; ctx.number(cx, RAf() - 118, N.plate[0], '#ffd36b'); ctx.number(cx, RAf() - 100, N.plate[1], '#ffd36b'); }   /* (claude/gq6fix) ON: the plate + hint come with the teach's tell, after the name card (they used to float up under it) */
+    if (ctx.hint && !Q6) ctx.hint(N.hint);
   };
 
   /* ---- THE TEACH ---- */
@@ -76,9 +77,25 @@ export function makeGQ5Q2(env) {
       if (!r.home && tt >= T.said) { T.said = tt + 1.0; ctx.number(r.x, r.y - 16, 'STRIKE IT!', '#ffd36b'); }
       return;
     }
+    if (Q6) { if (T.tellAt && tt >= T.tellAt) teachThrow(T, e, tt); return; }   /* (claude/gq6fix) the shard leaves HER hand after her own told move (E.choose starts it) */
     if (T.n >= N.teach.max || tt < T.nextAt || !e || e.mode === 'perch' || e.mode === 'perchSwing' || e.hp <= 0) return;
     const P0 = env.target(); if (!P0 || P0.dead) return; const ex = env.lvlRings(1)[0]; if (!ex) return;
     const p = env.ringPos(ex.r), px = p.x, py = p.y - 14, dx = P0.x - px, dy = (P0.y - 9) - py, dd = Math.hypot(dx, dy) || 1;
+    const r = env.addShardRef({ x: px, y: py, vx: dx / dd * N.teach.v, vy: dy / dd * N.teach.v, dmg: N.teach.dmg, glint: true, teach: true });
+    if (!r) { T.nextAt = tt + 0.5; return; }
+    T.n++; T.shard = r; T.said = tt + 0.3; ctx.burst(px, py, 8, ['#ffd36b', '#fff6c8'], 50, 0.4); ctx.ring(px, py, 14, '#ffd36b', 0.4); env.sfx('portalOpen'); ctx.number(px, py - 18, 'STRIKE IT!', '#ffd36b');
+  }
+
+  /* (claude/gq6fix) THE TEACH, FROM HER: her '!' and her sceptre-up pose (the volley's own tell), then the slow gold shard leaves her hand at you, the plate + hint say it from where you stand */
+  E.teachDue = e => { const T = st && st.teach; return !!(Q6 && T && !T.done && !T.shard && !T.tellAt && T.n < N.teach.max && tn() >= T.nextAt && e && e.hp > 0 && (e.mode === 'roofStand' || e.mode === 'rec')); };
+  E.teachTell = e => {
+    const T = st.teach, tt = tn(), P0 = env.target(); T.tellAt = tt + Q6N.tellT; e.mode = 'volleyTell'; e.modeT = Q6N.tellT; e.vx = 0; if (P0) e.face = sgn(P0.x - e.x);
+    ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); env.sfx('crack'); ctx.ring(e.x, e.y - 44, 20, '#ffd36b', 0.4);
+    if (T.n === 0 && P0) { const cx = P0.x; ctx.number(cx, RAf() - 118, N.plate[0], '#ffd36b'); ctx.number(cx, RAf() - 100, N.plate[1], '#ffd36b'); if (ctx.hint) ctx.hint(N.hint); }
+  };
+  function teachThrow(T, e, tt) {
+    T.tellAt = 0; const P0 = env.target(); if (!P0 || P0.dead || !e || e.hp <= 0) { T.nextAt = tt + 0.5; return; }
+    const px = e.x + sgn(P0.x - e.x) * 22, py = e.y - 44, dx = P0.x - px, dy = (P0.y - 9) - py, dd = Math.hypot(dx, dy) || 1;
     const r = env.addShardRef({ x: px, y: py, vx: dx / dd * N.teach.v, vy: dy / dd * N.teach.v, dmg: N.teach.dmg, glint: true, teach: true });
     if (!r) { T.nextAt = tt + 0.5; return; }
     T.n++; T.shard = r; T.said = tt + 0.3; ctx.burst(px, py, 8, ['#ffd36b', '#fff6c8'], 50, 0.4); ctx.ring(px, py, 14, '#ffd36b', 0.4); env.sfx('portalOpen'); ctx.number(px, py - 18, 'STRIKE IT!', '#ffd36b');
@@ -209,6 +226,7 @@ export function makeGQ5Q2(env) {
   /* her choice on the tower top (q4Choose, after the rage): true = it set her mode */
   E.choose = (e, ad) => {
     if (!st) return false;
+    if (E.teachDue(e)) { E.teachTell(e); return true; }   /* (claude/gq6fix) */
     if (E.perchWanted(e)) { E.perchStart(e); return true; }
     if (E.sweepWanted(e, ad)) { E.sweepStart(e); return true; }
     return false;
