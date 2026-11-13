@@ -821,7 +821,7 @@ export function gqGuardBot(BK, boss, P, k, h) {
   for (const e of BK.enemies()) { if (!e.alive || e === boss || e.t !== 'soldier') continue; const ad = Math.abs(e.x - P.x); if (ad < sd && Math.abs(e.y - P.y) < 30) { sd = ad; s = e; } }
   if (!s) return null; const dir = Math.sign(s.x - P.x) || P.face;
   if (s.mode === 'slashTell' && sd < 60) {
-    if (P.labSdE !== s || s.modeT > (P.labSdT ?? -1) + 0.05) { P.labSdE = s; P.labSdTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); }
+    if (P.labSdE !== s || s.modeT > (P.labSdT ?? -1) + 0.05) { P.labSdE = s; P.labSdTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); if (GSTATS) { GSTATS.sTell = (GSTATS.sTell || 0) + 1; if (P.labSdTry) GSTATS.sTry = (GSTATS.sTry || 0) + 1; } }
     P.labSdT = s.modeT; P.face = dir; k.left = k.right = false;
     if (P.labSdTry) { parryAt(BK, h, s.modeT); return { goal: null, strike: false }; }
     if (s.modeT < 0.2 && P.ground && !(P.dodge > 0)) BK.press('dodge');
@@ -3311,7 +3311,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: { ...gqLabRow(GQS, boss, f, gqSpf), ...(() => { try { const q5 = BK.gqHands().q5(), s5 = q5 && q5.state(); return s5 ? { q5: { fires: s5.fires, scorches: s5.scorches, burnTicks: s5.burned } } : {}; } catch (e) { return {}; } })() } } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: { ...gqLabRow(GQS, boss, f, gqSpf), ...(() => { try { const q5 = BK.gqHands().q5(), s5 = q5 && q5.state(); return s5 ? { q5: { fires: s5.fires, scorches: s5.scorches, burnTicks: s5.burned } } : {}; } catch (e) { return {}; } })() } } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0, soldier: GSTATS ? { tells: GSTATS.sTell || 0, tries: GSTATS.sTry || 0, rolls: GSTATS.sRoll || 0, cutFrames: GSTATS.sCut || 0 } : null } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
@@ -3537,7 +3537,7 @@ export async function eliteLab(BK, o) {
       if (f % 900 === 899) await yieldNow();
     }
     k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
-    let eyes = null; if (PERC) { PERC.restore(); eyes = { ...PERC.stats(), guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 }; PERC = null; }
+    let eyes = null; if (PERC) { PERC.restore(); eyes = { ...PERC.stats(), guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0, soldier: GSTATS ? { tells: GSTATS.sTell || 0, tries: GSTATS.sTry || 0, rolls: GSTATS.sRoll || 0, cutFrames: GSTATS.sCut || 0 } : null }; PERC = null; }
     return { eyes, out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
   } finally { if (PERC) { PERC.restore(); PERC = null; } LABP = LABP0; BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
 }
