@@ -141,7 +141,7 @@ await scene('shadow', `
   R.shots.push({ name: 'mill-lamp-dark', png: snap(2) });
   /* the goblin, unlit: a blow slips (the words and the hint) */
   const hp0 = gob.hp;
-  const strikeGob = () => { BK.textLab.hint('', 0); gob.x = 400; gob.vx = 0; gob.stagger = 0; strike(376, 1056, 1); let msg = null; for (let k = 0; k < 12; k++) { BK.step(1); if (BKT.hintNow.t > 0.4 && BKT.hintNow.msg) { msg = BKT.hintNow.msg; break; } } return msg; };
+  const strikeGob = () => { BK.textLab.hint('', 0); gob.x = 400; gob.vx = 0; gob.stagger = 0; strike(376, 1056, 1); let msg = null; for (let k = 0; k < 12; k++) { BK.step(1); if (BKT.hintNow.t > 0.4 && BKT.hintNow.msg) { msg = BKT.hintNow.msg; break; } } for (let k = 0; k < 14; k++) BK.step(1); return msg; };   /* (the hint box fades in) */
   const away = () => { for (let k = 0; k < 300; k++) { BK.P.x = 150; BK.P.y = 1056; gob.x = 400; gob.vx = 0; BK.step(1); } };
   R.strikes = [strikeGob().slice(0, 36)]; away();   /* the 1st blow: the goblin's own first-sight tip holds the hint box */
   const s2 = strikeGob(); R.strikes.push(s2); R.shots.push({ name: 'shadowgob-unlit-hint-bring-it-into-the-light', png: snap(2) }); away();
