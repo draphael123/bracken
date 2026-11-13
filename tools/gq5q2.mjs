@@ -6,7 +6,7 @@
 //   T  teach      the entry rule (hint + plate), ONE slow gold shard (160 px/s) inside 2 s of entry from a ring on your level, "STRIKE IT!" riding it, home = "STRUCK - 8%!"; a miss repeats, 3 at most;
 //                 the dim 'RING' plate at ~8 s; no volley before the teach has been seen
 //   P  perch      first at 18 s then every 22 s; no bombardment at 70 / 45%; ward: every blow is turned (the ONE immunity window), shards glance; the rope is rung by ANY blow or hero shot (every kind in
-//                 src/hero-strikes.js, every seat) -> 1.2 s swing tell -> SHAKEN LOOSE, DOWNED 3.0 s x1.5 at most 10% of her bar; nobody rings = she leaves at 8 s; the rope always re-arms; rockfall 2 / 1.2 s;
+//                 src/hero-strikes.js, every seat) -> 1.2 s swing tell -> SHAKEN LOOSE, DOWNED 3.0 s x1.5 at most 8% of her bar (GQ5Q2-TUNE: 10% -> 8%); nobody rings = she leaves at 8 s; the rope always re-arms; rockfall 2 / 1.2 s;
 //                 once more in the rage, 18 s after the last
 //   S  sweep      within 3 tiles only: tell 0.7 s, 2.5-tile chest arc, 18 x dmgK, a jumper is spared, a parry = STAGGERED 1.2 s, cd 4 s
 //   H  hatch      never before 50%; smoke 1.2 s + "THE HATCH!", fire 2.0 s, 14 + push once a hero, the nearest bay burns; every 15 s; never in the perch's swing / downed window or when a perch is due inside the lead
@@ -126,9 +126,9 @@ console.log('== P. THE BELL PERCH');
   const stunsBefore = w.H.read().stuns; const rp = rope(w); ringBy(w); ok(e.mode === 'perchSwing' && Math.abs(e.modeT - 1.2) < 0.05 && w.st.numbers.includes('THE BELL SWINGS'), 'a blow on the rope: THE BELL SWINGS, a 1.2 s tell (modeT ' + e.modeT.toFixed(2) + ')');
   w.step(60 * 1.1); ok(e.mode === 'perchSwing', 'she is still in the bell for the whole tell'); w.step(10); ok(e.mode === 'stunned' && e.q52Down && Math.abs(e.y - w.RA.floor) < 1 && Math.abs(e.x - w.H.q52().downX()) < 1, 'SHAKEN LOOSE: she falls to the deck beside the rope (x ' + Math.round(e.x) + ', y ' + e.y + ')');
   ok(w.st.numbers.includes('SHAKEN LOOSE') && w.st.numbers.includes('DOWNED') && Math.abs(e.modeT - 3.0) < 0.2, 'DOWNED 3.0 s (modeT ' + e.modeT.toFixed(2) + ')');
-  // x1.5 and the 10% cap: the roof's stunned x1.25 is already in the chain
+  // x1.5 and the cap (GQ5Q2-TUNE: 10% -> 8%): the roof's stunned x1.25 is already in the chain
   const hpd = e.hp; const d1 = w.blowOn(40); ok(d1 === 60, 'a base 40 blow lands 60 (x1.5, the chain\'s x1.25 x 1.2): ' + d1);
-  let total = d1, slivers = 0; for (let i = 0; i < 6; i++) { const dd = w.blowOn(40); total += dd; if (total > Math.round(e.maxHp * Q52N.perch.cap)) slivers++; } ok(total - slivers === Math.round(e.maxHp * Q52N.perch.cap) && slivers <= 5, 'the cap: 10% of her bar (' + (total - slivers) + ' of ' + e.maxHp + ') in one down, then 1-hp slivers in the 0.3 s tail (' + slivers + ')'); ok(e.modeT <= 0.3 + 1e-9, 'past the cap she scrambles away (modeT ' + e.modeT.toFixed(2) + ')');
+  let total = d1, slivers = 0; for (let i = 0; i < 6; i++) { const dd = w.blowOn(40); total += dd; if (total > Math.round(e.maxHp * Q52N.perch.cap)) slivers++; } ok(total - slivers === Math.round(e.maxHp * Q52N.perch.cap) && slivers <= 5, 'the cap: ' + Math.round(Q52N.perch.cap*100) + '% of her bar (' + (total - slivers) + ' of ' + e.maxHp + ') in one down, then 1-hp slivers in the 0.3 s tail (' + slivers + ')'); ok(e.modeT <= 0.3 + 1e-9, 'past the cap she scrambles away (modeT ' + e.modeT.toFixed(2) + ')');
   w.step(60 * 1); ok(e.mode !== 'stunned' && !e.q52Down && w.H.q52().state().perch.phase === 'idle', 'the window closes and the perch is over (mode ' + e.mode + ')'); }
 function Tw0(w) { const r = w.Tw.RINGS.find(x => x.id === 'cu'); return { x: r.x * TS + 8, y: (r.y + 1) * TS }; }
 { const w = roof(), e = w.e; ok(gotoPerch(w), 'perch (test entry)'); w.step(60 * 7.8); ok(e.mode === 'perch', 'still up at 7.8 s'); w.step(60 * 0.5); ok(e.mode === 'rec' && w.H.q52().state().perch.phase === 'idle' && e.q52Down !== true, 'nobody rings: she leaves after 8 s (mode ' + e.mode + ')'); ok(w.st.numbers.includes('SHE LEAVES THE BELL'), '"SHE LEAVES THE BELL"');

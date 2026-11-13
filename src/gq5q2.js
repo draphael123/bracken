@@ -5,7 +5,7 @@
 //                 At ~8 s the bell rope at deck level (beside the cupola) shows a dim 'RING' plate.
 //   THE BELL PERCH  every 22 s, the first at 18 s (replaces the BOMBARDMENT's 70 / 45% triggers; once more in the rage, 18 s after the last): she blinks into the cupola ring behind a violet ward
 //                 ("WARDED - RING THE BELL"), rockfall 2 shadows per 1.2 s. A deck-level ROPE hangs from the cupola frame: ANY blow or ANY hero shot rings it (1.2 s swing tell) = SHAKEN LOOSE, she falls
-//                 to the deck, DOWNED 3.0 s x1.5, at most 10% of her bar. Nobody rings = she leaves after 8 s. The one immunity window (B15): every hero can break it.
+//                 to the deck, DOWNED 3.0 s x1.5, at most 8% of her bar (GQ5Q2-TUNE: 10% -> 8%). Nobody rings = she leaves after 8 s. The one immunity window (B15): every hero can break it.
 //   THE SWEEP     within 3 tiles: tell 0.7 s, a 2.5-tile chest arc, 18 (x dmgK), jump or block, a parry = STAGGERED 1.2 s, cd 4 s.
 //   THE HATCH ERUPTS  every 15 s after 50%: seam smoke 1.2 s + "THE HATCH!", then a fire column 2 wide x 5 rows for 2.0 s (14 + a push), the nearest bay burns with it. Never during the perch's swing / downed window.
 //   NUMBERS       SHARD VOLLEY cd 2.5 -> 2.2 s; the phase-2 dmgK 0.6 -> 0.65; her bar stays 1000.
@@ -26,7 +26,7 @@ export const Q52N = {
   volleyCd: 2.2, dmgK: 0.65, firstVolley: 6.5,        // the first volley waits for the teach shard to be seen (it was 1.6 s)
   teach: { at: 1.5, v: 160, dmg: 4, max: 3, retry: 2.0, ropeAt: 8.0, ropeFor: 6.0 },
   rope: { dx: 0, top: 240, hang: 70, hw: 9 },          // dx from the cupola frame's west column centre; the rope hangs from the frame (row 14's underside, y 240) down to 70 px over the deck; hw = half width of the strike box
-  perch: { first: 18, every: 22, tell: 0.6, hold: 8.0, swing: 1.2, down: 3.0, mul: 1.5, cap: 0.10, rainEvery: 1.2, rainN: 2, rageGap: 18, fallDx: 34, guard: 1.5 },
+  perch: { first: 18, every: 22, tell: 0.6, hold: 8.0, swing: 1.2, down: 3.0, mul: 1.5, cap: 0.08, rainEvery: 1.2, rainN: 2, rageGap: 18, fallDx: 34, guard: 1.5 },   /* (GQ5Q2-TUNE step 2: 0.10 -> 0.08, step 1 (sweep dmg) was a no-move - sweep almost never connects against the bot, same shape as gq5p's heel dash: less free DOWNED damage per cycle is the next lever */
   sweep: { range: 48, tell: 0.7, cut: 0.3, arc: 44, dmg: 18, cd: 4.0, stagger: 1.2, bandHi: 30, bandLo: 12 },   /* (GQ5Q2-TUNE step 1: 15 -> 18, the baseline n=6 read 78% [55-91], over the 60-65 band; every roof-reaching fight in the baseline won) */
   hatch: { at: 0.5, first: 4.0, every: 15, smoke: 1.2, fire: 2.0, w: 2, rows: 5, dmg: 14, lead: 4.2 },
 };
@@ -137,7 +137,7 @@ export function makeGQ5Q2(env) {
     if (!(e.q52WardSaid > tt)) { e.q52WardSaid = tt + 1.2; ctx.number(e.x, e.y - 60, 'WARDED - RING THE BELL', '#c9a0ff'); ctx.ring(e.x, e.y - 40, 26, '#c9a0ff', 0.3); env.sfx('clank'); }
     e.wardHit = 0.4; return true;
   };
-  /* what lands on a DOWNED Queen: the roof's stunned x1.25 is already in `dmg`; x1.5 in all, at most 10% of her bar */
+  /* what lands on a DOWNED Queen: the roof's stunned x1.25 is already in `dmg`; x1.5 in all, at most 8% of her bar (GQ5Q2-TUNE step 2) */
   E.take = (e, dmg) => {
     if (!e.q52Down || e.mode !== 'stunned') return dmg; const Pn = N.perch, cap = e.maxHp * Pn.cap, room = Math.max(0, cap - (e.q52Taken || 0));
     dmg = Math.round(dmg * (Pn.mul / 1.25));

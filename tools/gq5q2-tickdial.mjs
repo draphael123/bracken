@@ -25,21 +25,22 @@ try {
       const G52=H.q52(); const row=res[h]={};
       // ---- THE SWEEP: force her into range, cd=0, call the real sweepStart, run to the real cut ----
       {
-        q.mode='roofStand'; q.modeT=99; q.x=P.x+30; q.y=A.floor; q.vx=0; q.face=-1; P.face=1; P.y=A.floor; P.ground=true; P.x=q.x-30;
+        q.mode='roofStand'; q.modeT=99; q.x=P.x+30; q.y=A.floor; q.vx=0; q.face=-1; P.face=1; P.y=A.floor; P.ground=true; P.x=q.x-30; P.hp=5000;
         const st=G52.state(); st.sweep.cd=0;
-        const hp0=P.hp;
         G52.sweepStart(q);
-        for(let i=0;i<120 && q.mode!=='rec';i++){P.ground=true;BK.sim(1);}
-        row.sweep={ hit: Math.round(hp0-P.hp), mode:q.mode };
+        // DO NOT re-pin P.hp inside this loop - the hit itself must be allowed to show (gq5q1-tickdial's own lesson: a hp reset
+        // in the same loop as the damage erases it before it can be read back)
+        let lastHp=P.hp, drop=0; for(let i=0;i<120 && q.mode!=='rec';i++){P.ground=true;BK.sim(1); if (P.hp<lastHp && !drop) drop=lastHp-P.hp; lastHp=P.hp;}
+        row.sweep={ hit: Math.round(drop), mode:q.mode };
       }
       // ---- THE HATCH ERUPTS: cut her to just under 50% so the real armed+first-timer fires it naturally, stand the hero in the real column ----
       {
         const Tw = (BK.L.arena && BK.L.arena.tower) || (BK.L.arenaRoof && BK.L.arenaRoof.tower);
         const c0=Tw.HATCH.cols[0], x0=c0*16, w=2*16;
-        q.hp = Math.round(q.maxHp*0.5)-1;
-        const hp0=P.hp; let fired=false;
-        for (let i=0;i<60*20 && !fired; i++){ P.hp=5000; P.x=x0+w/2; P.y=A.floor; P.ground=true; BK.sim(1); const hs=G52.state().hatch; if (hs.phase==='fire' && hs.hits && hs.hits.size>0) fired=true; }
-        row.hatch={ hit: Math.round(hp0-P.hp), fired };
+        P.hp=5000; q.hp = Math.round(q.maxHp*0.5)-1;
+        let lastHp=P.hp, drop=0, fired=false;
+        for (let i=0;i<60*20 && !fired; i++){ P.x=x0+w/2; P.y=A.floor; P.ground=true; BK.sim(1); if (P.hp<lastHp && !drop) drop=lastHp-P.hp; lastHp=P.hp; const hs=G52.state().hatch; if (hs.phase==='fire' && hs.hits && hs.hits.size>0) fired=true; }
+        row.hatch={ hit: Math.round(drop), fired };
       }
       res[h]=row;
     }
