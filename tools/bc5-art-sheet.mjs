@@ -1,12 +1,14 @@
 // tools/bc5-art-sheet.mjs - BURIED CITY 5's ART as contact sheets, NODE ONLY (no browser, no page): the Glassblower's poses and tells, the Sand Grasper's tell, the Glass Works kit, a composed boss hall.
 //   node tools/bc5-art-sheet.mjs [outdir] [gb|tells|grasper|kit|hall|all]      default outdir = ../scratch/lane-reports/bc5art (LANES), default all
 //   The canvas is tools/node-canvas.mjs (rect, alpha, drawImage only): src/redraw/buried_city_bc5_art.js is rect-only on purpose, so what is on the sheet is what the page draws.
-//   NOT on the sheet (they need the browser's paths/gradients): the real hourglass and the real tiles - the hall sheet stands a plain placeholder where they go (labelled in the report).
+//   (bc5art2) the REAL hourglass (paths, clip, gradient) renders through tools/node-canvas-paths.mjs; the real tiles/wall still cannot - the hall sheet keeps a flat wall stand-in.
 import { install, newCanvas, savePNG } from './node-canvas.mjs';
 import { fileURLToPath } from 'node:url';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import * as A from '../src/redraw/buried_city_bc5_art.js';
+import * as FA from '../src/redraw/buried_city_flip_art.js';
+import { withPaths } from './node-canvas-paths.mjs';
 import { GB, GB_STAGE } from '../src/glassblower.js';
 import { GRASP } from '../src/sand-grasper.js';
 install();
@@ -29,7 +31,7 @@ if (WHICH === 'gb' || WHICH === 'all') {
   const cells = poses.map(p => gbCell({ pose: p, p: p === 'gbWake' ? 0.6 : 0.85 }));
   cells.push(gbCell({ pose: 'gbBuried', open: 1, openK: 0.7 }), gbCell({ pose: 'gbIdle', ward: 1 }), gbCell({ pose: 'gbIdle', flash: true }), gbCell({ pose: 'gbBlastWind', ph: 2, p: 0.9 }), gbCell({ pose: 'gbGobWind', ph: 2, p: 0.9 }), gbCell({ pose: 'gbIdle', f: -1 }, -1));
   save(grid(cells, 7, 3), 'gb-poses.png');
-  const death = [0.05, 0.4, 0.8, 1.0, 1.4, 1.9, 2.2].map(t => cell(110, H, (g, fy) => A.drawGlassblowerDeath(g, { x: 55, y: fy, f: 1, t, time: 0.5 })));
+  const death = [0.05, 0.4, 0.8, 1.0, 1.4, 1.9, 2.2].map(t => cell(150, H, (g, fy) => A.drawGlassblowerDeath(g, { x: 42, y: fy, f: 1, t, time: 0.5 })));
   save(grid(death, 7, 3), 'gb-death.png');
 }
 if (WHICH === 'tells' || WHICH === 'all') {   /* each told move: the windup at 0 / .35 / .7 / 1, then the release - one row a move, P1 */
@@ -63,6 +65,9 @@ if (WHICH === 'kit' || WHICH === 'all') {
   cells.push(cell(130, 50, (g, fy) => A.drawBlast(V(g, 0.2), { x: 10, far: 122, dir: 1 }, fy, GB.blastH, 0.2, 0, 0)));
   cells.push(cell(60, 40, (g, fy) => { A.drawShard(V(g, 0.2), { x: 20, y: fy - 4, dir: 1, ht: 'low' }, 0, 0, 0.2); A.drawShard(V(g, 0.2), { x: 40, y: fy - 14, dir: -1, ht: 'high' }, 0, 0, 0.2); }));
   cells.push(cell(60, 70, (g, fy) => A.drawGlint(V(g, 0.4), 30, fy - 22, 0.6, 0.4)));
+  cells.push(cell(40, 40, (g, fy) => g.drawImage(A.signArt(), 11, fy - 18)));   /* (bc5art2) the BC5 sign */
+  for (const [run, warn] of [[false, false], [true, false], [true, true]]) cells.push(cell(60, 60, (g, fy) => A.drawFinishLine(V(g, 0.7), 30, fy, { run, warn })));   /* (bc5art2) the finish line */
+  cells.push(cell(70, 60, (g, fy) => { const gg = withPaths(g); FA.drawGlass({ g: gg, time: 0.5 }, { t: 5, x: 600 }, { k: 0.6, warn: false, spin: 0, x: 35, y: fy }); }));   /* the real hourglass, for scale */
   save(grid(cells, 6, 3), 'kit.png');
 }
 if (WHICH === 'hall' || WHICH === 'all') {   /* THE GLASSBLOWER'S HALL composed: floor, two kiln stubs, two placeholder hourglasses, him in P1 mid-blast tell and P2 */
@@ -71,7 +76,7 @@ if (WHICH === 'hall' || WHICH === 'all') {   /* THE GLASSBLOWER'S HALL composed:
     g.fillStyle = FLOOR; g.fillRect(0, fy, hallW, 40); const l0 = 12;
     A.drawHallFloor(V(g, 0.5), l0, fy, S.W * ts, 0.5);
     S.cover.forEach(([a, b], i) => { const rows = S.coverRows[i], x = l0 + a * ts; A.drawHallKiln(V(g, 0.5 + i), x, fy - rows * ts, (b - a + 1) * ts, rows * ts); });
-    for (const q of S.glass) { const x = l0 + q.c * ts + 8; g.fillStyle = '#b08a30'; g.fillRect(x - 6, fy - 30, 12, 30); g.fillStyle = '#9ac8e0'; g.fillRect(x - 4, fy - 26, 8, 20); }   /* placeholder hourglass: the real one is the flip's art (paths) */
+    for (const q of S.glass) { const x = l0 + q.c * ts + 8; FA.drawGlass({ g: withPaths(g), time: 0.5 }, { t: 0, x: q.c }, { k: 0, warn: false, spin: 0, x, y: fy }); }   /* the REAL hourglass (bc5art2: through the path shim) */
     const hx = l0 + S.him * ts; A.drawGlassblower(g, { x: hx, y: fy, f: -1, pose, p, t: 0.4, ph, ...extra });
     if (extra && extra.cone) A.drawBlast(V(g, 0.2), { x: hx - 8, far: hx - 8 - GB.blastLen, dir: -1 }, fy, GB.blastH, 0.2, 0, 0);
     g.fillStyle = '#4a6a9a'; g.fillRect(l0 + 3 * ts, fy - 26, 14, 26); g.fillStyle = '#d8c8a0'; g.fillRect(l0 + 3 * ts + 3, fy - 24, 6, 5);   /* hero stand-in */

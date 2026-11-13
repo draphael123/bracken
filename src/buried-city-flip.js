@@ -15,7 +15,7 @@ import * as ART from './redraw/buried_city_flip_art.js';
 import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
 import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the race door and the race marker */
 import * as FIX from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the glass's link to what it moves, its STRIKE glint */
-import { BC5_SAY, DOOR, CAM5, RACE_GLASSES } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
+import { BC5_SAY, DOOR, CAM5, RACE_GLASSES, RACE } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
 
 export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6,
   boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8,
@@ -44,6 +44,8 @@ export function makeFlip(api) {
     K.safe = new Map(); K.flipN = K.flipN || { strikes: 0, turns: 0, runs: 0, swallowed: 0, lifted: 0, beaten: 0, rose: 0, sank: 0, ranOut: 0, tilted: 0, slabs: 0, crumbled: 0, held: 0, glanced: 0 };
     if (fresh) K.flipN = { strikes: 0, turns: 0, runs: 0, swallowed: 0, lifted: 0, beaten: 0, rose: 0, sank: 0, ranOut: 0, tilted: 0, slabs: 0, crumbled: 0, held: 0, glanced: 0 };
   };
+  /* (claude/bc5art2) the floor under each race's end column: the AIR cell nearest the race's own row that has something under it (read once, from the cells as built) */
+  const finishCols = L => [[RACE.r1.end, 22, ['race1']], [RACE.r2.end, 31, ['span']], [RACE.r3.end, 31, ['r3a', 'r3b']], [RACE.r4.end, 31, ['ante']]].map(([c, row, glasses]) => { let fy = row + 1; for (const d of [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6]) { const r = row + d; if (ctx.cellGet(c, r) === T().AIR && ctx.cellGet(c, r + 1) !== T().AIR) { fy = r + 1; break; } } return { c, y: fy * TS(), glasses }; });
   const glassOf = id => K.glasses.find(g => g.id === id);
   const running = id => { const g = glassOf(id); return !!g && g.t > 0; };
   F.running = running;
@@ -210,6 +212,8 @@ export function makeFlip(api) {
       A5.drawRaceDoor(V, { l: R(l), top: R(top), w: R(w), hh: R(hh), open: Math.min(1, d.open), run, k, warn, moving: d.open > 0.02 && d.open < 0.98 });   /* (claude/bc5art) the shutter in its slots under a brass lintel (was greybox) */
       band(l, top - 12, w + 8, k, warn); }
     if (K.L.bc5) { for (const r of K.risers) { const gl = glassOf(r.glass); if (!gl || gl.t <= 0 || !vis(r.x0, r.x1) || r.sinks) continue; band(r.x0 * ts - cx, r.top * ts - cy - 9, (r.x1 - r.x0 + 1) * ts, gl.t / gl.dur, gl.t <= FLIP.warn); } }
+    /* (claude/bc5art2) THE FINISH LINES: draw-only, at each race's existing end column (RACE.*.end): two posts, a chequered ribbon, a chequered floor strip - gold while the race's glass runs */
+    if (K.L.bc5) { const fin = K.finish || (K.finish = finishCols(K.L)); for (const q of fin) { if (!vis(q.c, q.c)) continue; const run = q.glasses.some(running), warn = q.glasses.some(id => { const gq = glassOf(id); return !!gq && gq.t > 0 && gq.t <= FLIP.warn; }); A5.drawFinishLine(V, px(q.c) - cx, q.y - cy, { run, warn }); } }
     for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; ART.drawDuneFall(V, running(f.glass), f.x0 * ts - cx, f.top * ts - cy, (f.x1 - f.x0 + 1) * ts, (f.bottom + 1) * ts - cy); }
     for (const gq of K.glasses) { const gx = px(gq.x), gy = (gq.y + 1) * ts, x = gx - cx, y = gy - cy, run = gq.t > 0; if (x < -40 || x > vw + 40) continue;
       const k = run ? gq.t / gq.dur : (gq.back > 0 ? gq.back / FLIP.backT : 0), warn = run && gq.t <= FLIP.warn;   /* (claude/bc4fix) running: the sand left below; run out: the top's sand falls back down */

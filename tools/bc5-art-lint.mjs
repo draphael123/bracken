@@ -108,5 +108,14 @@ const gb = (o, f = 1) => rec(g => A.drawGlassblower(g, { x: FX, y: FY, f, t: 0.4
   for (const pose of A.GB_POSES) for (const mode of ['walk', 'sleep', 'wake', 'gobTell', 'blastTell', 'flipTell', 'bulbTell', 'buried']) { const e = { t: 'glassblower', x: 100, y: 200, face: -1, mode, modeT: 0.4, pose, phase: 2, open: mode === 'buried' ? 2 : 0, alive: true, flash: 0 }; const r = rec(g => H.drawFoe(g, e, 0, 0, 0.7)); ok(r.length > 30 && BAD.length === 0, 'drawFoe ' + pose + '/' + mode + ' draws clean'); }
   for (const [mode, pose] of [['buried', 'grBoil'], ['boil', 'grBoil'], ['rise', 'grRise'], ['walk', 'grWalk'], ['grabTell', 'grWind'], ['grab', 'grGrab'], ['hold', 'grHold'], ['recover', 'grRecover']]) { const e = { t: 'sandgrasper', x: 100, y: 200, face: 1, mode, pose, hurt: 0, st: { pose, t: 0.5, mode } }; const r = rec(g => H.drawFoe(g, e, 0, 0, 0.7)); ok(r.length > 5 && BAD.length === 0, 'drawFoe grasper ' + mode + ' draws clean'); }
   ok(texts.some(t => t[0] === 'BURIED') && texts.some(t => t[0] === 'OPEN'), 'the words stay (BURIED, OPEN): the reads are unchanged'); }
+
+// ---------- F. (bc5art2) the sign, the finish line, the rise has no slab, the wiring ----------
+{ globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => makeCtx() }) };
+  const sg = rec(g => { g.drawImage(A.signArt(), 0, 0); }); ok(typeof A.signArt === 'function' && A.signArt().width === 18, 'the BC5 sign bakes 18 x 18');
+  for (const run of [false, true]) for (const warn of [false, true]) { const r = rec(g => A.drawFinishLine({ g, time: 0.5 }, 0, 0, { run, warn })); ok(r.length > 40 && BAD.length === 0, 'the finish line draws clean (run ' + run + ' warn ' + warn + ')'); }
+  { const r = rec(g => A.drawGrasper(g, { x: 0, y: 0, f: 1, pose: 'grRise', mode: 'rise', p: 0.3, t: 0.5 })), b = bbox(r); ok(b.y1 <= 2, 'the rising grasper draws nothing below the floor line (no slab): y1 ' + b.y1); }
+  const m = readFileSync(URLS('src/main.js'), 'utf8'), fl = readFileSync(URLS('src/buried-city-flip.js'), 'utf8');
+  ok(m.includes('L.bc5 ? BC5SIGN()') && m.includes('signArt as BC5SIGN'), 'main.js skins the signs of an L.bc5 level with the BC5 tablet');
+  ok(fl.includes('K.L.bc5) { const fin') && fl.includes('drawFinishLine'), 'the flip draws the finish lines under L.bc5 only'); }
 console.log(bad ? bad + ' FAILED of ' + n : 'bc5-art-lint: ' + n + ' ok');
 process.exit(bad ? 1 : 0);

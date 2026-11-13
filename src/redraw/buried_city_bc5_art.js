@@ -38,13 +38,14 @@ const C = PAL;
 /* ============================================================ the pose painter: a facing-right frame, mirrored by f; (ox, oy) = the feet's centre */
 function painter(g, ox, oy, f, flash) {
   const col = c => (flash && c !== OL ? FLASH : c);
-  const r = (dx, dy, w, h, c) => { g.fillStyle = col(c); g.fillRect(R(f > 0 ? ox + dx : ox - dx - w), R(oy + dy), w, h); };
+  let cut = null;   /* (bc5art2) a frame row (0 = the feet's line) the sprite is cut at: what is below it is under the floor and is not drawn (the Grasper's rise) */
+  const r = (dx, dy, w, h, c) => { if (cut !== null) { if (dy >= cut) return; if (dy + h > cut) h = cut - dy; } g.fillStyle = col(c); g.fillRect(R(f > 0 ? ox + dx : ox - dx - w), R(oy + dy), w, h); };
   const mass = (dx, dy, w, h, c, hi, lo) => { r(dx - 1, dy - 1, w + 2, h + 2, OL); r(dx, dy, w, h, c); if (hi) { r(dx, dy, w, 1, hi); r(dx, dy, 1, h, hi); } if (lo) { r(dx, dy + h - 1, w, 1, lo); r(dx + w - 1, dy, 1, h, lo); } };
   const path = (x0, y0, x1, y1, wd, c, fn) => { const n = Math.max(1, Math.round(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)))), h = wd >> 1;
     for (let i = 0; i <= n; i++) { const x = lerp(x0, x1, i / n), y = lerp(y0, y1, i / n); fn(R(x) - h, R(y) - h, wd, wd, c); } };
   const limb = (x0, y0, x1, y1, wd, c, hi) => { path(x0, y0, x1, y1, wd + 2, OL, r); path(x0, y0, x1, y1, wd, c, r); if (hi) path(x0, y0 - 1, x1, y1 - 1, 1, hi, r); };
   const blob = (cx, cy, rad, cols) => { for (let i = 0; i < cols.length; i++) { const q = rad - i * Math.max(1, rad / cols.length); if (q < 0.5) break; const a = Math.max(1, R(q)); r(cx - a, cy - a + 1, a * 2, a * 2 - 2, cols[i]); r(cx - a + 1, cy - a, a * 2 - 2, a * 2, cols[i]); } };
-  return { r, mass, path, limb, blob, g, f, ox, oy, col };
+  return { r, mass, path, limb, blob, g, f, ox, oy, col, setCut: v => { cut = v; } };
 }
 function ik(sx, sy, hx, hy, l1, l2, bend) { let dx = hx - sx, dy = hy - sy, d = Math.hypot(dx, dy) || 0.01; const m = l1 + l2 - 0.05; if (d > m) { hx = sx + dx * m / d; hy = sy + dy * m / d; dx = hx - sx; dy = hy - sy; d = m; }
   const a = (l1 * l1 - l2 * l2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, l1 * l1 - a * a)), mx = sx + dx * a / d, my = sy + dy * a / d; return [mx - dy / d * h * bend, my + dx / d * h * bend, hx, hy]; }
@@ -99,30 +100,34 @@ export function drawGlassblower(g, o) {   /* o: { x, y (the feet), f, pose, p (t
   { const hem = ph > 1 ? C.molten : C.moltenLo; for (let x = -6; x < 10; x += 2) { P.r(x + lean, -9 + ub - (hash(x, 3) & 1), 1, 1 + (hash(x, 5) & 1), hem); } if (ph > 1) { for (let x = -5; x < 10; x += 4) P.r(x + lean, -20 + ub + (hash(x, 9) % 6), 2, 1, C.moltenLo); } }   /* the hem scorched, glowing in P2; burn holes */
   for (const bx of [-3, 3]) P.r(bx + lean, -22 + ub, 2, 2, C.leaLo);   /* patched burns */
   P.r(-9 + lean, -15 + ub, 19, 2, C.brassLo); P.r(-9 + lean, -15 + ub, 19, 1, C.brass); P.r(1 + lean, -16 + ub, 4, 4, C.brassHi); P.r(2 + lean, -15 + ub, 2, 2, C.brassLo);   /* the belt and a square buckle */
-  /* HEAD */
-  { const hx = -4 + lean + (hd.tilt || 0), hy = -47 + ub + (hd.dy || 0), hw = 12 + R((hd.puff || 0) * 2);
-    P.r(-3 + lean, -37 + ub, 7, 3, C.skinLo);   /* the neck */
-    P.mass(hx - R((hd.puff || 0)), hy, hw, 11, C.skin, C.skinHi, C.skinLo);
-    P.r(hx + hw, hy + 5, 1, 2, C.skinHi); P.r(hx + hw, hy + 7, 1, 1, C.skinLo);   /* the nose */
-    P.r(hx - 2, hy + 4, 2, 3, C.skinLo);   /* the ear */
-    P.r(hx + 1, hy + 8, hw - 2, 3, C.soot);   /* the soot beard */
-    for (const k of [3, 6, 9]) P.r(hx + k, hy + 4 + (k & 1), 1, 1, C.soot);   /* cheek soot */
-    /* the eyes */
-    const eye = (ex, kind) => { const ey = hy + 3;
-      if (kind === 'shut') { P.r(ex, ey + 1, 3, 1, C.brow); return; }
-      if (kind === 'dizzy') { P.r(ex, ey, 3, 1, C.sclera); P.r(ex + 1, ey - 1, 1, 3, C.sclera); P.r(ex + 1, ey, 1, 1, C.pupil); return; }
-      const big = kind === 'wide'; P.r(ex, ey - (big ? 1 : 0), 3, big ? 4 : 3, C.sclera); P.r(ex + (kind === 'up' ? 1 : 2), ey + (kind === 'up' ? -(big ? 1 : 0) : 0), 1, 2, C.pupil); if (big) P.r(ex, ey - 1, 1, 1, C.red); };
-    if (hd.gog === 'down') { P.r(hx + 1, hy + 2, hw - 3, 4, C.brassLo); P.r(hx + 2, hy + 3, 3, 2, C.glassDim); P.r(hx + 7, hy + 3, 3, 2, C.glassDim); P.r(hx + 1, hy + 2, hw - 3, 1, C.brass); }
-    else { eye(hx + 7, hd.eyes || 'open'); eye(hx + 2, hd.eyes || 'open'); if (hd.eyes === 'wide' || hd.eyes === 'up') { P.r(hx + 6, hy + 1, 5, 1, C.brow); P.r(hx + 1, hy + 1, 4, 1, C.brow); } else P.r(hx + 6, hy + 2, 5, 1, C.brow); P.r(hx + 1, hy + 2, 4, 1, C.brow); }
-    /* the mouth */
-    { const m = hd.mouth || 'grit', my = hy + 8, mx = hx + 6;
-      if (m === 'open') { P.r(mx - 1, my, 5, 3, C.mouth); P.r(mx - 1, my, 5, 1, C.sclera); }
-      else if (m === 'puff') { P.r(mx, my, 3, 2, C.mouth); }
-      else P.r(mx - 1, my + 1, 5, 1, C.mouth); }
-    /* the cap, singed, and the goggles pushed up on it */
-    P.mass(hx - 1, hy - 3, hw + 2, 4, C.cap, C.capHi, OL); for (let k = 0; k < hw; k += 3) P.r(hx + k, hy - 3, 1, 1, C.dull);
-    if (hd.gog !== 'down') { P.r(hx, hy - 1, hw, 1, C.brassLo); P.mass(hx + 3, hy - 7, 6, 4, C.brass, C.brassHi, C.brassLo); P.r(hx + 4, hy - 6, 4, 2, ph > 1 ? C.moltenHi : C.glassB); P.r(hx + 4, hy - 6, 1, 1, C.glassHi); }   /* lenses up; in P2 they glow */
-    if (ph > 1 && hd.gog !== 'down') { g.globalAlpha = 0.35; P.r(hx + 1, hy - 9, 10, 8, C.molten); g.globalAlpha = 1; }
+  /* HEAD (bc5art2: 17 x 14 under a hooded cap, the brass goggles ON the face - two big lit lenses and a heavy brow - so at 1x he reads as a FACE, not an eye and a brow) */
+  { const pf = hd.puff || 0, hx = -6 + lean + (hd.tilt || 0), hy = -51 + ub + (hd.dy || 0), hw = 17 + R(pf * 2), p2 = ph > 1;
+    P.r(-3 + lean, -38 + ub, 7, 4, C.skinLo);   /* the neck */
+    P.mass(hx - R(pf), hy, hw, 14, C.skin, C.skinHi, C.skinLo);
+    P.r(hx + hw, hy + 7, 2, 3, C.skinHi); P.r(hx + hw + 1, hy + 9, 1, 1, C.skinLo);   /* the nose */
+    P.r(hx + 1, hy + 10, hw - 2, 4, C.soot); for (const k of [3, 7, 11]) P.r(hx + k, hy + 9, 1, 1, C.soot);   /* the soot beard, stubble over the lip */
+    /* the goggles: two brass-rimmed lenses (7 x 7, a 5 x 5 pane) side by side, a bridge, a strap round the back */
+    const lens = (lx, kind) => { const ey = hy + 3, ix = lx + 1;
+      P.mass(lx, hy + 2, 7, 7, C.brass, C.brassHi, C.brassLo);
+      if (hd.gog === 'down') { P.r(ix, ey, 5, 5, C.glassDim); P.r(ix, ey, 2, 1, C.glassLo); return; }
+      if (kind === 'shut') { P.r(ix, ey, 5, 5, C.brassDk); P.r(ix, ey + 2, 5, 1, C.brassLo); return; }   /* the lens shuttered */
+      P.r(ix, ey, 5, 5, p2 ? C.moltenHi : C.sclera); P.r(ix, ey, 1, 1, p2 ? C.moltenCore : C.glassHi);
+      if (kind === 'dizzy') { P.r(ix + 2, ey, 1, 5, C.pupil); P.r(ix, ey + 2, 5, 1, C.pupil); }
+      else if (kind === 'wide') { P.r(ix + 1, ey + 1, 3, 3, C.pupil); P.r(ix + 1, ey + 1, 1, 1, C.red); P.r(ix + 4, ey, 1, 5, C.red); }
+      else if (kind === 'up') P.r(ix + 2, ey, 2, 2, C.pupil);
+      else P.r(ix + 3, ey + 1, 2, 3, C.pupil); };
+    lens(hx + 2, hd.eyes); lens(hx + 9, hd.eyes);
+    P.r(hx + 8, hy + 4, 1, 3, C.brassLo); P.r(hx - 1, hy + 4, 3, 2, C.brassLo);   /* bridge, strap */
+    if (hd.eyes === 'wide' || hd.eyes === 'up') { P.r(hx + 2, hy + 1, 13, 1, C.brow); } else { P.r(hx + 2, hy + 1, 13, 1, C.brow); P.r(hx + 6, hy + 2, 3, 1, C.brow); P.r(hx + 8, hy + 3, 1, 1, C.brow); P.r(hx + 12, hy + 2, 3, 1, C.brow); }   /* the brow: raised when he is startled, a scowl otherwise */
+    /* the mouth: a grimace of teeth, a roar, or round the pipe */
+    { const m = hd.mouth || 'grit', my = hy + 10, mx = hx + 7;
+      if (m === 'open') { P.r(mx - 1, my, 7, 4, C.mouth); P.r(mx - 1, my, 7, 1, C.sclera); }
+      else if (m === 'puff') { P.r(mx, my, 4, 3, C.mouth); P.r(mx + 1, my + 1, 2, 1, C.brassLo); }
+      else { P.r(mx - 1, my + 1, 7, 2, C.mouth); P.r(mx - 1, my + 1, 7, 1, C.sclera); for (let k = 1; k < 7; k += 2) P.r(mx - 1 + k, my + 1, 1, 1, C.mouth); } }
+    /* the hood: a singed cap with a back flap over the ear, brass rivets, burn marks */
+    P.mass(hx - 1, hy - 4, hw + 2, 5, C.cap, C.capHi, OL); P.mass(hx - 3, hy - 1, 4, 11, C.cap, C.capHi, OL);
+    for (let k = 0; k < hw; k += 3) P.r(hx + k, hy - 4, 1, 1, C.dull); for (const k of [4, 10]) P.r(hx + k, hy - 2, 1, 1, C.brassHi);
+    if (p2) { g.globalAlpha = 0.35; P.r(hx + 1, hy + 1, hw - 2, 9, C.molten); g.globalAlpha = 1; for (const k of [2, 8, 13]) P.r(hx + k, hy - 5 - (k & 1), 1, 2, C.ember); }   /* P2: the lenses burn, embers off the hood */
     P.hx = hx; P.hy = hy; P.hw = hw;
   }
   /* NEAR ARM + THE PIPE */
@@ -153,32 +158,79 @@ export function drawGlassblower(g, o) {   /* o: { x, y (the feet), f, pose, p (t
     for (let k = 0; k < 24; k++) { const q = Math.PI + k / 23 * Math.PI, cx0 = o.x + Math.cos(q) * 28, cy0 = o.y - 14 + Math.sin(q) * 22; rc(g, cx0 - 1, cy0 - 1, 2, 2, k % 4 === 0 ? C.glassHi : C.glassB); } g.globalAlpha = 0.7; for (const [x0, y0, w0] of [[-18, -26, 8], [-6, -34, 9], [8, -28, 7], [-12, -8, 6], [12, -14, 6]]) { rc(g, o.x + x0, o.y + y0, w0, 1, C.glassHi); rc(g, o.x + x0 + w0 - 2, o.y + y0 + 1, 2, 3, C.glassHi); } g.globalAlpha = 1; }
 }
 
-/* THE DEATH FALL (2.4 s; t = seconds since the last blow): he reels, drops the pipe, goes over on his back, the gather shatters on the floor, he fades into the sand */
+/* THE DEATH FALL (2.4 s; t = seconds since the last blow): he reels, drops the pipe, TOPPLES BACK over his heels (one rig, turned about his feet from upright to flat), lands in a puff of sand, the gather shatters on the floor, he fades into the sand.
+   (bc5art2) one body-frame rig - u up the body from the feet, v forward - turned by an angle: legs, boots, vest, apron, belt, an arm flung overhead and one fallen along his side, and the head, which stays a FACE (goggles, lenses cracked dim)
+   so the lying pose reads at 1x: boots toed up, the scorched apron across his chest, his head rolled to look at you, the cap beside it. */
+function deathRig(P, th, t, ph) {   /* th: 0 upright .. PI/2 flat on his back; t: seconds since death */
+  const cs = Math.cos(th), sn = Math.sin(th), at = (u, v) => [v * cs - u * sn, -(u * cs + v * sn)];
+  const pt = (u, v, w, c, hi) => { const [x, y] = at(u, v); P.limb(x, y, x, y, w, c, hi); };
+  const bar = (u0, v0, u1, v1, w, c, hi) => { const [x0, y0] = at(u0, v0), [x1, y1] = at(u1, v1); P.limb(x0, y0, x1, y1, w, c, hi); };
+  const flat = clamp01(th / 1.5);
+  /* legs and boots (far leg bent at the knee once he is down) */
+  bar(1, -5, 13, -5 + flat * 1, 6, C.leaLo); bar(1, 5, 13, 5 - flat * 2, 6, C.lea, C.leaHi);
+  bar(3, -6, 3, -1 + flat * 3, 5, C.leaLo); bar(3, 4, 3, 10 - flat * 0, 5, C.lea, C.leaHi);   /* boots: toes forward - up in the air when he lies on his back */
+  { const [bx, by] = at(2, 8); P.r(bx, by - 1, 2, 1, C.brassLo); }
+  /* the torso: vest, the scorched apron across his front, belt, the sleeve at the back */
+  bar(13, 0, 25, 0, 19, C.lea, C.leaHi); bar(14, 3, 24, 3, 14, C.apron, C.apronHi); bar(12, -6, 12, 9, 3, C.brassLo, C.brass); bar(11, -6, 11, 9, 2, C.moltenLo);
+  for (let v = -5; v < 9; v += 3) { const [x, y] = at(10 - (hash(v, 3) & 1), v); P.r(x, y, 1, 1, ph > 1 ? C.molten : C.dull); }   /* the hem still glowing */
+  /* arms: the near one flung over his head, the far one fallen along his side */
+  { const sw = th < 0.2 ? 1 : 0, [sx, sy] = at(24, 5), [hx, hy] = at(lerp(18, 41, flat), lerp(14, -4, flat) + sw * 3);
+    P.limb(sx, sy, (sx + hx) / 2, (sy + hy) / 2 + 2, 5, C.sleeve, C.leaHi); P.limb((sx + hx) / 2, (sy + hy) / 2 + 2, hx, hy, 4, C.skin, C.skinHi); P.mass(R(hx) - 2, R(hy) - 2, 5, 5, C.leaLo, C.lea, OL); }
+  { const [sx, sy] = at(23, -5), [hx, hy] = at(lerp(10, 10, flat), lerp(-9, -9, flat) + (1 - flat) * 14); P.limb(sx, sy, hx, hy, 4, C.sleeve, C.leaHi); P.mass(R(hx) - 2, R(hy) - 2, 4, 4, C.leaLo, C.lea, OL); }
+  /* the head: it rolls to face you - upright goggles, the lenses gone dim and cracked, the mouth slack; the cap has fallen off beside it */
+  { const [cx, cy] = at(38, 1), hx = R(cx) - 8, hy = R(cy) - 8 + R((1 - flat) * 1), p2 = ph > 1;
+    P.mass(hx, hy, 17, 14, C.skin, C.skinHi, C.skinLo); P.r(hx + 17, hy + 7, 2, 2, C.skinHi); P.r(hx + 1, hy + 10, 15, 4, C.soot);
+    for (const lx of [hx + 2, hx + 9]) { P.mass(lx, hy + 2, 7, 7, C.brass, C.brassHi, C.brassLo); P.r(lx + 1, hy + 3, 5, 5, flat > 0.85 ? C.glassDim : C.sclera); if (flat > 0.85) { P.r(lx + 1, hy + 3, 2, 1, C.glassLo); P.r(lx + 1, hy + 3, 1, 1, OL); P.r(lx + 2, hy + 4, 1, 1, OL); P.r(lx + 3, hy + 5, 1, 1, OL); P.r(lx + 4, hy + 6, 1, 1, OL); P.r(lx + 5, hy + 7, 1, 1, OL); P.r(lx + 5, hy + 3, 1, 1, OL); P.r(lx + 4, hy + 4, 1, 1, OL); P.r(lx + 2, hy + 6, 1, 1, OL); P.r(lx + 1, hy + 7, 1, 1, OL); } else P.r(lx + 3, hy + 4, 2, 3, C.pupil); }
+    P.r(hx + 8, hy + 4, 1, 3, C.brassLo); P.r(hx + 6, hy + 11, 5, 2, C.mouth); P.r(hx + 6, hy + 11, 5, 1, C.sclera);
+    P.r(hx + 2, hy + 1, 13, 1, C.brow);
+    if (flat < 0.9) { P.mass(hx - 1, hy - 4, 19, 5, C.cap, C.capHi, OL); P.mass(hx - 3, hy - 1, 4, 11, C.cap, C.capHi, OL); }
+    else { P.mass(hx - 12, hy + 6, 10, 7, C.cap, C.capHi, OL); P.r(hx - 11, hy + 8, 3, 1, C.dull); P.r(hx - 4, hy + 8, 1, 1, C.brassHi); }   /* the cap on the floor beside him */
+    if (p2 && flat < 0.9) { g0(P).globalAlpha = 0.3; P.r(hx + 1, hy + 1, 15, 9, C.molten); g0(P).globalAlpha = 1; } }
+}
+const g0 = P => P.g;
 export function drawGlassblowerDeath(g, o) {   /* o: { x, y, f, t (since death), time } */
-  const f = o.f || 1, t = Math.max(0, o.t), u = clamp01(t / 2.4), P = painter(g, R(o.x), R(o.y), f, t < 0.12);
-  const fade = u > 0.8 ? 1 - (u - 0.8) / 0.2 : 1; g.globalAlpha = fade;
-  if (t < 0.7) { const q = t / 0.7; drawGlassblower(g, { x: o.x - f * q * 6, y: o.y, f, pose: 'gbStagger', p: 1, t: o.time, ph: 2, flash: t < 0.12 }); g.globalAlpha = fade; if (q > 0.5) { P.limb(14 + q * 10, -22 + q * 18, 28 + q * 12, -10 + q * 10, 3, C.brass, C.brassHi); } }
-  else { const q = clamp01((t - 0.7) / 0.7), ang = q * 1.45, ox = o.x - f * (6 + q * 14), body = (dx, dy, w, h, c, hi) => { P.mass(dx, dy, w, h, c, hi, OL); };
-    const lyingY = -9;   /* on his back: a long mass along the floor, head on the far end */
-    if (q < 1) { const tx = -4 - R(q * 20), ty = lyingY - R((1 - q) * 28);   /* tipping: the torso mass swings down */
-      P.mass(-9 - R(q * 12), -26 + R(q * 17), 18, 15, C.lea, C.leaHi, C.leaLo); P.mass(-6 - R(q * 12), -25 + R(q * 17), 14, 12, C.apron, C.apronHi, OL);
-      P.r(tx + 1, ty + 4, 6, 14 - R(q * 6), C.skinLo); P.mass(tx - 4, ty - 5, 12, 11, C.skin, C.skinHi, C.skinLo); P.r(tx - 2, ty - 5, 10, 3, C.cap); P.r(tx + 3, ty - 1, 2, 2, C.pupil); P.mass(2 - R(q * 8), -14 + R(q * 6), 7, 14 - R(q * 6), C.lea, C.leaHi, C.leaLo); P.mass(-8 - R(q * 6), -14 + R(q * 8), 7, 14 - R(q * 8), C.leaLo, C.lea, OL); }
-    else { P.mass(-30, -12, 8, 9, C.skin, C.skinHi, C.skinLo); P.r(-28, -12, 6, 3, C.cap); P.r(-26, -8, 1, 1, C.pupil); P.r(-24, -8, 1, 1, C.pupil);   /* head on the floor, eyes closed in two dashes */
-      P.mass(-24, -14, 20, 11, C.lea, C.leaHi, C.leaLo); P.mass(-21, -13, 15, 9, C.apron, C.apronHi, OL); P.mass(-4, -11, 12, 5, C.lea, C.leaHi, C.leaLo); P.mass(7, -11, 8, 5, C.leaLo, C.lea, OL); P.r(11, -10, 3, 1, C.brassLo);
-      P.mass(-12, -22, 12, 4, C.sleeve, C.leaHi, OL); P.mass(-3, -19, 5, 4, C.leaLo, C.lea, OL);   /* an arm across the chest */ }
-    /* the pipe on the floor and the gather shattering */
-    P.limb(10, -3, 36, -2, 3, C.brass, C.brassHi); if (t < 1.5) { const s = clamp01((t - 0.7) / 0.8); P.blob(38, -4 - R((1 - s) * 2), R(4 * (1 - s) + 1), [C.moltenLo, C.molten, C.moltenHi]); for (let k = 0; k < 8; k++) { const a = -3.1 + k * 0.4, d = s * (6 + (hash(k, 3) % 10)); g.globalAlpha = fade * (1 - s * 0.7); P.r(38 + Math.cos(a) * d, -3 + Math.sin(a) * d * 0.8, 2, 2, k & 1 ? C.glassHi : C.glassB); } g.globalAlpha = fade; }
-    else { P.r(36, -3, 7, 2, C.glassB); P.r(38, -4, 3, 1, C.glassHi); } }
+  const f = o.f || 1, t = Math.max(0, o.t), u = clamp01(t / 2.4), fade = u > 0.8 ? 1 - (u - 0.8) / 0.2 : 1, flash = t < 0.12;
+  g.globalAlpha = fade;
+  if (t < 0.7) { const q = t / 0.7; drawGlassblower(g, { x: o.x - f * q * 6, y: o.y, f, pose: 'gbStagger', p: 1, t: o.time, ph: 2, flash }); g.globalAlpha = fade;
+    if (q > 0.5) { const P = painter(g, R(o.x), R(o.y), f, false); P.limb(14 + q * 10, -22 + q * 18, 28 + q * 12, -10 + q * 10, 3, C.brass, C.brassHi); } }   /* the pipe flies from his hand */
+  else { const q = clamp01((t - 0.7) / 0.8), e = q * q * (3 - 2 * q), th = e * (Math.PI / 2), shift = R(e * 20),
+      P = painter(g, R(o.x) + f * shift, R(o.y), f, false);
+    deathRig(P, th, t, 2);
+    /* the dust of the landing */
+    if (t > 1.4 && t < 2.1) { const k = (t - 1.4) / 0.7; for (let i = 0; i < 9; i++) { const a = -3.1 + i * 0.4, d = 4 + k * (10 + (hash(i, 8) % 14)); g.globalAlpha = fade * (1 - k); dot(g, R(o.x) + f * 8 + Math.cos(a) * d * (f > 0 ? 1 : -1), R(o.y) - 2 - Math.abs(Math.sin(a)) * d * 0.5, i & 1 ? C.sandHi : C.sand); } g.globalAlpha = fade; }
+    /* the pipe on the floor and the gather shattering (right of him) */
+    const Q = painter(g, R(o.x), R(o.y), f, false);
+    Q.limb(30, -2, 56, -2, 3, C.brass, C.brassHi);
+    if (t < 1.5) { const s = clamp01((t - 0.7) / 0.8); Q.blob(58, -4 - R((1 - s) * 2), R(4 * (1 - s) + 1), [C.moltenLo, C.molten, C.moltenHi]); for (let k = 0; k < 8; k++) { const a = -3.1 + k * 0.4, d = s * (6 + (hash(k, 3) % 10)); g.globalAlpha = fade * (1 - s * 0.7); Q.r(58 + Math.cos(a) * d, -3 + Math.sin(a) * d * 0.8, 2, 2, k & 1 ? C.glassHi : C.glassB); } g.globalAlpha = fade; }
+    else { Q.r(56, -3, 7, 2, C.glassB); Q.r(58, -4, 3, 1, C.glassHi); } }
   g.globalAlpha = 1;
 }
 
 /* ============================================================ THE SAND GRASPER (box ~ 40 x 40 round its feet) */
 export const SG_POSES = ['grBoil', 'grRise', 'grWalk', 'grWalk2', 'grWind', 'grGrab', 'grHold', 'grRecover', 'grHurt'];
-const sandMound = (g, x, y, w, h, t) => { for (let j = 0; j < h; j++) { const hw = R(w / 2 * Math.sqrt(1 - Math.pow(1 - (j + 1) / h, 2)) + 1); rc(g, x - hw, y - h + j, hw * 2, 1, j === 0 ? C.sandHi : j < h * 0.4 ? C.sand : j < h * 0.75 ? C.sandLo : C.sandDk); } rc(g, x - w / 2 - 1, y - 1, w + 2, 1, OL);
+const sandMound = (g, x, y, w, h, t) => {   /* (bc5art2) a heap of sand, not a slab: lumpy crest, lit from the upper left, grain shading, a skirt of spilled grains at its foot, no hard base line */
+  const hw = w / 2;
+  for (let dx = -R(hw); dx <= R(hw); dx++) { const u = Math.abs(dx) / hw, ht = Math.max(1, R(h * Math.pow(Math.max(0, 1 - u * u), 0.55) + ((hash(dx, 11) & 1) && u < 0.85 ? 0 : -(u > 0.5 ? 1 : 0)))); if (ht < 1) continue;
+    for (let j = 0; j < ht; j++) { const r = j / ht, lit = dx < 0 ? 0.12 : 0, c = j === ht - 1 ? (dx < 0 ? C.sandHi : C.sand) : r > 0.66 + lit ? (dx < 0 ? C.sand : C.sandLo) : r > 0.3 ? (dx < 0 ? C.sandLo : C.sandDk) : C.sandDk; rc(g, x + dx, y - 1 - j, 1, 1, ((hash(dx, j) % 9) === 0 ? C.sandLo : c)); } }
+  for (let i = 0; i < 10; i++) { const side = i & 1 ? 1 : -1, d = hw + 1 + (hash(i, 5) % 9); dot(g, x + side * d, y - 1 - (hash(i, 6) % 2), (i & 2) ? C.sand : C.sandLo); }   /* spilled grains */
   for (let i = 0; i < 4; i++) { const u = (t * 2.2 + i / 4) % 1; dot(g, x - w / 3 + ((hash(i, R(t * 5)) % R(w * 0.66))), y - h - u * 5, i & 1 ? C.sandHi : C.sand); } };
-function grHand(P, x, y, spread, claw, t) {   /* a hand at (x, y): a palm, four fingers (splayed or curled), grey-green, with long dark nails */
-  P.mass(x - 2, y - 2, 5, 5, C.dead, C.deadHi, C.deadLo);
-  for (let k = 0; k < 4; k++) { const fx = x - 3 + k * 2 + (k < 2 ? -spread : spread) * (k === 0 || k === 3 ? 1 : 0.4), fy = y - 3 - (claw ? 0 : 2 + (k === 1 || k === 2 ? 1 : 0)); P.r(R(fx), R(fy) - (claw ? 1 : 3), 1, claw ? 3 : 5, C.deadLo); P.r(R(fx), R(fy) - (claw ? 1 : 3), 1, 1, C.glow); } }
+function grHand(P, x, y, spread, claw, t) {   /* (bc5art2) a hand at (x, y): a palm, a thumb and FOUR SHAPED FINGERS - splayed up and out, or curled in claws - grey-green, knuckled, with pale nails; dark between them so each finger reads */
+  const bx = [-3, -1, 1, 3], pts = [];
+  const sp = Math.max(0, spread);
+  P.mass(x - 4, y - 2, 8, 5, C.dead, C.deadHi, C.deadLo);   /* the palm */
+  P.r(x - 3, y + 1, 6, 1, C.deadLo);
+  for (let k = 0; k < 4; k++) {
+    const len = k === 1 || k === 2 ? 6 : 5, run = [];
+    for (let s = 1; s <= len; s++) {
+      if (claw) { const hook = s > 2; run.push([x + bx[k] + (hook ? 1 : 0) + (hook && s > 4 ? 1 : 0), y + 2 + Math.min(s, 3) + (hook ? 0 : 0) + (s > 4 ? 0 : 0)]); }
+      else { const sway = (k - 1.5) * sp * 0.22 * s; run.push([x + bx[k] + R(sway), y - 2 - s]); }
+    }
+    pts.push(run); }
+  for (const run of pts) for (const [fx, fy] of run) { P.r(fx - 1, fy, 3, 1, C.deadLo); P.r(fx, fy - 1, 1, 3, C.deadLo); }   /* the dark between and round them */
+  pts.forEach((run, k) => run.forEach(([fx, fy], s) => { P.r(fx, fy, 1, 1, s % 3 === 1 ? C.deadHi : s === run.length - 1 ? C.glow : C.dead); if (s === 1 && !claw) P.r(fx, fy, 1, 1, C.deadLo); }));   /* a knuckle crease, a pale nail at the tip */
+  P.r(x + 4, y - 1, 2, 1, C.dead); P.r(x + 5, y - 2, 1, 1, C.glow);   /* the thumb */
+  P.r(x - 3, y - 2, 6, 1, C.deadHi);   /* the knuckle ridge */
+}
 export function drawGrasper(g, o) {   /* o: { x, y, f, pose, mode, p (boil/rise/tell progress 0..1), t, flash, open } */
   const f = o.f || 1, t = o.t || 0, p = clamp01(o.p || 0), pose = o.pose || 'grWalk', mode = o.mode || '', P = painter(g, R(o.x), R(o.y), f, !!o.flash);
   const grains = (n, w, hmax, a) => { for (let i = 0; i < n; i++) { const u = (t * 2.6 + i / n) % 1; g.globalAlpha = (1 - u) * a; dot(g, o.x - w / 2 + (hash(i, R(t * 4)) % w), o.y - 2 - u * hmax, i & 1 ? C.sandHi : C.sand); } g.globalAlpha = 1; };
@@ -199,7 +251,8 @@ export function drawGrasper(g, o) {   /* o: { x, y, f, pose, mode, p (boil/rise/
   const rr = pose === 'grRise' ? clamp01(p) : 1, sink = R((1 - rr) * 9);
   const wind = pose === 'grWind', grab = pose === 'grGrab', hold = pose === 'grHold', rec = pose === 'grRecover', hurt = pose === 'grHurt';
   const step = pose === 'grWalk2' ? 1 : 0, lean = wind ? -3 : grab ? 6 : rec ? 2 : 1, dip = rec ? 3 : wind ? -1 : 0;
-  const oy = sink;   /* a rising body is drawn lower and its lower half is covered with sand */
+  const oy = sink;   /* a rising body is drawn lower; what is below the floor line is CUT (bc5art2: no slab) and the heap of sand hides the cut */
+  if (pose === 'grRise') P.setCut(0);
   /* legs: wrapped in rotted cloth, dragging (still under the sand while it rises) */
   if (rr >= 0.8) P.mass(-6 - step, -9 + oy, 5, 9, C.wrapLo, C.wrap, OL); P.mass(1 + step, -9 + oy, 6, 9, C.wrap, C.stoneHi, C.wrapLo); if (rr >= 0.8) { P.r(-5 - step, -6 + oy, 6, 1, C.wrapLo); P.r(2 + step, -4 + oy, 5, 1, C.wrapLo); }
   /* torso: ribs showing through grey-green skin, wrap straps across, a ragged loincloth */
@@ -227,7 +280,7 @@ export function drawGrasper(g, o) {   /* o: { x, y, f, pose, mode, p (boil/rise/
   else if (rec) { claw(10, -4 + oy, 1, 0, true, shN); claw(-2, -3 + oy, 1, 0, true, shF); }
   else { const sw = Math.sin(t * 3) * 2; claw(12 + sw, -12 + oy, 1, 1, true, shN); claw(8 - sw, -9 + oy, 1, 1, true, shF); }   /* walk: arms hang forward, dragging */
   /* the sand it rises out of */
-  if (pose === 'grRise') { rc(g, o.x - 14, o.y, 28, sink + 2, C.sandLo); sandMound(g, o.x, o.y + 1, 26, R(8 + (1 - rr) * 8), t); grains(8, 26, 20, 1); for (let i = 0; i < 8; i++) { const u = (t * 5 + i / 8) % 1; g.globalAlpha = 1 - u; dot(g, o.x - 12 + hash(i, 7) % 24, o.y - 10 + u * 14, C.sandLo); } g.globalAlpha = 1; }
+  if (pose === 'grRise') { P.setCut(null); sandMound(g, o.x, o.y + 1, 28, R(5 + (1 - rr) * 8), t); grains(8, 26, 20, 1); for (let i = 0; i < 8; i++) { const u = (t * 5 + i / 8) % 1; g.globalAlpha = 1 - u; dot(g, o.x - 12 + hash(i, 7) % 24, o.y - 10 + u * 10, C.sandLo); } g.globalAlpha = 1; }
   else if (!wind && !grab && !hold && mode !== 'rise') { g.globalAlpha = 0.5; for (let i = 0; i < 3; i++) dot(g, o.x - 10 - ((t * 20 + i * 5) % 8), o.y - 1 - (i & 1), C.sand); g.globalAlpha = 1; }   /* dust trailing its drag */
   if (rec) { const a = 0.55 + 0.35 * Math.sin(t * 9); g.globalAlpha = a; rc(g, o.x - 6, o.y - 41, 12, 1, C.gold); rc(g, o.x - 6, o.y - 41, 1, 3, C.gold); rc(g, o.x + 5, o.y - 41, 1, 3, C.gold); g.globalAlpha = 1; }   /* its open moment: a gold bracket over the head */
 }
@@ -322,4 +375,24 @@ export function drawGlint(V, x, y, k, time) {   /* the glinting hourglass: a rin
   g.globalAlpha = 0.5 + a * 0.4; for (let q = 0; q < 18; q++) { const an = q / 18 * 6.283 + time * 1.5; rc(g, x + Math.cos(an) * (16 + a * 3) - 1, y + Math.sin(an) * (20 + a * 3) - 1, 2, 2, q % 3 === 0 ? C.moltenCore : C.gold); } g.globalAlpha = 1;
   for (let q = 0; q < 4; q++) { const u = (time * 1.4 + q / 4) % 1; g.globalAlpha = 1 - u; dot(g, x - 6 + hash(q, 4) % 12, y + 12 - u * 30, C.moltenCore); g.globalAlpha = 1; }
   rc(g, x - 13, y - 27, 26, 4, OL); rc(g, x - 12, y - 26, 24, 2, C.sandDk); rc(g, x - 12, y - 26, R(24 * clamp01(k)), 2, C.gold);
+}
+
+/* ============================================================ (bc5art2) THE BURIED CITY'S SIGN and THE FINISH LINE */
+let SIGN = null;
+export function signArt() {   /* 18 x 18, drawn at (x - 9, y - 18) like every sign: a carved SANDSTONE TABLET on a squat stone foot sunk in the sand, a brass-inlaid hourglass glyph and three chiselled lines, brass studs - the city's stone and brass, no timber */
+  if (SIGN) return SIGN; const c = document.createElement('canvas'); c.width = 18; c.height = 18; const g = c.getContext('2d');
+  rc(g, 6, 11, 6, 7, C.stoneLo); rc(g, 6, 11, 6, 1, C.stoneHi); rc(g, 6, 11, 1, 7, C.stoneMid); rc(g, 4, 16, 10, 2, C.stoneDk); rc(g, 4, 16, 10, 1, C.stoneLo); dot(g, 3, 17, C.sandLo); dot(g, 14, 17, C.sandLo); dot(g, 15, 17, C.sand);   /* the foot, sand against it */
+  rc(g, 1, 0, 16, 11, OL); rc(g, 2, 1, 14, 9, C.stone); rc(g, 2, 1, 14, 1, C.stoneHi); rc(g, 2, 1, 1, 9, C.stoneHi); rc(g, 2, 9, 14, 1, C.stoneLo); rc(g, 15, 1, 1, 9, C.stoneLo);   /* the tablet */
+  rc(g, 4, 3, 7, 1, C.stoneLo); rc(g, 4, 5, 7, 1, C.stoneLo); rc(g, 4, 7, 5, 1, C.stoneLo); rc(g, 4, 4, 7, 1, C.stoneHi);   /* chiselled lines */
+  rc(g, 12, 3, 3, 1, C.brassHi); rc(g, 13, 4, 1, 1, C.brass); rc(g, 12, 5, 3, 1, C.brassHi); rc(g, 13, 6, 1, 1, C.brass); rc(g, 12, 7, 3, 1, C.brassHi);
+  for (const [x, y] of [[3, 2], [3, 8], [14, 8]]) dot(g, x, y, C.brass);   /* brass studs */
+  return (SIGN = c);
+}
+export function drawFinishLine(V, x, y, o) {   /* the race's END: x the end column's centre, y its floor (screen px); o: { run, warn } - two stone posts under brass caps, a CHEQUERED gold-and-char ribbon between them (it ripples while the glass runs), a chequered strip across the floor */
+  const g = V.g, t = V.time, l = R(x) - 12, r = R(x) + 11, top = R(y) - 36;
+  for (const px of [l, r - 2]) { rc(g, px - 1, top, 5, 36, OL); rc(g, px, top + 1, 3, 35, C.stoneMid); rc(g, px, top + 1, 1, 35, C.stoneHi); rc(g, px + 2, top + 1, 1, 35, C.stoneLo); rc(g, px - 1, top - 2, 5, 3, C.brassLo); rc(g, px, top - 3, 3, 2, C.brassHi); dot(g, px + 1, top - 4, C.gold); }   /* the posts */
+  const w = r - l - 2, wave = i => (o.run ? Math.sin(t * 8 + i * 0.5) * 1.2 : 0), sag = i => R(Math.sin(i / w * Math.PI) * 2);
+  for (let i = 0; i < w; i++) { const yy = top + 4 + sag(i) + R(wave(i)); rc(g, l + 3 + i, yy - 1, 1, 10, OL); }
+  for (let i = 0; i < w; i++) { const yy = top + 4 + sag(i) + R(wave(i)); for (let j = 0; j < 4; j++) rc(g, l + 3 + i, yy + j * 2, 1, 2, (((i >> 1) + j) & 1) ? C.mortar : (o.run ? (o.warn ? C.hot : C.gold) : C.stoneMid)); }   /* the cheques */
+  for (let k = 0; k < 6; k++) rc(g, l + 1 + k * 4, R(y) - 2, 2, 2, (k & 1) ? C.mortar : (o.run ? C.gold : C.stoneMid)); for (let k = 0; k < 6; k++) rc(g, l + 3 + k * 4, R(y) - 1, 2, 1, (k & 1) ? (o.run ? C.gold : C.stoneMid) : C.mortar);   /* the floor strip, two rows of cheques */
 }
