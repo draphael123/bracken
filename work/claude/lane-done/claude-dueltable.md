@@ -1,6 +1,6 @@
-# CLAUDE-DUELTABLE - branch claude/dueltable-d. PHASE 1 DONE (full 72-pairing x n=10 matrix, finished 20:40, inside the 21:35 cutoff)
+# CLAUDE-DUELTABLE - branch claude/dueltable-d. PHASE 1 + PHASE 2 TOP-UP DONE (finished 21:08, inside the 21:35 cutoff)
 
-Full report: bracken-planning/reports/dueltable.md (this file is the short branch-side copy per the lane primer).
+Full report: bracken-planning/reports/dueltable.md (this file is the short branch-side copy per the lane primer). Phase 1 = full 72-pairing x n=10 matrix (finished 20:40). Phase 2 (this session, same worktree, 20:52-21:08) = n=30 top-up on the worst 8 ordered pairings + 2 more browser clips.
 
 ## What changed (this branch only, not applied to master)
 - `tools/duel-table.mjs` (new): resumable 9x9 ordered-pairing duel-matrix driver. One page reused across fights, recycled every 6 (crash-safe retry), `--resume` skips finished `(a,b,seed)` triples, persists to disk after every single fight. Committed (6b4eaef18) before running, per the brief.
@@ -19,11 +19,17 @@ Full report: bracken-planning/reports/dueltable.md (this file is the short branc
 ## Checks run
 - `tools/duel-table.mjs` smoke-tested (knight:pyro, warden:ranger @ n=2, then resumed to n=3 - correctly skipped the 4 already-persisted fights). No other project checks touched (tools/check.mjs was never run - not needed for this data-collection lane).
 
-## What's owed
-- Phase 2 (03:04): n=30 on the worst 8 pairs - exact resume command is in the PLAN report.
-- Browser-confirmed mechanism for pyro/paladin's weak performance despite a buffed heroMul (not watched - only knight v pirate was watched live).
-- Visual confirmation that the 21 timeout fights are mutual kiting, not a soft-lock.
-- None of the 4 proposed DUEL-only number changes have been applied to src/pvp-duel.js on this branch - PLAN report has the exact before/after values and the built recommendation on which to apply now vs hold for Daniel.
+## PHASE 2 addendum (n=30 top-up, 240/240 fights, `work/claude/tune/dueltable-worst8-n30.json`)
+- n=30 on the 8 worst ordered pairs CONFIRMS every direction from n=10; all 8 Wilson 95% CIs sit entirely outside the 35-65% band. pyro>reaper held at a rock-solid 0/30 [0-11]. Two cells softened from the n=10 extreme-zero reads (knight>pirate 0%->16.7% [7-34], warden>berserker 10%->23.3% [12-41]) but remain clearly imbalanced. **No proposal changes as a result** - still recommendations only, nothing applied to src/pvp-duel.js.
+- Watched 2 more fights live: (1) pyro v reaper seed 1 - pyro closed into near-melee range (inside its own 72px BOT_RANGE preference) and lost the trade there; reaper dealt 101 vs pyro's 50 (roughly the 2x gap seen in the aggregate data, meaning pyro's PRE-multiplier output is ~4x weaker since it already carries a x2 heroMul); reaper's K.O. screen showed a "VITAE: FULL" banner - a second reaper-side kit mechanic (campaign, not DUEL-only) stacking with Finding 2's riposte dynamic. Recommend against pushing pyro's heroMul further - the fix is pyro's bot positioning or reaper's Vitae interaction, neither a DUEL-only number. (2) warden v geomancer seed 2 (one of the 21 recorded timeout seeds) - replayed live, combat was NOT frozen, resolved cleanly 2-0 to warden in ~84s. This did **not** reproduce the exact recorded stall (manual `BK.sim()` chunking doesn't bit-reproduce the harness's `BK.sim(10)`-per-iteration seeded run), so it rules out a hard page freeze in general for this pairing but does not pin down the specific stalled seed - still partially owed.
+- Stills added: `pyro-vs-reaper-{1,2,3}.png`, `warden-vs-geomancer-{1,2}.png` (alongside Phase 1's `knight-vs-pirate-{1,2,3}.png`), all in `C:\Users\danie\Projects\desktop-stills\dueltable\`, not committed.
+
+## What's owed (updated)
+- Daniel's OK on the 3 heroMul nudges (reaper, new knight, new pirate) before touching src/pvp-duel.js.
+- The seat-order effect (Finding 4) - now refined: paladin/ranger is seat-clean (93.3%/93.3% both ways) while warden/berserker still shows a real seat gap on top of its dominance - the effect looks pair-specific, worth narrowing down.
+- A tighter repro of the exact warden-v-geomancer timeout seed (same call granularity as tools/duel-table.mjs) if the stall mechanism needs pinning down further.
+- Phase 1's remaining clip wishlist (pyro v knight/paladin, paladin v knight/pirate) - not picked up this pass.
+- None of the 4 proposed DUEL-only number changes have been applied to src/pvp-duel.js on this branch.
 
 ## Questions (recommendation built; see PLAN report for the full reasoning)
 1. Apply anti-juggle + round-timing knobs now, hold heroMul nudges for Daniel? REC: yes.
