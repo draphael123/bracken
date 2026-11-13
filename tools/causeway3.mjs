@@ -45,6 +45,7 @@ const { floodReach } = await imp('src/reachcore.js');
 const { MOVE, HERO_RUN, HERO_MOVE_IDS } = await imp('src/hero-move.js');
 const { breathCapacity } = await imp('src/deepair.js');
 const { makeCauseway3Hands } = await imp('src/causeway3-hands.js');
+const { makePirateFleetHands } = await imp('src/pirate-fleet-hands.js');   /* (claude/lw3b) the ONE water wiring: the level's hands ride its hooks */
 const TS = 16;
 pass(cw3On(), 'CW3=1 turns it on for Node tools');
 const L = LEVELS.find(l => l.id === 'causeway').build();
@@ -53,8 +54,8 @@ const at = (x, y) => L.grid[y * L.W + x];
 
 /* ---------- 2. THE LEVEL'S OWN LINT + THE KIT'S ---------- */
 { const bad = lintCauseway3(L, T); pass(!bad.length, 'lintCauseway3: ' + bad.join('; '));
-  const badT = lintTide({ tides: L.cw3Tides, pools: L.pools, checkpoints: L.ents.filter(e => e.t === 'check') }); pass(!badT.length, 'lintTide: ' + badT.join('; '));
-  const badP = lintPulls({ pulls: L.cw3Pulls }); pass(!badP.length, 'lintPulls: ' + badP.join('; ')); }
+  const badT = lintTide({ tides: L.tides, pools: L.pools, checkpoints: L.ents.filter(e => e.t === 'check') }); pass(!badT.length, 'lintTide: ' + badT.join('; '));
+  const badP = lintPulls({ pulls: L.pulls }); pass(!badP.length, 'lintPulls: ' + badP.join('; ')); }
 pass(L.ents.filter(e => e.t === 'check').length === CW3.checks.length && CW3.checks.length === 6, 'START + six shrines on 980 columns (one per area exam, at the 200-route-tile cap; master: 10 on 612): ' + L.ents.filter(e => e.t === 'check').map(e => e.x).join(' '));
 pass(L.ents.filter(e => e.t === 'silver').length === 3, 'three silvers, one an act (save bits)');
 pass((L.ambushes || []).map(a => a.name).join('|') === 'THE DROWNED CHAPEL', 'one ambush room (the island chapel)');
@@ -69,7 +70,7 @@ pass(L.pools.some(p => p.krakenSea && p.x0 === (566 + CW3.OFF) * TS), 'his sea, 
 for (const [name, tb] of Object.entries(CW3_TABLES)) pass(tb !== undefined, 'table row ' + name);
 
 /* ---------- 3. THE STORM BUILDS ---------- */
-const tideT = id => L.cw3Tides.find(t => t.id === id);
+const tideT = id => L.tides.find(t => t.id === id);
 for (const a of CW3.acts) { const t = tideT(a.id), sum = Object.values(t.cycle).reduce((s, v) => s + v, 0) / t.rate; pass(Math.abs(sum - a.every) < 0.05, a.id + ' turns every ' + sum.toFixed(1) + ' s');
   for (const ph of ['warn', 'turn']) pass(t.cycle[ph] / t.rate >= 1.5 - 1e-9, a.id + ' ' + ph + ' tell ' + (t.cycle[ph] / t.rate).toFixed(2) + ' s >= 1.5'); }
 pass(tideT('act1').hi === 24 && tideT('act2').hi === 20 && tideT('act3').hi === 20, 'act I\'s sea fills the cuts only; acts II and III come over the road');
@@ -94,7 +95,7 @@ for (const [id, x0, x1, label] of [['race1', 103, 144, 'THE STONES (act I)'], ['
   pass(held > walk / slowest * 1.25, label + ': the sluice\'s dry window ' + held.toFixed(1) + ' s > the slowest walk with its hops ' + (walk / slowest * 1.25).toFixed(1) + ' s');
 }
 /* the rips: a swimmer cannot cross (grip over a swim), and each leaves him at a near bank's rungs */
-for (const id of ['rip1', 'rip3']) { const f = L.cw3Pulls.find(p => p.id === id); pass(classOf(f) === 'rip' && f.dir[0] < 0, id + ': a rip (' + f.strength + ' px/s) back to the near bank');
+for (const id of ['rip1', 'rip3']) { const f = L.pulls.find(p => p.id === id); pass(classOf(f) === 'rip' && f.dir[0] < 0, id + ': a rip (' + f.strength + ' px/s) back to the near bank');
   const x = f.box[0]; pass(at(x, 26) === T.NET && at(x - 1, 26) === T.SOLID, id + ': the near bank\'s rungs at ' + x); }
 /* THE BOATS: at high water a hop under the sea wall; at low water far below it */
 const jumpH = (MOVE.JUMPV * MOVE.JUMPV - MOVE.APEX_VY * MOVE.APEX_VY) / (2 * MOVE.GRAV) + MOVE.APEX_VY * MOVE.APEX_VY / (2 * MOVE.GRAV * MOVE.APEX_G);
@@ -118,7 +119,7 @@ for (const [tid, fid, wallX, wallTop] of [['act1', 'b1', 176, 21], ['last', 'b3'
   const with_ = seg / (96 + A.strength), slack = seg / 96, against = seg / (96 - A.strength);
   pass(with_ < cap * 0.6 && slack < cap, 'the arch: the longest stretch between airs ' + (seg / TS) + ' cols - ' + with_.toFixed(1) + ' s with the flood, ' + slack.toFixed(1) + ' s at slack (breath ' + cap + ' s)');
   pass(against > cap, 'against the ebb it is ' + against.toFixed(1) + ' s (out of breath): hold the ring at an air bell and wait for the flood');
-  const f = L.cw3Pulls.find(p => p.id === 'arch'); pass(classOf(f) === 'strong' && f.posts.length === 3 && f.tide === 'act2', 'the arch current is STRONG (swimmable), signed by act II\'s tide, with a ring at each air bell');
+  const f = L.pulls.find(p => p.id === 'arch'); pass(classOf(f) === 'strong' && f.posts.length === 3 && f.tide === 'act2', 'the arch current is STRONG (swimmable), signed by act II\'s tide, with a ring at each air bell');
   for (const x of A.posts) pass((L.airRooms || []).some(([a, b, y0, y1]) => x >= a && x <= b && y0 <= 26 && y1 >= 27), 'an air bell (L.airRooms) at the ring ' + x); }
 /* THE LAMPS: the gate stands until its lamp is lit */
 { const g = CW3.lampGate; pass(at(g.col, 23) === T.PORT && at(g.col, 0) === T.PORT && L.ents.some(e => e.t === 'lantern' && e.x === g.lamp && e.dark), 'THE PILGRIMS\' GATE (col ' + g.col + ') shut, its storm lamp dark');
@@ -140,10 +141,13 @@ for (const [tid, fid, wallX, wallTop] of [['act1', 'b1', 176, 21], ['last', 'b3'
 /* ---------- 7. THE HANDS in a stub world ---------- */
 { const grid = L.grid.slice(); const marks = new Set(), said = [], props = [{ t: 'lantern', x: CW3.lampGate.lamp * TS + 8, y: 24 * TS, lit: false }], fell = [], opened = [];
   const Lw = { ...L, grid }, P = { x: 3 * TS, y: 18 * TS, dead: false, swim: false };
-  const H = makeCauseway3Hands({ L: Lw, players: [P], hero: () => P, enemies: () => [], props: () => props, parts: () => [], marks: () => marks, poolLevel: (p, y) => { p.y = y; }, moveBody: (b, dx) => { b.x += dx; },
+  const ctx0 = { L: Lw, players: [P], hero: () => P, enemies: () => [], props: () => props, parts: () => [], marks: () => marks, poolLevel: (p, y) => { p.y = y; }, moveBody: (b, dx) => { b.x += dx; },
     holding: () => false, view: () => ({ x0: 0, y0: 0, x1: 320, y1: 180 }), VW: () => 320, VH: () => 180, number: (x, y, t) => said.push(t), burst: () => {}, shake: () => {}, damagePlayer: () => 'hit',
-    asPlayer: (p, fn) => fn(), upright: p => !p.dead, openGateCol: c => opened.push(c), breakTile: (x, y) => { grid[y * L.W + x] = T.AIR; }, fallOut: (pp, why) => { fell.push(why); pp.dead = true; }, sound: () => {} });
+    asPlayer: (p, fn) => fn(), upright: p => !p.dead, openGateCol: c => opened.push(c), breakTile: (x, y) => { grid[y * L.W + x] = T.AIR; }, fallOut: (pp, why) => { fell.push(why); pp.dead = true; }, sound: () => {} };
   Lw.pools = L.pools.map(p => ({ ...p }));
+  /* main.js's order: the strike chain (PFH.strike), CWH.update, ..., PFH.update; the generic wiring gets CWH.water as its hooks */
+  const W = makePirateFleetHands({ ...ctx0, hooks: () => C3.water, shake: () => {}, sparks: () => {}, time: () => 0 }), C3 = makeCauseway3Hands({ ...ctx0, get pfh() { return W; } });
+  const H = { on: () => C3.on(), read: () => C3.read(), clear() { C3.clear(); W.clear(); }, strike(hb) { W.strike(hb); }, update(dt) { C3.update(dt); W.update(dt); } };
   H.clear(); pass(H.on() && H.read().chase.st === 'wait', 'hands: on, THE COLLAPSE waiting');
   const step = (s, f) => { for (let t = 0; t < s; t += 1 / 60) { if (f) f(1 / 60); H.update(1 / 60); } };
   step(1); pass(H.read().tides.find(t => t.id === 'act1').ph === 'low', 'hands: act I starts at low water (the safe phase)');

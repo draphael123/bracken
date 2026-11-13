@@ -8,6 +8,8 @@
 //                                    Hauled stays hauled: the mark 'pf:haul:<id>' (through death and reload). THE FREEBOOTER's sloop (boss: true) is his to haul.
 //   GRAPPLE WINCHES (ents)           a blow on the drum fires its line at its prize. A winch on a boat (on: float id) rides the boat.
 // main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawBack, drawMover, drawOver, hud, read, haul(id), unhaul(id), prizeK(id), deckY(id).
+// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, tide(ev), pull(e), verb(v, hb), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,gg,t,P), noStreaks, noPosts }
+// (all optional; a hook that returns true has CLAIMED the event, the generic words/sounds are skipped). Nothing steps the kit but this file: no level keeps a second TK / PF.
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
 import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
 import { pullInit, pullStep, pullBodies, pullShots, flowParts, postNear } from './pull-field.js';
@@ -21,6 +23,7 @@ export function makePirateFleetHands(ctx) {
   const lv = () => ctx.L, TS = 16;
   const on = () => !!(lv() && (lv().tides || lv().pulls));
   H.on = on;
+  const hooks = () => (ctx.hooks ? ctx.hooks() : null);
   H.kit = () => TK; H.pulls = () => PF;
   H.clear = () => {
     const L = lv(); TK = null; PF = null; S = null; if (!on()) return;
@@ -48,23 +51,27 @@ export function makePirateFleetHands(ctx) {
   /* ---------- ONE FRAME ---------- */
   H.update = dt => {
     if (!TK || !S) return; const L = lv();
+    const hk = hooks();
     for (const e of tideStep(TK, dt)) {
+      if (hk && hk.tide && hk.tide(e)) continue;
       if (e.t === 'toll') { if (!e.turn) ctx.sound('swellTell'); else ctx.sound('swellTurn'); }
       if (e.t === 'phase' && e.ph === 'warn') S.foam[e.id] = 1;
       if (e.t === 'phase' && e.ph === 'rise' && !S.told.rise) { const P = ctx.hero(); if (P && !P.dead && nearBoat(P)) { S.told.rise = 1; ctx.number(P.x, P.y - 40, PF_SAY.rising, '#dff2f8'); } }
     }
     for (const id in S.foam) S.foam[id] = Math.max(0, S.foam[id] - dt * 0.5);
     tideApply(TK, L.pools, ctx.poolLevel);
-    const g0 = gauge(TK, 'swell');
+    const g0 = gauge(TK, (hk && hk.signal) || L.pullSignal || 'swell');
     const pev = pullStep(PF, dt, { tidePh: g0 ? g0.ph : null });
     const bodies = [...ctx.players, ...ctx.enemies().filter(e => e.alive !== false && !e.boss && wetFoe(e))];
     const ev = pullBodies(PF, bodies, dt, { inWater: b => (ctx.players.includes(b) ? !!b.swim : wetFoe(b)), holding: b => ctx.holding(b), kind: b => (ctx.players.includes(b) ? 'hero' : 'foe'),
       dashing: b => !!((b.dashT || 0) > 0 || b.rolling || (b.dodge || 0) > 0), move: (b, dx, dy) => ctx.moveBody(b, dx, dy) });
     for (const e of ev) if (ctx.players.includes(e.b)) {
+      if (hk && hk.pull && hk.pull(e, g0)) continue;
       if (e.t === 'enter' && !S.told['in' + e.id]) { S.told['in' + e.id] = 1; ctx.number(e.b.x, e.b.y - 34, e.id === 'sinking' ? PF_SAY.sinking : PF_SAY.pull, '#bfe6f5'); }
       if (e.t === 'grab') { ctx.sound('grab'); if (!S.told.grab) { S.told.grab = 1; ctx.number(e.b.x, e.b.y - 30, PF_SAY.grab, '#ffd36b'); } } }
-    for (const e of pev) if (e.t === 'off') { const P = ctx.hero(); if (P && P.swim && !S.told['off' + e.id]) { S.told['off' + e.id] = 1; ctx.number(P.x, P.y - 30, PF_SAY.slack, '#8fd160'); } }
+    if (!(hk && hk.quiet)) for (const e of pev) if (e.t === 'off') { const P = ctx.hero(); if (P && P.swim && !S.told['off' + e.id]) { S.told['off' + e.id] = 1; ctx.number(P.x, P.y - 30, PF_SAY.slack, '#8fd160'); } }
     if (ctx.shots) pullShots(PF, ctx.shots(), dt);
+    if (hk && hk.flow) for (const p of flowParts(PF, dt, ctx.view())) ctx.parts().push(p);   /* a level that wants the flow specks (the streaks are the generic drawing) */
     /* (claude/pfart: the flow specks (flowParts) are retired - src/redraw/pirate_fleet_art.js drawStreaks draws the currents) */
     /* the prizes coming in */
     for (const id in S.prizes) { const p = S.prizes[id]; if (!p.hauling) continue;
@@ -89,7 +96,8 @@ export function makePirateFleetHands(ctx) {
   /* ---------- A BLOW ---------- */
   H.strike = hb => {
     if (!TK || !hb) return; const L = lv();
-    const v = tideStrike(TK, hb); if (v && v.t === 'lever') ctx.marks().add(v.key); if (v) ctx.sound('clank');
+    const v = tideStrike(TK, hb), hk = hooks(), claimed = v ? !!(hk && hk.verb && hk.verb(v, hb)) : (hk && hk.miss && hk.miss(hb), false);
+    if (v && !claimed) { if (v.t === 'lever') ctx.marks().add(v.key); ctx.sound('clank'); }
     for (const w of L.pfWinches || []) { const p = winchAt(w);
       if (!(hb.l < p.x + 10 && hb.r > p.x - 10 && hb.t < p.y - 2 && hb.b > p.y - 24)) continue;
       const pr = S.prizes[w.hauls]; if (!pr || pr.k >= 1 || pr.hauling) { if (!S.last[w.id] || ctx.time() - S.last[w.id] > 1) { S.last[w.id] = ctx.time(); ctx.sound('clank'); } continue; }
@@ -121,10 +129,12 @@ export function makePirateFleetHands(ctx) {
   H.drawOver = (g, cx, cy, t) => {
     if (!S) return; const L = lv(), VWd = ctx.VW();
     /* THE FOAM: the warn - the sea's surface runs white before the swell comes up */
+    const hk = hooks();
     for (const T of L.tides || []) { const gg = gauge(TK, T.id); if (!gg || !(gg.ph === 'warn' || gg.ph === 'turn')) continue;
-      for (const p of L.pools || []) { if (!(T.pools || []).includes(p.id)) continue; PFA.drawFoam(g, Math.max(0, R(p.x0 - cx)), Math.min(VWd, R(p.x1 - cx)), R(p.y - cy), t, gg.ph); } }
+      for (const p of L.pools || []) { if (!(T.pools || []).includes(p.id)) continue; const fx0 = Math.max(0, R(p.x0 - cx)), fx1 = Math.min(VWd, R(p.x1 - cx));
+        if (hk && hk.foam) hk.foam(g, fx0, fx1, R(p.y - cy), t, gg.ph); else PFA.drawFoam(g, fx0, fx1, R(p.y - cy), t, gg.ph); } }
     /* THE CURRENTS: flow streaks over every field (a told nudge, then a bite) */
-    for (const fs of PF ? PF.fields : []) PFA.drawStreaks(g, fs, cx, cy, t, VWd);
+    if (!(hk && hk.noStreaks)) for (const fs of PF ? PF.fields : []) PFA.drawStreaks(g, fs, cx, cy, t, VWd);
     /* THE WINCHES: a capstan on a bedplate; its line while it flies and while she comes in */
     for (const w of L.pfWinches || []) { const p = winchAt(w), x = R(p.x - cx), y = R(p.y - cy), pr = S.prizes[w.hauls];
       PFA.drawWinch(g, x, y, t, { hauling: !!(pr && pr.hauling), ready: !!(pr && pr.k < 1 && !pr.hauling) });
@@ -132,13 +142,14 @@ export function makePirateFleetHands(ctx) {
           tx = m.x0 + m.w / 2 - cx, ty = (fpos(pr.id) || m.y) - PFH.farLift * (1 - k) - cy - 30 * sc, f = pr.lineT > 0 ? 1 - pr.lineT / PFH.lineT : 1;
           PFA.drawLine(g, x, y - 14, tx, ty, f, t, { taut: pr.hauling && pr.lineT <= 0 }); } } }
     /* the posts (mast stumps over the sinking, anchor chains under the storm's prize): hold UP in reach */
-    for (const f of L.pulls || []) for (const [px, py] of f.posts || []) PFA.drawStump(g, px * TS + 8 - cx, py * TS + 8 - cy, f.id === 'rip' ? 'chain' : 'stump', t, ctx.players.some(pp => pp.pullGrab && !pp.dead && Math.abs(pp.x - (px * TS + 8)) < 30));
+    if (!(hk && hk.noPosts)) for (const f of L.pulls || []) for (const [px, py] of f.posts || []) PFA.drawStump(g, px * TS + 8 - cx, py * TS + 8 - cy, f.id === 'rip' ? 'chain' : 'stump', t, ctx.players.some(pp => pp.pullGrab && !pp.dead && Math.abs(pp.x - (px * TS + 8)) < 30));
     /* a held seat: a word */
-    for (const pp of ctx.players) if (pp.pullGrab && !pp.dead) { g.fillStyle = '#ffd36b'; g.fillRect(R(pp.x - cx) - 1, R(pp.y - cy) - 30, 3, 3); }
+    if (!(hk && hk.noPosts)) for (const pp of ctx.players) if (pp.pullGrab && !pp.dead) { g.fillStyle = '#ffd36b'; g.fillRect(R(pp.x - cx) - 1, R(pp.y - cy) - 30, 3, 3); }
   };
   /* THE A3 GAUGE (one drawing for every sea level, PFA.drawGauge): the swell's height, its phase, the tolls, the coming arrow */
   H.hud = (g, t) => {
     if (!TK) return; const P = ctx.hero(); if (!P) return;
+    const hk = hooks(); if (hk && hk.gauge) { hk.gauge(g, t, P); return; }
     const T = (lv().tides || []).find(q => (q.pools || []).some(id => { const p = (lv().pools || []).find(pp => pp.id === id); return p && P.x >= p.x0 && P.x <= p.x1; })); if (!T) return;
     const gg = gauge(TK, T.id); if (!gg) return; PFA.drawGauge(g, 6, 30, gg, t);
   };

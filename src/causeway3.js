@@ -294,7 +294,7 @@ export function buildCauseway3(R0, T, TS = 16) {
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
   // =====================================================================================================================
-  // THE WATER (src/tide-kit.js, kept on L.cw3Tides; src/pull-field.js on L.cw3Pulls - not L.tides/L.pulls: claude/water1's generic wiring steps those)
+  // THE WATER (src/tide-kit.js on L.tides, src/pull-field.js on L.pulls: the ONE generic wiring, src/pirate-fleet-hands.js; this level's own words, sounds and art ride its hooks, src/causeway3-hands.js H.water; L.pullSignal = the tide whose phase signs the arch)
   // =====================================================================================================================
   const A = CW3.acts;
   pool('sea1a', 4, 103, A[0].hi); pool('chan1', CW3.race1.x0, CW3.race1.x1, CW3.race1.hi); pool('sea1b', 146, 300, A[0].hi);
@@ -337,7 +337,7 @@ export function buildCauseway3(R0, T, TS = 16) {
     weather: [{ x0: 0, x1: 933 * TS, kind: 'rain' }, { x0: 933 * TS, x1: 99999, kind: 'mist' }],
     reachDoors: [{ x0: CW3.lampGate.col, x1: CW3.lampGate.col, y0: 0, y1: 23 }],
     routeSupports: supports,
-    cw3Tides: tides, cw3Pulls: pulls, cw3Props: props, cw3Arms: arms, cw3Lamps: lamps, cw3Chase: { ...CW3.chase },
+    tides, pulls, pullSignal: 'act2', cw3Props: props, cw3Arms: arms, cw3Lamps: lamps, cw3Chase: { ...CW3.chase },
     cw3Boats: Object.values(floats).flat().map(f => ({ ...f, x: f.x0 })), cw3Verbs: Object.values(verbs).flat().map(v => ({ ...v })),
     cw3Bells: Object.values(verbs).flat().filter(v => v.t === 'bell'), cw3Sluices: Object.values(verbs).flat().filter(v => v.t === 'sluice'), cw3Levers: [{ x: 408, y: 38 }],
     sections: CW3.sections.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
@@ -378,8 +378,8 @@ export function shadowCauseway(tables) {
 /* THE LEVEL'S OWN CHECKS (tools/causeway3.mjs) -> [problems] */
 export function lintCauseway3(L, T) {
   const bad = [], at = (x, y) => L.grid[y * L.W + x];
-  const tide = id => L.cw3Tides.find(t => t.id === id);
-  for (const T0 of L.cw3Tides) for (const v of T0.verbs || []) {
+  const tide = id => L.tides.find(t => t.id === id);
+  for (const T0 of L.tides) for (const v of T0.verbs || []) {
     if (at(v.x, v.y) !== T.AIR && at(v.x, v.y) !== T.NET) bad.push(T0.id + ' ' + v.t + ' at ' + v.x + ',' + v.y + ' is buried');
     if (at(v.x, v.y + 1) !== T.SOLID) bad.push(T0.id + ' ' + v.t + ' at ' + v.x + ',' + v.y + ' stands on nothing');
   }
