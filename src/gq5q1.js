@@ -1,4 +1,4 @@
-// src/gq5q1.js - GQ5Q1: THE BELL HOISTS (Daniel 11-12 14:04, scratch gq5-plan.md section 3). One switch, default OFF: OFF = claude/gq5fix cell for cell.
+// src/gq5q1.js - GQ5Q1: THE BELL HOISTS (Daniel 11-12 14:04, scratch gq5-plan.md section 3). One switch, SHIPS ON since claude/prepqon (?gq5q1=0 = the old fight, claude/gq5fix cell for cell).
 // ON, in THE GEODE THRONE hall (phase 1) only:
 //   THE HOISTS   three 4-tile iron grate-lifts on chains from floor slots; ring the hall bell (any blow or hero shot) and they rise 2 tiles in 0.6 s, stay up (8 s from the ring), rattle + flash red + "LOWERING"
 //                from 6.5 s, sink at 8.0 s over 0.5 s setting every rider down. The bell cools down 16 s ("STILL SWINGING"). The permanent galleries are not laid.
@@ -8,8 +8,11 @@
 //   SCORCHED     while she channels, a plunge from a hoist onto her (or any blow / shot by a hero standing on a hoist) = stunned 3.0 s x1.25, at most 15% of her bar, the fire goes out, then a told 3 s ward.
 //   REMOVED      the bell lure (lureBegin / lureStep / dropGrate), the grate at h17 and her charge to the bell. Everything else in the hall stays.
 // The override for review and the lanes: ?gq5q1=1 on the page, globalThis.BRACKEN_GQ5Q1 = true, or BRACKEN_GQ5Q1=1 in a Node tool's env.
-export const GQ5Q1_SHIPS = false;
+export const GQ5Q1_SHIPS = true;   /* (claude/prepqon) ships ON together with GQ5Q2 (Daniel's call). Rollback = this one flag. ?gq5q1=0 / BRACKEN_GQ5Q1=0 / globalThis.BRACKEN_GQ5Q1=false = the lab OFF override (the old fight); ?gq5q1=1 still forces ON. */
 export function gq5q1On() {
+  try { if (globalThis.BRACKEN_GQ5Q1 === false || globalThis.BRACKEN_GQ5Q1 === '0') return false; } catch { /* no global */ }
+  try { if (typeof location !== 'undefined' && /[?&]gq5q1=0\b/.test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_GQ5Q1 === '0') return false; } catch { /* no node */ }
   if (GQ5Q1_SHIPS) return true;
   try { if (globalThis.BRACKEN_GQ5Q1 === true || globalThis.BRACKEN_GQ5Q1 === '1') return true; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]gq5q1=1\b/.test(location.search || '')) return true; } catch { /* no page */ }
