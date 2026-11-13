@@ -129,8 +129,8 @@ for (const [name, put] of KINDS) { const w = callWorld([{ x: 100, y: 320, mode: 
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); w.run(0.3); w.g.stagger = 0.4; w.run(0.1); ok(w.H.callRead() === null, 'a stagger in the tell cancels the call (no stone, no ring)'); }
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); w.run(0.3); w.H.clear(); ok(w.H.callRead() === null, 'a respawn clears every call'); }
 /* drawing does not throw (a node canvas) */
-{ const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); const cv = new (globalThis.OffscreenCanvas || class { constructor() {} })(320, 180); const g2 = cv.getContext ? cv.getContext('2d') : null;
-  if (g2) { let thrown = false; try { for (const secs of [0.2, 0.4, 0.6, 0.6, 0.4]) { w.run(secs); w.H.drawOver(g2, 0, 120, w.st.time); } } catch (e) { thrown = e.message; } ok(!thrown, 'drawOver through the tell, the fall and the hang does not throw' + (thrown ? ': ' + thrown : '')); }
+{ const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); const calls = []; const g2 = new Proxy({}, { get: (t, k) => (k in t ? t[k] : (...a) => { calls.push(k); }), set: (t, k, v) => { t[k] = v; return true; } });   /* node-canvas has no paths: a recording stub proves the draw code runs, the browser lane proves it reads */
+  if (g2) { let thrown = false; try { for (const secs of [0.2, 0.4, 0.6, 0.6, 0.4]) { w.run(secs); w.H.drawOver(g2, 0, 120, w.st.time); } } catch (e) { thrown = e.message; } ok(!thrown && calls.length > 40, 'drawOver through the tell, the fall and the hang does not throw (' + calls.length + ' draw calls)' + (thrown ? ': ' + thrown : '')); }
   else ok(true, 'no canvas here: drawing is the browser lane\'s'); }
 
 /* ================= ON: THE LAB BOT ================= */
