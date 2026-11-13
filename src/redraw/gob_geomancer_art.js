@@ -184,7 +184,7 @@ export function bakeGobGeomancer() {
 export function ggFrame(e) {
   const m = e.mode, a = e.anim || 0, moving = Math.abs(e.vx || 0) > 4;
   switch (m) {
-    case 'rockTell': return GGF.rockTell;
+    case 'rockTell': case 'callTell': return GGF.rockTell;   /* (claude/gq6geo) THE GEODE CALL wears the rock's staff-up pose until its own frame is drawn (scratch/lane-reports/gq6geo.md) */
     case 'slateTell': return GGF.slateTell;
     case 'shellTell': return GGF.shellTell;
     case 'release': return e.relMove === 'slateTell' ? GGF.slate : e.relMove === 'shellTell' ? GGF.shell : GGF.rock;
