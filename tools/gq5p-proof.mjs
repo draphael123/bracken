@@ -4,11 +4,11 @@
 // OWED 5: a standing jump (the real JUMPV/GRAV physics, src/hero-move.js) on the curtsy's low sweep (hit 1, 10 px high) and whether its
 //   rising cut (hit 2, 32 px high, 0.3 s later) still finds a hero at the jump's apex - n >= 10 trials with the knight, hit/miss counted.
 // OWED 3: 8-10 stills (hero + the Princess, each new pose) saved as plain PNGs to the given stills dir (not committed - images never are).
-import { openPage } from './cdp.mjs';
+import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const STILLS = process.argv[2] || 'C:/Users/danie/Projects/desktop-stills/gq5p';
+const STILLS = process.argv[2] || process.env.OUT || join(ROOT, 'audits', 'gq5p');
 mkdirSync(STILLS, { recursive: true });
 const pg = await openPage({ seed: 20261112 });
 const snap = 'BK.view.buf.toDataURL("image/png")';
