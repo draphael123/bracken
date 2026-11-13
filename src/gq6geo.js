@@ -11,7 +11,7 @@ export const GQ6CALL_SHIPS = false;
 function flag(ships, name, query) {
   if (ships) return true;
   try { if (globalThis[name] === true || globalThis[name] === '1') return true; } catch { /* no global */ }
-  try { if (typeof location !== 'undefined' && new RegExp('[?&]' + query + '=1\b').test(location.search || '')) return true; } catch { /* no page */ }
+  try { if (typeof location !== 'undefined' && new RegExp('[?&]' + query + '=1(?![0-9])').test(location.search || '')) return true; } catch { /* no page */ }
   try { if (typeof process !== 'undefined' && process.env && process.env[name] === '1') return true; } catch { /* no node */ }
   return false;
 }

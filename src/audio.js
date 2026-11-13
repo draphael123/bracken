@@ -1393,6 +1393,11 @@ Object.assign(SFX, {
   arrowWhistle() { tone('sine', 3300, 1500, 1.0, 0.05); tone('sine', 2900, 1250, 1.05, 0.04, 0.1); tone('sine', 3600, 1700, 0.9, 0.035, 0.22); noise(0.9, 0.025, 5200, 0.5, 0.1); },
   whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
   fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
+  /* (claude/gq6call-art) THE GEODE CALL (the Goblin Geomancer's, GQ6CALL): three sounds of its own, all synthesized. TELL 0.8 s: a crystal shimmer that RISES (two sines climbing a fifth apart, a glassy hiss) over a low stone grind -
+     'something is gathering overhead'; FALL: a thin falling whistle, higher and shorter than the Queen's boulder; LAND: a short dry thud with a crack and two glass tinks (the stone is smaller than hers: shorter, higher) */
+  geoCallTell() { tone('sine', 660, 1320, 0.8, 0.07); tone('sine', 990, 1980, 0.7, 0.05, 0.1); tone('triangle', 1320, 2640, 0.55, 0.025, 0.25); noise(0.8, 0.04, 2600, 0.5); noise(0.35, 0.09, 380, 0.5); tone('square', 110, 70, 0.3, 0.05); },
+  geoCallFall() { tone('sine', 1900, 520, 0.5, 0.07); tone('sine', 2300, 700, 0.4, 0.035, 0.04); noise(0.45, 0.035, 3200, 0.6); },
+  geoCallLand() { tone('sine', 190, 80, 0.1, 0.22); noise(0.07, 0.22, 1100, 0.6); tone('square', 240, 90, 0.07, 0.1); tone('triangle', 1560, 1200, 0.14, 0.06, 0.01); tone('sine', 2400, 2000, 0.1, 0.045, 0.04); tone('sine', 3100, 2600, 0.08, 0.035, 0.07); },
   crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },
   gateOpen() { noise(0.5, 0.12, 300, 0.7); tone('sawtooth', 90, 130, 0.5, 0.08); },
   mawRoar() { noise(0.9, 0.2, 260, 0.4); tone('sawtooth', 90, 46, 0.7, 0.16); tone('square', 60, 40, 0.5, 0.1, 0.05); }, // the moray coming out of its hole
