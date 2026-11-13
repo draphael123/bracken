@@ -1,4 +1,4 @@
-// src/gq5q2.js - GQ5Q2: THE TOWER TOP, CLEAR (Daniel 11-12 14:04, scratch gq5-plan.md section 4). One switch, default OFF: OFF = claude/gq5q1 cell for cell. Independent of GQ5Q1 (the hall).
+// src/gq5q2.js - GQ5Q2: THE TOWER TOP, CLEAR (Daniel 11-12 14:04, scratch gq5-plan.md section 4). One switch, SHIPS ON since claude/prepqon (?gq5q2=0 = claude/gq5q1 cell for cell). Independent of GQ5Q1 (the hall).
 // ON, on the tower top (phase 2) only:
 //   THE RULE      the entry hint + plate: "STRIKE HER STONES BACK AT HER - AND WHEN SHE HIDES IN THE BELL, RING IT." (replaces "SHE WAITS ON THE ROOF").
 //   THE TEACH     at ~1.5 s ONE slow (160 px/s) gold-glint shard from a ring on your level, a "STRIKE IT!" plate riding it; home = "STRUCK - 8%!" + a flash; a miss repeats, 3 times at most.
@@ -10,8 +10,11 @@
 //   THE HATCH ERUPTS  every 15 s after 50%: seam smoke 1.2 s + "THE HATCH!", then a fire column 2 wide x 5 rows for 2.0 s (14 + a push), the nearest bay burns with it. Never during the perch's swing / downed window.
 //   NUMBERS       SHARD VOLLEY cd 2.5 -> 2.2 s; the phase-2 dmgK 0.6 -> 0.65; her bar stays 1000.
 // The override for review and the lanes: ?gq5q2=1 on the page, globalThis.BRACKEN_GQ5Q2 = true, or BRACKEN_GQ5Q2=1 in a Node tool's env.
-export const GQ5Q2_SHIPS = false;
+export const GQ5Q2_SHIPS = true;   /* (claude/prepqon) ships ON together with GQ5Q1 (Daniel's call). Rollback = this one flag. ?gq5q2=0 / BRACKEN_GQ5Q2=0 / globalThis.BRACKEN_GQ5Q2=false = the lab OFF override (the old fight); ?gq5q2=1 still forces ON. */
 export function gq5q2On() {
+  try { if (globalThis.BRACKEN_GQ5Q2 === false || globalThis.BRACKEN_GQ5Q2 === '0') return false; } catch { /* no global */ }
+  try { if (typeof location !== 'undefined' && /[?&]gq5q2=0\b/.test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_GQ5Q2 === '0') return false; } catch { /* no node */ }
   if (GQ5Q2_SHIPS) return true;
   try { if (globalThis.BRACKEN_GQ5Q2 === true || globalThis.BRACKEN_GQ5Q2 === '1') return true; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]gq5q2=1\b/.test(location.search || '')) return true; } catch { /* no page */ }

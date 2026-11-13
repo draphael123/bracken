@@ -40,7 +40,8 @@ try {
         if (A.s===B.s && Math.abs(A.x0-B.x0)<=1 && Math.abs(A.y0-B.y0)<=1) continue;
         const ix=Math.min(A.x0+A.w,B.x0+B.w)-Math.max(A.x0,B.x0), iy=Math.min(A.y0+A.h,B.y0+B.h)-Math.max(A.y0,B.y0);
         if (ix>1 && iy>1) report('COLLIDE',screen,A,{other:B.s}); }
-      return texts.map(t=>t.s);
+      /* (claude/prepqon) the OFFSCREEN / OVERFLOW / COLLIDE math above stays HUD-only (world text is in world coordinates), but the strings SEEN include world text: the plate lines and ctx.number() words (WARDED, SHE RUNS) are drawn inside the map transform (world:true) and were filtered out, so this tool read 0 of 4 (rel180) */
+      return rec.filter(r=>r.kind==='text' && r.s && r.s.trim() && r.alpha>0.05).map(r=>r.s);
     }
     // ---- drive the real roof entry, warded perch and sweep, recording every frame along the way ----
     BK.manualSimulation=true; BK.SET.speed=1; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(LEVELS.findIndex(l=>l.id==='crown')); BK.state='play'; BK.god=false; BK.step(5);
