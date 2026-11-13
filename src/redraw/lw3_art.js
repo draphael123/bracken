@@ -57,8 +57,17 @@ export function drawSluice(g, x, feet, held = 0, cool = 0, t = 0) {
   for (let i = 0; i < 4; i++) rect(-8 + i * 5, 0, 2, 1, LK.weed[1 + (i & 1)]);
 }
 /* A FISHING BOAT: (x, y) = the deck's top-left on screen (y = the platform), w px, t = clock, st = { lit, loose (afloat), cut }. Clinker strakes, the wale, a coil of net, a bollard, a lantern. */
+/* (claude/saltlook) THE STILL PART OF A BOAT IS BAKED ONCE PER (width, lantern): the procedural poly/outline pass cost ~3 ms a frame on screen (tools/saltlook-perf.mjs, saltlook-prof.mjs); only the foam of a loose boat moves.
+   Browser only (a node sheet has no document and draws the layers each time, as before). Pixels are the same: tools/saltlook-same.mjs. */
+const BOATS = new Map();
 export function drawBoat(g, x, y, w, t = 0, st = {}) {
-  at(g, x, y); w = R(w); const L = new Layer(), HULL = 11;
+  w = R(w); const key = w + (st.lit === false ? 'd' : 'l'); let c = BOATS.get(key);
+  if (!c && typeof document !== 'undefined' && document.createElement) { c = document.createElement('canvas'); c.width = w + 24; c.height = 48; boatBody(c.getContext('2d'), 10, 30, w, st); BOATS.set(key, c); }
+  if (c) g.drawImage(c, R(x) - 10, R(y) - 30); else boatBody(g, x, y, w, st);
+  if (st.loose) { at(g, x, y); for (let i = 0; i < 3; i++) rect(2 + i * (w / 3) + Math.sin(t * 2 + i) * 2, 12, 4, 1, LK.foam[0], 0.6); }
+}
+function boatBody(g, x, y, w, st) {
+  at(g, x, y); const L = new Layer(), HULL = 11;
   poly(L, [[-4, -5], [-1, 0], [w + 1, 0], [w + 4, -5], [w + 1, 3 + HULL - 4], [w - 6, HULL + 1], [6, HULL + 1], [1, 3 + HULL - 4]], LK.tar[2]);   /* the hull, bow and stern rising */
   poly(L, [[-4, -5], [-1, 0], [8, 0], [6, HULL + 1], [1, 3 + HULL - 4]], LK.tar[3]);
   for (let r = 0; r < 3; r++) { const yy = 2 + r * 3; for (let xx = 3 - r; xx < w - 3 + r; xx++) pset(L, xx, yy, (xx + r) % 11 === 0 ? LK.tar[3] : LK.tar[1]); }   /* the strake lines, joints staggered */
@@ -71,7 +80,6 @@ export function drawBoat(g, x, y, w, t = 0, st = {}) {
   const C = new Layer(); ell(C, 7, -3, 5, 2.4, LK.cord); for (let k = 0; k < 4; k++) pset(C, 3 + k * 2, -3 + (k & 1), LK.cord[0]); FL(C);
   const Bo = new Layer(); cap(Bo, w - 8, 0, w - 8, -6, 2, 1.6, LK.iron); pset(Bo, w - 9, -6, LK.iron[4]); FL(Bo);
   if (w > 40) { const P = new Layer(); cap(P, R(w * 0.55), 0, R(w * 0.55), -16, 1.2, 1, LK.iron); FL(P); rect(R(w * 0.55) - 2, -20, 5, 5, LK.glass[1], 0.9); rect(R(w * 0.55) - 1, -19, 3, 3, st.lit === false ? LK.glass[1] : LK.amber[1]); rect(R(w * 0.55) - 3, -21, 7, 1, LK.iron[2]); }
-  if (st.loose) for (let i = 0; i < 3; i++) rect(2 + i * (w / 3) + Math.sin(t * 2 + i) * 2, HULL + 1, 4, 1, LK.foam[0], 0.6);
 }
 /* THE MOORING: (x, feet) the iron bollard on its stone; cut = the rope is gone (a frayed end hangs) */
 export function drawMooring(g, x, feet, cut = false, t = 0) {
@@ -138,18 +146,32 @@ export function drawJelly(g, x, y, t = 0, i = 0) {
 }
 /* THE LIGHTHOUSE: (x, feet), 18 wide x 134 tall; gb = the bay gauge row { k, tell, ph, t, coming } (the dial); far = the horizon copy (small, no dial detail beyond the glass) */
 export function drawLighthouse(g, x, feet, gb = null, t = 0, far = false) {
-  at(g, x, feet); const L = new Layer(), h = far ? 70 : 120;
-  poly(L, [[-11, 0], [-8, -h], [8, -h], [11, 0]], LK.white[1]); poly(L, [[-11, 0], [-8, -h], [-2, -h], [-5, 0]], LK.white[2]); poly(L, [[6, 0], [11, 0], [8, -h], [4, -h]], LK.white[0]);
-  for (const f of far ? [0.2, 0.55] : [0.12, 0.42, 0.72]) { const yy = -h * f; poly(L, [[-10 + 3 * f, yy], [10 - 3 * f, yy], [10 - 3 * f - 1, yy - 9], [-10 + 3 * f + 1, yy - 9]], LK.red[1]); poly(L, [[-10 + 3 * f, yy], [-4, yy], [-4, yy - 9], [-10 + 3 * f + 1, yy - 9]], LK.red[2]); }
-  poly(L, [[-13, -h], [13, -h], [13, -h - 4], [-13, -h - 4]], LK.iron[2]); poly(L, [[-13, -h], [-5, -h], [-5, -h - 4], [-13, -h - 4]], LK.iron[3]);                      /* the gallery */
-  poly(L, [[-7, -h - 4], [7, -h - 4], [7, -h - 16], [-7, -h - 16]], LK.iron[1]); poly(L, [[-9, -h - 16], [9, -h - 16], [0, -h - 24]], LK.iron[2]); pset(L, 0, -h - 25, LK.brass[3]);   /* the lantern room and its cap */
-  FL(L, far ? 0.85 : 1);
-  const glow = 0.7 + 0.3 * Math.sin(t * 2);
-  rect(-5, -h - 15, 10, 10, LK.glass[0]); rect(-4, -h - 14, 8, 8, LK.amber[1]); rect(-2, -h - 13, 4, 5, LK.amber[2], glow); for (const dx of [-5, 0, 4]) rect(dx, -h - 15, 1, 10, LK.iron[1]);   /* the lit lantern */
-  for (let xx = -12; xx <= 12; xx += 3) rect(xx, -h - 9, 1, 5, LK.iron[3]);   /* the gallery rail */
-  if (!far) { rect(-2, -h * 0.5, 4, 8, LK.iron[1]); rect(-1, -h * 0.5 + 1, 2, 5, LK.amber[0]); }   /* a lit window */
-  SD.drawDial(g, ox_, oy_ - (far ? 44 : 84), gb || { k: 0.5 }, t, SALT_SKIN);                                                                                                       /* THE DIAL: the bay's tide */
-  if (!far) rect(-9, 0, 18, 2, LK.stone[2]);
+  const h = far ? 70 : 120, key = far ? 'f' : 'n'; let c = LHS.get(key);
+  /* (claude/saltlook) the still masses are baked once (a: the tower + lantern glass; b: rail, bars, window, base); the glow and the dial stay live. Same pixels: tools/saltlook-same.mjs */
+  if (!c && typeof document !== 'undefined' && document.createElement) { c = { a: document.createElement('canvas'), b: document.createElement('canvas') }; for (const k of 'ab') { c[k].width = 34; c[k].height = h + 44; lhPart(c[k].getContext('2d'), 17, h + 32, far, k === 'a'); } LHS.set(key, c); }
+  at(g, x, feet);
+  if (c) { g.globalAlpha = 1; g.drawImage(c.a, R(x) - 17, R(feet) - h - 32); } else lhPart(g, x, feet, far, true);
+  const glow = 0.7 + 0.3 * Math.sin(t * 2); at(g, x, feet); rect(-2, -h - 13, 4, 5, LK.amber[2], glow);   /* the lit lantern's glow */
+  if (c) g.drawImage(c.b, R(x) - 17, R(feet) - h - 32); else lhPart(g, x, feet, far, false);
+  at(g, x, feet); SD.drawDial(g, ox_, oy_ - (far ? 44 : 84), gb || { k: 0.5 }, t, SALT_SKIN);                                                                                                       /* THE DIAL: the bay's tide */
+}
+const LHS = new Map();
+function lhPart(g, x, feet, far, partA) {
+  at(g, x, feet); const h = far ? 70 : 120;
+  if (partA) {
+    const L = new Layer();
+    poly(L, [[-11, 0], [-8, -h], [8, -h], [11, 0]], LK.white[1]); poly(L, [[-11, 0], [-8, -h], [-2, -h], [-5, 0]], LK.white[2]); poly(L, [[6, 0], [11, 0], [8, -h], [4, -h]], LK.white[0]);
+    for (const f of far ? [0.2, 0.55] : [0.12, 0.42, 0.72]) { const yy = -h * f; poly(L, [[-10 + 3 * f, yy], [10 - 3 * f, yy], [10 - 3 * f - 1, yy - 9], [-10 + 3 * f + 1, yy - 9]], LK.red[1]); poly(L, [[-10 + 3 * f, yy], [-4, yy], [-4, yy - 9], [-10 + 3 * f + 1, yy - 9]], LK.red[2]); }
+    poly(L, [[-13, -h], [13, -h], [13, -h - 4], [-13, -h - 4]], LK.iron[2]); poly(L, [[-13, -h], [-5, -h], [-5, -h - 4], [-13, -h - 4]], LK.iron[3]);                      /* the gallery */
+    poly(L, [[-7, -h - 4], [7, -h - 4], [7, -h - 16], [-7, -h - 16]], LK.iron[1]); poly(L, [[-9, -h - 16], [9, -h - 16], [0, -h - 24]], LK.iron[2]); pset(L, 0, -h - 25, LK.brass[3]);   /* the lantern room and its cap */
+    FL(L, far ? 0.85 : 1);
+    rect(-5, -h - 15, 10, 10, LK.glass[0]); rect(-4, -h - 14, 8, 8, LK.amber[1]);   /* the lantern's glass and flame */
+  } else {
+    for (const dx of [-5, 0, 4]) rect(dx, -h - 15, 1, 10, LK.iron[1]);   /* the lantern's bars (over the glow) */
+    for (let xx = -12; xx <= 12; xx += 3) rect(xx, -h - 9, 1, 5, LK.iron[3]);   /* the gallery rail */
+    if (!far) { rect(-2, -h * 0.5, 4, 8, LK.iron[1]); rect(-1, -h * 0.5 + 1, 2, 5, LK.amber[0]); }   /* a lit window */
+    if (!far) rect(-9, 0, 18, 2, LK.stone[2]);
+  }
 }
 /* THE HERALD'S WATER. A wave crest: (x, top, bot) the crest's leading edge, dir +1 = running right */
 export function drawWave(g, x, top, bot, dir, t = 0) {
