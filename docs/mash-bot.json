@@ -9369,7 +9369,7 @@
   }
  },
  "buriedcity": {
-  "hash": "6604eaf0c9f8",
+  "hash": "8f287b9fc898",
   "boss": {
    "boss": "hourglassking",
    "wins": 0,
@@ -9470,7 +9470,7 @@
    ]
   },
   "carried": {
-   "from": "e414f94b1e60",
+   "from": "6604eaf0c9f8",
    "parts": [
     "boss"
    ]
