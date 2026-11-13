@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 179,
+    "lines": [
+      { "s": "The Goblin Princess fights with her blade now. She dashes at you, curtsies, then cuts.", "lv": ["crown"] },
+      { "s": "Her tower bell is just a bell now: no more ringing it to bring down the gate.", "lv": ["crown"] },
+      { "s": "In her angry phase she throws a tantrum: two slashes, then a big overhead chop.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 178,
     "lines": [
       { "s": "The Hexed Fields: no more knight dropping in on the Headless Ploughman fight.", "lv": ["fields"] },

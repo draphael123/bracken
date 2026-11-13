@@ -1,9 +1,12 @@
 // src/gq5p.js - GQ5P: THE GOBLIN PRINCESS FIGHTS WITH HER BLADE (Daniel 11-12 14:04; scratch gq5-plan.md section 2). One switch, default OFF: OFF = claude/gq5fix's Princess move for move.
 // ON: her bell mechanic is retired (no rope, no bell ring, no bolt for the hatch, no grate pin, no RING plate; the bell stays as silent dressing; HOP + perch leave her chains)
 //     and three melee moves join them: HEEL DASH, CURTSY CUT, TANTRUM COMBO (phase two only). Resist floor 0.4x untouched.
-// The override: ?gq5p=1 on the page, globalThis.BRACKEN_GQ5P = true (tools/cdp.mjs sets it from the env BRACKEN_GQ5P=1), or BRACKEN_GQ5P=1 in a Node tool's env.
-export const GQ5P_SHIPS = false;
+// SHIPS ON since claude/prepgq5p; the lab OFF is ?gq5p=0 / BRACKEN_GQ5P=0. The (older) ON override: ?gq5p=1 on the page, globalThis.BRACKEN_GQ5P = true (tools/cdp.mjs sets it from the env BRACKEN_GQ5P=1), or BRACKEN_GQ5P=1 in a Node tool's env.
+export const GQ5P_SHIPS = true;   /* (claude/prepgq5p) ships ON (Daniel played it 11-13). Rollback = this one flag. ?gq5p=0 / BRACKEN_GQ5P=0 / globalThis.BRACKEN_GQ5P=false = the lab OFF override (gq5fix's Princess); ?gq5p=1 still forces ON */
 export function gq5pOn() {
+  try { if (globalThis.BRACKEN_GQ5P === false || globalThis.BRACKEN_GQ5P === '0') return false; } catch { /* no global */ }
+  try { if (typeof location !== 'undefined' && /[?&]gq5p=0/.test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_GQ5P === '0') return false; } catch { /* no node */ }
   if (GQ5P_SHIPS) return true;
   try { if (globalThis.BRACKEN_GQ5P === true || globalThis.BRACKEN_GQ5P === '1') return true; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]gq5p=1\b/.test(location.search || '')) return true; } catch { /* no page */ }

@@ -11,6 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
+process.env.BRACKEN_GQ5P ||= '0';   /* (claude/prepgq5p) GQ5P ships ON; this proof is gq5fix's/gq4p's Princess (bell, hop) so it pins the lab OFF unless the env says otherwise (tools/gq5p.mjs proves the shipped one) */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);

@@ -2,6 +2,7 @@
 //   BRACKEN_GQ4L=1 BRACKEN_GQ4P=1 node tools/gq4p.mjs     (both flags: the 46-column room is GQ4L's)   flags OFF: node tools/gq4p.mjs just proves the Princess is master's (no gates, hp 1000)
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
+process.env.BRACKEN_GQ5P ||= '0';   /* (claude/prepgq5p) GQ5P ships ON; this proof is gq5fix's/gq4p's Princess (bell, hop) so it pins the lab OFF unless the env says otherwise (tools/gq5p.mjs proves the shipped one) */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };

@@ -42,7 +42,7 @@ const make = (seats = 1) => {
   return { H, st, e, A, heroes, step, blow, chain, until, modes, F, modeAt, Lw, ctx };
 };
 
-if (!P5) {
+if (!P5) {   /* run it as BRACKEN_GQ5P=0 node tools/gq5p.mjs (the lab OFF): the shipped state is the ON half */
   console.log('== GQ5P OFF half: the Princess is gq5fix\'s (no new move, no new frame, the bell and the hop are in) ==');
   ok(GPA.GP_FRAMES === 47 && GPA.GPF.hurt === 45 && GPA.GPF.body === 46, 'OFF: the sheet is the 47-frame gq5fix sheet (hurt 45, body 46)');
   ok(!NEW.some(k => [].concat(...Object.values(CHAINS[1]), ...Object.values(CHAINS[2])).includes(k)), 'OFF: no chain holds heel / curtsy / tantrum');
@@ -54,7 +54,7 @@ if (!P5) {
     ok(w.F().M.rings === 1 && w.st.said.includes('YOU RING THE TOWER BELL'), 'OFF: a blow on the rope still rings the tower bell'); }
   /* the child half + the two existing proofs, flag OFF */
   const kid = (args, env = {}) => spawnSync(process.execPath, args, { cwd: ROOT, env: { ...process.env, ...env }, encoding: 'utf8', maxBuffer: 1 << 26 });
-  for (const t of ['gprincess', 'gq4p']) { const r = kid(['tools/' + t + '.mjs'], { BRACKEN_GQ5P: '' }); ok(r.status === 0 && /all ok/.test(r.stdout), 'OFF: tools/' + t + '.mjs exits 0 ("all ok")'); }
+  for (const t of ['gprincess', 'gq4p']) { const r = kid(['tools/' + t + '.mjs'], { BRACKEN_GQ5P: '0' }); ok(r.status === 0 && /all ok/.test(r.stdout), 'OFF: tools/' + t + '.mjs exits 0 ("all ok")'); }
   const on = kid(['tools/gq5p.mjs'], { BRACKEN_GQ5P: '1' }); process.stdout.write(on.stdout.split('\n').map(l => '    | ' + l).join('\n') + '\n'); if (on.stderr) process.stdout.write(on.stderr);
   ok(on.status === 0, 'ON half (BRACKEN_GQ5P=1 node tools/gq5p.mjs) exits 0');
   console.log(fails ? '\n' + fails + ' FAIL' : '\nall ok'); process.exit(fails ? 1 : 0);

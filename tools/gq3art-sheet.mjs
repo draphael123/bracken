@@ -3,6 +3,7 @@
 // Lint: the Queen's 13 new frames (28-42) all drawn, one size, all different from every other frame, flash silhouette = sprite; the Princess's new frames (33-37, 39) likewise and the sheet
 // ends hurt, body (main.js C3_DEAD / lastFrame rely on that); every part paints pixels; the royal portal has its 3 + 4 + 2 frames and they all differ; the tint set differs.
 import { install, newCanvas, sheet, savePNG } from './node-canvas.mjs';
+process.env.BRACKEN_GQ5P ||= '0';   /* (claude/prepgq5p) GQ5P ships ON; this proof is gq5fix's/gq4p's Princess (bell, hop) so it pins the lab OFF unless the env says otherwise (tools/gq5p.mjs proves the shipped one) */
 install();
 { const P = Object.getPrototypeOf(newCanvas(2, 2).getContext('2d')); P.rotate = function () {}; }   // frame 14 tilts her; the sheet shows it upright
 const CH = await import('../src/chars.js');
