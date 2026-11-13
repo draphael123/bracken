@@ -17,6 +17,7 @@ export const PC = {
 export const PC_SAY = { dig: 'DIGS IN', up: 'THE SAND BOILS', buried: 'IN THE SAND' };
 /* marks.js rows: [mode, mark, answer, height] */
 export const PC_TELLS = [['pinchTell', '!', 'block', 'low'], ['emerge', '', '', ''], ['digTell', '', '', '']];
+export const TELL_ROWS = PC_TELLS.map(r => ['poolcrab', ...r]);   /* (claude/sea3) the rows of src/marks.js: marks.js registers every module's TELL_ROWS, tools/tells.mjs discovers them */
 export const pcOpen = e => e.mode === 'rec' || e.mode === 'flipped';
 
 export function spawnCrab(base, e, hp) {

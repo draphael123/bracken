@@ -380,6 +380,7 @@ if (take('mirage-kit')) results.push(run('mirage-kit', process.execPath, ['tools
 if (take('sun-puzzle')) results.push(run('sun-puzzle', process.execPath, ['tools/sun-puzzle.mjs']));
 if (take('beam-path')) results.push(run('beam-path', process.execPath, ['tools/beam-path.mjs']));   /* (claude/colossus4) the drawn light */
 if (take('colossus4')) results.push(run('colossus4', process.execPath, ['tools/colossus4.mjs', '--checks']));   /* (claude/colossus4) the Glass Sea + Colossus 4 flag, both ways (the bot sim is --sim=N, not in the gate) */
+if (take('whale')) results.push(run('whale', process.execPath, ['tools/whale.mjs']));   /* (claude/whale) THE WHALE + THE GASTRIC POLYP + THE PARASITE QUEEN: node proofs */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,

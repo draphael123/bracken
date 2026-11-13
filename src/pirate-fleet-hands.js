@@ -8,7 +8,7 @@
 //                                    Hauled stays hauled: the mark 'pf:haul:<id>' (through death and reload). THE FREEBOOTER's sloop (boss: true) is his to haul.
 //   GRAPPLE WINCHES (ents)           a blow on the drum fires its line at its prize. A winch on a boat (on: float id) rides the boat.
 // main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawBack, drawMover, drawOver, hud, read, haul(id), unhaul(id), prizeK(id), deckY(id).
-// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, step(dt), tide(ev), pull(e), pre(hb), verb(v, hb, pre), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,t,P), noRespawn, noStreaks, noPosts }
+// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, step(dt), tide(ev), pull(e), pre(hb), verb(v, hb, pre), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,t,P), noRespawn, noStreaks, noPosts, built(kit, pulls), foes(e) (claude/sea3: which foes the fields push; flow may be a colour string) }
 // (all optional; a hook that returns true has CLAIMED the event, the generic words/sounds are skipped). Nothing steps the kit but this file: no level keeps a second TK / PF.
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
 import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
@@ -33,6 +33,7 @@ export function makePirateFleetHands(ctx) {
     S = { L, told: {}, prizes: {}, lines: [], creak: 0, foam: {}, last: {} };
     for (const p of L.pfPrizes || []) S.prizes[p.id] = { ...p, k: !p.boss && marks.has(PFH.haulKey(p.id)) ? 1 : 0, hauling: false, lineT: 0 };
     tideApply(TK, L.pools, ctx.poolLevel);
+    if (hooks() && hooks().built) hooks().built(TK, PF);   /* (claude/sea3) the kit now exists: a level makes its own state ready (the whale's membranes) */
   };
   const fpos = id => floatY(TK, id);
   const winchAt = w => { const y = w.on ? fpos(w.on) : (w.y + 1) * TS; return { x: w.x * TS + 8, y: y == null ? (w.y + 1) * TS : y }; };
@@ -63,7 +64,7 @@ export function makePirateFleetHands(ctx) {
     tideApply(TK, L.pools, ctx.poolLevel);
     const g0 = gauge(TK, (hk && hk.signal) || L.pullSignal || 'swell');
     const pev = pullStep(PF, dt, { tidePh: g0 ? g0.ph : null });
-    const bodies = [...ctx.players, ...ctx.enemies().filter(e => e.alive !== false && !e.boss && wetFoe(e))];
+    const bodies = [...ctx.players, ...ctx.enemies().filter(e => e.alive !== false && (hk && hk.foes ? hk.foes(e) : !e.boss && wetFoe(e)))];   /* (hooks.foes: a level whose fields blow dry foes too, the whale's gusts) */
     const ev = pullBodies(PF, bodies, dt, { inWater: b => (ctx.players.includes(b) ? !!b.swim : wetFoe(b)), holding: b => ctx.holding(b), kind: b => (ctx.players.includes(b) ? 'hero' : 'foe'),
       dashing: b => !!((b.dashT || 0) > 0 || b.rolling || (b.dodge || 0) > 0), move: (b, dx, dy) => ctx.moveBody(b, dx, dy) });
     for (const e of ev) if (ctx.players.includes(e.b)) {
@@ -72,7 +73,7 @@ export function makePirateFleetHands(ctx) {
       if (e.t === 'grab') { ctx.sound('grab'); if (!S.told.grab) { S.told.grab = 1; ctx.number(e.b.x, e.b.y - 30, PF_SAY.grab, '#ffd36b'); } } }
     if (!(hk && hk.quiet)) for (const e of pev) if (e.t === 'off') { const P = ctx.hero(); if (P && P.swim && !S.told['off' + e.id]) { S.told['off' + e.id] = 1; ctx.number(P.x, P.y - 30, PF_SAY.slack, '#8fd160'); } }
     if (ctx.shots) pullShots(PF, ctx.shots(), dt);
-    if (hk && hk.flow) for (const p of flowParts(PF, dt, ctx.view())) ctx.parts().push(p);   /* a level that wants the flow specks (the streaks are the generic drawing) */
+    if (hk && hk.flow) for (const p of flowParts(PF, dt, ctx.view())) { if (typeof hk.flow === 'string') p.col = hk.flow; ctx.parts().push(p); }   /* a level that wants the flow specks (the streaks are the generic drawing) */
     /* (claude/pfart: the flow specks (flowParts) are retired - src/redraw/pirate_fleet_art.js drawStreaks draws the currents) */
     /* the prizes coming in */
     for (const id in S.prizes) { const p = S.prizes[id]; if (!p.hauling) continue;

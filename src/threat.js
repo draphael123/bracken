@@ -30,6 +30,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   poolcrab: 2, lw3herald: 6, lw3bell: 0, lw3sluice: 0, lw3trap: 0, lw3moor: 0,   /* (claude/longwater3) THE TIDE-POOL CRAB (a crab's weight, out only at low water); THE TIDE HERALD 2's spawn ent; SALTREACH's sea bells, sluice wheels, fish traps and moorings are gadgets */
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,
+  gastricpolyp: 2, parasitequeen: 6, nerve: 0, membrane: 0,   /* (claude/whale) THE GASTRIC POLYP (a ranged stalk the breath hides: a spitcap's weight); THE PARASITE QUEEN; THE WHALE's nerves and membranes are gadgets */
   /* THE ORE ROAD'S OWN THREE, weighed against the men already here rather than invented. A rockfall is a 2 and a
      javelineer 2.5, and the TIPPLER is a rockfall with a mind, so 2.5. A soldier is a 3 and the SHEARGOB does
      less damage than one but takes the floor away, which costs more than the blow. The GAFFER is worth what a

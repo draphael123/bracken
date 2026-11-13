@@ -312,3 +312,4 @@ export function crewPlan(S, P, o = {}) {   /* o.greedy: a player who fells whoev
   if (out.block || out.dodge) out.atk = false;
   return out;
 }
+export const TELL_ROWS = [['lungeTell', '!', 'block'], ['flurryTell', '!', 'block'], ['bashTell', '!', 'block'], ['reelTell', '!', 'block'], ['chargeTell', '!', 'block'], ['throwTell', '!!', 'dodge'], ['slamTell', '!!', 'jump']].map(([m, mk, an]) => ['sunkencrew', m, mk, an, 'low']);   /* (claude/sea3) the rows of src/marks.js: marks.js registers every module's TELL_ROWS, tools/tells.mjs discovers them */

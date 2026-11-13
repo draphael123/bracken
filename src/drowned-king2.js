@@ -46,6 +46,7 @@ export const K2_TELLS = {
   leechTell: { t: K2.leechTell, mark: '!', answer: 'dodge' }, prongTell: { t: K2.prongTell, mark: '!!', answer: 'dodge' },
   shellTell: { t: K2.shellTell, mark: '', answer: 'plunge' },
 };
+export const TELL_ROWS = Object.entries(K2_TELLS).map(([m, v]) => (v.mark ? ['drownedking', m, v.mark, v.answer, 'low'] : ['drownedking', m, '', '', '']));   /* (claude/sea3) the rows of src/marks.js: marks.js registers every module's TELL_ROWS, tools/tells.mjs discovers them */
 /* the windup / release pose each move asks the art lane for (greybox: the live king's frames, mapped in k2Frame) */
 export const K2_POSES = { thrustTell: 'trident drawn back to the hip', thrust: 'trident driven out, arm locked', sweepTell: 'trident low, wound back',
   sweep: 'the low arc', hurlTell: 'trident raised over the shoulder', hurl: 'the throw', recallTell: 'open hand out', decreeTell: 'trident raised high, crowned',

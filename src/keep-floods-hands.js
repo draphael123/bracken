@@ -93,7 +93,7 @@ export function makeKeepFloodsHands(ctx) {
     return true;
   }
   const owns = e => on() && e && e.t === 'drownedking' && !!e.k2;
-  const take = (e, dmg, plunge) => k2Take(e, dmg, plunge);
+  const take = (e, dmg, plunge, tag) => (void tag, k2Take(e, dmg, plunge));   /* (claude/sea3: every boss hook gets the blow's tag, tools/blow-tags.mjs; the king reads the plunge boolean the caller built from it) */
   const frame = e => (owns(e) ? k2Frame(e) : undefined);
 
   /* ---------------- THE GREYBOX (art owed: the verdigris lever + the A3 dial, the floodgate frames, the decree gate, the trident, the cursed model) ---------------- */

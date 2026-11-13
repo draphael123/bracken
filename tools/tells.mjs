@@ -12,6 +12,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { THROWN as THROWS_SOMETHING_ELSE, QUIET as NOT_A_BLOW, BY_HAND, MARK, TEMPO_CLASS } from '../src/marks.js';   // THE HONESTY LIST, THE QUIET WINDUPS and the table the screen reads: src/marks.js
 
+import { readdirSync } from 'fs';
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const JSON_OUT = process.argv.includes('--json');
 
@@ -161,6 +162,23 @@ for (const [k, v] of Object.entries(BY_HAND)) {
   const mode = k.split('|')[1], called = marks.filter(x => x.f === 'updateEnemies' && x.mode === mode);
   if (called.length && called.every(x => x.col === called[0].col) && (called[0].col === HARD ? '!!' : '!') !== v) tableProblems.push(k + ' is ' + JSON.stringify(v) + ' by hand but the creature calls ' + called[0].word + ' ' + called[0].col);
   if (k in TABLE && TABLE[k] !== v) tableProblems.push(k + ' is ' + JSON.stringify(v) + ' by hand and ' + JSON.stringify(TABLE[k]) + ' traced'); else TABLE[k] = v;
+}
+// (claude/sea3) THE MODULES THAT OWN THEIR ROWS: every src module that exports TELL_ROWS = [type, mode, mark, answer, height] (a hands-driven creature whose windups are not in main.js) is found here,
+// each row is checked (its mark, its answer agrees with the mark, its windup is named by the module), the module must be registered in src/marks.js, and the rows join the table the screen reads.
+const srcDir = new URL('../src/', import.meta.url), marksText = readFileSync(new URL('marks.js', srcDir), 'utf8'), discovered = [];
+for (const file of readdirSync(srcDir).filter(f => f.endsWith('.js') && f !== 'marks.js').sort()) {
+  const text = readFileSync(new URL(file, srcDir), 'utf8'); if (!/^export const TELL_ROWS\b/m.test(text)) continue;
+  const rows = (await import(new URL(file, srcDir).href)).TELL_ROWS; discovered.push(file);
+  if (!marksText.includes("'./" + file + "'")) tableProblems.push('src/' + file + ' exports TELL_ROWS but src/marks.js does not import it: its windups would have no rows (add it to the registry)');
+  for (const [t, m, mk, an, ht] of rows) {
+    const key = t + '|' + m, base = m.replace(/Tell$/, '');
+    if (!['', '!', '!!'].includes(mk)) tableProblems.push('src/' + file + ' ' + key + ' has the mark ' + JSON.stringify(mk) + ': a yellow ! or a red !! (or none)');
+    if (mk && !['block', 'dodge', 'jump', 'duck'].includes(an)) tableProblems.push('src/' + file + ' ' + key + ' is marked ' + mk + ' with no legal answer (' + JSON.stringify(an) + ')');
+    if (mk === '!!' && an === 'block') tableProblems.push('src/' + file + ' ' + key + ' is a red !! answered by a block: no shield turns it');
+    if (mk && !['low', 'high'].includes(ht)) tableProblems.push('src/' + file + ' ' + key + ' has no height (low / high)');
+    if (!text.includes(m) && !new RegExp('\\b' + base + '\\b').test(text)) tableProblems.push('src/' + file + ' ' + key + ': the module never names this windup');
+    if (key in TABLE && TABLE[key] !== mk) tableProblems.push(key + ' is ' + JSON.stringify(TABLE[key]) + ' elsewhere and ' + JSON.stringify(mk) + ' in src/' + file); else TABLE[key] = mk;
+  }
 }
 // every windup the predicate names by hand must have a row, and so must every '...Tell' written inline in updateEnemies
 const ue = funcs.find(f => f.name === 'updateEnemies');

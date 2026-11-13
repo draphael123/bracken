@@ -226,3 +226,4 @@ export function thPlan(e, S, T, bellX, sluiceX) {
   if (S.ph === 1 && T.ph === 'low') return { why: 'lure', go: 'bell', to: bellX, strike: true };
   return { why: 'flank', go: 'in', attack: true };
 }
+export const TELL_ROWS = [['herald', 'seize', '', '', '']];   /* (claude/sea3) his one new mode (the other herald rows are master's); src/marks.js registers it, tools/tells.mjs discovers it */

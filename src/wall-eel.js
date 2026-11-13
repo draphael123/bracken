@@ -66,3 +66,4 @@ export function stepEel(s, dt, heroes, w) {
 }
 /* A BLOW: whole when it is out; nothing in the wall (the hands say IN THE WALL) */
 export function eelTake(s, dmg) { return eelBare(s) ? dmg : 0; }
+export const TELL_ROWS = [['walleel', 'bubble', '!', 'block', 'low']];   /* (claude/sea3) the rows of src/marks.js: marks.js registers every module's TELL_ROWS, tools/tells.mjs discovers them */

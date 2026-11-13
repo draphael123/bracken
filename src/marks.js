@@ -16,6 +16,8 @@
 // THE HONESTY LIST. A windup whose blow is not thrown by the creature at all - the Forgemaster does not
 // strike you, he HURLS A CART, and the cart is a mover that does its own unblockable damage somewhere else.
 import { ORDER_MARKS, TYPES as ORDER_TYPES } from './order-chapters.js';   /* (claude/order) */
+import { TELL_ROWS as POOLCRAB_ROWS } from './pool-crab.js'; import { TELL_ROWS as WALLEEL_ROWS } from './wall-eel.js'; import { TELL_ROWS as CREW_ROWS } from './sunken-crew.js'; import { TELL_ROWS as K2_ROWS } from './drowned-king2.js';
+import { TELL_ROWS as HERALD_ROWS } from './tide-herald.js'; import { TELL_ROWS as GP_ROWS } from './gastric-polyp.js'; import { TELL_ROWS as PQ_ROWS } from './parasite-queen.js';   /* (claude/sea3) the sea act's hands-driven creatures: see the registry loop below */
 
 export const THROWN = new Set(['updateRam|boulderTell',   /* (claude/scree3, listed batch156) THE BOULDER BUTT: the blow is the rolled stone (src/ram-lord.js boulderStep), thrown by nobody - red, JUMP IT; a raised shield only shoves you back (SHOVED), it does not turn the hit */
   'updatePyromancer|chargeBigTell',   /* (claude/pyroboss2) THE PYROMANCER 2's big fireball (step 3+): the ball flies on its own (updatePyroBalls) and its BLAST no shield turns - out of the red ring */
@@ -967,7 +969,9 @@ export const HEIGHT = {
 /* (claude/order) THE ROAD WARDENS's answers: a yellow ! is blocked (or PARRIED - the duelist's cut is the lesson), a red !! is dodged; only the duelist's LUNGE runs at chest height (duck under it) - the rest reach the floor */
 for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) if (v) { ANSWER[t + '|' + m] = v === '!' ? 'block' : 'dodge'; HEIGHT[t + '|' + m] = m === 'lungeTell' ? 'high' : 'low'; }
 /* (claude/keepfloods) THE DROWNED KING 2 (src/drowned-king2.js K2_TELLS, behind KF_SHIPS): the trident kit, the decree, the cursed king's three */
-for (const [m, mk, an, ht] of [['thrustTell', '!', 'block', 'low'], ['sweepTell', '!!', 'jump', 'low'], ['hurlTell', '!!', 'dodge', 'low'], ['recallTell', '!', 'block', 'low'], ['decreeTell', '!!', 'dodge', 'low'], ['graspTell', '!!', 'jump', 'low'], ['leechTell', '!', 'dodge', 'low'], ['prongTell', '!!', 'dodge', 'low'], ['shellTell', '', '', '']]) { MARK['drownedking|' + m] = mk; BY_HAND['drownedking|' + m] = mk; if (an) { ANSWER['drownedking|' + m] = an; HEIGHT['drownedking|' + m] = ht; } }
+/* (claude/sea3) THE HANDS-DRIVEN SEA CREATURES' ROWS live with their modules (each exports TELL_ROWS = [type, mode, mark, answer, height]); one registry loop writes MARK + BY_HAND + ANSWER + HEIGHT from them,
+   and tools/tells.mjs DISCOVERS every src module that exports TELL_ROWS (it fails one this list does not register, a row whose windup the module never names, a !! you could block). A new module: export TELL_ROWS, add it here. */
+for (const rows of [POOLCRAB_ROWS, HERALD_ROWS, WALLEEL_ROWS, CREW_ROWS, K2_ROWS, GP_ROWS, PQ_ROWS]) for (const [t, m, mk, an, ht] of rows) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
 export const UNTOLD = {};
 /* (claude/rookery3) THE TEMPO CLASS OF A WINDUP: 'heavy' (a long readable windup ~0.9-1.2 s, the biggest pose, a deep cue, hits hard, a long recovery to punish), 'medium' (~0.6-0.75 s),
    'light' (~0.35-0.45 s, low damage, short; a quick flash). Daniel 10-29 live on THE SHRIEK SISTERS: "they attack way too quickly and at the same speed ... a heavy, a light and a medium one".
@@ -994,8 +998,6 @@ export const heightOf = k => HEIGHT[k] || '';
 /* THE LANE BESIDE THE MARK: 'duck' over a high blow, 'jump' over a blow answered with a jump, '' over the rest */
 export const laneOf = k => HEIGHT[k] === 'high' ? 'duck' : (ANSWER[k] || ANSWER['*|' + k.split('|')[1]]) === 'jump' ? 'jump' : '';
 /* (claude/longwater3) THE TIDE-POOL CRAB (src/pool-crab.js PC_TELLS) and THE TIDE HERALD 2's one new mode (src/tide-herald.js: his other tells keep master's herald rows) */
-for (const [t, m, mk, an, ht] of [['poolcrab', 'pinchTell', '!', 'block', 'low'], ['poolcrab', 'emerge', '', '', ''], ['poolcrab', 'digTell', '', '', ''], ['herald', 'seize', '', '', '']]) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
-for (const [t, m, mk, an, ht] of [['walleel', 'bubble', '!', 'block', 'low'], ['sunkencrew', 'lungeTell', '!', 'block', 'low'], ['sunkencrew', 'flurryTell', '!', 'block', 'low'], ['sunkencrew', 'bashTell', '!', 'block', 'low'], ['sunkencrew', 'reelTell', '!', 'block', 'low'], ['sunkencrew', 'chargeTell', '!', 'block', 'low'], ['sunkencrew', 'throwTell', '!!', 'dodge', 'low'], ['sunkencrew', 'slamTell', '!!', 'jump', 'low']]) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; }   /* (claude/deep3) THE WALL EEL's bubbles and THE SUNKEN CREW / THE CURSED SAILOR's told moves (src/wall-eel.js, src/sunken-crew.js): the new modules are not read by tools/tells.mjs, so the rows are by hand */
 
 export function markOf(e) {
   const mode = e.t === 'archer' && e.draw > 0.3 && !(typeof e.mode === 'string' && e.mode.endsWith('Tell')) ? 'draw' : e.mode;
@@ -1006,6 +1008,7 @@ export function markOf(e) {
   return '';
 }
 Object.assign(MARK, { 'armour|thrustTell': '!', 'armour|cleaveTell': '!!', 'haunt|lungeTell': '!!', 'poltergeist|liftTell': '!' }); Object.assign(ANSWER, { 'armour|thrustTell': 'block', 'armour|cleaveTell': 'dodge', 'haunt|lungeTell': 'dodge', 'poltergeist|liftTell': 'block' }); Object.assign(HEIGHT, { 'armour|thrustTell': 'high', 'armour|cleaveTell': 'high', 'haunt|lungeTell': 'high', 'poltergeist|liftTell': 'high' });   /* (claude/hollowmanor) THE HOLLOW MANOR: a suit's thrust and cleave, a shade's lunge, THE POLTERGEIST's lift */
+/* (claude/whale) THE GASTRIC POLYP (src/gastric-polyp.js GP_TELLS) and THE PARASITE QUEEN (src/parasite-queen.js PQ_TELLS): MARK / ANSWER / HEIGHT rows */
 export const marksMissed = () => [...MISSED];
 Object.assign(MARK, { 'wwthief|swoopTell': '!' }); Object.assign(ANSWER, { 'wwthief|swoopTell': 'block' }); Object.assign(HEIGHT, { 'wwthief|swoopTell': 'high' });   /* (claude/wispwood) A WISP THIEF's swoop: a yellow ! (the shield scorches it), at head height - a duck under it works too */
 Object.assign(MARK, { 'silklurker|threadTell': '!!', 'silklurker|biteTell': '!', 'spider|biteTell': '!' }); Object.assign(ANSWER, { 'silklurker|threadTell': 'dodge', 'silklurker|biteTell': 'block', 'spider|biteTell': 'block' }); Object.assign(HEIGHT, { 'silklurker|threadTell': 'high', 'silklurker|biteTell': 'low', 'spider|biteTell': 'low' });   /* (claude/silk) THE SILK LURKER's thread (from above: step off it) and bite; a SPIDERLING's bite */

@@ -94,6 +94,7 @@ export const OPEN_RULE = {
   captain: e => e.mode === 'beach' || e.mode === 'reel',                     // beached on his own planking
   tollmaster: e => e.open > 0,                                               // (claude/lamplit2) the ledger turned on a shield, a lamp RELIT beside him (his robes catch), or a bearer felled under the bier
   bellcrab: e => e.phase === 3 || e.open > 0,                                // a stone on his crown, or out of the bell
+  parasitequeen: e => e.open > 0,   /* (claude/whale) FLUSHED (a forced exhale) / STRANDED (a forced breath on the floor, P2) - src/parasite-queen.js */
   drownedking: e => e.open > 0,
   harbormaster: e => e.open > 0,
   closedhelm: e => e.open > 0 || e.mode === 'cutRec' || e.mode === 'thrustRec' || e.mode === 'grabMiss' || e.mode === 'brandRec',   // the ward down; (claude/crusader) or bent over a spent blow - main.js CRUS_SPENT, whole not x2
@@ -177,6 +178,7 @@ export const FULL_DAMAGE = {
   hawkmistress: 'always hittable (B15): (claude/ksarhawk, Daniel 10-13) HER HAWK IS HER SHIELD - while it rides over her a blow lands at the 0.4 floor; FIRE (a thrown torch, or a keg) brings it down and she is OPEN (x2), a gong / a flash / a struck stoop leaves her BARE (x1.4), and while it is out on a stoop of its own she takes a blow whole - all in her own code (src/hawk-mistress-hands.js take)',
   huntmaster: 'a duelist (design standard B11, claude/rootway): always hittable, he GUARDS BY ANGLE between his moves (a blow from his front at his height is turned: GO ROUND, or from above); his openings pay x1.5 (x2 behind the broken mask) in his own code (src/huntmaster.js)',
   admiral: 'his own numbers (claude/flotilla3, src/admiral.js take): armoured, a blade CHIPS his salvaged iron at 0.15 / 0.25 / 0.35 by plates left (Daniel-approved armour exception to B15) and his plate holds him over half his health until a deck gun blows it off; his openings x1 armoured, x1.6 bare; bare x1 outside them',
+  parasitequeen: 'her own numbers (claude/whale, src/parasite-queen.js takeAt): ROOTED x0.4 (B15 floor), SKITTERING x0.6 (x1 on her root-knot from behind), FLUSHED / STRANDED x1.5, WARDED x0.4 after each opening - never the x0.05 chip',
   champion: 'a duelist (design standard B11/B15, claude/flotilla2): always hittable - his PLATE takes every blow at x0.5 on guard (HIS PLATE), x1 in the recovery after each committed blow, x1.5 with the blade (or the anchor) stuck in the deck, x2 KNOCKED FLAT by a deck gun (one knockdown 11% of him at most), x0.4 in his told ward after it (src/fleetlord-champion.js)',
   freebooter: 'a duelist (design standard B11/B15, claude/water1; wired claude/tune3): always hittable, GUARDS BY ANGLE (src/freebooter-boss.js takeAt: front 0.5x PARRIED, committed/flank 0.6x, reload 1.0x, stuck 1.25x, ward 0.4x - never under 0.4x); no chip, greed still counts outside the openings',
   fogknight: 'a duelist (design standard B11): always hittable, GUARDS BY STANCE (high: a low blow lands; low: a high blow or a plunge; full: only a plunge, which breaks it); every angle lands in his own blows; his openings pay x1.6 in his own code (claude/towpath)',
