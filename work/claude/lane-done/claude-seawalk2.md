@@ -50,3 +50,22 @@ Saltreach: a human look at the wheel ladder and the mooring dive, co-op, bot tid
 3. Mooring: make the cut reachable from the surface, or a rope tell above water. REC yes, small, flag-gated.
 4. Walker: teach tools/level-walk the tide verbs (WALK_HINTS rows keyed on L.lw3Sluices / lw3Bells / moors, plus a route down the wheel's ladder). REC yes, a bot lane; until then Saltreach's act-target deaths cannot be measured.
 5. Deep 3: the walker ends at the first STUCK because the next shrine is far. REC a resume-at option in level-walk, or one early shrine near row 60.
+
+## HERALD-2 (11-13, knight floor + fight length; flasks on, L23, practiced, human profile, `BRACKEN_LW3=1 LW3=1`, --secs=300; logs `scratch/lane-reports/seawalk2/h2/`)
+**Cause (knight 3/12): the lab bot, not the fight.** HITLOG on two knight losses (h2/hl0): every sweep hit landed with the knight at 15-26 px of the Herald (inside the 62 px sweep box), mostly mid-swing (atk > 0) and not blocking; 7-8 sweeps and 5-6 thrusts a fight, 25-33 a hit, ~14 hits to die. The sweep is the told low blow "!! JUMP IT" (tide-herald thPlan says jump), but src/lab.js had no Saltreach hands: the generic herald branch (`goal = boss.x; strike = true`) swings through the tell, and the HARD-tell dodge only runs while not mid-swing. Second find: in most sweeps the hero was `P.ground` false (swimming in the flooded flats, or in a rise hop), so a ground-only jump could not fire. Warden and pyro have the same hands but their kits shrug a 1-2 s of lost tempo; the knight's melee stand-in-reach is exactly where the sweep lands.
+**Changes (3, all flag-gated: boss.lw3 / tide-herald only; flag-off identical)**
+1. LAB BOT (src/lab.js, herald branch, `boss.lw3` only): jump the told sweep once in the tell's last 0.3 s (ground OR swimming), held 16 frames, no swing started. Same thing a player is asked to do. Sweep hits per knight fight 7-8 -> 3.
+2. r1 (src/tide-herald.js): hp 1900 -> 2600 (wins were 32-97 s), thrust tell .62 -> .70 (the guard window), dmg thrust 11 -> 9, spear 12 -> 10, wave 14 -> 12, bite 12 -> 10.
+3. r2: dmg sweep 11 -> 10, thrust 8, spear 9, wave 11, bite 9 (hp 2600 kept). Nothing under k 0.4; openings, ward, verbs, TH.k untouched.
+| round | change | knight | warden | pyro | pooled | win times |
+|---|---|---|---|---|---|---|
+| start | (seawalk2 final, n=36) | 3/12 | 11/12 | 8/12 | 22/36 = 61% | 32-97 s |
+| m1 | bot jumps the sweep | 3/6 | 6/6 | 5/6 | 14/18 = 78% | knight 64-88, warden 43-83, pyro 38-75 |
+| m2 | hp 2600, thrust tell .70, dmg -20% | 2/6 | 6/6 | 2/6 | 10/18 = 56% | knight 108-129, warden 57-80, pyro 66-101 |
+| m3 (SHIPPED) | dmg -10% more | 3/6 | 6/6 | 3/6 | 12/18 = 67% | knight 119-144, warden 57-71, pyro 66-101 |
+| m3 confirm (seeds 7-12) | none | 4/6 | 6/6 | 4/6 | 14/18 = 78% | knight 102-115, warden 51-75, pyro 53-102 |
+**FINAL (m3 config, n=36 pooled): knight 7/12 (58%), warden 12/12 (100%), pyro 7/12 (58%) = 26/36 = 72%.** 95% interval about 56-85: straddles the 60-70 band, point 2 pts over. Every hero >= 4/12 (floor met). Knight wins now 102-144 s (target met); pyro 53-102 s; warden 51-75 s (still short: her kit, not the boss). Mash bot 0/6 (every hero dead 29-40 s or timeout, boss 93-100% left).
+Verdict: **READY on the knight floor and fight length for knight / pyro; pooled 72% is a hair over the band** (warden 12/12 carries it; one more nudge, hp 2600 -> 2900 or dmg +5%, would centre it, but the 3-change cap is spent). Only the bot is "fixed"; no hero got easier by a boss number the knight did not need.
+Checks: node --check lab.js / tide-herald.js; longwater3 91 ok; level-quality longwater clear; tide-kit 2023 ok; architecture ok; comments ok; mash-bot longwater 0/6. No level data changed: no restamp (mash-bot reports the level hash changed vs its row: pre-existing flag-on hash).
+Not checked: a human look at the jump read (the tell's last 0.3 s while wading), sweep when the hero is mid-air on a rise, co-op, Mage's Folly reviewer, pilot / curve / mash --write, check.mjs (never).
+Questions (recs first): (1) Accept 72% pooled? REC yes (in the interval); alt: one more tune, hp 2900. (2) Warden wins 51-75 s: REC accept (hero DPS, same as the Freebooter row). (3) Does the lab's jump-the-sweep hand belong in the shared lab for every Saltreach-style low sweep? REC yes later, as a general low-blow verb (a bot lane).
