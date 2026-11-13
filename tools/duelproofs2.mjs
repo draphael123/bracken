@@ -187,6 +187,21 @@ try {
       ok(topReached.length === ups.length, a + ': every bot climbs to a seat holding the top board (' + topReached.length + '/' + ups.length + ' bots; times f-s ' + JSON.stringify(topReached.map(f => f[T.tiers.length - 1])) + ')');
     }
   }
+  if (WHAT.includes('climbshots')) {
+    console.log('== CLIMBSHOTS: a bot on the top board (2 seats), and a 4-seat frame with a climber ==');
+    if (curFlags !== FON) await fresh(FON);
+    const TOP = { stockade: { x: 192, y: 7 * 16, row: 7 }, kitchen: { x: 88, y: 6 * 16, row: 6 } };
+    for (const [a, n, tag] of [['stockade', 2, 'climb-stockade-bot-on-lookout'], ['kitchen', 2, 'climb-kitchen-bot-on-board'], ['kitchen', 4, 'climb-kitchen-4seats-climber'], ['stockade', 4, 'climb-stockade-4seats-climber']]) {
+      if (process.env.ONLY && !tag.includes(process.env.ONLY)) continue;
+      const T = TOP[a];
+      await E(`__mk(${JSON.stringify({ level: LEVEL[a], heroes: n < 4 ? heroSet(3, n) : ['geomancer', 'knight', 'paladin', 'warden'], goblins: n < 4 ? 'off' : 'many', seed: n < 4 ? 14 : 68, idle: n < 4, arena: a })})`);
+      const r = await E(`(()=>{const M=__M,S=M.S,T=${JSON.stringify(T)};let hit=null;const N4=${n}===4;
+        for(let k=0;k<12000;k+=6){ const p0=S.seats[0]; if(!N4){p0.x=T.x;p0.y=T.y;p0.vx=0;p0.vy=0; for(const p of S.seats){p.duelHp=p.duelMax;}} M.step(6);
+          const c=S.seats.findIndex((p,i)=>(N4||i>0)&&p.y<=(N4?${a === 'kitchen' ? 150 : 215}:T.row*16+2)); if(c>=0){ hit={bot:c,f:+(M.f/60).toFixed(1)}; if(!N4)for(let j=0;j<12;j+=6){ p0.x=T.x;p0.y=T.y;p0.vx=0;p0.vy=0; M.step(6);} break; } }
+        return {hit,ys:S.seats.map(p=>Math.round(p.y)),xs:S.seats.map(p=>Math.round(p.x))};})()`, 120000);
+      console.log('  ' + tag, JSON.stringify(r)); if (r.hit) await shot(tag); else console.log('  no climber reached the top in the time box');
+    }
+  }
   if (WHAT.includes('shots')) {
     console.log('== SHOTS: torches, plank posts, results card (4 seats), goblins on the Stockade, tavern card rows ==');
     if (curFlags !== FON) await fresh(FON);
