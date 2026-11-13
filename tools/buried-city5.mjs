@@ -126,6 +126,28 @@ function world(Lx) {
   W5.place(B.x, B.y); W5.H.interact(W5.hero); W5.run(0.1); const rd = W5.H.flip.read().glasses; ok(rd.find(q => q.id === 'r3a').t > A.dur - 0.5 && rd.find(q => q.id === 'r3b').t > 0, 'STRIKING B runs B and TURNS A BACK TO FULL (the chain)');
   const P = L5.glasses.find(q => q.id === 'antepad'); W5.place(P.x, P.y); W5.H.interact(W5.hero); W5.run(0.2); const r4 = W5.H.flip.read(); ok(r4.glasses.find(q => q.id === 'ante').t > 0 && r4.tplats.filter(p => p.glass === 'ante').every(p => p.up) && r4.doors.some(q => q.glass === 'ante' && q.open > 0), 'the re-strike pad runs the antechamber\'s glass: the slabs rise, the door opens'); }
 
+/* ---------- (claude/bc5fix) THE THIN STRETCHES: foe and coin density up toward the Folly's bar, on the city's own cast, on solid footing, off the races ---------- */
+{ const NEW = ['hallsEndSling', 'hallsEndB', 'worksA', 'worksC', 'runInA', 'runInSling', 'roofA', 'roofB', 'roofC', 'farBank'], FOES = new Set(['construct', 'ambusher', 'slinger', 'scorpion']);
+  const mine = L.ents.filter(e => NEW.includes(e.squad)), rA = B5.ARCS_BC5.race, R = B5.RACE;
+  ok(mine.length === NEW.length && off.ents.filter(e => NEW.includes(e.squad)).length === 0, 'flag ON adds the ' + NEW.length + ' squads, flag OFF none of them (master unchanged)');
+  ok(mine.every(e => (e.t === 'ambusher' && e.cnSkin === 'sanddrowned') || (e.t === 'scorpion' && e.cnSkin === 'brassscorpion') || (e.t === 'slinger' && e.cnSkin === 'sandslinger')), 'only the city\'s own cast (drowned, brass scorpion, sand-folk slinger): no new foe, no goblin');
+  ok(mine.every(e => [T.SOLID, T.ONEWAY].includes(at(e.x, e.y + 1)) && [0, -1].every(d => at(e.x, e.y + d) === T.AIR)), 'every new foe stands on solid footing with 2 rows of air over it (a slinger, a drowned, a scorpion)');
+  const bad = e => [[R.r1.gallery[0], R.r1.end], [R.r2.pit[0] - 2, R.r2.end], [R.r3.a.gx - 1, R.r3.end], [R.r4.glass ? R.r4.gx - 1 : 823, R.r4.door.x1], [rA.mini[0], rA.mini[1]]].some(([a, b]) => e.x >= a && e.x <= b);
+  ok(mine.every(e => !bad(e)) && mine.every(e => L.glasses.every(g => Math.abs(g.x - e.x) >= 2) && L.ents.filter(q => q.t === 'check').every(q => Math.abs(q.x - e.x) >= 2)), 'none stands in a race window, the mini\'s hall, within 2 columns of a glass or a checkpoint');
+  const cnt = (Lx, a, b) => Lx.ents.filter(e => FOES.has(e.t) && e.x >= a && e.x <= b).length, wins = [[320, 359], [360, 399], [680, 719], [720, 759], [760, 799]];
+  const got = wins.map(([a, b]) => cnt(L, a, b)), was = wins.map(([a, b]) => cnt(off, a, b));
+  ok(got.every(n => n >= 2) && got.reduce((a, b) => a + b, 0) >= was.reduce((a, b) => a + b, 0) + 8, 'foes in the five thin windows (' + wins.map(w => w.join('-')).join(' ') + '): ' + was.join('/') + ' -> ' + got.join('/') + ' (each >= 2, +8 in all)');
+  { const arcs = [[338, 31], [346, 31], [712, 13], [735, 5], [792, 11]], has = (x, y) => L.ents.some(e => e.t === 'coin' && e.x === x && e.y === y + DY); ok(arcs.every(([x, y]) => has(x, y) && has(x + 1, y - 1) && has(x + 2, y)) && off.ents.filter(e => e.t === 'coin' && arcs.some(([x, y]) => e.x === x + 1 && e.y === y - 1 + DY)).length === 0, 'five coin arcs (' + arcs.map(a => a[0]).join(', ') + ') on the approach to the works and the rooftops, none in the OFF build'); }
+  ok(L.ents.some(e => e.t === 'sign' && e.x === 597 && /SPAN/.test(e.text)), 'a second teach sign for R2 on the shaft\'s exit ledge (R1 is optional)'); }
+/* ---------- (claude/bc5fix) THE POST-STRIKE CAMERA HOLD never blocks and never outlasts the tightest margin ---------- */
+{ const C5 = B5.CAM5, tight = Math.min(...Object.entries(margins[slowest]).filter(([c]) => !c.startsWith('R1')).map(([, m]) => m));
+  ok(C5.camT <= 0.8 && C5.camT < tight && C5.lean < 0.75 && C5.releaseV > 0 && B5.RACE_GLASSES.every(id => L.glasses.some(g => g.id === id)), 'the race glasses\' camera look is <= ' + C5.camT + ' s (the slowest hero\'s tightest margin is ' + tight.toFixed(2) + ' s), leans less than master (' + C5.lean + ' < 0.75), lets go when the hero runs');
+  const W5 = world(build(true)), g = W5.ctx.L.glasses.find(q => q.id === 'race1'), cam = () => W5.H.cam();
+  W5.H.reset(); W5.place(g.x, g.y); W5.hero.vx = 0; W5.H.interact(W5.hero); W5.run(0.1); ok(!!cam(), 'a strike on a race glass: the camera looks at what it moved');
+  W5.hero.vx = 80; W5.run(0.3); ok(!cam(), 'the hero running again: the camera lets go at once (it never holds the picture while the glass runs)');
+  W5.H.reset(); W5.place(g.x, g.y); W5.hero.vx = 0; W5.H.interact(W5.hero); W5.run(C5.camT + 0.25); ok(!cam(), 'a hero standing still: the look ends after ' + C5.camT + ' s');
+  const sg = W5.ctx.L.glasses.find(q => q.id === 'stair'); W5.H.reset(); W5.place(sg.x, sg.y); W5.hero.vx = 0; W5.H.interact(W5.hero); W5.run(1.2); ok(!!cam(), 'a non-race glass keeps master\'s 1.8 s look'); }
+
 /* ---------- THE SAND GRASPERS: one a room, never in a race window, a run line or the mini's floor ---------- */
 const gr = L.ents.filter(e => e.t === 'sandgrasper'), WIN = [['R1', B5.RACE.r1.gallery[0] - 6, B5.RACE.r1.end + 4], ['R2', 596, 612], ['R3', 658, 678], ['R4', 819, 846], ['the Glassblower\'s floor', 386, 410]];
 ok(gr.length === 3 && gr.every(e => e.cnSkin === 'sanddrowned'), 'three Sand Graspers (the Drowned Quarter, the Hourglass Halls, the Throne Street), the sand-drowned skin');
@@ -142,10 +164,11 @@ ok(gr.find(e => e.x < 500).sandWait === 'great' && gr.find(e => e.x > 280 && e.x
 /* ---------- THE GLASSBLOWER: the kit, the floor, the opening ---------- */
 { const GB = GBM.GB, MV = GBM.MOVES;
   ok(Object.keys(MV).length === 4 && Object.values(MV).every(m => m.pose.length === 2 && m.pose[0] && m.pose[1] && m.pose[0] !== m.pose[1] && m.mark && m.sound), 'every Glassblower move has its own windup AND release pose, a mark and a sound');
-  ok(GB.gobTell >= 0.7 && GB.blastTell >= 0.8 && GB.flipTell >= 0.9 && GB.bulbTell >= 0.7, 'every windup is long enough to read (gob ' + GB.gobTell + ', blast ' + GB.blastTell + ', flip ' + GB.flipTell + ', bulb ' + GB.bulbTell + ' s)');
+  ok(GB.gobTell >= 0.95 && GB.blastTell >= 1.1 && GB.flipTell >= 0.9 && GB.bulbTell >= 0.9 && [GB.gobTell, GB.blastTell, GB.flipTell, GB.bulbTell].every(t => t >= 0.3), 'every windup is long enough to read, >= 0.3 s always and longer than the first build (gob ' + GB.gobTell + ', blast ' + GB.blastTell + ', flip ' + GB.flipTell + ', bulb ' + GB.bulbTell + ' s)');
   ok(Object.keys(MV).every(k => MARK['glassblower|' + k] && ANSWER['glassblower|' + k] && HEIGHT['glassblower|' + k]), 'the four tells are in src/marks.js (mark, answer, height)');
   ok(GBM.NEW_MOVES[1].join() === 'gob,blast,flip' && GBM.NEW_MOVES[2].join() === 'bulb', 'P1 = gob, blast, flip; P2 adds the shatter bulb (the approved kit, brief-newminis-1015)');
-  ok(GB.rest >= 0.4 && GB.floor >= 0.4 && GB.openMul === 1.75 && GB.openT === 3.5, 'outside the opening he takes >= 0.4x (apron ' + GB.rest + ', ward ' + GB.floor + '); the opening is x1.75 for 3.5 s (plan s5)');
+  ok(GB.rest >= 0.4 && GB.floor >= 0.4 && GB.openMul === 1.75 && GB.openT === 4.5, 'outside the opening he takes >= 0.4x (apron ' + GB.rest + ', ward ' + GB.floor + '); the opening is x1.75 for 4.5 s (claude/bc5fix: plan s5 said 3.5; the desktop knight was 0/5)');
+  ok(GB.glintT >= 8 && GB.gap[0] >= 1.2 && GB.gap[1] >= 1.0 && GB.dmg.gob <= 22 && GB.dmg.blast <= 28 && GB.dmg.bulb <= 20 && GB.dmg.spike <= 10 && GB.blastLen <= 112 && GB.capFrac <= 0.25 && GB.capFrac >= 0.15, 'conservative (claude/bc5fix): the glass glints >= 8 s, the gaps >= 1.2/1.0 s, his blows <= 22/28/20/10, the cone <= 112 px, no blow over ' + GB.capFrac + ' of a hero max HP');
   const F = GBM.newGlassFight(GBM.gbGeom(L.mini, TS)), e = { x: 0, y: 0, hp: 1500, maxHp: 1500, mode: 'walk', open: 0, alive: true };
   const c = { said: [], number(x, y, t) { this.said.push(t); }, fx() {}, sound() {}, mark() {}, shake() {}, music() {}, hit() { return false; }, flip() { return true; }, step() {} };
   ok(GBM.gbTake(e, F, 100) === 50, 'a blow outside the opening: x0.5'); F.ward = 1; ok(GBM.gbTake(e, F, 100) === 40, 'in the ward: x0.4 - never 0 (B15)'); F.ward = 0;
@@ -159,7 +182,12 @@ ok(gr.find(e => e.x < 500).sandWait === 'great' && gr.find(e => e.x > 280 && e.x
   ok(/if \(miniDone && !rushOn\(\) && L\.mini && e\.t === L\.mini\.boss && \(e\.mini/.test(main) && /PROG\[id\]\.mini = true/.test(main), 'the mini stays dead after a reload: spawnEnt skips L.mini.boss once miniDone, miniEnd writes PROG[id].mini (the standard path, no second respawn fix)');
   ok(/BC5H\.owns\(e\)/.test(main) && /case 'glassblower': case 'sandgrasper'/.test(main) && /EHP\.glassblower/.test(main), 'main.js wires the hands (spawn, update, take, draw)');
   ok(at(S.sx + S.W, R - 4 + DY) === T.PORT && at(S.sx + S.W, R - 7 + DY) === T.SOLID, 'the hall\'s east wall is a portcullis (PORT) under stone: his death lifts it');
-  for (const [a, b] of S.cover) ok([R - 1, R - 2, R - 3].every(r => [...Array(b - a + 1).keys()].every(i => at(sx + a + i, r + DY) === T.SOLID)), 'a kiln stub (' + (sx + a) + '-' + (sx + b) + ') is three rows of stone: a cover from the blowpipe');
+  S.cover.forEach(([a, b], k) => { const rows = S.coverRows[k]; ok(rows >= 2 && rows <= 3 && [...Array(rows).keys()].every(j => [...Array(b - a + 1).keys()].every(i => at(sx + a + i, R - 1 - j + DY) === T.SOLID)) && at(sx + a, R - 1 - rows + DY) === T.AIR, 'a kiln stub (' + (sx + a) + '-' + (sx + b) + ') is ' + rows + ' rows of stone: a cover from the blowpipe'); });
+  { /* (claude/bc5fix) FLOOR TO STAND ON WEST OF HIM: he was flush against (inside) the second stub; a melee hero reached him only from the stub top */
+    const stub2 = S.cover[1], faceX = (sx + stub2[1] + 1) * TS, leftX = (sx + S.him0) * TS - GBM.GB.w / 2, strip = leftX - faceX;
+    ok(S.him >= S.him0 && S.coverRows[1] <= 2 && strip >= 6, 'the near stub is <= 2 rows (a hop) and he keeps to col ' + (sx + S.him0) + ': ' + strip + ' px of floor between its face and him at his westmost, and he stands at ' + (sx + S.him));
+    ok(sx + S.him0 - GBM.GB.w / 2 / TS > sx + stub2[1] + 1 && [S.him0 - 1, S.him0].every(c => at(sx + c, R + DY) === T.SOLID && [1, 2, 3].every(d => at(sx + c, R - d + DY) === T.AIR)), 'the floor west of him is open floor (stone under, three rows of air over)');
+    const Gx = GBM.gbGeom(L.mini, TS); ok(Gx.minX - GBM.GB.w / 2 > faceX && Gx.minX - GBM.GB.w / 2 - faceX >= 6, 'gbGeom: his westmost standing point clears the stub face by >= 6 px (' + (Gx.minX - GBM.GB.w / 2 - faceX) + ')'); }
   const G = GBM.gbGeom(L.mini, TS); ok(G.covers.length === 2 && G.covers.every(([a, b]) => a < b) && G.glasses.length === 2, 'the geometry hands the fight its covers and its two glasses'); }
 { /* THE OPENING IS REACHED BY EVERY HERO ON BASE MOVEMENT: both glasses on the hall's floor, in the hero fill from the kiln's drop */
   for (const h of HERO_MOVE_IDS) { const R = floodReach(L, T, { hero: h }); for (const id of ['gb', 'gb2']) { const g = L.glasses.find(q => q.id === id); let got = false; for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) if (R.seen.has((g.x + dx) + ',' + (g.y + dy))) got = true; ok(got, h + ' reaches his hourglass ' + id + ' on base movement'); } } }

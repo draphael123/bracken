@@ -14,7 +14,7 @@ import * as SET from './redraw/buried_city_set.js';
 import * as ART from './redraw/buried_city_flip_art.js';
 import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
 import * as FIX from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the glass's link to what it moves, its STRIKE glint */
-import { BC5_SAY, DOOR } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
+import { BC5_SAY, DOOR, CAM5, RACE_GLASSES } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
 
 export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6,
   boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8,
@@ -184,9 +184,12 @@ export function makeFlip(api) {
   /* THE CAMERA LOOKS AT WHAT IT MOVED (A3: draw the state where the player stands): for FLIP.camT s after a hero's strike, the middle of what the glass moves (main.js
      updateCamera leans toward it, never losing the hero) */
   F.cam = () => { if (!K) return null; const P0 = ctx.hero(); if (!P0 || P0.dead) return null;
-    const g = K.glasses.filter(q => q.byHero && (q.linkT ?? 99) < FLIP.camT && Math.abs(px(q.x) - P0.x) < FLIP.camR * TS()).sort((a, b) => a.linkT - b.linkT)[0]; if (!g) return null;
+    /* (claude/bc5fix) a bc5 race glass: a SHORT look (CAM5.camT, lean CAM5.lean) that lets go when the hero runs - it never holds the picture while the glass's clock runs */
+    const r5 = q => !!K.L.bc5 && RACE_GLASSES.includes(q.id), camT = q => (r5(q) ? CAM5.camT : FLIP.camT);
+    const g = K.glasses.filter(q => q.byHero && (q.linkT ?? 99) < camT(q) && Math.abs(px(q.x) - P0.x) < FLIP.camR * TS()).sort((a, b) => a.linkT - b.linkT)[0]; if (!g) return null;
+    if (r5(g) && g.linkT > CAM5.holdMin && Math.abs(P0.vx || 0) > CAM5.releaseV) return null;
     const ts = targetsOf(g).filter(q => !q.foe); if (!ts.length) return null; const x = ts.reduce((a, q) => a + (q.l + q.r) / 2, 0) / ts.length, y = ts.reduce((a, q) => a + (q.t + q.b) / 2, 0) / ts.length;
-    return { x, y, k: Math.min(1, (FLIP.camT - g.linkT) / 0.4) }; };
+    return r5(g) ? { x, y, k: Math.min(1, (CAM5.camT - g.linkT) / 0.2) * (CAM5.lean / 0.75) } : { x, y, k: Math.min(1, (FLIP.camT - g.linkT) / 0.4) }; };
   /* ---------- DRAWING (claude/bc3art: src/redraw/buried_city_flip_art.js - the hourglasses, risers, banks, dune falls, the sea, the gauges) ---------- */
   const R = Math.round;
   F.draw = (g, cx, cy, time) => {

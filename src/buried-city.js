@@ -330,9 +330,9 @@ export function buildBuriedCity({ painter, T, TS }) {
      kiln first: a death walks back two columns), two KILN STUBS (a cover from his blowpipe), two of the city's glasses with the hall's own risers and sinkers on them (his FLIP
      drives them), the portcullis at 407 lifts when he falls. No sea in the hall: a hole is two rows and a body climbs out of it */
   const S = GB_STAGE, sx = S.sx, R = S.R, ex = sx + S.W;
-  sign(383, 9, 'BELOW: THE GLASSBLOWER\'S HALL. THE SHRINE IS BEHIND YOU. STRIKE HIS HOURGLASS WHEN IT GLINTS.'); ent('check', 386, 9);
+  sign(383, 9, 'BELOW: THE GLASSBLOWER. THE SHRINE IS BEHIND YOU. STRIKE HIS HOURGLASS WHEN IT GLINTS.'); ent('check', 386, 9);
   ground(sx, ex + 1, R); block(ex, ex, 5, R - 7); for (let y = R - 6; y <= R - 1; y++) set(ex, y, T.PORT);
-  for (const [a, b] of S.cover) { block(sx + a, sx + b, R - 3, R - 1); decor.push({ kind: 'kiln', x0: sx + a, x1: sx + b, y: R - 3 }); }
+  S.cover.forEach(([a, b], i) => { const rows = (S.coverRows || [])[i] || 3; block(sx + a, sx + b, R - rows, R - 1); decor.push({ kind: 'kiln', x0: sx + a, x1: sx + b, y: R - rows }); });   /* (claude/bc5fix: the stub near him is two rows) */
   for (const sk of S.sink) sinker(sk.glass, sx + sk.c[0], sx + sk.c[1], R, 2, 'house');
   for (const rs of S.riser) riser(rs.glass, sx + rs.c[0], sx + rs.c[1], rs.top, rs.rows, 'house');
   for (const g of S.glass) glass(g.id, sx + g.c, R - 1, g.dur);
@@ -524,6 +524,16 @@ export function buildBuriedCity({ painter, T, TS }) {
   decor.push({ kind: 'mural', x0: 840, x1: 843, y: 25 });                          /* (B8: the art lane draws HIM raising slabs of sand toward himself - foreshadowing his fight) */
   lamp(BC5 ? 843 : 841, 24, 'brazier');   /* (claude/bc5: the race door's lintel is at 841) */
   ent('check', 842, TH - 1);                                                        /* CHECKPOINT FIVE, past the exam before the throne, at the throne room's door */
+  if (BC5) {   /* (claude/bc5fix) THE THIN STRETCHES (the laptop walk, bc5walk.md: BC ~3 foes per 40 columns, THE MAGE'S FOLLY ~8): the Glass Works' approach and the throne street's run-in to the rooftops and the king
+    get squads of the city's OWN cast (drowned, brass scorpion, sand-folk slinger - no new foe, no goblin, nothing of wood) and a few coin arcs on the ground a hero stands on. Every one stands on solid footing off the races, the
+    mini's floor, the glasses and the checkpoints (tools/buried-city5.mjs asserts it); OFF builds none of them. */
+    const arc = (x, y) => { ent('coin', x, y); ent('coin', x + 1, y - 1); ent('coin', x + 2, y); };
+    slinger(331, 27, 'hallsEndSling'); scorpion(334, 31, 'hallsEndB'); scorpion(343, 31, 'worksA'); drowned(366, 25, 'worksC');   /* the Glass Works' approach (320-399: 1 foe -> 5) */
+    scorpion(683, 31, 'runInA'); slinger(697, 28, 'runInSling'); drowned(715, 13, 'roofA');                                       /* the throne street's run-in and the first roof (680-719: 1 -> 4) */
+    slinger(724, 13, 'roofB'); scorpion(738, 5, 'roofC'); drowned(788, 11, 'farBank');                                           /* the rooftops (720-799: 1 -> 4) */
+    sign(597, 27, 'THE SPAN AHEAD CRUMBLES. STRIKE THE GLASS ON ITS LIP, THEN RUN.');   /* (R1 is optional: the player who skipped the balcony meets R2 cold - a second teach, on the shaft's exit ledge, 3 columns before the lip's own sign) */
+    arc(338, 31); arc(346, 31); arc(712, 13); arc(735, 5); arc(792, 11);
+  }
 
   // ================= THE HOURGLASS KING's THRONE ROOM (src/hourglass-king.js), at the foot of the Hourglass Tower =================
   const AX = 845;

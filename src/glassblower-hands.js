@@ -36,7 +36,8 @@ export function makeGlassblowerHands(ctx) {
       if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P))) return;
       if (o.low && !P.ground) return; if (o.duck && P.ducking) return;
       pp.bc5Keys = pp.bc5Keys || new Map(); if (pp.bc5Keys.size > 80) pp.bc5Keys.clear(); const key = o.key || name; if (pp.bc5Keys.has(key)) return; pp.bc5Keys.set(key, 1);
-      const hp0 = P.hp; ctx.damagePlayer(who.x, d, { who, name, unblockable: !o.blockable, noKnock: !!o.noKnock }); if (P.hp < hp0) any = true; }); return any; };
+      const dd = who.t === 'glassblower' && GB.capFrac ? Math.min(d, Math.max(1, Math.round((P.maxHp || 100) * GB.capFrac))) : d;   /* (claude/bc5fix) the damage cap */
+      const hp0 = P.hp; ctx.damagePlayer(who.x, dd, { who, name, unblockable: !o.blockable, noKnock: !!o.noKnock }); if (P.hp < hp0) any = true; }); return any; };
   const nearestHero = e => ctx.players.filter(p => !p.dead).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || ctx.hero();
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, ducking: !!pp.ducking, pp }));
   const flipFor = () => { const b = ctx.bch ? ctx.bch() : null; return b && b.flip; };
