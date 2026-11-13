@@ -23,7 +23,7 @@ export const Q52 = gq5q2On();
 export const Q52N = {
   hint: 'STRIKE HER STONES BACK AT HER - AND WHEN SHE HIDES IN THE BELL, RING IT.',
   plate: ['STRIKE HER STONES BACK AT HER', 'AND WHEN SHE HIDES IN THE BELL, RING IT.'],
-  volleyCd: 2.2, dmgK: 0.65, firstVolley: 6.5,        // the first volley waits for the teach shard to be seen (it was 1.6 s)
+  volleyCd: 2.2, dmgK: 0.7, firstVolley: 6.5,        // the first volley waits for the teach shard to be seen (it was 1.6 s)   /* (GQ5Q2-TUNE step 3: 0.65 -> 0.7 - steps 1 (sweep dmg) and 2 (perch cap) were both no-moves on the headline rate; dmgK scales EVERY roof damage source through gqHit (hearth jet, portal shard, geode, charge, crown, sweep, volley), unlike the two narrow levers already spent */
   teach: { at: 1.5, v: 160, dmg: 4, max: 3, retry: 2.0, ropeAt: 8.0, ropeFor: 6.0 },
   rope: { dx: 0, top: 240, hang: 70, hw: 9 },          // dx from the cupola frame's west column centre; the rope hangs from the frame (row 14's underside, y 240) down to 70 px over the deck; hw = half width of the strike box
   perch: { first: 18, every: 22, tell: 0.6, hold: 8.0, swing: 1.2, down: 3.0, mul: 1.5, cap: 0.08, rainEvery: 1.2, rainN: 2, rageGap: 18, fallDx: 34, guard: 1.5 },   /* (GQ5Q2-TUNE step 2: 0.10 -> 0.08, step 1 (sweep dmg) was a no-move - sweep almost never connects against the bot, same shape as gq5p's heel dash: less free DOWNED damage per cycle is the next lever */

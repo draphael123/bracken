@@ -2,7 +2,7 @@
 //   node tools/gq5q2.mjs                      flag OFF: proves OFF is claude/gq5q1 (no engine, the old hint, volley cd 2.5, dmgK 0.6, the bombardment at 70 / 45%, no perch / sweep / hatch in 60 s) and exits 0
 //   BRACKEN_GQ5Q2=1 node tools/gq5q2.mjs      flag ON (also run with BRACKEN_GQ5Q1=1: the hall's flag changes nothing up here):
 //   G  geometry   the rope hangs from the cupola frame (a tile above it, nothing floating), stands clear of the cupola stone, its box is at standing height over the deck; the hatch / downed spot / bays
-//   N  numbers    VOLLEY cd 2.2, the phase-2 dmgK 0.65 (a volley shard 3), the bar stays 1000
+//   N  numbers    VOLLEY cd 2.2, the phase-2 dmgK 0.7 (GQ5Q2-TUNE: 0.65 -> 0.7; a volley shard 3), the bar stays 1000
 //   T  teach      the entry rule (hint + plate), ONE slow gold shard (160 px/s) inside 2 s of entry from a ring on your level, "STRIKE IT!" riding it, home = "STRUCK - 8%!"; a miss repeats, 3 at most;
 //                 the dim 'RING' plate at ~8 s; no volley before the teach has been seen
 //   P  perch      first at 18 s then every 22 s; no bombardment at 70 / 45%; ward: every blow is turned (the ONE immunity window), shards glance; the rope is rung by ANY blow or hero shot (every kind in
@@ -87,7 +87,7 @@ console.log('== G. geometry');
   ok(!!w.H.q52() && !!Tw.RINGS.find(r => r.id === 'cu'), 'the cupola ring (her perch) exists'); }
 
 console.log('== N. numbers');
-{ const w = roof(); ok(Q52N.volleyCd === 2.2 && Q52N.dmgK === 0.65, 'Q52N: volley cd 2.2, dmgK 0.65');
+{ const w = roof(); ok(Q52N.volleyCd === 2.2 && Q52N.dmgK === 0.7, 'Q52N: volley cd 2.2, dmgK 0.7 (GQ5Q2-TUNE step 3)');
   w.H.test.startQ4('volley'); ok(Math.abs(w.H.test.q4().volleyCd - 2.2) < 1e-9, 'a volley sets the next one 2.2 s out (' + w.H.test.q4().volleyCd + ')');
   ok(GQ3.hp2 === Q4N.p2.hp && w.e.maxHp === 1000, 'her tower-top bar stays 1000 (' + w.e.maxHp + ')');
   const c = roof(); c.heroes[0].x = c.RA.x0 + 60; c.e.x = c.RA.x0 + 400; c.H.test.q4().volleyCd = 0; c.H.test.startQ4('volley'); c.step(60 * 3);
