@@ -89,7 +89,7 @@ export function makeGQueenHands(ctx) {
      (Every hero's beat path - the knight's raised shield, the warden's deflect, the pyro's ward, the pirate's catch - calls RP.parried, so all nine are covered with no per-hero code.)
      Never `unblockable`, never `pierce`: a red or a piercing blow is TOO STRONG and is never parried. */
   function gqHit(x, dmg, who, name) {
-    if (Q4 && who && who.t === 'gqueen') { const k = who.stage === 'roof' ? Q4N.p2.dmgK : (!who.stage || who.stage === 'hall') ? Q4N.p1.dmgK : 1; if (k !== 1) dmg = Math.max(1, Math.round(dmg * k)); }   /* (GQ4TUNE r3) ONE LEVER PER PHASE for everything she throws through gqHit (hall: crown, portal, geode, charge, reach; tower top: volley, crown, lash, boulder, rocks): Q4N.p1.dmgK / Q4N.p2.dmgK (the hearth jet has its own dmg) */
+    if (Q4 && who && who.t === 'gqueen') { const k = who.stage === 'roof' ? Q4N.p2.dmgK : (!who.stage || who.stage === 'hall') ? (Q5 && Q5N.hallDmgK != null ? Q5N.hallDmgK : Q4N.p1.dmgK) : 1;   /* (claude/gq5q1t) flag ON: the hall's lever is Q5N.hallDmgK */ if (k !== 1) dmg = Math.max(1, Math.round(dmg * k)); }   /* (GQ4TUNE r3) ONE LEVER PER PHASE for everything she throws through gqHit (hall: crown, portal, geode, charge, reach; tower top: volley, crown, lash, boulder, rocks): Q4N.p1.dmgK / Q4N.p2.dmgK (the hearth jet has its own dmg) */
     const n0 = ctx.parries();
     const r = ctx.damage(x, dmg, { who, name });
     return { res: r, parried: ctx.parries() > n0 };

@@ -81,6 +81,7 @@ if (!Q5) {
     w.step(60 * 6); ok(w.st.grate.length === 1, 'the grate drops once');
     ok(w.st.tiles.filter(t => t[3] === 'lay').length >= 2, 'the galleries are laid (the OFF hall keeps them)');
     const v = make(); v.e.mode = 'stand'; v.e.modeT = 0; v.step(60 * 40); ok(v.st.dmg.every(d => d.o.name !== 'THE THRONE FIRE') && !v.st.said.includes('THE FLOOR BURNS'), 'no THRONE FIRE in 40 s'); }
+  { const { Q4N } = await imp('src/gq4q.js'); const w = make(); w.e.stage = 'hall'; w.H.hit(w.heroes[0].x, 100, w.e, 'HER CROWN'); const d = w.st.dmg[w.st.dmg.length - 1].d; ok(d === Math.round(100 * Q4N.p1.dmgK), 'OFF: the hall lever is still Q4N.p1.dmgK ' + Q4N.p1.dmgK + ' (a 100 crown lands ' + d + ')'); }
   console.log(fails ? 'FAIL gq5q1 (flag off)' : 'ok  gq5q1 (flag off: it is gq5fix)'); process.exit(fails ? 1 : 0);
 }
 
@@ -172,7 +173,8 @@ console.log('== C. GQ5Q1B: per-burn cap, even dial, tells, cover');
   for (const h of HERO_MOVE_IDS) { const w = make({ mul: 17 / N.dmg, maxHp: 208 }); calm(w); w.H.mech().cd = 0; const hero = w.heroes[0]; hero.hero = h; hero.x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(Math.round(60 * 3.4));
     const lost = 208 - hero.hp, cap = N.capPct * 208, tick = 17; if (!(lost <= cap + tick + 0.01 && lost >= cap - 1e-6)) ok(false, h + ' standing a full burn lost ' + lost + ' (cap ' + cap.toFixed(1) + ' + one tick ' + tick + ')'); }
   { const w = make({ mul: 17 / N.dmg, maxHp: 208 }); calm(w); w.H.mech().cd = 0; const hero = w.heroes[0]; hero.x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(Math.round(60 * 3.4)); const lost = 208 - hero.hp;
-    ok(lost === 51 && lost <= N.capPct * 208 + 17 && lost < 0.30 * 208, 'CAP: an unanswered burn on a 208 bar costs ' + lost + ' (' + (100 * lost / 208).toFixed(0) + '%, was 102 = 49%); max allowed ' + (N.capPct * 208 + 17).toFixed(0)); }
+    ok(lost === 17 && lost <= N.capPct * 208 + 17 && lost < 0.10 * 208, 'CAP (GQ5Q1T-2, capPct ' + N.capPct + '): an unanswered burn on a 208 bar costs ONE tick, ' + lost + ' (' + (100 * lost / 208).toFixed(0) + '%; was 51 = 25% at .20, 34 = 16% at .15, 102 = 49% uncapped); max allowed ' + (N.capPct * 208 + 17).toFixed(0)); }
+  { for (const mh of [196, 208, 240]) { const w = make({ mul: 17 / N.dmg, maxHp: mh }); calm(w); w.H.mech().cd = 0; const hero = w.heroes[0]; hero.x = w.A.x0 + 18 * TS; toTell(w); toBurn(w); w.step(Math.round(60 * 3.4)); ok(mh - hero.hp === 17, 'CAP: one tick (17) on a ' + mh + ' bar (lost ' + (mh - hero.hp) + '; one tick holds up to maxHp ' + Math.floor(17 / N.capPct - 0.01) + ')'); } }
   ok(true, 'CAP: all ' + HERO_MOVE_IDS.length + ' heroes standing in the whole burn lose <= capPct x maxHp + one tick (no FAIL above)');
   { const w = make({ mul: 17 / N.dmg, maxHp: 208, seats: 2 }); calm(w); w.H.mech().cd = 0; w.heroes[0].x = w.hoist(1).cx; w.heroes[1].x = w.A.x0 + 18 * TS; toTell(w); w.ring(); w.step(60 * 1); toBurn(w); w.step(Math.round(60 * 3.4));
     ok(w.heroes[0].hp === 208 && w.heroes[1].hp < 208, 'CAP: 0 lost on a deck, ' + (208 - w.heroes[1].hp) + ' on the floor'); }
@@ -267,5 +269,25 @@ console.log('== X. 600 s soak (a bot that rings at random, stands where it likes
     const fires = w.H.q5().state().fires, ends = Uint8Array.from(w.Lw.grid).filter(v => v === T.ONEWAY).length; w.step(60 * 9);
     ok(below === 0 && noRearm === 0 && maxFire <= Q5N.fire.tell + Q5N.fire.burn + 0.5 && maxHoist <= hoistTotal() + 0.1 && w.H.q5().state().step === 0, 'seed ' + seed + ': ' + fires + ' fires, riders below the floor ' + below + ', longest fire ' + maxFire.toFixed(1) + ' s, longest hoist-up ' + maxHoist.toFixed(1) + ' s, bell never held past 16 s, hoists down at the end'); } }
 
+console.log('== K. GQ5Q1T-2 (QDMG 11-13): the hall lever, the guard hand, the hurt-by name');
+{ const { Q4N } = await imp('src/gq4q.js'); const w = make(); w.e.stage = 'hall'; const n0 = w.st.dmg.length; w.H.hit(w.heroes[0].x, 100, w.e, 'HER CROWN'); const d = w.st.dmg[w.st.dmg.length - 1] && w.st.dmg[w.st.dmg.length - 1].d;
+  const want = Q5 ? Math.round(100 * Q5N.hallDmgK) : Math.round(100 * Q4N.p1.dmgK);
+  ok(w.st.dmg.length === n0 + 1 && d === want, 'HALL LEVER: a 100 crown lands ' + d + ' (' + (Q5 ? 'flag ON Q5N.hallDmgK ' + Q5N.hallDmgK : 'flag OFF Q4N.p1.dmgK ' + Q4N.p1.dmgK) + ' -> ' + want + ')');
+  { const w2 = make(); w2.e.stage = 'roof'; w2.H.hit(w2.heroes[0].x, 100, w2.e, 'HER CROWN'); const d2 = w2.st.dmg[w2.st.dmg.length - 1].d; ok(d2 === Math.round(100 * Q4N.p2.dmgK), 'HALL LEVER: the roof (P2) is untouched: ' + d2 + ' = 100 x Q4N.p2.dmgK ' + Q4N.p2.dmgK); } }
+{ const src = fs.readFileSync(path.join(ROOT, 'src/main.js'), 'utf8'); ok(src.includes('(updFoe && updFoe.t ? "FOE " + updFoe.t : "?")'), 'HURT-BY: an unnamed blow is keyed "FOE <type>" (updFoe), not "?" (lab / hitlog only)'); }
+{ const { gqGuardBot } = await imp('src/lab.js'); const rnd0 = Math.random;
+  const mkb = (sol, hero = 'knight') => { const pressed = [], k = { left: false, right: false, block: false }, P = { x: 100, y: 200, face: 1, ground: true, atk: -1, dodge: 0, st: 100, labSdE: null }; return { pressed, k, P, BK: { enemies: () => [sol], P, keys: k, press: a => pressed.push(a), emberReady: () => true }, hero }; };
+  const sol = o => ({ t: 'soldier', alive: true, x: 125, y: 200, mode: 'walk', modeT: 0, cd: 0, stagger: 0, ...o });
+  try { Math.random = () => 0;   // a try
+    let b = mkb(sol({ mode: 'slashTell', modeT: 0.3 })); let r = gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight'); ok(r && r.strike === false && b.k.block === false && b.P.face === 1, 'GUARD BOT: a soldier tell at 0.3 s left, a try: face him, the guard stays down until the last 0.06 s');
+    b = mkb(sol({ mode: 'slashTell', modeT: 0.05 })); r = gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight'); ok(r && b.k.block === true, 'GUARD BOT: ...and is raised on the beat (parried: PARRIED / rocked open)');
+    Math.random = () => 0.999;   // no try: a roll in the last 0.2 s
+    b = mkb(sol({ mode: 'slashTell', modeT: 0.4 })); gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight'); ok(b.pressed.length === 0 && b.k.block === false, 'GUARD BOT: no try, 0.4 s left: no roll yet');
+    b = mkb(sol({ mode: 'slashTell', modeT: 0.1 })); gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight'); ok(b.pressed.join() === 'dodge', 'GUARD BOT: no try, 0.1 s left: ONE roll through the slash');
+  } finally { Math.random = rnd0; }
+  let b = mkb(sol({ mode: 'rest', modeT: 0.4 })); let r = gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight'); ok(r && r.strike === true, 'GUARD BOT: a soldier resting (just swung / parried) in reach is cut');
+  b = mkb(sol({ mode: 'walk', cd: 0 })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: a soldier walking up, no tell, no recovery: no swing into his shield');
+  b = mkb(sol({ mode: 'rest', x: 400 })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: out of reach: nothing');
+  b = mkb(sol({ t: 'javelin', mode: 'rest' })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: only the soldier (the javelin man is not this hand)'); }
 console.log(fails ? 'FAIL gq5q1' : 'ok  gq5q1');
 process.exit(fails ? 1 : 0);

@@ -815,6 +815,21 @@ function gqEscapeBot(BK, P, k) {
   k.up = up; return { goal, strike: false };
 }
 /* her P1 hall and her tower top, as a player reads them. Returns { goal, strike } to take the frame, or null (the rest of the chain: her quake's jump, the open branch, the bell, the hunt) */
+/* (claude/gq5q1t) the wave guards' hand (see gqueenReact): the nearest soldier on my level. TELL (modeT left of 'slashTell', reach ~30 px): a try is drawn ONCE per tell (LABP.parryTry, as for her shots) and parryAt times the guard; no try = a roll in the tell's last 0.2 s. Idle or recovering (rest / stagger / cooldown over 0.55 s): face him and cut. */
+export function gqGuardBot(BK, boss, P, k, h) {
+  let s = null, sd = 1e9;
+  for (const e of BK.enemies()) { if (!e.alive || e === boss || e.t !== 'soldier') continue; const ad = Math.abs(e.x - P.x); if (ad < sd && Math.abs(e.y - P.y) < 30) { sd = ad; s = e; } }
+  if (!s) return null; const dir = Math.sign(s.x - P.x) || P.face;
+  if (s.mode === 'slashTell' && sd < 60) {
+    if (P.labSdE !== s || s.modeT > (P.labSdT ?? -1) + 0.05) { P.labSdE = s; P.labSdTry = (GUARDR ? GUARDR() : Math.random()) < (LABP.parryTry ?? 0.7); }
+    P.labSdT = s.modeT; P.face = dir; k.left = k.right = false;
+    if (P.labSdTry) { parryAt(BK, h, s.modeT); return { goal: null, strike: false }; }
+    if (s.modeT < 0.2 && P.ground && !(P.dodge > 0)) BK.press('dodge');
+    return { goal: null, strike: false };
+  }
+  if (sd <= (LAB_REACH[h] || 22) + 8 && P.atk < 0 && !(P.dodge > 0) && (s.mode === 'rest' || s.stagger > 0 || (s.cd || 0) > 0.55)) { P.face = dir; k.left = k.right = false; k.block = false; return { goal: null, strike: true }; }
+  return null;
+}
 function gqueenReact(BK, boss, P, k, A, h) {
   const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
   if (stage === 'escape') return gqEscapeBot(BK, P, k);
@@ -842,6 +857,8 @@ function gqueenReact(BK, boss, P, k, A, h) {
     if (best.kind === 'crown') k.down = bt < 0.5; else if (bt < 0.22 && P.ground) BK.press('dodge');   /* not trying this one: the crown is ducked, a shard rolled */
     return { goal: null, strike: false };
   }
+  /* (claude/gq5q1t, flag ON only) HER BARRACKS GUARDS, as a player answers them: the soldier's '!' is a 0.5 s tell - parried (he is rocked open) or rolled, never stood in - and a soldier that has just swung or been parried is cut. The boss lab had NO soldier hand at all (no 'soldier'/'slashTell' anywhere in src/lab*.js): every slash of a wave's guards landed ('?' in the hurt-by table, 19-35% of the knight's and warden's damage). */
+  if (stage === 'hall' && !P.dead) { const Hq5 = BK.gqHands && BK.gqHands(); if (Hq5 && Hq5.q5 && Hq5.q5()) { const r5 = gqGuardBot(BK, boss, P, k, h); if (r5) return r5; } }
   const R0 = rd && rd.roof;
   /* (gq3fix) HER BELL CHARGE is told now (a 0.6 s planted wind-up, then the run): a player in her path rolls THROUGH her as she comes (a roll's frames), a parry on a shield hero is the existing tell branch */
   if (stage === 'hall' && boss.mode === 'lure' && Math.abs(boss.vx || 0) > 100 && P.ground && !(P.dodge > 0)) { const dq = boss.x - P.x; if (Math.abs(dq) < 78 && dq * boss.vx < 0) { k.left = dq < 0; k.right = dq > 0; BK.press('dodge'); return { goal: null, strike: false }; } }
@@ -3294,7 +3311,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: gqLabRow(GQS, boss, f, gqSpf) } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(GQS ? { gq: { ...gqLabRow(GQS, boss, f, gqSpf), ...(() => { try { const q5 = BK.gqHands().q5(), s5 = q5 && q5.state(); return s5 ? { q5: { fires: s5.fires, scorches: s5.scorches, burnTicks: s5.burned } } : {}; } catch (e) { return {}; } })() } } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
