@@ -85,7 +85,7 @@ console.log('== WIRING (src/lab.js, tools/boss-run.mjs)');
   ok(/import \{ gqLabState, gqLabStep, gqLabRow \} from '\.\/lab-gqueen\.js'/.test(lab), 'lab.js imports the stage clocks');
   const loop = lab.indexOf("for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;");
   ok(loop > 0 && /const GQS = boss\.t === 'gqueen' \? gqLabState\(\)/.test(lab.slice(loop - 400, loop)) && /if \(GQS\) \{[^]{0,160}gqLabStep\(/.test(lab.slice(loop, loop + 500)), 'bossLab steps them every frame of the row, before the hands');
-  ok(/\.\.\.\(GQS \? \{ gq: gqLabRow\(GQS, boss, f, gqSpf\) \} : \{\}\)/.test(lab), 'the row carries gq');
+  ok(/\.\.\.\(GQS \? \{ gq: (\{ \.\.\.)?gqLabRow\(GQS, boss, f, gqSpf\)/.test(lab), 'the row carries gq');   /* (REL180) the row's gq may spread gqLabRow and add the GQ5Q1 hall counters (q5) */
   ok(/gq:r\.gq\|\|null/.test(run) && /x\.gq \? ' gq '/.test(run), 'boss-run returns and prints gq');
   const { ROW_MIN_SECS } = await imp('tools/boss-run.mjs'); ok(ROW_MIN_SECS.crown >= 300, 'her row never runs under ' + ROW_MIN_SECS.crown + ' s (P1 + escape + P2)');
   ok(/Math\.max\(secs, ROW_MIN_SECS\[id\] \|\| 0\)/.test(run), 'and the clock is applied to maxSecs');

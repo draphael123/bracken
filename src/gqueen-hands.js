@@ -948,8 +948,8 @@ export function makeGQueenHands(ctx) {
   G52 = Q52 ? makeGQ5Q2({ TS, ctx, L, q, now, seats, sfx, gqRed: (...a) => gqRed(...a), gqHit: (...a) => gqHit(...a), jarr: e => jarr(e), strikes: (b, k) => strikes(b, k), ringPos: r => ringPos(r), rings: () => rings(), lvlRings: n => lvlRings(n), pickExit: (...a) => pickExit(...a), target: () => target(), addShardRef: o => (addShard(o) ? S.rocks[S.rocks.length - 1] : null), setCrown: v => { S.crown = v; },
     R0: () => (S ? S.roof : null), lightBay: (R0, i, tt) => lightBay(R0, i, tt), art: GQ3A, stunGap: () => G.stunGuard,
     guard: v => (v === undefined ? (S ? S.stunGuardUntil : 0) : (S.stunGuardUntil = Math.max(S.stunGuardUntil, v))), markStun: d => { S.stunUntil = now() + d; } }) : null;   /* (claude/gq5q2) */
-  H.q52 = () => G52; H.q52Ward = (e, fx) => (G52 ? G52.ward(e, fx) : false); H.q52Take = (e, dmg) => (G52 ? G52.take(e, dmg) : dmg);
-  H.q5 = () => G5; H.q5Scorch = (e, plunge) => (G5 ? G5.onHurt(e, plunge) : false); H.q5Take = (e, dmg) => (G5 ? G5.take(e, dmg) : dmg);
+  H.q52 = () => G52; H.q52Ward = (e, fx) => (G52 ? G52.ward(e, fx) : false); H.q52Take = (e, dmg, tag) => (G52 ? G52.take(e, dmg, tag) : dmg);
+  H.q5 = () => G5; H.q5Scorch = (e, plunge) => (G5 ? G5.onHurt(e, plunge) : false); H.q5Take = (e, dmg, tag) => (G5 ? G5.take(e, dmg, tag) : dmg);
   const hearthXs = () => { const A = L().arena, e = q(), tx = e && e.throneX; let ex = A.x1 - 3 * TS - 8; if (tx && Math.abs(ex - tx) < 84) ex = tx - 84; return [A.x0 + 3 * TS + 8, ex]; };   /* (GQ5FIX 11-12, Daniel still b: the geode throne's crystals were drawn over the east hearth gate - both stood at tile 858; the east hearth now stands 84 px (5 tiles) clear of the throne) */
   function hearthStart(e) {
     const A = L().arena, h4 = g4(), [wx, ex] = hearthXs(); h4.side = -h4.side; const src = h4.side > 0 ? wx : ex;

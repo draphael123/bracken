@@ -582,12 +582,12 @@ const OPEN0 = b => b.t === 'ploughman' ? b.open > 0 : b.t === 'master' ? b.open 
 export const HARD_TELLS = new Set(["lance|charge","lance|sweepTell","troll|slamTell","troll|ripTell","assassin|markTell","berserker|windTell","captain|kegTell","captain|shootTell","closedhelm|bashTell","drownedking|slamTell","forgemaster|anvilTell","forgemaster|breathTell","forgemaster|dragTell","forgemaster|dropTell","forgemaster|hurlTell","forgemaster|ladleTell","forgemaster|pourTell","forgemaster|slamTell","forgemaster|whirlTell","golem|stompTell","gqueen|chandTell","gqueen|chargeTell","gqueen|gDropTell","gqueen|leapTell","gqueen|shadowTell","gqueen|slamTell","gqueen|sweepTell","grandmother|sweepTell","grandmother|throwTell","herald|sweepTell","king|cageTell","king|chargeTell","king|grabTell","king|liftTell","king|shoutTell","king|slamTell","lance|bashTell","lance|whirlTell","master|leapTell","masthead|boomTell","masthead|dropTell","owl|hootTell","prince|sinkTell","prince|snuffTell","quarter|shootTell","quarter|stanceTell","ram|leapTell","ram|stampTell","ram|tossTell","roadman|leapTell","roc|diveTell","suncatcher|frostTell","suncatcher|hailTell","suncatcher|spireTell","roc|shriekTell","tollmaster|tollTell","troop|grabTell","windcaller|wallTell"]);
 HARD_TELLS.add('owl|skimTell');
 HARD_TELLS.add('gobmage|runeTell');   /* THE GOBLIN MAGE'S RUNE: stepped off, never guarded */
-for (const m of ['sceptreSweepTell', 'baleTell', 'lanternTell', 'leapTell']) HARD_TELLS.add('strawking|' + m); HARD_TELLS.add('ploughman|chargeTell');   /* THE HEXED FIELDS' red marks */
+for (const m of ['sweepTell', 'baleTell', 'lanternTell', 'leapTell']) HARD_TELLS.add('strawking|' + m); HARD_TELLS.add('ploughman|chargeTell');   /* THE HEXED FIELDS' red marks */
 for (const m of ['scuttleTell', 'poundTell', 'flaskTell']) HARD_TELLS.add('homunculus|' + m); for (const m of ['rendTell', 'slamTell', 'crushTell', 'glyphTell', 'pairTell']) HARD_TELLS.add('archmage|' + m);   /* THE MAGE'S FOLLY's red marks */
 for (const m of ['whirlTell', 'gulpTell']) HARD_TELLS.add('drownedking|' + m);   /* THE MAELSTROM and DROWNED BREATH: a current and a burst, and no shield is in either */
 HARD_TELLS.add('herald|glideTell');   /* THE TIDE HERALD'S GLIDE ends in his low sweep: gone from, never guarded */
 HARD_TELLS.add('drownedking|ramTell'); HARD_TELLS.add('drownedking|diveTell');   /* THE DROWNED KING'S CHARGE AND FALL: gone across, never guarded */
-for (const m of ['grabTell', 'sceptreSweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell', 'waveTell', 'shakeTell', 'biteTell']) HARD_TELLS.add('kraken|' + m);   /* (claude/kraken2: THE WAVE, the shaken ramp, the beak in the climb) */   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
+for (const m of ['grabTell', 'sweepTell', 'rakeTell', 'hurlTell', 'jetTell', 'geyserTell', 'lungeTell', 'roarTell', 'rollTell', 'waveTell', 'shakeTell', 'biteTell']) HARD_TELLS.add('kraken|' + m);   /* (claude/kraken2: THE WAVE, the shaken ramp, the beak in the climb) */   /* THE RAKE is HIGH in red: an arm that size turns on no shield either */   /* THE KRAKEN's red marks */   /* THE OWL REEVE'S SKIM: talons at ankle height, dodged or jumped, never guarded */
 /* AND EVERY RED MARK IN src/marks.js, the table the screen draws from: the hand list above predates it and stays as it was. An elite's own moves are '*|mode', and answer for whatever creature is the elite */
 for (const [k, v] of Object.entries(MARK)) if (v === '!!') HARD_TELLS.add(k);
 { const has = HARD_TELLS.has.bind(HARD_TELLS); HARD_TELLS.has = k => has(k) || has('*|' + String(k).slice(String(k).indexOf('|') + 1)); }
@@ -1480,7 +1480,7 @@ async function runbossLab(BK, opts) {
           if(m==='descendTell'||m==='descend'){const rx=boss.toX,s=P.x>=rx?1:-1,out=rx+s*(WM_K.leapHit+26);if(Math.abs(P.x-rx)<WM_K.leapHit+14)go(out>F.x0+6&&out<F.x1-6?out:rx-s*(WM_K.leapHit+26));return;}
           if(m==='whirlTell'){ if(ad<R+8){const out=Math.max(F.x0+3,Math.min(F.x1-3,boss.x-side*(R+10)));if(Math.abs(out-boss.x)>R+3)go(out);else if(md<0.24&&P.ground&&!P.labJump){BK.press('jump');P.labJump=16;}} return; }   /* (no room on the deck to step out of it: over it) */
           if(m==='wrenchTell'&&ad<WM_K.wrenchHit+14){ if((SHIELDED(h)||(LABP.v2&&h==='warden'))&&P.ground){k.block=SHIELDED(h)?true:DEFLECT_TAP(f);P.face=side;}   /* (claude/retune2, v2: the warden DEFLECTS his brake bar and wrench - both yellow; she took 8 of 8 brake bars, 0 deflects) */ else go(boss.x-side*(WM_K.wrenchHit+22)); return; }
-          if(m==='sceptreSweepTell'||m==='sweep'){ if(m==='sceptreSweepTell'&&md<0.16&&P.ground&&!P.labJump&&ad<WM_K.sweepR+6){BK.press('jump');P.labJump=14;} return; }   /* (round seven: THE CHAIN SWEEP - over it) */
+          if(m==='sweepTell'||m==='sweep'){ if(m==='sweepTell'&&md<0.16&&P.ground&&!P.labJump&&ad<WM_K.sweepR+6){BK.press('jump');P.labJump=14;} return; }   /* (round seven: THE CHAIN SWEEP - over it) */
           if(m==='rideTell'||m==='ride'){ if((m==='ride'||toldRun(['rideTell']))&&ad<64&&P.ground&&!P.labJump){BK.press('jump');P.labJump=14;} return; }
           /* (claude/sweep1, v2 only) HIS GREED, ON THE DECK: the duel cut him whenever he was in reach, so the reprisal burst took the hands
              every few seconds (the knight's 152 health went 60% to it). As the other duels do (BK.greed): out of the burst as it is told,
@@ -1625,7 +1625,7 @@ async function runbossLab(BK, opts) {
         /* THE TAIL: it sweeps along the floor from past you to his head - jump it as it comes (and THE CRASH's waves off his lunge) */
         { const lows=[];if((m==='sweep'||m==='sweepBack')&&W&&typeof W.tailX==='number'){lows.push([W.tailX,W.tailX-(P.dwTail??W.tailX)]);P.dwTail=W.tailX;}else P.dwTail=undefined;
           for(const w of (W&&W.waves)||[])if(w.t<=0.9-0.25)lows.push([w.x,w.v]);P.dwLow=lows.length>0;if(gx===null&&W&&(W.waves||[]).some(w=>Math.abs(w.x-P.x)<90))gx=P.x;   /* the crash still running: no walking into it */
-          P.dwNear=(m==='sceptreSweepTell'&&boss.modeT<0.3)||lows.some(([x,v])=>{const td=P.x-x;return Math.abs(td)<100&&(Math.sign(td)===Math.sign(v)||Math.abs(td)<14);});   /* a low one coming: no swing to be caught in */
+          P.dwNear=(m==='sweepTell'&&boss.modeT<0.3)||lows.some(([x,v])=>{const td=P.x-x;return Math.abs(td)<100&&(Math.sign(td)===Math.sign(v)||Math.abs(td)<14);});   /* a low one coming: no swing to be caught in */
           if(P.ground&&!(P.labJump>0)&&lows.some(([x,v])=>{const td=P.x-x;return Math.abs(td)<P.dwJ&&(Math.sign(td)===Math.sign(v)||Math.abs(td)<14);})){BK.press('jump');P.labJump=14;} }
         if(gx===null&&!k.block){
           if(m==='stunned'&&!rest){const st=Math.max(12,Math.min(LAB_STAND[h]||14,reach-6));gx=boss.x-side*st;swing=true;}   /* HIS HEAD ON THE LEDGE: in, and cut */
@@ -2276,7 +2276,7 @@ async function runbossLab(BK, opts) {
         const bells=BK.props().filter(p=>p.t==='tbell'&&p.guard),ready=b=>!(b.cool>0)&&!(b.tollT>0);
         const tollNear=(TGs.tolls||[]).some(w=>w.life>0&&Math.abs(w.x-P.x)<38&&(P.x-w.x)*w.dir>0);
         const waveNear=BK.waves().some(w=>!w.royal&&w.life>0&&Math.abs(w.x-P.x)<32&&(P.x-w.x)*w.dir>0&&P.y>w.y-6);
-        const sweepIn=((boss.mode==='sceptreSweepTell'&&boss.modeT<0.1)||boss.mode==='sweep')&&adg<100, stompIn=boss.mode==='stompTell'&&boss.modeT<0.12&&adg<66;
+        const sweepIn=((boss.mode==='sweepTell'&&boss.modeT<0.1)||boss.mode==='sweep')&&adg<100, stompIn=boss.mode==='stompTell'&&boss.modeT<0.12&&adg<66;
         const hurl=(TGs.blocks||[]).find(b=>b.by==='golem'&&(b.state==='lift'||b.state==='fly')&&Math.abs(b.aimX-P.x)<36);
         const stand=(TGs.blocks||[]).filter(b=>b.state==='stand');
         let gx=null,face=sg,atk=false,jump=false,talk=false,drop=false;
@@ -2492,12 +2492,12 @@ async function runbossLab(BK, opts) {
             goal = Math.abs(a - kg.x) >= Math.abs(b - kg.x) ? (Math.abs(a - kg.x) === Math.abs(b - kg.x) ? (P.x < kg.x ? a : b) : a) : b; strike = false; } }
         else if (sk && boss.mode === 'horn') { const sd = Math.sign(boss.x - P.x) || 1; goal = boss.x - sd * 16; strike = false; if (Math.abs(P.x - boss.x) < 30 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } } }
       let gBell = null; const golemWave = boss.t === 'golem' && BK.waves().some(w => !w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 6);
-      if (boss.t === 'golem' && LABP.v2 && (golemWave || (boss.mode === 'sceptreSweepTell' && boss.modeT < 0.07 && ad < 74) || (boss.mode === 'sweep' && ad < 74) || (boss.mode === 'stompTell' && boss.modeT < 0.12 && ad < 60))) { goal = null;
+      if (boss.t === 'golem' && LABP.v2 && (golemWave || (boss.mode === 'sweepTell' && boss.modeT < 0.07 && ad < 74) || (boss.mode === 'sweep' && ad < 74) || (boss.mode === 'stompTell' && boss.modeT < 0.12 && ad < 60))) { goal = null;
         if (P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }
       /* AND STONE DOES NOT BLEED (its sign, at the chapel door): the note of a hanging bell struck while he stands under it cracks him for 3.6 s.
          The hands stand just this side of the nearest bell, let him walk in under it, and strike it from a jump; cracked, they cut him as ever.
          The lab had never done it, so it swung 170 times at stone and measured him 0/18 (claude/bot2 triage: a bot gap, not the mini) */
-      else if (boss.t === 'golem' && LABP.v2 && boss.mode === 'sceptreSweepTell') { goal = boss.x - (Math.sign(d) || 1) * 96; strike = false; }   /* the sweep's line is drawn on the floor, 66 each side: walk off it, and jump it if still on it */
+      else if (boss.t === 'golem' && LABP.v2 && boss.mode === 'sweepTell') { goal = boss.x - (Math.sign(d) || 1) * 96; strike = false; }   /* the sweep's line is drawn on the floor, 66 each side: walk off it, and jump it if still on it */
       else if (boss.t === 'golem' && LABP.v2 && !(boss.crackT > 0) && boss.mode !== 'stagger' && (gBell = BK.props().filter(p => p.t === 'tbell' && p.guard).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0])) {
         const side = Math.sign(boss.x - gBell.x) || 1; goal = gBell.x - side * 20; strike = false; if (Math.abs(P.x - goal) < 8) P.face = side;   /* (he stops 40 short of a hero: stood 20 this side of the bell, he halts 20 past it - under it) */
         if (Math.abs(boss.x - gBell.x) < 30 && !(gBell.cool > 0) && P.ground && Math.abs(P.x - goal) < 10 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 22; goal = null; }
@@ -3066,7 +3066,7 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'ram' && boss.mode === 'leap' && Math.abs((boss.landX ?? boss.x) - P.x) < 44) { strike = false; goal = null; const away = Math.sign(P.x - (boss.landX ?? boss.x)) || (P.x < (A.x0 + A.x1) / 2 ? 1 : -1); k.left = away < 0; k.right = away > 0; k.block = false; }
       else if (boss.t === 'ram' && boss.mode === 'tossTell' && ad < 46 && boss.modeT < 0.25 && !(P.dodge > 0)) { strike = false; k.block = false; k[boss.x > P.x ? 'left' : 'right'] = true; BK.press('dodge'); }   /* his horns go up under you: out of it */
       else if (boss.t === 'ram' && P.ground && BK.waves().some(w => w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 4)) { BK.press('jump'); P.labJump = 12; strike = false; }   /* his stamp's and his landing's shock along the floor: jumped */
-      else if (boss.t === 'ram' && boss.mode === 'sceptreSweepTell' && ad < 72) { strike = false; if (P.ground && boss.modeT < 0.32) { BK.press('jump'); P.labJump = 16; } }   /* (his head goes down: no swing started that would still be running when he comes) */
+      else if (boss.t === 'ram' && boss.mode === 'sweepTell' && ad < 72) { strike = false; if (P.ground && boss.modeT < 0.32) { BK.press('jump'); P.labJump = 16; } }   /* (his head goes down: no swing started that would still be running when he comes) */
       /* THE GRANDMOTHER LISTENS (claude/bosswave1: her rap and her feel turned are her openings now): SHE IS LISTENING is told, and a player stands
          still and silent through it - no step, no swing - and she raps the floor, open */
       else if (boss.t === 'grandmother' && (boss.mode === 'listenTell' || boss.mode === 'listen')) { strike = false; goal = null; k.left = k.right = false;   /* (claude/underleaf2) a rug in a stride or two: onto it while she gathers herself (the boards carry a breath; the rug does not) */
