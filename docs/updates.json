@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 178,
+    "lines": [
+      { "s": "The Hexed Fields: no more knight dropping in on the Headless Ploughman fight.", "lv": ["fields"] },
+      { "s": "A hedge knight that used to walk off the roof into the arena now waits on the road.", "lv": ["fields"] },
+      { "s": "A few foes along the Fields road stand in new spots.", "lv": ["fields"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 177,
     "lines": [
       { "s": "The Glassblower is a little fairer.", "lv": ["buriedcity"] },
