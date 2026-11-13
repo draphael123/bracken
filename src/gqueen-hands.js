@@ -808,7 +808,7 @@ export function makeGQueenHands(ctx) {
   const GM = G.mech;
   const inHall = e => !!(e && (!e.stage || e.stage === 'hall') && L().arena && L().arena.boss === 'gqueen');
   const bellProp = () => (ctx.bell ? ctx.bell() : null);
-  const hit = (P1, box, key) => BW.struck(ctx.attackBox, ctx.overlap, P1, box, key);   /* (claude/highcrown3) the shared rule code, src/bell-winch.js */
+  const hit = (P1, box, key) => BW.struck(ctx.attackBox, ctx.overlap, P1, box, key) || (Q6 && !!strikes(box, key));   /* (claude/gq6fix) the hall's bell and winch took a MELEE blow only (the ranger's arrow and the pyro's ember did nothing: the doc said 'any blow or hero shot'): now every hero's shot rings and cranks too (src/hero-strikes.js) */   /* (claude/highcrown3) the shared rule code, src/bell-winch.js */
   const winchAt = () => { const A = L().arena; return { x: A.x0 + GM.winchCol * TS + 8, y: A.floor }; };
   const safeToLure = e => ['stand', 'rec', 'slamRec', 'point', 'sceptreWait'].includes(e.mode) && !e.crownOut;
   /* a blow on the bell: she hears it (queued up to GM.queue s if she is mid-move) */

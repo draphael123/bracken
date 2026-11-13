@@ -15,7 +15,7 @@
 //                   it drops he is pinned; the servery door horns, and its winch keeps the garrison in. No boss: a puzzle.
 // Resist 0.5x outside openings (0.4x hiding behind a guard: never less, never invulnerable). A single opening takes no more than GP.capK of her bar.
 // main.js calls makeGoblinPrincessHands(ctx): spawn, owns, update, take, frame, barName, drawOver, end, read, level, drawWorld, clear, load, labDuty.
-import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js'; import { P5, G5, GAP5, GP5_HP } from './gq5p.js';   /* (claude/gq5p) the Princess's blade: flag GQ5P_SHIPS, default OFF = gq5fix's move for move */   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
+import { heroStrikes } from './hero-strikes.js'; import * as BW from './bell-winch.js'; import { P4 } from './gq4p.js'; import { P5, G5, GAP5, GP5_HP } from './gq5p.js'; import { Q6 } from './gq6fix.js';   /* (claude/gq6fix) the dressing bell hangs out of reach */   /* (claude/gq5p) the Princess's blade: flag GQ5P_SHIPS, default OFF = gq5fix's move for move */   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (flag GQ4P_SHIPS, default OFF = master's move for move) */
 import * as GQ4A from './redraw/gq4_art.js'; import * as GPA from './redraw/goblin_princess_art.js'; import * as HC3A from './redraw/hc3_art.js'; import * as HC2A from './redraw/highcrown2_art.js';   /* (claude/hc3art) her sprite set, the battlements' doors, winches, bells, ropes and hatch, and the grate's warning (drawing only) */
 
 export const GP = {
@@ -28,7 +28,7 @@ export const GP = {
   fan: { tell: 0.6, t: 0.5, push: 140, dmg: 6, reach: 120 },
   hop: { tell: 0.4, stay: [3, 5], every: 1.3 },
   guards: { at: [0.75, 0.4], gapMin: 14, horn: 3.0 /* (GQ5FIX 11-12: 6.0 -> 3.0, Daniel: the alarms hold the gates too long) */, crank: 3, win: 2.0, closeAfter: 1.0, kinds: [['soldier'], ['soldier', 'javelin']] },
-  bell: { hang: 7 /* (GQ5FIX 11-12: 4 -> 7 rows under the roof: the bell body hangs at y 236-253, a standing jump from the belfry landing (feet 304, rise 48+) reaches it; Daniel could not hit it at 176+) */, cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
+  bell: { hang: (P5 && Q6) ? 4 : 7 /* (claude/gq6fix) GQ5P retired the bell: it is DRESSING now, so it hangs back up where it cannot be struck (4 rows under the roof, GQ5FIX's own first height) instead of at a standing jump from the landing where a blow did nothing; flags off = 7 as before */ /* (GQ5FIX 11-12: 4 -> 7 rows under the roof: the bell body hangs at y 236-253, a standing jump from the belfry landing (feet 304, rise 48+) reaches it; Daniel could not hit it at 176+) */, cd: 12, queue: 1.0, glow: 0.9, glowUp: 0.6, win: 0.6, lead: 3.4, react: [0.08, 0.3], pin: 2.5, under: 13, shove: 14, duck: 0.6, bolt: 200, hup: 0.3 },
   tiara: { tell: 0.6, out: 220, speed: 300, dmg: P4 ? 14 : 18 /* (GQ4TUNE-t, flag ON only: 18 -> 14) */, stun: 2.5 },
   stomp: { tell: 0.5, t: 0.5, dmg: P4 ? 16 : 20 /* (GQ4TUNE r4, flag ON only: 20 -> 16) */, speed: 220 },
   /* (claude/gq4p-d, GQ4 plan sec 2) THE GATES: 'GUARDS!' tell 1.0 s, the open gates' lanterns burn 3.5 s, then one goblin per open gate (never more than maxAlive alive); THE KEY (tell 1.2 s; a blow in it = STAGGERED 1.5 s);
