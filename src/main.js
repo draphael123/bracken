@@ -35904,6 +35904,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* (claude/church2) THE PALADIN is drawn by the generic path below now: the hero's own sheet (SPR.paladinboss), frame = PBH.frame, x PBG.PB.scale */
     if (DCH && DCH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) DCH.drawBoss(g, e, cx, cy, time); continue; }   /* THE DEACON draws himself (GREYBOX) */   /* THE HAWK-MISTRESS draws herself (GREYBOX) */   /* THE RAPTOR MATRIARCH draws herself, live (GREYBOX shapes until the art pass) */
     if (FKH && FKH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) FKH.drawBoss(g, e, cx, cy, time); continue; }
+    if (KFH && KFH.drawsSelf(e)) { if (e.x > cx - 200 && e.x < cx + VW + 200) KFH.drawBoss(g, e, cx, cy, time); continue; }   /* (claude/k2art) THE DROWNED KING 2 draws himself: a pose per move (src/redraw/drowned_king2_art.js) */
     if (SKRH && SKRH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) SKRH.drawEnt(g, e, cx, cy, time); continue; }   /* (claude/sirenrocks) GREYBOX naga */
     if (CHH && CHH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) CHH.drawBoss(g, e, cx, cy, time); continue; }
     if (LWH && LWH.drawsSelf(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) LWH.drawEnt(g, e, cx, cy, time); continue; }   /* (claude/longwater3) GREYBOX tide-pool crab (THE TIDE HERALD 2 keeps master's sheet) */
@@ -36747,7 +36748,7 @@ function drawWorld(cx, cy, showPlayer) {
   C3A.drawOver(g, enemies, cx, cy, time, OPF.isPaladinFoe, UPF.isDeadPriest);   /* (claude/church3) the paladin foe's divine shield and gleam, the undead priest's bolts and casts */
   if (DCH && miniActive) DCH.drawOver(g, cx, cy, time);   /* THE DEACON: his light bar, the holy fire of his arc, the read */   /* THE PALADIN: his marks, the holy floor, his light bar, the read */
   if (KSH && KSH.on()) KSH.drawOver(g, cx, cy, time);   /* THE BANDIT KSAR: the smoke, the blasts, the flashes, the told arc */
-  if (KFH) KFH.drawOver(g, cx, cy, time);   /* (claude/keepfloods) */
+  if (KFH) KFH.drawOver(g, cx, cy, time);   /* (claude/keepfloods) */   if (KFH) KFH.drawDead(g, cx, cy, time);   /* (claude/k2art) his fall */
   if (TPH && TPH.on()) TPH.drawOver(g, cx, cy, time); if (FKH && FKH.on()) FKH.drawOver(g, cx, cy, time); if (CHH && CHH.on()) CHH.drawOver(g, cx, cy, time); if (ADH && ADH.on()) ADH.drawOver(g, cx, cy, time); if (PMK) PMK.drawOver(g, cx, cy, time); if (F3H && F3H.on()) F3H.drawOver(g, cx, cy, time); if (H3H && H3H.on()) H3H.drawOver(g, cx, cy, time); if (PFH && PFH.on()) PFH.drawOver(g, cx, cy, time); if (FBH && FBH.on()) FBH.drawOver(g, cx, cy, time);   /* THE TOWPATH: the fog and its clearings, the lantern; THE FOG KNIGHT: his double, his stance, the burn, the read */
   if (HMH && HMH.on()) HMH.drawOver(g, cx, cy, time);   /* THE HAWK-MISTRESS: her hawk, its marks, and the read */   /* THE RAPTOR MATRIARCH: her marks, the quills, the surge, and the read (open / beat / ward / talons up) */   /* THE GREAT RED CRAB: the boulders' marks, the scuttle's line, ON HIS BACK */
   if (D3H && D3H.on()) D3H.drawOver(g, cx, cy, time);   /* (claude/deep3) the lanterns and their rings, the harpoons, the waves, the aim line, the four bars */
