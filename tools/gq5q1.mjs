@@ -289,5 +289,11 @@ console.log('== K. GQ5Q1T-2 (QDMG 11-13): the hall lever, the guard hand, the hu
   b = mkb(sol({ mode: 'walk', cd: 0 })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: a soldier walking up, no tell, no recovery: no swing into his shield');
   b = mkb(sol({ mode: 'rest', x: 400 })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: out of reach: nothing');
   b = mkb(sol({ t: 'javelin', mode: 'rest' })); ok(gqGuardBot(b.BK, { t: 'gqueen' }, b.P, b.k, 'knight') === null, 'GUARD BOT: only the soldier (the javelin man is not this hand)'); }
+console.log('== L. GQ5Q1T-4 (QUEENTUNE-3): the hall guards - slash x slashK, tells staggered');
+{ const { soldierMayTell, soldierSlashDmg } = await imp('src/gq5q1.js'); const S = Q5N.soldier;
+  ok(S.stagger >= 0.5 && S.stagger >= 0.3, 'STAGGER: Q5N.soldier.stagger ' + S.stagger + ' s >= 0.5 s (a hero in hit-stun can answer the second guard)');
+  ok(soldierMayTell(10, null) && !soldierMayTell(10, 10 - 0.2) && !soldierMayTell(10, 10 - 0.49) && soldierMayTell(10, 10 - S.stagger - 0.01) && soldierMayTell(10, 5) && soldierMayTell(1, 50), 'STAGGER: first tell free; 0.2 s and 0.49 s after one is refused; ' + S.stagger + ' s and older is allowed; a clock that restarted is allowed');
+  ok(soldierSlashDmg(14) === Math.round(14 * S.slashK) && soldierSlashDmg(14) < 14 && soldierSlashDmg(1) >= 1, 'SLASH: soldier slash 14 -> ' + soldierSlashDmg(14) + ' (x' + S.slashK + '), never under 1');
+  const src = fs.readFileSync(path.join(ROOT, 'src/main.js'), 'utf8'); ok(src.includes('gqHallGuard() ? gq5SoldierDmg(DMG.soldier) : DMG.soldier') && src.includes('gq5SoldierMayTell(time, gq5LastTell)') && src.includes('GQ5Q1_ON && boss && boss.t === \'gqueen\''), 'WIRED: main.js updateTroop uses both, behind the flag and the Queen\'s hall (flag OFF = DMG.soldier, no stagger)'); }
 console.log(fails ? 'FAIL gq5q1' : 'ok  gq5q1');
 process.exit(fails ? 1 : 0);

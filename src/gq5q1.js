@@ -24,6 +24,7 @@ export const Q5N = {
   fire: { tell: 3.0, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 30, run: 260, waveWait: 17, spotW: 72, capPct: 0.07 },   // GQ5Q1T-2 (QDMG 11-13): capPct 0.15 -> 0.07 = ONE tick (17 hp, ~8% of a 208 bar) for an unanswered burn on any bar up to ~242 hp (a tick is a fixed ~17, not a % of the bar); was two ticks (34)
   //   // GQ5Q1B REWORK (11-12, gq5q1-rework-plan.md): tell 2.5 -> 3.0 (grille steps 1.0 s each), every 20 -> 26, capPct 0.20 = one burn costs at most ~20% of the bar (+ one tick)   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 17%->11%, no-move, kept). knob 2: first 12 -> 15 (more time to reach a hoist before the first, currently-unanswerable, fire)
   scorch: { stun: 3.0, mul: 1.25, cap: 0.12, ward: 3.0, grace: 1.2 },   // GQ5Q1-TUNE knob 3 (11-12): cap 15% -> 12% (per the plan's tune-back order; knobs 1-2 were no-moves)
+  soldier: { slashK: 0.75, stagger: 0.6 },   // GQ5Q1T-4 (QUEENTUNE-3, flag ON, Queen's hall only): the wave guard's slash x0.75 (24 -> 18 hp) and the next guard may not START its tell within 0.6 s of the last one (the tell is 0.5 s: two blows land >= 0.6 s apart, past a hit-stun)
   hallDmgK: 0.45,   // GQ5Q1T-2 (QDMG 11-13, flag ON only): the hall's crown / portal shard / geode / charge / reach lever (Q4N.p1.dmgK 0.65 when the flag is off): the five told, parryable blows were ~28% of the damage taken
   pyroMul: 1.5,   // GQ5Q1B REWORK: flag ON only - DUEL_HERO.gqueen.pyro (2.2, calibrated for her dodgeable single-target moves) -> 1.5 in this hall, the fire took away the dodge room (main.js damagePlayer0); OFF keeps 2.2
   hallHp: 2400,   // GQ5Q1-TUNE extra round (11-12), flag ON only (OFF/EHP.gqueen stays 2400 either way): TRIED 1900 (-21%) at n=6 - 17% [6-39], a step DOWN from knob 4's 22% [9-45], not an improvement (pyro still 0/6, identical death pattern to every other table). REVERTED to 2400 (the wiring stays, for a future lane): this is not the working lever gq4tune/gq5p-tune found, unlike on those bosses
@@ -268,3 +269,7 @@ export function makeGQ5Q1(env) {
   };
   return E;
 }
+/* PURE (QUEENTUNE-3): may a hall guard start a slash tell at `now`, the last one having started at `last`? Tells never overlap within N.soldier.stagger. */
+export const soldierMayTell = (now, last, N = Q5N) => last == null || now < last || now - last >= N.soldier.stagger;
+/* PURE: the hall guard's slash damage argument (flag ON, Queen's hall only). */
+export const soldierSlashDmg = (dmg, N = Q5N) => Math.max(1, Math.round(dmg * N.soldier.slashK));
