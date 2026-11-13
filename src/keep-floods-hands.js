@@ -4,15 +4,15 @@
 // kit's told CYCLE in phase two (the curse tide: 3 tolls in, 1 out). The Drowned King 2 is src/drowned-king2.js; this file hands it the world and draws
 // the greybox (levers, the water-line dials, the decree gate, the trident, every tell). The knights placed in a chamber are FLOOR-BOUND (too heavy in their
 // plate to rise: main.js updateDrownedKnight reads e.floorBound) - flooded, you swim over them; drained, they walk to you.
-import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, kOf } from './tide-kit.js';
+import { gauge, kOf } from './tide-kit.js';   /* (claude/sea2) reads only: the kit is built, stepped, written and struck in src/pirate-fleet-hands.js (ctx.pfh), through H.water below */
 import { KF_CURSE } from './keep-floods.js';
 import { k2Init, k2Step, k2Take, k2Frame, k2Lever, K2 } from './drowned-king2.js';
 
 export function makeKeepFloodsHands(ctx) {
   const TS = ctx.TS;
-  let lvRef = null, life = -1, kit = null, gate = null, shots = [], said = new Set(), lastLeverT = -9;
-  const L = () => ctx.L, on = () => !!(L() && L().keepFloods && L().kfTides);
-  const S = id => kit && kit.tides.find(s => s.id === id);
+  let lvRef = null, life = -1, gate = null, shots = [], said = new Set(), lastLeverT = -9;
+  const L = () => ctx.L, on = () => !!(L() && L().keepFloods && L().tides), kitOf = () => (ctx.pfh && ctx.pfh.kit()) || null;
+  const S = id => { const k = kitOf(); return k && k.tides.find(s => s.id === id); };
   const throneP = () => (L().pools || []).find(p => p.id === 'kfthrone');
   const KT = () => L().kfThrone;
   function arena() {
@@ -32,13 +32,12 @@ export function makeKeepFloodsHands(ctx) {
   function liftGate() { if (!gate) return; for (const [x, y, t] of gate.cells) ctx.cellSet(x, y, t); gate = null; if (ctx.sfx.gateLift) ctx.sfx.gateLift(); }
   function reset(full) {
     const Lv = L(); if (!Lv) return;
-    if (full || !kit) { kit = tideInit({ tides: Lv.kfTides, pools: Lv.pools }, { off: ctx.marks() }); }
-    tideRespawn(kit);   /* a death / a load: the chambers stay as their levers left them (marks), the throne room floods, the curse tide waits at high */
+    /* a death / a load (the generic wiring built the kit and respawned it): the chambers stay as their levers left them (marks), the throne room floods, the curse tide waits at high */
     const th = S('throne'); if (th) { th.ph = 'high'; th.k = 1; }
     const cu = S('curse'); if (cu) { cu.ph = 'high'; cu.t = 1e9; cu.k = 1; }
     const tp = throneP(); if (tp) tp.tide = 'throne';
     liftGate(); shots = [];
-    tideApply(kit, Lv.pools, ctx.poolLevel); capAll();
+    capAll();
   }
   function capAll() { for (const p of L().pools || []) if (p.kfPool) { const s = S(p.tide); if (s) p.capped = s.k >= 0.999; } }
   const inChamber = e => (L().kfChambers || []).some(c => e.x >= c.x0 * TS && e.x <= (c.x1 + 1) * TS && e.y > c.top * TS && e.y <= 59 * TS);
@@ -47,7 +46,7 @@ export function makeKeepFloodsHands(ctx) {
   function c2(e) {
     const P = ctx.hero(), A = arena();
     return { A, P,
-      water: () => kOf(kit, throneP() ? throneP().tide : 'throne'),
+      water: () => kOf(kitOf(), throneP() ? throneP().tide : 'throne'),
       flood: ph => { const s = S('throne'); if (s) s.ph = ph; },
       curse: () => { const tp = throneP(), cu = S('curse'); if (tp) tp.tide = 'curse'; if (cu) { cu.ph = 'high'; cu.t = KF_CURSE.high; cu.k = 1; cu.toll = 0; } },
       dropGate: pin => dropGate(pin), liftGate: () => liftGate(),
@@ -65,7 +64,7 @@ export function makeKeepFloodsHands(ctx) {
     if (f && X[f]) X[f](); if (k === 'decree' && X.seaBell) X.seaBell();
   }
 
-  function update(dt, hb) {
+  function update(dt) {
     if (!on()) return;
     const Lv = L(), ln = ctx.life();
     if (Lv !== lvRef) { lvRef = Lv; life = ln; said = new Set(); reset(true); }
@@ -76,30 +75,7 @@ export function makeKeepFloodsHands(ctx) {
     /* the throne room waits flooded, with its gate up, until the fight; the curse tide waits at high until he is cursed */
     if (!fight) { const th = S('throne'); if (th && (th.ph !== 'high' || throneP().tide !== 'throne')) { th.ph = 'high'; throneP().tide = 'throne'; } if (gate && !(boss && boss.pinned)) liftGate(); }
     const cu = S('curse'); if (cu && !(fight && boss.k2.ph === 2)) { cu.ph = 'high'; cu.t = 1e9; cu.k = 1; }
-    for (const ev of tideStep(kit, dt)) {
-      const T = S(ev.id) && S(ev.id).T;
-      if (ev.t === 'toll' && ev.id === 'curse' && fight) { if (ctx.sfx.seaBell) ctx.sfx.seaBell(); if (ev.n === 1) ctx.number(arena().gateX, arena().floor - 150, ev.turn ? 'HIS TIDE TURNS: IT GOES OUT' : 'HIS TIDE IS COMING', ev.turn ? '#8fd160' : '#ff6b6b'); }
-      if (ev.t === 'phase' && T && T.chamber && P && Math.abs(P.x - (T.floods[0].x0 + T.floods[0].x1) * TS / 2) < 500)
-        ctx.number(P.x, P.y - 40, ev.ph === 'low' ? T.chamber + ': DRY' : T.chamber + ': FLOODED', ev.ph === 'low' ? '#8fd160' : '#7ff0e0');
-      if (ev.t === 'phase' && ev.id === 'curse' && fight && ev.ph === 'low') ctx.number(boss.x, boss.y - 60, 'HE IS BEACHED: NOW', '#8fd160');
-    }
-    tideApply(kit, Lv.pools, ctx.poolLevel); capAll();
-    /* A BLOW ON A LEVER (the hero's attack box; any seat's box the caller hands in) */
-    if (hb && P && !P.dead) {
-      const th = S('throne'), ph0 = th && th.ph, v = tideStrike(kit, hb);
-      if (v && v.tide === 'throne') {
-        if (th) th.ph = ph0;   /* the throne room's water is the fight's (k2Lever), not the kit's toggle */
-        ctx.sfx.clank(); lastLeverT = ctx.time();
-        const r = fight ? k2Lever(boss, c2(boss)) : null;
-        if (!fight) ctx.number(v.x * TS + 8, v.y * TS - 20, 'HIS FLOODGATE. IT ANSWERS IN THE FIGHT', '#9aa39a');
-        else if (r === 'spent') ctx.number(v.x * TS + 8, v.y * TS - 20, 'THE CHAIN IS SLACK', '#9aa39a');
-      } else if (v && v.t === 'lever') {
-        const m = ctx.marks(), S1 = S(v.tide);
-        if (v.thrown) m.add(v.key); else m.delete(v.key);   /* the kit's lever mark: a chamber stays as you left it through a death and a reload */
-        ctx.sfx.clank(); if (ctx.sfx.gateLift) ctx.sfx.gateLift(); ctx.shake(3);
-        ctx.number(v.x * TS + 8, v.y * TS - 24, S1.ph === 'low' ? 'THE FLOODGATE OPENS: IT DRAINS' : 'THE FLOODGATE SHUTS: IT FLOODS', '#8fd160');
-      }
-    }
+    /* (the kit's step, its events, the pool write and a blow on a lever run in the ONE generic wiring, through H.water below) */
     /* THE CURSED TRIDENT's prongs */
     for (const s of shots) { s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt;
       if (ctx.isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) s.life = 0;
@@ -122,12 +98,12 @@ export function makeKeepFloodsHands(ctx) {
 
   /* ---------------- THE GREYBOX (art owed: the verdigris lever + the A3 dial, the floodgate frames, the decree gate, the trident, the cursed model) ---------------- */
   function drawOver(g, cx, cy, time) {
-    if (!on() || !kit) return;
+    if (!on() || !kitOf()) return;
     const Lv = L(), rect = (x, y, w, h, col, a = 1) => { g.globalAlpha = a; g.fillStyle = col; g.fillRect(Math.round(x - cx), Math.round(y - cy), w, h); g.globalAlpha = 1; };
     const line = (x0, y0, x1, y1, col, a = 1, dash) => { g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = 1; if (dash) g.setLineDash(dash); g.beginPath(); g.moveTo(Math.round(x0 - cx) + 0.5, Math.round(y0 - cy) + 0.5); g.lineTo(Math.round(x1 - cx) + 0.5, Math.round(y1 - cy) + 0.5); g.stroke(); g.restore(); };
     const ring = (x, y, r, col, a = 1) => { g.save(); g.globalAlpha = a; g.strokeStyle = col; g.beginPath(); g.arc(Math.round(x - cx), Math.round(y - cy), r, 0, Math.PI * 2); g.stroke(); g.restore(); };
     /* every lever + its water-line dial (the one A3 drawing; greybox = a bar beside the lever) */
-    for (const s of kit.tides) for (const v of s.verbs) {
+    for (const s of kitOf().tides) for (const v of s.verbs) {
       const x = v.x * TS + 8, y = (v.y + 1) * TS, sw = v.swing || 0, k = s.k;
       rect(x - 2, y - 4, 5, 4, '#3f6f62'); line(x, y - 4, x + (v.thrown ? 6 : -6) * (1 - sw * 0.5), y - 16, '#c9a83a');
       rect(x + 7, y - 22, 4, 20, '#14222a', 0.8); rect(x + 7, y - 2 - Math.round(18 * k), 4, Math.round(18 * k), '#7ff0e0', 0.9);
@@ -164,8 +140,40 @@ export function makeKeepFloodsHands(ctx) {
     if (e.cursed) { rect(e.x - 6, e.y - e.h - 2, 2, 2, '#8fd160'); rect(e.x + 4, e.y - e.h - 2, 2, 2, '#8fd160'); }
     if (e.mode === 'curse') rect(A.x0, A.y0, A.x1 - A.x0, A.floor - A.y0, '#0c2018', 0.25 * (1 - e.modeT / K2.curseT));
     /* HIS TIDE (P2): the gauge, top-left, with its tell */
-    if (s.ph === 2) { const gg = gauge(kit, 'curse'); if (gg) { g.fillStyle = '#14222a'; g.fillRect(6, 30, 6, 40); g.fillStyle = gg.tell ? (gg.coming === 'in' ? '#ff6b6b' : '#8fd160') : '#7ff0e0'; g.fillRect(6, 70 - Math.round(40 * gg.k), 6, Math.round(40 * gg.k)); } }
+    if (s.ph === 2) { const gg = gauge(kitOf(), 'curse'); if (gg) { g.fillStyle = '#14222a'; g.fillRect(6, 30, 6, 40); g.fillStyle = gg.tell ? (gg.coming === 'in' ? '#ff6b6b' : '#8fd160') : '#7ff0e0'; g.fillRect(6, 70 - Math.round(40 * gg.k), 6, Math.round(40 * gg.k)); } }
     void lastLeverT;
   }
-  return { on, update, king, owns, take, frame, drawOver, reset, debug: () => ({ kit, gate, shots }) };
+
+  /* THE WATER HOOKS (claude/sea2: the ONE wiring, src/pirate-fleet-hands.js header): the keep's words, pins and lever answers on the generic kit step / strike */
+  const water = {
+    signal: 'curse', quiet: true, noStreaks: true, noPosts: true,
+    foam() {}, gauge() {},   /* the greybox draws its own water-line dials and the curse gauge (drawOver) */
+    step() { if (on()) capAll(); },   /* between the kit's step and its write: which pools are capped (the pins on the throne / curse phases run in update, before the step) */
+    tide(ev) {
+      const P = ctx.hero(), boss = bossK(), fight = !!(ctx.bossActive && boss), T = S(ev.id) && S(ev.id).T;
+      if (ev.t === 'toll' && ev.id === 'curse' && fight) { if (ctx.sfx.seaBell) ctx.sfx.seaBell(); if (ev.n === 1) ctx.number(arena().gateX, arena().floor - 150, ev.turn ? 'HIS TIDE TURNS: IT GOES OUT' : 'HIS TIDE IS COMING', ev.turn ? '#8fd160' : '#ff6b6b'); }
+      if (ev.t === 'phase' && T && T.chamber && P && Math.abs(P.x - (T.floods[0].x0 + T.floods[0].x1) * TS / 2) < 500)
+        ctx.number(P.x, P.y - 40, ev.ph === 'low' ? T.chamber + ': DRY' : T.chamber + ': FLOODED', ev.ph === 'low' ? '#8fd160' : '#7ff0e0');
+      if (ev.t === 'phase' && ev.id === 'curse' && fight && ev.ph === 'low') ctx.number(boss.x, boss.y - 60, 'HE IS BEACHED: NOW', '#8fd160');
+      return true;
+    },
+    pre() { const th = S('throne'); return th ? th.ph : undefined; },   /* the throne's phase before the blow (its water is the fight's, not the kit's toggle) */
+    verb(v, hb, ph0) {
+      const P = ctx.hero(), boss = bossK(), fight = !!(ctx.bossActive && boss); if (!on() || !P || P.dead) return true;
+      if (v.tide === 'throne') {
+        const th = S('throne'); if (th) th.ph = ph0;   /* the throne room's water is the fight's (k2Lever), not the kit's toggle */
+        ctx.sfx.clank(); lastLeverT = ctx.time();
+        const r = fight ? k2Lever(boss, c2(boss)) : null;
+        if (!fight) ctx.number(v.x * TS + 8, v.y * TS - 20, 'HIS FLOODGATE. IT ANSWERS IN THE FIGHT', '#9aa39a');
+        else if (r === 'spent') ctx.number(v.x * TS + 8, v.y * TS - 20, 'THE CHAIN IS SLACK', '#9aa39a');
+      } else if (v.t === 'lever') {
+        const m = ctx.marks(), S1 = S(v.tide);
+        if (v.thrown) m.add(v.key); else m.delete(v.key);   /* the kit's lever mark: a chamber stays as you left it through a death and a reload */
+        ctx.sfx.clank(); if (ctx.sfx.gateLift) ctx.sfx.gateLift(); ctx.shake(3);
+        ctx.number(v.x * TS + 8, v.y * TS - 24, S1.ph === 'low' ? 'THE FLOODGATE OPENS: IT DRAINS' : 'THE FLOODGATE SHUTS: IT FLOODS', '#8fd160');
+      }
+      return true;
+    },
+  };
+  return { on, update, king, water, owns, take, frame, drawOver, reset, debug: () => ({ kit: kitOf(), gate, shots }) };
 }

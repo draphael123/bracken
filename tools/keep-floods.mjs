@@ -16,7 +16,7 @@ if (args.includes('--off')) {
   delete process.env.KF; const { install } = await import('./node-canvas.mjs'); install();
   const { LEVELS } = await import('../src/level.js'); const L = LEVELS.find(l => l.id === 'keep').build();
   console.log(JSON.stringify({ grid: h12(Buffer.from(L.grid)), ents: h12(strip(L.ents)), all: h12(strip({ ...L, grid: undefined })), whirl: (L.whirlpools || []).length,
-    kf: !!(L.keepFloods || L.kfTides || L.kfThrone || (L.pools || []).some(p => p.kfPool)) }));
+    kf: !!(L.keepFloods || L.tides || L.kfThrone || (L.pools || []).some(p => p.kfPool)) }));
   process.exit(0);
 }
 process.env.KF = '1';
@@ -25,6 +25,7 @@ const { LEVELS, T } = await import('../src/level.js');
 const KF = await import('../src/keep-floods.js');
 const K2M = await import('../src/drowned-king2.js');
 const { makeKeepFloodsHands } = await import('../src/keep-floods-hands.js');
+const { makePirateFleetHands } = await import('../src/pirate-fleet-hands.js');   /* (claude/sea2) the ONE water wiring: the keep's hands ride its hooks (main.js: PFH.strike, KFH.update, PFH.update) */
 const TK = await import('../src/tide-kit.js');
 const L0 = LEVELS.find(l => l.id === 'keep').build();
 
@@ -39,8 +40,8 @@ const BASE = { grid: '94b12ec69f9b', ents: '2a373743b05f', all: '9c01ccca53be' }
   const same = off.grid === BASE.grid && off.ents === BASE.ents && off.all === BASE.all;
   console.log('  flag OFF build ' + (same ? '== the base keep, cell for cell (grid ' + off.grid + ', ents ' + off.ents + ', all ' + off.all + ')' : 'DIFFERS from the stamped base (master moved the keep? re-stamp BASE): ' + JSON.stringify(off)));
   if (same) n++;
-  ok(L0.keepFloods && (L0.whirlpools || []).length === 0 && L0.kfTides.length === KF.KF_CHAMBERS.length + 2, 'flag ON: the whirlpools are out, ' + KF.KF_CHAMBERS.length + ' chambers + the throne\'s two tides');
-  ok(!L0.tides, 'flag ON: the keep declares L.kfTides, not L.tides (claude/water1 runs every L.tides level generically)');
+  ok(L0.keepFloods && (L0.whirlpools || []).length === 0 && L0.tides.length === KF.KF_CHAMBERS.length + 2, 'flag ON: the whirlpools are out, ' + KF.KF_CHAMBERS.length + ' chambers + the throne\'s two tides');
+  ok(Array.isArray(L0.tides) && L0.pullSignal === 'curse', 'flag ON: the keep declares L.tides (claude/sea2: the one generic water wiring runs them, its words ride the hooks)');
 }
 
 /* ---------- 2. THE CHAMBERS: geometry, both states pass, the kit's lint ---------- */
@@ -48,7 +49,7 @@ const at = (L, x, y) => L.grid[y * L.W + x], air = (L, x, y) => at(L, x, y) === 
 {
   const bad = KF.lintFloods(L0, T); ok(!bad.length, 'lintFloods: ' + bad.join('; '));
   const checkpoints = L0.ents.filter(e => e.t === 'check').map(e => ({ x: e.x, y: e.y }));
-  const tl = TK.lintTide({ ...L0, tides: L0.kfTides, checkpoints }, { run: 96 * 0.8 }); ok(!tl.length, 'lintTide on the keep\'s tides: ' + tl.join('; '));
+  const tl = TK.lintTide({ ...L0, tides: L0.tides, checkpoints }, { run: 96 * 0.8 }); ok(!tl.length, 'lintTide on the keep\'s tides: ' + tl.join('; '));
   for (const c of KF.KF_CHAMBERS) {
     ok(c.role && ['teach', 'test', 'remix'].includes(c.role), c.id + ' has its role');
     /* WATER BFS: from the west neighbour's sump to the east neighbour, through air tiles that are under the line */
@@ -83,13 +84,16 @@ function world(o = {}) {
   const W = { L, P, marks, said, hurt, sfx, enemies: [], boss: null, bossActive: false, lifeN: 0, t: 0, block: false };
   const solidAt = (x, y) => { const tt = L.grid[y * L.W + x]; return tt === T.SOLID || tt === T.PORT; };
   W.hands = makeKeepFloodsHands({ get L() { return L; }, get players() { return [P]; }, get enemies() { return W.enemies; }, get boss() { return W.boss; }, get bossActive() { return W.bossActive; },
-    TS, T, hero: () => P, marks: () => marks, life: () => W.lifeN, time: () => W.t, poolLevel, isSolid: solidAt,
+    get pfh() { return W.pfh; }, TS, T, hero: () => P, marks: () => marks, life: () => W.lifeN, time: () => W.t, poolLevel, isSolid: solidAt,
     moveBody: (b, dx, dy) => { const nx = b.x + dx, ny = b.y + dy, r = { hitX: false, hitY: false, ground: false };
       if (solidAt(Math.floor(nx / TS), Math.floor((b.y - 4) / TS))) r.hitX = true; else b.x = nx;
       if (dy > 0 && solidAt(Math.floor(b.x / TS), Math.floor(ny / TS))) { r.hitY = true; r.ground = true; b.y = Math.floor(ny / TS) * TS; } else b.y = ny; return r; },
     cellSet: (x, y, t) => { L.grid[y * L.W + x] = t; }, damagePlayer: (x, d, op) => { const res = W.block && !(op && op.unblockable) ? 'blocked' : 'hit'; hurt.push({ d, res, blow: op && op.blow, t: W.t }); return res; },
     number: (x, y, t) => said.push(String(t)), shake: () => {}, sfx });
-  W.step = (dt, hb) => { W.t += dt; W.hands.update(dt, hb || null); };
+  W.pfh = makePirateFleetHands({ get L() { return L; }, hooks: () => W.hands.water, get players() { return [P]; }, hero: () => P, marks: () => marks, poolLevel, moveBody: (b, dx, dy) => ({}), holding: () => false, enemies: () => W.enemies, parts: () => [], VW: () => 320,
+    view: () => ({ x0: 0, y0: 0, x1: 320, y1: 240 }), burst: () => {}, sparks: () => {}, time: () => W.t, sound: () => {}, number: (x, y, t) => said.push(String(t)), shake: () => {}, TS });
+  W.pfh.clear();   /* spawnEntities: the generic wiring builds the kit first */
+  W.step = (dt, hb) => { W.t += dt; W.hands.update(dt); if (hb) W.pfh.strike(hb); W.pfh.update(dt); };
   W.hbAt = (tx, ty) => { const x = tx * TS + 8, y = (ty + 1) * TS; return { l: x - 6, r: x + 6, t: y - 20, b: y - 6 }; };
   return W;
 }
@@ -112,7 +116,7 @@ function world(o = {}) {
     ok(W.said.some(s => /FLOODGATE/.test(s)), c.id + ': it says what it did');
   }
   /* a death keeps them (the mark); a reload keeps them (tideInit reads the marks) */
-  W.lifeN++; W.step(1 / 60);
+  W.lifeN++; W.pfh.clear(); W.step(1 / 60);   /* a death reloads: spawnEntities clears the generic wiring, then the hands see the new life */
   for (const c of KF.KF_CHAMBERS) { const p = L.pools.find(q => q.id === c.id); ok(c.start === 'flooded' ? p.y === c.floor * TS : p.y === (c.top - 1) * TS, c.id + ': a death keeps the chamber as the lever left it'); }
   const W2 = world({ marks }); W2.step(1 / 60);
   for (const c of KF.KF_CHAMBERS) { const p = W2.L.pools.find(q => q.id === c.id); ok(c.start === 'flooded' ? p.y === c.floor * TS : p.y === (c.top - 1) * TS, c.id + ': a reload keeps it (the mark)'); }
