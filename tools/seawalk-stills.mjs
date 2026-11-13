@@ -8,7 +8,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 const id = process.argv[2], every = +(process.argv[3] || 5), tag = process.argv[4] || id;
 const lv = LEVELS.find(l => l.id === id), route = pacing(lv).route;
-const out = join(ROOT, '..', 'scratch', 'lane-reports', 'seawalk1'); mkdirSync(out, { recursive: true });
+const out = join(ROOT, '..', 'scratch', 'lane-reports', process.env.SEAWALK_OUT || 'seawalk1'); mkdirSync(out, { recursive: true });
 const pts = route.filter((_, i) => i % every === 0 || i === route.length - 1);
 const pg = await openPage({ audio: false, fonts: false });
 try {
