@@ -16,7 +16,7 @@ export const FOE_ARENAS = { pit: { doors: [2, -3], kinds: ['sprig', 'shield'], w
   rootway: { doors: [2, -3], kinds: ['sprig', 'javelin'], weights: [0.6, 0.4] },   /* (duelarenas-b) THE ROOTWAY HOLLOW: the goblin scout and the javelin skirmisher (Act 1 fodder, the Rootway's own goblins) */
   kitchen: { doors: [2, -3], kinds: ['sprig', 'shield'], weights: [0.65, 0.35] } };   /* (duelarenas-b) THE KITCHEN: the same two as the Pit */   /* (duelarenas) THE STOCKADE: the camp's own fodder (an archer's arrow carries its owner, so it is a goblin blow too) */
 export const GOB_NAME = { off: 'OFF', few: 'FEW', many: 'MANY' };
-export const GOB_LINE = { off: 'NO GOBLINS IN THE PIT.', few: 'GOBLINS: FEW - THEY HURT ANYONE, BUT ONLY A HERO CAN K.O. YOU.', many: 'GOBLINS: MANY - THEY HURT ANYONE, BUT ONLY A HERO CAN K.O. YOU.' };
+export const GOB_LINE = { off: 'NO GOBLINS IN THE PIT.', few: 'GOBLINS: FEW - HURT ALL. HEROES K.O.', many: 'GOBLINS: MANY - HURT ALL. HEROES K.O.' };   /* (claude/duelarenas-d 11-12) shortened twice: the old 'THEY HURT ANYONE, BUT ONLY...' overran the 300px roster line at size 6, and the first shortening still overran the 196px tavern card at size 8 (textfit reds, see work/claude/lane-done/claude-duel-proofs.md) */
 export const FF_LINE = { false: 'TEAMMATES CANNOT HURT EACH OTHER.', true: 'TEAMMATES HURT EACH OTHER TOO.' };
 export const foeModeOf = v => GOBLIN_CHOICES.includes(v) ? v : 'off';
 export const foeDoorCols = (W, arena = 'pit') => (FOE_ARENAS[arena] || FOE_ARENAS.pit).doors.map(c => c < 0 ? W + c : c);
