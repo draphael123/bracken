@@ -366,6 +366,7 @@ if (take('longwater3')) results.push(run('longwater3', process.execPath, ['tools
 if (take('pull-field')) results.push(run('pull-field', process.execPath, ['tools/pull-field.mjs']));
 if (take('pirate-fleet')) results.push(run('pirate-fleet', process.execPath, ['tools/pirate-fleet.mjs']));   /* (claude/water1) THE PIRATE FLEET + THE FREEBOOTER: node proofs */
 if (take('pf-art-lint')) results.push(run('pf-art-lint', process.execPath, ['tools/pf-art-lint.mjs']));   /* (claude/pfart) THE PIRATE FLEET's art: tile kit, backdrop, ship pieces, the Freebooter's poses - node only (a recording canvas stub) */
+if (take('deep3')) results.push(run('deep3', process.execPath, ['tools/deep3.mjs']));   /* (claude/deep3) THE DEEP 3 behind its flag: master's Deep cell for cell with it off; the tower, the eels, the crew with it on (node, ~5 s) */
 /* THE ARENA POLISH PACK (claude/arenapolish, Node): the phase-tint helper (an arena with no tintFn draws its fixed tint untouched; a tintFn eases), the five arenas' opt-ins, the level hash independent of them, every drawing function run in every state */
 if (take('arena-polish')) results.push(run('arena-polish', process.execPath, ['tools/arena-polish.mjs']));
 /* THE DESERT KIT (claude/desertkit, Node only; docs/desertkit.md): THE SUN KIT (profiles, water cools, hot glass, SUNSTRUCK never kills, the Desert Priest's radiance feed),

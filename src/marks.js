@@ -201,6 +201,7 @@ for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) B
 // 'type|mode' -> '!' (a shield turns it) | '!!' (nothing does) | '' (not a blow). '*|mode' is any elite's own move.
 /* MARK:BEGIN */
 export const MARK = {
+  'walleel|bubble': '!', 'sunkencrew|lungeTell': '!', 'sunkencrew|flurryTell': '!', 'sunkencrew|bashTell': '!', 'sunkencrew|reelTell': '!', 'sunkencrew|chargeTell': '!', 'sunkencrew|throwTell': '!!', 'sunkencrew|slamTell': '!!',   /* (claude/deep3) THE WALL EEL's bubbles are its tell (src/wall-eel.js); THE SUNKEN CREW -> THE CURSED SAILOR (src/sunken-crew.js CREW.moves .mark) */
   '*|ekCallTell': '', '*|ekRiposteTell': '!', '*|ekThornsTell': '!!', 'abbot|castTell': '!', 'abbot|censerTell': '!', 'abbot|coalsTell': '!!',
   'abbot|gleamTell': '!', 'abbot|knellTell': '!!', 'abbot|riteTell': '', 'abbot|swingTell': '!!', 'acbooks|gatherTell': '!', 'admiral|axeTell': '!!',
   'admiral|cutTell': '!', 'admiral|flurryTell': '!', 'admiral|grapTell': '!!', 'admiral|kegTell': '!!', 'admiral|listTell': '', 'admiral|pistol2Tell': '!!',
@@ -415,6 +416,7 @@ export const MARK = {
 // hand: tools/answer-tags.mjs fails on a told blow with no row, a row with no blow, and a ! that is not a block.
 /* ANSWER:BEGIN */
 export const ANSWER = {
+  'walleel|bubble': 'block', 'sunkencrew|lungeTell': 'block', 'sunkencrew|flurryTell': 'block', 'sunkencrew|bashTell': 'block', 'sunkencrew|reelTell': 'block', 'sunkencrew|chargeTell': 'block', 'sunkencrew|throwTell': 'dodge', 'sunkencrew|slamTell': 'jump',   /* (claude/deep3) THE WALL EEL: let it strike your shield (or stop short), cut it as it hangs; THE SUNKEN CREW / THE CURSED SAILOR */
   'wyrmling|sparkTell': 'dodge', 'wyrmling|coilTell': 'block', 'thunderwyrm|strikeTell': 'dodge', 'thunderwyrm|slamTell': 'jump', 'thunderwyrm|roarTell': 'block', 'thunderwyrm|tailTell': 'jump',   /* (claude/airship) */
   'sandskiff|sweepTell': 'block', 'sandskiff|potTell': 'dodge', 'skiffchief|potTell': 'dodge',   /* (claude/greatdune) */
   'hookjack|tell': 'block', 'hookjack|footTell': 'block',   /* (claude/linekit) hit him in the tell, parry it (he spins) or guard it (no damage, pushed 24 px along the line) */
@@ -708,6 +710,7 @@ export const ANSWER = {
 // A SHOT FROM ABOVE STILL FINDS A DUCKER: a high seed passes over only while it flies near level (src/duck.js seedOver).
 /* HEIGHT:BEGIN */
 export const HEIGHT = {
+  'walleel|bubble': 'low', 'sunkencrew|lungeTell': 'low', 'sunkencrew|flurryTell': 'low', 'sunkencrew|bashTell': 'low', 'sunkencrew|reelTell': 'low', 'sunkencrew|chargeTell': 'low', 'sunkencrew|throwTell': 'low', 'sunkencrew|slamTell': 'low',   /* (claude/deep3) the wall eel reaches the floor (a curtain's eel strikes down at a walker; a wall's at a swimmer's middle): a duck does not let it over; the crew's moves all reach the floor */
   'wyrmling|sparkTell': 'low', 'wyrmling|coilTell': 'low', 'thunderwyrm|strikeTell': 'low', 'thunderwyrm|slamTell': 'low', 'thunderwyrm|roarTell': 'low', 'thunderwyrm|tailTell': 'low',   /* (claude/airship) the spark arcs onto your spot, the bite lunges low, bolts / coil / roar / tail all reach the deck (no duck under any) */
   'sandskiff|sweepTell': 'low', 'sandskiff|potTell': 'low', 'skiffchief|potTell': 'low',   /* (claude/greatdune) the sweep cuts at the shins, the pots burst on the sand */
   'hookjack|tell': 'low', 'hookjack|footTell': 'low',   /* (claude/linekit) the hook swipe is at hand height: nothing of his goes over a duck */
