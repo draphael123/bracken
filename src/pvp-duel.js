@@ -563,7 +563,7 @@ export function makeDuel(api) {
     if (m.phase === 'count') { T('ROUND ' + m.round, VW / 2, VH / 2 - 30, '#fff6e0', 'center', 16); T(String(Math.max(1, Math.ceil(m.t))), VW / 2, VH / 2 - 8, '#ffd36b', 'center', 24); const al = arenaLabel(); if (al) T(al, VW / 2, VH / 2 + 22, '#c2c9c2', 'center', 8); }   /* (duelarenas) which arena, and that RANDOM picked it */
     const b = st.banner; if (b && (api.time() - b.at < b.t) && m.phase !== 'count') { T(b.txt, VW / 2, VH / 2 - 40, b.c, 'center', b.txt.length > 18 ? 8 : 16); if (b.txt === 'FIGHT!') { const al = arenaLabel(); if (al) T(al, VW / 2, VH / 2 - 21, '#c2c9c2', 'center', 8); } }   /* (duelarenas) the FIGHT banner names the arena */
     if (m.phase === 'over' && st.result) {
-      const w = 220, h = 72 + st.result.rows.length * 9 + 80, x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
+      const w = st.result.foes ? 260 : 220, h = 72 + st.result.rows.length * 9 + 80,   /* (duelproofs-2 11-13) the GOBLINS column leaves only 50 px for the name on the 220 px board: 'P1 GEOMA', 'P3 PALADI', 'P4 WARDE' - 260 px gives it 90 */ x = Math.round(VW / 2 - w / 2), y = Math.round(VH / 2 - h / 2) + 8;
       api.board(x, y, w, h);
       T(st.result.winner ? winName(st.result.winner) + ' WINS' : 'A DRAWN DUEL', x + w / 2, y + 5, st.result.winner ? winCol(st.result.winner) : '#fff6e0', 'center', 8);
       if (st.result.practice) T('PRACTICE: UNRANKED', x + w / 2, y + 15, '#9aa39a', 'center', 8); if (!st.result.foes) T('ROUNDS  DEALT  POINTS', x + w - 6, y + 25, '#9aa39a', 'right', 8);
