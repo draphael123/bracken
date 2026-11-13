@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 174,
+    "lines": [
+      { "s": "Clearer combat feedback: damage numbers pop, health bars drain smoothly.", "lv": [] },
+      { "s": "Low health pulses the screen edge so you notice it sooner.", "lv": [] },
+      { "s": "Coins chime up a scale as you grab them in a row.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
+    "batch": 173,
+    "lines": [
+      { "s": "THORNROAD jumping feels crisper: short hops ease out and land sooner.", "lv": [] },
+      { "s": "Ledge corners and low lips forgive more, so you catch edges you used to miss.", "lv": [] },
+      { "s": "Fully held jumps are unchanged.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 172,
     "lines": [
       { "s": "Groundwork for a new Buried City stretch is in; it is switched off for now.", "lv": [] },
