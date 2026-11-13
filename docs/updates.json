@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 176,
+    "lines": [
+      { "s": "Buried City: race the hourglass. Doors, bridges and lifts stand only while the sand runs.", "lv": ["buriedcity"] },
+      { "s": "Meet the Glassblower: strike his glass when it glints, then cut him down.", "lv": ["buriedcity"] },
+      { "s": "New foe: the Sand Grasper, rising from the sand.", "lv": ["buriedcity"] },
+      { "s": "Rangers can strike a glass with a knife tap (X) or E.", "lv": ["buriedcity"] },
+      { "s": "A new shrine before the Glassblower's hall.", "lv": ["buriedcity"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 175,
     "lines": [
       { "s": "Smoother title screen on phones.", "lv": [] },
