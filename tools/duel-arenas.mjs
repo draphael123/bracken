@@ -310,7 +310,7 @@ if (MODE === 'on') {
   console.log('main.js wiring (source)');
   { const m = text('../src/main.js'), lv = text('../src/level.js');
     ok((m.match(/pitArt\(\)/g) || []).length >= 7 && /function pitArt\(\) \{ return !!\(L && L\.duelPit && \(L\.duelPit\.kit \|\| 'arena'\) === 'arena'\); \}/.test(m), 'pitArt() is defined (the Pit has no kit field = arena) and used at the art sites (' + (m.match(/pitArt\(\)/g) || []).length + ' uses)');
-    const left = (m.match(/L.duelPit/g) || []).length; ok(left === 9, 'the only L.duelPit left in main.js: the three is-a-duel checks, pitArt (two), the backdrop floor line, the vent lift for every seat, the Pit stands (two) (' + left + ')');
+    const left = (m.match(/L.duelPit/g) || []).length; ok(left === 15, 'the only L.duelPit left in main.js: the three is-a-duel checks, pitArt (two), the backdrop floor line, the vent lift for every seat, the Pit stands (two), the box camera (two), the narrow-arena view (two) and centring (two) (duelarenas-d 11-13) (' + left + ')');
     ok(/const duelIndex = \(arena = 'pit'\) =>/.test(m) && /duelResolveArena\(settings && settings\.arena/.test(m), 'duelIndex(arena) + duelEnter resolves the arena (RANDOM once, from the built levels)');
     ok(/if \(DUEL_ARENAS\) LEVELS\.push\(\{ id: 'duel_stockade'/.test(lv), 'level.js registers the Stockade only under DUEL_ARENAS');
     for (const f of ['duel-arenas.js', 'duel-arenas.mjs']) ok(!/(^|[-_.])(ad|ads|admiral|banner|track|tracker|promo)([-_.]|$)/i.test(f), 'filename ' + f + ' is not ad-block-looking'); }

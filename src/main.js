@@ -33530,7 +33530,11 @@ function updateCamera(dt) {
   let tx = P.x + (LA ? P.face * 24 + camLead : P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28))) - VW / 2, ty = P.y - (VH * camFoot) - climbUp + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
-  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * camFoot - climbUp + lookDown; }
+  if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * camFoot - climbUp + lookDown;
+    /* (claude/duelarenas-d 11-13) THE NEW DUEL ARENAS' BOX CAMERA (flag ON, the Stockade / Rootway / Kitchen only - the Pit's level carries no `arena` and keeps the party camera): the foot-weighted mean above (feet at 68% of the frame)
+       puts a fighter 144 px under the mean off the bottom edge, and the Rootway's floor-to-crown rise is exactly 144 px (tools/duelproofs2.mjs measured 7% of a 4-seat fight with one seat partly out of the picture). Centre the
+       BOX the upright seats stand in instead (feet to feet, plus the 26 px of body) so the spare room is shared top and bottom. */
+    if (DUEL_ARENAS && L && L.duelPit && L.duelPit.arena) { const ups = players.filter(upright); if (ups.length) { let y0 = 1e9, y1 = -1e9; for (const p of ups) { if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y; } ty = (y0 - 26 + y1) / 2 - VH / 2; } } }
   /* THE GATE GARGOYLE's fight frames him and you together, and keeps the garden floor he crashes onto in the picture (gate-gargoyle.js) */
   else if (bossActive && boss && boss.alive && boss.t === 'gargoyle' && L.arena) { [tx, ty] = gargCam(P, boss, L.arena, VW, VH); ty += lookDown * 0.5; }
   /* THE WINCHMASTER's room is wider than any zoomed view (round five, claude/winch3: five more columns so his housings are wide enough to
@@ -33567,6 +33571,7 @@ function updateCamera(dt) {
   if (centerLock) { x0 = x1 = Math.max(0, Math.min(LW * TS - VW, (camLock.x0 + camLock.x1) / 2 - VW / 2)); }
   else { x0 = camLock ? camLock.x0 - 8 : 0; x1 = camLock ? camLock.x1 + 8 - VW : LW * TS - VW; }
   camX = Math.max(x0, Math.min(x1, camX)); camY = Math.max(0, Math.min(LH * TS - VH, camY));
+  if (DUEL_ARENAS && L && L.duelPit && L.duelPit.arena && LW * TS < VW) camX = (LW * TS - VW) / 2;   /* (claude/duelarenas-d 11-13) a duel arena NARROWER than the picture (the Stockade, 384 px, in the party's 400 px view) is centred, not pinned to the west wall (a 16 px strip of the world outside the east wall) */
   // a level with its insides in a band of rock (Stormhold): from the street you never see into the band, and from a room you never see the street
   if (L.indoorRow !== undefined) { const edge = (L.indoorRow + 1) * TS; if (P.y > edge) camY = Math.max(camY, edge); else camY = Math.min(camY, edge - VH);
     // inside one of the cellars and halls: frame the whole room, ceiling and all, when it fits (the camera sat on the
@@ -37659,7 +37664,7 @@ function drawTransition() {
   } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
-  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? (bossActive && boss && boss.alive && boss.t === 'cryptmother' && CMH && CMH.on() ? 'zoomfar' : 'zoom') : typeof partyCam !== 'undefined' && partyCam.wide && coop() ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? (bossActive && boss && boss.alive && boss.t === 'cryptmother' && CMH && CMH.on() ? 'zoomfar' : 'zoom') : typeof partyCam !== 'undefined' && partyCam.wide && coop() && !(DUEL_ARENAS && L && L.duelPit && L.duelPit.arena && LW * TS <= 320) ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
 
 // ==================================================================================
 // THE EDITOR
