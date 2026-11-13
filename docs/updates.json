@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-12",
+    "batch": 174,
+    "lines": [
+      { "s": "Clearer combat feedback: damage numbers pop, health bars drain smoothly.", "lv": [] },
+      { "s": "Low health pulses the screen edge so you notice it sooner.", "lv": [] },
+      { "s": "Coins chime up a scale as you grab them in a row.", "lv": [] }
+    ]
+  },
+  {
+    "date": "2026-11-12",
     "batch": 173,
     "lines": [
       { "s": "THORNROAD jumping feels crisper: short hops ease out and land sooner.", "lv": [] },
