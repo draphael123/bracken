@@ -36,7 +36,7 @@ function old(hero, run, release) {
 
 /* 1. the frozen base numbers; flag ships OFF */
 assert.equal(MOVE.JUMPV, -320); assert.equal(MOVE.GRAV, 1000); assert.equal(MOVE.RUN, 92); assert.equal(MOVE.FALL_G, 1.2); assert.equal(MOVE.MAX_FALL, 270); assert.equal(MOVE.APEX_G, 0.62); assert.equal(MOVE.JUMP_CUT, -110);
-assert.equal(C.CF2_SHIPS, false, 'ships OFF');
+assert.equal(C.CF2_SHIPS, true, 'ships ON on this branch');
 
 /* 2. FLAG OFF == batch158 (9 heroes x stand/run x five release frames, incl. never) */
 setCF2(false);

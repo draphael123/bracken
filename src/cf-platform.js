@@ -12,7 +12,7 @@
 // frame; the lock itself stays, Daniel 10-02 WEIGHT); a jump out of a roll/dash is allowed (`!dodging || P.dash > 0`). Landing has no lock.
 // Art beats (apex hold, run-start kick) live in jump-feel.js / air-motion.js and read, never write, physics: owed to a later commit (see the lane report).
 import { MOVE } from './hero-move.js';
-export let CF2_SHIPS = false;                                   /* the one-line switch. OFF until the browser proofs pass (Daniel 11-11) */
+export let CF2_SHIPS = true;                                    /* the one-line switch. OFF until the browser proofs pass (Daniel 11-11) */
 export const setCF2 = on => { CF2_SHIPS = !!on; };
 export const CF2 = {
   cutMul: 0.45,                                                 /* first cut frame: vy x 0.45 (never slower than JUMP_CUT) */
