@@ -109,6 +109,7 @@ const isGadget = t => ALWAYS_GADGET.has(t) || GADGET_WORD.test(t) || (t in THREA
 const arena = L => L.arena || null;
 SYSTEM_ARRAYS.push('lw3Boats');   /* (claude/longwater3) SALTREACH's boats (kit floats) are a system; the bells, wheels, traps and moorings are ents (lw3bell, lw3sluice, lw3trap, lw3moor). LONG WATER 3 is NOT gated here (master's longwater misses the bar with the flag off): run LW3=1 node tools/level-quality.mjs longwater */
 SYSTEM_ARRAYS.push('d3Cracks', 'd3Stones', 'd3Rot', 'd3Currents');   /* (claude/deep3) THE DEEP 3's cracked floors and steps, settling stones, rot vents + pit, the window drift and the shaft's upwelling (src/deep3.js) */
+SYSTEM_ARRAYS.push('kfLevers');   /* (claude/keepfloods) KEEP 2's floodgate levers are the level's gadget (replaces the four whirlpools) */
 const setSpan = (xs, gap = 12) => { xs = [...xs].sort((a, b) => a - b); let n = 0, last = -1e9; for (const x of xs) { if (x - last > gap) n++; last = x; } return n; };
 
 /* LEVEL-SPECIFIC ENT KINDS: how many campaign levels place each kind, once, for the whole run */
