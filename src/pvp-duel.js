@@ -183,9 +183,10 @@ export function botThink(me, foe, s, rnd, dt, hops, vents) {   /* hops (duelaren
       if (!me.ground && s.hopB) { s.held.move = me.x < s.hopX - 3 ? 1 : me.x > s.hopX + 3 ? -1 : 0; }   /* in the air: steer for the middle of where we mean to land (the board's own middle if it is narrow) */
       else if (s.hopSeen >= 0.45 && vents && vents.length && (s.vg = ventGoal(me, foe, vents, hops))) {   /* (duelarenas-b) A SPORE VENT: walk onto it and WAIT for the puff (no jump), then steer to stay over it in the air */
         const vg = s.vg, ddx = vg.tx - me.x; s.held.move = vg.ok ? 0 : Math.abs(ddx) > 4 ? Math.sign(ddx) : 0; s.ventWait = vg.ok; s.hopB = vg.board; s.hopX = vg.tx; }
-      else if (s.hopSeen >= 0.45) { s.ventWait = false; const hg = hopGoal(me, foe, hops); if (hg) { const ddx = hg.tx - me.x; s.held.move = Math.abs(ddx) > 5 ? Math.sign(ddx) : 0; if (hg.jump && s.jumpCd <= 0) { press.jump = true; s.jumpCd = 0.8 + rnd() * 0.4; s.stuckT = 0; s.hopB = hg.board; const bw = hg.board[2] - hg.board[1] + 1; s.hopX = bw >= 3 ? Math.max(hg.board[1] * 16 + 16, Math.min((hg.board[2] + 1) * 16 - 16, hg.tx)) : (hg.board[1] + hg.board[2] + 1) * 8; } } } }
+      else if (s.hopSeen >= 0.45) { s.ventWait = false; const hg = hopGoal(me, foe, hops); if (hg) { const ddx = hg.tx - me.x; s.held.move = Math.abs(ddx) > 5 ? Math.sign(ddx) : 0; if (hg.jump && s.jumpCd <= 0) { press.jump = true; s.jumpHold = 0.4;   /* HOLD the jump: a tap is cut to a 7 px hop, a board needs the full 51 px */ s.jumpCd = 0.8 + rnd() * 0.4; s.stuckT = 0; s.hopB = hg.board; const bw = hg.board[2] - hg.board[1] + 1; s.hopX = bw >= 3 ? Math.max(hg.board[1] * 16 + 16, Math.min((hg.board[2] + 1) * 16 - 16, hg.tx)) : (hg.board[1] + hg.board[2] + 1) * 8; } } } }
   }
   if (s.blockT > 0) keys.block = true;
+  if (s.jumpHold > 0) { s.jumpHold -= dt; keys.jump = true; }   /* only a board hop sets it: the Pit has no hops and is unchanged */
   const mv = s.held.face || s.held.move || 0;
   if (mv < 0) keys.left = true; else if (mv > 0) keys.right = true;
   if (s.held.drop) { keys.down = true; press.jump = press.jump || rnd() < 0.2; }
