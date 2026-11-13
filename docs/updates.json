@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-13",
+    "batch": 175,
+    "lines": [
+      { "s": "Smoother title screen on phones.", "lv": [] },
+      { "s": "Co-op rule text fits the screen.", "lv": [] },
+      { "s": "Small text fixes in What's New.", "lv": [] }
+    ]
+  },
+  {
     "date": "2026-11-12",
     "batch": 174,
     "lines": [
