@@ -140,8 +140,12 @@ await scene('shadow', `
   BK.P.x = 330 - 60; BK.P.y = 1056; BK.P.face = 1; BK.P.inv = 0; gob.x = 330 + 80; gob.vx = 0; BK.sim(20);
   R.shots.push({ name: 'mill-lamp-dark', png: snap(2) });
   /* the goblin, unlit: a blow slips (the words and the hint) */
-  gob.x = 330 + 70; gob.vx = 0; const hp0 = gob.hp; strike(gob.x - 24, 1056, 1);
-  R.slipAt = untilText(/SLIPS THE BLOW|INTO THE LIGHT/, 40); R.shots.push({ name: 'shadowgob-unlit-it-slips-the-blow', png: snap(2) });
+  const hp0 = gob.hp;
+  const strikeGob = () => { BK.textLab.hint('', 0); gob.x = 400; gob.vx = 0; gob.stagger = 0; strike(376, 1056, 1); let msg = null; for (let k = 0; k < 12; k++) { BK.step(1); if (BKT.hintNow.t > 0.4 && BKT.hintNow.msg) { msg = BKT.hintNow.msg; break; } } return msg; };
+  const away = () => { for (let k = 0; k < 300; k++) { BK.P.x = 150; BK.P.y = 1056; gob.x = 400; gob.vx = 0; BK.step(1); } };
+  R.strikes = [strikeGob().slice(0, 36)]; away();   /* the 1st blow: the goblin's own first-sight tip holds the hint box */
+  const s2 = strikeGob(); R.strikes.push(s2); R.shots.push({ name: 'shadowgob-unlit-hint-bring-it-into-the-light', png: snap(2) }); away();
+  const s3 = strikeGob(); R.strikes.push(s3); R.shots.push({ name: 'shadowgob-unlit-it-slips-the-blow', png: snap(2) });
   R.slip = { hp0, hp1: gob.hp, lit: gob.shadow.lit, said: Object.keys(labels()) };
   for (let k = 0; k < 20; k++) BK.sim(1);
   /* the lamp struck: it lights, the goblin close to it is lit and REVEALED */

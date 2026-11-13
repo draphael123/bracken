@@ -90,7 +90,7 @@ const slice = src.slice(src.indexOf('function lightOwlLamp'), src.indexOf('// Th
 function world(opts = {}) {
   const L = hang(), A = L.arena, floor = A.floor, noop = () => {}, log = { dmg: [], say: [] };
   const P = { x: 700, y: floor, dead: false, ground: true, dodge: 0, parryT: 0, caged: 0, vx: 0, vy: 0, block: false, hp: 100 }, keys = {}; let dmgRes = 'hit';
-  const ctx = vm.createContext({ L, props: [], TS, P, enemies: [], SFX: new Proxy({}, { get: () => noop }), number: (x, y, t) => log.say.push(t), burst: noop, ringAt: noop, dust: noop, shakeCam: noop, zoomKick: noop, sparks: noop, flash: 0, parts: [], seeds: [], keys, COLS: { owl: ['#fff'] },
+  const ctx = vm.createContext({ hintT: 0, L, props: [], TS, P, enemies: [], SFX: new Proxy({}, { get: () => noop }), number: (x, y, t) => log.say.push(t), burst: noop, ringAt: noop, dust: noop, shakeCam: noop, zoomKick: noop, sparks: noop, flash: 0, parts: [], seeds: [], keys, COLS: { owl: ['#fff'] },
     DMG: new Proxy({}, { get: () => 10 }), damagePlayer: (x, d, o) => { log.dmg.push({ x, d, o }); return dmgRes; }, duckBox: p => ({ t: p.y - 14, b: p.y, l: p.x - 5, r: p.x + 5 }), embers: [], pyres: [], pwaves: [], bolts: [], bloodBolts: [], rbolts: [], hammers: [], shots: [], inJet: () => false,
     overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, O4, bossActive: true, boss: null, HVR: opts.HVR });
   vm.runInContext(slice, ctx);
@@ -143,7 +143,7 @@ process.env.BRACKEN_OWL4 = '1';
   const gs = src.indexOf('if (e.shadow && dmg > 0 && !owlShadowLit(e))'), ge = src.indexOf('return; }', gs) + 9, gate = src.slice(gs, ge); assert(gs > 0 && gate.includes("'BRING IT INTO THE LIGHT'") && gate.includes("'IT SLIPS THE BLOW'"), 'the gate is in hurtEnemy0 (its two lines are literals: number() routes only literals hint-shown can see)'); assert.equal(SHADOW.hint, 'BRING IT INTO THE LIGHT'); assert.equal(SHADOW.glance, 'IT SLIPS THE BLOW'); assert.equal(OWL4.slam.hint, 'THE SANDBAG HANGS OVER HER: CUT THE DECK');
   const hurtEnemy0Start = src.lastIndexOf('function hurtEnemy0', gs); assert(hurtEnemy0Start > 0 && !src.slice(hurtEnemy0Start + 10, gs).includes(String.fromCharCode(10) + 'function '), 'the gate sits inside hurtEnemy0 (every melee / bolt / skill / burn blow passes it)');
   const say = [], hints = []; let now = 10, clanks = 0, spk = 0;
-  const mk = (lights = [], props = []) => { const ctx = vm.createContext({ O4, props, fires: [], HVR: { pools: () => lights.filter(l => l.pool) }, number: (x, y, t) => say.push(t), SFX: { clank: () => clanks++, spark: () => spk++ }, sparks: () => {}, ringAt: () => {}, owl4Said: {}, P: { x: 0, y: 0 }, get time() { return now; } });
+  const mk = (lights = [], props = []) => { const ctx = vm.createContext({ hintT: 0, O4, props, fires: [], HVR: { pools: () => lights.filter(l => l.pool) }, number: (x, y, t) => say.push(t), SFX: { clank: () => clanks++, spark: () => spk++ }, sparks: () => {}, ringAt: () => {}, owl4Said: {}, P: { x: 0, y: 0 }, get time() { return now; } });
     vm.runInContext(lightSlice + '\nthis.shadowGate = function (e, dmg, fromX) { ' + gate.replace(/\breturn;/g, 'return "glanced";') + ' return "through"; };', ctx); return ctx; };
   const gob = (x = 100) => ({ t: 'shadowgob', alive: true, x, y: 200, hp: 20, bleed: 3, stagger: 0, flash: 0, burn: 0, shadow: { lit: false, revealCd: 0, seen: false } });
   /* unlit: every blow of every size glances, no hp change, bleed cleared, a hint ONCE */

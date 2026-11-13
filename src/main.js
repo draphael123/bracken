@@ -9634,8 +9634,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { if (e.t === 'gque
   if (e.t === 'heart') { if (!mother || mother.mode !== 'open') return; dmg = 1; mother.mode = 'idle'; mother.modeT=2; mother.nodeRest=10; mother.tipped=false; mother.gillsOpen=false; mother.nodeMove=true; e.burn=0; e.bleed=0; } // each cut closes the heart: return to the living knot
   /* (claude/bosswave1) her windows pay x1.3 now, not double (the boss rule chips her everywhere else): the old double on the boards, and 2.5x under the bough,
      gave the mash bot 92% of her in one grounded window. The bough, the window the player makes, still pays best. */
-  if (e.shadow && dmg > 0 && !owlShadowLit(e)) { e.glancedAt = time; e.flash = 0.12; e.bleed = 0; SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 5, e.y - 6, Math.sign(e.x - fromX) || 1, 3); number(e.x, e.y - 20, 'IT SLIPS THE BLOW', '#8a8090');   /* (claude/owl4) UNLIT: every blow glances, nothing lands */
-    if (!owl4Said.shadow) { owl4Said.shadow = true; number(P.x, P.y - 34, 'BRING IT INTO THE LIGHT', '#ffd36b'); } return; }
+  if (e.shadow && dmg > 0 && !owlShadowLit(e)) { e.glancedAt = time; e.flash = 0.12; e.bleed = 0; SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 5, e.y - 6, Math.sign(e.x - fromX) || 1, 3);    /* (claude/owl4) UNLIT: every blow glances, nothing lands */
+    if (!owl4Said.shadow && !(hintT > 0.4)) { owl4Said.shadow = true; number(P.x, P.y - 34, 'BRING IT INTO THE LIGHT', '#ffd36b'); } else number(e.x, e.y - 20, 'IT SLIPS THE BLOW', '#8a8090'); return; }   /* (claude/owl4-d) the one-time hint waits for a free hint box (the goblin's own first-sight tip holds it 5 s), and is never in one frame with the glance word: the second callout overwrote the first */
   if (e.t === 'owl') dmg = Math.round(dmg * owlTake(e, tag));   /* (claude/owl2) the lamp crash x2, on the boards x1.5, under the bough x1.6, nothing in her ward - and 0.4 anywhere else (the chip, src/boss-greed.js) */
   if (e.t === 'owl' && e.mode === 'sit') e.hits = (e.hits || 0) + 1;
   if (e.t === 'windcaller' && !callerThere(e)) { SFX.buzz(); return; } // between stones there is nothing to cut (on a stone he is there: the boss rule chips him, claude/bosswave1)
@@ -20478,7 +20478,7 @@ function updateOwl(e, dt) {
     case 'netGo': { const N = O4.OWL4.net, b = e.netB; if (!b) { e.mode = 'fly'; e.modeT = 3; e.next = e.perchI; break; }
       if (!e.netPh) { e.face = Math.sign(b.x - e.x) || e.face; const left = toward(b.x, b.y + 4, 320); if (left <= 3) { e.netPh = 1; b.taken = true; b.t = 10; e.modeT = 2.6; number(e.x, e.y - 26, 'SHE PULLS THE NET', '#ff9a5c'); SFX.creak(); SFX.clank(); } else if (e.modeT <= 0) { b.taken = true; b.t = 10; e.netPh = 1; e.modeT = 2.6; } }
       else { const tx = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x)); e.face = Math.sign(tx - e.x) || e.face; const left = toward(tx, floor - N.carryUp, 320) + Math.abs(tx - e.x);
-        if (left <= 14 || e.modeT <= 0) { e.netPh = 0; e.netB = null; e.mode = 'netTell'; e.modeT = N.tell[p2 ? 1 : 0]; e.netT0 = e.modeT; e.netStruck = false; SFX.creak(); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(P.x, P.y - 34, 'THE NET: OUT FROM UNDER', '#ff9a5c'); if (!owl4Said.net) { owl4Said.net = true; number(e.x, e.y + 34, 'HIT THE KNOT AT HER TALONS', '#ffd36b'); } } } break; }
+        if (left <= 14 || e.modeT <= 0) { e.netPh = 0; e.netB = null; e.mode = 'netTell'; e.modeT = N.tell[p2 ? 1 : 0]; e.netT0 = e.modeT; e.netStruck = false; SFX.creak(); number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); if (owl4Said.net === 1) { owl4Said.net = 2; number(e.x, e.y + 34, 'HIT THE KNOT AT HER TALONS', '#ffd36b'); } else { owl4Said.net = owl4Said.net || 1; number(P.x, P.y - 34, 'THE NET: OUT FROM UNDER', '#ff9a5c'); }   /* (claude/owl4-d) one hint line a cast: the 1st says where to step, the 2nd teaches the knot */ } } break; }
     case 'netTell': { const N = O4.OWL4.net; e.y = floor - N.carryUp + Math.round(Math.sin(e.anim * 9)); if (e.modeT > e.netT0 - N.follow) { const tx = Math.max(A.x0 + 40, Math.min(A.x1 - 40, P.x)); e.x += Math.sign(tx - e.x) * Math.min(Math.abs(tx - e.x), 260 * dt); e.face = Math.sign(tx - e.x) || e.face; }
       if (Math.random() < dt * 4) SFX.creak();
       if (!e.netStruck && ropeStruck({ l: e.x - 9, r: e.x + 9, t: e.y + 8, b: e.y + 28 })) e.netStruck = true;
@@ -20646,7 +20646,7 @@ function owl4Tick(e, dt, floor, A) { const N = O4.OWL4;
   const S = N.slam, top = e.y - 30;
   for (const b of HVR.bags()) { const near = Math.abs(e.x - b.x) < S.lowNear + S.bagW;
     if (b.armed && near && b.b + S.bagReach >= top && b.t < e.y) { owlSlam(e, b.id); HVR.bagSpent(b.id); return; }
-    if (!owl4Said.bag && !b.armed && Math.abs(e.x - b.x) < 40) { owl4Said.bag = true; number(P.x, P.y - 34, 'THE SANDBAG HANGS OVER HER: CUT THE DECK', '#ffd36b'); HVR.glint(b.id); } } }
+    if (!owl4Said.bag && !b.armed && !(hintT > 0.4) && Math.abs(e.x - b.x) < 40) { owl4Said.bag = true; number(P.x, P.y - 34, 'THE SANDBAG HANGS OVER HER: CUT THE DECK', '#ffd36b'); HVR.glint(b.id); } } }
 /* ===== (claude/owl4) THE SHADOW GOBLIN: a goblin made of the dark. Its lights: a lit lamp (a village lamp's radius HV_LAMP.r, any other lit lantern 56), the oil pool of a dropped lamp,
    a fire on the boards, or itself burning (the pyromancer works). Unlit, every blow glances (hurtEnemy0). The first time a light reaches it: REVEALED, a 0.6 s stagger, 3 s cooldown. ===== */
 function owl4Lights() { const out = []; for (const pr of props) if (pr.t === 'lantern' && pr.lit && !pr.gone) out.push({ x: pr.x, y: pr.y - 30, r: pr.hv ? O4.HV_LAMP.r : 56 });
