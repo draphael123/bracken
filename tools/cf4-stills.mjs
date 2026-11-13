@@ -16,12 +16,12 @@ try {
     /* numbers: a light hit, a heavy hit, a kill, via the real hurtEnemy path; frames 0, 2, 4, 7 after the first hit */
     await E(`(() => { const d = BK.dk2(), P = BK.P, es = d.enemies.filter(q => q.alive); BK.__es = es; const e = es[0]; e.hp = 9999; P.x = e.x - 18; P.y = e.y - 4; P.vx = P.vy = 0; P.inv = 99; BK.step(90); P.x = e.x - 18; BK.env().hurt(e, 12, P.x); BK.step(1); })()`);
     const cam = await E(`(() => ({ cx: BK.camX && BK.camX(), px: BK.P.x, py: BK.P.y }))()`); console.log(JSON.stringify(cam));
-    await shot(tag + '-num-f1-full'); await shot(tag + '-num-f1-crop', [60, 30, 160, 90]);
-    await E(`BK.step(2)`); await shot(tag + '-num-f3-crop', [60, 30, 160, 90]);
-    await E(`BK.step(4)`); await shot(tag + '-num-f7-crop', [60, 30, 160, 90]);
-    await E(`(() => { const e = BK.__es[0]; BK.env().hurt(e, 30, BK.P.x); BK.step(1); })()`); await shot(tag + '-heavy-f1-crop', [60, 30, 160, 90]);
-    await E(`BK.step(10)`); await shot(tag + '-heavy-f11-crop', [60, 30, 160, 90]);
-    await E(`(() => { const e = BK.__es[0]; e.hp = 5; BK.env().hurt(e, 20, BK.P.x); BK.step(1); })()`); await shot(tag + '-kill-f1-crop', [60, 30, 160, 90]);
+    await shot(tag + '-num-f1-full'); await shot(tag + '-num-f1-crop', [80, 80, 120, 70]);
+    await E(`BK.step(2)`); await shot(tag + '-num-f3-crop', [80, 80, 120, 70]);
+    await E(`BK.step(4)`); await shot(tag + '-num-f7-crop', [80, 80, 120, 70]);
+    await E(`(() => { const e = BK.__es[0]; BK.env().hurt(e, 30, BK.P.x); BK.step(1); })()`); await shot(tag + '-heavy-f1-crop', [80, 80, 120, 70]);
+    await E(`BK.step(10)`); await shot(tag + '-heavy-f11-crop', [80, 80, 120, 70]);
+    await E(`(() => { const e = BK.__es[0]; e.hp = 5; BK.env().hurt(e, 20, BK.P.x); BK.step(1); })()`); await shot(tag + '-kill-f1-crop', [80, 80, 120, 70]); await E('BK.step(11)'); await shot(tag + '-kill-f12-crop', [80, 80, 120, 70]); await E('BK.step(12)'); await shot(tag + '-kill-f24-crop', [80, 80, 120, 70]);
     /* chip bar: lose 40% at once, frames 1 / 30 (held) / 45 (draining) */
     await setup(on);
     await E(`(() => { BK.P.hp = BK.P.maxHp; BK.step(3); BK.P.hp = BK.P.maxHp * 0.55; BK.step(1); })()`); await shot(tag + '-chip-f1-crop', [0, 0, 100, 24]);
