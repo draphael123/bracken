@@ -97,6 +97,7 @@ export const OPEN_RULE = {
   parasitequeen: e => e.open > 0,   /* (claude/whale) FLUSHED (a forced exhale) / STRANDED (a forced breath on the floor, P2) - src/parasite-queen.js */
   drownedking: e => e.open > 0,
   harbormaster: e => e.open > 0,
+  nagaqueen: e => e.open > 0,   /* (claude/sirenrocks) THE SONG BREAKS (a stone struck while she sings) / DRAGGED UP (both stones silent under the tide) - src/naga-queen.js */
   closedhelm: e => e.open > 0 || e.mode === 'cutRec' || e.mode === 'thrustRec' || e.mode === 'grabMiss' || e.mode === 'brandRec',   // the ward down; (claude/crusader) or bent over a spent blow - main.js CRUS_SPENT, whole not x2
   prince: e => e.mode === 'buried' || e.mode === 'reel' || e.bare > 0,
   strawking: e => e.open > 0,
@@ -182,6 +183,7 @@ export const FULL_DAMAGE = {
   champion: 'a duelist (design standard B11/B15, claude/flotilla2): always hittable - his PLATE takes every blow at x0.5 on guard (HIS PLATE), x1 in the recovery after each committed blow, x1.5 with the blade (or the anchor) stuck in the deck, x2 KNOCKED FLAT by a deck gun (one knockdown 11% of him at most), x0.4 in his told ward after it (src/fleetlord-champion.js)',
   freebooter: 'a duelist (design standard B11/B15, claude/water1; wired claude/tune3): always hittable, GUARDS BY ANGLE (src/freebooter-boss.js takeAt: front 0.5x PARRIED, committed/flank 0.6x, reload 1.0x, stuck 1.25x, ward 0.4x - never under 0.4x); no chip, greed still counts outside the openings',
   fogknight: 'a duelist (design standard B11): always hittable, GUARDS BY STANCE (high: a low blow lands; low: a high blow or a plunge; full: only a plunge, which breaks it); every angle lands in his own blows; his openings pay x1.6 in his own code (claude/towpath)',
+  nagaqueen: 'her own numbers (claude/sirenrocks, src/naga-queen.js takeAt): always hittable - x0.6 on her scales, x0.4 under the tide (a swimmer reaches her) or in her ward, x1 when THE SONG BREAKS, x1.25 DRAGGED UP; never under 0.4 (B15); greed still counts',
   bloodknight: "Daniel 10-03: he shouldn't be invulnerable most of the time, he should play like the player character - FULL DAMAGE, DEFENDS HIMSELF (claude/dk3)",
   roc: 'Daniel 10-06 (claude/roc2): "you can jump on the gliding platforms / thermals and actually hit her, so she does not need to be invulnerable by default" - a beast, always hittable, guarding by HEIGHT (src/roc-eyrie.js take: whole and a little more from the air the level gives, GUARDS LOW from the floor); her plunge and her nest are x1.5',
   greathound: 'Daniel 10-07 (claude/hound): "too difficult simply because he is invincible outside of very small windows ... he should not be invincible" - a beast duelist (B11/B13): always hit for real, his jaws turn part of a blow into his face (GO ROUND), whole from behind or above; his skid and his whine are bonus openings x1.5 (src/great-hound.js)',

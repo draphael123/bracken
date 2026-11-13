@@ -189,7 +189,7 @@ export function lintTide(L, o = {}) {
       if ((v.t === 'bell' || v.t === 'sluice') && v.y + 1 > T.hi && !v.swim) bad.push(id + ': the ' + v.t + ' at ' + v.x + ',' + v.y + ' drowns at high water');
       if (v.t === 'lever' && T.mode === 'manual' && v.y + 1 > T.hi && !v.swim) bad.push(id + ': the chamber lever at ' + v.x + ',' + v.y + ' is under a full chamber (flag swim: true if it is meant to be reached swimming)');
     }
-    if (T.mode === 'manual' && !(T.verbs || []).some(v => v.t === 'lever')) bad.push(id + ': a manual chamber with no lever never moves');
+    if (T.mode === 'manual' && !T.boss && !(T.verbs || []).some(v => v.t === 'lever')) bad.push(id + ': a manual chamber with no lever never moves');
     const grace = Math.max(T.grace ?? TIDE.grace, dur(T, T.safe || 'low'));
     for (const c of L.checkpoints || []) {
       const inBox = (T.floods || []).some(b => c.x >= b.x0 && c.x <= b.x1 && c.y >= b.y0 && c.y <= b.y1);

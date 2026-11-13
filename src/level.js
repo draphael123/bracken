@@ -54,6 +54,7 @@ import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's tar
 import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './frog-court.js';
 import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+import { buildSirenRocks, SR_RULE } from './siren-rocks.js';   /* (claude/sirenrocks) SIREN ROCKS: the Naga Queen's sea caves (hidden until its art pass: dev only, ?level=sirenrocks) */
 import { highcrownTwo } from './highcrown2.js';
 import { buildPirateFleet, PF_RULE } from './pirate-fleet.js';   /* (claude/water1) THE PIRATE FLEET: the Freebooter's sea, off the Flotilla (hidden until its art pass: dev only, ?level=piratefleet) */
 import { buildDuelPit } from './duel-pit.js';   /* (claude/pvpduel, Daniel 11-05) THE DUEL PIT: DUEL (BETA)'s one ring */ import { buildArenaYard } from './arena-yard.js'; import { buildLesson } from './opening-tutorial.js';   /* (claude/tutorial1, Daniel 11-05) THE ROADSIDE LESSON: the generic opening for a new save, replayable from the inn */   /* (claude/arenayard, Daniel 11-03) THE ARENA YARD: the one shared practice yard (src/arena-yard.js) */
@@ -8214,6 +8215,10 @@ LEVELS.push({ id: 'highlines', name: 'THE HIGH LINES', sub: 'the ropeway up to t
    OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=piratefleet). Its place when it goes live
    is a hidden spur off THE FLOTILLA (brief-piratefleet.md); needs 'flotilla' is that link for the gate chain. THE FREEBOOTER is its boss (src/freebooter-boss.js) */
 LEVELS.push({ id: 'piratefleet', name: 'THE PIRATE FLEET', sub: 'open sea, the swell, and the Freebooter', rule: PF_RULE, build: () => buildPirateFleet({ painter, T, TS }), hidden: true, needs: 'flotilla' });
+/* SIREN ROCKS (claude/sirenrocks, the OPUS GREYBOX, 11-06; scratch/plan-water-1105.md item 4, pulled forward 11-06 with Daniel's OK): APPENDED (saves count levels by index). HIDDEN, no map node:
+   OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=sirenrocks). Its place when it goes live (plan Q1 rec)
+   is the main road REEF -> SIREN ROCKS -> FLOTILLA: needs 'reef' is that link; the Flotilla's needs moves through claude/greatdune's road-insert table when SR_SHIPS flips. THE NAGA QUEEN is its boss */
+LEVELS.push({ id: 'sirenrocks', name: 'SIREN ROCKS', sub: 'the song pulls you', rule: SR_RULE, build: () => buildSirenRocks({ painter, T, TS }), hidden: true, needs: 'reef' });
 
 /* THE WHALE (claude/whale, the OPUS GREYBOX, 11-06; scratch/plan-water-1105.md item 9, the water arc pulled forward 11-06 with Daniel's OK): APPENDED (saves count levels by index). HIDDEN, no map node:
    OFF THE ROAD and off the demo list until its art pass merges and the browser proofs run (art before live) - dev only (?level=whale). Its place when it goes live is the main road

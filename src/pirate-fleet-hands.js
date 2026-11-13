@@ -8,7 +8,7 @@
 //                                    Hauled stays hauled: the mark 'pf:haul:<id>' (through death and reload). THE FREEBOOTER's sloop (boss: true) is his to haul.
 //   GRAPPLE WINCHES (ents)           a blow on the drum fires its line at its prize. A winch on a boat (on: float id) rides the boat.
 // main.js calls: on, clear, update(dt), strike(hb), mover(m, dt), drawBack, drawMover, drawOver, hud, read, haul(id), unhaul(id), prizeK(id), deckY(id).
-// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, step(dt), tide(ev), pull(e), pre(hb), verb(v, hb, pre), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,t,P), noRespawn, noStreaks, noPosts, built(kit, pulls), foes(e) (claude/sea3: which foes the fields push; flow may be a colour string) }
+// ONE WIRING FOR EVERY SEA LEVEL (claude/lw3b): a level with its own words, sounds and art on the kit hands this file ctx.hooks() -> { signal, step(dt), tide(ev), pull(e), pre(hb), verb(v, hb, pre), miss(hb), quiet, flow, foam(g,x0,x1,y,t,ph), gauge(g,t,P), noRespawn, noStreaks, noPosts, built(kit, pulls), field(ev), foes(e) (claude/sea3: which foes the fields push; flow may be a colour string) }
 // (all optional; a hook that returns true has CLAIMED the event, the generic words/sounds are skipped). Nothing steps the kit but this file: no level keeps a second TK / PF.
 import { tideInit, tideStep, tideApply, tideStrike, tideRespawn, gauge, floatY, lineY } from './tide-kit.js';
 import * as PFA from './redraw/pirate_fleet_art.js'; import * as PFT from './redraw/pirate_fleet_tiles.js';
@@ -64,6 +64,7 @@ export function makePirateFleetHands(ctx) {
     tideApply(TK, L.pools, ctx.poolLevel);
     const g0 = gauge(TK, (hk && hk.signal) || L.pullSignal || 'swell');
     const pev = pullStep(PF, dt, { tidePh: g0 ? g0.ph : null });
+    if (hk && hk.field) for (const e of pev) hk.field(e);   /* (claude/sea3) a field's own events: a stone's hum and song */
     const bodies = [...ctx.players, ...ctx.enemies().filter(e => e.alive !== false && (hk && hk.foes ? hk.foes(e) : !e.boss && wetFoe(e)))];   /* (hooks.foes: a level whose fields blow dry foes too, the whale's gusts) */
     const ev = pullBodies(PF, bodies, dt, { inWater: b => (ctx.players.includes(b) ? !!b.swim : wetFoe(b)), holding: b => ctx.holding(b), kind: b => (ctx.players.includes(b) ? 'hero' : 'foe'),
       dashing: b => !!((b.dashT || 0) > 0 || b.rolling || (b.dodge || 0) > 0), move: (b, dx, dy) => ctx.moveBody(b, dx, dy) });

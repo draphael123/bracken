@@ -17,7 +17,7 @@
 // strike you, he HURLS A CART, and the cart is a mover that does its own unblockable damage somewhere else.
 import { ORDER_MARKS, TYPES as ORDER_TYPES } from './order-chapters.js';   /* (claude/order) */
 import { TELL_ROWS as POOLCRAB_ROWS } from './pool-crab.js'; import { TELL_ROWS as WALLEEL_ROWS } from './wall-eel.js'; import { TELL_ROWS as CREW_ROWS } from './sunken-crew.js'; import { TELL_ROWS as K2_ROWS } from './drowned-king2.js';
-import { TELL_ROWS as HERALD_ROWS } from './tide-herald.js'; import { TELL_ROWS as GP_ROWS } from './gastric-polyp.js'; import { TELL_ROWS as PQ_ROWS } from './parasite-queen.js';   /* (claude/sea3) the sea act's hands-driven creatures: see the registry loop below */
+import { TELL_ROWS as HERALD_ROWS } from './tide-herald.js'; import { TELL_ROWS as NG_ROWS } from './naga-guard.js'; import { TELL_ROWS as NQ_ROWS } from './naga-queen.js'; import { TELL_ROWS as GP_ROWS } from './gastric-polyp.js'; import { TELL_ROWS as PQ_ROWS } from './parasite-queen.js';   /* (claude/sea3) the sea act's hands-driven creatures: see the registry loop below */
 
 export const THROWN = new Set(['updateRam|boulderTell',   /* (claude/scree3, listed batch156) THE BOULDER BUTT: the blow is the rolled stone (src/ram-lord.js boulderStep), thrown by nobody - red, JUMP IT; a raised shield only shoves you back (SHOVED), it does not turn the hit */
   'updatePyromancer|chargeBigTell',   /* (claude/pyroboss2) THE PYROMANCER 2's big fireball (step 3+): the ball flies on its own (updatePyroBalls) and its BLAST no shield turns - out of the red ring */
@@ -971,7 +971,7 @@ for (const t of ORDER_TYPES) for (const [m, v] of Object.entries(ORDER_MARKS)) i
 /* (claude/keepfloods) THE DROWNED KING 2 (src/drowned-king2.js K2_TELLS, behind KF_SHIPS): the trident kit, the decree, the cursed king's three */
 /* (claude/sea3) THE HANDS-DRIVEN SEA CREATURES' ROWS live with their modules (each exports TELL_ROWS = [type, mode, mark, answer, height]); one registry loop writes MARK + BY_HAND + ANSWER + HEIGHT from them,
    and tools/tells.mjs DISCOVERS every src module that exports TELL_ROWS (it fails one this list does not register, a row whose windup the module never names, a !! you could block). A new module: export TELL_ROWS, add it here. */
-for (const rows of [POOLCRAB_ROWS, HERALD_ROWS, WALLEEL_ROWS, CREW_ROWS, K2_ROWS, GP_ROWS, PQ_ROWS]) for (const [t, m, mk, an, ht] of rows) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
+for (const rows of [POOLCRAB_ROWS, HERALD_ROWS, WALLEEL_ROWS, CREW_ROWS, K2_ROWS, GP_ROWS, PQ_ROWS, NG_ROWS, NQ_ROWS]) for (const [t, m, mk, an, ht] of rows) { MARK[t + '|' + m] = mk; BY_HAND[t + '|' + m] = mk; if (an) { ANSWER[t + '|' + m] = an; HEIGHT[t + '|' + m] = ht; } }
 export const UNTOLD = {};
 /* (claude/rookery3) THE TEMPO CLASS OF A WINDUP: 'heavy' (a long readable windup ~0.9-1.2 s, the biggest pose, a deep cue, hits hard, a long recovery to punish), 'medium' (~0.6-0.75 s),
    'light' (~0.35-0.45 s, low damage, short; a quick flash). Daniel 10-29 live on THE SHRIEK SISTERS: "they attack way too quickly and at the same speed ... a heavy, a light and a medium one".

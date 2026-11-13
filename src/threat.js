@@ -29,6 +29,7 @@ export const THREAT = { crackfloor: 0, crackpillar: 0, cracknest: 0, crackslab: 
   dummy: 0, bale: 0.5, fisher: 0,
   poolcrab: 2, lw3herald: 6, lw3bell: 0, lw3sluice: 0, lw3trap: 0, lw3moor: 0,   /* (claude/longwater3) THE TIDE-POOL CRAB (a crab's weight, out only at low water); THE TIDE HERALD 2's spawn ent; SALTREACH's sea bells, sluice wheels, fish traps and moorings are gadgets */
   sailor: 2.5, netter: 2, gill: 2, heart: 1, bearer: 1, master: 5, kite: 1.5, hare: 0, grub: 1.5,
+  nagaguard: 2.5, nagaqueen: 6, singstone: 0, blowhole: 0, tidebell: 0,   /* (claude/sirenrocks) THE NAGA GUARD (a spear and a told lunge, the song never moves it: a tideguard's weight); THE NAGA QUEEN; SIREN ROCKS' stones, blowholes and tide bell are gadgets */
   miner: 2, horn: 2, sweep: 1.5, drone: 1, stormshaman: 3, seawitch: 3,
   gastricpolyp: 2, parasitequeen: 6, nerve: 0, membrane: 0,   /* (claude/whale) THE GASTRIC POLYP (a ranged stalk the breath hides: a spitcap's weight); THE PARASITE QUEEN; THE WHALE's nerves and membranes are gadgets */
   /* THE ORE ROAD'S OWN THREE, weighed against the men already here rather than invented. A rockfall is a 2 and a

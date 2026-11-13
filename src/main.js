@@ -156,6 +156,7 @@ import { makeTowpathHands } from './towpath-hands.js'; import { makeFogKnightHan
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
 import { reachGeom, reachPoseFor } from './warden-reach.js';   /* (claude/wardenult) WARDEN'S REACH, SEEN: both hands on the ghost spear (src/warden-reach.js) */
 import { WTH as WTW, WTH_PIPS, wthTier, wthPips } from './warden-throw.js';   /* THE WARDEN'S JAVELIN THROW (claude/herofeel): hold C winds three tiers; it replaced the hold-C brace (heroblocksb) */
+import { makeSirenRocksHands } from './siren-rocks-hands.js'; import { NG as SR_NG } from './naga-guard.js'; import { NQ as SR_NQ } from './naga-queen.js'; let SKRH = null;   /* (claude/sirenrocks) SIREN ROCKS: its songs, stones, blowholes and tides, THE NAGA GUARD, THE NAGA QUEEN - inert on every other level (SKRH.on() reads L.sirenRocks) */
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import { makeWhaleHands } from './whale-hands.js'; import { GP as WH_GP } from './gastric-polyp.js'; import { PQ as WH_PQ } from './parasite-queen.js'; let WHH = null;   /* (claude/whale) THE WHALE: its breath (the tide kit), nerves, membranes, gusts, THE GASTRIC POLYP, THE PARASITE QUEEN - inert on every other level (WHH.on() reads L.whale) */
@@ -582,6 +583,7 @@ const EHP = { hookjack: HKJ.hp, /* (claude/hllive) THE HOOKJACK (src/hookjack.js
   poolcrab: LW3_PC.hp,   /* (claude/longwater3) THE TIDE-POOL CRAB (LONG WATER 3's new foe): placeholder, untuned */
   walleel: 20, sunkencrew: 1920,   /* (claude/deep3) THE WALL EEL (src/wall-eel.js); THE SUNKEN CREW's anchor = the four crew (960) + THE CURSED SAILOR (960): the brief's ~600 + ~600 x1.6, placeholder until the tune lane (src/sunken-crew.js) */
   gastricpolyp: WH_GP.hp, parasitequeen: WH_PQ.hp,   /* (claude/whale) THE GASTRIC POLYP (THE WHALE's new foe) and THE PARASITE QUEEN: placeholders, untuned (boss-rates owed) */
+  nagaguard: SR_NG.hp, nagaqueen: SR_NQ.hp,   /* (claude/sirenrocks) THE NAGA GUARD (SIREN ROCKS' new foe) and THE NAGA QUEEN: placeholders, untuned (boss-rates owed) */
   drownedknight: DKN.DK.knight.hp, drownedcaptain: DKN.DK.captain.hp, whelp: WHF.WH.hp, mummer: MU.MUMMER.hp, hobbyhorse: MU.HORSE.hp, wickerqueen: WQN.WQ.hp, lanterneater: LEM.LE.hp, stagehand: THF.STAGEHAND.hp, puppeteer: PM.PUP.hp, marionette: 999, harlequin: 999, acrobat: 999, masterpiece: 999, stringjack: FAF.MARIONETTE.hp, hornsman: HM.HORNSMAN.hp, barker: FAF.BARKER.hp, grindylow: CNF.GRIND.hp, willowisp: CNF.WISP.hp, wickerman: WMN.WM.hp };   /* (his puppets are wood: a blow on a body does nothing, only the strings are cut - src/puppeteer.js) */
 /* (claude/sweep2) THE ACT II BOSS RETUNE (2026-10-06), measured with tools/boss-rates.mjs (profile human, campaign level, n=12): every
    number the sweep moved is here, on its own lines, so the act lanes never fight over the two tables above. before -> after in the comment */
@@ -2970,6 +2972,7 @@ const loadDice = (id, part) => { let h = 2166136261 >>> 0; const k = String(id) 
 function spawnEntities() { const dice0 = Math.random; if (LOAD_OWN_STREAM) Math.random = loadDice(curId() || levelIndex, 'spawn'); try { spawnEntitiesRaw(); } finally { Math.random = dice0; } }
 function spawnEntitiesRaw() {
   if (PUPH) PUPH.clear();   /* THE PUPPETEER's show is made again with him (his spawn case) */
+  if (SKRH) SKRH.clear();   /* (claude/sirenrocks) the songs, the stones, the tides and the Queen's fight made again (a death brings every stone back) */
   if (LEH) LEH.clear();   /* THE LANTERN-EATER's show is made again with it (its spawn case) */
   if (D3H) D3H.clear();   /* (claude/deep3) the cracks laid (what gave stays given), the stair and F4's stone set back, the crew made again with their spawn */
   if (SKH) SKH.reset(); if (CMH) CMH.clear();   /* (claude/silk) THE SILK UNDERCROFT: every sticky wall whole, every bridge high, the sacs whole, no torch; the Mother's fight is made again with her (her spawn case) */
@@ -3099,6 +3102,7 @@ function spawnEnt(e) {
       case 'grapplewinch': break;   /* (claude/water1) THE PIRATE FLEET's winches: src/pirate-fleet-hands.js reads L.pfWinches */
       case 'admiral': { const a = ADH.spawnBoss(base); if (a) { boss = a; enemies.push(a); } break; }
       case 'grapnel': if (F3H) enemies.push(F3H.spawnFoe(base, e)); break;
+      case 'nagaqueen': { const a = SKRH && SKRH.spawnEnt(base, e); if (a) { boss = a; enemies.push(a); } break; }   /* (claude/sirenrocks) */ case 'nagaguard': { const a = SKRH && SKRH.spawnEnt(base, e); if (a) enemies.push(a); break; } case 'singstone': case 'blowhole': case 'tidebell': break;   /* (the hands read them from L.srStones / L.srBlowholes / L.srTides) */
       case 'powdermonkey': if (PMK) enemies.push(PMK.spawn(base, e)); break;   /* (claude/flotilla4) THE POWDER MONKEY (src/powder-monkey.js): any level places him */   /* THE GRAPNEL BOARDER (claude/flotilla3, the flotilla's one new foe): src/flotilla3.js */   /* THE ADMIRAL (src/admiral.js): on THE LASHINGS at the flotilla's end */   /* THE ADMIRAL'S CHAMPION (src/fleetlord-champion.js): on THE LASHINGS at the flotilla's end; his fight is made here */
       case 'tollmaster': boss = { ...base, t: 'tollmaster', w: 20, h: 30, hp: EHP.tollmaster, maxHp: EHP.tollmaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, onFoot: false, open: 0, ring: 0, ledgerT: 1.4, rodT: 5.5, flooded: false, ward: 0 }; enemies.push(boss); break;
       case 'lampreeve': enemies.push({ ...base, t: 'lampreeve', w: 12, h: 28, hp: EHP.lampreeve, maxHp: EHP.lampreeve, mini: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, snuffT: 2.4, sweepT: 2, flaskT: 4, hookT: 7, lungeT: 3.5, open: 0, ward: 0, target: null }); break;
@@ -9492,6 +9496,7 @@ function wardedDamage(e, dmg, blow, tag = blow) {
   if (e.t === 'fogknight' && FKH) dmg = FKH.take(e, dmg, blow, tag); if (e.t === 'champion' && CHH) dmg = CHH.take(e, dmg, blow, tag); if (e.t === 'admiral' && ADH) dmg = ADH.take(e, dmg, blow, tag); if (e.t === 'freebooter' && FBH) dmg = FBH.take(e, dmg, blow, tag); if (e.t === 'grapnel' && F3H) dmg = F3H.takeFoe(e, dmg, blow); if (e.cnSkin === 'pistoleer' && e.mode === 'reload') dmg = Math.round(dmg * 1.6);   /* (claude/flotilla3) a blow on a boarder's line cuts it; the pistoleer RELOADING is open */   /* THE ADMIRAL (claude/flotilla3): his iron chips (Daniel's 0.15x), his openings whole */   /* THE ADMIRAL'S CHAMPION (claude/flotilla2): never nothing (B15) - his plate x0.5, flat x2 (src/fleetlord-champion.js) */   /* THE FOG KNIGHT (claude/towpath): his STANCE turns the wrong angle (0), his ward everything; open x1.6 (src/fog-knight.js); FULL_DAMAGE (no chip) */
   if (e.t === 'roc' && ROCE && ROCE.on()) dmg = ROCE.take(e, dmg, P.x, tag);   /* THE ROC (claude/roc2, B11/B13): always hittable - whole from the air the level gives (a thermal, the cloak, a height), GUARDS LOW from the floor; x1.5 open; nothing in her ward (src/roc-eyrie.js); she is on FULL_DAMAGE (no chip) */
   if (e.t === 'matriarch' && MTH) dmg = MTH.take(e, dmg, tag);   /* THE RAPTOR MATRIARCH: her talons turn a blow from the front (0), her ward everything; an opening x1.6 (src/raptor-matriarch.js); she is on FULL_DAMAGE (no chip) */   /* THE GREAT RED CRAB: x1.6 on his back (the global chip, src/boss-greed.js, makes every other blow a scratch) */
+  if (SKRH && (e.t === 'nagaqueen' || e.t === 'nagaguard')) dmg = SKRH.take(e, dmg, blow, tag);   /* (claude/sirenrocks) THE NAGA QUEEN: x0.6 on her scales, x0.4 under the tide or warded, x1 / x1.25 open (src/naga-queen.js takeAt; boss-greed FULL_DAMAGE); the guard x1.5 spent */
   if (e.t === 'djinn' && DJH) dmg = DJH.take(e, dmg, tag);   /* THE DJINN: x2.5 in his water openings (mud, doused, bailed), his slammed hand whole; anything else passes through (claude/welltown5) */
   if (e.t === 'cisternqueen' && CQH) dmg = CQH.take(e, dmg, tag);   /* THE CISTERN QUEEN: x2.2 in her openings (soaked, on her back, rearing); her raised claws turn a frontal blow outside them; from behind the global chip */
   if (e.t === 'gangleader' && GLH) dmg = GLH.take(e, dmg, tag);
@@ -13218,6 +13223,7 @@ function bossEnd(e) {
       shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.12; if (CHH) CHH.end(e);
       for (let i = 0; i < 30; i++) parts.push({ x: x + (Math.random() - 0.5) * 30, y: y - Math.random() * 40, vx: (Math.random() - 0.5) * 80, vy: -40 - Math.random() * 60, life: 1.5, max: 1.5, col: Math.random() < 0.5 ? '#e8eee8' : '#c9b27c', size: 2, grav: 120 });
       say('THE FLEET STRIKES ITS COLOURS', '#ffd36b'); break; }
+    case 'nagaqueen': { shakeCam(9); zoomKick(1.14, 0.6); killFlash = 0.12; if (SKRH) SKRH.end(e); say('THE ROCKS FALL SILENT', '#e2c8ff'); break; }   /* (claude/sirenrocks) she sinks; the stones stop singing (greybox: the art pass owes her fall) */
     case 'reefmaw': { // it dies on the reef it came out onto, and what water was left goes off it
       shakeCam(10); zoomKick(1.16, 0.6); SFX.boreRoar(); SFX.waveCrash();
       const rp = (L.pools || []).find(q => q.arenaTide); if (rp) { rp.tideY = floor + 6; poolLevel(rp, floor + 6); }
@@ -29957,6 +29963,7 @@ function updateEnemies(dt) {
     if (FBH && FBH.owns(e)) { if (bossActive && e === boss) FBH.update(e, dt); continue; }   /* (claude/water1) */
     if (ADH && ADH.owns(e)) { if (bossActive && e === boss) { beastSeen('admiral'); ADH.update(e, dt); } continue; }
     if (F3H && F3H.ownsFoe(e)) { if (e.hurtT > 0) e.hurtT -= dt; F3H.updateFoe(e, dt); continue; }
+    if (SKRH && SKRH.owns(e)) { if (SKRH.on()) SKRH.updateEnt(e, dt); continue; }   /* (claude/sirenrocks) THE NAGA GUARD; THE NAGA QUEEN (only while her fight is on) */
     if (PMK && PMK.owns(e)) { if (e.hurtT > 0) e.hurtT -= dt; PMK.updateFoe(e, dt); continue; }   /* (claude/flotilla4) THE POWDER MONKEY */   /* THE GRAPNEL BOARDER (src/flotilla3.js) */   /* THE ADMIRAL (src/admiral.js) */   /* THE ADMIRAL'S CHAMPION (src/fleetlord-champion.js) */
     // (the Roc was 32 tiles off across her crown and simply stopped; the Lance could freeze at the far end of his own bridge)
     if (e.t === 'tollmaster') { if (bossActive) beastSeen('tollmaster'); if (bossActive || e.mode === 'sleep') updateTollmaster(e, dt); continue; }
@@ -31216,7 +31223,7 @@ CHH = makeChampionHands({ get L() { return L; }, get players() { return players;
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
 KFH = kfOn() ? makeKeepFloodsHands({ get L() { return L; }, get players() { return players; }, get enemies() { return enemies; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, hero: () => P, marks: () => marks, life: () => lifeN, time: () => time, poolLevel: (p, y) => poolLevel(p, y), moveBody: (b, dx, dy, d) => moveBody(b, dx, dy, d), isSolid: (x, y) => isSolid(x, y), cellSet: (x, y, t) => cellSet(x, y, t), damagePlayer: (...a) => damagePlayer(...a), number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), sfx: SFX }) : null;   /* (claude/keepfloods) */
 /* (claude/water1) THE WATER KIT'S WIRING (docs/waterkit.md) + THE PIRATE FLEET; THE FREEBOOTER */
-PFH = makePirateFleetHands({ get L() { return L; }, hooks: () => (CWH && CWH.on() ? CWH.water : LWH && LWH.on() ? LWH.water : KFH && KFH.on() ? KFH.water : WHH && WHH.on() ? WHH.water : null), get players() { return players; },   /* (claude/lw3b) a level's own words / sounds / art on the ONE water wiring */ hero: () => P, marks: () => marks, poolLevel: (p, y) => poolLevel(p, y), moveBody: (b, dx, dy) => moveBody(b, dx, dy, false),
+PFH = makePirateFleetHands({ get L() { return L; }, hooks: () => (CWH && CWH.on() ? CWH.water : LWH && LWH.on() ? LWH.water : KFH && KFH.on() ? KFH.water : WHH && WHH.on() ? WHH.water : SKRH && SKRH.on() ? SKRH.water : null), get players() { return players; },   /* (claude/lw3b) a level's own words / sounds / art on the ONE water wiring */ hero: () => P, marks: () => marks, poolLevel: (p, y) => poolLevel(p, y), moveBody: (b, dx, dy) => moveBody(b, dx, dy, false),
   holding: b => (b === P ? !!keys.up : !!b.hold), enemies: () => enemies, number: (x, y, t, c) => number(x, y, t, c), shake: n => shakeCam(n), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), time: () => time,
   VW: () => VW, view: () => ({ x0: camX, y0: camY, x1: camX + VW, y1: camY + VH }), parts: () => parts,
   sound: k => { const f = { whirr: SFX.whoosh || SFX.tell, creak: SFX.creak || SFX.thud || SFX.clank, thud: SFX.thud || SFX.clank, clank: SFX.clank, grab: SFX.clank, swellTell: SFX.splash || SFX.tell, swellTurn: SFX.splash || SFX.tell }[k]; if (f) try { f.call(SFX); } catch {} } });
@@ -31235,6 +31242,11 @@ F3H = makeFlotilla3({ get L() { return L; }, get players() { return players; }, 
   damagePlayer: (...a) => damagePlayer(...a), hurtEnemy: (e, d, x) => hurtEnemy(e, d, x, false), isSolid: (x, y) => isSolid(x, y), oneWay: (x, y) => isOneWay(tileAt(x, y)), cellSet: (x, y, t) => cellSet(x, y, t), resolve: () => resolveTiles(),
   pushBall: b => balls.push(b), explode: (x, y, r) => explode(x, y, r, DMG.bomb), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), wet: (x, y) => (L.pools || []).some(p => p.harm && x > p.x0 && x < p.x1 && y > p.y && y < (p.bottom || 1e9)),
   sound: k => { try { ({ whistle: () => SFX.tell(true), broadside: () => { SFX.boom(); SFX.crack(); }, boom: () => SFX.boom(), crack: () => SFX.crack(), fuse: () => SFX.fuse(), clank: () => SFX.clank(), snap: () => SFX.crack(), whirl: () => SFX.tell(false), swing: () => SFX.pJump(), slash: () => (SFX.foeSlash || SFX.slash)() }[k] || (() => {}))(); } catch {} } });   /* THE FLOTILLA 3 (claude/flotilla3) */
+SKRH = makeSirenRocksHands({ get L() { return L; }, get pfh() { return PFH; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, hero: () => P, time: () => time, poolLevel: (p, y) => poolLevel(p, y), moveBody: (b, dx, dy) => moveBody(b, dx, dy, false), enemies: () => enemies, parts: () => parts, isSolid: (x, y) => isSolid(x, y), VW: () => VW, view: () => ({ x0: camX, y0: camY, x1: camX + VW, y1: camY + VH }),   /* (claude/sirenrocks) SIREN ROCKS' hands */
+  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => { const cxw = Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)); wordRects.push([cxw - textW(s, 5) / 2, a[0], textW(s, 5), 8]); return text(s, cxw, ...a); }, burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), turned: (e, x, w, o) => BR.turned(e, x, w, o),
+  damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b),
+  sound: k => { const f = { hum: () => SFX.tell(false), song: () => SFX.sirenSong(), crack: () => SFX.crack(), bell: () => SFX.seaBell(), toll: () => SFX.seaBell(), tollTurn: () => SFX.seaBell(), boom: () => SFX.boom(), spout: () => SFX.splash(), tell: () => SFX.tell(false), tellHard: () => SFX.tell(true), slash: () => (SFX.foeSlash || SFX.slash)(), clank: () => SFX.clank(), whoosh: () => (SFX.whoosh || SFX.pJump)(), open: () => (SFX.bell || SFX.clank)(), spit: () => SFX.splash() }[k]; if (f) try { f(); } catch {} } });
+if (typeof window !== 'undefined') window.BK_SIREN = () => (SKRH && SKRH.on() ? SKRH.read() : null);   /* (claude/sirenrocks) for the page tools (browser owed) */
 PMK = makePowderMonkeys({ get TS() { return TS; }, EHP, hero: () => P, enemies: () => enemies, boss: () => boss, time: () => time, LH: () => LH, isSolid: (x, y) => isSolid(x, y), oneWay: (x, y) => isOneWay(tileAt(x, y)),
   wet: (x, y) => (L.pools || []).some(p => !p.shallow && x > p.x0 && x < p.x1 && y > p.y && y < (p.bottom || 1e9)), moveBody: (e, dx, dy) => moveBody(e, dx, dy, false), overlap: (a, b) => overlap(a, b), number: (x, y, t, c) => number(x, y, t, c),
   hint: m => hintSay('mechanic', 5, m), blast: (x, y, r, o) => pmBlast(x, y, r, o), heel: () => (L && L.h3 && typeof heeling === 'function' && heeling() && roll ? (roll.dir || 0) * 160 : 0),
@@ -32627,6 +32639,7 @@ function updateProps(dt) {
   if (WWH && WWH.on()) WWH.strike(hb, P); if (WDH && WDH.on()) WDH.strike(hb);   /* (claude/wispwood) a grave candle, a hanging lamp, a shadow hand; the Widow's lantern (the reclaim) and her false lights */
   if (ACH && ACH.on()) ACH.strike(hb, P); if (HDH && HDH.on()) HDH.strike(hb);   /* (claude/academy) a lectern (learn its lesson), a shortcut rune; the Headmistress's shield books */
   if (PUPH && PUPH.on()) PUPH.strike(hb);   /* THE PUPPETEER: a swing across a glowing string cuts it; a swing at the pin rail frees the counterweight */
+  if (SKRH && SKRH.on()) { SKRH.strike(hb); SKRH.update(dt); }   /* (claude/sirenrocks) a blow shatters a singing stone / rings the tide bell; then the tides, the songs, the surf, the blowholes */
   if (MRH && MRH.on()) MRH.strike(hb);   /* GALE MOOR: the frame's guy-rope */
   if (SKH && SKH.on()) SKH.strike(hb, P); if (CMH && CMH.on()) CMH.strike(hb, P);   /* (claude/silk) an anchor knot (CUT), a sconce (a torch), a sticky wall (BURN, with a torch), an egg sac, a lurker's thread; the Mother's live knot and her sacs */
   if (LWH && LWH.on()) { LWH.strike(hb); LWH.update(dt); }   /* (claude/longwater3) a blow cuts a trap's rope or a mooring; then the race, the jellies, the traps, the village (claude/lw3b: a sea bell / a sluice wheel, the tides and the flats' sea run in PFH, through LWH.water) */
@@ -33073,6 +33086,7 @@ function updateMovers(dt) {
     if (m.mplank && MTH && MTH.plank(m, dt)) continue;
     if (m.mbasket && MTH && MTH.basket(m, dt)) continue;   /* (claude/redgorgerework) THE STANDPIPE BASKETS: a lever's water lifts one to her wall in phase two */   /* the dam's loose timbers on the Matriarch's ledge: they float up when it cracks */
     if (m.canal && CNH.canalMover(CANAL, CNX, m, dt)) continue;   /* THE FOG CANAL: the water in the locks, and the barge on it */
+    if (m.sr && SKRH && SKRH.mover(m, dt)) continue;   /* (claude/sirenrocks) a pumice raft where the cove's tide puts it */
     if (m.towpath && TPH && TPH.mover(m, dt)) continue;
     if (m.pf && PFH && PFH.mover(m, dt)) continue;   /* (claude/water1) a swell boat / a prize: where the swell (and the haul) put it */
     if (m.h3 && H3H && H3H.mover(m, dt)) continue;   /* (claude/hurricane3) HER CASKS: the heel runs them (src/hurricane3.js) */   /* THE TOWPATH: a punt rides its lock's water (src/towpath-hands.js) */
@@ -35391,6 +35405,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (OWK && OWK.on()) OWK.drawWorld(g, cx, cy, time);   /* (claude/oreroadminor) the lamps, the rock piles and the lifts, behind the bodies */
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
+  if (SKRH && SKRH.on()) SKRH.drawBack(g, cx, cy, time);   /* (claude/sirenrocks) the singing stones, the blowholes, the tide bell (GREYBOX) */
   if (FAIR && L.ring) CRG.drawRingBack(g, cx, cy, VW, L.ring, L.green, L.arena, time, L.ring.quickT > 0);   /* THE WICKER QUEEN'S CAROUSEL: the canopy, the column, the firebox, the back of the ride, under its horses */
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time); if (FL2H && FL2H.on()) FL2H.drawBack(g, cx, cy, time); if (F3H && F3H.on()) F3H.drawBack(g, cx, cy, time); if (H3H && H3H.on()) H3H.drawBack(g, cx, cy, time); if (PFH && PFH.on()) PFH.drawBack(g, cx, cy, time);   /* THE FLOTILLA 2 (claude/flotilla2art): spars, hawser, wreck-bone masts, hatch, magazine, mainmast wall (src/flotilla2-art.js) */
   //   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
@@ -35398,6 +35413,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.lw3) { if (LWH) LWH.drawMover(g, m, cx, cy, time); continue; }   /* (claude/longwater3) a boat (GREYBOX) */
     if (H2A.on() && (m.kind === 'swing' || (!m.kind && m.vert))) { if (m.x + m.w > cx - 40 && m.x < cx + VW + 40 || m.kind === 'swing') { if (m.kind === 'swing') H2A.swing(g, m, cx, cy, time); else H2A.hatch(g, m, cx, cy, time); } continue; }   /* her rope swings and her hatch covers (claude/hurricane2art) */
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
+    if (m.sr) { if (SKRH) SKRH.drawMover(g, m, cx, cy, time); continue; }   /* (claude/sirenrocks) a pumice raft */
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
     if (m.pf) { if (PFH) PFH.drawMover(g, m, cx, cy, time); continue; }   /* (claude/water1) */
     if (m.h3) { if (H3H) H3H.drawMover(g, m, cx, cy, time); continue; }   /* (claude/hurricane3) her casks */
@@ -35888,6 +35904,7 @@ function drawWorld(cx, cy, showPlayer) {
     /* (claude/church2) THE PALADIN is drawn by the generic path below now: the hero's own sheet (SPR.paladinboss), frame = PBH.frame, x PBG.PB.scale */
     if (DCH && DCH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) DCH.drawBoss(g, e, cx, cy, time); continue; }   /* THE DEACON draws himself (GREYBOX) */   /* THE HAWK-MISTRESS draws herself (GREYBOX) */   /* THE RAPTOR MATRIARCH draws herself, live (GREYBOX shapes until the art pass) */
     if (FKH && FKH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) FKH.drawBoss(g, e, cx, cy, time); continue; }
+    if (SKRH && SKRH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) SKRH.drawEnt(g, e, cx, cy, time); continue; }   /* (claude/sirenrocks) GREYBOX naga */
     if (CHH && CHH.owns(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) CHH.drawBoss(g, e, cx, cy, time); continue; }
     if (LWH && LWH.drawsSelf(e)) { if (e.alive && e.x > cx - 200 && e.x < cx + VW + 200) LWH.drawEnt(g, e, cx, cy, time); continue; }   /* (claude/longwater3) GREYBOX tide-pool crab (THE TIDE HERALD 2 keeps master's sheet) */
     if (e.t === 'captain' && e.mode === 'dive') continue;   /* (claude/hurricane3) under the water: only his ring shows (capRead) */
@@ -36738,6 +36755,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (BTH && BTH.on()) BTH.drawOver(g, cx, cy, time);   if (SKYH && SKYH.on()) SKYH.drawOver(g, cx, cy, time);   /* (claude/skyhook) SKYHOOK's hook, drop ring, swing arc, fray bar and read */   /* (claude/fenroad) THE BOG TROLL's bulge, drag line, rip warning, clods and read */
   if (LWH && LWH.on()) LWH.drawOver(g, cx, cy, time);   /* (claude/longwater3) foam, the race, the traps, the Herald's reads (gold ring + timer, the wave, the spears, the undertow), the A3 gauge */
   if (BCH && BCH.on()) BCH.drawOver(g, cx, cy, time);   if (BC5H && BC5H.on()) BC5H.drawOver(g, cx, cy, time);   /* (claude/bc5) gobs, blast cone, shards */   if (HGK && HGK.on()) HGK.drawOver(g, cx, cy, time);   if (PYH && PYH.on()) PYH.drawOver(g, cx, cy, time);   if (SMH && SMH.on()) SMH.drawOver(g, cx, cy, time);   if (TKH && TKH.on()) TKH.drawOver(g, cx, cy, time);   if (OTH && OTH.on()) OTH.drawOver(g, cx, cy, time);   if (BBH && BBH.on()) BBH.drawOver(g, cx, cy, time);   if (GBH && GBH.on()) GBH.drawOver(g, cx, cy, time);   if (SSH && SSH.on()) SSH.drawOver(g, cx, cy, time);   if (HQH && L.hornetsNest) HQH.drawOver(g, cx, cy, time);   if (HNS && HNS.on()) HNS.drawOver(g, cx, cy, time);   /* (claude/hornetsnest) the pots, the smoke, the told arc */
+  if (SKRH && SKRH.on()) SKRH.drawOver(g, cx, cy, time);   /* (claude/sirenrocks) the cove's foam, her venom, the A3 gauge */
   if (LEH && LEH.on()) LEH.drawOver(cx, cy, time);   /* THE LANTERN-EATER: phase three's dark, the lights, its tells, the key, OPEN and its ward - over everything */
   if (WWH && WWH.on()) WWH.drawOver(g, cx, cy, VW, VH, time); if (WDH && WDH.on()) WDH.drawOver(g, cx, cy, VW, VH, time);   /* (claude/wispwood) the spectral cells (real / the glint), candles, lamps, waystones, pools and hands, the lanterns; her wail, hands, march and false lights */
   if (ACH && ACH.on()) ACH.drawOver(g, cx, cy, VW, VH, time); if (HDH && HDH.on()) HDH.drawOver(g, cx, cy, VW, VH, time);   /* (claude/academy) the lecterns, the ward rails, the conjured steps, the runes, each hero's lesson; her chalk, bolts, shield books, the floor's tell */
@@ -38528,6 +38546,7 @@ function render() {
    : boss.t === 'colossus' && COH ? COH.barName(boss)
    : boss.t === 'greatdrill' && GDH ? GDH.barName(boss)
    : boss.t === 'djinn' && DJH ? DJH.barName(boss)
+   : boss.t === 'nagaqueen' && SKRH ? SKRH.barName(boss)   /* (claude/sirenrocks) */
    : boss.t === 'gorgecrab' && GCH ? GCH.barName(boss)
    : boss.t === 'herald' && boss.lw3 && LWH ? LWH.barName(boss)   /* (claude/longwater3) */
    : boss.t === 'scarabmother' && SMH ? SMH.barName(boss)
