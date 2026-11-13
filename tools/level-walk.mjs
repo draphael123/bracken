@@ -302,7 +302,7 @@ export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
   const queue = cfgs.slice(), out = [], rcs = Array.from({ length: Math.max(1, Math.min(jobs, cfgs.length)) }, () => recycler({ open: openRetry }));
   const worker = async i => { for (;;) { const c = queue.shift(); if (!c) return; let row;
     try { row = await rcs[i].run(async pg => { await pg.reload(); await pg.evalp(diffJs()); const r = await pg.evalp(walkJs(c), 1800000); const errs = pg.errors.splice(0); if (errs.length) r.pageErrors = errs.slice(0, 3); return r; }, 1); }
-    catch (e) { row = { id: c.id, hero: c.hero, seed: c.seed, err: String(e.message).slice(0, 160), ...(e.infraKilled ? { infraKilled: true } : {}) }; await rcs[i].reset(); }
+    catch (e) { row = { id: c.id, hero: c.hero, seed: c.seed, err: String(e.message).slice(0, +(process.env.ERRLEN||160)), ...(e.infraKilled ? { infraKilled: true } : {}) }; await rcs[i].reset(); }
     out.push(row); if (onRow) onRow(row, out); } };
   try { await Promise.all(rcs.map((_, i) => worker(i))); } finally { for (const r of rcs) try { await r.close(); } catch {} }
   return out;
