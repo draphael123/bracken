@@ -9,12 +9,14 @@
 //   THE BELL: master's lift mover (kind 'lift', d3bell) rides while a hero stands on it - and only weight keeps a swimmer on its deck. The air under her rim is a
 //     deep air box that rides with her (src/main.js deepAir: 'AIR UNDER HER RIM').
 //   THE WALL EELS and THE CREW are foes in the list; their blows on the heroes are told and keyed once per blow (the shriek sisters' pattern).
-// GREYBOX ART: plain shapes in the Deep's colours; the sonnet art lane draws them (lane report: ART OWED).
+// ART (claude/d3art): src/redraw/deep3_art.js (cracks, settling stones, rot, the Bell, lanterns + ring, the wall eel, harpoon, rings, wave) and src/redraw/drowned_crew_art.js (the crew + the Cursed Sailor); draw-only.
 // main.js calls: clear, spawn, owns, on, update, hit, tick, drawBack, drawFoe, drawOver, barName.
 import * as WE from './wall-eel.js';
 import * as SC from './sunken-crew.js';
 import { crewStage } from './deep3.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as KA from './redraw/deep3_art.js';   /* (claude/d3art) the level kit + the wall eel */
+import * as CA from './redraw/drowned_crew_art.js';   /* (claude/d3art) the four crew + the Cursed Sailor */
 
 export const DEEP3 = { step: { back: 8 }, tick: 0.5 };
 const COL = { cutlass: '#5e7a86', shield: '#6e6a58', harpoon: '#4e6a5a', heavy: '#6a5a66', sailor: '#3e5a64', rot: '#7aa04a', eel: '#4a5e3a', lantern: '#7ff0e0', crack: '#1a2228', stone: '#4a5058' };
@@ -193,68 +195,43 @@ export function makeDeep3Hands(ctx) {
   const R = Math.round, rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.drawBack = (g, cx, cy, time) => {
     const d = D(); if (!d || !per) return;
-    for (const c of per.cracks) { if (c.mode === 'gone') continue; const x = c.x0 * TS - cx, y = c.y0 * TS - cy, w = (c.x1 - c.x0 + 1) * TS;
-      g.strokeStyle = c.mode === 'creak' ? '#ffd36b' : COL.crack; g.lineWidth = 1; g.beginPath(); for (let i = 0; i < w; i += 7) { g.moveTo(x + i + 0.5, y + 1); g.lineTo(x + i + 4.5, y + 5 + (i % 3)); g.lineTo(x + i + 2.5, y + 10); } g.stroke();
-      if (c.stoneOnly) { rect(g, x, y + 13, w, 1, '#2a3238'); } }
-    for (const s of per.stones) { if (s.mode === 'rest') continue; const x = s.x0 * TS - cx, y = s.y - cy, w = s.w * TS, h = s.h * TS, sh = s.mode === 'tell' ? (Math.random() - 0.5) * 2 : 0;
-      if (s.mode !== 'fall') { rect(g, x + w / 2 - 1, s.y0 * TS - cy - 6, 2, 6, '#6a6e72'); }
-      rect(g, x + sh, y, w, h, COL.stone); rect(g, x + sh, y, w, 2, '#6a7078'); if (s.mode === 'tell') { g.globalAlpha = 0.5; rect(g, x - 8, y + h, w + 16, 12 * TS, '#ffd36b'); g.globalAlpha = 1; } }
-    for (const r of per.rot) { const b = rotBox(r); const a = r.state === 'on' ? 0.32 : r.state === 'tell' ? 0.14 + 0.1 * Math.sin(time * 18) : 0.05;
-      g.globalAlpha = a; rect(g, b.l - cx, b.t - cy, b.r - b.l, b.b - b.t, COL.rot); g.globalAlpha = 1;
-      if (r.kind === 'vent') { rect(g, (r.dir > 0 ? r.x - 1 : r.x) * TS - cx, r.y0 * TS - cy, TS, (r.y1 - r.y0 + 1) * TS, '#24301c'); } }
+    for (const c of per.cracks) { if (c.mode === 'gone') continue; KA.drawCrack(g, c.x0 * TS - cx, c.y0 * TS - cy, (c.x1 - c.x0 + 1) * TS, c.mode, c.x0 * 31 + c.y0, time, !!c.stoneOnly); }
+    for (const s of per.stones) { if (s.mode === 'rest') continue; const x = s.x0 * TS - cx, y = s.y - cy; if (s.mode === 'tell') { g.globalAlpha = 0.16; rect(g, x - 8, y + s.h * TS, s.w * TS + 16, 12 * TS, '#ffd36b'); g.globalAlpha = 1; } KA.drawSettling(g, x, y, s.w * TS, s.h * TS, s.y0 * TS - cy, s.mode, time); }
+    for (const r of per.rot) { const b = rotBox(r), pit = r.kind !== 'vent'; KA.drawRot(g, b.l - cx, b.t - cy, b.r - cx, b.b - cy, r.state, time, pit);
+      if (r.kind === 'vent') KA.drawVent(g, (r.dir > 0 ? r.x - 1 : r.x) * TS - cx, r.y0 * TS - cy, (r.y1 - r.y0 + 1) * TS, r.dir, r.state, time, TS); }
     const bell = ctx.movers ? ctx.movers().find(m => m.d3bell) : null;
-    if (bell) { const x = R(bell.x - cx), y = R(bell.y - cy), w = bell.w, top = d.shaft ? R(d.bell.y0 * TS - cy - 200) : y - 200;
-      rect(g, x + w / 2 - 1, top, 2, y - 40 - top, '#6a6e72');   /* her chain */
-      g.fillStyle = '#8a6a3a'; g.beginPath(); g.moveTo(x + 2, y); g.lineTo(x + 8, y - 34); g.quadraticCurveTo(x + w / 2, y - 48, x + w - 8, y - 34); g.lineTo(x + w - 2, y); g.lineTo(x + w - 6, y); g.lineTo(x + w - 11, y - 31); g.quadraticCurveTo(x + w / 2, y - 42, x + 11, y - 31); g.lineTo(x + 6, y); g.closePath(); g.fill();
-      rect(g, x, y, w, 4, '#5a4630'); rect(g, x, y + 4, w, 2, '#3a2e20');
-      if (bell.d3Ride) { g.globalAlpha = 0.25; rect(g, x + 8, y - 34, w - 16, 30, '#bfe6f5'); g.globalAlpha = 1; } }
+    if (bell) KA.drawBell(g, bell.x - cx, bell.y - cy, bell.w, !!bell.d3Ride, time, d.shaft ? d.bell.y0 * TS - cy - 200 : bell.y - cy - 200);
     if (S) for (const l of S.lanterns) { const f = S.crew[l.role]; drawCorpse(g, f, cx, cy); }
   };
-  function drawCorpse(g, c, cx, cy) { const x = R(c.x - cx), y = R(c.y - cy); g.globalAlpha = 0.7; rect(g, x - 12, y - 6, 24, 6, COL[c.role]); g.globalAlpha = 1; }
+  function drawCorpse(g, c, cx, cy) { CA.drawCrew(g, c.x - cx, c.y - cy, c.face || 1, { role: c.role, pose: 'crewCorpse', alpha: 0.78, still: true, seed: c.x * 0.01 }, 0); }
   H.drawFoe = (g, e, cx, cy, time) => {
     if (!e.alive) return;
-    if (e.t === 'walleel') { const s = e.st; const h = WE.eelHead(s), hx = R(s.hx - cx), hy = R(s.hy - cy);
-      rect(g, s.dy ? hx - 5 : (s.dx > 0 ? hx - 3 : hx - 7), s.dy ? hy - 4 : hy - 5, 10, 10, '#0c1418');   /* the hole */
-      if (s.mode === 'bubble') { g.fillStyle = '#e8f4f0'; for (let i = 0; i < 4; i++) { const k = (time * 3 + i * 0.27) % 1; g.fillRect(hx + s.dx * 3 + Math.sin(time * 9 + i) * 3, hy - k * 16, 2, 2); } }
-      if (s.ext > 0.02) { g.strokeStyle = COL.eel; g.lineWidth = 6; g.beginPath(); g.moveTo(hx, hy); g.lineTo(R(h.x - cx), R(h.y - cy)); g.stroke(); g.lineWidth = 1;
-        rect(g, R(h.x - cx) - 5, R(h.y - cy) - 4, 10, 8, s.mode === 'hang' ? '#6a8a4a' : '#5a7a3a'); rect(g, R(h.x - cx) + (s.dx >= 0 ? 2 : -4), R(h.y - cy) - 2, 2, 2, '#ffd36b');
-        if (s.mode === 'hang' && !e.saidCut) { e.saidCut = 1; ctx.number(h.x, h.y - 14, WE.EEL_SAY.cut, '#ffd36b'); } }
-      if (e.flash > 0) { g.globalAlpha = 0.6; rect(g, R(h.x - cx) - 6, R(h.y - cy) - 5, 12, 10, '#ffffff'); g.globalAlpha = 1; }
+    if (e.t === 'walleel') { const s = e.st, h = WE.eelHead(s);
+      KA.drawEel(g, s.hx - cx, s.hy - cy, s.dx, s.dy, s.ext, s.mode, time, s.reach, e.flash > 0);
+      if (s.ext > 0.02 && s.mode === 'hang' && !e.saidCut) { e.saidCut = 1; ctx.number(h.x, h.y - 14, WE.EEL_SAY.cut, '#ffd36b'); }
       return; }
-    if (e.t === 'crewman' && S) { const c = S.crew[e.role]; if (!c || !c.alive) return; drawSailorShape(g, c, cx, cy, time, 1, COL[c.role], e.flash > 0);
+    if (e.t === 'crewman' && S) { const c = S.crew[e.role]; if (!c || !c.alive) return; drawSailorShape(g, c, cx, cy, time, e.flash > 0);
       const x = R(c.x - cx), y = R(c.y - cy), mx = SC.CREW.hp[c.role] * (S.k || 1), k = Math.max(0, c.hp / Math.max(1, c.maxHp));
       rect(g, x - 12, y - 36, 24, 3, '#1a1a22'); rect(g, x - 12, y - 36, R(24 * k), 3, SC.crewOpen(c) ? '#ffd36b' : '#c84848');   /* his own bar */
-      if (c.role === 'shield' && c.mode === 'guard' && c.guarding) { const m = S.crew[c.guarding]; if (m && m.alive) { g.strokeStyle = '#c8d8e8'; g.globalAlpha = 0.6; g.beginPath(); g.moveTo(x, y - 14); g.lineTo(R(m.x - cx), R(m.y - cy) - 14); g.stroke(); g.globalAlpha = 1;
-        g.strokeStyle = '#c8d8e8'; g.beginPath(); g.arc(R(m.x - cx), R(m.y - cy) - 14, 16, 0, 7); g.stroke(); } }
-      if (c.mode === 'raise') { g.strokeStyle = '#ff9a5c'; g.beginPath(); g.arc(x, y - 14, 14 + 4 * Math.sin(time * 10), 0, 7); g.stroke(); }
+      if (c.role === 'shield' && c.mode === 'guard' && c.guarding) { const m = S.crew[c.guarding]; if (m && m.alive) { KA.drawRope(g, x, y - 14, R(m.x - cx), R(m.y - cy) - 14, time); KA.drawWardRing(g, R(m.x - cx), R(m.y - cy) - 14, 17, time); } }
+      if (c.mode === 'raise') KA.dotRing(g, x, y - 14, 14 + 4 * Math.sin(time * 10), '#ff9a5c', 1, 0.9);
       void mx; return; }
-    if (e.t === 'cursedsailor' && S && S.sailor) { const s = S.sailor; drawSailorShape(g, s, cx, cy, time, SC.CREW.p2.scale, COL.sailor, e.flash > 0);
-      if (SC.sailorOpen(s)) { const t0 = s.mode === 'swap' ? SC.CREW.p2.swap : s.mode === 'stuck' ? SC.CREW.p2.stuck : 1.2; const x = R(s.x - cx), y = R(s.y - cy); g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 24, 30, 0, 7); g.stroke();
+    if (e.t === 'cursedsailor' && S && S.sailor) { const s = S.sailor; drawSailorShape(g, s, cx, cy, time, e.flash > 0);
+      if (SC.sailorOpen(s)) { const t0 = s.mode === 'swap' ? SC.CREW.p2.swap : s.mode === 'stuck' ? SC.CREW.p2.stuck : 1.2; const x = R(s.x - cx), y = R(s.y - cy); KA.drawOpenRing(g, x, y - 24, 30, time);
         rect(g, x - 16, y - 66, R(32 * Math.max(0, s.modeT) / t0), 2, '#ffd36b'); }
-      else if (s.ward > 0) { const x = R(s.x - cx), y = R(s.y - cy); g.strokeStyle = '#c8d8e8'; g.globalAlpha = 0.6; g.beginPath(); g.arc(x, y - 24, 32, 0, 7); g.stroke(); g.globalAlpha = 1; }
+      else if (s.ward > 0) KA.drawWardRing(g, R(s.x - cx), R(s.y - cy) - 24, 32, time);
       return; }
   };
-  /* a sailor (greybox): body, head, the weapon of his role / stance, the pose's lean (windup back, release forward) */
-  function drawSailorShape(g, c, cx, cy, time, sc, col, flash) {
-    const x = R(c.x - cx), y = R(c.y - cy), w = R(SC.CREW.w * sc), h = R(SC.CREW.h * sc), f = c.face || 1, tell = /Tell$/.test(c.mode), act = c.move && c.mode === c.move;
-    const lean = tell ? -f * 3 : act ? f * 4 : 0, bob = Math.sin(time * 2 + c.x * 0.01) * 1.5;
-    rect(g, x - w / 2 + lean, y - h + bob, w, h - 4, flash ? '#ffffff' : col); rect(g, x - w / 2 + 2 + lean, y - 4 + bob, w - 4, 4, '#2a3238');   /* body, legs trailing */
-    rect(g, x - 5 * sc + lean + f * 2, y - h - 8 * sc + bob, 10 * sc, 9 * sc, '#8aa0a0'); rect(g, x + lean + f * 4 * sc, y - h - 5 * sc + bob, 2, 2, c.mode === 'raise' ? '#ff9a5c' : '#7ff0e0');   /* the drowned head, its eye */
-    const role = c.sailor ? ({ cutlass: 'cutlass', shield: 'shield', harpoon: 'harpoon', anchor: 'heavy' })[c.stance] : c.role, hx = x + f * (w / 2 + 2) + lean, hy = y - h / 2 + bob;
-    if (role === 'cutlass') { const a = tell ? -1.2 : act ? 0.4 : -0.4; g.strokeStyle = '#c8d0d8'; g.lineWidth = 2; g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx + f * Math.cos(a) * 14 * sc, hy + Math.sin(a) * 14 * sc); g.stroke(); g.lineWidth = 1; }
-    else if (role === 'shield') { rect(g, hx - (f > 0 ? 0 : 6 * sc), hy - 10 * sc, 6 * sc, 18 * sc, c.mode === 'broken' ? '#5a5048' : c.mode === 'guard' ? '#c8d8e8' : '#8a8270'); }
-    else if (role === 'harpoon') { g.strokeStyle = '#b0a080'; g.lineWidth = 2; g.beginPath(); g.moveTo(hx - f * 6, hy + (tell ? -6 : 0)); g.lineTo(hx + f * 18 * sc, hy - (tell ? 10 : 2)); g.stroke(); g.lineWidth = 1; }
-    else if (role === 'heavy') { const up = c.mode === 'slamTell' ? -18 : c.mode === 'slam' ? 8 : 0; rect(g, hx - 4, hy + up - 4, 9 * sc, 9 * sc, '#4a4e56'); }
-    if (c.mode === 'staggered' || c.mode === 'broken' || c.mode === 'reeling' || c.mode === 'swap' || c.mode === 'stuck') { g.fillStyle = '#ffd36b'; for (let i = 0; i < 3; i++) g.fillRect(x - 6 + i * 6, y - h - 14 * sc + Math.sin(time * 8 + i) * 2, 2, 2); }
+  /* a sailor: src/redraw/drowned_crew_art.js picks the pose from his mode */
+  function drawSailorShape(g, c, cx, cy, time, flash) {
+    CA.drawCrew(g, c.x - cx, c.y - cy, c.face || 1, c.sailor ? { role: 'sailor', stance: c.stance, mode: c.mode, ward: c.ward > 0, flash, seed: 3 } : { role: c.role, mode: c.mode, flash, seed: c.x * 0.01 }, time);
   }
   H.drawOver = (g, cx, cy, time) => {
     if (!S) return;
-    for (const l of S.lanterns) { const x = R(l.x - cx), y = R(l.y - cy), k = l.t / SC.CREW.lantern.t;
-      rect(g, x - 3, y - 5, 6, 8, COL.lantern); g.strokeStyle = k < 0.3 ? '#ff6b6b' : COL.lantern; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 1, 12, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); g.stroke(); g.lineWidth = 1;
+    for (const l of S.lanterns) { const x = R(l.x - cx), y = R(l.y - cy), k = l.t / SC.CREW.lantern.t; KA.drawLantern(g, x, y, k, time);
       g.fillStyle = '#e8f4f0'; g.font = '8px monospace'; g.fillText(String(Math.ceil(l.t)), x - 3, y - 16); }
-    for (const q of S.shots) { const x = R(q.x - cx), y = R(q.y - cy), a = Math.atan2(q.vy, q.vx); g.strokeStyle = q.kind === 'reel' ? '#d8b070' : '#c8d0d8'; g.lineWidth = 2; g.beginPath(); g.moveTo(x - Math.cos(a) * 10, y - Math.sin(a) * 10); g.lineTo(x + Math.cos(a) * 6, y + Math.sin(a) * 6); g.stroke(); g.lineWidth = 1;
-      if (q.kind === 'reel') { g.strokeStyle = '#8a7a5a'; g.beginPath(); g.moveTo(R(q.by.x - cx), R(q.by.y - cy) - 16); g.lineTo(x, y); g.stroke(); } }
-    for (const v of S.waves) { const x = R(v.x - cx), y = R(S.G.floor - cy); g.globalAlpha = 0.6; rect(g, x - 8, y - 16 * v.sc, 16, 16 * v.sc, '#bfe6f5'); g.globalAlpha = 1; }
+    for (const q of S.shots) { const x = R(q.x - cx), y = R(q.y - cy); if (q.kind === 'reel') KA.drawRope(g, R(q.by.x - cx), R(q.by.y - cy) - 16, x, y, time); KA.drawHarpoonShot(g, x, y, q.vx, q.vy, q.kind); }
+    for (const v of S.waves) KA.drawWave(g, R(v.x - cx), R(S.G.floor - cy), v.sc, time);
     const actors = S.ph === 1 ? SC.living(S) : S.sailor ? [S.sailor] : [];
     for (const a of actors) if (a.move === 'throw' && a.mode === 'throwTell' && a.aim) { g.strokeStyle = '#ff6b6b'; g.globalAlpha = 0.5; g.setLineDash && g.setLineDash([3, 3]); g.beginPath(); g.moveTo(R(a.x - cx), R(a.y - cy) - 16); g.lineTo(R(a.aim.x - cx), R(a.aim.y - cy)); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1; }
     for (const a of actors) if (a.mode === 'slamTell') { g.strokeStyle = '#ff6b6b'; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(R(a.x - cx), R(S.G.floor - cy) - 2, 90, 7, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
