@@ -62,6 +62,14 @@ export const K2_POSE_SET = {
   prongTell:  { a: -16, aD: -90, armF: [-50, -40], armB: [-44, -36], tri: { by: 'F', ang: -44, grip: 14, split: true }, eyes: 'curse', cape: 0.9, legs: 0.7, ghost: true },
   shellTell:  { a: 24, aD: -64, cy: 17, cyD: 14, armF: [-20, 160], armB: [-30, 150], tri: null, head: [-1, 3], eyes: 'flare', cape: 0.6, legs: 0.2, growShell: true },
 };
+/* the BODY of each pose (claude/sea4): [bow, sq, curl, tlen, rv] - bow = chest+head bent off the hips (deg, + forward), sq = chest length (coil < 1 < stretch), curl = tail curl (- under the belly, + arched over the back), tlen = tail length, rv = chest depth */
+export const K2_BODY = {
+  idle: [0, 1, -8, 1, 1], sleep: [20, 0.95, -60, 0.9, 1], wake: [-6, 1, -20, 1, 1], beached: [18, 1, -40, 0.9, 1], open: [40, 0.9, -80, 0.8, 1.05], hurt: [-34, 1.05, 40, 1.1, 1],
+  thrustTell: [-24, 0.82, -120, 0.9, 1.1], thrust: [10, 1.22, 0, 1.2, 0.82], recover: [24, 0.95, -30, 0.9, 1], recoil: [-38, 1.05, 50, 1.1, 1],
+  sweepTell: [34, 0.8, -100, 0.85, 1.15], sweep: [-6, 1.2, 6, 1.2, 0.8], hurlTell: [-32, 1, 70, 1.1, 1], hurl: [24, 1.18, -20, 1.15, 0.85],
+  bare: [4, 1, -10, 1, 1], recallTell: [-16, 1.06, 25, 1.05, 1], recall: [-26, 1.1, -55, 1, 0.95], decreeTell: [-4, 1.14, 0, 1.15, 0.9], decree: [30, 0.95, -70, 0.9, 1.05],
+  heave: [12, 0.9, -30, 0.8, 1.1], pinned: [40, 0.85, -50, 0.8, 1.1], curse: [-44, 1.05, 60, 1.1, 1], graspTell: [48, 0.9, -90, 0.85, 1.1], grasp: [60, 0.9, -100, 0.8, 1.1],
+  leechTell: [-46, 1.1, 40, 1, 0.95], leech: [32, 1.1, -10, 1.05, 0.95], prongTell: [-14, 1.08, 30, 1.05, 1], shellTell: [54, 0.7, -150, 0.8, 1.15] };
 /* the move modes -> pose keys (one place; the lint walks this against K2_TELLS) */
 export const K2_MODE_POSE = { sleep: 'sleep', wake: 'wake', recover: 'recover', recoil: 'recoil', thrustTell: 'thrustTell', thrust: 'thrust', sweepTell: 'sweepTell', sweep: 'sweep', hurlTell: 'hurlTell', hurl: 'hurl',
   recallTell: 'recallTell', recall: 'recall', decreeTell: 'decreeTell', decree: 'decree', heave: 'heave', pinned: 'pinned', curse: 'curse', graspTell: 'graspTell', grasp: 'grasp', leechTell: 'leechTell', leech: 'leech', prongTell: 'prongTell', shellTell: 'shellTell' };
@@ -101,44 +109,63 @@ export function drawKing2(g, x, y, f, o = {}, time = 0) {
   const oval = (u0, v0, ru, rv, col, al) => { const [cx, cy] = Pt(u0, v0), r = Math.max(ru, rv) + 1;
     for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const px = i, py = j, uu = px * ca + py * sa, vv = -px * sa + py * ca; if ((uu / ru) ** 2 + (vv / rv) ** 2 <= 1) dot(R(cx + i), R(cy + j), col, al); } };
   const arm = (sh, [a1, a2], c1, c2, th = 2) => { const aa = v => (v === AIM ? o.aim : v === TIP ? o.trAng : v), e1 = ang(aa(a1), 8), e2 = ang(aa(a2), 7), el = [sh[0] + e1[0], sh[1] + e1[1]], ha = [el[0] + e2[0], el[1] + e2[1]];
-    ln(sh[0], sh[1], el[0], el[1], c1, th); ln(el[0], el[1], ha[0], ha[1], c2, th); return ha; };
+    ln(sh[0], sh[1], el[0], el[1], K2P.iron[0], th + 2); ln(el[0], el[1], ha[0], ha[1], K2P.iron[0], th + 2); ln(sh[0], sh[1], el[0], el[1], c1, th); ln(el[0], el[1], ha[0], ha[1], c2, th); return ha; };
   /* the colour set */
   const gl = key === 'curse' ? (kk > 0.4 ? K2P.curse.eyes : K2P.lamp[0]) : cursed ? K2P.curse.eyes : K2P.lamp[0];
   const eyeC = Pz.eyes === 'dim' ? K2P.dim : Pz.eyes === 'flare' ? (cursed ? '#d4f4a0' : K2P.lamp[1]) : Pz.eyes === 'curse' ? K2P.curse.eyes : Pz.eyes === 'dim' ? K2P.dim : gl;
   const eyes = key === 'wake' ? (kk > 0.4 ? K2P.lamp[1] : K2P.dim) : eyeC;
 
-  /* ---- THE CAPE, behind everything: mail and weed trailing off his shoulders ---- */
-  { const cl = 26 * (Pz.cape ?? 1) * (cursed ? 0.9 : 1), ph = tm * 3 + (o.seed || 0);
-    for (let u = 9; u >= -cl; u -= 1) { const t = (9 - u) / 35, wv = Math.sin(u * 0.3 + ph) * 2.6 * t * (Pz.still ? 0.3 : 1), top = Pt(u, -9 - t * 2 + wv), bot = Pt(u, 7 + t * 6 + wv);
-      ln(top[0], top[1], bot[0], bot[1], (cursed && ((u * 7) | 0) % 5 === 0) ? K2P.mail[0] : K2P.mail[(((u + 30) / 3) | 0) % 2 ? 1 : 0], 2); }
-    for (let u = 5; u >= -cl + 2; u -= 5) { const t = (9 - u) / 35, wv = Math.sin(u * 0.3 + ph) * 2.6 * t * (Pz.still ? 0.3 : 1), p0 = Pt(u, -7 + wv), p1 = Pt(u - 3, 5 + t * 4 + wv); ln(p0[0], p0[1], p1[0], p1[1], K2P.mail[3]); }
-    for (let u = -4; u >= -cl + 4; u -= 7) { const t = (9 - u) / 35, wv = Math.sin(u * 0.3 + ph) * 2.6 * t, q = Pt(u, 8 + t * 6 + wv); dot(q[0], q[1], K2P.weed[1]); dot(q[0] + 1, q[1], K2P.weed[0]); } }
-  /* ---- THE BACK ARM ---- */
-  const shB = Pt(8, 3), shF = Pt(8, -2);
-  const handB = arm(shB, Pz.armB, K2P.mail[0], K2P.mail[1], 3); rc(handB[0] - 1, handB[1] - 1, 3, 3, pl(0));
-  /* ---- THE LEGS: greaves, kicking in the water, planted on the floor ---- */
-  for (const s of [-1, 1]) { const kick = dry ? (walk * s * 3) : Math.sin(tm * 6 + (s > 0 ? 0 : Math.PI)) * 3 * (Pz.legs ?? 1) + stroke * s;
-    const hip = Pt(-6, s * 3), knee = dry ? [hip[0] + s * 3 + (Pz.aD < -100 ? -4 : 0), hip[1] + 9] : Pt(-16, s * 3 + kick * 0.5), foot = dry ? [hip[0] + s * 4 + kick, 0] : Pt(-25, s * 2 + kick);
-    ln(hip[0], hip[1], knee[0], knee[1], K2P.plate[1], 4); ln(knee[0], knee[1], foot[0], foot[1], K2P.iron[2], 3); dot(foot[0], foot[1], K2P.weed[1]); if (dry) rc(foot[0] - 2, foot[1] - 1, 5, 2, K2P.iron[1]); }
-  /* ---- THE BODY: green plate, a gold belt, chain off it ---- */
-  oval(2, 0, 12, 7, pl(2)); oval(5, -3, 6, 2.5, pl(3)); oval(-3, 3, 7, 2, pl(1));
-  { const s0 = Pt(-8, 0), s1 = Pt(12, 0); ln(s0[0], s0[1], s1[0], s1[1], pl(1)); const b0 = Pt(-6, -6), b1 = Pt(-6, 6); ln(b0[0], b0[1], b1[0], b1[1], K2P.gold[1], 2); const b2 = Pt(-6, 0); dot(b2[0], b2[1], K2P.gold[3]); }
-  for (let k = 0; k < 4; k++) { const q = Pt(-8 - k * 3, 7 + (k % 2)); dot(q[0], q[1], k % 2 ? K2P.mail[3] : K2P.mail[2]); }
-  if (cursed || greyK > 0.5) for (const [u, v] of [[0, -3], [6, 2], [-4, 2]]) { const q = Pt(u, v); dot(q[0], q[1], K2P.curse.plate[0]); dot(q[0] + 1, q[1] + 1, K2P.curse.plate[0]); }   /* the cracks in the plate */
-  if (Pz.growShell || o.shell || o.shellOpenT > 0) drawShell(Pt, kk, key, o, tm);
-  /* ---- THE HEAD: a narrow face, two lamps, a weed beard, the crown ---- */
-  { const hd = Pz.head || [0, 0], hu = 17 + hd[0], hv = -1 + hd[1], wide = Pz.mouth === 'wide';
-    oval(hu, hv, 5, 5, sk(2)); oval(hu + 1, hv - 2, 3, 1.6, sk(3)); oval(hu - 1, hv + 2, 3, 1.4, sk(0));
-    const e1 = Pt(hu + 3, hv - 1), e2 = Pt(hu + 3, hv + 2.5); dot(e1[0], e1[1], eyes); dot(e2[0], e2[1], eyes); if (eyes === K2P.lamp[1] || eyes === '#d4f4a0') { dot(e1[0] - 1, e1[1], eyes, 0.4); dot(e2[0] - 1, e2[1], eyes, 0.4); }
-    if (Pz.mouth) { const m = Pt(hu + 4, hv + 3); rc(m[0], m[1], wide ? 3 : 2, wide ? 3 : 1, K2P.mouth); if (wide) { rc(m[0] + 1, m[1] + 1, 1, 1, K2P.curse.eyes); } }
-    { const wv = Math.sin(tm * 2.4 + 1) * 1.6 * (Pz.still ? 0.3 : 1), b0 = Pt(hu + 4, hv + 4), b1 = Pt(hu - 2, hv + 6), b2 = Pt(hu - 11, hv + 10 + wv), b3 = Pt(hu - 13, hv + 12 + wv);
-      ln(b0[0], b0[1], b1[0], b1[1], K2P.beard[1], 2); ln(b1[0], b1[1], b2[0], b2[1], K2P.beard[1], 2); ln(b2[0], b2[1], b3[0], b3[1], K2P.beard[0]); }
+  /* ---- THE SILHOUETTE PASS (claude/sea4): four masses, each outlined dark so they read apart: HEAD + CROWN, CHEST (pauldrons, gold belt), the ARMS, and the TAIL (wet) / LEGS (dry); the CAPE is one flat shape BEHIND them (2 values + a hem).
+     K2_BODY[pose] = [bow, sq, curl, tlen, rv]: bow = the chest + head bent off the hips (deg, + = bowed forward), sq = chest length (coil < 1 < stretch), curl = the tail's curl (- under the belly, + arched over the back), tlen, rv = chest depth. ---- */
+  const BD = K2_BODY[key] || K2_BODY.idle, bow = BD[0] + (key === 'idle' ? stroke * 3 : 0), sq = BD[1], rvS = BD[4], aC = (A + bow) * D2R, cc = Math.cos(aC), sc = Math.sin(aC), OLC = K2P.iron[0];
+  const PC = (u, v) => [CX + u * cc - v * sc, CY + u * sc + v * cc];
+  const ovalC = (u0, v0, ru, rv, col, al) => { const [cx, cy] = PC(u0, v0), r = Math.max(ru, rv) + 1;
+    for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const uu = i * cc + j * sc, vv = -i * sc + j * cc; if ((uu / ru) ** 2 + (vv / rv) ** 2 <= 1) dot(R(cx + i), R(cy + j), col, al); } };
+  const olC = (u0, v0, ru, rv, col) => { ovalC(u0, v0, ru + 1, rv + 1, OLC); ovalC(u0, v0, ru, rv, col); }, olH = (u0, v0, ru, rv, col) => { oval(u0, v0, ru + 1, rv + 1, OLC); oval(u0, v0, ru, rv, col); };
+  const cRu = 10 * sq, cRv = 8 * rvS, shU = 3 + cRu * 0.55, FLOORY = -2;
+  /* ---- THE CAPE: one flat shape behind the body (a dry cape never goes under the floor line) ---- */
+  { const cl = 24 * (Pz.cape ?? 1) * (cursed ? 0.9 : 1) * (dry ? 0.8 : 1), ph = tm * 3 + (o.seed || 0), top = [], bot = [];
+    for (let u = 8; u >= -cl; u -= 1) { const t = (8 - u) / 32, wv = Math.sin(u * 0.3 + ph) * 2.2 * t * (Pz.still ? 0.3 : 1); let a1 = Pt(u, -7 - t * 4 + wv), b1 = Pt(u, 6 + t * 7 + wv); if (cursed && ((u * 7) | 0) % 6 === 0) b1 = Pt(u, 3 + t * 5 + wv);
+      if (dry) { a1 = [a1[0], Math.min(a1[1], FLOORY)]; b1 = [b1[0], Math.min(b1[1], FLOORY)]; } top.push(a1); bot.push(b1); }
+    const col = (p, q, c) => ln(p[0], p[1], q[0], q[1], c, 2);
+    top.forEach((p, i) => col([p[0], p[1] - 1], [bot[i][0], bot[i][1] + 1], OLC)); top.forEach((p, i) => col(p, bot[i], K2P.mail[1]));
+    top.forEach((p, i) => { if (i > 5) { const q = bot[i], k = 0.55; col([p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k], q, K2P.mail[0]); } }); }
+  /* ---- THE BACK ARM (dark green, behind the chest) ---- */
+  const shB = PC(shU - 1, 4), shF = PC(shU, -3);
+  const handB = arm(shB, Pz.armB, K2P.plate[0], K2P.plate[1], 3); rc(handB[0] - 2, handB[1] - 2, 5, 5, OLC); rc(handB[0] - 1, handB[1] - 1, 3, 3, pl(1));
+  /* ---- THE TAIL (wet) / THE LEGS (dry) ---- */
+  if (!dry) { const N = 11, seg = 3.3 * BD[3], sway = (Pz.still ? 0.25 : 1) * (Pz.legs ?? 1), pts = []; let [px, py] = Pt(-8, 1), dg = A + 180;
+    for (let i = 0; i < N; i++) { dg += BD[2] / N * (1 + i / N) * 0.9 + Math.sin(tm * 6 - i * 0.55 + (o.seed || 0)) * 4.2 * sway * (0.3 + i / N) + (key === 'idle' ? stroke * 1.5 : 0); const [dx, dy] = ang(dg, seg); px += dx; py += dy; pts.push([px, py, 8 - i * 0.58]); }
+    let q0 = Pt(-8, 1); pts.forEach(p => { ln(q0[0], q0[1], p[0], p[1], OLC, Math.max(3, R(p[2]) + 2)); q0 = p; }); q0 = Pt(-8, 1); pts.forEach(p => { ln(q0[0], q0[1], p[0], p[1], K2P.plate[1], Math.max(1, R(p[2]))); q0 = p; });
+    q0 = Pt(-8, 0); pts.forEach((p, i) => { if (i < N - 2) { ln(q0[0], q0[1] - 1, p[0], p[1] - 1, K2P.plate[2], 1); } q0 = p; });
+    const e = pts[N - 1], e0 = pts[N - 2], da = Math.atan2(e[1] - e0[1], e[0] - e0[0]) / D2R;
+    for (const s of [-1, 1]) { const [fx, fy] = ang(da + s * 38, 8); ln(e[0], e[1], e[0] + fx, e[1] + fy, OLC, 4); } for (const s of [-1, 1]) { const [fx, fy] = ang(da + s * 38, 8); ln(e[0], e[1], e[0] + fx, e[1] + fy, K2P.plate[2], 2); dot(e[0] + fx, e[1] + fy, K2P.weed[2]); } }
+  else for (const s of [-1, 1]) { const kick = walk * s * 3, lo = (Pz.cyD ?? 20) < 14, hip = Pt(-6, s * 3), foot = [hip[0] + s * 4 + kick + (lo ? s * 3 : 0), 0], mid = [(hip[0] + foot[0]) / 2 + 4 + (lo ? 3 : 0), (hip[1] + foot[1]) / 2 - 1];
+    ln(hip[0], hip[1], mid[0], mid[1], OLC, 6); ln(mid[0], mid[1], foot[0], foot[1], OLC, 5); rc(foot[0] - 3, -3, 8, 4, OLC);
+    ln(hip[0], hip[1], mid[0], mid[1], K2P.plate[1], 4); ln(mid[0], mid[1], foot[0], foot[1], K2P.iron[2], 3); rc(foot[0] - 2, -2, 6, 2, K2P.iron[1]); dot(mid[0], mid[1], K2P.gold[2]); }
+  /* ---- THE CHEST: hips, chest plate, pauldrons, belt ---- */
+  olH(-5, 0, 7, 6.2, pl(1));
+  olC(3, 0, cRu, cRv, pl(2)); ovalC(4, -cRv * 0.4, cRu * 0.6, cRv * 0.25, pl(3)); ovalC(0, cRv * 0.45, cRu * 0.6, cRv * 0.22, pl(1));
+  { const s0 = PC(-5, 0), s1 = PC(cRu * 0.9, 0); ln(s0[0], s0[1], s1[0], s1[1], pl(1)); const b0 = Pt(-6, -6), b1 = Pt(-6, 6); ln(b0[0], b0[1], b1[0], b1[1], K2P.gold[1], 2); const b2 = Pt(-6, 0); dot(b2[0], b2[1], K2P.gold[3]); }
+  olC(shU, -cRv + 2.5, 4.4, 3.6, pl(3)); ovalC(shU + 0.5, -cRv + 1.5, 2.4, 1.4, pl(4));
+  if (cursed || greyK > 0.5) for (const [u, v] of [[0, -3], [6, 2], [-4, 2]]) { const q = PC(u, v); dot(q[0], q[1], K2P.curse.plate[0]); dot(q[0] + 1, q[1] + 1, K2P.curse.plate[0]); }   /* the cracks in the plate */
+  if (Pz.growShell || o.shell || o.shellOpenT > 0) drawShell(PC, kk, key, o, tm);
+  /* ---- THE HEAD: big, round, outlined; two lamps, a weed beard, the crown standing up off it. Its own frame: swimming it faces along the body, standing (dry) the frame turns 90 deg so the face looks FORWARD and the crown is on top ---- */
+  { const hd = Pz.head || [0, 0], hu = 3 + cRu + 5.5 + hd[0] + (BD[1] > 1.1 ? 1.5 : 0), hv = -1 + hd[1], wide = Pz.mouth === 'wide', hc = PC(hu, hv), aH = aC + (dry ? Math.PI / 2 : 0), ch = Math.cos(aH), sh_ = Math.sin(aH);
+    const PH = (u, v) => [hc[0] + u * ch - v * sh_, hc[1] + u * sh_ + v * ch];
+    const ovalH = (u0, v0, ru, rv, col, al) => { const [cx, cy] = PH(u0, v0), r = Math.max(ru, rv) + 1;
+      for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const uu = i * ch + j * sh_, vv = -i * sh_ + j * ch; if ((uu / ru) ** 2 + (vv / rv) ** 2 <= 1) dot(R(cx + i), R(cy + j), col, al); } };
+    ovalH(0, 0, 8, 8, OLC); ovalH(0, 0, 7, 7, sk(2)); ovalH(1, -3, 4.4, 1.8, sk(3)); ovalH(-1, 3.5, 4, 1.8, sk(0));
+    const e1 = PH(4, -1), e2 = PH(4, 3); dot(e1[0], e1[1], eyes); dot(e2[0], e2[1], eyes); if (eyes === K2P.lamp[1] || eyes === '#d4f4a0') { dot(e1[0] - 1, e1[1], eyes, 0.4); dot(e2[0] - 1, e2[1], eyes, 0.4); }
+    if (Pz.mouth) { const m = PH(5, 4); rc(m[0], m[1], wide ? 3 : 2, wide ? 3 : 1, K2P.mouth); if (wide) { rc(m[0] + 1, m[1] + 1, 1, 1, K2P.curse.eyes); } }
+    { const wv = Math.sin(tm * 2.4 + 1) * 1.4 * (Pz.still ? 0.3 : 1), b0 = PH(5, 5), b1 = PH(-2, 8), b2 = PH(-8, 11 + wv), b3 = PH(-10, 13 + wv);
+      ln(b0[0], b0[1], b1[0], b1[1], K2P.beard[1], 3); ln(b1[0], b1[1], b2[0], b2[1], K2P.beard[1], 2); ln(b2[0], b2[1], b3[0], b3[1], K2P.beard[0]); }
     const cr = (Pz.crown || 0) + (key === 'curse' ? kk * 4 : cursed ? 2 : 0);
-    for (let k = 0; k < 5; k++) { const b = Pt(hu - 4 + k * 2 + cr, hv - 4 - cr * 0.5), t = Pt(hu - 3 + k * 2 + cr, hv - 8 - cr); ln(b[0], b[1], t[0], t[1], k % 2 ? K2P.gold[2] : K2P.gold[3]); }
-    { const b0 = Pt(hu - 5 + cr, hv - 4 - cr * 0.5), b1 = Pt(hu + 5 + cr, hv - 3 - cr * 0.5); ln(b0[0], b0[1], b1[0], b1[1], K2P.gold[1], 2); }
-    if (cursed || (key === 'curse' && kk > 0.3)) { const t = Pt(hu + 1 + cr, hv - 10 - cr); for (let i = 0; i < 4; i++) dot(t[0] + Math.sin(tm * 14 + i * 2) * 1.5, t[1] - i * 2, K2P.curse.flame[i % 3], 0.9); }
-    if (Pz.throat) { const m = Pt(hu + 4, hv + 3); rc(m[0] - 1, m[1] - 1, 5, 5, K2P.curse.flame[0]); rc(m[0], m[1], 3, 3, K2P.curse.flame[1]); }
-    if (Pz.rays) { const c = Pt(hu, hv - 8); const n = 7; for (let i = 0; i < n; i++) { const dg = -160 + i * (140 / (n - 1)), L = 6 + kk * 14, [dx, dy] = ang(dg, L), [sx, sy] = ang(dg, 5); ln(c[0] + sx, c[1] + sy, c[0] + dx, c[1] + dy, i % 2 ? K2P.gold[3] : K2P.gold[2], 1); } } }
+    { const b0 = PH(-6 + cr, -6 - cr * 0.5), b1 = PH(6 + cr, -5 - cr * 0.5); ln(b0[0], b0[1] - 1, b1[0], b1[1] - 1, OLC, 4); ln(b0[0], b0[1], b1[0], b1[1], K2P.gold[1], 2); }
+    for (let k = 0; k < 5; k++) { const b = PH(-5 + k * 2.5 + cr, -6 - cr * 0.5), t = PH(-4 + k * 2.5 + cr, -12 - cr); ln(b[0], b[1], t[0], t[1], k % 2 ? K2P.gold[2] : K2P.gold[3], 2); dot(t[0], t[1] - 1, K2P.gold[3]); }
+    if (cursed || (key === 'curse' && kk > 0.3)) { const t = PH(1 + cr, -14 - cr); for (let i = 0; i < 4; i++) dot(t[0] + Math.sin(tm * 14 + i * 2) * 1.5, t[1] - i * 2, K2P.curse.flame[i % 3], 0.9); }
+    if (Pz.throat) { const m = PH(5, 4); rc(m[0] - 1, m[1] - 1, 5, 5, K2P.curse.flame[0]); rc(m[0], m[1], 3, 3, K2P.curse.flame[1]); }
+    if (Pz.rays && !o.bodyOnly) { const c = PH(0, -10); const n = 7; for (let i = 0; i < n; i++) { const dg = -160 + i * (140 / (n - 1)), L = 6 + kk * 14, [dx, dy] = ang(dg, L), [sx, sy] = ang(dg, 5); ln(c[0] + sx, c[1] + sy, c[0] + dx, c[1] + dy, i % 2 ? K2P.gold[3] : K2P.gold[2], 1); } } }
   /* ---- THE FRONT ARM, the TRIDENT, the effects: over all of it ---- */
   const aimA = o.aim;
   const hF = arm(shF, Pz.armF.map(v => (v === AIM ? aimA : v === TIP ? o.trAng : v)).map((v, i) => (key === 'idle' ? v + stroke * (i ? 8 : 24) : v)), K2P.iron[1], K2P.iron[2], 3);
@@ -149,8 +176,9 @@ export function drawKing2(g, x, y, f, o = {}, time = 0) {
   if (Pz.palm) { const pr = 4 + 2 * Math.sin(tm * 14); for (let i = 0; i < 12; i++) { const t = i / 12 * Math.PI * 2; dot(hF[0] + Math.cos(t) * pr + 2, hF[1] + Math.sin(t) * pr, K2P.hot, 0.9); } }
   if (Pz.greenHands) for (const h of [hF, handB]) { rc(h[0] - 3, h[1] - 2, 6, 6, K2P.curse.flame[0], 0.8); rc(h[0] - 2, h[1] - 1, 4, 4, K2P.curse.flame[1], 0.9); dot(h[0], h[1] + 1, K2P.curse.flame[2]); for (let i = 0; i < 3; i++) dot(h[0] - 2 + i * 2, h[1] + 4 + ((tm * 12 + i) % 4), K2P.curse.flame[1], 0.8); }
   /* the trident */
-  if (Pz.tri) { const T = Pz.tri, holder = T.by === 'B' ? handB : hF, tdeg = T.ang === AIM ? aimA : T.ang; drawTrident(holder[0], holder[1], tdeg, T.grip, { cursed, split: T.split ? 0.4 + 0.6 * kk : 0, glint: Pz.glint, red: Pz.red, tm }); }
+  if (Pz.tri && !o.bodyOnly) { const T = Pz.tri, holder = T.by === 'B' ? handB : hF, tdeg = T.ang === AIM ? aimA : T.ang; drawTrident(holder[0], holder[1], tdeg, T.grip, { cursed, split: T.split ? 0.4 + 0.6 * kk : 0, glint: Pz.glint, red: Pz.red, tm }); }
   /* the effects of the move */
+  if (!o.bodyOnly) {
   if (Pz.sight) { const [dx, dy] = ang(aimA, 60); for (let i = 1; i < 6; i++) dot(hF[0] + dx * i / 5 + 24 * Math.cos(aimA * D2R), hF[1] + dy * i / 5 + 24 * Math.sin(aimA * D2R), K2P.hot, 0.3 + 0.4 * ((tm * 16 + i) % 2)); }
   if (Pz.lunge) { for (let i = 0; i < 5; i++) { const [dx, dy] = ang(aimA + 180, 12 + i * 5); ln(hF[0] + dx - 4, hF[1] + dy - 4 + (i - 2) * 3, hF[0] + dx * 1.7 - 4, hF[1] + dy * 1.7 - 4 + (i - 2) * 3, K2P.lamp[1], 1); } }
   if (Pz.arc) { for (let i = 0; i < 26; i++) { const t = i / 25, dg = lerp(-70, 24, t), r = 36 + t * 4, [dx, dy] = ang(dg, r); const q = Pt(0, 0); rc(q[0] + dx + 6, -6 + dy * 0.34 + 6, 2, 2, t > 0.6 ? K2P.white : K2P.iron[3], 0.35 + t * 0.55); } }
@@ -160,6 +188,7 @@ export function drawKing2(g, x, y, f, o = {}, time = 0) {
   if (Pz.sparks) for (let i = 0; i < 4; i++) dot(14 + i * 4, -30 + ((tm * 13 + i * 3) % 7), K2P.spark);
   if (Pz.cursing) for (let i = 0; i < 9; i++) dot(-20 + i * 5 + Math.sin(tm * 7 + i) * 2, -44 - ((tm * 22 + i * 6) % 34) * kk, K2P.curse.flame[i % 3], 0.5 + 0.4 * kk);
   if (key === 'decreeTell' || key === 'decree') { /* the crown's light */ rc(-6, -48, 12, 1, K2P.gold[2], 0.25 + 0.25 * kk); }
+  }
   TINT_ = 0; return { hand: hF };
 }
 

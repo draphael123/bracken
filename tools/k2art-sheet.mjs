@@ -46,7 +46,7 @@ function kingSheet(dry, name) {
     KA.drawKing2(g, fx, fy, 1, { pose: k, dry, aim: k.startsWith('hurl') ? -12 : -4, trAng: 0, k: PROG[k] ?? 0.5, seed: 1, vx: 0 }, 0.3);
     label(g, x0 + 3, y0 + 3, k, /Tell$/.test(k) ? '#ffd36b' : '#c9d8d0'); });
   png(c, 3, name); }
-kingSheet(false, 'k2-poses-wet.png'); kingSheet(true, 'k2-poses-dry.png');
+kingSheet(false, 'k2b-poses-wet.png'); kingSheet(true, 'k2b-poses-dry.png');
 
 /* ---- the specials: cursed model, the shell, the curse's progress, his fall, the trident ---- */
 { const cw = 96, ch = 84, cols = 8, [c, g] = mk(cw * cols, ch * 4, BG); let n = 0;
@@ -59,7 +59,7 @@ kingSheet(false, 'k2-poses-wet.png'); kingSheet(true, 'k2-poses-dry.png');
   for (const kq of [0, 0.2, 0.4, 0.6, 0.8, 1]) cell('dead ' + Math.round(kq * 100), (x, y) => { g.fillStyle = FLOOR; g.fillRect(x - 40, y, 80, 2); KA.drawDeadKing2(g, x, y, 1, kq, 0.3); });
   cell('dead cursed', (x, y) => { g.fillStyle = FLOOR; g.fillRect(x - 40, y, 80, 2); KA.drawDeadKing2(g, x, y, 1, 1, 0.3, { cursed: true }); });
   for (const [lab, o] of [['trident', {}], ['cursed trident', { cursed: true }], ['split 40', { split: 0.4 }], ['split 100', { split: 1, cursed: true }]]) cell(lab, (x, y) => K2A.drawTrident2(g, x - 18, y - 30, -20, 6, { ...o, glint: true, tm: 0.1 }));
-  png(c, 3, 'k2-poses-special.png'); }
+  png(c, 3, 'k2b-poses-special.png'); }
 
 /* ---- the pieces ---- */
 { const [c, g] = mk(520, 300, BG); label(g, 4, 3, 'levers + A3 dial: brass / verdigris / flesh (lever idle, thrown, mid-throw)');
@@ -77,7 +77,7 @@ kingSheet(false, 'k2-poses-wet.png'); kingSheet(true, 'k2-poses-dry.png');
   label(g, 4, 200, 'grasp told / live; flooded-room dressing');
   g.fillStyle = FLOOR; g.fillRect(4, 244, 120, 2); K2A.drawGrasp(g, 8, 62, 244, false, 0.3); K2A.drawGrasp(g, 66, 120, 244, true, 0.3);
   g.fillStyle = '#1a3236'; g.fillRect(130, 208, 380, 40); g.fillStyle = FLOOR; g.fillRect(130, 248, 380, 4); K2A.drawDressing(g, 130, 0, 380, 130, 510, 208, 248, 0.5, {});
-  png(c, 3, 'k2-pieces.png'); }
+  png(c, 3, 'k2b-pieces.png'); }
 
 /* ---- a composed throne room: mid-thrust at you, the gate half down, both levers + dials, floodgate frames, dressing, the stuck trident ---- */
 { const VW = 320, VH = 180, [c, g] = mk(VW, VH, '#0a2428'); for (let y = 0; y < VH; y += 16) for (let x = 0; x < VW; x += 16) { g.fillStyle = ((x + y) / 16) & 1 ? '#16363a' : '#1a3c40'; g.fillRect(x, y, 16, 16); g.fillStyle = '#0e2a2e'; g.fillRect(x, y + 15, 16, 1); g.fillRect(x + 15, y, 1, 16); }
@@ -90,4 +90,13 @@ kingSheet(false, 'k2-poses-wet.png'); kingSheet(true, 'k2-poses-dry.png');
   KA.drawKing2(g, 112, 128, 1, { pose: 'thrust', aim: -4, k: 0.5, seed: 1 }, 0.3);
   KA.drawKing2(g, 232, 150, -1, { pose: 'sweepTell', dry: true, aim: 0, k: 0.5, seed: 1 }, 0.3);
   K2A.drawTridentStuck(g, 300, 60, 100, 30, 0.3, { ring: true });
-  png(c, 3, 'k2-room.png'); }
+  png(c, 3, 'k2b-room.png'); }
+
+/* ---- BEFORE / AFTER (claude/sea4): node tools/k2art-sheet.mjs outdir --before=path/to/old-drowned_king2_art.js : old vs new idle + 3 tells, 1x game scale (rows 1-2: wet, dry) and 4x (rows 3-4, wet) ---- */
+{ const arg = process.argv.find(a => a.startsWith('--before=')); if (arg) {
+  const OLD = await import((await import('node:url')).pathToFileURL(arg.slice(9)).href), poses = ['idle', 'thrustTell', 'sweepTell', 'hurlTell'], CW = 100, CH = 80;
+  const [c, g] = mk(CW * 16, CH * 2 + 10 + 2 * CH * 4, BG);
+  const cell = (mod, pose, dry) => { const [sc, sg] = mk(CW, CH, CELL); if (dry) { sg.fillStyle = FLOOR; sg.fillRect(8, 66, CW - 16, 2); } mod.drawKing2(sg, 50, 66, 1, { pose, dry, aim: pose.startsWith('hurl') ? -12 : -4, trAng: 0, k: 0.5, seed: 1, vx: 0 }, 0.3); return sc; };
+  [false, true].forEach((dry, r) => poses.forEach((p, i) => { [OLD, KA].forEach((mod, j) => { const x0 = (i * 2 + j) * CW, y0 = r * CH; g.drawImage(cell(mod, p, dry), x0, y0); label(g, x0 + 3, y0 + 3, (j ? 'new ' : 'old ') + p, j ? '#ffd36b' : '#c9d8d0'); }); }));
+  [OLD, KA].forEach((mod, j) => poses.forEach((p, i) => { const sc = cell(mod, p, false), x0 = i * CW * 4, y0 = CH * 2 + 10 + j * CH * 4; g.drawImage(sc, 0, 0, CW, CH, x0, y0, CW * 4, CH * 4); label(g, x0 + 3, y0 + 3, (j ? 'new ' : 'old ') + p + ' 4x', j ? '#ffd36b' : '#c9d8d0'); }));
+  png(c, 1, 'k2b-before-after.png'); } }

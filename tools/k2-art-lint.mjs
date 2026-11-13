@@ -37,6 +37,17 @@ for (const key of ['idle', 'thrust', 'curse']) { const A = print({ pose: key }, 
   ok(fp(print({ pose: 'idle', shell: true })) !== fp(print({ pose: 'idle' })), 'the shell differs'); ok(fp(print({ pose: 'idle', shellOpenT: 1 })) !== fp(print({ pose: 'idle', shell: true })), 'the split shell differs from the whole one');
   ok(fp(print({ pose: 'curse', k: 0 })) !== fp(print({ pose: 'curse', k: 1 })), 'the curse progresses'); }
 
+/* ---- B2: SILHOUETTE (claude/sea4): the BODY only (no trident, no effects: o.bodyOnly) as a 1-px mask round his feet; every tell's body must change a minimum share of pixels against idle, and against its own strike ---- */
+const mask = (pose, dry) => { const r = print({ pose, bodyOnly: true }, 1, 0.4, dry), m = new Uint8Array(200 * 200); for (const s of r) { const [x, y, w, h, , a] = s.split(',').map((v, i) => (i === 4 ? 0 : +v)); if (a < 0.5) continue; for (let j = Math.max(0, y); j < Math.min(200, y + h); j++) for (let i = Math.max(0, x); i < Math.min(200, x + w); i++) m[j * 200 + i] = 1; } return m; };
+const diffShare = (A, B) => { let x = 0, u = 0; for (let i = 0; i < A.length; i++) { if (A[i] | B[i]) u++; if (A[i] ^ B[i]) x++; } return x / Math.max(1, u); };
+const SIL_IDLE = 0.2, SIL_STRIKE = 0.25; let silMin = 9, silMinS = 9;
+for (const dry of [false, true]) { const idle = mask('idle', dry);
+  for (const m of Object.keys(K2M.K2_TELLS).filter(m => KA.K2_MODE_POSE[m] && /Tell$/.test(m))) { const mm = mask(m, dry), s = diffShare(mm, idle); silMin = Math.min(silMin, s); ok(s >= SIL_IDLE, (dry ? 'dry ' : 'wet ') + m + ' BODY silhouette differs from idle by ' + (s * 100).toFixed(0) + '% (>= ' + SIL_IDLE * 100 + '%)');
+    const rel = m.replace(/Tell$/, ''); if (KA.K2_POSE_SET[rel]) { const s2 = diffShare(mm, mask(rel, dry)); silMinS = Math.min(silMinS, s2); ok(s2 >= SIL_STRIKE, (dry ? 'dry ' : 'wet ') + m + ' BODY differs from its strike ' + rel + ' by ' + (s2 * 100).toFixed(0) + '% (>= ' + SIL_STRIKE * 100 + '%)'); } } }
+console.log('  silhouette: smallest tell-vs-idle ' + (silMin * 100).toFixed(0) + '%, smallest tell-vs-strike ' + (silMinS * 100).toFixed(0) + '%');
+/* the dry cape never dips under the floor line (his feet are y = 0 -> rect y+h <= 0 for cape colours only is not separable, so: no mail-coloured rect below the floor) */
+for (const k of Object.keys(KA.K2_POSE_SET)) { const r = print({ pose: k, bodyOnly: true }, 1, 0.4, true); ok(!r.some(s => { const [x, y, w, h, c] = s.split(','); return (c === '#4e5664' || c === '#2c3440') && +y + +h > 100 - 1; }), 'dry ' + k + ': the cape stays above the floor line'); }
+
 /* ---- C: the box round his feet: x -70..+90 and y -110..+36 at feet (100,100) ---- */
 { let out = 0; for (const dry of [false, true]) for (const k of Object.keys(KA.K2_POSE_SET)) for (const o of [{}, { cursed: true }, { shell: true }]) for (const r of print({ pose: k, ...o }, 1, 0.4, dry)) { const [x, y, w, h] = r.split(',').map(Number); if (x < 30 || x + w > 190 || y < -10 || y + h > 136) out++; }
   ok(out === 0, 'every pose inside the box round his feet (' + out + ' rects outside)'); }
