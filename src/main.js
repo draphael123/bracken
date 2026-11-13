@@ -36703,7 +36703,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (let pass = 0; pass < 3; pass++) if (numBoxes.some(q => boxHit([px - nw / 2, py, nw, 8], q))) py += 9;   /* a number sets down below the one already there, not on it */
     numBoxes.push([px - nw / 2, py, nw, 8]);
     if (CF4.CF4_SHIPS) { const s4 = CF4.numScale(n, time, !!SET.reduceMotion), c4 = CF4.numColor(n), py4 = Math.min(VH - 9, py);   /* (claude/cf4) the pop, the heavy size and the gold kill number; the scaled one is kept on the screen by its own width */
-      if (s4 === 1) text(numTxt(n), px, py4, c4, 'center', TYPE.popup, 'outline'); else { const px4 = Math.round(Math.max(nw * s4 / 2 + 1, Math.min(VW - nw * s4 / 2 - 1, px))); g.save(); g.translate(px4, py4 + 4); g.scale(s4, s4); text(numTxt(n), 0, -4, c4, 'center', TYPE.popup, 'outline'); g.restore(); } }
+      if (s4 === 1) text(numTxt(n), Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, px))), py4, c4, 'center', TYPE.popup, 'outline'); else { const px4 = Math.round(Math.max(nw * s4 / 2 + 1, Math.min(VW - nw * s4 / 2 - 1, px))); g.save(); g.translate(px4, py4 + 4); g.scale(s4, s4); text(numTxt(n), 0, -4, c4, 'center', TYPE.popup, 'outline'); g.restore(); } }
     else text(numTxt(n), px, Math.min(VH - 9, py), n.col, 'center', TYPE.popup, 'outline'); }
   g.globalAlpha = 1; g.__world = false;
 }
