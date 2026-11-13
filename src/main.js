@@ -23616,7 +23616,12 @@ function drawMurderHoles(cx, cy) {
 function gqPinCap(e, dmg) { const cap = e.maxHp * GQ3.mech.pinCap, room = Math.max(0, cap - (e.gqPinTaken || 0)); if (dmg >= room) { dmg = Math.max(1, Math.round(room)); if (e.modeT > 0.3) { e.modeT = 0.3; gqSay(e, 'SHE HEAVES AT THE GRATE', '#ff6b5c'); } } e.gqPinTaken = (e.gqPinTaken || 0) + dmg; return dmg; }
 function gqPinFor(e, x, by, txt, secs) { const r = gqPin(e, x, by, txt); if (r && secs) e.modeT = secs; return r; }
 /* THE BARRACKS GATE is her hall's west door: it rises for the guards (open) and drops again (the winch, or after they are in) - the same wall the fight shut at her waking */
-function gqWestGate(open) { const A = L.arena; if (!A || A.boss !== 'gqueen') return; if (open) { const ys = [], top = A.floor / TS - 6, bot = A.floor / TS - 1; for (let ty = top; ty <= bot; ty++) ys.push(ty); setWall(A.wallL, false); gateFx.push({ col: A.wallL, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift(); resolveTiles(); } else { setWall(A.wallL, true); resolveTiles(); } }
+/* (claude/gq6fix) THE BARRACKS GATE'S OTHER FRAME: opening and closing her west gate each ran a whole-level resolveTiles (~0.2 s, a 190 ms frame right after the throne fire, when the wave opens, and again at the close). The window of tiles round the gate col is resolved ONCE per state at the fight's wake card (gqWarmGate) and a swing is a copy of that window. */
+const gqGateWin = A => { const idx = [], top = A.floor / TS - 6, bot = A.floor / TS - 1; for (let c = A.wallL - 6; c <= A.wallL + 6; c++) for (let y = top - 2; y <= bot + 2; y++) if (c >= 0 && c < LW && y >= 0 && y < LH) idx.push(y * LW + c); return idx; };
+function gqWarmGate() { const A = L.arena; if (!A || A.boss !== 'gqueen' || A.gateSpr || !GQ6) return; const idx = gqGateWin(A), grab = () => idx.map(i => tileSpr[i]);
+  setWall(A.wallL, false); resolveTiles(); const open = grab(); setWall(A.wallL, true); resolveTiles(); A.gateSpr = { idx, open, shut: grab() }; }
+function gqGateSprites(open) { const A = L.arena, G = A && A.gateSpr; if (!G) { resolveTiles(); return; } const s = open ? G.open : G.shut; G.idx.forEach((i, k) => { tileSpr[i] = s[k]; }); }
+function gqWestGate(open) { const A = L.arena; if (!A || A.boss !== 'gqueen') return; if (open) { const ys = [], top = A.floor / TS - 6, bot = A.floor / TS - 1; for (let ty = top; ty <= bot; ty++) ys.push(ty); setWall(A.wallL, false); gateFx.push({ col: A.wallL, ys, t: 0, dur: 0.7, closing: false }); SFX.gateLift(); gqGateSprites(true); } else { setWall(A.wallL, true); gqGateSprites(false); } }
 /* (claude/highcrown2bell) THE GRATE'S FX: dust trickling off the lintel and iron grit while it is told; when it lands, a ring of dust along the floor, sparks off the tines and grit down the column. Art only: nothing here touches the grid or a number. */
 const GQ_HAND = { 15: [35, -72], 16: [37, -35] };   /* where her fists' rope ends in the sprite (frames 15 and 16): dx facing right, dy from her feet */
 function gqBellFx(e, dt) { const b = gqBell(); if (!b) return; const gx = b.gate * TS + 8;
@@ -23674,14 +23679,14 @@ function gqEscapeLay() { const A = L.arena, E = L.gqEscape; if (!A || !E || A.es
   for (let k = 0; k < 20; k++) parts.push({ x: (A.hole.x0 + Math.random() * (A.hole.x1 - A.hole.x0 + 1)) * TS, y: A.hole.y1 * TS + 8, vx: (Math.random() - 0.5) * 120, vy: 40 + Math.random() * 80, life: 1.2, max: 1.2, col: Math.random() < 0.5 ? '#5a5a68' : '#ff9a5c', size: 3, grav: 500 });
 }
 /* one row of the escape's tiles: 'drop' (gone: a burning rafter or a roof slate under a foot), 'lay' (a dropped rafter laid again), 'restore' (a slate put back as it was) */
-function gqTiles(row, x0, x1, how) { const A = L.arena; if (!A) return; const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []);
+function gqTiles(row, x0, x1, how, defer) { const A = L.arena; if (!A) return; const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []);
   for (let x = x0; x <= x1; x++) { const i = row * LW + x;
     if (how === 'drop') { if (L.grid[i] !== T.AIR) { if (!keep.has(i) && !laid.includes(i)) keep.set(i, L.grid[i]); L.grid[i] = T.AIR; tileSpr[i] = null; } }
     else if (how === 'lay') { if (L.grid[i] === T.AIR) { L.grid[i] = T.ONEWAY; grid0[i] = T.ONEWAY; tileSpr[i] = null; if (!laid.includes(i)) laid.push(i); } }
     else if (how === 'ladder') { if (L.grid[i] === T.AIR) { L.grid[i] = T.NET; grid0[i] = T.NET; tileSpr[i] = null; if (!laid.includes(i)) laid.push(i); } }   /* (claude/gq4art) the galleries' ladders */
     else if (how === 'unlay') { if (L.grid[i] === T.ONEWAY && laid.includes(i)) { L.grid[i] = T.AIR; grid0[i] = T.AIR; tileSpr[i] = null; laid.splice(laid.indexOf(i), 1); } }   /* (claude/gq5q1) a hoist's deck lowers: the laid ledge goes */
     else if (how === 'restore') { const t0 = keep.get(i); if (t0 !== undefined) { L.grid[i] = t0; tileSpr[i] = null; keep.delete(i); } } }
-  resolveTiles(); }
+  if (!defer) resolveTiles(); }   /* (claude/gq6fix) defer: the caller changes several rows and calls tilesDone once - resolveTiles walks the WHOLE level (twice over for the ground depth), and the hoists asked for 3 to 6 of them per step: one 1 s frame when the bell rang */
 function gqCeiling(q) { // she goes up through her own roof, and what she brings down is the way after her
   const A = L.arena, H0 = A.hole; if (!H0 || A.holeOpen) return; A.holeOpen = true;
   const keep = A.taken || (A.taken = new Map()), laid = A.laid || (A.laid = []);
@@ -31035,7 +31040,7 @@ GQH = makeGQueenHands({ get L() { return L; }, TS, T, sfx: SFX, P: () => P, enem
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (x, y, n) => dust(x, y, n), part: o => parts.push(o), shake: n => shakeCam(n), zoom: (s, t) => zoomKick(s, t), ring: (x, y, r, c, l) => ringAt(x, y, r, c, l),
   damage: (x, d, o) => damagePlayer(x, d, o), parries: () => RP.stats.parries, hurt: (e, d, x) => hurtEnemy(e, d, x, false), solid: (tx, ty) => isSolid(tx, ty), overlap: (a, b) => overlap(a, b), hurtBox: () => duckBox(P),
   endFight: () => { bossActive = false; camLock = null; setView('normal'); if (L.arena) { setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); } },
-  shutWest: () => { const A = L.arena; if (A) setWallAt(A.wallL, true, A.floor); }, layEscape: () => gqEscapeLay(), tiles: (row, x0, x1, how) => gqTiles(row, x0, x1, how), spawnEnt: e => spawnEnt(e),
+  shutWest: () => { const A = L.arena; if (A) setWallAt(A.wallL, true, A.floor); }, layEscape: () => gqEscapeLay(), tiles: (row, x0, x1, how, defer) => gqTiles(row, x0, x1, how, defer), tilesDone: () => resolveTiles(), warmGate: () => gqWarmGate(), tileSprs: idx => idx.map(i => tileSpr[i]), setTileSprs: (idx, s) => { idx.forEach((i, k) => { tileSpr[i] = s[k]; }); }, spawnEnt: e => spawnEnt(e),
   setCheckpoint: (x, y) => { checkpoint = { x, y }; }, flaskMax: () => SV.flaskMax(PROG), music: n => music.play(n), lift: n => music.lift && music.lift(n), hint: m => hintSay('mechanic', 6, m),
   enterRoof: () => { Object.assign(L.arena, L.arenaRoof); bossStart(); }, wave: w => waves.push(w), ducking: () => !!P.ducking,
   /* (claude/gq2) 1-4 SEATS: her hits test every hero on his feet (asPlayer: P, PROG and the keys are his for the call), the portal step and the flee's heal take the whole party, her portals aim at the hero she means */

@@ -59,7 +59,7 @@ export function makeGQ5Q1(env) {
     let ceilY = A.floor - 160; if (grid) { const cc = hs[1].c0 + 2; for (let r = fr - 1; r >= 0; r--) { const v = grid[r * W + cc]; if (v === 1) { ceilY = (r + 1) * TS; break; } } }
     const surf = {}; if (grid) for (let c = x0t; c < x1t; c++) { let y = A.floor; for (let r = fr - 4; r <= fr; r++) { const v = grid[r * W + c]; if (v === 1) { y = r * TS; break; } } surf[c] = y; }
     let dais = x1t; if (grid) for (let c = x0t; c < x1t; c++) if (grid[(fr - 1) * W + c] === 1) { dais = c; break; }
-    geo = { A, x0t, x1t, fr, hs, ceilY, floorY: A.floor, surf, dais };
+    geo = { A, x0t, x1t, fr, hs, ceilY, floorY: A.floor, surf, dais }; cache = null;   /* (claude/gq6fix) a new arena: the decks' sprites are re-warmed */
     return geo;
   }
   E.geo = G0;
@@ -71,11 +71,22 @@ export function makeGQ5Q1(env) {
   E.overHoist = P1 => { if (!st || st.step <= 0 || !P1 || P1.dead) return null; const h = hoistAtX(P1.x); if (!h) return null; const top = topAt(st.step); return P1.y <= top + 2.5 && P1.y >= top - 90 ? h : null; };
 
   /* ---- the lifts ---- */
-  const rowTiles = (row, how) => { for (const h of G0().hs) ctx.tiles(row, h.c0, h.c0 + N.hoist.w - 1, how); };
+  const rowTiles = (row, how) => { const dfr = !!ctx.tilesDone; for (const h of G0().hs) ctx.tiles(row, h.c0, h.c0 + N.hoist.w - 1, how, dfr); };   /* (claude/gq6fix) the three decks of a row change together: ONE level resolve per step (setStep calls tilesDone), not 3 per row */
+  /* (claude/gq6fix) THE FRAME THE BELL COST: every deck row change re-resolved the WHOLE level's tiles (main.js resolveTiles, twice over for the ground depth: ~0.25 s each; a ring = 4 steps, and before this 3 resolves per row op: one 1 s frame).
+     warm() lays each step's row once at the fight's wake card (the name card: nothing moves), copies the sprites the resolver gave those cells, and puts the hall back; setStep then just copies them in. */
+  let cache = null;
+  const deckIdx = n => { const g = G0(), W = env.L().W, out = []; for (const h of g.hs) for (let c = h.c0; c < h.c0 + N.hoist.w; c++) out.push((g.fr - n) * W + c); return out; };
+  function warm() {
+    if (ctx.warmGate) ctx.warmGate();   /* (claude/gq6fix) the barracks gate's two states, resolved once too */
+    if (cache || !ctx.tilesDone || !ctx.tileSprs || !ctx.setTileSprs || st.step !== 0) return; const c0 = {}; const g = G0();
+    try { for (let n = 1; n <= N.hoist.rows; n++) { rowTiles(g.fr - n, 'lay'); if (n > 1) rowTiles(g.fr - n + 1, 'unlay'); ctx.tilesDone(); c0[n] = ctx.tileSprs(deckIdx(n)); }
+      rowTiles(g.fr - N.hoist.rows, 'unlay'); ctx.tilesDone(); cache = c0; } catch (err) { cache = null; }
+  }
+  E.warm = warm;
   function setStep(n) {
     const old = st.step; if (n === old) return; const g = G0(), oldTop = topAt(old), newTop = topAt(n);
     if (n > old) { rowTiles(g.fr - n, 'lay'); if (old > 0) rowTiles(g.fr - old, 'unlay'); } else { if (n > 0) rowTiles(g.fr - n, 'lay'); rowTiles(g.fr - old, 'unlay'); }
-    st.step = n;
+    st.step = n; if (cache && (n === 0 || cache[n])) { if (n > 0) ctx.setTileSprs(deckIdx(n), cache[n]); } else if (ctx.tilesDone) ctx.tilesDone();   /* (claude/gq6fix) the decks' sprites were resolved ONCE at the fight's start (warm): a step is a grid change + a copy, no level resolve (it was ~0.25 s a step) */
     env.seats(P1 => { if (P1.dead || P1.ground === false || Math.abs(P1.y - oldTop) > 2.5 || !hoistAtX(P1.x)) return; P1.y = newTop; P1.vy = 0; });   // every rider goes with it: carried up, set down
     for (const h of g.hs) { ctx.dust(h.l + 4, g.floorY, 2); ctx.dust(h.r - 4, g.floorY, 2); }
     env.sfx('clank'); ctx.shake(2);
@@ -183,7 +194,7 @@ export function makeGQ5Q1(env) {
   E.update = dt => {
     if (!st) return; const e = env.q(), tt = tn(), inH = !!(e && env.inHall(e) && !e.hidden && env.bossOn());
     if (!inH) { if (st.step > 0) { try { setStep(0); } catch (err) { /* the arena is gone */ } } st.phase = 'down'; st.fire = null; return; }
-    hoistTick(dt);
+    warm(); hoistTick(dt);
     if (e.mode !== 'sleep' && e.mode !== 'wake' && st.nextFire == null) st.nextFire = tt + N.fire.first;
     env.seats(P1 => { if (E.overHoist(P1)) P1.q5Hoist = tt; });
     const F = st.fire;
