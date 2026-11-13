@@ -3874,7 +3874,7 @@
   }
  },
  "harbor": {
-  "hash": "ce45ca81cf76",
+  "hash": "45a281c50b60",
   "boss": {
    "boss": "harbormaster",
    "wins": 0,
@@ -4073,15 +4073,22 @@
     }
    ]
   },
+  "carried": {
+   "from": "ce45ca81cf76",
+   "parts": [
+    "boss",
+    "mini"
+   ]
+  },
   "level": {
    "knight": {
-    "deaths": 2,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 280,
-    "hits": 28,
+    "hpLostPct": 467,
+    "hits": 34,
     "walked": 100,
-    "lifts": 74,
-    "held": 30,
+    "lifts": 83,
+    "held": 29,
     "duels": 0,
     "boardLifts": 1,
     "rides": 1,
@@ -4090,18 +4097,18 @@
      "lift": 1
     },
     "machines": true,
-    "frames": 21163,
-    "kills": 0,
-    "heroLevel": 21
+    "frames": 21564,
+    "kills": 3,
+    "heroLevel": 31
    },
    "warden": {
-    "deaths": 2,
+    "deaths": 4,
     "minHpPct": 0,
-    "hpLostPct": 323,
-    "hits": 33,
+    "hpLostPct": 565,
+    "hits": 45,
     "walked": 100,
-    "lifts": 72,
-    "held": 10,
+    "lifts": 82,
+    "held": 23,
     "duels": 0,
     "boardLifts": 1,
     "rides": 1,
@@ -4110,18 +4117,18 @@
      "lift": 1
     },
     "machines": true,
-    "frames": 21479,
+    "frames": 22209,
     "kills": 6,
-    "heroLevel": 21
+    "heroLevel": 31
    },
    "pyro": {
-    "deaths": 2,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 250,
-    "hits": 35,
+    "hpLostPct": 429,
+    "hits": 34,
     "walked": 100,
-    "lifts": 70,
-    "held": 15,
+    "lifts": 79,
+    "held": 29,
     "duels": 0,
     "boardLifts": 1,
     "rides": 1,
@@ -4130,9 +4137,9 @@
      "lift": 1
     },
     "machines": true,
-    "frames": 21030,
+    "frames": 21228,
     "kills": 3,
-    "heroLevel": 21
+    "heroLevel": 31
    }
   }
  },

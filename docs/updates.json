@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 181,
+    "lines": [
+      { "s": "Stormwreck Harbor: no more tideguard dropping off the roof into the Salvage Captain.", "lv": ["harbor"] },
+      { "s": "He now waits on the road past the sea gate instead.", "lv": ["harbor"] },
+      { "s": "Nothing else in the harbor changed.", "lv": ["harbor"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 180,
     "lines": [
       { "s": "Groundwork for a reworked Goblin Queen fight is in; it is switched off for now.", "lv": [] },
