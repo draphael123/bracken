@@ -199,4 +199,17 @@ const K2 = K2M.K2;
   ok(W.hurt.length > 0 && W.hurt.every(h => h.d > 0), 'his blows land through damagePlayer (' + W.hurt.length + ' in the sim)');
 }
 
+/* (claude/sea6-d) THE PAGE WIRING: main.js builds the hands with its own ctx and this tool builds them with a ctx of its own, so a ctx member the hands read but main.js never gave
+   passed 105 checks while the page threw: kitOf() read ctx.pfh, main.js had no `get pfh`, and the Drowned King 2 threw in k2Step every frame the first time he woke. Every ctx.<name>
+   the hands read must be on main.js's KFH ctx line. */
+{
+  const { readFileSync } = await import('node:fs');
+  const hands = readFileSync(new URL('../src/keep-floods-hands.js', import.meta.url), 'utf8'), main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const line = main.split(/\r?\n/).find(l => l.startsWith('KFH = kfOn() ? makeKeepFloodsHands(')) || '';
+  const used = [...new Set([...hands.matchAll(/ctx\.([A-Za-z_]\w*)/g)].map(m => m[1]))];
+  const given = k => new RegExp('(?:get\\s+' + k + '\\s*\\(|[,{]\\s*' + k + '\\s*[:,}(])').test(line);
+  const missing = used.filter(k => !given(k));
+  ok(line.length > 0 && !missing.length, 'main.js KFH ctx carries every ctx.<name> the hands read (' + used.length + ' names)' + (missing.length ? ': MISSING ' + missing.join(', ') : ''));
+}
+
 console.log('keep-floods: ' + n + ' checks ok');
