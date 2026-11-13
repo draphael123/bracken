@@ -6,7 +6,7 @@
 //   THE BELL PERCH  every 22 s, the first at 18 s (replaces the BOMBARDMENT's 70 / 45% triggers; once more in the rage, 18 s after the last): she blinks into the cupola ring behind a violet ward
 //                 ("WARDED - RING THE BELL"), rockfall 2 shadows per 1.2 s. A deck-level ROPE hangs from the cupola frame: ANY blow or ANY hero shot rings it (1.2 s swing tell) = SHAKEN LOOSE, she falls
 //                 to the deck, DOWNED 3.0 s x1.5, at most 10% of her bar. Nobody rings = she leaves after 8 s. The one immunity window (B15): every hero can break it.
-//   THE SWEEP     within 3 tiles: tell 0.7 s, a 2.5-tile chest arc, 15 (x dmgK), jump or block, a parry = STAGGERED 1.2 s, cd 4 s.
+//   THE SWEEP     within 3 tiles: tell 0.7 s, a 2.5-tile chest arc, 18 (x dmgK), jump or block, a parry = STAGGERED 1.2 s, cd 4 s.
 //   THE HATCH ERUPTS  every 15 s after 50%: seam smoke 1.2 s + "THE HATCH!", then a fire column 2 wide x 5 rows for 2.0 s (14 + a push), the nearest bay burns with it. Never during the perch's swing / downed window.
 //   NUMBERS       SHARD VOLLEY cd 2.5 -> 2.2 s; the phase-2 dmgK 0.6 -> 0.65; her bar stays 1000.
 // The override for review and the lanes: ?gq5q2=1 on the page, globalThis.BRACKEN_GQ5Q2 = true, or BRACKEN_GQ5Q2=1 in a Node tool's env.
@@ -27,7 +27,7 @@ export const Q52N = {
   teach: { at: 1.5, v: 160, dmg: 4, max: 3, retry: 2.0, ropeAt: 8.0, ropeFor: 6.0 },
   rope: { dx: 0, top: 240, hang: 70, hw: 9 },          // dx from the cupola frame's west column centre; the rope hangs from the frame (row 14's underside, y 240) down to 70 px over the deck; hw = half width of the strike box
   perch: { first: 18, every: 22, tell: 0.6, hold: 8.0, swing: 1.2, down: 3.0, mul: 1.5, cap: 0.10, rainEvery: 1.2, rainN: 2, rageGap: 18, fallDx: 34, guard: 1.5 },
-  sweep: { range: 48, tell: 0.7, cut: 0.3, arc: 44, dmg: 15, cd: 4.0, stagger: 1.2, bandHi: 30, bandLo: 12 },
+  sweep: { range: 48, tell: 0.7, cut: 0.3, arc: 44, dmg: 18, cd: 4.0, stagger: 1.2, bandHi: 30, bandLo: 12 },   /* (GQ5Q2-TUNE step 1: 15 -> 18, the baseline n=6 read 78% [55-91], over the 60-65 band; every roof-reaching fight in the baseline won) */
   hatch: { at: 0.5, first: 4.0, every: 15, smoke: 1.2, fire: 2.0, w: 2, rows: 5, dmg: 14, lead: 4.2 },
 };
 

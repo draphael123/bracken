@@ -8,7 +8,7 @@
 //   P  perch      first at 18 s then every 22 s; no bombardment at 70 / 45%; ward: every blow is turned (the ONE immunity window), shards glance; the rope is rung by ANY blow or hero shot (every kind in
 //                 src/hero-strikes.js, every seat) -> 1.2 s swing tell -> SHAKEN LOOSE, DOWNED 3.0 s x1.5 at most 10% of her bar; nobody rings = she leaves at 8 s; the rope always re-arms; rockfall 2 / 1.2 s;
 //                 once more in the rage, 18 s after the last
-//   S  sweep      within 3 tiles only: tell 0.7 s, 2.5-tile chest arc, 15 x dmgK, a jumper is spared, a parry = STAGGERED 1.2 s, cd 4 s
+//   S  sweep      within 3 tiles only: tell 0.7 s, 2.5-tile chest arc, 18 x dmgK, a jumper is spared, a parry = STAGGERED 1.2 s, cd 4 s
 //   H  hatch      never before 50%; smoke 1.2 s + "THE HATCH!", fire 2.0 s, 14 + push once a hero, the nearest bay burns; every 15 s; never in the perch's swing / downed window or when a perch is due inside the lead
 //   X  soak       3 x 600 s of everything with a bot that rings / ducks / wanders: no mode sticks, every perch ends, the rope always re-arms (no soft-lock)
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -163,7 +163,7 @@ console.log('   - every kind of blow and shot rings it (src/hero-strikes.js), ev
 console.log('== S. THE SCEPTRE SWEEP');
 { const w = roof(), e = w.e, h = w.heroes[0]; e.mode = 'roofStand'; e.modeT = 0; e.x = w.cx0; h.x = e.x - 60; w.step(5); ok(!/[sS]weep/.test(e.mode), 'a hero 3.75 tiles away: no sweep'); e.mode = 'roofStand'; e.modeT = 0; h.x = e.x - 40; w.step(2);
   ok(e.mode === 'sceptreSweepTell' && Math.abs(e.modeT - 0.7) < 0.05, 'within 3 tiles: sweepTell for ' + Q52N.sweep.tell + ' s (modeT ' + e.modeT.toFixed(2) + ')'); ok(w.st.dmg.length === 0, 'nothing hurts in the tell'); w.step(60 * 0.6); ok(w.st.dmg.length === 0, 'nor at 0.6 s'); w.step(10);
-  const d = w.st.dmg.find(x => x.o.name === 'HER SCEPTRE SWEEP'); ok(!!d && d.d === Math.max(1, Math.round(15 * Q52N.dmgK)), 'the release hits a grounded hero for 15 x dmgK = ' + (d && d.d)); }
+  const d = w.st.dmg.find(x => x.o.name === 'HER SCEPTRE SWEEP'); ok(!!d && d.d === Math.max(1, Math.round(18 * Q52N.dmgK)), 'the release hits a grounded hero for 18 x dmgK = ' + (d && d.d)); }
 { const w = roof(), e = w.e, h = w.heroes[0]; e.mode = 'roofStand'; e.modeT = 0; e.x = w.cx0; h.x = e.x - 30; w.step(2); w.step(60 * 0.6); h.y = w.RA.floor - 34; h.ground = false; w.step(10); ok(w.st.dmg.length === 0, 'a hero JUMPING the arc (feet 34 px up) is spared'); }
 { const w = roof({ mode: 'parry' }), e = w.e, h = w.heroes[0]; e.mode = 'roofStand'; e.modeT = 0; e.x = w.cx0; h.x = e.x - 30; w.step(2); w.step(60 * 0.7 + 2); ok(e.mode === 'jarred' && Math.abs(e.modeT - 1.2) < 0.15 && w.st.numbers.includes('STAGGERED'), 'a PARRY = STAGGERED 1.2 s (mode ' + e.mode + ', ' + e.modeT.toFixed(2) + ' s)'); }
 { const w = roof(), e = w.e, h = w.heroes[0]; e.x = w.cx0; h.x = e.x - 30; const starts = []; let prev = ''; for (let i = 0; i < 60 * 30; i++) { w.step(1); h.hp = 100; if (e.mode === 'roofStand') e.modeT = 0; if (e.mode === 'sceptreSweepTell' && prev !== 'sceptreSweepTell') starts.push(w.st.time); prev = e.mode; }
