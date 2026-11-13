@@ -61,7 +61,7 @@ export function makeGQ5Q2(env) {
     st = fresh(); const p4 = R0 && R0.q4; if (p4) p4.volleyCd = Math.max(p4.volleyCd, N.firstVolley);
     const e = env.q(), RA = env.L().arena || env.L().arenaRoof;
     if (RA && e && !Q6) { const cx = (RA.x0 + RA.x1) / 2; ctx.number(cx, RAf() - 118, N.plate[0], '#ffd36b'); ctx.number(cx, RAf() - 100, N.plate[1], '#ffd36b'); }   /* (claude/gq6fix) ON: the plate + hint come with the teach's tell, after the name card (they used to float up under it) */
-    if (ctx.hint && !Q6) ctx.hint(N.hint);
+    if (ctx.hint) ctx.hint(N.hint);   /* (claude/gq6fix) the hint stays as batch182 had it (visible the same way); the plate + a second hint come with the teach's tell */
   };
 
   /* ---- THE TEACH ---- */

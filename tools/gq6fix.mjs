@@ -51,7 +51,7 @@ if (Q6) {
   ok(shard && shardAt - tellAt >= Q6N.tellT - 0.05 && shardAt - tellAt <= Q6N.tellT + 0.1, 'the shard leaves her ' + (shardAt - tellAt).toFixed(2) + ' s after the tell');
   ok(shard && Math.abs(shard.x - (e.x + Math.sign(w.heroes[0].x - e.x) * 22)) < 14 && Math.abs(shard.y - (e.y - 44)) < 14, 'from HER hand (x ' + (shard && Math.round(shard.x)) + ', y ' + (shard && Math.round(shard.y)) + '), not a ring: her x ' + Math.round(e.x));
   ok(shard && Math.abs(Math.hypot(shard.vx, shard.vy) - Q52N.teach.v) < 1 && !!G.state().teach.shard && G.state().teach.shard.teach && G.state().teach.shard.glint, 'slow (' + Q52N.teach.v + ' px/s), gold glint, the teach shard');
-  ok(st.hints.includes(Q52N.hint) && st.numbers.includes(Q52N.plate[0]) && st.numbers.includes(Q52N.plate[1]), 'the rule hint + the two-line plate come with the tell (after the name card), not under it');
+  ok(st.hints.filter(m => m === Q52N.hint).length >= 2 && st.numbers.includes(Q52N.plate[0]) && st.numbers.includes(Q52N.plate[1]), 'the rule hint is said again with the tell, and the two-line plate comes with it (after the name card, not under it)');
   ok(st.numbers.includes('STRIKE IT!'), '"STRIKE IT!" is said at the shard');
   const h = w.heroes[0]; h.box = { l: shard.x - 14, r: shard.x + 14, t: shard.y - 14, b: shard.y + 14 }; h.hitSet = new Set(); const hp0 = e.hp; st.numbers.length = 0; w.step(1);
   for (let i = 0; i < 60 * 3 && e.hp === hp0; i++) w.step(1);
