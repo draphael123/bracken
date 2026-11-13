@@ -15,6 +15,10 @@ import { tideStrike, gauge, floatY, liftY, TS as KTS } from './tide-kit.js';
 import { WH, BREATH_NAME, WH_HEART } from './whale.js';
 import * as GPM from './gastric-polyp.js';
 import * as PQM from './parasite-queen.js';
+import * as WA from './redraw/whale_art.js';   /* (claude/whaleart) the level kit: flesh, nerves, membranes, heart, tongue, raft, bile, lung */
+import * as PA from './redraw/gastric_polyp_art.js';   /* (claude/whaleart) the Gastric Polyp's poses + the bile glob */
+import * as QA from './redraw/parasite_queen_art.js';   /* (claude/whaleart) the Parasite Queen's poses + her floor pieces */
+import * as KA from './redraw/deep3_art.js';   /* (claude/whaleart) the gold OPEN ring and the grey WARD ring (shared with the Deep) */
 const R = Math.round;
 export const WH_HANDS = { nerveW: 12, nerveH: 14, nerveReach: 14 };
 export const WH_SAY = { exhale: 'IT BREATHES OUT', inhale: 'IT BREATHES IN', already: 'IT IS DRAWING IN ALREADY', cool: 'THE NERVE IS SPENT', unseal: 'THE CARDIA OPENS', torn: 'THE INHALE TEARS IT LOOSE' };
@@ -30,7 +34,7 @@ export function makeWhaleHands(ctx) {
   H.on = on;
   H.owns = e => e.t === 'gastricpolyp' || e.t === 'parasitequeen';
   H.clear = () => {
-    S = null; Q = null; WORD = null; if (!on()) return;
+    S = null; Q = null; WORD = null; seen.clear(); if (!on()) return;
     const L = lv();
     S = { told: {}, nerves: {}, mems: [], ph: 'low', sealed: {} };
     for (const n of L.whNerves || []) S.nerves[n.id] = { ...n, cool: 0, flare: 0, kind: null, glow: 0 };
@@ -186,78 +190,69 @@ export function makeWhaleHands(ctx) {
     const oy = m.y, y = m.wh === 'lift' ? liftY(K(), m.lid) : floatY(K(), m.fid); if (y != null) m.y = y; m.x = m.x0; m.dx = 0; m.dy = m.y - oy; return true;
   };
 
-  /* ---------- DRAWING (GREYBOX: the art pass owes the flesh kit, the nerves, the membranes, the tongue, the rafts, the heart, both sheets) ---------- */
+  /* ---------- DRAWING (claude/whaleart: the art pass - src/redraw/whale_art.js the kit, gastric_polyp_art.js and parasite_queen_art.js the two sheets; draw-only, no number or box moved) ---------- */
+  const seen = new Map();   /* a foe we drew alive: when it is dead we play its fall (once) */
+  const DEAD_T = { gastricpolyp: 0.8, parasitequeen: 2.6 };
+  const K01 = v => Math.max(0, Math.min(1, v));
   H.drawBack = (g, cx, cy, t) => {
-    if (!S) return; const VW = ctx.VW(), A = lv().arena;
+    if (!S) return; const VW = ctx.VW(), vw = ctx.view ? ctx.view() : null, VH = vw ? vw.y1 - vw.y0 : 216, A = lv().arena;
+    /* THE FLESH: the section's wash, fibres, veins, wet edges and the sinew hung off every ceiling, over the level's tiles */
+    WA.drawFleshTex(g, cx, cy, t, VW, VH, (x, y) => ctx.isSolid(x, y), lv().W || WH.W, lv().H || WH.H);
     /* THE HEART: behind her, beating (it swells on each beat; fast in P3) */
-    if (A && A.heartX - cx > -80 && A.heartX - cx < VW + 80) { const hs = heartTide(), rate = hs ? (hs.T.rate || 1) : 1, beat = Math.max(0, Math.sin(t * 5.2 * rate)) ** 6, x = R(A.heartX - cx), y = R(A.floor - cy) - 44;
-      g.fillStyle = '#5a1420'; g.beginPath(); g.ellipse(x, y, 30 + beat * 4, 34 + beat * 5, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#8a2232'; g.beginPath(); g.ellipse(x - 6, y - 6, 20 + beat * 3, 22 + beat * 3, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#c04050'; g.fillRect(x - 3, y - 40, 6, 12); g.fillRect(x + 10, y - 36, 5, 10); }
+    if (A && A.heartX - cx > -80 && A.heartX - cx < VW + 80) { const hs = heartTide(), rate = hs ? (hs.T.rate || 1) : 1, beat = Math.max(0, Math.sin(t * 5.2 * rate)) ** 6;
+      WA.drawHeart(g, R(A.heartX - cx), R(A.floor - cy) - 44, beat, rate, t); }
     for (const id in S.nerves) { const n = S.nerves[id], x = R(nerveX(n) - cx), y = R(nerveFeet(n) - cy); if (x < -30 || x > VW + 30) continue;
-      const pulse = 0.5 + 0.5 * Math.sin(t * 6 + n.x);
-      if (n.glow > 0.05) { g.globalAlpha = 0.3 * n.glow; g.fillStyle = '#ffd0dc'; g.beginPath(); g.arc(x, y - 7, 9 + 5 * n.glow + pulse * 2 * n.glow, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-      g.fillStyle = n.cool > 0 && n.flare <= 0 ? '#8a6a70' : '#f4c0cc'; g.fillRect(x - 5, y - 10, 10, 10); g.fillStyle = n.flare > 0 ? '#ffffff' : '#ffe8ee'; g.fillRect(x - 2, y - 8, 4, 5);
-      g.fillStyle = '#c07080'; g.fillRect(x - 7, y - 2, 3, 2); g.fillRect(x + 4, y - 3, 3, 2); g.fillRect(x - 1, y - 13, 2, 3);   /* the nerve's strands into the flesh */
-      if (n.cool > 0 && n.flare <= 0) { const k = n.cool / (WH.nerve.cool + WH.nerve.flare); g.fillStyle = '#9ab0c0'; g.fillRect(x - 6, y + 2, R(12 * k), 1); } }
+      WA.drawNerve(g, x, y, { glow: n.glow, flare: n.flare, cool: n.cool, coolMax: WH.nerve.cool + WH.nerve.flare }, t); }
     for (const m of S.mems) { const x = R(m.x0 * TS - cx), y = R(m.y0 * TS - cy), w = (m.x1 - m.x0 + 1) * TS, h = (m.y1 - m.y0 + 1) * TS; if (x > VW + 20 || x + w < -20) continue;
-      if (m.open) { g.fillStyle = '#7a2a3a'; g.fillRect(x, y, 3, h); g.fillRect(x + w - 3, y, 3, h); continue; }   /* drawn back to the walls */
       const b = master(), quiver = b && b.ph === 'warn' ? R(Math.sin(t * 30) * 1) : 0;
-      g.fillStyle = m.kind === 'sealed' ? '#a03a50' : '#c06070'; g.fillRect(x + quiver, y, w, h); g.fillStyle = '#e090a0'; for (let yy = 4; yy < h; yy += 9) g.fillRect(x + 2 + quiver, y + yy, w - 4, 1);
-      if (m.kind === 'sealed') { g.fillStyle = '#ffd36b'; g.fillRect(x + w / 2 - 1, y + h / 2 - 1, 3, 3); } }
+      WA.drawMembrane(g, x, y, w, h, { open: m.open, kind: m.kind, quiver }, t); }
   };
-  H.drawMover = (g, m, cx, cy) => {
+  H.drawMover = (g, m, cx, cy, t = 0) => {
     if (!m.wh) return false; const x = R(m.x - cx), y = R(m.y - cy), w = R(m.w);
-    if (m.wh === 'lift') { g.fillStyle = '#b04858'; g.fillRect(x, y, w, 8); g.fillStyle = '#d07080'; g.fillRect(x + 1, y, w - 2, 2); g.fillStyle = '#8a3040'; for (let i = 4; i < w - 2; i += 7) g.fillRect(x + i, y + 4, 2, 1); return true; }
-    g.fillStyle = '#3a2a22'; g.fillRect(x, y, w, 8); g.fillStyle = '#5a4434'; g.fillRect(x + 1, y, w - 2, 2); g.fillStyle = '#c8c0a8'; for (let i = 3; i < w - 2; i += 6) g.fillRect(x + i, y + 4, 2, 2);   /* tarred wreck planks, barnacles (a swallowed ship) */
+    if (m.wh === 'lift') WA.drawTongue(g, x, y, w, t); else WA.drawRaft(g, x, y, w, t);   /* the tongue; a swallowed ship's planks */
     return true;
   };
   H.drawEnt = (g, e, cx, cy, t) => {
     const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1;
     if (e.t === 'gastricpolyp') {
-      const h = R(e.h), tell = e.mode === 'spitTell';
-      g.fillStyle = '#8a3040'; g.fillRect(x - 7, y - 3, 14, 3);   /* its root in the flesh */
-      if (GPM.gpIn(e) && e.mode === 'in') { g.fillStyle = '#b05a68'; g.fillRect(x - 4, y - 5, 8, 3); return; }
-      g.fillStyle = '#c87a6a'; g.fillRect(x - 3, y - h, 6, h); g.fillStyle = tell ? '#e8f0a0' : '#d8a090'; g.fillRect(x - 5 - (tell ? 1 : 0), y - h - 6, 10 + (tell ? 2 : 0), 7);
-      g.fillStyle = '#3a1018'; g.fillRect(x + f * 3 - 1, y - h - 4, 3, 3);   /* its mouth */
-      if (e.mode === 'spit') { g.fillStyle = '#b8d060'; g.fillRect(x + f * 6, y - h - 4, 3, 3); }
-      for (const gl of e.globs) { g.fillStyle = '#b8d060'; g.fillRect(R(gl.x - cx) - 2, R(gl.y - cy) - 2, 5, 5); g.fillStyle = '#e0f0a0'; g.fillRect(R(gl.x - cx) - 1, R(gl.y - cy) - 1, 2, 2); }
+      seen.set(e, { x: e.x, y: e.y, face: f, t0: null, k: 'gastricpolyp' });
+      PA.drawPolyp(g, x, y, f, { mode: e.mode, h: e.h, hurtT: e.hurtT, flash: e.flash, seed: (e.x % 97) * 0.13 }, t);
+      for (const gl of e.globs) PA.drawGlob(g, R(gl.x - cx), R(gl.y - cy), gl.vx, gl.vy, t);
       return;
     }
     if (e.t !== 'parasitequeen' || !Q) return;
-    const m = e.mode, open = PQM.pqOpen(e), skit = Q.ph === 2 && !open && m !== 'rerootTell';
-    /* HER ROOTS into the heart (P1/P3; torn and trailing when open or skittering) */
-    if (!skit) { g.strokeStyle = open ? 'rgba(200,180,160,0.5)' : '#d8c8b0'; g.lineWidth = 2; for (let i = 0; i < 5; i++) { g.beginPath(); g.moveTo(x - 10 + i * 5, y - 6); g.lineTo(x - 18 + i * 9 + (open ? R(Math.sin(t * 8 + i) * 6) : 0), y + (open ? -2 : 6)); g.stroke(); } g.lineWidth = 1; }
-    const rear = m === 'thrumTell' || m === 'crushTell' ? 6 : m === 'lashTell' ? -4 : 0, bh = skit ? PQM.PQ.hSkit : PQM.PQ.h;
-    g.fillStyle = open ? '#e8e0d0' : '#d8d0c0'; g.beginPath(); g.ellipse(x, y - bh / 2 - rear, PQM.PQ.w / 2 + 2, bh / 2, 0, 0, Math.PI * 2); g.fill();   /* the pale swollen body */
-    g.fillStyle = '#b8a890'; for (let i = -2; i <= 2; i++) g.fillRect(x + i * 5 - 1, y - bh + 4 - rear, 2, bh - 8);   /* her segments */
-    if (skit) { g.fillStyle = '#ffe070'; g.fillRect(x - f * 12 - 3, y - bh / 2 - 3, 6, 6); }   /* THE ROOT-KNOT on her back (1.0x from behind) */
-    g.fillStyle = '#5a2a2a'; for (let i = 0; i < 3; i++) { const lg = R(Math.sin(t * (skit ? 18 : 3) + i) * 2); g.fillRect(x - 16 - i * 2, y - 6 + lg, 6, 2); g.fillRect(x + 10 + i * 2, y - 6 - lg, 6, 2); }   /* her legs */
-    g.fillStyle = m === 'spitTell' ? '#e8f0a0' : '#7a3a3a'; g.fillRect(x + f * (PQM.PQ.w / 2) - (f < 0 ? 6 : 0), y - bh / 2 - 6 - rear, 6, 8);   /* her mouthparts */
-    if (m === 'constrictTell' || m === 'constrict') { g.strokeStyle = m === 'constrict' ? '#ff9aa8' : 'rgba(255,154,168,0.5)'; g.beginPath(); for (const P0 of ctx.players) { if (P0.dead) continue; g.moveTo(x, y - bh / 2); g.lineTo(R(P0.x - cx), R(P0.y - 8 - cy)); } g.stroke(); }
-    /* the marked stretch of a ROOT LASH, the THRUM rings, the eggs, the spit */
-    for (const r of Q.roots) { const rx = R(r.x - cx), ry = R(r.y - cy); g.globalAlpha = m === 'lash' ? 0.95 : 0.45 + 0.35 * Math.sin(t * 20); g.fillStyle = m === 'lash' ? '#d8c8b0' : '#ff6b6b';
-      if (m === 'lash') for (let i = -2; i <= 2; i++) g.fillRect(rx + i * 8 - 1, ry - PQM.PQ.lash.h, 3, PQM.PQ.lash.h); else g.fillRect(rx - PQM.PQ.lash.w, ry - 2, PQM.PQ.lash.w * 2, 2); g.globalAlpha = 1; }
-    for (const ring of Q.rings) for (const sx of [-1, 1]) { g.fillStyle = 'rgba(255,140,150,0.8)'; g.fillRect(R(ring.x + sx * ring.r - cx) - 2, R(ring.y - cy) - PQM.PQ.thrum.h, 4, PQM.PQ.thrum.h); }
-    for (const egg of Q.eggs) { g.fillStyle = '#e8e0b0'; g.fillRect(R(egg.x - cx) - 4, R(egg.y - cy) - 8, 8, 8); g.fillStyle = '#a89860'; g.fillRect(R(egg.x - cx) - 1, R(egg.y - cy) - 6, 2, 2); }
-    for (const gl of Q.globs) { g.fillStyle = gl.kind === 'egg' ? '#e8e0b0' : '#b8d060'; g.fillRect(R(gl.x - cx) - 3, R(gl.y - cy) - 3, 6, 6); }
-    if (m === 'crushTell') { g.globalAlpha = 0.25 + 0.25 * Math.sin(t * 24); g.fillStyle = '#ff4050'; g.fillRect(R(Q.G.x0 - cx), R(Q.G.floor - cy) - PQM.PQ.crush.h, R(Q.G.x1 - Q.G.x0), PQM.PQ.crush.h); g.globalAlpha = 1; }
+    const m = e.mode, open = PQM.pqOpen(e);
+    seen.set(e, { x: e.x, y: e.y, face: f, t0: null, k: 'parasitequeen' });
+    QA.drawQueen(g, x, y, f, { mode: m, phase: Q.ph, ward: Q.ward > 0, hurtT: e.hurtT, flash: e.flash, seed: 1 }, t);
+    /* CONSTRICT: her tendrils reach (the tell: thin and wavering) and pull (thick, barbed) to every hero */
+    if (m === 'constrictTell' || m === 'constrict') { const rel = m === 'constrict'; for (const P0 of ctx.players) { if (P0.dead) continue; QA.drawTendril(g, x + f * (rel ? 44 : 31), y - (rel ? 19 : 22), R(P0.x - cx), R(P0.y - 8 - cy), rel ? 1 : 0, t); } }
+    /* the marked stretch of a ROOT LASH, the THRUM ridges, the eggs, the spit */
+    for (const r of Q.roots) QA.drawLash(g, R(r.x - cx), R(r.y - cy), PQM.PQ.lash.w, PQM.PQ.lash.h, m === 'lash' ? 'rel' : 'tell', t, m === 'lash' ? K01((0.25 - e.modeT) / 0.1) : 1);
+    for (const ring of Q.rings) for (const sx of [-1, 1]) QA.drawThrumRing(g, R(ring.x + sx * ring.r - cx), R(ring.y - cy), PQM.PQ.thrum.h, sx, t);
+    for (const egg of Q.eggs) QA.drawEgg(g, R(egg.x - cx), R(egg.y - cy), K01(1 - egg.t / PQM.PQ.brood.hatch), t);
+    for (const gl of Q.globs) PA.drawGlob(g, R(gl.x - cx), R(gl.y - cy), gl.vx, gl.vy, t, gl.kind);
+    if (m === 'crushTell' || m === 'crush') { const VWd = ctx.VW(); QA.drawCrushFloor(g, Math.max(-8, R(Q.G.x0 - cx)), Math.min(VWd + 8, R(Q.G.x1 - cx)), R(Q.G.floor - cy), PQM.PQ.crush.h, m === 'crush', t); }
     /* THE READ: gold ring + timer when open, grey when warded */
-    if (open) { const k = e.open / (m === 'stranded' ? PQM.PQ.stranded : PQM.PQ.flushed); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 16, 26, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 52, R(32 * Math.min(1, k)), 2); }
-    else if (Q.ward > 0) { g.strokeStyle = '#9ab0c0'; g.beginPath(); g.arc(x, y - 16, 26, 0, Math.PI * 2); g.stroke(); }
-    if (WORD && ctx.text) { const M = PQM.MOVES[WORD.k]; if (M) ctx.text(PQM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 66, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
+    if (open) { const k = e.open / (m === 'stranded' ? PQM.PQ.stranded : PQM.PQ.flushed); KA.drawOpenRing(g, x, y - 22, 34, t);
+      g.fillStyle = '#ffd36b'; g.fillRect(x - 16, y - 66, R(32 * Math.min(1, k)), 2); }
+    else if (Q.ward > 0) KA.drawWardRing(g, x, y - 22, 34, t);
+    if (WORD && ctx.text) { const M = PQM.MOVES[WORD.k]; if (M) ctx.text(PQM.MOVE_NAME[WORD.k] + ': ' + M.answer, x, y - 76, M.mark === '!' ? '#ffd36b' : '#ff6b6b'); }
   };
   H.drawOver = (g, cx, cy, t) => {
     if (!S) return; const L = lv(), VW = ctx.VW();
-    /* THE BILE: a green over every flooded bile pool (the game draws clear water; the art pass owes the bile's own surface) */
+    /* THE BILE: the surface (scum, foam, a bright lip), bubbles and drifting shell over every flooded bile pool */
     for (const p of L.pools) { if (!p.wh || p.dry || p.x1 < cx || p.x0 > cx + VW) continue; const x0 = R(Math.max(p.x0, cx) - cx), x1 = R(Math.min(p.x1, cx + VW) - cx), y = R(p.y - cy), h = R((p.bottom || p.base) - p.y);
-      g.globalAlpha = 0.32; g.fillStyle = '#6a8a20'; g.fillRect(x0, y, x1 - x0, h); g.globalAlpha = 0.7; g.fillStyle = '#c8e070'; for (let x = x0 - (x0 % 5) + R(t * 14) % 5; x < x1; x += 5) g.fillRect(x, y, 2, 1); g.globalAlpha = 1; }
-    /* THE LUNG (the HUD read of the breath, the plan's one A3 dial in its flesh skin - art owed): full on the inhale, empty on the exhale; it flashes on the tells */
+      WA.drawBile(g, x0, x1, y, h, t); }
+    /* THE LUNG (the HUD read of the breath, the plan's one A3 dial in its flesh skin): full on the inhale, empty on the exhale; it flashes on the tells */
     const P = ctx.hero(); if (P) { const b = breathAt(P.x), s = (b.id && K().tides.find(q => q.id === b.id)) || master(), gg = s && gauge(K(), s.id); if (gg) {
       const x = R(VW / 2) - 30, y = 4, fill = 1 - gg.k, tell = gg.tell && Math.sin(t * 16) > 0;
-      g.fillStyle = 'rgba(20,8,12,0.7)'; g.fillRect(x - 2, y - 2, 64, 15); g.fillStyle = tell ? '#ffffff' : '#f4b0c0'; g.fillRect(x, y, R(60 * fill), 5); g.fillStyle = '#5a2030'; g.fillRect(x + R(60 * fill), y, 60 - R(60 * fill), 5);
-      if (ctx.text) ctx.text(BREATH_NAME[gg.ph] + (gg.held ? ' (HELD)' : ''), x + 30, y + 7, tell ? '#ffffff' : '#f4d0d8'); } }
+      WA.drawLung(g, x, y, fill, tell, t);
+      if (ctx.text) ctx.text(BREATH_NAME[gg.ph] + (gg.held ? ' (HELD)' : ''), x + 30, y + 10, tell ? '#ffffff' : '#f4d0d8'); } }
+    /* THE FALLS: a foe we saw alive and that is now dead plays its fall once */
+    for (const [e, d] of seen) { if (e.alive) continue; if (!(e.hp <= 0)) { seen.delete(e); continue; }
+      if (d.t0 == null) d.t0 = t; const k = (t - d.t0) / DEAD_T[d.k]; if (k >= 1) { seen.delete(e); continue; }
+      const x = R(d.x - cx), y = R(d.y - cy); if (x < -80 || x > VW + 80) continue;
+      if (d.k === 'parasitequeen') QA.drawQueenDead(g, x, y, d.face, k, t, {}); else PA.drawPolypDead(g, x, y, d.face, k, t, {}); }
   };
   H.barName = e => 'THE PARASITE QUEEN' + (e.mode === 'flushed' && e.open > 0 ? '  FLUSHED' : e.mode === 'stranded' && e.open > 0 ? '  STRANDED' : Q && Q.ward > 0 ? '  RE-GRIPPING' : Q && Q.ph === 2 ? '  SKITTERING' : '  ROOTED');
   H.end = e => { if (Q && e && (!e.alive || e.hp <= 0)) { Q.dead = true; ctx.number(e.x, e.y - 70, PQM.PQ_SAY.down, '#ffd36b'); } if (Q) { Q.globs = []; Q.rings = []; Q.roots = []; Q.eggs = []; Q.constricting = false; }
