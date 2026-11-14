@@ -16,14 +16,17 @@
    Usage: node tools/highlines.mjs [--quick]   (--quick: the sweep for the knight x1 only) */
 import assert from 'node:assert/strict';
 import { LK, TS, lineInit, riderStep, kitStep, kitStrike, windPush, platforms, lintLines, lineY, lineCut, foeRide, riderHit, catchBelow } from '../src/line-kit.js';
-import { HL_DATA, HL, buildHighLines } from '../src/highlines.js';
+import { HL_DATA, HL_DATA_EXT, HL_EXT_H, HL, buildHighLines } from '../src/highlines.js';
+import { rowMap } from '../src/highlines-ext.js';
 import { HK, newHook, hookStep, hookTake, hookOpen } from '../src/hookjack.js';
 import { MOVE, HERO_MOVE_IDS, heroRunMul } from '../src/hero-move.js';
 import { T } from '../src/level.js';
 
+const EXT = process.argv.includes('--ext');   /* (claude/hlext1) --ext: the same proofs on the HL_EXT level (ore line + cave apron), the data from src/highlines-ext.js */
+const HLD = EXT ? HL_DATA_EXT : HL_DATA, HLH = EXT ? HL_EXT_H : HL.H, RS = y => (EXT ? rowMap(y) : y);   /* RS: a base row in this level's rows (the hookjack unit tests stand at the base level's rows) */
 const QUICK = process.argv.includes('--quick'), ONLY = (process.argv.find(a => a.startsWith('--hero=')) || '').slice(7);
 const DT = 1 / 60;
-const lvl = () => JSON.parse(JSON.stringify(HL_DATA));
+const lvl = () => JSON.parse(JSON.stringify(HLD));
 let n = 0; const ok = (c, m) => { assert(c, m); n++; };
 const t0 = Date.now();
 const WALL_L = 1 * TS + 5, WALL_R = (HL.W - 1) * TS - 5;
@@ -65,26 +68,26 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
 /* 2. THE GRID AGREES WITH THE DATA */
 { const painter = (W, H) => { const grid = new Uint8Array(W * H), ents = []; const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) grid[y * W + x] = v; };
     return { W, H, grid, ents, set, block: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); }, ent: (t, x, y, o = {}) => ents.push({ t, x, y, ...o }) }; };
-  const B = buildHighLines({ painter, T, TS }), at = (x, y) => B.grid[y * B.W + x];
-  ok(B.W === HL.W && B.H === HL.H && B.lineKit && B.lineKit.lines.length === HL_DATA.lineKit.lines.length, 'the builder hands main.js the line kit (' + B.lineKit.lines.length + ' lines)');
-  for (const [x0, top, x1] of HL_DATA.landings.concat(HL_DATA.nets)) for (let x = x0; x <= x1; x++) { ok(at(x, top) === T.ONEWAY || at(x, top) === T.SOLID, 'deck at ' + x + ',' + top); ok(at(x, top - 1) !== T.SOLID && at(x, top - 2) !== T.SOLID, 'room to stand over ' + x + ',' + top); }
+  const B = buildHighLines({ painter, T, TS, ext: EXT }), at = (x, y) => B.grid[y * B.W + x];
+  ok(B.W === HL.W && B.H === HLH && B.lineKit && B.lineKit.lines.length === HLD.lineKit.lines.length, 'the builder hands main.js the line kit (' + B.lineKit.lines.length + ' lines)');
+  for (const [x0, top, x1] of HLD.landings.concat(HLD.nets)) for (let x = x0; x <= x1; x++) { ok(at(x, top) === T.ONEWAY || at(x, top) === T.SOLID, 'deck at ' + x + ',' + top); ok(at(x, top - 1) !== T.SOLID && at(x, top - 2) !== T.SOLID, 'room to stand over ' + x + ',' + top); }
   const kit = lineInit(lvl()); let through = [];
   for (const z of kit.list) for (let x = z.xa + 4; x <= z.xb - 4; x += 4) for (const dy of [-8, 0, 8, 12]) { const tx = Math.floor(x / TS), ty = Math.floor((lineY(z, x) + dy) / TS); if (at(tx, ty) === T.SOLID) { through.push(z.id + '@' + tx + ',' + ty); break; } }
   ok(!through.length, 'no line or rider runs through rock: ' + through.slice(0, 6).join(' '));
   ok(B.ents.filter(e => e.t === 'check').length === 3, 'three checkpoints (Daniel: fewer)'); ok(B.ents.filter(e => e.t === 'silver').length === 2, 'two silvers (secrets) off the route');
   ok(B.ents.some(e => e.t === 'gate'), 'the way on (the gate) at the cave mouth');
   ok(!B.ents.some(e => /gob|goblin/.test(e.t) || ['archer', 'shield', 'spear', 'slinger', 'miner', 'sprig', 'brute'].includes(e.t)), 'no goblins (theme): ' + [...new Set(B.ents.map(e => e.t))].join(' '));
-  for (const e of B.ents.filter(q => ['goat', 'crossbow', 'check', 'silver', 'gate', 'sign'].includes(q.t))) { const fy = e.y + 1; const on = HL_DATA.landings.some(b => fy === b[1] && e.x >= b[0] && e.x <= b[2]) || at(e.x, fy) === T.SOLID;
+  for (const e of B.ents.filter(q => ['goat', 'crossbow', 'check', 'silver', 'gate', 'sign'].includes(q.t))) { const fy = e.y + 1; const on = HLD.landings.some(b => fy === b[1] && e.x >= b[0] && e.x <= b[2]) || at(e.x, fy) === T.SOLID;
     ok(on, e.t + ' at ' + e.x + ',' + e.y + ' stands on a deck'); }
-  for (const hj of B.ents.filter(e => e.t === 'hookjack')) ok(HL_DATA.lineKit.lines.some(d => d.id === hj.line), 'a hookjack on a real line (' + hj.line + ')');
-  ok(B.ents.filter(e => e.t === 'hookjack').length === HL_DATA.hookjacks.length && B.moversExtra.length === 3 && B.moversExtra.every(m => m.lk), 'the hookjacks are foes in the level; the cab and the weights are movers');
+  for (const hj of B.ents.filter(e => e.t === 'hookjack')) ok(HLD.lineKit.lines.some(d => d.id === hj.line), 'a hookjack on a real line (' + hj.line + ')');
+  ok(B.ents.filter(e => e.t === 'hookjack').length === HLD.hookjacks.length && B.moversExtra.length === 3 && B.moversExtra.every(m => m.lk), 'the hookjacks are foes in the level; the cab and the weights are movers');
   ok(B.music === 'skysail' && B.arena && B.arena.boss === 'skyhook' && B.ents.filter(e => e.t === 'skyhook').length === 1, 'its own music (skysail, free since the Sky Ship left); THE HEAD STATION is the arena of SKYHOOK (claude/skyhook), his ent on his gallery');
   { const A = B.arena; for (const c of [A.wallL, A.wallR]) for (let y = 30; y <= 41; y++) ok(at(c, y) === T.SOLID, 'the head station: arch over the wall column ' + c + ' at row ' + y);
     for (let x = A.wallL; x <= A.wallR; x++) ok(at(x, A.floor / TS) === T.SOLID, 'the head station: floor is rock at ' + x + ' (no dropping out of the fight)'); }
 }
 
 /* 3. THE BANDS ARE ALL THERE (Daniel 11-05 15:27) */
-{ const D = HL_DATA, K = D.lineKit, L = id => K.lines.find(d => d.id === id), kit = lineInit(lvl());
+{ const D = HLD, K = D.lineKit, L = id => K.lines.find(d => d.id === id), kit = lineInit(lvl());
   ok(['W1', 'W2'].every(id => L(id).kind === 'winch' && (L(id).drive || 'grip') === 'grip') && D.nets.length >= 2, '1 FOOTHOLD: grip winches over cargo nets');
   ok(K.lines.some(d => d.points && d.points.length) && K.lines.some(d => d.kind === 'glide') && L('F1') && L('F2'), '2 JUNCTIONS: points, fast glides, a kick gap (F1 -> F2)');
   ok(K.winds.filter(w => !w.exam).length >= 2 && K.lee.length >= 2, '3 THE WIND GORGE: told crosswind sections with lee rocks');
@@ -186,7 +189,7 @@ function sweep(hero, seats) {
 }
 { const rows = [], runs = ONLY ? [[ONLY.split('x')[0], +(ONLY.split('x')[1] || 1)]] : QUICK ? [['knight', 1]] : [...HERO_MOVE_IDS.map(h => [h, 1]), ['knight', 2], ['knight', 3], ['knight', 4]];
   for (const [hero, seats] of runs) { const ts = Date.now(), R = sweep(hero, seats); rows.push(hero + 'x' + seats + ' ' + R.nodes + 'n ' + ((Date.now() - ts) / 1000).toFixed(0) + 's');
-    if (process.env.HL_DEBUG) { const miss = HL_DATA.landings.map((b, i) => 'L:' + i).filter(k => !R.seen.has(k)); console.log('  unreached landings: ' + miss.join(' ')); console.log('  can-not-exit: ' + [...R.seen].filter(k => !R.canExit.has(k)).join(' ')); }
+    if (process.env.HL_DEBUG) { const miss = HLD.landings.map((b, i) => 'L:' + i).filter(k => !R.seen.has(k)); console.log('  unreached landings: ' + miss.join(' ')); console.log('  can-not-exit: ' + [...R.seen].filter(k => !R.canExit.has(k)).join(' ')); }
     if (process.env.HL_DEBUG) console.log('  edges: ' + [...R.edges].filter(([k]) => k.startsWith('L:')).map(([k, s]) => k + '>' + [...s].filter(t => t.startsWith('L:') || t.startsWith('Z:')).map(t => t.replace(/:d+$/, '')).filter((t, i, a) => a.indexOf(t) === i).join(',')).join('  '));
     ok(R.exitFrom === R.cps, hero + ' x' + seats + ': the exit from every checkpoint (' + R.exitFrom + '/' + R.cps + ')');
     ok(!R.lock.length, hero + ' x' + seats + ': no soft-lock (' + R.lock.join(' ') + ')'); ok(!R.stuck.length, hero + ' x' + seats + ': no stuck state (' + R.stuck.join(' ') + ')');
@@ -199,7 +202,7 @@ function hkWorld(kit, heroes, o = {}) {
   const w = { kit, LK: { foeRide, lineY, lineCut, riderHit }, now: 0, last: -9, said: [], sounds: [], marks: [], hurts: [],
     heroes: () => heroes, time: () => w.now, lastSwipe: () => w.last, swiped: t => { w.last = t; w.swipes = (w.swipes || []).concat(t); },
     hurt: (h, d, x) => { const r = o.answer ? o.answer(h) : 'hit'; w.hurts.push(r); return r; },
-    landingUnder: (x, y0, y1) => { for (const b of HL_DATA.landings) { const top = b[1] * TS; if (x >= b[0] * TS && x < (b[2] + 1) * TS && y0 <= top && y1 >= top) return top; } return null; },
+    landingUnder: (x, y0, y1) => { for (const b of HLD.landings) { const top = b[1] * TS; if (x >= b[0] * TS && x < (b[2] + 1) * TS && y0 <= top && y1 >= top) return top; } return null; },
     pitY: kit.pitY, say: (x, y, t) => w.said.push(t), sound: k => w.sounds.push(k), mark: (e, m) => w.marks.push(m) };
   return w;
 }
@@ -233,7 +236,7 @@ const hookOn = (kit, line, tx, dir) => { const z = kit.lines[line], e = newHook(
   const sw = w.swipes || []; let minGap = 9; for (let i = 1; i < sw.length; i++) minGap = Math.min(minGap, sw[i] - sw[i - 1]);
   ok(sw.length >= 2 && minGap >= HK.noStack - 1e-6, 'two Hookjacks on one rider: ' + sw.length + ' swipes, never two inside ' + HK.noStack + ' s (min ' + minGap.toFixed(2) + ')'); }
 { /* THE CUTTER: waits; saws only while a hero rides his line, told >= 2 s; a blow stops it; the cut drops the rider a level; then he rides the line */
-  const L = lvl(), S = statics(L), kit = lineInit(L), z = kit.lines.H2, e = newHook({ line: 'H2', role: 'cutter' }); e.x = 57 * TS + 8; e.y = 142 * TS; const w = hkWorld(kit, []);
+  const L = lvl(), S = statics(L), kit = lineInit(L), z = kit.lines.H2, e = newHook({ line: 'H2', role: 'cutter' }); e.x = 57 * TS + 8; e.y = RS(142) * TS; const w = hkWorld(kit, []);
   stepN(e, w, 3); ok(e.mode === 'perch', 'the cutter waits at his station while nobody rides his line');
   const r = onLine(kit, 'H2', 32 * TS); w.heroes = () => [r]; let sawT = 0, cutAt = -1;
   for (let i = 0; i < 60 * 6 && cutAt < 0; i++) { w.now += DT; hookStep(e, DT, w); if (e.mode === 'saw') sawT += DT; if (z.cut > 0) cutAt = w.now; }
@@ -242,14 +245,14 @@ const hookOn = (kit, line, tx, dir) => { const z = kit.lines[line], e = newHook(
   ok(cutAt > 0, 'left alone, the line PARTS'); const ev = []; run(kit, [r], 4, () => ({}), S, ev);
   ok(!r.dead && ev.some(q => q.t === 'parted') && (r.ground || r.lk), 'the rider drops a level, not the pit (' + (r.lk ? 'caught ' + r.lk.id : r.on ? 'landed on ' + r.on.i : '?') + ')');
   stepN(e, w, LK.RESTRING + 1, () => kitStep(kit, [], DT)); ok(e.mode === 'ride' || e.mode === 'recover' || e.mode === 'tell', 'when the line is strung again he hooks on and rides it (one cut only: ' + e.mode + ', cuts ' + e.cuts + ')');
-  const k2 = lineInit(lvl()), e2 = newHook({ line: 'H2', role: 'cutter' }); e2.x = 57 * TS + 8; e2.y = 142 * TS; const r2 = onLine(k2, 'H2', 32 * TS), w2 = hkWorld(k2, [r2]);
+  const k2 = lineInit(lvl()), e2 = newHook({ line: 'H2', role: 'cutter' }); e2.x = 57 * TS + 8; e2.y = RS(142) * TS; const r2 = onLine(k2, 'H2', 32 * TS), w2 = hkWorld(k2, [r2]);
   stepN(e2, w2, 1.5); ok(e2.mode === 'saw' && hookOpen(e2), 'while he saws he is open'); hookTake(e2, 10, e2.x - 10, w2); stepN(e2, w2, 1.2);
   ok(!(k2.lines.H2.cut > 0) && e2.mode !== 'saw', 'a blow (or a shot) stops the saw: the line holds');
-  const k3 = lineInit(lvl()), e3 = newHook({ line: 'E1', role: 'cutter' }); e3.x = 76 * TS; e3.y = 92 * TS; const r3 = onLine(k3, 'E1', 67.6 * TS), w3 = hkWorld(k3, [r3]); const S3 = statics(lvl()); let topped = false;
+  const k3 = lineInit(lvl()), e3 = newHook({ line: 'E1', role: 'cutter' }); e3.x = 76 * TS; e3.y = RS(92) * TS; const r3 = onLine(k3, 'E1', 67.6 * TS), w3 = hkWorld(k3, [r3]); const S3 = statics(lvl()); let topped = false;
   for (let i = 0; i < 60 * 4 && !topped; i++) { w3.now += DT; hookStep(e3, DT, w3); for (const q of tick(k3, [r3], () => ({ strike: i % 9 === 0 }), S3)) if (q.t === 'top') topped = true; }
   ok(topped && !(k3.lines.E1.cut > 0), 'THE EXAM RACE: striking hard, a rider tops E1 before the cutter\'s saw is through'); }
 { /* ON FOOT: the same told hook; into the void he is gone */
-  const kit = lineInit(lvl()), h = mkBody('knight', 70 * TS, 134 * TS), e = newHook({ line: null }); e.mode = 'foot'; e.x = 76 * TS; e.y = 134 * TS; e.modeT = 0; const w = hkWorld(kit, [h]);
+  const kit = lineInit(lvl()), h = mkBody('knight', 70 * TS, RS(134) * TS), e = newHook({ line: null }); e.mode = 'foot'; e.x = 76 * TS; e.y = RS(134) * TS; e.modeT = 0; const w = hkWorld(kit, [h]);
   let told = false; stepN(e, w, 4, () => { if (e.mode === 'footTell') told = true; }); ok(told && w.hurts.length > 0, 'on a landing he walks at you and swings the same told hook');
   const e2 = newHook({ line: null }); e2.mode = 'fall'; e2.x = 40 * TS; e2.y = 60 * TS; e2.vy = 0; const kit2 = lineInit({ ...lvl(), h: 70 }); const w2 = hkWorld(kit2, []); w2.landingUnder = () => null; w2.pitY = 80 * TS;
   stepN(e2, w2, 4); ok(!e2.alive && e2.gone, 'knocked off over the void, he is gone'); }

@@ -19,7 +19,13 @@
 //                              (the boss is a LATER lane) and the way on into the Ore Road (the gate)
 // Landings are ONE-WAY decks (iron gantries / rock lips, art owed) so the node sweep (tools/highlines.mjs) and the page agree: nothing bonks a rider from below.
 import { endSupports } from './line-kit.js';   /* (claude/hlfix) what holds each rope end (a drawn mast, hanger or wall bracket) */
+import { shiftRows, extendHighLines, EXT_ROWS } from './highlines-ext.js'; export { SECTIONS_EXT, EXT_ROCK } from './highlines-ext.js';   /* (claude/hlext1) the extension: behind HL_EXT, default OFF */
 export const HL = { W: 80, H: 240 };
+/* (claude/hlext1, 11-14) THE EXTENSION, behind HL_EXT (default OFF: with it off every byte of this level is as before). ON: +26 rows (THE ORE LINE) and +10 rows (THE CAVE APRON): src/highlines-ext.js.
+   A test door: globalThis.__HLEXT = true (node) or ?hlext=1 (page). */
+const hlextForced = () => { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false; if (g.__HLEXT === true) return true; return !!g.location && /[?&]hlext=1(&|#|$)/.test(String(g.location.search || '')); };
+export const HL_EXT_DEFAULT = false;   /* THE ONE LINE TO FLIP (after the extension's art, the review and the browser look) */
+export const HL_EXT = HL_EXT_DEFAULT || hlextForced();
 export const RULE = 'HANG ON AND STRIKE: EVERY BLOW HAULS A WINCH LINE UP AND THE RATCHET HOLDS YOU. MISS A LINE AND YOU DROP A LEVEL.';
 export const SECTIONS = [['FOOTHOLD', 206, 240], ['JUNCTIONS', 188, 206], ['THE WIND GORGE', 164, 188], ['THE AMBUSH', 133, 171], ['THE LEE HUT', 118, 134], ['THE COUNTERWEIGHT', 102, 118], ['THE GONDOLA', 85, 102], ['THE EXAM', 57, 104], ['THE CAVE MOUTH', 30, 58]];   /* [name, rowTop, rowBottom] - a TALL level's sections are row bands */
 
@@ -135,9 +141,9 @@ export const HL_DATA = {
    with guy cables to the cliffs. No tile changes: the route, the walker and the sweep are untouched. */
 export const ROCK_LANDINGS = [14, 15, 16, 17, 18, 19, 20, 21, 22, 29, 30, 31, 32, 33];
 export const FLOOR_LANDINGS = [0];   /* solid rock under it already (the line-yard); the head station floor (34) is a 1-thick slab over the shaft and gets its girder */
-export function hlSupports(D, at, solid) {
+export function hlSupports(D, at, solid, rockIdx = ROCK_LANDINGS) {   /* rockIdx: (claude/hlext1) the extended level's rock lips too */
   const out = [], runs = [];
-  D.landings.forEach((b, i) => { if (!FLOOR_LANDINGS.includes(i)) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: ROCK_LANDINGS.includes(i) }); });
+  D.landings.forEach((b, i) => { if (!FLOOR_LANDINGS.includes(i)) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: rockIdx.includes(i) }); });
   for (const b of D.nets) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: false, net: true });
   for (const r of runs) {
     const wl = solid(at(r.x0 - 1, r.y)) || solid(at(r.x0 - 1, r.y + 1)), wr = solid(at(r.x1 + 1, r.y)) || solid(at(r.x1 + 1, r.y + 1)), run = [r.x0, r.x1];
@@ -153,7 +159,11 @@ export function hlSupports(D, at, solid) {
 }
 
 /* ---------------- THE GAME'S LEVEL (src/level.js calls this) ---------------- */
-export function buildHighLines({ painter, T, TS }) {
+/* (claude/hlext1) the extended data (rows shifted, ore line + apron added) - read by tools/hl-ext.mjs and tools/highlines.mjs --ext; HL_DATA itself is never touched */
+export const HL_DATA_EXT = shiftRows(HL_DATA);
+export const HL_EXT_H = HL.H + EXT_ROWS;
+export function buildHighLines({ painter, T, TS, ext = HL_EXT }) {   /* ext: the HL_EXT flag (a node proof passes it in) */
+  if (ext) return extendHighLines(buildHighLines({ painter, T, TS, ext: false }), { T, TS, DX: HL_DATA_EXT, hlSupports, endSupports, ROCK_LANDINGS });
   const { W, H } = HL, D = HL_DATA, L = painter(W, H), { set, block, ent } = L;
   const sign = (x, y, text) => ent('sign', x, y, { text });
   const foe = (t, x, y, o) => ent(t, x, y, o || {});
