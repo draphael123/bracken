@@ -141,3 +141,4 @@ ok(L.hlKit === true && Array.isArray(L.routeSupports), 'the level carries hlKit 
   const sk = readFileSync(URLS('skyhook-hands.js'), 'utf8'); for (const w of ['drawRiggerArt', 'drawSkyTrolley', 'drawSkyHook', 'drawLeverArt', 'drawRag', 'chainLine']) ok(sk.includes(w), 'skyhook-hands uses ' + w); }
 console.log((bad ? 'FAIL ' : 'ok  ') + 'hl-art-lint ' + n + ' checks' + (bad ? ', ' + bad + ' failed' : ''));
 process.exit(bad ? 1 : 0);
+// batch189: touched so the QUICK gate runs this check beside the cave-backdrop draw change

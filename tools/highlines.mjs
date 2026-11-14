@@ -328,3 +328,4 @@ if (SW) {
 }
 
 console.log('highlines: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)' + (QUICK ? ' [--quick: knight x1 sweep only]' : ''));
+// batch189: touched so the QUICK gate runs this check beside the cave-backdrop draw change
