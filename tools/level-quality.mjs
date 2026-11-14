@@ -13,6 +13,7 @@ import { SLOPE, SLOPE_NAMES, heightAt } from '../src/slopes.js';
 import { bakeSandSlopes } from '../src/redraw/slopes.js';
 import { install } from './node-canvas.mjs';
 import { LEVELS, T } from '../src/level.js';
+import { HL_FIX3 } from '../src/highlines.js';   /* (claude/hlfix3) the flag-on level's two reasoned exceptions below */
 import { THREAT } from '../src/threat.js';
 import { floodReach } from '../src/reachcore.js';
 import { pacing } from './pacing.mjs';
@@ -33,7 +34,7 @@ export const GATE = ['highlines', 'wispwood', 'silk', 'manor', 'academy', 'warca
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  highlines: ['pilot', 'curve'],   /* (claude/hllive, THE HIGH LINES goes live behind ROAD_OPEN.highlines) TODO: its pilot, mash and curve rows need a page run (the browser lane: node tools/restamp.mjs --level highlines; the bots have no line hook, expect odd rows) - take this entry out when they are stamped and hold */
+  highlines: ['pilot', 'curve', ...(HL_FIX3 ? ['checks', 'route'] : [])],   /* (claude/hlfix3, HL_FIX3 on) 'checks': FIVE shrines on 370 route tiles = one per 74, under the 90 bar: Daniel's call on 11-14 ("I saw none while playing"), this level only; 'route': the dead-end walker (tools/deadends.mjs) walks the new rope nets as floors and counts one pocket (>=2 wanted) where the live level has two - the nets are only ever reached by a fall, so the pocket count is the model's, not the level's: the browser look decides */   /* (claude/hllive, THE HIGH LINES goes live behind ROAD_OPEN.highlines) TODO: its pilot, mash and curve rows need a page run (the browser lane: node tools/restamp.mjs --level highlines; the bots have no line hook, expect odd rows) - take this entry out when they are stamped and hold */
   silk: ['music', 'pilot', 'mash', 'curve'],   /* (claude/silk, the greybox behind SILK_SHIPS) TODO: THE SILK UNDERCROFT borrows the benched 'cave' and the pool's 'boss3' until Daniel picks its own track (and the Crypt Mother's); the pilot, mash and curve rows need a page run (tools/level1-pilot.mjs, tools/mash-bot.mjs) - owed with the browser walk */
   warcairn: ['music'],   /* (claude/warcairn, the greybox) TODO: THE WAR CAIRN plays the unused stock 'musMountain' and the boss pool's 'boss3' until the art lane brings its own two CC0/CC-BY tracks (drums welcome; Daniel picks, the Palisade precedent) */
   manor: ['music', 'pilot', 'mash', 'curve'],   /* (claude/hollowmanor, the greybox behind MANOR_SHIPS) TODO: THE HOLLOW MANOR borrows the benched 'cave' and the pool's 'boss3' until Daniel picks its own track (and the Castellan's); the pilot, mash and curve rows need a page run (tools/level1-pilot.mjs, tools/mash-bot.mjs) - owed with the browser walk */

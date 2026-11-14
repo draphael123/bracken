@@ -16,7 +16,7 @@
    Usage: node tools/highlines.mjs [--quick]   (--quick: the sweep for the knight x1 only) */
 import assert from 'node:assert/strict';
 import { LK, TS, lineInit, switchConfigs, setSwitches, riderStep, kitStep, kitStrike, windPush, platforms, lintLines, lineY, lineCut, foeRide, riderHit, catchBelow } from '../src/line-kit.js';
-import { HL_DATA, HL_DATA_SW, HL_SWITCH, HL, applySwitchPatch, buildHighLines } from '../src/highlines.js';
+import { HL_DATA, HL_DATA_SW, HL_DATA_FX, HL_DATA_SW_FX, HL_SWITCH, HL, applySwitchPatch, applyFix3Patch, buildHighLines } from '../src/highlines.js';
 import { HK, newHook, hookStep, hookTake, hookOpen } from '../src/hookjack.js';
 import { MOVE, HERO_MOVE_IDS, heroRunMul } from '../src/hero-move.js';
 import { T } from '../src/level.js';
@@ -25,7 +25,9 @@ const QUICK = process.argv.includes('--quick'), ONLY = (process.argv.find(a => a
 const DT = 1 / 60;
 /* (claude/hlswitch) --sw: the same proof on the flag-ON level (HL_DATA_SW: the switch rule, levers, the new lines) - every section below runs on DATA, and the sweep runs once per lever configuration (init, each lever thrown, all thrown).
    No flag: exactly the flag-off proof as before. */
-const SW = process.argv.includes('--sw'), DATA = SW ? HL_DATA_SW : HL_DATA; let SWCFG = null;
+/* (claude/hlfix3) --fx: the same proof on the HL_FIX3 level (nets at every section, five shrines, carts that wait; combine with --sw for the shipping rule). No flag: exactly the flag-off proof as before. */
+const FX = process.argv.includes('--fx');
+const SW = process.argv.includes('--sw'), DATA = FX ? (SW ? HL_DATA_SW_FX : HL_DATA_FX) : (SW ? HL_DATA_SW : HL_DATA); let SWCFG = null;
 const lvl = () => JSON.parse(JSON.stringify(DATA));
 const kitNew = () => { const k = lineInit(lvl()); if (SWCFG) setSwitches(k, SWCFG); return k; };
 let n = 0; const ok = (c, m) => { assert(c, m); n++; };
@@ -69,13 +71,13 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
 /* 2. THE GRID AGREES WITH THE DATA */
 { const painter = (W, H) => { const grid = new Uint8Array(W * H), ents = []; const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) grid[y * W + x] = v; };
     return { W, H, grid, ents, set, block: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); }, ent: (t, x, y, o = {}) => ents.push({ t, x, y, ...o }) }; };
-  const B = buildHighLines({ painter, T, TS, sw: SW }), at = (x, y) => B.grid[y * B.W + x];
+  const B = buildHighLines({ painter, T, TS, sw: SW, fx: FX }), at = (x, y) => B.grid[y * B.W + x];
   ok(B.W === HL.W && B.H === HL.H && B.lineKit && B.lineKit.lines.length === DATA.lineKit.lines.length, 'the builder hands main.js the line kit (' + B.lineKit.lines.length + ' lines)');
   for (const [x0, top, x1] of DATA.landings.concat(DATA.nets)) for (let x = x0; x <= x1; x++) { ok(at(x, top) === T.ONEWAY || at(x, top) === T.SOLID, 'deck at ' + x + ',' + top); ok(at(x, top - 1) !== T.SOLID && at(x, top - 2) !== T.SOLID, 'room to stand over ' + x + ',' + top); }
   const kit = kitNew(); let through = [];
   for (const z of kit.list) for (let x = z.xa + 4; x <= z.xb - 4; x += 4) for (const dy of [-8, 0, 8, 12]) { const tx = Math.floor(x / TS), ty = Math.floor((lineY(z, x) + dy) / TS); if (at(tx, ty) === T.SOLID) { through.push(z.id + '@' + tx + ',' + ty); break; } }
   ok(!through.length, 'no line or rider runs through rock: ' + through.slice(0, 6).join(' '));
-  ok(B.ents.filter(e => e.t === 'check').length === 3, 'three checkpoints (Daniel: fewer)'); ok(B.ents.filter(e => e.t === 'silver').length === 2, 'two silvers (secrets) off the route');
+  ok(B.ents.filter(e => e.t === 'check').length === (FX ? 5 : 3), FX ? 'five checkpoints (Daniel 11-14: none seen while playing; this level only)' : 'three checkpoints (Daniel: fewer)'); ok(B.ents.filter(e => e.t === 'silver').length === 2, 'two silvers (secrets) off the route');
   ok(B.ents.some(e => e.t === 'gate'), 'the way on (the gate) at the cave mouth');
   ok(!B.ents.some(e => /gob|goblin/.test(e.t) || ['archer', 'shield', 'spear', 'slinger', 'miner', 'sprig', 'brute'].includes(e.t)), 'no goblins (theme): ' + [...new Set(B.ents.map(e => e.t))].join(' '));
   for (const e of B.ents.filter(q => ['goat', 'crossbow', 'check', 'silver', 'gate', 'sign'].includes(q.t))) { const fy = e.y + 1; const on = DATA.landings.some(b => fy === b[1] && e.x >= b[0] && e.x <= b[2]) || at(e.x, fy) === T.SOLID;
@@ -98,7 +100,7 @@ const onLine = (kit, id, x, hero = 'knight') => { const z = kit.lines[id], b = m
   ok(K.weights.length === 1 && K.weights[0].hopper, '6 THE COUNTERWEIGHT: a cage, a weight, a hopper');
   ok(L('GD').cab && L('GD').snap, '7 THE GONDOLA: the cab snaps and falls onto the glide below');
   { const ex = K.winds.find(w => w.exam); ok(ex && ['E1', 'E2', 'E3'].every(id => L(id).kind === 'winch') && D.hookjacks.filter(h => /^E/.test(h.line)).length >= 3, '8 THE EXAM: winches in an exam wind, hookjacks');
-    const netTop = Math.min(...D.nets.map(nb => nb[1])); ok(netTop > 200, 'and no nets above the foothold'); }
+    const netTop = Math.min(...D.nets.map(nb => nb[1])); if (FX) ok(D.nets.length >= 8 && netTop < 100, 'and (HL_FIX3) a net at every section, up to the cave mouth'); else ok(netTop > 200, 'and no nets above the foothold'); }
   ok(D.arena && D.arena.boss === 'skyhook' && D.exit, 'THE CAVE MOUTH: SKYHOOK at the head station and the exit'); }
 
 /* 4. EVERY DROP LANDS ON SOMETHING */
@@ -277,9 +279,13 @@ SWCFG = null;   /* the sweep left its last lever configuration set */
   ok(HL_DATA.lineKit.lines.every(d => (d.points || []).every(p => p.sw === undefined)), 'flag off: every points board is still hold-UP');
   const painter = (W, H) => { const grid = new Uint8Array(W * H), ents = []; const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) grid[y * W + x] = v; };
     return { W, H, grid, ents, set, block: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); }, ent: (t, x, y, o = {}) => ents.push({ t, x, y, ...o }) }; };
-  const off = buildHighLines({ painter, T, TS, sw: false });
+  const off = buildHighLines({ painter, T, TS, sw: false, fx: false });
   ok(!off.ents.some(e => e.t === 'hllever') && off.lever === undefined && off.lineKit.rule === undefined && off.points.every(p => p.sw === undefined), 'flag off: the built level has no lever prop, no lever list, no rule');
   ok(off.ents.some(e => e.t === 'sign' && /HOLD UP AS YOU PASS THE BOARD/.test(e.text)) && off.unlocks.some(u => u.hud === 'HOLD UP AT THE BOARD') && off.unlocks.some(u => u.hud === 'STRIKE TO HAUL'), 'flag off: the signs and the callouts are the stroke rule\'s'); }
+
+/* 7b. (claude/hlfix3) FLAG-OFF PARITY: the fix patch is a copy too - HL_DATA / HL_DATA_SW have no fix3 key, three shrines, two nets, and the flag-off build has none of its signs */
+{ const b1 = JSON.stringify(HL_DATA), b2 = JSON.stringify(HL_DATA_SW); applyFix3Patch(HL_DATA); applyFix3Patch(HL_DATA_SW); ok(JSON.stringify(HL_DATA) === b1 && JSON.stringify(HL_DATA_SW) === b2, 'applyFix3Patch works on a copy: the flag-off data is untouched');
+  ok(HL_DATA.lineKit.fix3 === undefined && HL_DATA_SW.lineKit.fix3 === undefined && HL_DATA.nets.length === 2 && HL_DATA.checkpoints.length === 3 && HL_DATA_FX.nets.length === 11 && HL_DATA_FX.checkpoints.length === 5 && HL_DATA_FX.lineKit.fix3 === true, 'flag off: no fix3 key, two nets, three shrines; the patched copy has ten nets, five shrines'); }
 
 /* 8. (claude/hlswitch) THE SWITCH RULE ON THE LEVEL (--sw): one hit starts every line, levers (never UP) set the points, the lamps, the new lines, the props */
 if (SW) {
@@ -295,7 +301,7 @@ if (SW) {
   { const bad = lintLines(lvl()); ok(!bad.length, 'the patched level lints clean (' + bad.join('; ') + ')'); }
   const painter = (W, H) => { const grid = new Uint8Array(W * H), ents = []; const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) grid[y * W + x] = v; };
     return { W, H, grid, ents, set, block: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.SOLID); }, ent: (t, x, y, o = {}) => ents.push({ t, x, y, ...o }) }; };
-  const B = buildHighLines({ painter, T, TS, sw: true });
+  const B = buildHighLines({ painter, T, TS, sw: true, fx: FX });
   ok(B.ents.filter(e => e.t === 'hllever').length === 3 && K.switches.every(s => B.ents.some(e => e.t === 'hllever' && e.sw === s.id && e.x === s.at[0] && e.y === s.at[1])), 'each lever is a prop entity at its post (hllever)');
   ok(B.lever.length === 3 && B.points.every(p => p.sw) && B.lineKit.rule === 'switch' && B.unlocks.some(u => u.hud === 'A LEVER SETS THE POINTS') && B.unlocks.some(u => u.hud === 'STRIKE ONCE TO RIDE'), 'the level data names the levers, the points read them, the callouts are the switch rule\'s');
   ok(!B.ents.some(e => e.t === 'sign' && /HOLD UP|EVERY BLOW HAULS/.test(e.text)) && B.ents.some(e => e.t === 'sign' && /LEVER SETS THE POINTS/.test(e.text)), 'no sign teaches hold-UP or the stroke; the lever sign stands on L2');

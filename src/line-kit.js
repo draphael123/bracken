@@ -50,6 +50,7 @@ export const LK = {
   MIN_TELL: 1.0, GRACE: 3, TAIL: 1.35, HEAD: 0.6, SWAY: 10, SWAY_K: 18, SWAY_DAMP: 2.2, AIR_PUSH: 1.5, SHOVE_CAP: 320,   /* wind */
   GUARD_PUSH: 24, KNOCK_VX: 60, KNOCK_VY: -80, SEATS: 4, POST_BOX: [11, 14],
   FOE_SPEED: 110,
+  CAB_BACK: 240, PARTY_WAIT: 2.5, CW_BOARD: 0.6, NEAR_X: 192, NEAR_Y: 96,                /* (claude/hlfix3, flag HL_FIX3 = lineKit.fix3) a cab / cage waits docked for a hero; its beat; the co-op wait for the other seats (s); an empty cab's way home (px/s); how near counts as 'coming' */
   TUCK: 0.25, TUCK_CD: 0.5,                                           /* (claude/linekit) THE TUCK: DODGE on a line = this many s of i-frames, and he stays on the line */
   LATCH_SPEED: 120, POST_IDLE: 1, SW_COOL: 0.4,                       /* (claude/hlswitch) a latched winch's px/s; a post line idles this long after its last rider; a lever's cooldown s */
   CLIMB_FOOT: 0.80, CLIMB_LEAD: 40, CLIMB_EASE: 0.4,                 /* (claude/linekit) L.climbCam: the camera's foot line while a seat is on a winch, its up-lead px, the ease s */
@@ -78,7 +79,7 @@ const inBox = (B, x, y) => x >= B.l && x < B.r && y >= B.t && y < B.b;
 
 export function lineInit(L) {
   const D = L.lineKit || {};
-  const kit = { L, D, rule: D.rule || null, sw: {}, q: [], lines: {}, list: [], posts: [], weights: [], winds: [], lee: (D.lee || []).map(boxPx), cabs: [], pitY: px((L.h || 200) + 2) };
+  const kit = { L, D, rule: D.rule || null, fix3: !!D.fix3, sw: {}, q: [], lines: {}, list: [], posts: [], weights: [], winds: [], lee: (D.lee || []).map(boxPx), cabs: [], pitY: px((L.h || 200) + 2) };
   for (const d of D.lines || []) {
     const z = mkLine(d); kit.lines[z.id] = z; kit.list.push(z);
     for (const p of d.posts || []) kit.posts.push({ kind: 'winch', line: z.id, x: px(p[0]) + 8, y: px(p[1] + 1) - 12, cool: 0, swing: 0 });
@@ -89,7 +90,7 @@ export function lineInit(L) {
     kit.posts.push({ kind: 'lever', sw: d.id, from: d.from || 'foot', x: px(d.at[0]) + 8, y: px(d.at[1] + 1) - 12, cool: 0, swing: 0 });
   }
   for (const d of D.weights || []) {
-    const W = { id: d.id, d, k: d.rest || 0, stones: 0, rel: 0, emptyT: 0, moving: false };
+    const W = { id: d.id, d, k: d.rest || 0, stones: 0, rel: 0, emptyT: 0, moving: false, go: false, boardT: 0, wait: 0 };
     if (d.hopper) kit.posts.push({ kind: 'hopper', weight: d.id, x: px(d.hopper[0]) + 8, y: px(d.hopper[1] + 1) - 12, cool: 0, swing: 0 });
     if (d.brake) kit.posts.push({ kind: 'brake', weight: d.id, x: px(d.brake[0]) + 8, y: px(d.brake[1] + 1) - 12, cool: 0, swing: 0 });
     kit.weights.push(W);
@@ -101,7 +102,7 @@ export function lineInit(L) {
 }
 function cabHome(kit, c, z) {   /* the cab waits at its line's start (the end it runs from), floor level with the station */
   z = z || kit.lines[c.home]; c.on = c.home; c.dir = z.dir; c.x = z.dir > 0 ? z.xa : z.xb;
-  c.st = 'rest'; c.t = 0; c.vx = 0; c.vy = 0; c.hookY = lineY(z, c.x); c.told = false; c.emptyT = 0;
+  c.st = 'rest'; c.t = 0; c.vx = 0; c.vy = 0; c.hookY = lineY(z, c.x); c.told = false; c.emptyT = 0; c.wait = 0;
 }
 export const cabFloor = c => c.hookY + LK.CAB_DROP;
 
@@ -268,12 +269,17 @@ export function kitStep(kit, bodies, dt) {
     const sA = (bodies || []).filter(b => onTop(b, Ax0, Ax1, T0.A)).length, sB = (bodies || []).filter(b => onTop(b, Bx0, Bx1, T0.B)).length;
     W.rel = Math.max(0, W.rel - dt);
     const span = Math.max(1, px(d.a.bot - d.a.top)), k0 = W.k;
-    W.emptyT = sA + sB ? 0 : W.emptyT + dt;
-    if (W.emptyT >= LK.CW_RETURN) { if (W.stones) ev.push({ t: 'stonesOut', id: W.id }); W.stones = 0; const home = d.rest || 0; if (W.k !== home) W.k = home > W.k ? Math.min(home, W.k + LK.CW_HOME / span * dt) : Math.max(home, W.k - LK.CW_HOME / span * dt); }
-    else if ((sA + sB > 0 || W.stones > 0) && !(d.brake && !(W.rel > 0))) {
+    W.emptyT = sA + sB ? 0 : W.emptyT + dt; const F = kit.fix3;
+    if (W.emptyT >= LK.CW_RETURN) { if (F) { W.go = false; W.boardT = 0; W.wait = 0; } if (W.stones) ev.push({ t: 'stonesOut', id: W.id }); W.stones = 0; const home = d.rest || 0; if (W.k !== home) W.k = home > W.k ? Math.min(home, W.k + LK.CW_HOME / span * dt) : Math.max(home, W.k - LK.CW_HOME / span * dt); }
+    else if ((F ? sA + sB > 0 : (sA + sB > 0 || W.stones > 0)) && !(d.brake && !(W.rel > 0))) {   /* (hlfix3) a cage never goes up empty: the stone alone moves nothing, a hero has to be aboard */
       const diff = sA + (d.tare ?? LK.TARE) + W.stones - (sB + (d.tareB || 0));
-      if (Math.abs(diff) >= 0.5 && W.k !== (diff > 0 ? 1 : 0)) { const tg = diff > 0 ? 1 : 0; W.k = tg > W.k ? Math.min(1, W.k + LK.CW_SPEED / span * dt) : Math.max(0, W.k - LK.CW_SPEED / span * dt); }
-    }
+      if (Math.abs(diff) >= 0.5 && W.k !== (diff > 0 ? 1 : 0)) { const tg = diff > 0 ? 1 : 0;
+        if (F && !W.go) {   /* the beat, then the co-op wait for the others coming */
+          if (!W.boardT) ev.push({ t: 'cwBoard', id: W.id }); W.boardT += dt;
+          if (W.boardT >= LK.CW_BOARD) { if (W.wait < LK.PARTY_WAIT && partyNear(bodies, b => onTop(b, Ax0, Ax1, T0.A) || onTop(b, Bx0, Bx1, T0.B), (Ax0 + Bx1) / 2, [T0.A, T0.B])) { if (!W.wait) ev.push({ t: 'cwWait', id: W.id }); W.wait += dt; } else { W.go = true; ev.push({ t: 'cwGo', id: W.id }); } } }
+        if (!F || W.go) W.k = tg > W.k ? Math.min(1, W.k + LK.CW_SPEED / span * dt) : Math.max(0, W.k - LK.CW_SPEED / span * dt); }
+      else if (F) { W.go = false; W.boardT = 0; W.wait = 0; }
+    } else if (F) { W.go = false; W.boardT = 0; W.wait = 0; }
     const mv = W.k !== k0; if (mv !== W.moving) { ev.push({ t: mv ? 'cwStart' : 'cwStop', id: W.id }); W.moving = mv; }
     if (mv) { const T1 = weightTops(W); carry(bodies, Ax0, Ax1, T0.A, 0, T1.A - T0.A, 'w:' + W.id + ':A'); carry(bodies, Bx0, Bx1, T0.B, 0, T1.B - T0.B, 'w:' + W.id + ':B'); }
   }
@@ -281,13 +287,19 @@ export function kitStep(kit, bodies, dt) {
   for (const c of kit.cabs) cabStep(kit, c, bodies, dt, ev);
   return ev;
 }
+/* (hlfix3) is another seat on its way to this cab / cage: alive, on his feet, off a line, not aboard, within NEAR_X across and NEAR_Y of one of the floor heights `tops` */
+function partyNear(bodies, aboard, cx, tops) {
+  return (bodies || []).some(b => b && !b.dead && !b.down && !b.lk && !aboard(b) && Math.abs(b.x - cx) <= LK.NEAR_X && tops.some(t => Math.abs(b.y - t) <= LK.NEAR_Y));
+}
 function cabStep(kit, c, bodies, dt, ev) {
   const home = kit.lines[c.home], x0 = c.x - LK.CAB_W / 2, x1 = c.x + LK.CAB_W / 2, f0 = cabFloor(c);
   const seats = (bodies || []).filter(b => onTop(b, x0, x1, f0)).length;
   c.emptyT = seats ? 0 : c.emptyT + dt;
   const ox = c.x, oy = c.hookY;
-  if (c.st === 'rest') { if (seats && !(home.cut > 0)) { c.st = 'board'; c.t = LK.CAB_BOARD; ev.push({ t: 'cabBoard', id: c.home }); } }
-  else if (c.st === 'board') { if (!seats) c.st = 'rest'; else if ((c.t -= dt) <= 0) { c.st = 'run'; ev.push({ t: 'cabGo', id: c.home }); } }
+  if (c.st === 'rest') { if (seats && !(home.cut > 0)) { c.st = 'board'; c.t = LK.CAB_BOARD; c.wait = 0; ev.push({ t: 'cabBoard', id: c.home }); } }
+  else if (c.st === 'board') { if (!seats) { c.st = 'rest'; c.wait = 0; } else if ((c.t -= dt) <= 0) {
+      if (kit.fix3 && c.wait < LK.PARTY_WAIT && partyNear(bodies, b => onTop(b, x0, x1, f0), c.x, [f0])) { if (!c.wait) ev.push({ t: 'cabWait', id: c.home }); c.wait += dt; }   /* (hlfix3) a hero is aboard: the beat, then up to PARTY_WAIT more for the others coming */
+      else { c.st = 'run'; ev.push({ t: 'cabGo', id: c.home }); } } }
   else if (c.st === 'run') {
     const z = kit.lines[c.on], sp = c.on === c.home ? LK.CAB_SPEED : Math.min(z.speed, LK.CAB_ONTO);
     c.x += c.dir * sp * dt; c.hookY = lineY(z, c.x);
@@ -299,8 +311,12 @@ function cabStep(kit, c, bodies, dt, ev) {
       if ((c.x - end) * c.dir >= 0) { c.x = end; c.hookY = lineY(z, c.x); c.st = 'dock'; ev.push({ t: 'cabDock', id: c.home, on: c.on }); } }
   } else if (c.st === 'fall') {
     const r = cabFall(kit, c, dt); if (r === 'catch') ev.push({ t: 'cabCatch', id: c.home, on: c.on }); else if (r === 'gone') ev.push({ t: 'cabLost', id: c.home });
+  } else if (c.st === 'back') {   /* (hlfix3) an empty cab comes home along a visible way, not in a blink */
+    const tx = home.dir > 0 ? home.xa : home.xb, ty = lineY(home, tx), dx = tx - c.x, dy = ty - c.hookY, d = Math.hypot(dx, dy), st = LK.CAB_BACK * dt;
+    if (d <= st) { cabHome(kit, c, home); ev.push({ t: 'cabHome', id: c.home }); return; }
+    c.x += dx / d * st; c.hookY += dy / d * st;
   } else if (c.st === 'dock' || c.st === 'gone') {
-    if (!(home.cut > 0) && c.emptyT >= 1) { cabHome(kit, c, home); ev.push({ t: 'cabHome', id: c.home }); return; }
+    if (!(home.cut > 0) && c.emptyT >= 1) { if (kit.fix3 && c.st === 'dock') { c.st = 'back'; ev.push({ t: 'cabBack', id: c.home }); } else { cabHome(kit, c, home); ev.push({ t: 'cabHome', id: c.home }); return; } }
   }
   if (c.st !== 'gone' && c.st !== 'rest') carry(bodies, x0, x1, f0, c.x - ox, c.hookY - oy, 'cab:' + c.home);
 }
