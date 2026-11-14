@@ -19,7 +19,7 @@ const pg = await openPage({ audio: false, fonts: false, seed: 20261112 });
 const PAGE = `(async (hero, reset) => {
   const lvm = await import('./src/level.js'), hlm = await import('./src/highlines.js'), LKT = await import('./src/line-kit.js');
   const TS = 16, rows = [], idx = lvm.LEVELS.findIndex(l => l.id === 'highlines'); if (idx < 0) return { err: 'no highlines level (road off?)' };
-  const D = hlm.HL_DATA, LAND = D.landings, LINE = Object.fromEntries(D.lineKit.lines.map(d => [d.id, d]));
+  const SW = !!hlm.HL_SWITCH, D = SW ? hlm.HL_DATA_SW : hlm.HL_DATA, LAND = D.landings, LINE = Object.fromEntries(D.lineKit.lines.map(d => [d.id, d]));
   const fresh = () => { BK.setHero(hero); BK.reset({ fresh: true }); BK.load(idx); BK.start(); BK.god = true; BK.sim(5); for (const e of BK.enemies()) e.alive = false;
     const k = BK.keys; k.left = k.right = k.up = k.down = k.jump = false; return { L: BK.L, P: BK.P, k }; };
   const { L, P, k } = fresh(); const kit = () => BK.kit();
@@ -34,7 +34,7 @@ const PAGE = `(async (hero, reset) => {
   const walkTo = x => { const tx = x * TS; for (let f = 0; f < 900 && Math.abs(P.x - tx) > 5; f++) { k.left = P.x > tx; k.right = P.x < tx; BK.sim(1); } clr(); BK.sim(8); };
   const at = (li, x) => { if (!reset && onLanding(li)) walkTo(x); else { if (!reset) rows.push({ name: '  (stood on landing ' + li + ' - the last leg did not leave him there: ' + JSON.stringify(info()) + ')', ok: false, why: 'the previous leg ended off this landing', note: true }); stand(x * TS, LAND[li][1] * TS); } };
   const take = (id, cap = 40) => { const z = kit().lines[id]; k.up = true; let got = false; for (let f = 0; f < cap && !got; f++) { BK.sim(1); got = !!P.lk && P.lk.id === id; } k.up = false; return got; };
-  const crank = (cap = 2400) => { let f = 0; for (; f < cap && P.lk; f++) { if (f % 18 === 0) BK.press('atk'); BK.sim(1); } return f; };
+  const crank = (cap = 2400) => { let f = 0; for (; f < cap && P.lk; f++) { if (SW ? f === 0 : f % 18 === 0) BK.press('atk'); BK.sim(1); } return f; };   /* (batch188) the switch rule: ONE blow carries him (the kit's latch); the old rule cranks every 0.3 s */
   const rideOut = (cap = 1600) => { let f = 0; for (; f < cap && P.lk; f++) BK.sim(1); return f; };
   const takeHow = (id, from, x0) => { let got = take(id); if (got) return 'stand'; const z = kit().lines[id]; const A = LAND[from];
     for (let x = A[0] * TS + 6; x <= (A[2] + 1) * TS - 6 && !got; x += 4) { stand(x, A[1] * TS); got = take(id, 6); if (got) return 'sweep@' + (x / TS).toFixed(1); }
@@ -45,7 +45,7 @@ const PAGE = `(async (hero, reset) => {
     const y0 = P.y, f = crank(); const climbed = y0 - P.y; settle();
     row(id + ' winch: strikes haul him up (' + f + ' frames) and the top sets him on landing ' + to, onLanding(to) && !(P.dead > 0), 'ended ' + JSON.stringify(info()) + ' climbed ' + Math.round(climbed)); return onLanding(to); };
   const glide = (id, from, to, xo) => { const d = LINE[id]; at(from, xo === undefined ? d.a[0] : xo); const how = takeHow(id, from); const got = !!how; row(id + ' glide: UP on landing ' + from + ' takes it' + (how && how !== 'stand' ? '  [ONLY BY ' + how + ']' : ''), got, 'not taken ' + JSON.stringify(info())); if (!got) return false;
-    const f = rideOut(); settle(); row(id + ' glide: rides to the low end (' + f + ' frames) and is set on landing ' + to, onLanding(to) && !(P.dead > 0), 'ended ' + JSON.stringify(info())); return onLanding(to); };
+    if (SW && LINE[id].hold) BK.press('atk'); const f = rideOut(); settle(); row(id + ' glide: rides to the low end (' + f + ' frames) and is set on landing ' + to, onLanding(to) && !(P.dead > 0), 'ended ' + JSON.stringify(info())); return onLanding(to); };
   const hop = (from, to, label) => { /* a run-up and a jump from landing "from" toward landing "to": starts at the near edge, farther back, and under the target's own middle */
     const A = LAND[from], B = LAND[to], bc = ((B[0] + B[2] + 1) / 2) * TS, ac = ((A[0] + A[2] + 1) / 2) * TS, lo = A[0] * TS + 5, hi = (A[2] + 1) * TS - 5, cl = x => Math.max(lo, Math.min(hi, x)), dirTo = bc > ac ? 1 : -1, edge = dirTo > 0 ? hi : lo;
     const starts = [0, 24, 48, 80, 120].map(r => cl(edge - dirTo * r)).concat([bc - 40, bc - 12, bc + 12, bc + 40].map(cl)); let ok = false; const tried = [];

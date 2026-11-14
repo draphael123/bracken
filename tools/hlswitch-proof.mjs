@@ -81,10 +81,11 @@ if (MODE === 'route') {
   const src = readFileSync(new URL('./hl-route.mjs', import.meta.url), 'utf8'); const a = src.indexOf('const PAGE = `') + 14, b = src.indexOf("})(${JSON.stringify('HERO')}, ${RESET})`;");
   let PAGE = src.slice(a, b) + '})("__HERO__", false)';
   const rep = (from, to) => { if (!PAGE.includes(from)) throw new Error('patch target missing: ' + from.slice(0, 60)); PAGE = PAGE.replace(from, to); };
-  rep('const D = hlm.HL_DATA,', 'const D = hlm.HL_SWITCH ? hlm.HL_DATA_SW : hlm.HL_DATA,');
+  const optional = (from, to) => { if (PAGE.includes(from)) PAGE = PAGE.replace(from, to); };   /* tools/hl-route.mjs is switch-aware since batch188: these three patches only apply to an older copy */
+  optional('const D = hlm.HL_DATA,', 'const D = hlm.HL_SWITCH ? hlm.HL_DATA_SW : hlm.HL_DATA,');
   rep('const { L, P, k } = fresh();', 'const CFG = { J1: +CFGS[0], J3: +CFGS[1], J4: +CFGS[2] }; const { L, P, k } = fresh(); LKT.setSwitches(BK.kit(), CFG);');
-  rep("if (f % 18 === 0) BK.press('atk'); BK.sim(1); } return f; };", "if (f === 0) BK.press('atk'); BK.sim(1); } return f; };");   /* ONE blow: the latch carries him */
-  rep("const f = rideOut(); settle(); row(id + ' glide: rides", "if (LINE[id].hold) BK.press('atk'); const f = rideOut(); settle(); row(id + ' glide: rides");
+  optional("if (f % 18 === 0) BK.press('atk'); BK.sim(1); } return f; };", "if (f === 0) BK.press('atk'); BK.sim(1); } return f; };");   /* ONE blow: the latch carries him */
+  if (!PAGE.includes('SW && LINE[id].hold')) optional("const f = rideOut(); settle(); row(id + ' glide: rides", "if (LINE[id].hold) BK.press('atk'); const f = rideOut(); settle(); row(id + ' glide: rides");
   const swNow = "const swS = id => BK.kit().sw[id].state; const where = () => { if (P.lk) return 'on ' + P.lk.id; for (let i = 0; i < LAND.length; i++) if (onLanding(i)) return 'L' + i; for (let j = 0; j < D.nets.length; j++) { const n = D.nets[j]; if (Math.abs(P.y - n[1] * TS) <= 6 && P.x >= n[0] * TS - 6 && P.x <= (n[2] + 1) * TS + 6) return 'net' + j; } return 'air(' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + ')'; };";
   rep('/* ---- the route ---- */', swNow + '\n  /* ---- the route ---- */');
   rep("winch('W3', 2, 3, 69.5);", `winch('W3', 2, CFG.J1 ? 4 : 3, 69.5); row('J1 still ' + CFG.J1 + ' after W3 (the latch blow did not throw it)', swS('J1') === CFG.J1, 'J1 ' + swS('J1'));

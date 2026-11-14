@@ -978,7 +978,7 @@ export const TEMPO_CLASS = {
 };
 export const tempoOf = k => TEMPO_CLASS[k] || '';
 // THE COMMON FOLK THAT NEVER HARM YOU AT ALL: no blow, so nothing to tell and nothing to answer.
-export const HARMLESS = new Set(['folk', 'sentry', 'squirrel', 'dummy', 'acolyte', 'shaman']);   /* (claude/sporewood2) THE SHAMAN strikes nobody himself: he raises sporelings (whose bites are told) and blinks away when struck */   // townsfolk, a bell-runner, a pickpocket (it is a thief underneath: see thief|snatchTell), a straw man
+export const HARMLESS = new Set(['folk', 'sentry', 'squirrel', 'dummy', 'acolyte', 'shaman', 'hllever']);   /* (claude/sporewood2) THE SHAMAN strikes nobody himself: he raises sporelings (whose bites are told) and blinks away when struck */   // townsfolk, a bell-runner, a pickpocket (it is a thief underneath: see thief|snatchTell), a straw man   /* (batch188) 'hllever': a High Lines lever is a prop (never harms) */
 export const answerOf = (t, mode) => ANSWER[t + '|' + mode] || ANSWER['*|' + mode] || UNTOLD[t] || '';
 
 const MISSED = new Set();
