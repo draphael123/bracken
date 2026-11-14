@@ -400,7 +400,8 @@ export function sky2Plan(s) {
   const dx = Math.abs(e.x - P.x), side = Math.sign(P.x - e.x) || 1, onFl = P.y >= G.floorY - 2 && !P.lk;
   const swingAtHim = () => { out.face = Math.sign(e.x - P.x) || out.face; out.atk = P.atk < 0; };
   const L = lamps(e, S), lev = id => G.levers.find(l => l.id === id);
-  const standOff = s.ranged ? 96 : Math.max(10, reach - 6);
+  const PYRO = s.hero === 'pyro';   /* (sky2tune) the pyro is 'ranged' for the levers but his flame is 30-48 px: standing 40-90 px off him he never burned anything (0/48 wins) */
+  const standOff = PYRO ? 26 : s.ranged ? 96 : Math.max(10, reach - 6);
   const leverSpot = l => clamp(l.x + (P.x < l.x ? -1 : 1) * standOff);
   const mine = id => { const l = lev(id); let best = null, bd = 1e9; for (const q of team) { const d = Math.abs(q.x - l.x); if (d < bd) { bd = d; best = q; } } return best === P || team.length < 2; };
   const strike = (id, why) => { const l = lev(id), sx = leverSpot(l); out.gx = sx; out.lever = id; out.face = Math.sign(l.x - P.x) || 1; if (Math.abs(P.x - sx) < (s.ranged ? 40 : 8) && P.ground) out.atk = P.atk < 0; out.why = why; return out; };
@@ -441,7 +442,7 @@ export function sky2Plan(s) {
   /* 7. HE HOOKS THE POINTS: hold them (strike POINTS in the tell) */
   if (levers && (e.mode === 'rehookTell' || e.mode === 'crownHookTell') && !S.held && mine('POINTS')) { const key = 'p' + S.act; if (seenFor(key, s.v2 ? 0.05 : PLAN2.react) && !roll(key + 'm', s.v2 ? 0 : PLAN2.missLever)) return strike('POINTS', 'hold the points: he hooks them'); }
   /* 8. OPEN: strike him */
-  if (sky2Open(e)) { const sd = s.ranged ? Math.min(90, Math.max(40, dx)) : s.tip ? SK.w / 2 + s.tip : SK.w / 2 + Math.max(6, reach - 8); out.gx = clamp(e.x + side * sd);
+  if (sky2Open(e)) { const sd = PYRO ? 30 : s.ranged ? Math.min(90, Math.max(40, dx)) : s.tip ? SK.w / 2 + s.tip : SK.w / 2 + Math.max(6, reach - 8); out.gx = clamp(e.x + side * sd);
     if (dx < sd + 10) swingAtHim(); out.why = 'strike him: ' + e.mode; return out; }
   /* 9. P3: CRANE when he will be in the arc as the skip comes through (the tell + half the sweep, a lead), then the wall */
   if (levers && L.CRANE === 'READY' && mine('CRANE')) { const tHit = SK.crane.tell + SK.crane.sweep / 2 + PLAN2.craneLead, px = predictX(e, S, tHit);
