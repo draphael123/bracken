@@ -1,8 +1,9 @@
 // tools/gqmusic.mjs - THE GOBLIN QUEEN'S TOWER-TOP MUSIC, THE NODE HALF (claude/gqmusic, Daniel 11-08). No page, no browser.
 //   The roof stage lifts the track (music.lift(1): x1.06 + the told stinger, King Gorm's own), her crown circling her steps it up (lift(2): x1.10 + a higher stinger),
 //   and every way out lets it go (lift(false)): her death, every hero down, a death / retry / level load (H.reset, H.load), the fight ending, the stage left.
-//   node tools/gqmusic.mjs
+//   node tools/gqmusic.mjs   (S2/S3 pinned OFF = the old deck fight; then runs tools/gqmusic-s23.mjs = the same proof with S2 + S3 ON, the fight players get since batch186)
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 process.env.BRACKEN_GQ6S3 = '0'; process.env.BRACKEN_GQ6S2 = '0';   /* (batch186) this tool proves the DECK fight's music steps (the portal storm on the deck); the final platform is proved by tools/gq6s2.mjs / gq6s3.mjs */
 const { Q4: Q4M } = await import('../src/gq4q.js');   /* (rel167) the flag, not the env: GQ4Q ships ON */
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -75,5 +76,8 @@ console.log('== wiring: main.js hands her music.lift; Gorm\'s hook is unchanged'
 { const m = rd('src/main.js');
   ok(/lift: n => music\.lift && music\.lift\(n\), hint:/.test(m), 'makeGQueenHands gets lift');
   ok(/music: on => music\.lift && music\.lift\(on\)/.test(m), 'makeGormHands still gets music: on => music.lift(on)'); }
+console.log('== the same music with the final-platform stages ON (tools/gqmusic-s23.mjs, its own process: the flags are read at import)');
+{ const on = spawnSync(process.execPath, [path.join(ROOT, 'tools/gqmusic-s23.mjs')], { encoding: 'utf8', env: { ...process.env, BRACKEN_GQ6S2: '1', BRACKEN_GQ6S3: '1' } });
+  process.stdout.write(on.stdout || ''); if (on.stderr) process.stderr.write(on.stderr); ok(on.status === 0, 'gqmusic-s23 (S2 + S3 ON) exits 0'); }
 console.log(fails ? '\n' + fails + ' FAIL' : '\nall ok');
 process.exit(fails ? 1 : 0);
