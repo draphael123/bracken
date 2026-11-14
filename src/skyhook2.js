@@ -37,7 +37,7 @@ export const SK = {
   leverHook: { tell: [0.7, 0.6, 0.6], range: 64 },
   points: { rehook: [3.0, 2.2, 1.7], tell: 1.0, onRise: true },       /* KNOB 1: how long a route stays. onRise (lane decision, see the report): back on a crown after a DOWN / SMASHED he hooks the points first (the same told, holdable re-hook) - without it one POINTS strike sets the LOW route for the rest of the fight and WEIGHT loops him */
   weight: { rehang: 6, fall: 0.45 },
-  downed: { t: 5.0, mul: 2.0, cap: 0.30 },                             /* KNOB 2: DOWN purse / window */
+  downed: { t: 4.0, mul: 2.0, cap: 0.22 },                             /* KNOB 2: DOWN purse / window */
   smashed: { t: 4.0, mul: 2.0, cap: 0.30, capSky: 0.25, capRun: 0.20 },
   fray: { tell: 1.4, restring: 6, dmg: 9, h: 14, back: 0.6 },
   crane: { tell: 1.0, sweep: 1.2, cool: 9, dmg: 14, push: 240, r: 14, amp: 170, len: 264, him: 22 },
