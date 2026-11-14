@@ -361,7 +361,7 @@ addEventListener('resize', () => { if (viewMode === 'zoom' || viewMode === 'coop
 const q = new URLSearchParams(location.search);
 if (q.get('cf1') === '1') setCF1(true);   /* (claude/cf1) preview only: CF1_SHIPS stays false in the file */
 { const cq = q.get('cf3'); if (cq) CF3.setCF3(cq !== 'off'); }   /* (claude/cf3) lab only: ?cf3=on|off (CF3_SHIPS stays false in the file) */
-{ const c4 = q.get('cf4'); if (c4) CF4.setCF4(c4 !== 'off'); }   /* (claude/cf4chip, flag CF4CHIP_SHIPS false) lab only: ?cf4chip=1|0 = the chip drain on foe + elite + mini-boss bars */
+{ const c4 = q.get('cf4'); if (c4) CF4.setCF4(c4 !== 'off'); }   /* (claude/cf4chip, flag CF4CHIP_SHIPS ships ON since batch187; ?cf4chip=0 is the opt-out = the old bars) ?cf4chip=1|0 = the chip drain on foe + elite + mini-boss bars */
 { const c4c = q.get('cf4chip'); if (c4c) CF4.setCF4Chip(c4c !== '0' && c4c !== 'off'); }   /* (claude/cf4) lab only: ?cf4=on|off (CF4_SHIPS stays false in the file) */
 { const tq = q.get('traits'); if (tq) { TRT.setTraitsShip(tq !== 'off'); TRT.setLabTraits(tq === 'on' || tq === 'off' ? null : tq === 'core' || tq === 'def' ? tq : tq.split(',').filter(Boolean)); } }   /* (claude/traitframe) lab only: ?traits=on|off|core|def|<id>,<id> (TRAITS_SHIP stays false for everyone else) */
 { const c2 = q.get('cf2'); if (c2) CF2.setCF2(c2 !== 'off' && c2 !== '0'); }   /* (claude/cf2) preview only: ?cf2=on turns the platform-feel pass on (CF2_SHIPS stays false) */

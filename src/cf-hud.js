@@ -92,9 +92,11 @@ export const coinArc = t => t < CF4.coin.arcT ? Math.sin(Math.PI * t / CF4.coin.
 export const bumpScale = (now, at) => now >= at && now - at < CF4.coin.bumpFor ? CF4.coin.bump : 1;
 
 /* 7. FOE + MINI-BOSS CHIP BARS (claude/cf4chip, 11-14, Daniel: yes to both). The SAME barStep as the hero and boss bars - this is only the per-entity state holder.
-   Flag CF4CHIP_SHIPS false = the old foe / elite / mini draw paths byte for byte. State lives on the entity (e.cfc, marked .foe): no table to leak, it dies with the entity,
+   Flag CF4CHIP_SHIPS false (the ?cf4chip=0 opt-out; ships ON since batch187) = the old foe / elite / mini draw paths byte for byte. State lives on the entity (e.cfc, marked .foe): no table to leak, it dies with the entity,
    and the draw drops it while the bar is hidden (full health, death, Foe bars off). The draw has no dt, so it is the gap between two draws of the same entity (clamped). */
-export let CF4CHIP_SHIPS = false;
+/* (batch187) SHIPS ON. The lab OFF = the old foe / elite / mini bars: ?cf4chip=0 (main.js), globalThis.BRACKEN_CF4CHIP = false or '0' (tools/cdp.mjs env BRACKEN_CF4CHIP=0), process.env.BRACKEN_CF4CHIP = '0'. */
+const chipOptOut = () => { try { if (globalThis.BRACKEN_CF4CHIP === false || globalThis.BRACKEN_CF4CHIP === '0') return true; } catch { /* no global */ } try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_CF4CHIP === '0') return true; } catch { /* no node */ } return false; };
+export let CF4CHIP_SHIPS = !chipOptOut();
 export const setCF4Chip = on => { CF4CHIP_SHIPS = !!on; };
 export const FOEDT_MAX = 0.1;   // a foe off screen for a while must not drain its chip in one step on return
 export function foeChip(e, hp, max, now) {

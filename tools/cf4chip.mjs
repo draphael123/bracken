@@ -5,7 +5,9 @@ import * as C from '../src/cf-hud.js';
 const near = (a, b, m, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, m + ': ' + a + ' vs ' + b);
 
 /* flag ships OFF, setter flips it, the existing CF4_SHIPS is untouched */
-assert.equal(C.CF4CHIP_SHIPS, false, 'CF4CHIP_SHIPS ships false'); C.setCF4Chip(true); assert.equal(C.CF4CHIP_SHIPS, true); C.setCF4Chip(false); assert.equal(C.CF4CHIP_SHIPS, false);
+/* (batch187) ships ON; BRACKEN_CF4CHIP=0 in the env (node) = the opt-out, flag false at load */
+const OPT_OUT = process.env.BRACKEN_CF4CHIP === '0';
+assert.equal(C.CF4CHIP_SHIPS, !OPT_OUT, OPT_OUT ? 'CF4CHIP_SHIPS false with the BRACKEN_CF4CHIP=0 opt-out' : 'CF4CHIP_SHIPS ships true'); C.setCF4Chip(OPT_OUT); assert.equal(C.CF4CHIP_SHIPS, OPT_OUT); C.setCF4Chip(!OPT_OUT); assert.equal(C.CF4CHIP_SHIPS, !OPT_OUT);
 
 /* ON maths, a foe: born full, one hit 30 -> 18 of 30: red drops at once, white holds 0.4 s, then drains at 0.6 bar/s (the SAME barStep as hero + boss) */
 {
