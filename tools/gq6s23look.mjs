@@ -1,14 +1,14 @@
-/* tools/gq6s23look.mjs - GQ6S23LOOK (11-13): the browser look at the Highcrown burn + climb + final platform (flags ?gq6s2=1 & ?gq6s3=1). A measuring / looking tool, not a check.
+/* tools/gq6s23look.mjs - GQ6S23LOOK (11-13): the browser look at the Highcrown burn + climb + final platform (shipped ON 11-14; ?gq6s2=0 / ?gq6s3=0 opt out). A measuring / looking tool, not a check.
      node tools/gq6s23look.mjs climb [--heroes=knight,warden,...] [--out=dir]     each hero climbs deck -> hoardings -> loft -> roof by REAL KEYS (BK.keys left / right / up), stills, time, fire cost, camera, text fit, sounds
      node tools/gq6s23look.mjs frames [--off] [--secs=20]                          frame time (BK.step = update + render): hall, roof deck, tell, burn, each tier; --off = flags off (master's fight)
      node tools/gq6s23look.mjs coop                                                a downed seat returns on her tier; the hold waits for the living
      node tools/gq6s23look.mjs attacks                                             stills of her told moves on every tier (hero invulnerable)
-   Flags are set through tools/cdp.mjs (BRACKEN_GQ6S2 / BRACKEN_GQ6S3), none shipped. One headless Chrome at a time. */
+   Flags are set through tools/cdp.mjs (BRACKEN_GQ6S2 / BRACKEN_GQ6S3), shipped ON; BRACKEN_GQ6S2=0 / BRACKEN_GQ6S3=0 opt out. One headless Chrome at a time. */
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 const a = process.argv.slice(2), mode = a.find(x => !x.startsWith('--') && !x.endsWith('.mjs')) || 'climb', opt = (k, d) => { const x = a.find(y => y.startsWith('--' + k + '=')); return x ? x.slice(k.length + 3) : d; };
-const OUT = resolve(opt('out', 'C:/Users/Daniel Raphael/.claude/bracken-lanes/scratch/lane-reports/gq6s23look')); mkdirSync(OUT, { recursive: true });
+const OUT = resolve(opt('out', process.env.OUT || join(ROOT, 'audits', 'gq6s23look'))); mkdirSync(OUT, { recursive: true });
 const HEROES = opt('heroes', 'knight,warden,pyro,paladin,pirate,reaper,geomancer,berserker,ranger').split(',');
 if (a.includes('--off')) { delete process.env.BRACKEN_GQ6S2; delete process.env.BRACKEN_GQ6S3; } else { process.env.BRACKEN_GQ6S2 = '1'; process.env.BRACKEN_GQ6S3 = '1'; }
 const png = (name, url) => writeFileSync(join(OUT, name), Buffer.from(url.split(',')[1], 'base64'));

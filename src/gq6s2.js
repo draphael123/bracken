@@ -11,7 +11,7 @@
 import { MOVE, HERO_RUN, HERO_MOVE_IDS } from './hero-move.js';
 import { S3, S3N, tierGeom, spansFor, arriveX } from './gq6s3.js';
 import * as TA6 from './redraw/gq6s3_art.js';   /* (claude/gq6s3art) the tiers', the burnt spans' and the ladders' art (drawing only; no document = it answers false and the old look stays) */   /* (claude/gq6s3) THE BURN AND THE CLIMB (src/gq6s3.js, its own switch, OFF): S3 on implies S2 on */
-export const GQ6S2_SHIPS = false;
+export const GQ6S2_SHIPS = true;   /* (claude/prepgq6s23) SHIPPED ON (Daniel 11-14); ?gq6s2=0 / BRACKEN_GQ6S2=0 restores the old fight (also switches S3 off) */
 export function gq6s2On() {
   try { if (globalThis.BRACKEN_GQ6S2 === false || globalThis.BRACKEN_GQ6S2 === '0') return false; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]gq6s2=0\b/.test(location.search || '')) return false; } catch { /* no page */ }

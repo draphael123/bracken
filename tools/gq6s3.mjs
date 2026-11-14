@@ -1,6 +1,7 @@
 // tools/gq6s3.mjs - GQ6S3 (Daniel 11-13 17:14, Highcrown pass 6 item 3, slice S3): THE ARENA BURNS AWAY AND YOU CLIMB. NODE ONLY, no page, no browser.
-//   node tools/gq6s3.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
-//   BRACKEN_GQ6S2=1 node tools/gq6s3.mjs    S2 ONLY (S3 off): the seeded fight hashes to what S2 did at 41ad47bbe (the final platform, the stand-in lift), no tier engine
+//   (11-14: the flags SHIP ON, so the plain run is S3 ON; the OFF run is BRACKEN_GQ6S2=0, the S2-only run is BRACKEN_GQ6S3=0)
+//   BRACKEN_GQ6S2=0 node tools/gq6s3.mjs    flag OFF (was the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
+//   BRACKEN_GQ6S3=0 node tools/gq6s3.mjs    S2 ONLY (S3 off): the seeded fight hashes to what S2 did at 41ad47bbe (the final platform, the stand-in lift), no tier engine
 //   BRACKEN_GQ6S3=1 node tools/gq6s3.mjs    S3 ON: G geometry, B thresholds 85/70/50, T the told burn (3.0 s + sounds), R the route (slowest hero, fire cost), S no soft-lock (bots, falls, co-op, last resort),
 //                                           A the attack set on every tier, K no knock-off, L the lab bot's hand, Q source / wiring, P draw cost
 //   node tools/gq6s3.mjs --hash             print the identity hashes only (GQ6S3_ROOT=<tree> runs the same script on another checkout - how the pins were made: MASTER b211d645b, S2-only 41ad47bbe)
@@ -76,7 +77,7 @@ ok(LH.split('/')[0] === PIN.level, 'the built Highcrown level hashes to MASTER\'
 if (!S2) {
   ok(SH.split('/')[0] === PIN.master, 'ALL FLAGS OFF: a seeded 100 s roof fight (autostrike hero) hashes to MASTER\'s b211d645b (' + SH.split('/')[0] + ' / ' + SH.split('/')[1] + ' events)');
   { const w = roof(); ok(!w.H.gq6s2 || w.H.gq6s2() === null, 'ALL FLAGS OFF: no engine is built'); const m = w.Lw.arena.tower.OUT.mouthLadder; ok(w.Lw.grid[19 * w.Lw.W + m] === T.NET, 'ALL FLAGS OFF: the east-end ladder tile is still there (col ' + m + ', row 19)'); }
-  ok(S3 === false && (!s3m || s3m.GQ6S3_SHIPS === false), 'GQ6S3_SHIPS = false' + (s3m ? ' (src/gq6s3.js)' : ' (no module on master)'));
+  ok(S3 === false && (!s3m || s3m.GQ6S3_SHIPS === true), 'GQ6S3_SHIPS = true and the opt-out (BRACKEN_GQ6S2=0) is the old fight: S3 off' + (s3m ? ' (src/gq6s3.js)' : ' (no module on master)'));
   console.log(fails ? 'FAIL gq6s3 OFF (' + fails + ' of ' + checks + ')' : 'ok  gq6s3 OFF (' + checks + ' checks)'); process.exit(fails ? 1 : 0);
 }
 if (!S3) {   /* S2 only */
@@ -272,7 +273,7 @@ console.log('== Q. wiring (source)');
   ok(main.includes('A.respawn ? A.respawn.x') && main.includes('A.respawn ? A.respawn.y'), 'main.js bleedBack returns a downed seat to arena.respawn when it is set (unset = the old spot)');
   ok(html.includes('./src/gq6s3.js') && cdp.includes('BRACKEN_GQ6S3'), 'index.html modulepreloads src/gq6s3.js; tools/cdp.mjs sets window.BRACKEN_GQ6S3 for the lab');
   ok(hands.includes('GS2.fireSpans') && hands.includes('GS2.final()'), 'the hands: the burnt-span fire tick + the final-only reshapes (rockfall 3, mountain, volley gap) are keyed to the final platform, not to every tier');
-  ok(/export const GQ6S3_SHIPS = false/.test(rd('src/gq6s3.js')), 'GQ6S3_SHIPS = false'); }
+  ok(/export const GQ6S3_SHIPS = true/.test(rd('src/gq6s3.js')) && /export const GQ6S2_SHIPS = true/.test(rd('src/gq6s2.js')), 'GQ6S3_SHIPS = true, GQ6S2_SHIPS = true (shipped 11-14; ?gq6s2=0 old fight, ?gq6s3=0 platform only)'); }
 
 console.log('== P. draw cost (the burnt spans, baked: one shared flame sheet + one smoke sheet, a span = slab + glow + drawImage tiles + sparks)');
 { let art = null; try { art = await imp('src/redraw/gq3_art.js'); } catch (err) { say('     (gq3_art not importable in node: ' + String(err.message).slice(0, 60) + ')'); }

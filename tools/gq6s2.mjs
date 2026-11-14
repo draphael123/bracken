@@ -1,9 +1,11 @@
 // tools/gq6s2.mjs - GQ6S2 (Daniel 11-13 17:14, Highcrown pass 6 item 3, slice S2): THE FINAL PLATFORM. NODE ONLY, no page, no browser.
-//   node tools/gq6s2.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
-//   BRACKEN_GQ6S2=1 node tools/gq6s2.mjs    flag ON: G geometry, T transition (told blink, hold, stand-in lift), A the attack set up there (kept / dropped), R rockfall 3, K no knock-off,
+//   (11-14: the flags SHIP ON: OFF = BRACKEN_GQ6S2=0; the plain run holds S3 off itself and proves S2 alone)
+//   BRACKEN_GQ6S2=0 node tools/gq6s2.mjs    flag OFF (was the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
+//   BRACKEN_GQ6S3=0 node tools/gq6s2.mjs    flag ON: G geometry, T transition (told blink, hold, stand-in lift), A the attack set up there (kept / dropped), R rockfall 3, K no knock-off,
 //                                           D dodge room for every kept attack (slowest hero), L the east-end ladder tile, F a fall + the reset
 //   node tools/gq6s2.mjs --hash             print the two identity hashes only (GQ6S2_ROOT=<tree> runs the same script on another checkout - how MASTER's pins were made)
 // The tool's ctx.tiles mirrors main.js gqTiles for the kinds the hands use (drop / restore / lay / ladder / solid / unsolid / unlay / unladder); a source check below proves main.js has every branch.
+process.env.BRACKEN_GQ6S3 ??= '0';   /* (claude/prepgq6s23) this tool proves S2 ALONE (the stand-in lift); S3 ships on too now, so it is held off here unless set */
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path'; import fs from 'node:fs';
 const ROOT = process.env.GQ6S2_ROOT ? path.resolve(process.env.GQ6S2_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
