@@ -23,7 +23,7 @@ const shot = async (label, extra) => {
 };
 // ---- the in-page kit
 const KIT = `window.__K = (async () => {
-  const M = await import('/src/skyhook2.js'); const K = { M };
+  let M = { SKY2: false }; try { M = await import('/src/skyhook2.js'); } catch (e) {} const K = { M };
   K.S = () => BK.skyhookHands().show(); K.e = () => BK.enemies().find(e => e.t === 'skyhook' && e.alive);
   K.run = (n) => { for (let i = 0; i < n; i++) { BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
   K.keysOff = () => { const k = BK.keys; k.left = k.right = k.up = k.down = k.jump = k.atk = k.block = false; };
@@ -39,7 +39,7 @@ try {
     await ev('new Promise(r => setTimeout(r, 400))');
     const tag = W + 'x' + H + '-' + MODE;
     await ev(`(async()=>{ BK.manualSimulation = true; BK.SET.zoom = ${JSON.stringify(MODE)}; BK.SET.reduceMotion = false; BK.setHero('knight'); BK.reset({ fresh: true }); BK.god = true; BK.bossJump.go('skyhook'); let f = 0; for (; f < 1500 && !BK.bossActive; f++) { BK.P.inv = 99; BK.sim(1); if (f % 8 === 0) BK.step(1); } })()`);
-    note.flag = await ev('(async()=>{ const m = await import("/src/skyhook2.js"); return m.SKY2; })()'); console.log('sky2 flag in page:', note.flag);
+    note.flag = await ev('(async()=>{ try { const m = await import("/src/skyhook2.js"); return m.SKY2; } catch (e) { return "n/a"; } })()'); console.log('sky2 flag in page:', note.flag);
     if (PART === 'off') {
       // identical-stills scene: hero at a fixed spot, 400 sim frames, one still of the fight (deterministic seed); compare the sha between master and the branch
       await kit(`K.keysOff(); K.place(24*16, 48*16); K.run(400); return 1;`); await shot('off-' + tag + '-a'); await kit(`K.run(300); return 1;`); await shot('off-' + tag + '-b');
@@ -117,6 +117,48 @@ try {
       let at = 2; for (const off of [6, 20, 36, 52, 66, 80, 92, 110, 150, 200]) { await kit(`K.run(${off - at}); return 1`); at = off; await shot(tag + '-crane-t' + String(off).padStart(3, '0'), { info: await kit(sk) }); }
       await kit(`const S=K.S(), e=K.e(); S.enraged=true; S.skip.cycle=0.3; S.skip.st='rest'; K.M.atCrown(e,S); e.mode='perch'; S.restT=99; K.place(S.G.mid-90, S.G.floorY); K.run(5); return 1`);
       at = 0; for (const off of [20, 40, 55, 70, 85, 100, 120, 140]) { await kit(`K.run(${off - at}); return 1`); at = off; await shot(tag + '-runaway-t' + String(off).padStart(3, '0'), { info: await kit(sk) }); }
+    }
+    if (PART === 'heroes') {
+      // all 9 heroes strike every lever (melee beside it; the ranged from ~7.5 tiles = 120 px), in the real page
+      const HEROES = ['knight', 'warden', 'paladin', 'berserker', 'reaper', 'pyro', 'pirate', 'geomancer', 'ranger'], RANGE = { pirate: 120, geomancer: 120, ranger: 120, pyro: 40 };
+      const out = [];
+      for (const h of HEROES) {
+        await ev(`(async()=>{ BK.manualSimulation = true; BK.SET.zoom = ${JSON.stringify(MODE)}; BK.setHero(${JSON.stringify(h)}); BK.reset({ fresh: true }); BK.god = true; BK.bossJump.go('skyhook'); let f = 0; for (; f < 1500 && !BK.bossActive; f++) { BK.P.inv = 99; BK.sim(1); if (f % 8 === 0) BK.step(1); } })()`);
+        const rec = { hero: h };
+        for (const [li, id] of [[0, 'POINTS'], [1, 'WEIGHT'], [2, 'CRANE']]) {
+          const dist = RANGE[h] ?? 14, res = await kit(`
+            const S=K.S(), e=K.e(); K.keysOff(); S.restT=99; e.hp=e.maxHp*(${li === 2} ? 0.3 : 0.9); S.ph=${li === 2 ? 3 : 1}; S.points='SKY'; S.held=false; S.craneT=0; S.weightT=0; S.skip.st='rest';
+            if (${li === 1}) { S.points='LOW'; e.mode='ride'; e.route='low'; K.M.hangOn(e,S,'low',S.G.mid); S.onLow=-99; S.lowVisit=1; } else { K.M.atCrown(e,S); e.mode='perch'; }
+            const lx = S.G.levers[${li}].x, dir = lx < S.G.mid ? 1 : -1; const n0 = JSON.stringify(S.n);
+            K.place(lx - dir * ${dist}, S.G.floorY); BK.P.face = dir; BK.P.vx = 0;
+            for (let t = 0; t < 4; t++) { BK.press('atk'); K.run(30); }
+            const after = { pts: S.points, mode: K.e().mode, skip: S.skip.st, craneT: +S.craneT.toFixed(1), n: S.n };
+            const ok = ${li} === 0 ? S.points === 'LOW' : ${li} === 1 ? (K.e().mode === 'slip' || K.e().mode === 'downed') : (S.skip.st !== 'rest' || S.craneT > 0);
+            return { ok, after: { pts: after.pts, mode: after.mode, skip: after.skip, craneT: after.craneT } };`);
+          rec[id] = res.ok ? 'OK' : 'NO ' + JSON.stringify(res.after);
+        }
+        out.push(rec); console.log(JSON.stringify(rec));
+      }
+      note.facts.push(['heroes', out]);
+    }
+    if (PART === 'softlock') {
+      const r = await kit(`
+        const S=K.S(), e=K.e(); K.keysOff(); K.place(S.G.mid, S.G.floorY);
+        const res = {};
+        const track = (frames) => { const modes = {}; let a0 = S.act, lastMode = ''; for (let i = 0; i < frames; i++) { K.run(1); const m = K.e() ? K.e().mode : 'dead'; modes[m] = (modes[m] || 0) + 1; } return { modes, acts: S.act - a0, alive: !!K.e() }; };
+        S.skyCut = 999; S.lowCut = 999; K.M.atCrown(e,S); e.mode='perch'; S.restT=0; res.bothCut = track(900);   /* 15 s: both lines parted */
+        S.skyCut = 0; S.lowCut = 0; e.hp = e.maxHp*0.9; res.afterRestring = track(600);
+        return res;`);
+      note.facts.push(['softlock', r]); console.log(JSON.stringify(r));
+    }
+    if (PART === 'perf') {
+      const r = await kit(`
+        const S = K.M.SKY2 ? K.S() : null, t = {}; K.keysOff(); const sim = () => { const a = performance.now(); BK.sim(1); const b = performance.now(); BK.step(1); const c = performance.now(); t.sim += b - a; t.step += c - b; t.n++; };
+        t.sim = 0; t.step = 0; t.n = 0; if (S) { K.place(S.G.mid, S.G.floorY); S.ph = 3; const e = K.e(); e.hp = e.maxHp * 0.3; }
+        for (let i = 0; i < 120; i++) sim(); t.sim = 0; t.step = 0; t.n = 0;
+        for (let i = 0; i < 900; i++) { BK.P.inv = 99; sim(); }
+        return { simMs: +(t.sim / t.n).toFixed(3), stepMs: +(t.step / t.n).toFixed(3), n: t.n, mode: S ? K.e().mode : BK.enemies().find(e => e.t === 'skyhook').mode };`).catch(e => ({ err: String(e) }));
+      note.facts.push(['perf', r]); console.log('perf', JSON.stringify(r));
     }
   }
   // ---- console errors
