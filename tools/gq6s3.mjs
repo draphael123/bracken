@@ -274,11 +274,20 @@ console.log('== Q. wiring (source)');
   ok(hands.includes('GS2.fireSpans') && hands.includes('GS2.final()'), 'the hands: the burnt-span fire tick + the final-only reshapes (rockfall 3, mountain, volley gap) are keyed to the final platform, not to every tier');
   ok(/export const GQ6S3_SHIPS = false/.test(rd('src/gq6s3.js')), 'GQ6S3_SHIPS = false'); }
 
-console.log('== P. draw cost (Highcrown\'s own bay fire, one call per visible span)');
+console.log('== P. draw cost (the burnt spans, baked: one shared flame sheet + one smoke sheet, a span = slab + glow + drawImage tiles + sparks)');
 { let art = null; try { art = await imp('src/redraw/gq3_art.js'); } catch (err) { say('     (gq3_art not importable in node: ' + String(err.message).slice(0, 60) + ')'); }
-  if (art && art.drawBay) { let n = 0; const g2 = new Proxy({}, { get: (_, k) => (k === 'fillStyle' || k === 'globalAlpha' ? 1 : () => { n++; }), set: () => true }); const w = fresh(); toTier(w, 3); const E2 = w.G2; let worst = 0, worstSpans = 0;
+  if (art && art.drawBay) { let n = 0, nb = 0; const mk = (cnt) => new Proxy({}, { get: (_, k) => (k === 'fillStyle' || k === 'globalAlpha' ? 1 : () => { cnt(); }), set: () => true });
+    const g2 = mk(() => { n++; }); const w = fresh(); toTier(w, 3); const E2 = w.G2; const spots = []; for (const cy of [20, 90, 150, 200]) for (const cx of [13800, 14100, 14400, 14700, 14900]) spots.push([cx, cy]);
     let bay = 0; { n = 0; art.drawBay(g2, 0, 96, 100, 'burn', 3.3, 0); bay = n; }
-    for (const cy of [20, 90, 150, 200]) for (const cx of [13800, 14100, 14400, 14700, 14900]) { n = 0; E2.draw(Object.assign(g2, {}), cx, cy, 3.3); worst = Math.max(worst, n); }
-    ok(worst > 0 && worst <= 1800, 'a frame with all 5 spans burning, worst of 20 camera spots (up to three stacked spans on screen): ' + worst + ' draw calls at the half-density flame step (a 96 px bay is ' + bay + ' at the full step; a span off the screen draws nothing, each is clipped to the 320 px screen)'); void worstSpans; }
+    /* A. node has no document: drawBayBaked returns false and the old per-span drawBay runs (the fallback) */
+    let fall = 0; for (const [cx, cy] of spots) { n = 0; E2.draw(g2, cx, cy, 3.3); fall = Math.max(fall, n); }
+    /* B. a document (a counting fake canvas): the baked path. bake calls land on the offscreen ctx (nb), drawn calls on the screen ctx (n) */
+    const had = globalThis.document; globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => mk(() => { nb++; }) }) };
+    const sp = E2.burns(); const states = ['smoke', 'burn']; let worst = 0, worstBake = 0, bakeTotal = 0;
+    for (const stt of states) { for (const b of sp) b.state = stt; nb = 0; let t = 3.3; for (let f = 0; f < 14; f++, t += 1 / 60) for (const [cx, cy] of spots) { n = 0; const nb0 = nb; E2.draw(g2, cx, cy, t); if (f >= 7) worst = Math.max(worst, n); worstBake = Math.max(worstBake, nb - nb0); } bakeTotal += nb; }
+    globalThis.document = had;
+    ok(worst > 0 && worst <= 600, 'BUDGET: a frame with all 5 spans (smoke, then burning), worst of 20 camera spots (up to three stacked spans on screen): ' + worst + ' screen canvas calls once baked (<= 600; was 1738 with drawBay at half density; one 96 px bay is ' + bay + ')');
+    ok(worstBake > 0 && worstBake <= 600, 'the one-time bake is spread: worst single frame ' + worstBake + ' offscreen calls (1 sheet frame per game frame), ' + bakeTotal + ' in all for both sheets, never rebuilt when a tier burns');
+    ok(fall > 0, 'no-document fallback draws with drawBay as before (' + fall + ' calls: node-only path)'); }
   else ok(true, 'draw not measured in node (browser owed)'); }
 console.log(fails ? 'FAIL gq6s3 ON (' + fails + ' of ' + checks + ')' : 'ok  gq6s3 ON (' + checks + ' checks)'); process.exit(fails ? 1 : 0);
