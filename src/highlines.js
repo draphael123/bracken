@@ -20,11 +20,13 @@
 // Landings are ONE-WAY decks (iron gantries / rock lips, art owed) so the node sweep (tools/highlines.mjs) and the page agree: nothing bonks a rider from below.
 import { endSupports } from './line-kit.js';   /* (claude/hlfix) what holds each rope end (a drawn mast, hanger or wall bracket) */
 export const HL = { W: 80, H: 240 };
-/* (claude/hlswitch, 11-12) THE SWITCH RULE, behind HL_SWITCH (default OFF: with it off every byte of this level is as before). ON: ONE BLOW starts a line and carries it the whole way (the kit's latch,
+/* (claude/hlswitch, 11-12) THE SWITCH RULE, behind HL_SWITCH (batch188: ships ON; ?hlsw=0 is the opt-out and every byte of the level is then as before). ON: ONE BLOW starts a line and carries it the whole way (the kit's latch,
    src/line-kit.js rule 'switch'), and LEVERS - never hold-UP - set the points (Daniel 11-12: levers only). A test door: globalThis.__HLSW = true (node) or ?hlsw=1 (page). */
 const hlswForced = () => { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (!g) return false; if (g.__HLSW === true) return true; return !!g.location && /[?&]hlsw=1(&|#|$)/.test(String(g.location.search || '')); };
-export const HL_SWITCH_DEFAULT = false;   /* THE ONE LINE TO FLIP (after Daniel plays it and slice A's art + browser proofs land) */
-export const HL_SWITCH = HL_SWITCH_DEFAULT || hlswForced();
+/* (batch188) THE OPT-OUT: ?hlsw=0 (page), globalThis.__HLSW = false or '0' (tools/cdp.mjs env BRACKEN_HLSW=0), process.env.BRACKEN_HLSW = '0' (node) = the old stroke rule, byte for byte (the level's flag-off data is never touched) */
+const hlswOptOut = () => { try { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (g && (g.__HLSW === false || g.__HLSW === '0')) return true; if (g && g.location && /[?&]hlsw=0(&|#|$)/.test(String(g.location.search || ''))) return true; } catch { /* no globals */ } try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_HLSW === '0') return true; } catch { /* no node */ } return false; };
+export const HL_SWITCH_DEFAULT = true;   /* (batch188) SHIPS ON: the switch rule (one blow, levers set the points); ?hlsw=0 is the lab OFF */
+export const HL_SWITCH = hlswForced() || (HL_SWITCH_DEFAULT && !hlswOptOut());
 const RULE_OLD = 'HANG ON AND STRIKE: EVERY BLOW HAULS A WINCH LINE UP AND THE RATCHET HOLDS YOU. MISS A LINE AND YOU DROP A LEVEL.';
 export const RULE_SW = 'STRIKE ONCE AND THE LINE CARRIES YOU UP. THE LEVERS SET THE POINTS: READ THE LAMPS. MISS A LINE AND YOU DROP A LEVEL.';
 export const RULE = HL_SWITCH ? RULE_SW : RULE_OLD;

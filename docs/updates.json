@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-11-14",
+    "batch": 188,
+    "lines": [
+      { "s": "The High Lines: one blow starts a line, and it carries you all the way up.", "lv": ["highlines"] },
+      { "s": "Levers set the points: strike or shoot one, and the lamp shows where the line goes.", "lv": ["highlines"] },
+      { "s": "The ambush has a way round the saw, and the exam has a sheltered lee route.", "lv": ["highlines"] },
+      { "s": "The gorge glides now wait for your blow, so you pick your gust.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-14",
     "batch": 187,
     "lines": [
       { "s": "Enemy health bars now show what your last hit took: a white chunk, then it drains away.", "lv": [] },
