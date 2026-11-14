@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-14",
+    "batch": 189,
+    "lines": [
+      { "s": "The High Lines: Skyhook's arena is now the mouth of a rock cave, not a brick hall.", "lv": ["highlines"] },
+      { "s": "Ore-road rails run out under hung lamps to a small patch of daylight.", "lv": ["highlines"] },
+      { "s": "The fight is unchanged; every tell and lever reads against the darker stone.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-14",
     "batch": 188,
     "lines": [
       { "s": "The High Lines: one blow starts a line, and it carries you all the way up.", "lv": ["highlines"] },
