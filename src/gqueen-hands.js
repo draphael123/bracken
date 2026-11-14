@@ -463,6 +463,9 @@ export function makeGQueenHands(ctx) {
       seats(P1 => { if (!P1.dead && P1.ground && P1.y >= RA.floor - 3 && P1.x >= sp[0] * TS && P1.x <= (sp[1] + 1) * TS) {
         P1.gqFireT = (P1.gqFireT ?? 0.4) - dt; if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; gqRed(P1.x, G.esc.fire, 'THE BURNING ROOF', { spare: true, noKnock: true }); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, RA.floor - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); } } });
     });
+    // ---- (claude/gq6s3) THE BURNT SPANS: a floor the climb has set alight stays a fire floor (the bay rule: 3 hp / 0.8 s and a push up; spare - it never kills). A hero on a ladder or in the air is not on it. ----
+    if (GS2 && GS2.fireSpans) for (const sp of GS2.fireSpans()) seats(P1 => { if (!P1.dead && P1.ground && Math.abs(P1.y - sp.y) <= 3 && P1.x >= sp.x0 && P1.x <= sp.x1) {
+      P1.gqFireT = (P1.gqFireT ?? 0.4) - dt; if (P1.gqFireT <= 0) { P1.gqFireT = G.esc.fireEvery; gqRed(P1.x, G.esc.fire, 'THE BURNING ROOF', { spare: true, noKnock: true }); P1.vy = -G.esc.push; P1.ground = false; ctx.burst(P1.x, sp.y - 2, 6, ['#ff9a5c', '#ffd36b', '#ff6b2c'], 60, 0.4); } } });
     // ---- DESPERATION: the portal storm - the five rings light in order and each fans three shards; she stumbles out of the cupola ring ----
     const ps = R0.pstorm;
     if (ps) {
@@ -960,7 +963,8 @@ export function makeGQueenHands(ctx) {
   GS2 = S2 ? makeGQ6S2({ TS, ctx, L, q, now, seats, everyone, sfx, R0: () => (S ? S.roof : null), setCrown: c => { S.crown = c; },
     clearShards: () => { for (const r of S.rocks) if (r.p2) r.dead = true; },   /* her stones in the air are gone when she goes up */
     cullAdds: () => { const e0 = q(); if (!e0) return; for (const q2 of ctx.enemies()) if (q2.alive && q2 !== e0 && !q2.mini && (q2.t === 'soldier' || q2.t === 'javelin') && Math.abs(q2.x - e0.x) < 900) { q2.alive = false; ctx.burst(q2.x, q2.y - 14, 8, ['#8fd160', '#5a8a3a'], 60, 0.4); } },   /* reinforcements are dropped up there */
-    perchIdle: () => !G52 || (G52.perchPhase() === 'idle' && !G52.hatchBusy()) }) : null;
+    perchIdle: () => !G52 || (G52.perchPhase() === 'idle' && !G52.hatchBusy()),
+    art: GQ3A, setRespawn: r => { const A0 = L() && L().arena; if (!A0) return; if (r) A0.respawn = r; else delete A0.respawn; } }) : null;   /* (claude/gq6s3) the bay fire's art; a downed seat comes back on her tier (src/main.js bleedBack) */
   H.gq6s2 = () => GS2;
   H.q52 = () => G52; H.q52Ward = (e, fx) => (G52 ? G52.ward(e, fx) : false); H.q52Take = (e, dmg, tag) => (G52 ? G52.take(e, dmg, tag) : dmg);
   H.q5 = () => G5; H.q5Scorch = (e, plunge) => (G5 ? G5.onHurt(e, plunge) : false); H.q5Take = (e, dmg, tag) => (G5 ? G5.take(e, dmg, tag) : dmg);
@@ -1000,7 +1004,7 @@ export function makeGQueenHands(ctx) {
     P4.vol = { rings: lvlRings(two ? 2 : 1), at: now() + Q4N.p2.volley.tell }; e.mode = 'volleyTell'; e.modeT = Q4N.p2.volley.tell; ctx.number(e.x, e.y - e.h - 12, '!', '#ffd36b'); sfx('crack');
   }
   function volleyFire(e, v, glint) {
-    const P0 = target(), P4 = S.roof.q4, V = Q4N.p2.volley; if (GS2 && GS2.active() && !v && P4.vol && P4.vol.rings.length > 1) { P4.volTwo = { at: now() + S2N.volley.gap, rings: P4.vol.rings.slice(1) }; P4.vol = { rings: P4.vol.rings.slice(0, 1) }; }   /* (claude/gq6s2) the second ring fires 0.4 s after the first */ for (const o of (P4.vol ? P4.vol.rings : [])) { const p = ringPos(o.r), px = p.x, py = p.y - 14, base = Math.atan2(P0.y - 8 - py, P0.x - px);
+    const P0 = target(), P4 = S.roof.q4, V = Q4N.p2.volley; if (GS2 && GS2.final() && !v && P4.vol && P4.vol.rings.length > 1) { P4.volTwo = { at: now() + S2N.volley.gap, rings: P4.vol.rings.slice(1) }; P4.vol = { rings: P4.vol.rings.slice(0, 1) }; }   /* (claude/gq6s2) the second ring fires 0.4 s after the first */ for (const o of (P4.vol ? P4.vol.rings : [])) { const p = ringPos(o.r), px = p.x, py = p.y - 14, base = Math.atan2(P0.y - 8 - py, P0.x - px);
       for (let k = 0; k < V.n; k++) { const a = base + (k - (V.n - 1) / 2) * G.portal.spread * Math.PI / 180; addShard({ x: px, y: py, vx: Math.cos(a) * (v || V.v), vy: Math.sin(a) * (v || V.v), dmg: V.dmg, glint: !!glint }); }
       ctx.burst(px, py, 8, ['#b28cff', '#e8dcff', '#8a8a9c'], 60, 0.4); }
     sfx('crack'); P4.volLit = { until: now() + 0.3, rings: P4.vol ? P4.vol.rings.map(o => o.r.id) : [] }; P4.vol = null;
@@ -1013,7 +1017,7 @@ export function makeGQueenHands(ctx) {
     const P4 = S.roof.q4; P4.rockCd = Q4N.p2.rockfall.cd; e.mode = 'rockfallTell'; e.modeT = Q4N.p2.rockfall.tell; e.vx = 0; ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); sfx('rumble');
   }
   function rockfallFire(tg) {
-    const A = RAr(), P4 = S.roof.q4, RF = Q4N.p2.rockfall, pf = !!(GS2 && GS2.active()), xs = pf ? pfRockXs(A.x0, A.x1, tg.x) : [tg.x]; let guard = 0;   /* (claude/gq6s2) the platform: 3 rocks, one on you, two >= 40 px from you and each other */
+    const A = RAr(), P4 = S.roof.q4, RF = Q4N.p2.rockfall, pf = !!(GS2 && GS2.final()), xs = pf ? pfRockXs(A.x0, A.x1, tg.x) : [tg.x]; let guard = 0;   /* (claude/gq6s2) the platform: 3 rocks, one on you, two >= 40 px from you and each other */
     while (!pf && xs.length < RF.n && guard++ < 60) { const x = A.x0 + 24 + Math.random() * (A.x1 - A.x0 - 48); if (xs.every(o => Math.abs(o - x) >= 26)) xs.push(x); }
     xs.sort(() => Math.random() - 0.5); const t0 = now(); P4.fall = (P4.fall || []).concat(xs.map((x, i) => ({ x, at: t0 + RF.shadow + i * 0.1, t0, done: false, until: 0 })));
   }
@@ -1027,7 +1031,7 @@ export function makeGQueenHands(ctx) {
   }
   function startMountain(e) {
     const P4 = S.roof.q4, M = mtnN(), A = RAr(), P0 = target(); P4.mtnCd = M.cd; e.mode = 'mountainTell'; e.modeT = M.tell; e.vx = 0;
-    P4.mtn = { t0: now() + M.tell, gapX: GS2 && GS2.active() ? pfMtnGap(A.x0, A.x1, P0.x, Math.random() < 0.5 ? -1 : 1) : Math.max(A.x0 + 40, Math.min(A.x1 - 40, P0.x + (Math.random() < 0.5 ? -1 : 1) * 60)), state: 'tell', cols: null, geode: null };
+    P4.mtn = { t0: now() + M.tell, gapX: GS2 && GS2.final() ? pfMtnGap(A.x0, A.x1, P0.x, Math.random() < 0.5 ? -1 : 1) : Math.max(A.x0 + 40, Math.min(A.x1 - 40, P0.x + (Math.random() < 0.5 ? -1 : 1) * 60)), state: 'tell', cols: null, geode: null };
     ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); sfx('rumble');
   }
   /* what her modes do (roofStep calls this before its own switch; the hall's two (hearth, reach) are in H.mode) */

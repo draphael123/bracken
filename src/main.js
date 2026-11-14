@@ -1871,7 +1871,7 @@ function bleedBack() {
   const A = bossActive ? L.arena : miniActive ? L.mini : null, inFight = A && Number.isFinite(A.wallL) && Number.isFinite(A.floor);
   coopWakeBody();
   p.down = 0; p.reviveT = 0; p.dead = 0; p.killer = null; p.inv = 2; if (p.ai) p.aiS = null; PINGS.drop(p.n);
-  if (inFight) { p.x = (A.wallL + 2) * TS + 8; p.y = A.floor; if (moveBodyClear(p)) { p.x = checkpoint.x; p.y = checkpoint.y; } }   /* the walls are shut: he is let back in at the arena's entry, not locked out at the shrine */
+  if (inFight) { p.x = A.respawn ? A.respawn.x : (A.wallL + 2) * TS + 8; p.y = A.respawn ? A.respawn.y : A.floor; if (moveBodyClear(p)) { p.x = checkpoint.x; p.y = checkpoint.y; } }   /* the walls are shut: he is let back in at the arena's entry, not locked out at the shrine */
   SFX.mend(); ringAt(p.x, p.y - 10, 20, '#c9d1dc', 0.4); motes(p.x, p.y - 10, 10, 8);
   number(p.x, p.y - 36, inFight ? 'BACK IN THE FIGHT' : 'BACK AT THE SHRINE', '#ff6b6b'); callout(PARTY.tagOf(p) + (inFight ? ' RETURNS' : ' WAKES AT THE SHRINE'));
 }
@@ -8117,6 +8117,7 @@ const MOVE_WORDS = new Set(['STRIKE HER STONES BACK AT HER', 'AND WHEN SHE HIDES
 const moveWord = t => MOVE_WORDS.has(t) || (m => !!m && MOVE_WORDS.has(m[1]))(/^(\D*?)\d[\d.]*$/.exec(t));   /* (claude/smallfix10) a move word + a trailing number ('GREAT ARROW x2.0', 'CHAIN 3') floats as its stem, listed in MOVE_WORDS with the space / x kept */
 for (const w of KI_WORDS) MOVE_WORDS.add(w);
 for (const w of ['THE BELL-CAGE ROOF', 'UP THE LADDER!', 'SHE WAITS ABOVE', 'THE TOWER LIFTS YOU', 'REFLECT HER STONES']) MOVE_WORDS.add(w);   /* (claude/gq6s2) the final platform's told words (src/gq6s2.js S2N.words) */
+for (const w of ['THE FIRE CLIMBS - GO UP!', 'SHE CLIMBS', 'THE HOARDINGS', 'THE BELL LOFT', 'THE LADDER FOOT HOLDS']) MOVE_WORDS.add(w);   /* (claude/gq6s3) the burning climb's told words (src/gq6s3.js S3N.words) */
 for (const w of Object.values(LANCE_WORD)) MOVE_WORDS.add(w);   /* (claude/lance4) THE QUEEN'S LANCE's move words float over him (HE CHARGES, SPEARS, STONES...) */
 for (const w of [...GORM_WORDS, ...Object.values(RBM.RB_SAY)]) MOVE_WORDS.add(w);   /* (claude/gorm2) KING GORM 2's short words float over the spot (CAUGHT, WARDED, HIGH: DUCK...) */
 for (const w of [...FOA.WORDS, ...TA.WORDS, 'THROWN BACK']) MOVE_WORDS.add(w);   /* (claude/foepass) the affix's shell, a told attack answered OVER / UNDER it, and the Death Knight's ward-release parry (it said RETURNED, which was never drawn) */   /* (claude/knockinto) INTO THE SPIKES / OFF THE EDGE / INTO THE FIRE ...: what a throw ended in is said */

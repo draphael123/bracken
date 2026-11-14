@@ -4,7 +4,7 @@
 //   P1       THE HEARTH JET (told 1.0 s '!!', jet 0.6 s at knee height, 16, a jumper or a gallery is spared) and THE SCEPTRE REACH (told 0.8 s '!', chest height 14, duck / parry = STAGGERED 1.5 s x1.15)
 //   P2       hp2 1500, chip 0.4; a shard struck home = 3% + flinch; 6 inside 10 s = DAZED 2.5 s then a 3 s WARD (shards glance); SHARD VOLLEY (3 shards, 240 px/s, 4; two rings under 60%), PORTAL BOULDER (9, bursts
 //            into 3 hanging shards), ROCKFALL (6 shadows, 6 each), BOMBARDMENT at 70 / 45% (6 s), BLINK = movement only, ENRAGE at 25% (once, told 2.0 s, tempo, THE MOUNTAIN FALLS), the 9-shard cap
-process.env.BRACKEN_GQ6S2 = '0';   /* (claude/gq6s2) this tool proves the DECK fight (the hatch, the rage on the deck, the perch); the final platform is proved by tools/gq6s2.mjs */
+process.env.BRACKEN_GQ6S3 = '0'; process.env.BRACKEN_GQ6S2 = '0';   /* (claude/gq6s2) this tool proves the DECK fight (the hatch, the rage on the deck, the perch); the final platform is proved by tools/gq6s2.mjs */
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

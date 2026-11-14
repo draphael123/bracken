@@ -232,14 +232,14 @@ export function drawCupola(g, x0, x1, solidTop, fx0, fx1, fr, cx, cy, t) {
   R(g, bx - 1, FY - 9, 3, 9, '#e0b040'); px(g, bx, FY - 10, '#fff6c8'); R(g, bx - 3, FY - 4, 7, 2, '#a0781c'); px(g, bx, FY - 6, '#c9463d');                    // a gold finial with a stone
 }
 // a bay's floor span (x0..x1 world px, fy = deck top): idle = a timber hatch-board set in the slates (so you can tell which bay it is), smoke = soot and a red seam and smoke, burn = alight
-export function drawBay(g, x0, x1, fy, state, t, i = 0) {
+export function drawBay(g, x0, x1, fy, state, t, i = 0, step = 7, wstep = 10) {   /* (claude/gq6s3) step / wstep: a wide burnt span (the climb's) draws every 2nd flame / smoke column - the default is the bay's own */
   x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
   if (state === 'idle') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#2a1a10'); R(g, x0 + 2, fy, x1 - x0 - 4, 1, '#6a4a2a'); for (let x = x0 + 8; x < x1 - 4; x += 8) R(g, x, fy + 1, 1, 3, '#0e0806'); for (const x of [x0 + 5, x1 - 7]) { R(g, x, fy + 1, 2, 2, '#9a9ab0'); }   // oak boards, iron nailed
     R(g, x0, fy - 1, 3, 5, S.dk); R(g, x1 - 3, fy - 1, 3, 5, S.dk); return; }
   if (state === 'smoke') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1);
-    for (let x = x0 + 4; x < x1 - 4; x += 10) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
+    for (let x = x0 + 4; x < x1 - 4; x += wstep) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
   R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); alpha(g, 0.28); R(g, x0 - 6, fy - 30, x1 - x0 + 12, 30, '#ff6b2c'); alpha(g, 1);
-  for (let x = x0 + 4; x < x1 - 2; x += 7) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
+  for (let x = x0 + 4; x < x1 - 2; x += step) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0) + (step > 7 ? 3 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
   for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1);
 }
 // THE ROOF BACK, the new tower top's: over the shared night (GQA.drawRoofBack), behind the deck - two spires and the old bell turret in silhouette far off, and straight up out of the hatch the tower's own fire, a column of smoke and sparks (world x hx)
