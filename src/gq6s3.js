@@ -25,7 +25,7 @@ export const S3N = {
   steps: [0.85, 0.70, 0.50],     // her bar at which tier 0 / 1 / 2 burns away (Daniel: 85 / 70 / 50)
   gapMin: 4,                     // s between two steps (a threshold waits until she is free, like the rage)
   tell: 3.0, climbTell: 0.6,     // s: the told burn (smoulder), and the last stretch of it where she says "SHE CLIMBS"
-  liftHold: 60, liftOn: 45,      // s: the last-resort lift (a seat still below at the end of the hold / nobody on the tier after a fall)
+  liftHold: 30, liftOn: 20,      // s: the last-resort lift (a seat still below at the end of the hold / nobody on the tier after a fall)
   slack: 12, up: 54,             // a hero is 'on' a tier within slack px of its ends (the ladder's top rung stands 8 px outside) and up <= 54 px over its floor (a jump is 51 px); the ladder's own tier is 64 px up
   arriveIn: 120,                 // px in from the end of the hero's side where she lands
   ladRows: { t1: 4, t2: 4, fin: 5 },   // rungs per ladder (the top rung is at the floor row)
