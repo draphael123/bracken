@@ -116,6 +116,7 @@ export async function openPage(opts = {}) {
   if (process.env.BRACKEN_GQ4P === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4P=true' });   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (src/gq4p.js gq4pOn) */
   if (process.env.BRACKEN_GQ4L === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4L=true' });   /* (claude/gq4l) Highcrown pass 4's level half (src/gq4l.js gq4lOn): from the first script of every document */
   if (process.env.BRACKEN_GQ6GEO === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6GEO=true' });   /* (claude/gq6geo) three more Geomancers in Highcrown (src/gq6geo.js gq6geoOn) */
+  if (process.env.BRACKEN_GQ6GEO === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6GEO=false' });   /* (batch184) ships ON: =0 is the lab OFF (the old Highcrown) */
   if (process.env.BRACKEN_GQ6CALL === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6CALL=true' });   /* (claude/gq6geo) THE GEODE CALL (src/gq6geo.js gq6callOn) */
   if (process.env.BRACKEN_GQ4Q === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4Q=true' });   /* (claude/gq4q) the Queen's pass 4 (src/gq4q.js gq4qOn) */
   if (process.env.BRACKEN_GQ5P === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5P=false' });   /* (claude/prepgq5p) ships ON: =0 is the lab OFF */

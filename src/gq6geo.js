@@ -1,4 +1,4 @@
-// src/gq6geo.js - GQ6GEO + GQ6CALL: MORE GOBLIN GEOMANCERS IN HIGHCROWN, AND THEIR SECOND ATTACK (Daniel 11-13, scratch/brief-gq6-1113.md item 6; plan scratch/lane-reports/gq6-plan.md section C).
+﻿// src/gq6geo.js - GQ6GEO + GQ6CALL: MORE GOBLIN GEOMANCERS IN HIGHCROWN, AND THEIR SECOND ATTACK (Daniel 11-13, scratch/brief-gq6-1113.md item 6; plan scratch/lane-reports/gq6-plan.md section C).
 // TWO SWITCHES, each default OFF (OFF = master's Highcrown cell for cell, foe for foe):
 //   GQ6GEO_SHIPS   (slice S1, placement) three more Geomancers: THE CRAG WALK (a pier ledge over the climb at 128), THE BAKEHOUSE YARD (a pier ledge over the yard's top walk at 295),
 //                  THE KEEP (a chain landing in the tall hall at 400). Level data only (src/gobgeo-level.js); no new art, no new rule. 10 -> 13 Geomancers.
@@ -6,9 +6,13 @@
 //                  HANGING SHARDS; any hero blow or shot sends one home to him (stagger 1.4 s + his own rock's damage). Rules in src/gob-geomancer.js, hands in src/gobgeo-hands.js.
 //                  ART BEFORE LIVE: this flag cannot ship until the art lane has drawn the two poses (scratch/lane-reports/gq6geo.md lists them).
 // The override for review and the lanes: ?gq6geo=1 / ?gq6call=1 on the page, globalThis.BRACKEN_GQ6GEO / BRACKEN_GQ6CALL = true (tools/cdp.mjs sets them from the env), or the same names = '1' in a Node tool's env.
-export const GQ6GEO_SHIPS = false;
+export const GQ6GEO_SHIPS = true;
 export const GQ6CALL_SHIPS = false;
 function flag(ships, name, query) {
+  /* the lab OFF override (GQ6GEO ships ON since batch184): ?gq6geo=0 / globalThis.BRACKEN_GQ6GEO = false or '0' / env =0 = the old Highcrown cell for cell */
+  try { if (globalThis[name] === false || globalThis[name] === '0') return false; } catch { /* no global */ }
+  try { if (typeof location !== 'undefined' && new RegExp('[?&]' + query + '=0(?![0-9])').test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof process !== 'undefined' && process.env && process.env[name] === '0') return false; } catch { /* no node */ }
   if (ships) return true;
   try { if (globalThis[name] === true || globalThis[name] === '1') return true; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && new RegExp('[?&]' + query + '=1(?![0-9])').test(location.search || '')) return true; } catch { /* no page */ }

@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-13",
+    "batch": 184,
+    "lines": [
+      { "s": "Three more goblin geomancers hold the high ground in Highcrown.", "lv": ["crown"] },
+      { "s": "Watch the Crag Walk, the Bakehouse Yard and the Keep for stones from above.", "lv": ["crown"] },
+      { "s": "Strike a thrown stone back and it knocks the geomancer off his feet.", "lv": ["crown"] }
+    ]
+  },
+  {
+    "date": "2026-11-13",
     "batch": 183,
     "lines": [
       { "s": "The Goblin Queen's roof fight starts at once: she stands in front of you.", "lv": ["crown"] },

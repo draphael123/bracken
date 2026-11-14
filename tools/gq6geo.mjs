@@ -22,17 +22,18 @@ const hashOf = (L0) => createHash('sha1').update(JSON.stringify([L0.W, L0.H, Arr
 const geos = () => L.ents.filter(e => e.t === 'gobgeo');
 const NEW = ['CRAG', 'BAKE', 'KEEP'].map(k => ({ k, ...GEO6[k] }));
 
-if (!G6GEO) {
+const self = new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1').replace(/%20/g, ' ');
+if (!G6GEO) {   /* the lab OFF (ships ON since batch184): BRACKEN_GQ6GEO=0 */
   ok(hashOf(L) === LQ.levelHash(lv), 'the tool hashes a level exactly as tools/level-quality.mjs does');
   ok(LQ.levelHash(lv) === MASTER_HASH, 'FLAG OFF: Highcrown is master cell for cell (hash ' + LQ.levelHash(lv) + ')');
   ok(geos().length === 10, 'ten Geomancers today (' + geos().length + ')');
   for (const P of NEW) ok(!geos().some(e => e.x === P.geo), P.k + ': nobody at column ' + P.geo);
   ok(!(L.routeSupports || []).some(s => NEW.some(P => s.x === P.ledge[0] && s.y === P.ledge[2])), 'no piers or chains laid');
   console.log('gq6geo OFF: ' + n + ' checks');
-  const r = spawnSync(process.execPath, [new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1').replace(/%20/g, ' ')], { env: { ...process.env, BRACKEN_GQ6GEO: '1' }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  process.stdout.write(r.stdout || ''); if (r.status !== 0) { process.stderr.write(r.stderr || ''); process.exit(r.status || 1); }
   process.exit(0);
 }
+{ const r = spawnSync(process.execPath, [self], { env: { ...process.env, BRACKEN_GQ6GEO: '0' }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  process.stdout.write(r.stdout || ''); if (r.status !== 0) { process.stderr.write(r.stderr || ''); process.exit(r.status || 1); } }
 
 /* ---------------- ON ---------------- */
 const W = L.W, g = (x, y) => (x < 0 || y < 0 || x >= W || y >= L.H) ? T.SOLID : L.grid[y * W + x];
