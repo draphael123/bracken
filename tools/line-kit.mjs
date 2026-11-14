@@ -467,4 +467,4 @@ function sweep(hero, seats, lab = labOK) {
 }
 
 console.log('line-kit: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');
-// batch189: touched so the QUICK gate runs this check beside the cave-backdrop draw change
+// batch190: touched so the QUICK gate runs this check beside the HL_FIX3 flip (carts wait, nets, five shrines)

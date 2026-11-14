@@ -874,14 +874,14 @@
   "lostPct": 234
  },
  "highlines": {
-  "hash": "4c3c692b3e92",
+  "hash": "1ccc0f832f18",
   "hero": "knight",
   "steps": 30000,
   "runs": 6,
   "hits": 0,
   "deaths": 0,
   "kills": 0,
-  "lifts": 132,
+  "lifts": 150,
   "walked": 100,
   "bare": true,
   "seed": 1,

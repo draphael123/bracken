@@ -293,12 +293,13 @@ function partyNear(bodies, aboard, cx, tops) {
 }
 function cabStep(kit, c, bodies, dt, ev) {
   const home = kit.lines[c.home], x0 = c.x - LK.CAB_W / 2, x1 = c.x + LK.CAB_W / 2, f0 = cabFloor(c);
-  const seats = (bodies || []).filter(b => onTop(b, x0, x1, f0)).length;
+  const sat = b => onTop(b, x0, x1, f0) && !(kit.fix3 && (c.st === 'rest' || c.st === 'board') && b.x < c.x - 4);   /* (hlfix3 look fix) the home cab's left half overlaps the station's last tile: a hero standing on that rim is not aboard (the cab would leave without carrying him) */
+  const seats = (bodies || []).filter(sat).length;
   c.emptyT = seats ? 0 : c.emptyT + dt;
   const ox = c.x, oy = c.hookY;
   if (c.st === 'rest') { if (seats && !(home.cut > 0)) { c.st = 'board'; c.t = LK.CAB_BOARD; c.wait = 0; ev.push({ t: 'cabBoard', id: c.home }); } }
   else if (c.st === 'board') { if (!seats) { c.st = 'rest'; c.wait = 0; } else if ((c.t -= dt) <= 0) {
-      if (kit.fix3 && c.wait < LK.PARTY_WAIT && partyNear(bodies, b => onTop(b, x0, x1, f0), c.x, [f0])) { if (!c.wait) ev.push({ t: 'cabWait', id: c.home }); c.wait += dt; }   /* (hlfix3) a hero is aboard: the beat, then up to PARTY_WAIT more for the others coming */
+      if (kit.fix3 && c.wait < LK.PARTY_WAIT && partyNear(bodies, sat, c.x, [f0])) { if (!c.wait) ev.push({ t: 'cabWait', id: c.home }); c.wait += dt; }   /* (hlfix3) a hero is aboard: the beat, then up to PARTY_WAIT more for the others coming */
       else { c.st = 'run'; ev.push({ t: 'cabGo', id: c.home }); } } }
   else if (c.st === 'run') {
     const z = kit.lines[c.on], sp = c.on === c.home ? LK.CAB_SPEED : Math.min(z.speed, LK.CAB_ONTO);

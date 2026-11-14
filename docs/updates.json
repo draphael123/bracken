@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-11-14",
+    "batch": 190,
+    "lines": [
+      { "s": "The High Lines: the gondola and the cage now wait until a hero is aboard.", "lv": ["highlines"] },
+      { "s": "In co-op the car holds a moment for a partner who is close.", "lv": ["highlines"] },
+      { "s": "A missed line drops you into a net: it costs 10% health, never your last point.", "lv": ["highlines"] },
+      { "s": "Strike on the net and its winch hauls you back to the ledge you fell from.", "lv": ["highlines"] },
+      { "s": "Five shrines now stand on the main climb, so a death costs less ground.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-14",
     "batch": 189,
     "lines": [
       { "s": "The High Lines: Skyhook's arena is now the mouth of a rock cave, not a brick hall.", "lv": ["highlines"] },

@@ -64,7 +64,7 @@ export function makeHighLinesHands(c) {
     if (P.dead || P.down > 0) { if (P.lk) { P.lk = null; P.lkHeld = false; } if (P.hlNet) P.hlNet.haul = null; return; }
     if (net && net.on) {   /* (hlfix3) THE FALL NET and THE RETURN WINCH: the catch costs a tenth of max hp (never the last hp) and a grace; strike or interact on the net and the winch hauls him to the ledge he fell from */
       const S = P.hlNet, onNet = !!(S && S.net >= 0 && !S.haul); let auto = false;
-      if (P.ai && S) { S.nt = onNet ? (S.nt || 0) + dt : 0; auto = S.nt > 1.2; }   /* the AI partner takes the winch itself */
+      if (P.ai && S) { if (onNet) S.nt = (S.nt || 0) + dt; else if (S.haul || (P.ground && !(S.net >= 0))) S.nt = 0; auto = S.nt > 1.2; }   /* (look fix) the partner hops on the net trying to rejoin the leader: the clock runs while he stands on it and only the haul or a deck resets it, not every hop */   /* the AI partner takes the winch itself */
       for (const e of netSeat(net, P, { strike: !!pr.atk || auto, talk: !!pr.talk }, dt)) {
         if (e.t === 'netLand') { sfx('thud'); c.shake && c.shake(3); c.number(P.x, P.y - 34, '-' + e.cost, '#ff9a5c'); say(HLX_SAY_FX.net, P.x, P.y - 50); }
         else if (e.t === 'haulStart') sfx('ratchet'); else if (e.t === 'haulEnd') sfx('pStep'); }
