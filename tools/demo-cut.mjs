@@ -142,9 +142,9 @@ console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption a
   assert.equal(TZ.SCENES.length, 5, 'five teaser vignettes'); assert.deepEqual(TZ.SCENES.map(x => x.label), ['THE BURIED CITY', 'HIGHCROWN', 'THE LONG WATER', 'THE DRAKE', 'THE DEMON KING']);
   const ids = new Set();
   for (const sc of TZ.SCENES) { assert.ok(!ids.has(sc.id), 'unique scene id ' + sc.id); ids.add(sc.id); assert.ok(/^[A-Z' ]+$/.test(sc.label), 'caption charset (pixel font): ' + sc.label);
-    const a = TZ.bake(sc.id), b = TZ.bake(sc.id); assert.equal(a.px.length, TZ.W * TZ.H * 4); assert.ok(Buffer.from(a.px).equals(Buffer.from(b.px)), sc.id + ' bakes the same bytes every time');
+    const a = TZ.bake(sc.id), b = TZ.bake(sc.id); assert.equal(a.px.length, a.w * a.h * 4); assert.ok((a.w === TZ.W && a.h === TZ.H) || (a.w === TZ.VW && a.h === TZ.VH), sc.id + ' is a known picture size'); assert.ok(a.w * 9 === a.h * 16, sc.id + ' is 16:9 (the card shows every canvas at 16:9)'); assert.ok(Buffer.from(a.px).equals(Buffer.from(b.px)), sc.id + ' bakes the same bytes every time');
     let opaque = 0; const cols = new Set(); for (let i = 0; i < a.px.length; i += 4) { if (a.px[i + 3] === 255) opaque++; cols.add(a.px[i] << 16 | a.px[i + 1] << 8 | a.px[i + 2]); }
-    assert.equal(opaque, TZ.W * TZ.H, sc.id + ' paints every pixel'); assert.ok(cols.size >= 8 && cols.size <= 400, sc.id + ' is a real picture, not a flat fill (' + cols.size + ' colours)'); }
+    assert.equal(opaque, a.w * a.h, sc.id + ' paints every pixel'); assert.ok(cols.size >= 8 && cols.size <= 400, sc.id + ' is a real picture, not a flat fill (' + cols.size + ' colours)'); }
   assert.throws(() => TZ.bake('nope'), /no such teaser scene/);
   assert.equal(CFG.FOLLOW_URL, 'https://draphael123.itch.io/thornroad', 'the itch page (Daniel 11-08)'); assert.equal(DE.followUrlOk(), true, 'set URL: live follow button');
   for (const bad of ['', 'http://x.io/a', 'javascript:alert(1)', 'https://', 'https://a b', 'itch.io/x']) assert.equal(DE.followUrlOk(bad), false, 'refused: "' + bad + '"');
@@ -152,8 +152,9 @@ console.log('ok  MENUS   five demo heroes (pick + store rows), the map caption a
   const src = readFileSync(new URL('../src/demo-end.js', import.meta.url), 'utf8');
   assert.ok(src.includes('b.disabled = true') && src.includes('CFG.SOON_BTN') && src.includes("window.open(u, '_blank', 'noopener,noreferrer')"), 'blank: a shut COMING SOON button; set: opens noopener');
   assert.ok(src.includes('KEEP YOUR PROGRESS') && src.includes('H.keep()') && src.includes('H.feedback()') && src.includes('H.credits()'), 'KEEP YOUR PROGRESS / GIVE FEEDBACK / CREDITS are still wired');
-  assert.ok(!/<img|\.png|\.jpg|fetch\(/.test(readFileSync(new URL('../src/demo-teaser.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')), 'the vignettes ship as code: no image file, no fetch');
-  console.log('ok  CARD2   5 baked vignettes (deterministic, fully painted), follow button live (FOLLOW_URL = the itch page), refuses non-https'); }
+  assert.ok(!/<img|\.png|\.jpg|fetch\(/.test(readFileSync(new URL('../src/demo-teaser.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')), 'the pictures ship as code: no image file, no fetch');
+  assert.deepEqual(TZ.SCENES.filter(sc => TZ.bake(sc.id).w === TZ.W).map(sc => sc.id), ['desert', 'crown', 'water', 'drake'], 'four real stills (the Demon King has no art yet: his vignette stays)');
+  console.log('ok  CARD2   4 real stills + 1 vignette (deterministic, fully painted, 16:9), follow button live (FOLLOW_URL = the itch page), refuses non-https'); }
 /* ---- NAMES ---- */
 const NEW_FILES = ['src/demo-flag.js', 'src/demo-save.js', 'src/demo-end.js', 'src/demo-end-config.js', 'src/demo-teaser.js', 'tools/demo-cut.mjs', 'tools/demo-save-carry.mjs'];
 const ADBLOCK = /(^|[^a-z])(ad|ads|adv|advert|admiral|banner|sponsor|track|tracker|tracking|analytics|beacon|pixel|promo|popup|affiliate|click|stats)([^a-z]|$)/i;
