@@ -3,6 +3,7 @@
 //   and every way out lets it go (lift(false)): her death, every hero down, a death / retry / level load (H.reset, H.load), the fight ending, the stage left.
 //   node tools/gqmusic.mjs
 import { readFileSync } from 'node:fs';
+process.env.BRACKEN_GQ6S3 = '0'; process.env.BRACKEN_GQ6S2 = '0';   /* (batch186) this tool proves the DECK fight's music steps (the portal storm on the deck); the final platform is proved by tools/gq6s2.mjs / gq6s3.mjs */
 const { Q4: Q4M } = await import('../src/gq4q.js');   /* (rel167) the flag, not the env: GQ4Q ships ON */
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
