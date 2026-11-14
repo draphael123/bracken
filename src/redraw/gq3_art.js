@@ -250,13 +250,14 @@ const bakeStep = (B, burn, quota = 1) => { if (B.done >= B.n || B.c === false ||
     if (burn) { for (let j = 0; j < 6; j++) { const x = 4 + 14 * j; drawFlame(g, x + 2, oy + B.base, 8 + 9 * wave(t, 9, x * 0.37) + 3 * wave(t, 5, x * 0.9) + 3, t, x * 0.5, 6); } }
     else { for (let j = 0; j < 5; j++) { const x = 4 + 20 * j, ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), oy + B.base - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); } } };
 // a baked span: x0..x1 in screen px (NOT clipped), fy = deck top, state 'smoke' | 'burn'
-export function drawBayBaked(g, x0, x1, fy, state, t, i = 0) {
+export function drawBayBaked(g, x0, x1, fy, state, t, i = 0, VWd = 320) {   /* (claude/gq6s23look) VWd = the picture's real width (the Queen's fight draws a 629 px wide view: the 328 clip drew nothing right of x 328) */
+  const RE = VWd + 8;
   const burn = state !== 'smoke', B = burn ? BK.burn : BK.smoke; if (t !== bakeT) { bakeT = t; if (BK.smoke.done < BK.smoke.n && !burn) bakeStep(BK.smoke, false); else bakeStep(BK.burn, true); if (!B.done) bakeStep(B, burn); } if (!B.c || !B.done) return false;
   x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
   if (!burn) { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1); }
-  else { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); const gx0 = Math.max(x0 - 6, -8), gx1 = Math.min(x1 + 6, 328); alpha(g, 0.28); R(g, gx0, fy - 30, gx1 - gx0, 30, '#ff6b2c'); alpha(g, 1); }
+  else { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); const gx0 = Math.max(x0 - 6, -8), gx1 = Math.min(x1 + 6, RE); alpha(g, 0.28); R(g, gx0, fy - 30, gx1 - gx0, 30, '#ff6b2c'); alpha(g, 1); }
   const fr = Math.floor((((t % B.loop) + B.loop) % B.loop) / B.loop * B.n) % B.done, end = burn ? x1 - 2 : x1 - 4, oy = burn ? fy + 1 - B.base : fy - B.base;
-  for (let m = Math.max(0, Math.floor((-8 - x0) / B.w)); ; m++) { const tx = x0 + m * B.w; if (tx > 328 || tx >= end) break; let sw = Math.min(B.w, end - tx), sx = 0, dx = tx; if (dx < -8) { sx = -8 - dx; dx = -8; sw -= sx; } if (dx + sw > 328) sw = 328 - dx; if (sw > 0) g.drawImage(B.c, sx, fr * B.h, sw, B.h, dx, oy, sw, B.h); }
+  for (let m = Math.max(0, Math.floor((-8 - x0) / B.w)); ; m++) { const tx = x0 + m * B.w; if (tx > RE || tx >= end) break; let sw = Math.min(B.w, end - tx), sx = 0, dx = tx; if (dx < -8) { sx = -8 - dx; dx = -8; sw -= sx; } if (dx + sw > RE) sw = RE - dx; if (sw > 0) g.drawImage(B.c, sx, fr * B.h, sw, B.h, dx, oy, sw, B.h); }
   if (burn) { for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1); }
   return true;
 }

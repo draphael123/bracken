@@ -200,9 +200,10 @@ export function makeGQ6S2(env) {
   /* the picture: S3 = the burning spans (Highcrown's own bay fire, drawn once per visible span, clipped to the screen) + the ladder glow while it is the way (tell / hold / nobody up) */
   E.draw = (g2, cx, cy, t) => {
     if (!st || st.phase === 'off' || !laid) return;
-    if (S3 && env.art) for (let i = 0; i < st.burns.length; i++) { const b = st.burns[i]; let x0 = Math.round(b.x0 - cx), x1 = Math.round(b.x1 - cx); if (x1 < -8 || x0 > 328) continue;
-      const fyb = Math.round(b.y - cy); if (fyb < -36 || fyb > 190) continue;   /* a span off the screen (above / below the camera) draws nothing */
-      if (x0 < -8) x0 += 14 * Math.ceil((-8 - x0) / 14); if (x1 > 328) x1 = 328; if (x1 - x0 < 8) continue; const sm = b.state === 'smoke'; if (!(env.art.drawBayBaked && env.art.drawBayBaked(g2, b.x0 - cx, b.x1 - cx, fyb, sm ? 'smoke' : 'burn', t, i))) env.art.drawBay(g2, x0, x1, fyb, sm ? 'smoke' : 'burn', t, i, 14, 20); }
+    const VWv = (g2.canvas && g2.canvas.width) || 320, VHv = (g2.canvas && g2.canvas.height) || 180, RE = VWv + 8;   /* (claude/gq6s23look) the Queen's fight is drawn on a 629 x 311 picture, not 320 x 180: the old 328 / 190 culls hid every span right of x 328 and below y 190 (the deck itself) */
+    if (S3 && env.art) for (let i = 0; i < st.burns.length; i++) { const b = st.burns[i]; let x0 = Math.round(b.x0 - cx), x1 = Math.round(b.x1 - cx); if (x1 < -8 || x0 > RE) continue;
+      const fyb = Math.round(b.y - cy); if (fyb < -36 || fyb > VHv + 10) continue;   /* a span off the screen (above / below the camera) draws nothing */
+      if (x0 < -8) x0 += 14 * Math.ceil((-8 - x0) / 14); if (x1 > RE) x1 = RE; if (x1 - x0 < 8) continue; const sm = b.state === 'smoke'; if (!(env.art.drawBayBaked && env.art.drawBayBaked(g2, b.x0 - cx, b.x1 - cx, fyb, sm ? 'smoke' : 'burn', t, i, VWv))) env.art.drawBay(g2, x0, x1, fyb, sm ? 'smoke' : 'burn', t, i, 14, 20); }
     const glow = st.phase === 'tell' || st.phase === 'hold' || (st.phase === 'on' && !E.anyOn()); if (!glow) return;
     const g = S3 ? tg(st.phase === 'tell' ? st.next : st.tier) : geom(); if (!g) return;
     const k = 0.3 + 0.2 * Math.sin(t * 6);
