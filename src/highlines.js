@@ -195,7 +195,7 @@ export function applyFix3Patch(src) {
 }
 export const HL_DATA_FX = applyFix3Patch(HL_DATA), HL_DATA_SW_FX = applyFix3Patch(HL_DATA_SW);
 /* the sign texts the flag changes (the nets and the carts are told where the player reads) */
-export const SIGNS_FX = { '36,219': 'A MISS: THE NET CATCHES YOU (A TENTH OF YOUR HEALTH). STRIKE AT THE NET AND THE WINCH HAULS YOU BACK.', '70,103': 'NETS ALL THE WAY UP: A MISS COSTS A TENTH OF YOUR HEALTH, THEN THE WINCH HAULS YOU BACK.', '17,101': 'THE GONDOLA WAITS FOR YOU. STEP IN AND IT GOES. IF THE LINE CREAKS, HOLD ON.' };
+export const SIGNS_FX = { '36,219': 'A MISS: THE NET CATCHES YOU, -10% HEALTH. STRIKE: THE WINCH HAULS YOU BACK.', '70,103': 'NETS ALL THE WAY UP: A MISS COSTS A TENTH OF YOUR HEALTH, THEN THE WINCH HAULS YOU BACK.', '17,101': 'THE GONDOLA WAITS FOR YOU. STEP IN AND IT GOES. IF THE LINE CREAKS, HOLD ON.' };
 
 /* ---------------- THE DRAWN SUPPORTS (claude/hlart): every deck stands on the line crews' iron or the cliff's own stone ---------------- */
 /* L.routeSupports kind 'hlgantry' (drawn by src/redraw/high_lines_tiles.js drawGantry through src/route-art.js): per landing / net run, posts at both ends and every 8 tiles. The rock lips (ROCK_LANDINGS) stand on granite
