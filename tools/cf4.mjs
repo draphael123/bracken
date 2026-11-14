@@ -94,7 +94,7 @@ near(C.popScale(0, C.CF4.pop.merge), 1.3, 'merge re-pop 1.3');
   const calls = (main.match(/CF4\.[a-zA-Z]+/g) || []);
   for (const m of main.matchAll(/CF4\.(popNum|numScale|numColor|drawEdge|ghostOf|healFlash|ladderStep|coinArc|bumpScale|takeFlash)\b/g)) {
     const at = m.index, line = main.slice(main.lastIndexOf('\n', at) + 1, main.indexOf('\n', at));
-    assert.ok(/CF4\.CF4_SHIPS|cf4\.bar\.init|bk4 > 1/.test(line) || /^\s*(bar\(|if \(g4|if \(CF4)/.test(line) || line.includes('CF4.CF4_SHIPS'), 'unguarded CF4 call on: ' + line.slice(0, 140));
+    assert.ok(/CF4\.CF4_SHIPS|CF4CHIP_SHIPS|cf4\.bar\.init|bk4 > 1/.test(line) || /^\s*(bar\(|if \(g4|if \(CF4)/.test(line) || line.includes('CF4.CF4_SHIPS'), 'unguarded CF4 call on: ' + line.slice(0, 140));
   }
   assert.ok(calls.length >= 20, 'wired: ' + calls.length);
   assert.ok(main.includes('if (!CF4.CF4_SHIPS && P.hp > 0 && P.hp <= 30 && !P.dead)'), 'the old fixed heart only runs OFF');
