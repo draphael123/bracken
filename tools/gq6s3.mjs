@@ -1,9 +1,9 @@
 // tools/gq6s3.mjs - GQ6S3 (Daniel 11-13 17:14, Highcrown pass 6 item 3, slice S3): THE ARENA BURNS AWAY AND YOU CLIMB. NODE ONLY, no page, no browser.
-//   node tools/gq6s3.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (d216feb87), no engine, the east-end ladder tile stays
+//   node tools/gq6s3.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
 //   BRACKEN_GQ6S2=1 node tools/gq6s3.mjs    S2 ONLY (S3 off): the seeded fight hashes to what S2 did at 41ad47bbe (the final platform, the stand-in lift), no tier engine
 //   BRACKEN_GQ6S3=1 node tools/gq6s3.mjs    S3 ON: G geometry, B thresholds 85/70/50, T the told burn (3.0 s + sounds), R the route (slowest hero, fire cost), S no soft-lock (bots, falls, co-op, last resort),
 //                                           A the attack set on every tier, K no knock-off, L the lab bot's hand, Q source / wiring, P draw cost
-//   node tools/gq6s3.mjs --hash             print the identity hashes only (GQ6S3_ROOT=<tree> runs the same script on another checkout - how the pins were made: MASTER d216feb87, S2-only 41ad47bbe)
+//   node tools/gq6s3.mjs --hash             print the identity hashes only (GQ6S3_ROOT=<tree> runs the same script on another checkout - how the pins were made: MASTER b211d645b, S2-only 41ad47bbe)
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path'; import fs from 'node:fs';
 const ROOT = process.env.GQ6S3_ROOT ? path.resolve(process.env.GQ6S3_ROOT) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -16,8 +16,8 @@ const HSm = await imp('src/hero-strikes.js');
 let S2 = false, S2N = null, pf = null, S3 = false, S3N = null, s3m = null; try { pf = await imp('src/gq6s2.js'); S2 = pf.S2; S2N = pf.S2N; } catch { /* master has no gq6s2 */ }
 try { s3m = await imp('src/gq6s3.js'); S3 = s3m.S3; S3N = s3m.S3N; } catch { /* no gq6s3 */ }
 const TS = 16;
-/* the pins: MASTER (d216feb87) and S2 ONLY (41ad47bbe) - made by GQ6S3_ROOT=<that tree> node tools/gq6s3.mjs --hash (S2 only: with BRACKEN_GQ6S2=1) */
-const PIN = { level: '1810830c', master: 'e4235c29', s2only: 'ce11ad58' };
+/* the pins: MASTER (b211d645b) and S2 ONLY (41ad47bbe) - made by GQ6S3_ROOT=<that tree> node tools/gq6s3.mjs --hash (S2 only: with BRACKEN_GQ6S2=1) */
+const PIN = { level: '9c22e612', master: 'e4235c29', s2only: 'ce11ad58' };
 const fnv = (arr) => { let h = 0x811c9dc5; for (let i = 0; i < arr.length; i++) { h ^= arr[i] & 255; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };
 const fnvStr = s => fnv(Buffer.from(s));
 const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -74,7 +74,7 @@ console.log('flags GQ6S2 ' + S2 + ' GQ6S3 ' + S3 + '   level ' + LH + '   sim ' 
 console.log('== I. identity');
 ok(LH.split('/')[0] === PIN.level, 'the built Highcrown level hashes to MASTER\'s (' + LH.split('/')[0] + ') - every tier is laid at its transition, never at build time' + (S3 ? ' (S3 ON too)' : ''));
 if (!S2) {
-  ok(SH.split('/')[0] === PIN.master, 'ALL FLAGS OFF: a seeded 100 s roof fight (autostrike hero) hashes to MASTER\'s d216feb87 (' + SH.split('/')[0] + ' / ' + SH.split('/')[1] + ' events)');
+  ok(SH.split('/')[0] === PIN.master, 'ALL FLAGS OFF: a seeded 100 s roof fight (autostrike hero) hashes to MASTER\'s b211d645b (' + SH.split('/')[0] + ' / ' + SH.split('/')[1] + ' events)');
   { const w = roof(); ok(!w.H.gq6s2 || w.H.gq6s2() === null, 'ALL FLAGS OFF: no engine is built'); const m = w.Lw.arena.tower.OUT.mouthLadder; ok(w.Lw.grid[19 * w.Lw.W + m] === T.NET, 'ALL FLAGS OFF: the east-end ladder tile is still there (col ' + m + ', row 19)'); }
   ok(S3 === false && (!s3m || s3m.GQ6S3_SHIPS === false), 'GQ6S3_SHIPS = false' + (s3m ? ' (src/gq6s3.js)' : ' (no module on master)'));
   console.log(fails ? 'FAIL gq6s3 OFF (' + fails + ' of ' + checks + ')' : 'ok  gq6s3 OFF (' + checks + ' checks)'); process.exit(fails ? 1 : 0);

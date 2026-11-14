@@ -1,5 +1,5 @@
 // tools/gq6s2.mjs - GQ6S2 (Daniel 11-13 17:14, Highcrown pass 6 item 3, slice S2): THE FINAL PLATFORM. NODE ONLY, no page, no browser.
-//   node tools/gq6s2.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (d216feb87), no engine, the east-end ladder tile stays
+//   node tools/gq6s2.mjs                    flag OFF (the default): the level + a seeded roof fight hash to MASTER's (b211d645b), no engine, the east-end ladder tile stays
 //   BRACKEN_GQ6S2=1 node tools/gq6s2.mjs    flag ON: G geometry, T transition (told blink, hold, stand-in lift), A the attack set up there (kept / dropped), R rockfall 3, K no knock-off,
 //                                           D dodge room for every kept attack (slowest hero), L the east-end ladder tile, F a fall + the reset
 //   node tools/gq6s2.mjs --hash             print the two identity hashes only (GQ6S2_ROOT=<tree> runs the same script on another checkout - how MASTER's pins were made)
@@ -15,8 +15,8 @@ const { LEVELS, T } = await imp('src/level.js'); const { makeGQueenHands, GQ3 } 
 const HSm = await imp('src/hero-strikes.js');
 let S2 = false, S2N = null, pf = null; try { pf = await imp('src/gq6s2.js'); S2 = pf.S2; S2N = pf.S2N; } catch { /* master has no gq6s2 */ }
 const TS = 16;
-/* MASTER's pins (d216feb87; made by GQ6S2_ROOT=<master> node tools/gq6s2.mjs --hash) */
-const MASTER = { level: '1810830c', sim: 'e4235c29' };
+/* MASTER's pins (b211d645b; made by GQ6S2_ROOT=<master> node tools/gq6s2.mjs --hash) */
+const MASTER = { level: '9c22e612', sim: 'e4235c29' };
 
 const fnv = (arr) => { let h = 0x811c9dc5; for (let i = 0; i < arr.length; i++) { h ^= arr[i] & 255; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); };
 const fnvStr = s => fnv(Buffer.from(s));
