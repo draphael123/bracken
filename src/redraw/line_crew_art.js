@@ -12,7 +12,7 @@ export const CP = {
   skin: ['#3f6e2c', '#6faa4a', '#8fc760', '#b4dc86'], eye: '#ff4030', tooth: '#f3f0d2',   /* the goblin's green (the foes' own: #6faa4a / #8fc760 / #3f6e2c), red eyes, a pale tusk */
  rope: ['#2a2014', '#4e3e24', '#8a7444', '#c0a868'], iron: ['#0e1014', '#222830', '#3c444e', '#68727e', '#9aa4b0', '#d0d8e0'], ash: ['#3a2a1a', '#6a5030', '#9a7a4c'],
   rime: ['#a8bccc', '#dce8f2', '#ffffff'], boot: ['#0c0a08', '#221a14', '#3e3024'], gold: '#ffd36b', red: '#ff6b6b', stars: '#fff0a0',
-  coat: ['#0c1018', '#1a2230', '#2a384a', '#46586e'], cape: ['#5a1208', '#a8341e', '#d8523a'], beard: ['#58606a', '#8a929c', '#c0c6cc'], hookIron: ['#3a424c', '#98a2ae', '#dce4ec'], chain: ['#2a3038', '#6a7480', '#a8b2be'],
+  coat: ['#0c1018', '#1a2230', '#2a384a', '#46586e'], coatRim: ['#16202e', '#2c3c52', '#4a6280', '#7e98b4'], rimEdge: '#9eb4c8',   /* (claude/sky2art) the coat in the cave: paler, with a light edge */ cape: ['#5a1208', '#a8341e', '#d8523a'], beard: ['#58606a', '#8a929c', '#c0c6cc'], hookIron: ['#3a424c', '#98a2ae', '#dce4ec'], chain: ['#2a3038', '#6a7480', '#a8b2be'],
   lever: ['#3a2a1c', '#6a5038', '#a8885c'], flag: '#ff4a2a',
 };
 let g_, X_, Y_, F_;
@@ -114,12 +114,15 @@ export function drawHookjack(g, e, cx, cy, time) {
 
 /* =============================================================== SKYHOOK =============================================================== */
 /* p = the POSE entry of src/skyhook-hands.js (crouch, lean, hand, off, hook, legs, grip, coil, rope, butt, cutter, bracket, stars, look); drawn at his feet, facing right, like the greybox */
-export function drawRiggerArt(g, p, flash, time, ph, x, y, f) {
+/* o (claude/sky2art, optional: undefined = the live fight, unchanged): { rim: true -> a paler coat and a 1 px light edge so he parts from the dark cave rock, rimCol: the edge colour (enraged: red) } */
+export function drawRiggerArt(g, p, flash, time, ph, x, y, f, o) {
   begin(g, x, y, f);
-  const cr = p.crouch || 0, lean = p.lean || 0, K = flash ? ['#ffffff', '#ffffff', '#ffffff', '#ffffff'] : CP.coat, top = -34 + cr, sh = lean * 4;
+  const rim = o && o.rim ? (o.rimCol || CP.rimEdge) : null;
+  const cr = p.crouch || 0, lean = p.lean || 0, K = flash ? ['#ffffff', '#ffffff', '#ffffff', '#ffffff'] : rim ? CP.coatRim : CP.coat, top = -34 + cr, sh = lean * 4;
   if (p.legs === 'down') {                                                                                                                                              /* DOWN: on his back across the rock */
     rc(-16, -9, 32, 8, K[2]); rc(-16, -9, 32, 2, K[3]); rc(-16, -2, 32, 2, K[0]); rc(13, -12, 8, 8, CP.skin[1]); rc(13, -12, 3, 8, CP.skin[2]); rc(13, -14, 8, 3, CP.cape[1]); rc(14, -15, 6, 1, CP.cape[2]); rc(17, -7, 5, 3, CP.beard[1]);
     rc(-23, -6, 8, 4, CP.boot[1]); rc(-23, -6, 8, 1, CP.boot[2]); rc(-14, -5, 26, 1, CP.leather[1]);
+    if (rim) { rc(-16, -10, 32, 1, rim); rc(-23, -7, 8, 1, rim); rc(13, -13, 8, 1, rim); }
     ln(4, -7, p.hand[0], p.hand[1], K[1], 2); if (p.hook) boatHook(p.hand[0], p.hand[1], p.hook[0], p.hook[1]);
     if (p.bracket) { rc(-5, -15, 7, 4, CP.iron[3]); rc(-5, -15, 7, 1, CP.iron[5]); dot(0, -14, CP.iron[0]); }
     if (p.stars) for (let i = 0; i < 3; i++) { const a = time * 3 + i * 2.1; dot(16 + Math.cos(a) * 10, -20 + Math.sin(a) * 3, CP.stars); }
@@ -132,6 +135,7 @@ export function drawRiggerArt(g, p, flash, time, ph, x, y, f) {
   else { lg(-4, -9, -5, 0, 0); lg(4, -9, 5, 0, 1); }
   /* THE LONG TARRED COAT: to the knee, rime on the shoulders, a belt, a coil of line, buttons of horn */
   for (let yy = top + 6; yy < top + 28; yy++) { const k = (yy - top - 6) / 22, w = 12 + k * 6, s0 = sh * (1 - k); rc(-w / 2 + s0, yy, w, 1, K[(yy & 3) === 0 ? 1 : 2]); rc(-w / 2 + s0, yy, 3, 1, K[3]); rc(w / 2 - 2 + s0, yy, 2, 1, K[0]); }
+  if (rim) for (let yy = top + 6; yy < top + 28; yy++) { const k = (yy - top - 6) / 22, w = 12 + k * 6, s0 = sh * (1 - k); dot(-w / 2 + s0 - 1, yy, rim); dot(w / 2 + s0, yy, rim); }   /* the light edge down both sides of the coat */
   rc(-1 + sh * 0.4, top + 8, 1, 18, K[0]); for (let k = 0; k < 4; k++) dot(1 + sh * 0.4, top + 10 + k * 4, CP.beard[2]);
   rc(-7 + sh * 0.5, top + 6, 14, 3, K[3]); rc(-7 + sh * 0.5, top + 6, 14, 1, K[3]); rc(-6 + sh * 0.5, top + 6, 3, 1, CP.rime[1]); dot(2 + sh * 0.5, top + 6, CP.rime[0]); dot(-1 + sh * 0.5, top + 5, CP.rime[2]);   /* shoulders and the rime on them */
   rc(-9 + sh * 0.3, top + 15, 18, 2, CP.leather[1]); rc(-1 + sh * 0.3, top + 15, 4, 2, CP.iron[3]); dot(1 + sh * 0.3, top + 15, CP.iron[5]);               /* the belt */
@@ -145,6 +149,7 @@ export function drawRiggerArt(g, p, flash, time, ph, x, y, f) {
   rc(hdX + 1, top + 1, 4, 2, CP.iron[0]); dot(hdX + 3, top + 1, p.look ? CP.gold : CP.eye); dot(hdX + 3, top + 2, CP.iron[1]); dot(hdX + 2, top + 3, CP.tooth); dot(hdX + 4, top + 3, CP.tooth);                                      /* the brow, the red eye (gold when he LOOKS) and two tusks over the beard */
   rc(hdX - 5, top - 5, 11, 5, CP.cape[1]); rc(hdX - 5, top - 5, 11, 2, CP.cape[2]); rc(hdX - 5, top - 1, 11, 1, CP.cape[0]); rc(hdX - 3, top - 7, 7, 2, CP.cape[1]); rc(hdX - 1, top - 8, 3, 1, CP.cape[2]); dot(hdX, top - 3, CP.cape[0]); dot(hdX + 3, top - 4, CP.cape[0]); rc(hdX - 6, top - 3, 1, 3, CP.cape[0]);   /* the cap: knit rows, a bobble, a turned brim */
   rc(hdX - 12, top + 1, 8, 2, CP.skin[1]); rc(hdX - 13, top, 2, 2, CP.skin[2]); rc(hdX - 11, top + 3, 4, 1, CP.skin[0]); dot(hdX - 5, top + 1, CP.skin[2]);   /* the long leaf ear, swept back out from under the red cap */
+  if (rim) { rc(hdX - 1, top - 9, 3, 1, rim); dot(hdX - 3, top - 8, rim); dot(hdX + 3, top - 8, rim); dot(hdX - 4, top - 6, rim); dot(hdX + 4, top - 6, rim); rc(hdX + 6, top - 5, 1, 5, rim); rc(hdX - 4, top + 9, 9, 1, rim); }   /* a light edge round the cap and the beard */
   /* arms + the boat-hook and its chain */
   limb(-4 + sh, top + 9, p.off[0], p.off[1] + cr, K[1], K[3], 3); rc(p.off[0] - 1, p.off[1] + cr - 1, 3, 3, CP.leather[2]);
   limb(4 + sh, top + 9, p.hand[0], p.hand[1] + cr, K[1], K[3], 3); rc(p.hand[0] - 1, p.hand[1] + cr - 1, 3, 3, CP.leather[3]); dot(p.hand[0], p.hand[1] + cr - 1, CP.skin[2]);
