@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const [dir, out, cw, ...names] = process.argv.slice(2), CW = +cw || 640;
 const u = p => 'data:image/png;base64,' + readFileSync(p).toString('base64');
-const rows = names.map(s => { const [n, c] = s.split('@'); return { n, crop: c ? c.split(',').map(Number) : null, a: u(join(dir, 'mst1-' + n + '.png')), b: u(join(dir, 'new-' + n + '.png')) }; });
+const rows = names.map(s => { const [nn, c] = s.split('@'), [na, nb] = nn.split('|'), n = nb ? na + ' / ' + nb : na; return { n, crop: c ? c.split(',').map(Number) : null, a: u(join(dir, 'mst1-' + na + '.png')), b: u(join(dir, 'new-' + (nb || na) + '.png')) }; });
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const url = await pg.evalp(`(async (rows, CW) => { const pad = 6, lab = 16; const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = s; });
