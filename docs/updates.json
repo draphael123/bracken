@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-11-14",
+    "batch": 191,
+    "lines": [
+      { "s": "The High Lines: Skyhook's cave backdrop now fills the whole screen.", "lv": ["highlines"] },
+      { "s": "It was cut off below on a wide or fullscreen view; rock now runs past every edge.", "lv": ["highlines"] },
+      { "s": "Nothing in the fight changed; only the picture behind it grew.", "lv": ["highlines"] }
+    ]
+  },
+  {
+    "date": "2026-11-14",
     "batch": 190,
     "lines": [
       { "s": "The High Lines: the gondola and the cage now wait until a hero is aboard.", "lv": ["highlines"] },
