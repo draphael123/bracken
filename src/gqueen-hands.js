@@ -296,7 +296,7 @@ export function makeGQueenHands(ctx) {
     const Lv = L(), A0 = Lv && Lv.arenaRoof, Tw = A0 && A0.tower; if (!Tw || !Lv.grid) return; const [c0, c1] = Tw.HATCH.cols, fy = Tw.DECK.floor;
     if (Tw.OUT) { const [m0, m1] = Tw.OUT.mouth; for (let y = fy; y <= fy + 1; y++) for (let x = m0; x <= m1; x++) Lv.grid[y * Lv.W + x] = on ? 8 : (x === Tw.OUT.mouthLadder ? 9 : 0); }   /* (gq4l) the outside stretch's mouth in the deck floor (a ladder up it) */
     else for (let y = fy; y <= fy + 1; y++) { Lv.grid[y * Lv.W + c0] = on ? 8 : 9; Lv.grid[y * Lv.W + c1] = on ? 8 : 0; }   /* 8 = T.PLANK, 9 = T.NET (the ladder), 0 = air */
-    if (GS2 && Tw.OUT) { const m = Tw.OUT.mouthLadder; ctx.tiles(fy - 1, m, m, on ? 'drop' : 'restore', defer); }   /* (claude/gq6s2) the one-tile ladder left at the deck's east end (rung row 19 of the mouth ladder) is the 'random ladder': gone for the fight, back with the way into the tower */
+    if (GS2 && Tw.OUT) { const m = Tw.OUT.mouthLadder; if (on && !defer && ctx.tilesDone) { ctx.tiles(fy - 1, m, m, 'drop', true); if (!GS2.sealPut()) ctx.tilesDone(); } else ctx.tiles(fy - 1, m, m, on ? 'drop' : 'restore', defer); }   /* (claude/gq6hitch) the sealed picture was resolved once at the hall wake: copied in, no level resolve on the roof entry (src/gq6s2.js sealPut) */   /* (claude/gq6s2) the one-tile ladder left at the deck's east end (rung row 19 of the mouth ladder) is the 'random ladder': gone for the fight, back with the way into the tower */
     S.hatchShut = !!on;
   }
   function roofBegin(e) { sealHatch(true); S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,

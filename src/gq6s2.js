@@ -115,6 +115,7 @@ export function makeGQ6S2(env) {
   /* (claude/gq6hitch) WARM, one state per call (one level resolve a frame, while the hall fight wakes: nothing moves on the name card): 0 = the hatch sealed (roof entry), 1..3 = tiers 1..k laid on top. Each call lays its state, resolves, keeps the tower's tile columns, and puts EVERYTHING back (grid by the same ops a reset uses, the tile picture by a copy) - the world is as it was when the call returns, and nothing is drawn in between. */
   const cache = {}; let warmN = 0;
   E.warmed = () => warmN;
+  E.sealPut = () => { if (!cache[0] || !ctx.tilePut) return false; ctx.tilePut(cache[0]); return true; };   // roof entry: the sealed hatch's picture, copied in (state 0) instead of a level resolve
   E.warm = () => {
     if (!S3 || warmN >= 4 || !ctx.tileKeep || !ctx.tilePut || !ctx.tilesDone || !ctx.tiles || !env.seal || !(env.warmOk && env.warmOk())) return;
     const Tw = tower(); if (!Tw || !Tw.OUT || (st && st.phase !== 'off') || layK.size) { if (!Tw || !Tw.OUT) warmN = 99; return; }

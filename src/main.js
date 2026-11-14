@@ -1411,6 +1411,8 @@ function groundDepth(W, H, solidAt, cap) {
     for (let x = W - 2; x >= 0; x--) if (solidAt(x, y) && solidAt(x + 1, y)) D[r + x] = Math.min(D[r + x], D[r + x + 1] + 1); }
   return D;
 }
+/* (claude/gq6hitch) mulberry(seed)'s own stream, one shared function re-seeded per cell: the same numbers, none of the 125,000 closures a level resolve would otherwise make (tens of MB of garbage = a major GC in the fight) */
+let cellRndA = 0; const cellRnd = () => { cellRndA = (cellRndA + 0x6D2B79F5) >>> 0; let t = cellRndA; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 function resolveTiles() {
   if (!LEDGE_SETS.beam) { LEDGE_SETS.beam = { ledge: TILE.beam, ledgeL: TILE.beamL, ledgeR: TILE.beamR };
     LEDGE_SETS.staging = { ledge: TILE.staging, ledgeL: TILE.stagingL, ledgeR: TILE.stagingR };
@@ -1466,7 +1468,7 @@ function resolveTiles() {
     /* (claude/maker) IN A MADE-BY-HAND WOOD EACH TILE THROWS ITS OWN DICE. One stream read left to right meant painting one tile
        changed how many rolls came before every tile after it, so all the dressing (trees, fences, tufts) to its right reshuffled
        on every click (Daniel: "the terrain moves oddly when I try placing things"). Seeded by the cell, an edit only moves its own. */
-    if (L.custom || (GQ6S3 && L.hc2Kit)) rnd = mulberry(((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0);   /* (claude/gq6hitch) HIGHCROWN with the burning climb: one stream read left to right meant that laying a tier's floor (ONE changed cell) re-rolled every variant after it in the whole level - every ground tile on screen changed picture at each burn and every tile chunk re-baked (a 200-350 ms frame). Seeded by the cell, a laid tier only moves its own cells. Flag off: the old stream, untouched. */
+    if (L.custom) rnd = mulberry(((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0); else if (GQ6S3 && L.hc2Kit) { cellRndA = ((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0; rnd = cellRnd; }   /* (claude/gq6hitch) HIGHCROWN with the burning climb: one stream read left to right meant that laying a tier's floor (ONE changed cell) re-rolled every variant after it in the whole level - every ground tile on screen changed picture at each burn and every tile chunk re-baked (a 200-350 ms frame). Seeded by the cell, a laid tier only moves its own cells. Flag off: the old stream, untouched. */
     /* (claude/maker) GROUND MATERIALS: a cell painted COBBLE / SHORE ROCK / ... is drawn as if the place were that one (MAT_SET) */
     const MATS = L.mat ? L.mat[y * LW + x] : undefined, PSET = MATS ? MAT_SET[MATS] : (L.palette && L.palette.set);
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);

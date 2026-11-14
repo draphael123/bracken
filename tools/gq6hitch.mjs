@@ -5,20 +5,21 @@
 import { openPage } from './cdp.mjs';
 import { writeFileSync } from 'fs';
 const a = process.argv.slice(2), opt = (k, d) => { const x = a.find(y => y.startsWith('--' + k + '=')); return x ? x.slice(k.length + 3) : d; };
-process.env.BRACKEN_GQ6S2 = '1'; process.env.BRACKEN_GQ6S3 = '1';
+if (a.includes('--off')) { delete process.env.BRACKEN_GQ6S2; delete process.env.BRACKEN_GQ6S3; } else { process.env.BRACKEN_GQ6S2 = '1'; process.env.BRACKEN_GQ6S3 = '1'; }
 const RUNS = +opt('runs', 3), HERO = opt('hero', 'knight'), PROOF = a.includes('--proof');
 const FN = `async (hero, proof) => {
   const { LEVELS } = await import('/src/level.js');
   const hold = () => { BK.P.hp = BK.P.maxHp; };
   BK.manualSimulation = true; BK.SET.speed = 1; BK.setHero(hero); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'crown')); BK.state = 'play'; BK.god = false; BK.step(5);
   const A = BK.L.arena; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1);
-  for (let k = 0; k < 300; k++) { hold(); BK.step(1); }
+  const hallT = []; for (let k = 0; k < 300; k++) { hold(); const t0 = performance.now(); BK.step(1); const d0 = performance.now() - t0; if (d0 > 40) hallT.push([k, +d0.toFixed(0), Math.round(performance.memory.usedJSHeapSize / 1e5) / 10]); }
   const q = BK.boss; q.hp = 2; (BK.hurt || (BK.env && BK.env().hurt))(q, 50, BK.P.x); for (let k = 0; k < 140; k++) { hold(); BK.step(1); }
-  const H = BK.gqHands(); H.skipRoof(); for (let k = 0; k < 600; k++) { hold(); BK.step(1); if (BK.boss.stage === 'roof' && (BK.boss.mode === 'roofStand' || BK.boss.mode === 'rec') && k > 200) break; }
+  const H = BK.gqHands(); const entry = []; const w0 = performance.now(); H.skipRoof(); entry.push(['skipRoof', +(performance.now() - w0).toFixed(0)]); for (let k = 0; k < 600; k++) { hold(); const t0 = performance.now(); BK.step(1); const d0 = performance.now() - t0; if (d0 > 40) entry.push([k, +d0.toFixed(0), Math.round(performance.memory.usedJSHeapSize / 1e5) / 10]); if (BK.boss.stage === 'roof' && (BK.boss.mode === 'roofStand' || BK.boss.mode === 'rec') && k > 200) break; }
+  if (!H.gq6s2 || !H.gq6s2()) return { hallT, entry, steps: [], all: [], errors: null };
   const g = H.gq6s2(), st = g.state(), P = BK.P, Tw = (BK.L.arena && BK.L.arena.tower) || (BK.L.arenaRoof && BK.L.arenaRoof.tower), cu = Tw.CUPOLA;
   P.x = (cu.x1 + 1) * 16 + 6; P.y = Tw.DECK.floor * 16; P.vx = 0; P.vy = 0;
   const ce = Document.prototype.createElement, cnt = { c: 0 }; Document.prototype.createElement = function (t, ...x) { if (String(t).toLowerCase() === 'canvas') cnt.c++; return ce.call(this, t, ...x); };
-  const out = { steps: [], all: [] };
+  const out = { steps: [], all: [], entry, hallT };
   const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; const c2 = cv.getContext('2d', { willReadFrequently: true }), hc = new Map();
   const hash = sp => { if (!sp) return 'n'; let v = hc.get(sp); if (v) return v; c2.clearRect(0, 0, 16, 16); c2.drawImage(sp, 0, 0); const d = c2.getImageData(0, 0, 16, 16).data; let a = 5381; for (let i = 0; i < d.length; i++) a = ((a * 33) ^ d[i]) >>> 0; v = sp.width + 'x' + sp.height + ':' + a; hc.set(sp, v); return v; };
   /* the live tile picture (after the burn was told through the cached state) against a full resolveTiles of the very same grid */
@@ -46,7 +47,7 @@ const res = [];
 for (let n = 0; n < RUNS; n++) {
   const pg = await openPage({ audio: false, fonts: true, seed: 7 });
   try { const r = await pg.evalp('(' + FN + ')(' + JSON.stringify(HERO) + ',' + PROOF + ')', 900000); r.errors = pg.errors.slice(0, 3); res.push(r);
-    console.log('run ' + (n + 1) + ': ' + r.steps.map(s => 'step' + s.step + ' worst ' + s.worst[0].ms + ' ms @' + s.worst[0].label + ' (canv ' + s.worst[0].canv + '); tellFirst ' + (s.tellFirst && s.tellFirst.ms) + '; worstNonWait ' + s.worstNonWait + ' slow>40 ' + s.slow.map(x => x.label + '@' + x.rel + ':' + x.ms + ' heap ' + x.heapPrev + '>' + x.heapMB).join(',')).join(' | ') + ' errs ' + JSON.stringify(r.errors)); if (r.proof) console.log('proof ' + JSON.stringify(r.proof));
+    console.log('hall frames >40: ' + JSON.stringify(r.hallT) + ' roof entry >40: ' + JSON.stringify(r.entry)); console.log('run ' + (n + 1) + ': ' + r.steps.map(s => 'step' + s.step + ' worst ' + s.worst[0].ms + ' ms @' + s.worst[0].label + ' (canv ' + s.worst[0].canv + '); tellFirst ' + (s.tellFirst && s.tellFirst.ms) + '; worstNonWait ' + s.worstNonWait + ' slow>40 ' + s.slow.map(x => x.label + '@' + x.rel + ':' + x.ms + ' heap ' + x.heapPrev + '>' + x.heapMB).join(',')).join(' | ') + ' errs ' + JSON.stringify(r.errors)); if (r.proof) console.log('proof ' + JSON.stringify(r.proof));
   } finally { pg.close(); }
 }
 const o = opt('out', ''); if (o) writeFileSync(o, JSON.stringify(res, null, 1));
