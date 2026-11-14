@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/playrec.mjs - THE PLAYTEST RECORDER, checked (claude/bot2; src/playrec.js). Asserts the four promises it makes Daniel:
    1. OFF BY DEFAULT: a fresh page records nothing and draws no REC.
    2. ON, it logs a whole boss fight: the boss, the hero and level, the time, the outcome, the blows that hurt (by foe and move), the hits

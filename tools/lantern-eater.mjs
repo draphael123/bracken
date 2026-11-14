@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lantern-eater.mjs - THE LANTERN-EATER, the boss at the end of THE FOG CANAL (claude/lanterneater, Daniel 10-07: Jenny Greenteeth's raft duel "just
 // isn't working, clunky" - he kept the raft and approved a beast under the basin). src/lantern-eater.js is the fight (its header is the design). This replaces
 // tools/greenteeth.mjs, rule for rule (a deliberate design change, Daniel's - the same strictness, on the new boss):

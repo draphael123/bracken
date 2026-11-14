@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/save-safety.mjs - A SAVE IS NEVER LOST IN SILENCE (claude/shipfix, Daniel 10-11; src/save-safety.js, src/main.js).
  *   A. THE RULES, no page (a fake storage with a size cap): a slot's text is judged empty / ok / newer / corrupt (a truncated file, a bad hero, a bad type, a
  *      future version); a damaged text is KEPT (key.corrupt) and restore puts the last good copy back without losing the damaged one; the migration backups are pruned to one;

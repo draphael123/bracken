@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/wicker-man.mjs - THE WICKER MAN (claude/fairfix6, src/wicker-man.js + src/wicker-man-hands.js): the Harvest Fair's one new foe, the Wicker Queen's lesser
 // echo, whose fire you STRIKE BACK to make it vulnerable (Daniel, 10-05). Fails when:
 //   NODE (the rules, pure)

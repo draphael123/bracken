@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fodder-tuning.mjs — THE FODDER'S HEALTH, MEASURED FOR ALL SIX HEROES (docs/combat-tuning.md recommends x2.4 on the fodder
 // alone; only the knight and the Freebooter had been measured). One headless pass: the game's own fight bot puts every hero against
 // every fodder type in an early, a middle and a late level, first at the health the game ships and then at the scaled health, and

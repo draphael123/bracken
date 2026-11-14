@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/frog-stills150.mjs - stills of the Bullfrog King's moves as he really plays them (claude/bosstune150; a capture tool, not a check).
 // God-mode hero stands by him; every sim frame we watch his mode and grab a zoomed crop around him the first time each wanted mode shows (and a few frames in).
 // usage: node tools/frog-stills150.mjs <outdir> [hero]

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq6fix-entry.mjs - GQ6FIX item 1: the tower-top (phase 2) entry, timed in a real page.
    Drives the hall -> escape skip -> roof (the lab's own skip, same toRoof as the real portal step), then logs each 0.25 s: her mode / hidden / x, the hero x,
    and the first 'told action' (a mode ending Tell, or the teach shard). Arrival = the frame toRoof ran. The hero STANDS STILL (no walking) so a trigger column would show.

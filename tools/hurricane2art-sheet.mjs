@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hurricane2art-sheet.mjs - THE CAPTAIN's pose sheet (claude/hurricane2art; not in the suite): every frame of bakeCaptain() on a storm sky, labelled.
 //   node tools/hurricane2art-sheet.mjs [outdir]       env F=13,15 (only those frames), S=4 (scale). PORT from the environment, one page.
 import { openPage } from './cdp.mjs';

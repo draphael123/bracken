@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/riposte-hud-shots.mjs - THE RIPOSTE'S HUD ART, LIVE (claude/riposteart): the mix-up pips in both HUD modes and on the co-op P2 plate; the boss's poise bar (filling, near full, broken, in the
 // ward) under the boss plate; and the boss's OPEN, DUELIST OPEN, BREAK and WARD reads in the world; an elite's plate with its poise bar. Drawn by the real page (BK.step renders).
 //   PORT=8838 node tools/riposte-hud-shots.mjs [out.png]

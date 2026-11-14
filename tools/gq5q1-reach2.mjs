@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-reach2.mjs - GQ5Q1-TUNE addendum to OWED 2: does a hero simply STANDING on the deck nearest her spot (no plunge, a normal
    swing) reach her during THE THRONE FIRE, at both the west hoist (h7-10 -> her west spot) and the "centre"/east hoist (h20-23 -> her
    east spot h26.3, the queue's own question)? SCORCHED fires on "any blow / shot by a hero standing on a hoist" too (src/gq5q1.js

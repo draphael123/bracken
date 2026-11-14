@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stockade3-shots.mjs - THE STOCKADE 3 stills (claude/stockade3-1101): the gate fork (peg, logs, gate walk), the logs down as a stair, the Chieftain
 // lured under a hall pile, and CRUSHED. Saved at 2x into scratch/lane-reports/stockade3-shots/ (OUTDIR=). Not in the suite: pictures are for eyes.
 import { openPage, ROOT } from './cdp.mjs';

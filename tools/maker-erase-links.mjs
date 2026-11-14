@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-erase-links.mjs (claude/maker) - ERASE OPTIONS, STYLE LIMITS, THE START GATE AND THE BOSS-LOCKED GOAL.
    1. ERASE: GROUND ONLY leaves pieces, PIECES ONLY leaves ground, ENEMIES ONLY leaves other pieces; a BOX takes a whole area.
    2. STYLE: a castle refuses reeds (the palette greys them), its slopes are cut from castle stone (L.mat on the slope cells).

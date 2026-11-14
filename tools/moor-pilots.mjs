@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor-pilots.mjs [passes=2] - GALE MOOR's fight, THE WINDCALLER, through BK.bossLab (src/lab.js): all six heroes, dice
    pinned per row, one salt per pass so pass two is not pass one again (docs/INTEGRATOR.md). Refill health (the danger number) and
    a 150 s cap, as the ranking measured them. Prints a row per fight (outcome, seconds, damage taken, how often an opening fired,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-embed-page.mjs - THE ITCH BUILD, INSIDE AN EMBED (claude/batch143; headless, ONE browser; not in the suite).
    Serves the unpacked build (dist-itch/site, from tools/build-itch.mjs) on one origin and a stand-in for itch's page on ANOTHER SITE (localhost vs 127.0.0.1, so the game is a third-party
    iframe with partitioned storage, as on html-classic.itch.zone), with itch's 960x540 iframe and its `allow` list. Then: load to the title, take the real keyboard path to the first level,

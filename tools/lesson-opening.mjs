@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lesson-opening.mjs - THE ROADSIDE LESSON (claude/tutorial1, Daniel 11-05 22:05): the generic opening for a new save, replayable from the inn.
 //   pure   src/opening-tutorial.js: the level builds (one floor, a curb, a ditch, a ledge, straw, a gate per gated step, an inn door), is hidden, has NO `trial` flag (co-op),
 //          every step has a prompt line that fits three rows of the panel for every key set (keyboard, pad, touch words), the demo slice names it, the append log keeps its order

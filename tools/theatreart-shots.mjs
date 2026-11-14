@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/theatreart-shots.mjs - THE MASKWRIGHT'S THEATRE after its art pass (claude/theatreart): stills, in-motion strips and the full-level image, into work/claude/theatreart/.
 //   node tools/theatreart-shots.mjs [--only=name,name]      (no --only: every still and strip; the full-level image is --only=full-level)
 //   STILLS  one moment a section, rendered with BK.step at 2x (god mode: a picture, not a playtest)

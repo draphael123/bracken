@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/map-forks.mjs - EVERY LEVEL THE MAP SHOWS CAN BE WALKED TO ON THE MAP, and no secret shows early (claude/mapforks, Daniel 10-15:
 // "I cannot walk to THE BURNING VILLAGE on the world map, I have to use the level select").
 //   The cause: a side road (a spur) is off the road on purpose, so LEFT/RIGHT step past it; UP/DOWN were the only keys onto it, and only for

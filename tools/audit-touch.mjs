@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-touch.mjs — WHICH BODIES HURT ON TOUCH. Findings only; it changes nothing.
 // updatePlayer's contact pass (the damagePlayer call beside HOP[...].dmg) hurts the hero for touching any creature not on its
 // "their damage comes from their attacks" list. That is damage with no windup and no mark. Each creature is stood up alone in its own

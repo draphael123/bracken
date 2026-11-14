@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stuck.mjs - THE STUCK-POINT GUIDE's own check (claude/stuckfix; src/stuck-guide.js, src/stuck-spots.js).
 //   STATIC (Node, no page): every listed spot, step by step, RESOLVES a glint target and a nudge line from a stall point in its zone:
 //     - the zone holds a place to stand (or swim) that is not inside rock; from it the guide returns THIS step (earlier steps marked done), with

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/foe-pass-page.mjs - THE FOE PASS CORE, IN THE PAGE (headless; claude/foepass. The tables and pure rules: tools/foe-pass.mjs).
 // On a flat stretch of a level, god mode where the hero's health is not the measure:
 //   BREAK     the same cut four times on a hound, a brute, a shield never breaks it (stale); cut / sweep / rise / cut leans harder on the

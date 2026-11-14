@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-teachmiss.mjs - GQ5Q2-TUNE BROWSER OWED 5: a teach shard that dies on the cupola's stone (ctx.solid() check,
    src/gqueen-hands.js:713 - the same rule every S.rocks shard already obeys) still counts as a miss and the lesson is seen
    again within 10 s (src/gq5q2.js teachStep: T.nextAt = tt + N.teach.retry on a dead, un-arrived shard; max 3).

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/orevalue-shots.mjs - THE ORE ROAD value-separation pass (lane claude/orevalue): per section, the luminance (L*) of what you must READ
 // (the foes on screen, the footing = the top rows of every walkable tile in view, the hazards = spikes, the pickups = coins/loot) against the
 // BACKDROP (the median L* of the open-air pixels behind the play), in one page session, rows 40-330 of a 640x360 capture. Pictures to

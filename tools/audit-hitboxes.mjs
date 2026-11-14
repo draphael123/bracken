@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-hitboxes.mjs — THE CREATURE SWEEP: hitboxes against sprites, frame data, animation coverage and silhouettes, measured in the page.
 // FINDINGS ONLY: it measures and writes JSON and PNG sheets; it changes nothing in the game.
 // Each creature is stood up in its own level (a boss in its arena) with a passive hero pinned beside it (health and invulnerability reset every

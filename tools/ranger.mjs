@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ranger.mjs - THE RANGER'S KIT, PLAYED THROUGH HER REAL INPUT IN THE REAL PAGE (claude/ranger, scratch/brief-ranger.md).
 //   quick     a TAP of X looses a QUICK SHOT (let go before the draw starts): an arrow out of the quiver, short (lands 50-95 px out) and tagged 'shot'
 //   draw      HOLD X: she DRAWS and is ROOTED (a way held moves her nowhere); let go and a full draw lands 125-185 px out (longer than a tap),

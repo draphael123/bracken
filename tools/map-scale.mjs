@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/map-scale.mjs - THE WORLD MAP AT ONE PIXEL SCALE (claude/mapscale, art-direction fix 3). The style guide: "one integer world scale per screen; no rotated or
 // non-integer-scaled pixel sprites, no smooth clouds; dither ordered 2x2 at region edges only; a label never overlaps its node or another label; the info panel never covers
 // what it describes nor its neighbours and never cuts its blurb". This lint holds the map to it:

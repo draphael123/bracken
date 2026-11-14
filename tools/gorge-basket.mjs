@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorge-basket.mjs - THE RED GORGE's baskets and ropes, the soft-lock Daniel hit on bridge two (claude/gorgebasket, 10-03).
 // His basket "did not get low enough": it sank 36 px/s but a flood comes every ~10 s, so after its first ride the ledges basket (18 rows) was
 // wound up again before it ever reached the bridge and hung out of reach for good. Asserts, for each gorge basket, over six floods with a hero

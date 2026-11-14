@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stockade3.mjs - PINS THE STOCKADE 3's NEW BEATS (claude/stockade3-1101, scratch/brief-stockade3-1101.md; report work/claude/lane-done/claude-stockade3-1101.md)
 // Daniel 11-01: "the level and the boss should better use the level's mechanics" - the captured horn's lure, the log pile's crush and the barred gate, together.
 // STATIC (node, the built level):

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/paladin-kit.mjs — PALADIN 3: CONVICTION (claude/paladin3, scratch/brief-paladin3-1014.md; was PALADIN 2's holy-ground check, rewritten:
 // the planted circle is gone). On flat Stockade floor, with the real keys, this fails when:
 //   - CONVICTION is not five pips of the Light store (HG.conv.pip each), or a tap of C with none spends anything

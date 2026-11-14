@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/djinn4-shots.mjs - THE DJINN4 pass's pictures (claude/djinn4): the pail in the hero's hand (empty, then scooped full), HE REARS UP (his core lit),
 // the pail in flight, HE CHOKES (the shared OPEN read: a gold ring, OPEN, a gold clock), and a bail's OPEN ring for comparison. Not in the suite.
 //   PORT=8641 node tools/djinn4-shots.mjs <tag>   -> work/claude/djinn4/<tag>/*.png (2x frames from the game's own canvas)

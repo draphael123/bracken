@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/reach-heroes.mjs - EVERY HERO, HIS OWN LEGS, EVERY LEVEL (claude/reachcore, Daniel-approved 10-07).
 // THE GLASS SEA's slide gap was frame-tight for every hero and passed every check: src/reachcore.js jumped SIX columns for everybody, counted a toe
 // on the far lip as a landing, and had no slide. src/reachcore.js's opts.hero is the fix (src/reach-hero.js flies src/hero-move.js - the numbers

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial-shots.mjs — the real page, captured: THE BURIED DEAD's new sprite in his tells over the ossuary's platforms, a skull in
    flight at a hero on the high tier, THE ROTTEN BRIDGES and THE BLIND VAULT. Writes docs/burial/page-<name>.png. Not in the suite. */
 import { openPage } from './cdp.mjs';

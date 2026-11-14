@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/lance-pilot.mjs [passes=2] [label] - STORMHOLD's fight, THE QUEEN'S LANCE, through BK.bossLab (src/lab.js): every hero
    (the geomancer too), dice pinned per row, one salt per pass so pass two is not pass one again (docs/INTEGRATOR.md). The
    ranking's settings (the ranking's audit-bosslab tool, on the claude/audit branch: refill health, a 150 s cap, speed 1, modes on) for passes 0..n-1,

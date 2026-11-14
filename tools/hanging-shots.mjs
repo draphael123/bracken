@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hanging-shots.mjs [tag] - THE HANGING VILLAGE, PHOTOGRAPHED IN THE REAL PAGE: one shot per floor, the Web Hollow, the
    Reeve's crown, for the rework (docs/briefs/hanging-village-rework.md). Node renders lie about light (docs/AGENT-HANDOFF.md), so
    every picture is the page's own 320x180 buffer after 300 BK.step frames, saved at 2x as docs/hanging/<tag>-NN-<spot>.png.

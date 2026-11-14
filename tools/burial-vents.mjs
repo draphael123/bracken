@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial-vents.mjs — THE MACHINE, IN THE PAGE (claude/burial2, 2026-09-26; src/burial-expansion.js, docs/briefs/burial-rework-2.md §2).
    The level's sentence is LIGHT THE GAS: THE DEAD WILL NOT RISE IN ITS LIGHT. On the Candle Path's lesson, with real keys and no god mode:
      1. walking past the candle puts FIRE IN HAND, and it burns down

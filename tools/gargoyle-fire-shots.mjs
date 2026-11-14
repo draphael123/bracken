@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-fire-shots.mjs <tag> — the real page, captured: THE GATE GARGOYLE's fire (claude/gargoyle5, 2026-09-28). One sheet of four
    panels: the breath half-way out along its line, the fireball's windup (his pose and the fire in his jaws), the first ball in the air,
    and a beat later (the second throw, since gargoyle5). Writes work/gargoyle5/<tag>-fire.png. Not in the suite. Run it before a change

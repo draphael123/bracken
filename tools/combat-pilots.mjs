@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/combat-pilots.mjs - THE HUMAN-SPEED BOT ON A SAMPLE OF BOSSES, AT NORMAL HEALTH (claude/combat3, the combat pass; a measuring tool, not a check).
    The boss lab's bot (src/lab.js bossLab: ~250 ms reactions, it guards and rolls on the tells and goes for the openings it knows) fights each
    boss once per hero with NORMAL health - it can die - so a row is a win, a death or a timeout. Daniel's fairness target for a boss is 60-75%

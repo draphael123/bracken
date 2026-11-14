@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/check-pool.mjs - THE SAME CHECKS, WITH A SMALL NUMBER OF HANDS.
 // The parent keeps every answer until that check finishes: two tools may work together, but their words never mix.
 // Each hand has one port and one long-lived server. Page tools still ask cdp.mjs whether that server serves this checkout.

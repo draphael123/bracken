@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stockade3art-shots.mjs - THE STOCKADE 3 ART stills (claude/stockade3art): the gallows, the gate walk, the stair, the yard + hall pegs, the Chieftain lured and crushed,
 // the crew pinned. Full frames at 2x, plus 4x crops of the Chieftain. Saved into OUTDIR (default scratch/lane-reports/stockade3art-shots/after). Not in the suite: pictures are for eyes.
 import { openPage, ROOT } from './cdp.mjs';

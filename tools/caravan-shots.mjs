@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan-shots.mjs — THE SUNKEN CARAVAN in the real page: pictures of its places, rendered with BK.step (BK.sim does not
 // draw), saved at 2x into docs/caravan/, one numbered picture a place. Not in the suite: pictures are for eyes. usage: node tools/caravan-shots.mjs [name ...]
 import { openPage, ROOT } from './cdp.mjs';

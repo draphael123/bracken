@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksar-route.mjs - THE BANDIT KSAR walked end to end with REAL KEYS (claude/ksar; the shape of tools/glasssea-route.mjs). Not in the suite: a route
 // pilot. A scripted hand holds a direction, hops onto the next ledge, CUTS the gongs on its way (ATTACK at a gong), RINGS THE GREAT GONG (E) and hauls the
 // gate winch (E, notch by notch), KICKS the powder store's first keg (ATTACK) and waits for the chain to blow the bricked arch, and cuts down what stands in

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/uphill.mjs — UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down").
 // In the real page, on THE SUNKEN CARAVAN's own dunes: a hero set on a slope and walked UP it for a moment settles at
 // UPHILL.steep (steep) or UPHILL.gentle (gentle) of the speed the same hero reaches walking the other way, DOWN it, which is

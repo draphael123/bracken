@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/tower-collapse.mjs — FAILING STONE, THE FALLING TOWER's own rule (docs/briefs/falling-tower-rework.md §2, src/tower-collapse.js).
    "THE TOWER IS FALLING: STONE THAT CRACKS COUNTS DOWN, AND THEN IT GOES." This proves the rule is what the brief promises:
      TOLD     weight starts a count; a crack on each whole second (3, 2, 1) - the count is the tell, and nothing goes without one

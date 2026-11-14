@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/structure-stable.mjs - a footing drawn by main.js's drawStructures must look the same wherever the CAMERA is (Daniel 10-21, THE UNBURIED FIELD:
    "this gets scrambled when you move" - the headstone cairn and the trestles were seeded from the box's screen x, so they re-dealt every frame the camera moved).
    Every 'ub' structure kind of the field is drawn into the same box at two screen offsets (the world box unmoved, only cx differs) and the two pictures must be identical.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/boss-fight-end.mjs — EVERY BOSS'S DEATH ENDS ITS FIGHT. For every level with an arena (and every level with a mini), in
 // the page: start the fight the way the boss lab does, cut the boss down through the game's own hurtEnemy, and require that the
 // fight is OVER within five seconds - bossActive (or miniActive) false. A boss whose death leaves the fight running keeps the walls

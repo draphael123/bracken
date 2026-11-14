@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/secrets.mjs - THE SECRETS SYSTEM (claude/secrets, Daniel 10-21: "secrets must be CLEAR"). One registry (src/secrets.js) for the Unburied Field (three lost banners) and the Lit Church (three votive lamps).
 //  A. NODE: the registry's integrity (levels, hosts, heroes, piece ids = the levels' own ids), the pure rules (found / open / progress / toast / journal / hero line / migration), no spoiler before discovery.
 //  B. THE PAGE: a fresh save shows NOTHING of the field (no '?' , no progress line, the journal says '? ? ?', the hero card names no place); a banner -> the toast 'LOST BANNER 1/3', a dim '?' with '1/3 LOST BANNERS' on the map,

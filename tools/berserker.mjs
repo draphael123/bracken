@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/berserker.mjs — THE BERSERKER'S KIT, PLAYED THROUGH HIS REAL INPUT IN THE REAL PAGE (claude/berserker; REWORKED claude/berserker2,
 // scratch/brief-berserker2.md - the design changes are stated where the assertions changed).
 //   flurry    the chops run 1..5 and the run goes on only while they land: the FIFTH is the CROSS-CHOP (heavySwing), a chop that whiffs

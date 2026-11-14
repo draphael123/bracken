@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/riposte-shots.mjs - THE PARRY AND THE RIPOSTE, LIVE (claude/riposteart): every hero parries a sprig through his real input, and the drawn frame (BK.step renders it) is cropped round him
 // at the catch, the hold, then at the three beats of the riposte strike (step-in, cut, follow-through); the foe's recoil is cropped with him. One row a hero. Also asserts the draw CHOSE the
 // new keys (P.lastKey 'parry' while the pose runs, 'ripo' through the strike) - the art is wired, not just baked.   node tools/riposte-shots.mjs [out.png]

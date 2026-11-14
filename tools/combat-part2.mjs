@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/combat-part2.mjs - THE COMBAT PASS, PART 2b (claude/combat2, src/foe-react.js): reactive foes, varied swings, squads, the act ramp.
 //
 // In the page, headless, on a flat floor of a loaded level (everything else in it put away), a god-mode hero and a few common foes:

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/heropassaart-shots.mjs - HERO PASS A ART in the game (claude/heropassaart; not in the suite): on a flat floor, a strip of crops round the hero (3x) for each new move.
 //   usage: PORT=8966 node tools/heropassaart-shots.mjs <outdir> [scenario,scenario...]  -> <outdir>/<scenario>.png
 import { openPage } from './cdp.mjs';

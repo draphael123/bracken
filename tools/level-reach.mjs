@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/level-reach.mjs - EVERY LEVEL IS REACHABLE FROM A FRESH SAVE BY NORMAL PLAY (2026-10-07, Daniel: "there's no way to
 // actually get to THE BURNING VILLAGE by default on the map - you have to use level select"; the cause was a silver-TIME
 // gate (opensOn.medal) on the class levels' roads). Walks the real map: starting with nothing cleared, every node the map

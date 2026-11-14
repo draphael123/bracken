@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/foeproof-seeds.mjs - the variant archers' shots (claude/foevariety proof, 11-05): for each skin, the first live archer of it, the knight 5 tiles off (an archer ignores a hero farther than ~7) in the open:
    (1) wait for a shot (s.fv set), (2) REFLECT it (emulated reflectSeed, main.js 7817) and see it hurt/kill its owner, (3) a second shot left to LAND: damage, and venom poisons / rock shatters. node tools/foeproof-seeds.mjs */
 import { openPage } from './cdp.mjs';

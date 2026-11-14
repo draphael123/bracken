@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/spart-mother-states.mjs - THE SCARAB MOTHER in every move, in the real page (claude/spart): each mode forced for a frame and shot -> work/claude/shots/spart/mother-states.png (a sheet) + mother-<mode>.png.
 // Not in the suite: pictures are for eyes. PORT from the environment. env: SHOTS (default work/claude/shots/spart), ONLY=a,b
 import { openPage, ROOT } from './cdp.mjs';

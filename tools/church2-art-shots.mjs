@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/church2-art-shots.mjs - LIT CHURCH 2's art-pass pictures (claude/church2art). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8945 node tools/church2-art-shots.mjs <tag> [name-filter,...]   -> work/claude/church-art/<tag>/*.png (the game's own canvas, 2x)
 //   spots: the crossing + parclose, the nave trough (lit/dark), the chantry (stalls, fire, braziers, door), the south trough, the Deacon's fight (a shot at each new mode), the Paladin's bar.

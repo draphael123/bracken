@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance4.mjs - THE QUEEN'S LANCE 4 (claude/lance4; scratch/brief-lance4-1029.md, Daniel 10-29 20:04: all recs). Replaces tools/lance3.mjs
 // (the mounted Lance). Node for his bridge, his numbers and the pure bell / rope machinery; the page for the fight, every device forced and
 // its effect read back:

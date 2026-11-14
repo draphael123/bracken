@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ft2-shots.mjs — THE FALLING TOWER, ROUND 2 (docs/briefs/falling-tower-round2.md): before/after pictures of the places the
 // round touches, rendered with BK.step (BK.sim does not draw) and saved at 2x into work/ft2/<tag>/. God mode; the hero stood at each
 // spot and given a second and a half to settle. The last pictures are of the sky fight (the carpet boarded, the Archmage awake) and,

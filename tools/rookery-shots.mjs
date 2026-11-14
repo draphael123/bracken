@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery-shots.mjs [only,tags] - real-page stills of THE ROOKERY and THE SHRIEK SISTERS (claude/rookery greybox) for the lane report and the art lane:
    each named area at its point of use, a cracked rock before (its result ghosted) and after her dive broke it, the shrieker's mark, and the sisters' every move at its
    windup / release (B16) and STUNNED. Headless Chrome through tools/cdp.mjs, the knight in god mode, the level reloaded before each shot.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/skyroad-aloft.mjs - NOTHING IN THE SKY ROAD HANGS IN THE AIR (claude/skyroadart; the same idea as underwell-aloft / moor-aloft / unburied-aloft, Daniel's playtest 10-05: "this is floating").
    The Sky Road's ledges cross open sky; the art keys every one of them to the rock or to something that reaches it.
    NODE (no page):

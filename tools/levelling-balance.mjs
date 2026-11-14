@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/levelling-balance.mjs — WHAT THE PASSIVES DO TO THE FIGHTS. Not in the suite (it is long): run it by hand after a change
 // to when passives arrive. For each hero level asked (default 8,12,20) every hero is set to exactly that level with NO ability
 // owned or slotted, so the only difference between two runs of this tool is which passives the level has switched on. It then

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnestart-props-sheet.mjs - THE HORNET'S NEST's PROPS and FOES on one sheet (claude/hornetsnestart): the comb (fresh / set), the stand, the pot, the smoke cloud, the brood cell
 // (idle / pulse / broken), the wax pillar, the four foe skins' frames and the swarm's five poses, at 4x.   TAG=after PORT=<port> node tools/hornetsnestart-props-sheet.mjs
 import { openPage, ROOT } from './cdp.mjs';

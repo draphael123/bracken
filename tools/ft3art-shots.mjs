@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ft3art-shots.mjs - FALLING TOWER 3 ART (claude/fallingtower3art): the chase rooms, the cracked pillars, his fall poses, the ladder and the core, rendered in
 // NODE (tools/node-canvas.mjs, no browser) into work/ft3art/. Node renders are honest about construction and not about light: the page captures are the judge.
 // usage: node tools/ft3art-shots.mjs [rooms|pillars|mage|all]      Not in the suite: pictures are for eyes.

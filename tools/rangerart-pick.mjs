@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rangerart-pick.mjs - the hero pick with the Warden and the Ranger selected (claude/rangerart; not in the suite). usage: PORT=8914 node tools/rangerart-pick.mjs <tag>
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/courtyard-shots.mjs <tag> — the real page, captured: THE MAGE'S FOLLY's opening (claude/courtyard, 2026-09-28). One sheet of
    four panels across the level's first section (the overgrown grounds before, THE WARDED COURTYARD after), camera parked on each beat,
    god mode, foes left where they stand. Writes work/courtyard/<tag>.png. Not in the suite. Run it before a change and after it.

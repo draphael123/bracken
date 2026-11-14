@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/underwell-route.mjs - THE UNDERWELL walked end to end with REAL KEYS (claude/underwell; the shape of tools/redgorge-route.mjs). Not in the suite: a
 // route pilot. A scripted hand holds a direction, hops onto the next ledge, climbs the rope, TAKES the torches and THROWS them (claude/underwell2: E, then ATTACK -
 // with UP held for the lob over the water, DOWN for the short toss into the gutter), strikes the great lamp's chain, swims the drowned cistern's deep pool, fills at the

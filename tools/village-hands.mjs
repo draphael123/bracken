@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/village-hands.mjs - THE BURNING VILLAGE 3 (claude/burning3; Daniel 10-23: "we can use water better in the level, the fire should feel more intense, falling debris at points").
    What it proves (src/village-hands.js + src/burning-village.js; the rules are in the header of the first):
      1. BURST: three tanks in a rising line (barrel, tank, tower; reach 5 / 9 / 15 tiles), each taught by a sign, a struck full one bursts ONCE: its wave puts out the straw in reach,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bloodstep-strip.mjs - THE BLOOD KNIGHT'S STEP, frame by frame as the game draws it (claude/bloodstep).
 // The real page in Chrome, stepped with the draw on: the hero 'reaper' steps once (a foe stands ahead), caught every second tick in a crop round him, blown up.
 //   PORT=<p> node tools/bloodstep-strip.mjs <out.png> [label]

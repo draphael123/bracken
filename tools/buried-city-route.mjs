@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/buried-city-route.mjs - THE BURIED CITY walked end to end with REAL KEYS (claude/buriedcity; the shape of tools/ksar-route.mjs). Not in the suite: a route
 // pilot. A scripted hand holds a direction, hops onto the next ledge, works THE RULE with E (pulls a sand-gate lever, turns the great wheel) and WAITS on the sand
 // (it rides a filling room up, walks over a filled one), and cuts down what stands in its way with plain swings (it never blocks or dodges: a careless player).

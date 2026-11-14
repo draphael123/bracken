@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/queen-pilot.mjs [maxSecs=300] [seeds=1] [heroes] — THE GOBLIN QUEEN, piloted by the boss-lab hands with every hero: the settings
    6ac9c23 used (bossLab crown, refill health, a 300 s cap), plus how she was opened - how often a chandelier and how often a
    pillar pinned her, and which of her attacks did the damage. Not in the suite: it is too long. Prints one row a fight and a

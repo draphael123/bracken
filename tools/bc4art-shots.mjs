@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc4art-shots.mjs - THE BURIED CITY 4's art pass in the real page (claude/bc4art), for eyes. Not in the suite. PORT from the environment, one page.
 //   node tools/bc4art-shots.mjs name:x:row[:sim[:flags]] ...   flags: s = strike the nearest glass first, S = strike it and sim 'sim' frames more, f = foes kept (default: other foes put down), h = HUD kept
 //   env: OUT (default work/claude/shots/bc4art/cur), CROP=x0,y0,w,h,k (zoom of the 320x180 frame), SHEET=1 (a contact sheet), PRE=<js run after load>

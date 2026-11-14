@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3fix-trace.mjs - a one-fight TRACE of the Goblin Queen row (claude/gq3tune, GQ3FIX): samples the hero, the boss and the stage every 0.5 s of game time
    so a stall (the tower) or a hero who never lands a blow (P2) can be read. A measuring tool, not a check.   PORT=8644 node tools/gq3fix-trace.mjs knight 1 [stage=escape|roof|all] [secs=360] */
 import { openRetry, fightJs, diffJs } from './boss-run.mjs';

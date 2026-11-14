@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-shots.mjs [outDir] - GQ5Q2-TUNE BROWSER OWED 4: 8-10 stills for Daniel. Real page, real swings/physics, flag ON.
    Writes work/claude/shots/gq5q2/ (or outDir) one PNG each (640x360) + sheet.png. One headless page, not in the suite.
    BRACKEN_GQ5Q2=1 node tools/gq5q2-shots.mjs <outDir> */

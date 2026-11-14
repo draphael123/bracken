@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dk2art-shots.mjs - THE DEATH KNIGHT 2's art in the real page (claude/dk2art), for eyes: the boss's price glow + dashed crescent, the crescent, the drain, the
 // chapel standards (up / cut / risen), the gold OPEN read, the hook; and the hero's rhythm, kneel, held price and crescent, and the lingering dead.
 // -> work/claude/shots/dk2art/*.png. Not in the suite.   PORT=<port> node tools/dk2art-shots.mjs

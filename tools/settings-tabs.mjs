@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // (batch89 integ) (batch156: Y is now the co-op PING default, claude/cooppr, so the fixtures use R) the rebind fixtures use Y, not I: I is now the default GRAB key (claude/partnerthrow), so binding it to jump is a real, flagged conflict.
 // tools/settings-tabs.mjs - SETTINGS IN TABS, REBINDING, THE CO-OP GUIDE (claude/storeui; HANDOFF items 18 and 22).
 //   1. the five tabs exist (AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY) and EVERY row of the old Settings list is on exactly one of them,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/fat-pilot.mjs [bosses=crown,kings] [heroes=knight,warden,pyro] [maxSecs=300] [seed=s1] - the goblin queen's and King Gorm's
    fights, piloted by the boss-lab hands: one row a fight (hero, outcome, seconds, hp left, damage taken a minute). Not in the suite
    (too long). Used for the BEFORE and AFTER of the fat-queen pass. */

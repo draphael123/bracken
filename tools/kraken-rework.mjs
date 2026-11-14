@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kraken-rework.mjs - THE KRAKEN, REWORKED (docs/briefs/kraken-rework.md, Daniel 2026-09-25), in the game. Each part forced and
    watched, the way a player meets it:
      THE TIDE RISES   on its clock the sea takes a section of the road from his end; caught on the stones it takes, you are hit and

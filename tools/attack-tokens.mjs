@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/attack-tokens.mjs — A CROWD TAKES TURNS, AND THE ONES WAITING ARE NOT STATUES (the combat pass, 2026-09-28; src/attack-tokens.js).
 //
 // In the page, headless: a level is loaded, everything in it is put away, and a crowd of six common foes is set down round a hero

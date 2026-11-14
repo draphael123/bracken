@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/chief-stills150.mjs - stills of the Chieftain's fight as it plays (claude/bosstune150; a capture tool, not a check).
 // usage: node tools/chief-stills150.mjs <outdir>   (god-mode knight beside him; a zoomed crop the first time each of his modes shows)
 import { openPage } from './cdp.mjs';

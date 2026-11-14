@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/whirlpools.mjs — THE KEEP'S WHIRLPOOLS do what Daniel asked (docs/briefs/keep-rework-2.md; src/whirlpools.js).
    "Each drags you toward its centre and burns air faster while you are in its pull. Entering its area SHOWS ITS SWITCH; strike the
    lever and the whirlpool winds down and stays off (through a death)." In Node, on the module: the drag is toward the eye, the air

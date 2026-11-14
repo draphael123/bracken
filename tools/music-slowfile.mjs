@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/music-slowfile.mjs (claude/smallfix11, Daniel 11-03: THE HORNET'S NEST played a generic synth loop for about a minute, then its own track).
 // Cause: the music fetch had a 20 s TOTAL timeout; the 2.1 MB hornetnest.ogg on a slow line was aborted and restarted from zero three times (~60 s), then
 // trackFailed let the synth stand in until a later retry landed. Now the timeout is a STALL timeout and trackFailed waits for the whole retry budget.

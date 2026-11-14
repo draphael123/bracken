@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance-sheet.mjs - THE QUEEN'S CHAMPION as a contact sheet (claude/stormhold3art; claude/lance4: ON FOOT; claude/lance4art: the 1:1 sheet, x1 in the
 // game, so the sheet shows him at the game's own scale times K): the shielded set, then the shieldless (P3) set, then the bestiary card.
 // `node tools/lance-sheet.mjs` -> work/claude/shots-lance4/lance-sheet.png (SHOTS=<dir> to change it; K=<n> for the zoom, default 2)

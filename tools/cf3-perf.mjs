@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf3-perf.mjs - CF3 frame cost + console check (claude/cf3proof): 8 foes mid-flash in one room, ms per step with the flag ON vs OFF, and any page error.
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false, seed: 7 });

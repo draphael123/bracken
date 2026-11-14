@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial2-walk.mjs <tag> [heroes] — THE BURIAL CAVERNS WALKED AND LOOKED AT (claude/burial2; RULES F9, S8). Not in the suite.
      1. THE PLAY BOT (src/playtest.js, mode 'play'): no god mode, start to gate, once per hero - the same bot before and after the rework,
         so its report (walked, deaths, lifted-over places, findings) compares like with like.

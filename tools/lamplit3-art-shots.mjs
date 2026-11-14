@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lamplit3-art-shots.mjs - THE LAMPLIT STREET 3's art-pass pictures (claude/lamplit3art): each section, dark and lit, the fire verbs, the Wickling.
 // Not in the suite: god mode, a picture not a playtest.   usage: node tools/lamplit3-art-shots.mjs [out-dir] [name-filter,...]   (PORT from the env)
 import { openPage } from './cdp.mjs';

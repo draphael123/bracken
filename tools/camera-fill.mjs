@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/camera-fill.mjs — THE CAMERA'S FOOT LINE AND THE GROUND'S FADE (look-and-feel review, 2026-09-26, Daniel: "the
 // levels should feel more polished and look better"). Three things, red first against the OLD code (0.58, camBelow: 1,
 // a flat 0.05-a-row fade):

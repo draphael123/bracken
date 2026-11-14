@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/onestore-shots.mjs - a picture of the store from each way into it (claude/onestore).
    node tools/onestore-shots.mjs <out-prefix>   e.g. work/claude/onestore/before
    Drives the REAL keys: the map's V and Q, the wood's Q, the pause menu's entries, the keeper's counter. Works on the old code and the new. */

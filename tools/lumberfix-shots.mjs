@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lumberfix-shots.mjs - a SWEEP of the whole Lumber Trail (claude/lumberfix): a frame every ~STEP columns along the route (nearest coin), 4 frames to a sheet.
 //   usage: PORT=8777 node tools/lumberfix-shots.mjs <tag> [step=22]  -> work/claude/shots/lumberfix/<tag>/sheet-N.png. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';

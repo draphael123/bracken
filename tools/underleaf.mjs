@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleaf.mjs - UNDERLEAF 3: THE GRANDMOTHER'S VILLAGE + HER JARS (claude/underleaf3; Daniel's interview 2026-10-15, scratch/brief-underleaf3-1015.md).
    A DELIBERATE DESIGN CHANGE, stated (never a weakened test): Underleaf 2's SOUND / HUSH rule is RETIRED from this level on Daniel's word ("the sound situation
    just doesn't really work") - the streets, alarms, caches, the toll, the Bellman and the bone key went with the old village, and so did their assertions here.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/knight-shots.mjs - THE KNIGHT'S BIG BLOWS, frame by frame as the game draws them (claude/chargefeet).
 // The real page in Chrome, stepped with the draw on; 12 crops round him, blown up. Run it in the old checkout and in this one for before / after.
 //   PORT=<p> node tools/knight-shots.mjs <heavy|finisher|slam|slam2> <out.png> [label]

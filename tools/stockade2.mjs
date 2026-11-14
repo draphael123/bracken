@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stockade2.mjs - PINS THE STOCKADE 2's NEW BEATS (claude/stockade2, scratch/brief-stockade2-1014.md; report work/claude/lane-done/claude-stockade2.md)
 // so a later merge cannot silently drop them. STATIC (node, the built level):
 //   watchtowers  the section is built: the dozing blower who drops his horn, two log piles, the barred gate (T.PORT, opened by the horn - reachDoors),

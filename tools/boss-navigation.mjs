@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import assert from 'node:assert/strict';
 import {openPage} from './cdp.mjs';
 import {LEVELS} from '../src/level.js';

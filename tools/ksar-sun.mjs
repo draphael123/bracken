@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksar-sun.mjs - HP THE SUN COSTS PER OUTDOOR STRETCH OF THE KSAR, per hero (claude/ksarfix; report only, not in the suite).
 //   A STRETCH = a maximal walk along the level's route (tools/pacing.mjs) out of shade (src/ksar.js shade boxes + rock overhead), timed at RUN pace
 //   (src/sunstroke.js), costed with the real meter (walkCost: cool at the start - the shade before it resets it). hp = share of max health x the hero's max

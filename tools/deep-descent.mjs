@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/deep-descent.mjs — THE WAY DOWN THE DEEP, PLAYED (Daniel, 2026-09-25: "The deep is unbeatable. There is no way down.").
    In the real page, no god mode, with the game's own key state (BK.keys / BK.press, what the keyboard sets), for the knight and the
    warden: from each checkpoint above a descent the hero plays down it the way a player does - swims to a stone, walks onto it, carries

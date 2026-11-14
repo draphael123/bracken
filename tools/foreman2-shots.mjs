@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/foreman2-shots.mjs - FOREMAN2 proof pictures (claude/proof146b). Not in the suite. god mode, pictures not a playtest.
 //   usage: PORT=8861 node tools/foreman2-shots.mjs <outdir>   -> <outdir>/f2-*.png (crops from the game's canvas)
 //   stills: plates off per stomp stage (0..3), the stomp debris burst, the braced cart, the points notches on the rail, + a numeric braced-poke check

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bkblood-shots.mjs - THE BLOOD KNIGHT'S BLOOD PASS in the real page (claude/bkblood, scratch/brief-bkblood-1023.md), for eyes: THE RALLY (a hit, then the reclaiming
 // cut with its stream + '+N', the debt bar and the red edge pulse - the whole screen), THE BLOOD LASH (the third cut against a goblin past the steel's reach) and CRIMSON
 // FRENZY (full VITAE, HOLD F, then cutting). Runs on any branch (before: the old drag / BLOOD SURGE).

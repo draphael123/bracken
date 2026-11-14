@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/keep-passages.mjs — THE KEEP'S NARROWS, PROVED (src/keep-passages.js, batch 2 of work/claude/KICKOFF.md).
 // Built: the approach is 560 tiles, the new stretch is passages and not a hall, every siphon is a mouth in rock on a
 // passage and nowhere near air, blight lies on water, every place in the narrows combines three hazards or more, the

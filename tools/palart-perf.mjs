@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/palart-perf.mjs - what does the Paladin's holy art cost a frame? (claude/palart; a spot check, not in the suite.)
 // A phone-sized page with the CPU throttled (MP_CPU, default 4), the paladin on flat floor; the average ms of BK.step(1) with NOTHING up, with a circle
 // planted, an EMPOWERED circle, and a circle + a hammer in flight + a SMITE column. Fails if the circle adds more than PERF_MAX_MS (default 1.5 ms at 4x) a frame.

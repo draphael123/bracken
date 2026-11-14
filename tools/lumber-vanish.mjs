@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lumber-vanish.mjs - A FELLED PINE NEVER VANISHES (claude/lumberfix, Daniel's playtest 10-19: "if a bridge falls or a tree falls, and you keep going, it seems to
 // disappear visually. You go back and it reappears"). The prop draw culled every prop by its OWN x (+-40 px of the screen), and a felled pine's x is its STUMP: a trunk is up to
 // 14 tiles long, so once the stump scrolled off the far end of the trunk stayed un-drawn until you came back. src/felling.js fellSpan() is the trunk's real span; main.js tests it.

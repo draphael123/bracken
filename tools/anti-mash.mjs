@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/anti-mash.mjs - ANTI-MASH INSIDE OPENINGS (claude/difficulty; Daniel 10-15 ~12:55, src/anti-mash.js).
    NODE: the stale table (x1 / 0.85 / 0.7 / floor 0.55), a different verb resets it, a new opening resets it, a room's blow is never stale;
      every campaign boss and mini carries a break bar (breakMax > 0) unless BREAK_SKIP names why; heavies / plunges / ripostes / abilities fill

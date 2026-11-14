@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/ranger-canal-trace.mjs (claude/rangercanal) - a measuring tool: Ranger-vs-boss fights with a trace (where she stood, what the boss did, what hit her).
      PORT=8920 node tools/ranger-canal-trace.mjs [boss=canal] [seeds=1,2,3] [hero=ranger]     env T0/T1: dump every frame between those seconds */
 import { openRetry, fightJs } from './boss-run.mjs';

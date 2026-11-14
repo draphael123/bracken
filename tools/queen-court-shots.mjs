@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/queen-court-shots.mjs [out.png] - THE GOBLIN QUEEN'S COURT, PHOTOGRAPHED IN THE REAL PAGE (docs/briefs/goblin-queen-court.md). One contact
    sheet of six frames of the page's own 320x180 buffer (BK.step, so it is drawn): her leap told (her shadow where she lands), her holding court
    beside a pillar with its crack at one blow, at two blows, tottering after the third, pinned under it, and her round-two plate shattering.

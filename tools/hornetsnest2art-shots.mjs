@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnest2art-shots.mjs - THE HORNET'S NEST 2 ART LANE's close-ups (claude/hornetsnest2art): the SAGGING COMB (whole / counting / hot / gone / back), the RESIN DRIP (nub, bead steps, fall),
 // the empty SMOKE STAND, the pot's BURST, the GROUNDED Queen. OUT=<dir> sends the shots elsewhere; ONLY=a,b limits them.
 import { openPage, ROOT } from './cdp.mjs';

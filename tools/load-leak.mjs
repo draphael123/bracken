@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/load-leak.mjs - A PAGE THAT LOADS LEVEL AFTER LEVEL DOES NOT GROW (claude/loadleak, 10-16).
 // Every BK.load bakes the level's tiles, props and backdrop again (~750 canvases). The sheets of the bake before were simply dropped, and a
 // dropped canvas keeps its native memory until a MAJOR garbage collection, which V8 (it cannot see that memory) is in no hurry to run: ~43 MB

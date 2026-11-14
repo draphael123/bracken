@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/highcrown2-shots.mjs [outDir] - HIGHCROWN 2 (claude/highcrown2), PHOTOGRAPHED IN THE REAL PAGE: the new pieces of the level and the Queen's new
    move, one frame each of the page's own 320x180 buffer (BK.step, so it is drawn), saved at 2x to work/claude/shots/highcrown2/ (or outDir) with a
    contact sheet. For the art lane (what it has to draw) and the report. Not in the suite. */

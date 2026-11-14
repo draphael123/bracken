@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad2art-heroes.mjs - THE NINE HEROES' PLANK POSES laid out for eyes (claude/fenroad2art): per hero, the base frames (idle, run, crouch, heavy, atk) as the baked set has them, and
 // the carry / lay / throw poses the plank module composes. PORT=<port> node tools/fenroad2art-heroes.mjs [base|poses]  -> work/claude/lane-done/fenroad2art-<TAG>-heroes-<mode>.png
 import { writeFileSync, mkdirSync } from 'node:fs';

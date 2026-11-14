@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/clanart-sheet.mjs - THE WAR CAIRN clan on one contact sheet (claude/warcairnart): PORT=.. node tools/clanart-sheet.mjs [keys..]  env: K=scale(6) OUT=file.png BASES=1 (also draw each base sheet's frames under it)
 import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';

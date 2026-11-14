@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/caravan-walk.mjs [heroes] [steps] — F9 for THE SUNKEN CARAVAN: the in-page play bot (src/playtest.js), NO god mode, start
    to gate, once per hero (default knight,warden). Not in the suite: it is long, and the bot cannot fight (RULES M) - it proves
    nothing crashes, floats or strands, and says where a plain run gets to.

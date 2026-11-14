@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geo-board.mjs - THE GEOMANCER'S BOARD (claude/geoid, Daniel 10-31 Q3 + 11-01 3rd jab). Played through her real input in the real page:
 //   stands   her stone is up ten seconds on, and the hero meter reads the board (a third a stone)
 //   gnaw     a foe pressed against it costs it a hp per GEO.stone.gnaw s and, at hp 0, it breaks (a walker cannot pen a route for good)

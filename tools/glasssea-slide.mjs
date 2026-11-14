@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/glasssea-slide.mjs - THE GLASS SEA's SLIDE GAP, MEASURED PER HERO WITH REAL KEYS (claude/slickslope). A page check (PORT).
 // Daniel 10-07, playing the GEOMANCER at L32 on the live site: "This jump can't be beat by the geomancer." Every check before this one said the gap was fine:
 //   - src/reachcore.js credits a SIX-tile run-jump across (JUMP_ACROSS), so the five-wide crack read as a plain jump for anyone (the fill has no slide at all);

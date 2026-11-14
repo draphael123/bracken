@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc-bound-footing.mjs - THE SAND-BOUND STANDS ON WHAT IS DRAWN UNDER IT (claude/bc4fix, 2026-10-15; scratch/brief-buriedcity4fix-1015.md item 1).
 // Daniel played Buried City 4 live: "sand-bound soldiers sometimes FLOAT". This loads the city, and for every SAND-BOUND (and, reported only with --all, every
 // sand-drowned) stands a god hero by it and works every glass that moves the ground round it (its own glass, and every glass of a tilting dune / riser /

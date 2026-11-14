@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied3-shots.mjs <set> - THE UNBURIED FIELD, lane claude/unburied3 (docs/briefs/unburied-deathknight.md), PHOTOGRAPHED IN
    THE REAL PAGE: the page's own 320x180 buffer after BK.step frames (BK.step renders; BK.sim does not), saved at 2x under
    work/unburied3/. Not in the suite: it is a camera.

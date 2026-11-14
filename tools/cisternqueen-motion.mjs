@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cisternqueen-motion.mjs - THE CISTERN QUEEN's motion, frame by frame (claude/queen4, Daniel 10-07: "her animations jumping around look really awkward").
 // Not in the suite: god mode, pictures. Boots her hall in the Underwell, forces each of her trips and moves by script, and lays the game's own frames out in a
 // contact sheet per move (every `every`-th frame, left to right) - a pop shows as a jump between two cells.

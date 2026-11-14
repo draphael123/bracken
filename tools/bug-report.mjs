@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bug-report.mjs - REPORT A BUG = A PASTEABLE CODE (claude/shipfix, Daniel 10-11: no email, no address, no network).
  *   A. THE ROW: 'Report a bug' is on the pause menu and 'REPORT A BUG' under the title's OPTIONS; the build (BATCH n - DATE) is small on the title.
  *   B. THE BOARD: from the pause menu it opens a one-line 'what happened?' box, MAKE REPORT CODE builds a 'BRK1-' code (< 1500 characters), shows it selectable

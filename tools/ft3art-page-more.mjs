@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ft3art-page-more.mjs - FALLING TOWER 3 ART page captures part 3: each pillar before/after it falls, the rolling ladder, the core and his hall. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

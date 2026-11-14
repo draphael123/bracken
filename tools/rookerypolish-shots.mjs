@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookerypolish-shots.mjs - stills of THE SUMMIT's slabs/rubble/stone and the Shriek Sisters' card (claude/rookerypolish). OUT=<dir> PREFIX=<name> */
 import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';

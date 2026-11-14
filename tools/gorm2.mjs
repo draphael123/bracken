@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorm2.mjs - KING GORM 2: THE COURT, THE BURNING WOOD, THE KING'S GLADE (claude/gorm2; Node, no page). The shape of the fight, checked on the
 // level's data and on his hands and AI run in a fake world:
 //   THE HALL: five cages on ropes (no plates), each tied off at two pegs on the hall floor three tiles either side; each cage's deck under its

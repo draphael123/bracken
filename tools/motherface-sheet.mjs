@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/motherface-sheet.mjs - BEFORE / AFTER sheet of her every state (claude/motherface): <before dir> <after dir> <out png>. Each cell = her crop (200x160 of the 640x360 still) at 1.5x, before left, after right, two states a row.
    PORT=<port> node tools/motherface-sheet.mjs work/tmp-motherface/before2 work/tmp-motherface/shots work/claude/lane-done/motherface-before-after.png */
 import { openPage } from './cdp.mjs';

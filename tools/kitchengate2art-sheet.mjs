@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kitchengate2art-sheet.mjs - contact sheets for the KITCHEN GATE 2 art pass (claude/kitchengate2art): the 8 dressing props, the serving line / griddle / meat rail,
    the attendant's 7 frames, the boss's hall pieces (hatch, belt, platter, cauldron, burn, dishes, ham, plate, pepper stove) and every Grubbag pose. Nearest-neighbour upscaled.
    Writes work/claude/lane-done/kitchengate2art-<name>.png. Headless Chrome through tools/cdp.mjs, ONE page, closed at the end. Not in the suite.

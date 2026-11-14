@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/windcaller-gusts.mjs [heroes] - THE WINDCALLER 3's SUMMIT, PER HERO, WITH REAL KEYS (claude/windcaller3, scratch/brief-windcaller3.md;
    design standard A7 + B12: every hero reaches every ledge with base movement). In the page, the fight live and the shaman held still (his clocks
    frozen, his bolts cleared), NO god mode, once per hero (default: every hero in src/progression.js HERO_IDS):

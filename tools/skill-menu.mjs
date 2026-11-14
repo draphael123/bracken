@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';
 const pg=await openPage({audio:false,fonts:false});try{
 const r=await pg.evalp(`(async()=>{const{skillsFor}=await import('/src/progression.js'),{hasSplit}=await import('/src/traits.js'),{xpFloor}=await import('/src/xp.js');BK.manualSimulation=true;const rows=[],shots=[];

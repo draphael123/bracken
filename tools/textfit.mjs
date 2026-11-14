@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/textfit.mjs — DOES THE TEXT FIT WHAT IT IS DRAWN ON?
 // The owner keeps finding words running out of their box. Measuring strings against a guessed width misses that the box
 // is whatever the draw code happened to put behind them. So this puts every player-facing screen on the page and records

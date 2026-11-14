@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/relics.mjs - THE RELICS ARE GONE (Daniel 2026-10-02: "no relic rewards"; the level-up card replaces the power they gave).
 //   A. NO RELIC EXISTS. No built level places one, main.js has no RELICS table and no P.relic read, and the spawn, pickup, HUD and map card
 //      code for them is gone. (Route relics: there are none. A relic was lost on death and found mid-level, so no road could ever

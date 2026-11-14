@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad2art-strips.mjs - IN THE REAL PAGE, for Daniel (claude/fenroad2art): the stilt-walker's walk (every distinct frame of two strides + a stomp, cropped round him at x4), the nine heroes
 // CARRYING the plank, one hero LAYING it and THROWING it (frame by frame), and the leech's lurk / rear / lunge / latched.   TAG=after PORT=<port> node tools/fenroad2art-strips.mjs
 // -> work/claude/lane-done/fenroad2art-<TAG>-{stilt-walk-strip,heroes-carry,hero-lay-throw,leech-strip}.png

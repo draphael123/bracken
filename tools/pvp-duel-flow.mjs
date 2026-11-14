@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pvp-duel-flow.mjs - DUEL (BETA) end-to-end in the real page (claude/proof146b). Not in the suite. usage: PORT=8681 node tools/pvp-duel-flow.mjs <outdir>
 //   title DUEL (BETA) row -> the inn with the card up -> FIGHT (bot) -> hand-played rounds (P1 on BK.press/keys) -> rankings -> winner screen -> E back to the inn at the pit; stills + self-hit stats + console errors
 import { openPage } from './cdp.mjs';

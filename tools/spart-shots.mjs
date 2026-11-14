@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/spart-shots.mjs - THE SEALED PYRAMID's art pass in the real page (claude/spart): `node tools/spart-shots.mjs [name:x:y[:sim] ...]` (x, y in tiles; y = the row to drop in from).
 // No arguments = the whole level, a shot per section (SET=all), plus sheet.png (a contact sheet, 2 wide). Not in the suite: pictures are for eyes. PORT from the environment.
 // env: CROP=x0,y0,w,h,k (a zoom of the 320x180 frame at k x), SHOTS=work/claude/shots/spart (default), SCALE=1 (the sheet's cell scale), ONLY=a,b (names), DEBUG=1 (keeps the HUD), SIM=70, SUN=1.

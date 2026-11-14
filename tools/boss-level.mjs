@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-level.mjs - ONE RULE FOR EVERY BOSS BOT: THE HERO FIGHTS AT THE LEVEL'S CAMPAIGN LEVEL (claude/botlevel; Daniel, 10-05).
    Before this, tools/combat-pilots.mjs set the hero to the level's campaign depth (BKT.setHeroLevel) while the per-boss pilots (greenteeth,
    wicker-queen, ram, ...) never did and fought a LEVEL-1 hero: Jenny was 21/21 at her campaign level and 11/21 at level 1. Two tools, two answers.

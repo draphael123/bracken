@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dr3art-shots.mjs - DEEP RAILS 3 ART pictures (claude/dr3art). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8851 node tools/dr3art-shots.mjs <group[,group]>  -> work/claude/shots/dr3art/<name>.png (crops from the game's canvas) + sheet.png (every crop, labelled)
 //   groups: foreman (his poses, boarded, braced, dents, corpse), rails (low roofs, the switch and its bridge), foes (perch, swing, leap), drill (Great Drill 3), card (the bestiary card)

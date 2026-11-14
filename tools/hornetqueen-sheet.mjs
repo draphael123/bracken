@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetqueen-sheet.mjs - THE HORNET QUEEN 2's POSE SHEET (claude/hornetsnestart): every pose of POSE (src/hornet-queen-hands.js), baked, labelled, at 3x.
 // TAG=before|after PORT=<port> node tools/hornetqueen-sheet.mjs  ->  work/claude/lane-done/hornetqueen-<TAG>-sheet.png
 import { openPage, ROOT } from './cdp.mjs';

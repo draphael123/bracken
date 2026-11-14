@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/check-context-selftest.mjs - A BORROWED BROWSER MUST NEVER BORROW A SAVE.
 // Run on demand while changing the suite pool: node tools/check-context-selftest.mjs. It is not another release gate.
 import assert from 'node:assert/strict';

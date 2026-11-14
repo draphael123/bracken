@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import assert from 'node:assert/strict';import {openPage} from './cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});try{
  const rows=await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out=[];const load=id=>{BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.start();BK.sim(10);for(const e of BK.enemies())e.alive=false;BK.god=false;};

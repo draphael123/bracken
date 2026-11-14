@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-pieces.mjs (claude/maker, batch 2) - PIECE SETTINGS reach the game, and a SHARE LINK carries the whole level.
    Every setting row of every kind that has one steps without error; the stepped values are what the game spawns (a
    platform's range and speed, a foe's facing, a crusher's beat, a gate's metal and height - its bars regrown); and a level

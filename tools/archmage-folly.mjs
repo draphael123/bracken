@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/archmage-folly.mjs — THE ARCHMAGE, HARDER (claude/archmage2; Daniel, 2026-09-29: "the Archmage fight is a bit too easy").
    The Mage's Folly's boss (id 'archmage'; tools/archmage-pilot.mjs and archmage-rings.mjs are the OTHER archmage, the Falling
    Tower's undead one). Four decisions, each proved in the page on a real fight, and every assertion SOFT and printed, so a run on

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/folly-runtime.mjs — THE MAGE'S FOLLY in the page: the co-op counterweight gate and the wizard's defeat. These lived in
    tower-finish-runtime.mjs beside the old Falling Tower checks; the tower's own now live in tower-ascent.mjs (batch 4). */
 import{openPage}from'./cdp.mjs';import{readFileSync}from'node:fs';import assert from'node:assert/strict';

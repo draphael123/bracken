@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied3-pilot.mjs [tag] [seeds=3] — THE UNBURIED FIELD's boss, the bot against him: all SEVEN heroes, REFILL health, 150 s,
    `seeds` pinned rolls each (docs/briefs/unburied-deathknight.md; claude/unburied3's before/after). Whatever L.arena.boss names is
    fought, so the same command measured THE FIRST DEATH KNIGHT before the lane and THE DEATH KNIGHT after it. Prints a row per fight

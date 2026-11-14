@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/puppeteer-shots.mjs [hero=knight] [level=theatre] [salt=1] - THE PUPPETEER in the page (claude/puppeteer; PUPPETEER2): stills of one whole fight,
 // the human bot playing it (src/puppeteer.js puppetPlan) at normal health, drawn frame by frame, saved at 2x into work/claude/puppeteer/ (or SHOTS_OUT) - one
 // for each beat the first time it happens: the chained lever, a cut, a green window, his prop drop and snare line, the lever freed and glinting, the visit

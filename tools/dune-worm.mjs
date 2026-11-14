@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/dune-worm.mjs — THE DUNE WORM IN THE PAGE (docs/briefs/dune-worm.md; reworked by claude/caravan2 from Daniel's 10-09 playtest,
    scratch/brief-caravan2.md part B). tools/caravan.mjs proves his machine in Node; this proves the game that wraps it, because every rule
    below is a rule about the WORLD around the machine, and a machine can be right while its hands are wrong:

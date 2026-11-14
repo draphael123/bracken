@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyrocharge.mjs - THE PYRO'S CHARGING FIREBALL (claude/pyrocharge, Daniel 11-04): the ball GROWS while C is held (radius 3 -> 16 at full charge), a charge meter
 // over her head like the knight's, and at 10 s THE LITTLE SUN (huge, crawling, one great blast; a boss takes <= sunCap of his health; no blow-up).
 //   node tools/pyrocharge.mjs [outDir]     frame strips -> outDir (default ../scratch/lane-reports) as pyrocharge-*.png, numbers -> stdout (JSON)

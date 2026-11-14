@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/xp.mjs — THE CURVE, WALKED. Does a straight run still stand at the level the woods used to give?
 // The hero's level is XP now (src/xp.js), and the curve it climbs was fitted to the campaign, not typed. This walks every campaign
 // wood in the order it opens, in the page, with the real spawns (placed foes, the garrison, the ambush waves, the one mini and the

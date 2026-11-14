@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/minecart-aloft.mjs - NOTHING IN THE DEEP RAILS HANGS IN THE AIR, AND IT IS A MINE (claude/minecartart; the same idea as the underwell / unburied / moor lanes' aloft checks).
    The art pass drew trestle bents, lamp posts, lip lamps, crushers, gates, duck beams, the points mast and the drill's chute; each is held by something.
    NODE (no page):

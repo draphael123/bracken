@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/reef-hulk.mjs - THE SHIPWRECK REEF's HULK (docs/briefs/reef-longer.md), proved in the page: the grate across her stern is DOWN
    when the level loads (PORT tiles, laid by main.js from the capstan's ent - the built grid leaves them open so the reach model sees the
    way on), three blows on the capstan on her deck lift it, it stays up through a death, and a swimmer can go out through it. Also the

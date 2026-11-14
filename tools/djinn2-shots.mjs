@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/djinn2-shots.mjs - THE DJINN rework's pictures (claude/djinn2): his ward after each opening, his new moves (sand spears, the fire devil, the
 // whirlpool), the flood's waves (the high ripples), the bucket bailing him where he is. Not in the suite: god mode, pictures not a playtest.
 //   PORT=6989 node tools/djinn2-shots.mjs <tag> [p1|p2|p3|all]   -> work/claude/djinn2/<tag>/*.png (2x frames from the game's own canvas)

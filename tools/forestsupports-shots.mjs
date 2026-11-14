@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/forestsupports-shots.mjs - pictures of the forest/crag levels' drawn island supports (claude/forestsupports). Not in the suite.
 //   usage: PORT=8770 node tools/forestsupports-shots.mjs <level> [x,y ...]  -> work/claude/forestsupports/<level>-N.png
 //   with no points: six islands spread along the level (from the supported-island list).

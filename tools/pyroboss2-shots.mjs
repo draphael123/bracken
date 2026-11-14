@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/pyroboss2-shots.mjs [outDir] - THE PYROMANCER 2 and THE GOBLIN FIRE MAGE, photographed in the real page (claude/pyroboss2), for the report and the
    art lane: his ward (up, guttering), the charge steps (a small one, a big one with its red ring), PHOENIX RISE told, the STOKE, P2's marks told and
    erupting; the fire mage casting (the lob drawn back), his patch, his ward, doused. Each is the page's own 320x180 buffer at 2x.

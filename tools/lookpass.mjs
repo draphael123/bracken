@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lookpass.mjs — READABILITY BY THE PIXELS, HEADLESS. The owner sees a walkway he cannot make out in a dark cave, or a
 // pale boss under pale water, the moment he looks; no tile check sees either. This runs src/lookpass.js (BK.lookPass) on
 // every campaign level and writes what it saw:

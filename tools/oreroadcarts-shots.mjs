@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/oreroadcarts-shots.mjs - THE ORE ROAD's LAUNCHED CARTS (lane claude/oreroadminor, Daniel 10-26): pictures + a proof that the verbs WORK on the real page.
 // usage: PORT=6604 node tools/oreroadcarts-shots.mjs <tag> [before]     (pictures to work/oreroadminor/<tag>/, a JSON line per probe to stdout)
 //   'before' only takes the pictures that exist on master too (the same spots with no cart): run it from a checkout of master.

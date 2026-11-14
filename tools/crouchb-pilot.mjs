@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/crouchb-pilot.mjs [label] - THE CROUCH TWISTS, PART B's pilot (claude/crouchb): the PALADIN, the GEOMANCER and the DEATH KNIGHT,
    one pinned seed each, run BEFORE and AFTER a change to their crouch (src/crouch-b.js) or to the bot's use of it (src/lab.js crouchBPlan):
      1. STORMHOLD's QUEEN'S LANCE through BK.bossLab, the duck pilot's settings (refill health, a 150 s cap, salt duck-1)

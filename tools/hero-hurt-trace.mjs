@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hero-hurt-trace.mjs (claude/herobots, a measuring tool): which boss mode hurt the hero and what he was doing (|W warding |B guarding |swinging).
    PORT=n [BT=bosstype] [SNAPS=1] node tools/hero-hurt-trace.mjs <row> <hero> 1,2,3 [profile name or JSON e.g. {"base":"human","dkWin":0.25}] */
 import { openPage } from './cdp.mjs';

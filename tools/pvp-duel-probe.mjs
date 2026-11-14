@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pvp-duel-probe.mjs - hero A against each hero of LIST, N matches each (seats alternate), prints A's wins (claude/pvpduel2).
 //   usage: A=warden LIST=knight,pyro N=6 node tools/pvp-duel-probe.mjs      LIST defaults to every other hero
 import { openPage } from './cdp.mjs';

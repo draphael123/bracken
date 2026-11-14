@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/untold-told.mjs — NO UNTOLD HITS, IN THE PAGE (the combat pass, part 2, 2026-09-28; Daniel: "no untold hits").
 //
 // tools/answer-tags.mjs proves, from the tables, that every common foe that harms you has a told windup (UNTOLD is empty). This

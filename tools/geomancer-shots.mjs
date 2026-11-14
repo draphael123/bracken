@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer-shots.mjs — THE GEOMANCER, MID-MOVE, FROM THE REAL PAGE. Every base move and every one of her nine abilities is
 // played through the real input on a flat floor with two straw foes in front of her, and the drawn screen (BK.step renders it) is
 // cropped round her at the moment the move is doing its thing. One sheet (docs/geomancer/moves.png), a cell a move, labelled with

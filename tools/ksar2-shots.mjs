@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksar2-shots.mjs - THE BANDIT KSAR 2's art pictures (claude/ksar2 part B; not in the suite): the new props in every state, the fortress, the rooftops, her poses. god mode.
 //   usage: PORT=8792 node tools/ksar2-shots.mjs [tag] [filter,filter]   -> work/claude/ksar2art/<tag>/*.png
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pogo-chain.mjs — OFF THEIR HEADS, EVERY HERO (the combat pass, part 2, 2026-09-28; src/pogo-chain.js).
 //
 // A foe's head is ground only if every hero comes back up off it. In the page, headless, on the Stockade, for each of the seven

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-textfit.mjs - GQ5Q2-TUNE BROWSER OWED 3: does the new text fit what it is drawn on?
    tools/textfit.mjs's own 'hints' scope is a STATIC regex scan of main.js for literal `hintMsg = '...'` / `hintSay('tier',N,'...')`
    assignments - it can never see gq5q2.js's dynamic `ctx.hint(Q52N.hint)` (a variable, not a literal), and its 'boss'/'bossfix'

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';
 /* every active the shop sells is cast here: counted from the catalog, so a new one is measured the day it is added (34 before the starter kits) */
 const {SKILLS}=await import('../src/progression.js'),SKILLS_ACTIVE=SKILLS.filter(n=>n.active).length;assert(SKILLS_ACTIVE>=40);

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crusader-sheet.mjs - THE CRUSADER's frames on one sheet (claude/crusader; not in the suite): every frame of bakePaladinBoss at 3x, numbered.
 //   usage: PORT=8793 node tools/crusader-sheet.mjs [out.png]
 import { openPage, ROOT } from './cdp.mjs';

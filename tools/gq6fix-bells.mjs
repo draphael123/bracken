@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq6fix-bells.mjs - GQ6FIX item 5: every bell a player can strike in Highcrown, struck at player speed (a real BK.press('atk') swing / shot) by each hero.
    node tools/gq6fix-bells.mjs [hall|props|all] [--heroes=knight,warden,pyro,ranger]   (BRACKEN_GQ6FIX=0 for the old build)
    hall  = the Queen's hall bell (src/gqueen-hands.js mechStep -> ringIt; GQ5Q1: the hoists rise) in the live fight

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/wardenult-stills.mjs - STILLS OF THE WARDEN'S REACH (claude/wardenult2). LAUNCHES ONE HEADLESS CHROME (openPage). node tools/wardenult-stills.mjs [outdir]
 import { openPage } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

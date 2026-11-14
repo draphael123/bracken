@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/barriers-shots.mjs - THE BARRIERS' pictures (claude/barriers). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8834 node tools/barriers-shots.mjs [level-id,...]   -> work/claude/shots/barriers/<level>-gate-closed|open.png, <level>-seal-closed|open.png (4x crops + a whole-screen shot of the seal)
 //   gate: the level's mini-boss gate (closed, then the mini is cut down and it lifts); else the first static portcullis column (closed only). seal: the arena's left wall rising as the boss wakes, then the boss falls.

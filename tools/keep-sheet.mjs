@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/keep-sheet.mjs — the Drowned Knight's and the Drowned Captain's frames on one contact sheet, 4x (E6: look at it). Not in the suite.
    Writes work/keep2/knight-sheet.png. */
 import { openPage } from './cdp.mjs';

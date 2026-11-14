@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/room-kills.mjs - A FOE THE ROOM KILLS GOES DOWN (claude/flotilla4, Daniel 10-27: "many foes, once dead, don't disappear - they stand there, no attacks").
 // The page test for every common foe on the build, killed by each of the ROOM's blows - not the hero's:
 //   hurt     an untagged hurt (what a broadside ball, a crusher, a falling rock, a loose gun, a rod's bolt or a fire hand to hurtEnemy)

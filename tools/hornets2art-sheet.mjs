@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornets2art-sheet.mjs - BEFORE / AFTER SHEETS for the art lane (claude/hornets2art): pairs of work/claude/lane-done/hornets2art-before-<n>.png | hornets2art-after-<n>.png side by side.
 // PORT=<port> node tools/hornets2art-sheet.mjs  ->  work/claude/lane-done/hornets2art-sheet-<set>.png
 import { openPage, ROOT } from './cdp.mjs';

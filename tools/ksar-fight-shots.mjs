@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksar-fight-shots.mjs - THE HAWK-MISTRESS's body and hawk in her modes (claude/ksar art pass; not in the suite): god mode, forced modes, a picture not a fight.
 //   usage: PORT=8704 node tools/ksar-fight-shots.mjs [tag]   -> work/claude/ksar-art/<tag>/fight-*.png
 import { openPage, ROOT } from './cdp.mjs';

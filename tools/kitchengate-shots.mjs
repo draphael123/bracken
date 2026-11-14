@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kitchengate-shots.mjs [only,tags] - real-page stills of THE KITCHEN GATE and LORD GRUBBAG (claude/kitchengate greybox) for the lane report and the art lane: each named
    area at its point of use, each machine banked and then worked (the copper's steam, the great spit turning, the trail burning to the tallow door and the door gone), the great
    pot's fire, the butcher and the butcher burning, (claude/kitchengate2) the serving lines, the stove flares, the passage, and his every move at its windup / release (B16), eating,

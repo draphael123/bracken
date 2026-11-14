@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/demoaudit-shots.mjs - stills of the demo levels along the main route (claude/demoaudit). node tools/demoaudit-shots.mjs <id>[,<id>] [--at=x,y;x,y]  -> scratch/lane-reports/demoaudit/shot-<id>-<n>.png
 import { openPage, ROOT } from './cdp.mjs';
 import { pacing } from './pacing.mjs';

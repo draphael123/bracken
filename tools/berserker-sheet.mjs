@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/berserker-sheet.mjs — THE BERSERKER'S FRAMES, ALL OF THEM, ON ONE SHEET (docs/berserker/frames.png): every key of his baked set
 // (and of his BARE set, the off axe thrown), a row a key, each frame at 3x with its name - the contact sheet a reviewer reads him from.
 //   node tools/berserker-sheet.mjs [out.png] [--skin=<id>] [--weapon=<id>]

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-reach.mjs [outDir] - GQ5Q1-TUNE BROWSER OWED 2: the 7(+2)-hero hoist reach walk, real page physics, flag ON.
      For each playable hero and each of the three hoists (h7-10 west, h13-16 mid, h20-23 "centre"/east):
        A  a standing jump from the floor in the hoist's own footprint lands on the raised deck (real tile collision, not scripted)

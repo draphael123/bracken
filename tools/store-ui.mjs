@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* STORE UI + LIVE ABILITY PREVIEWS (item 17a): the skills store shows the highlighted ability performed by the hero on a
    training post. The preview is pure draw, so cycling it must change nothing but pixels; buying is untouched. */
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';

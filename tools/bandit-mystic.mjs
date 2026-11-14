@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bandit-mystic.mjs - THE BANDIT MYSTICS held to the brief (claude/djinn2, Daniel 10-03: THE WELL TOWN's one new foe). PURE (Node) then the PAGE.
 //   THE KIND            both are the goblin mage's AI (t 'gobmage') under a man's skin (cnSkin): placed only in THE BINDING WORKS, a sprite set with the mage's
 //                       seven frames each, a bestiary card each, and a corpse frame (main.js DF2_CORPSE) - tools/corpses.mjs and goblin-lint hold the rest

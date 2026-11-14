@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq6fix-textfit.mjs - GQ6FIX: does the NEW tower-top text fit? The gq5q2-textfit recording (src/main.js __textRec, textfit.mjs's own OFFSCREEN / OVERFLOW / COLLIDE math), driving the real roof entry (toRoof), the teach
    shard's prompt, a direct blow on her (the roof WARDED line + its hint) and the reflected-stone hit confirm. Strings read: STRIKE IT!, STRUCK - 8%!, WARDED - REFLECT HER STONES, the entry hint + plate, the ward hint.
    node tools/gq6fix-textfit.mjs */

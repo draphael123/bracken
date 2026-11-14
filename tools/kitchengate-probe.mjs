@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/kitchengate-probe.mjs - THE KITCHEN GATE in the page, quickly (claude/kitchengate, the greybox). A smoke test of the rule, its machines, the butcher and the boss, not a
 // playtest: ?level=kitchengate lands in play (no god mode); a REAL BLOW on the scullery's bellows makes its fire roar, and the copper's steam lifts a hero up the well of the scullery
 // to the wine vaults; the great spit turns while its fire roars (and stops when it dies), and a hero stood on a spit at the bottom is carried up; the stove's grease trail burns to

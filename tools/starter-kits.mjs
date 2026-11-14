@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/starter-kits.mjs — THE STARTER KITS DO WHAT THEIR CARDS SAY (the Knight's and the Warden's bought abilities).
 // Each case is played through the real input on a flat floor, and asks the one thing the ability PROMISES, not a number:
 //   rise    the bought RISING CUT carries the first foe up with him, holds it in the air, and is drawn as an upward cut

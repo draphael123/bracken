@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/queen-chandelier.mjs — THE GOBLIN QUEEN IS PINNED BY HER CHANDELIER, NOT HER GALLERY (Daniel, 2026-09-24; docs/QUEUE.md §4.7,
 // docs/DESIGN.md A11: "Cut the chain and drop the chandelier on her"). Played in the real page, through the real input:
 //   gallery   her hall has no gallery any more: no pillar props, and nothing solid or one-way on the old gallery row

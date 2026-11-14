@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/mini-walls.mjs — A FIGHT THAT PINS ITS FEET NEVER ENDS A FRAME IN ROCK (Falling Tower round 2, docs/briefs/falling-tower-round2.md §1a).
 // Daniel, 2026-09-25: THE SEXTON "gets stuck in walls a lot". His feet were pinned to his deck and his x was clamped only to his room's
 // box, so he walked, rushed and climbed out of the bell pit into the two stone ringers' walks that stand two rows proud of that deck.

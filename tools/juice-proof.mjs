@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/juice-proof.mjs - JUICE2 PROOF FRAMES (claude/juiceproof-d, 2026-11-10): captures the game buffer, one PNG per rendered step, for a knight / ranger / pyro combo + a kill, and a
 // knight CLINK (a light blow on a plate foe). Stitching (strip, GIF) is done outside by ffmpeg / PIL.  node tools/juice-proof.mjs <outdir>
 // One headless browser. Flag state is whatever src/juice.js ships (ON). Each step waits 17 ms of real time so the freeze jitter (frame parity from performance.now) alternates as it does live.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canal-tunnel-route.mjs - THE LEGGING TUNNEL walked with REAL KEYS by every hero, many seeds (claude/canal5, Daniel 10-06: "the tunnel isn't
 // really working right - glitchy, awkward. There's a LADDER - I jumped out of the area and the RAFT DIDN'T FOLLOW ME... I COULDN'T GET TO THE BOSS").
 // The old checks (tools/canal.mjs) only used a scripted rider who never left the barge. This hand plays it the way a player does, and the way a player

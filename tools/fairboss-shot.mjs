@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fairboss-shot.mjs <name> - ONE still of THE WICKER QUEEN's fight, mid-fight (claude/fairboss): the fight woken at the door, a few seconds of it
 // run with the hero looking at her, and on the carousel (when the green is one) the hero set on a horse while the floor is told to burn. Saved at 2x into
 // work/claude/fairboss/<name>.png. God mode. Not in the suite: pictures are for eyes.   usage: node tools/fairboss-shot.mjs before|after

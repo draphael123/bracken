@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery2art-shots.mjs [only,tags] - ZOOMED real-page stills of the ROOKERY 2 art pass (claude/rookery2art): the two spots Daniel photographed, the gale harpy's tell and beat, a ride and
    the hang, each sister's poses in the fight, the three survivors, a sister's death, the boss room. Each shot: [tag, code, crop]; code runs in the page (BK, P, RK, SH, tp, boss, at(wx,wy)),
    crop = [wx, wy, w, h] in WORLD px or null (the whole 640x360). Output x3 for a crop. Not in the suite.   OUT=<dir> (default work/claude/shots/rookery2art)   PORT=<port> */

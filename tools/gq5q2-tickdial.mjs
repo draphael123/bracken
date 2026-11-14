@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-tickdial.mjs - GQ5Q2 TUNE: per-hero damage dial check (the gq5q1-d bug class, c308664ee: a brand-new move inheriting
    DUEL_HERO.gqueen.pyro=2.2 that the brief never meant). Measures ONE real hit of THE SWEEP and ONE real hit of THE HATCH ERUPTS
    on knight / warden / pyro at a big health buffer (no clipping), using the engine's own exposed API (G52.state(), G52.sweepStart)

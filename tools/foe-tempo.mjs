@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/foe-tempo.mjs - TIGHTER, STILL TOLD (claude/combat3, the combat pass; Daniel 2026-10-01, src/foe-tempo.js).
    Each common foe is set down alone beside a hero standing still (god mode, so it keeps attacking) on the Stockade's flat floor for
    ten seconds, and every windup it throws is timed (BK.telling, the frames the mark is up), first with the tempo OFF and then ON.

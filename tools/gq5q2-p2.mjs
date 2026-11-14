@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-p2.mjs - GQ5Q2 TUNE: THE TOWER TOP ALONE (the escape SKIPPED, same precedent as tools/gq4tune-p2.mjs:
    profile {base:'human', gqEscape:'skip'} - the lab goes straight from the hall's flee to the roof at her full second bar,
    so every fight measures ONLY the phase-2 tower-top mechanics GQ5Q2 adds (teach shard, bell perch + rope, sceptre sweep,

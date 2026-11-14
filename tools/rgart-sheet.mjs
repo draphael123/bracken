@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rgart-sheet.mjs - the contact sheet for claude/rgart: every before/after pair from tools/rgart-shots.mjs side by side (before left, after right), half size.
 //   usage: PORT=8897 node tools/rgart-sheet.mjs   -> work/claude/shots/rgart/contact-sheet.png (needs before/ and after/ shots made first)
 import { openPage, ROOT } from './cdp.mjs';

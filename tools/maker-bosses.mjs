@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-bosses.mjs (claude/maker) - EVERY BOSS IN THE MAKER'S PALETTE WORKS IN A MADE-BY-HAND ARENA.
    Each kind in src/maker-palette.js BOSSES is placed alone in a plain wood (its arena is built round it), and with the dice
    pinned to its name: walking over the trigger WAKES the fight, it stays in the world and moves or hurts the knight, a

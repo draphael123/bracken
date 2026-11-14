@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/check.mjs — ONE COMMAND BEFORE EVERY COMMIT: npm run check
 // Every audit that answers yes or no, in one pass, with one exit code. A convention nothing checks is a wish; a
 // check nobody remembers to run is the same wish with extra steps.

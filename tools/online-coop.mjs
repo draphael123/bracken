@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/online-coop.mjs - ONLINE CO-OP, PHASE 1 (claude/onlinecoop): TWO HEADLESS BROWSERS ON LOCALHOST, a host and a guest, joined through
 // a LOCAL signalling stub (tools/online-stub.mjs - the tests have no internet, so the free PeerJS broker is swapped for it with ?net=local;
 // src/online-peer-local.js has PeerJS's surface) and then REAL WebRTC between them: a data channel and the host's streamed canvas. It proves:

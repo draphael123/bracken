@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/store.mjs - ONE STORE (claude/onestore). Coins are spent in ONE store, reached from the menu, the map and the walk-in shop rooms.
  *
  * WHAT IT HOLDS (each of these fails on the old code, where there were three ways to spend coins):

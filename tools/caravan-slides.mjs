@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan-slides.mjs - THE SUNKEN CARAVAN's DUNE SLIDES, MEASURED PER HERO WITH REAL KEYS (claude/caravan2; Daniel 10-09: "big hills you slide down
 // for jumps"). A page check (PORT). Every REQUIRED slide in L.duneSlides (the teach, the big dune, the exam's; 'beds' is optional - its pit has a wagon bed
 // to hop) is driven for every hero (knight, warden, pyro, paladin, pirate, reaper, geomancer) on a fresh save, base movement, god and no foes, keys held as a

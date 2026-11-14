@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
 // driven over the DevTools protocol with Node's own WebSocket), as a helper the readability tools share.
 //   const pg = await openPage();  await pg.evalp('BK.state');  pg.close();

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/curve-gate.mjs - THE MEASURED DIFFICULTY CURVE, AS A GATE WITH A LIST THAT SHRINKS (claude/combat2, 2026-10-05). No browser.
    Every campaign level's level-1 knight row (docs/level1-curve.json, tools/level1-pilot.mjs <id> --curve) against its act's band (tools/rule-state.mjs
    CURVE_BANDS, acts in src/foe-react.js ACTS). FAILS on: a level out of its band that is not on CURVE_REPORT_ONLY, and a listed level that is back in its

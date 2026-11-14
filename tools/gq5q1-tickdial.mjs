@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-tickdial.mjs - OWED 3a, the burn-tick damage dial, fixed twice now:
      pass 1: used the default fresh knight (maxHp 100) - one tick saturated his whole bar, unreadable.
      pass 2: set the fake fire's F.tB (tick-origin time) to 0 instead of the CURRENT absolute clock (tn()) - since real play always

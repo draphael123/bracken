@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/touchrows-proof.mjs - 812x375 touch shots + tap-row-height audit of the paged title (claude/touchrows).   node tools/touchrows-proof.mjs <outdir> [demo]
 import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';

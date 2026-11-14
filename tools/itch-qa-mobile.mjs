@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-mobile.mjs - ITCH QA SWEEP, PHONE inside the itch embed (claude/qasweep; headless, ONE browser, closed at the end; not in the suite).
    iPhone-size viewport 375x812 (portrait: what itch shows first) then 812x375 (landscape: how it is played), touch events over CDP, the iframe filling the viewport as itch's mobile page does.
    Checks: loads to the title, rotate/portrait behaviour, touch layer on, every touch button >= 44 CSS px, title > map > play by TAPS, stick moves the hero, attack/jump buttons, audio starts on the first tap, saves, 0 errors.

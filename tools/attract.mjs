@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/attract.mjs - ATTRACT MODE (claude/intro, Daniel 11-08). After ~20 s idle on the title scene or the main menu the game plays short bot clips like an arcade cabinet.
 //   STATIC   the clip list is the first act's, free starters only, 3-4 clips of 8-10 s; the "may it start" rule names each reason; the idle clock zeroes on any touch
 //   OFF      a tool page (BK.manualSimulation) never gets it; ?noattract never gets it, even forced; reduce-motion never gets it; not in a submenu, not under the press prompt

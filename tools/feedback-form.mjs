@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/feedback-form.mjs - GIVE FEEDBACK, THE IN-GAME FORM (claude/feedback, Daniel 11-03).
  *   A. STATIC   the GIVE FEEDBACK rows (title top level, pause menu) are wired; FEEDBACK_FORM_URL is Daniel's form (11-10) with 7 entry ids; new filenames / ids / classes carry no ad-block word.
  *   B. FORM     from the title row: 1-5 rating, 10 'liked' + 10 'frustrating' chips, one text box, SEND, BACK; hero / level / build shown and NOT editable (the only

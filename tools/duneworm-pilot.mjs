@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/duneworm-pilot.mjs [salts=1,2,3] [heroes] — THE DUNE WORM at NORMAL health (docs/briefs/dune-worm.md), all seven heroes (the
 // Geomancer too: src/lab.js's own list stops at six), one pass per salt. bossLab pins its dice per row and the salt makes each pass its
 // own fight (docs/INTEGRATOR.md §6: a pilot that loops passes without a salt measures pass 1 again). The house band is 60-75% wins with

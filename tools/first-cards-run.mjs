@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/first-cards-run.mjs - BROWSER RUNTIME CHECK of the first-time cards and boss hints (claude/onboard2). NOT YET RUN (written under a release gate: no browser).
 //   usage: node tools/first-cards-run.mjs        (one headless page, like tools/salt-card.mjs)
 //   SKILLS   a real level, calm for FC.CALM_S: the skills card comes up by itself, once; the world holds still under it

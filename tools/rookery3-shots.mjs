@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery3-shots.mjs [only,tags] - real-page stills of ROOKERY 3 (claude/rookery3, Daniel 10-29): the new end of THE BONE STAIR (THE GALE SPIRES, THE NEST FACE, THE RELAY)
    and THE SHRIEK SISTERS' three TEMPO tells (heavy: the chain stoop's climb; medium: the dive's aim; light: the echo's flash). Headless Chrome through tools/cdp.mjs, the knight in god
    mode. Not in the suite. OUT=<dir> (default work/claude/shots/rookery3)   PORT=<port> node tools/rookery3-shots.mjs */

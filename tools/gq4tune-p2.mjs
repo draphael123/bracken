@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* GQ4TUNE-d: the Queen row with the escape SKIPPED (P2 alone, the tower climb is the level walker's), n a hero.
    node tools/gq4tune-p2.mjs [--seeds=6] [--heroes=knight,warden,pyro] [--jobs=3] [--row=crown] [--out=file.json] */
 import { writeFileSync } from 'node:fs';

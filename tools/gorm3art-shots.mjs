@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorm3art-shots.mjs - KING GORM 3 ART (claude/gorm3art): his new poses in the real fight, one still each (2x, the hero in frame), plus the baked-frame sheets.
 //   PORT=<free port> node tools/gorm3art-shots.mjs <outdir> [tag]      (tag: 'after' | 'before', prefixes the file names; run it in the checkout you want to shoot)
 // Stills: potTell / pot / pot in flight / pitch patch (the hero on a deck, the hall), sceptreTell / Out (low pass) / high pass / Catch, rageTell (plain crown, then split), enraged stand,

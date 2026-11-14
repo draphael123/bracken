@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/mini-names.mjs — EVERY MINI IS CALLED BY ITS OWN NAME (E7, 2026-09-24).
    The mini's letterbox card and its bar both ask miniName(), and miniName() asked the level and then a hand-kept table
    and then gave up with 'THE BEAST'. The Burial Caverns' mini was in neither, so he announced himself as THE BEAST -

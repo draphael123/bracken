@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kitchengate4art-shots.mjs <before|after> [tags] - (claude/kitchengate4art) zoomed real-page stills of the Kitchen Gate's arena art: the coal trench (banked / glow / lit),
    the two hook rails (the red hop stretch, the cauldron over the upper rail's end), the platter drop, the second helping, the belly swell, ORDER UP's attendants.
    Writes work/claude/lane-done/kitchengate4art-<before|after>-<tag>.png (crop of the 640x360 frame, scaled). Not in the suite.

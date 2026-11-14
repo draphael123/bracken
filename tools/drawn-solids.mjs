@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/drawn-solids.mjs - EVERY SOLID TILE IS DRAWN, AS BUILT AND AFTER THE RULE HAS MOVED IT (claude/buriedcity3, 2026-10-12).
 //
 // Daniel, 10-12, played THE BURIED CITY live: "INVISIBLE PLATFORMS in the Hourglass Tower room" (scratch/daniel-bc2-hourglass-1012.jpg: he stands on

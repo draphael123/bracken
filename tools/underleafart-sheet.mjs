@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleafart-sheet.mjs <key,key,...> [scale] [name] - a contact sheet of SPR sets (every frame, scaled, on a dark ground), for the art pass: the goblin sheets it reskins, the new skins,
    THE GRANDMOTHER 3's frames. Writes work/claude/lane-done/underleafart/sheet-<name>.png.   PORT=<port> node tools/underleafart-sheet.mjs sprig,herbgatherer 6 gatherers */
 import { openPage } from './cdp.mjs';

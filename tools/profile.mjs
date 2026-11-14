@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/profile.mjs — WHERE DOES THE SLOW FRAME GO?
 // Walks a hero through a level in the local Chrome with the DevTools CPU profiler running, then prints the functions
 // that cost the most time, and the frames that ran long. Same launcher as tools/headless.mjs: nothing to install.

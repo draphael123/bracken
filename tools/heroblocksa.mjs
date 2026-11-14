@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/heroblocksa.mjs - THE FREEBOOTER'S HOOK CATCH + THE BLOOD KNIGHT'S BLOCK (claude/heroblocksa, scratch/brief-pyrokit-1101.md 7a/7b; src/hook-catch.js, src/blood-kit.js GUARD).
 // Pure (Node) this fails when: a catch is not perfect for its first CATCH.perfect s / a block after / nothing after CATCH.snap; a heavy does not break through a plain catch (and does on the beat);
 //   a red blow is caught; a pierce is caught off the beat; a thrown thing is not flung on the beat / dropped after; the guard's blood is not ALL debt; three notches do not lift the tier by one (never past

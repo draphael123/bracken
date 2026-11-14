@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/warcairnart-shots.mjs - real-page stills of THE WAR CAIRN at its set pieces (claude/warcairnart; before/after for the art pass). Knight, god mode.
    PORT=<port> PREFIX=warcairnart-after OUT=<dir> [ONLY=a,b] node tools/warcairnart-shots.mjs     Writes <OUT>/<PREFIX>-<tag>.png (640x360). Not in the suite. */
 import { openPage } from './cdp.mjs';

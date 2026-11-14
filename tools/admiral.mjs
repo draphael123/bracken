@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/admiral.mjs - THE ADMIRAL and THE FLOTILLA 3 keep their promises (claude/flotilla3; scratch/brief-flotilla3-1018.md C + D and the APPROVED review
    scratch/review-flotilla-1018.md). The Flotilla's checks moved here from tools/fleetlord-champion.mjs (the Champion is off the Flotilla, registered for the Keep).
    PURE (node): his moves' marks/answers/heights agree with src/marks.js; every tell >= 0.5 s; B15 + Daniel's armour exception - every awake mode takes > 0, armoured

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/spore-shots.mjs <suffix> [only,tags] — real-page captures of SPOREWOOD for the rebuild (docs/briefs/sporewood-rebuild.md).
    Headless Chrome through tools/cdp.mjs, the knight in god mode, the level reloaded before each shot so nothing carries over.
    Writes docs/sporewood/<tag>-<suffix>.png at 2x (640x360). Run it with `before` on the old code and `after` on the new one:

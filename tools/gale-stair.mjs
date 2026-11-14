@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gale-stair.mjs [heroes] - THE GALE STAIR (claude/windcaller4, scratch/brief-windcaller4-1026.md: "a little longer: one stretch of WIND PLATFORMING
    before the Landing"), PER HERO, WITH REAL KEYS. In the page, NO god mode, the stair's two gale harpies held still, once per hero (default: every hero in
    src/progression.js HERO_IDS). The stair's updrafts blow only in its told gust (main.js stairGustNow) - the summit's lesson, taught before the summit:

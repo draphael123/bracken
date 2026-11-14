@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync}from'node:fs';
 const pg=await openPage({audio:false,fonts:false});try{
 const r=await pg.evalp(`(async()=>{const {SKILLS}=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js');(await import('/src/traits.js')).setTraitsShip(false);/* (claude/traitsmoke-d) this tool is the LEGACY passive layer (every passive on at 24, none worn): pinned flag-off so the TRAITS_SHIP flip cannot break it; the traits layer is tools/traits.mjs */BK.manualSimulation=true;BK.SET.speed=1;const rows=[],catalog=[];

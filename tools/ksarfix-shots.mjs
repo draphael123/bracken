@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksarfix-shots.mjs - the Hawk-Mistress room ENTRY, door and mid-room, desktop and phone size (claude/ksarfix; not in the suite).
 //   PORT=8908 node tools/ksarfix-shots.mjs <tag> [mobile]   -> work/ksarfix/<tag>-<size|desk|mobile|WxH>-<spot>.png
 import { openPage, ROOT } from './cdp.mjs';

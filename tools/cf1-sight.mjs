@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf1-sight.mjs - CF1 PRE-DEPLOY SIGHT CHECK (claude/rel165, 2026-11-12): REAL key events (CDP Input.dispatchKeyEvent, key 'x' = attack), the sim stepped by hand between them.
 //   node tools/cf1-sight.mjs <outdir>     one headless browser. Run it on a tree where CF1_SHIPS is true (or add ?cf1=1). Not a check; a looking tool.
 //   Writes one PNG strip a scene (3x, hero crop) + sight.json (per-frame probe values). Scenes: heavy charge pyro/warden (glint at half, flash at full), warden tip / shaft.

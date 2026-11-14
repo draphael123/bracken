@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/soundtest.mjs — THE SOUND TEST'S LOCK (Daniel's design, 2026-09-27): a song unlocks once it is actually
 // heard in play - a level, a boss arena or a menu track - never by browsing the Sound Test itself; sound effects are
 // all open from the start. In the page:

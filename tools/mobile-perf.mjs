@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/mobile-perf.mjs - THE GAME ON A MID PHONE (claude/mobile2, 2026-10-03: Daniel's real Android, "VERY LAGGY, even the menus").
 // The page runs as a 915x412 landscape phone at DPR 2.625 with touch on (auto-detected: NO ?touch=1) and the CPU throttled
 // (MP_CPU, default 4x), and is left to run on its own requestAnimationFrame loop (not BK.step) so the numbers are what a thumb feels:

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/music-priority.mjs (claude/marsh3, Daniel 10-20: the Frog King played "a generic theme, not real music").
 // THE BOSS TRACK ARRIVES IN TIME, AND THE GAP IS NOT THE SYNTH ARPEGGIO. Measured on a 1.6 Mbit/s line (DevTools throttle):
 // the boot fetched all 867 sound clips at once, so a music file asked for in the first minute queued behind them - audio/frogking.ogg

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-race.mjs - BC5 WALK (claude/bc5-l, 11-12): THE REAL-PAGE RACE per hero (BRACKEN_BC5=1). Each hero is put left of a race's first glass, walks right and swings at it (the first swing in reach strikes it:
    the clock starts when BK.flip() reads that glass running), then RUNS: hold right, hop at a gap or a wall (read from the grid, no play bot - it waits at hazards), swing every 12 frames (a passing swing re-strikes a pad).
    Prints pass/fail, seconds from the strike to the far end, hp lost. Not the model's margin (tools/buried-city5.mjs has that table); it is what a hand that knows the room achieves.

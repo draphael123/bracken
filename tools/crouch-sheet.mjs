@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crouch-sheet.mjs - ONE CONTACT SHEET: each hero standing beside his crouch (the ground line drawn through the boots) and the
 // Lampreeve's lunge with the 18 px hit reach marked.   node tools/crouch-sheet.mjs out.png
 import { writeFileSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ai-companion.mjs - AI COMPANIONS, THE CORE (claude/aicompanions; scratch brief-aicompanions.md '!! 10-14 LATE', brief-coopprogress.md 10-19: the tavern
 // PARTY BOARD's AI PARTNER seat). src/ai-companion.js is the pure half; main.js allyTick the hands (the lab's duel hands + the playtest walker).
 //   pure    the four behaviours (BALANCED default; numbers differ measurably), the LIGHTER scaling (a human partner keeps x2; one AI 1.5; never past 2), who an

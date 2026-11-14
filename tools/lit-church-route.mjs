@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lit-church-route.mjs - THE LIT CHURCH walked end to end with REAL KEYS (claude/litchurch; the shape of tools/ksar-route.mjs). Not in the suite: a route
 // pilot. A scripted hand holds a direction, hops onto the next ledge, takes a flame at a fire (E) and carries it to a dark lamp (E), strikes the bellows and rides
 // their breath, plays the key desk's chord and jumps the broken loft in its gust, snuffs the seal lamp, climbs the crypt well lighting its sconces as relays,

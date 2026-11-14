@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-anim.mjs — ANIMATION COVERAGE FOR THE FIVE HEROES: which state draws its own frames and which borrows another's. Findings only.
 // Each hero is stood on Bracken Wood's ground and put into every state the draw can show - idle, run, skid, jump, apex, fall, land, crouch,
 // dodge, dash, block, parry, climb, swim, each blow of the three-cut run through its whole length, the air swing, the heavy, the brace, the

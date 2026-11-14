@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/foeproof-frames.mjs - frame time with the variant archers (claude/foevariety proof, 11-05). Palisade (9 variant archers) and stockade, real rAF loop, 1x and 4x CPU, god-mode knight
    put beside the densest cluster of fire/rock archers; also counts console.error/warn and page exceptions. node tools/foeproof-frames.mjs   (not in the suite) */
 import { openPage } from './cdp.mjs';

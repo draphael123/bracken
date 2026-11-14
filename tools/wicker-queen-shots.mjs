@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/wicker-queen-shots.mjs - THE WICKER QUEEN in the page (claude/fair3): stills of her fight on the maypole green, rendered with BK.step and saved at
 // 2x into work/claude/fair3/. God mode; the fight woken at the door and each beat forced. Not in the suite: pictures are for eyes.
 //   usage: node tools/wicker-queen-shots.mjs

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bell-pilot.mjs [seeds=3] [label] - THE DIVING BELL (the Deep's boss) through BK.bossLab (src/lab.js): every hero (the
    geomancer too), the ranking's settings (refill health, a 150 s cap, speed 1, modes on), and one pinned roll per seed (opts.seed)
    so seed two is not seed one again (docs/INTEGRATOR.md) - and a start nudged 7 px a seed, because the Deep's fight replays the same under any roll (lab.js opts.nudge). Prints a row per fight (outcome, seconds, damage taken, how often he

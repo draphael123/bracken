@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/firsthour.mjs — THE FIRST HOUR'S TWO BOSSES, THE WEAK-BOSS PATTERN FIXED (claude/firsthour, Daniel's backlog item 9).
 // The Hornet Queen and the Bullfrog King each opened on their own timer (winded after EVERY dive, dazed after EVERY leap), and
 // the King's spit left his mouth with no windup at all. (claude/oldtusker) THE HORNET QUEEN is PARKED: the Lumber Trail's boss is OLD TUSKER, and this asks of him,

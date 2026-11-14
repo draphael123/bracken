@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-playtest.mjs — THE GATE GARGOYLE after Daniel's playtest of 2026-09-28 (work/claude/lane-done/claude-gargoyle4.md):
      1. "FIRE BREATH IS WAY TOO FAST": a longer yellow tell, a line that stays set for longer, and a jet whose front RUNS OUT along the
         line, so a hero who sees it coming has time to get off it. Asked by stepping src/gate-gargoyle.js in Node against a hero standing

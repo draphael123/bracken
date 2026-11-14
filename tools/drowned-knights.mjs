@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/drowned-knights.mjs — THE DROWNED KNIGHT and THE DROWNED CAPTAIN do what their tells say (docs/briefs/keep-rework-2.md).
    Rule A3: an attack nobody has FORCED is an attack that may never once have fired. So, off updateDrownedKnight in src/main.js,
    run in Node with the game's pieces stubbed:

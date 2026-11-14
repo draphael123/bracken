@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/sexton.mjs — THE SEXTON, the Falling Tower's mini (src/sexton.js, docs/briefs/falling-tower-rework.md §3), proved.
      KIT      four told attacks (A1), every tell a named '<thing>Tell' mode long enough to read, in windingUp() (A2), each FORCED
               here and seen to fire and land (A3): the swing and the rush a shield turns, the toll and the bell nothing does

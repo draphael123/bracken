@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/visible-supports.mjs - EVERY OVERHANG NEEDS SUPPORT THE PLAYER CAN SEE.
    The Unburied Field taught the difference between a declared footing and a drawn one: at 320 by 180 a 1-2 px leg,
    a disconnected pair of shores or a facade in the BACKGROUND leaves the deck looking as if it floats. This runs that

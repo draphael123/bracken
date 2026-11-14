@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied2-shots.mjs <set> [tag] - THE UNBURIED FIELD REWORK (docs/briefs/unburied-rework.md), PHOTOGRAPHED IN THE REAL PAGE.
    Node renders lie about light (docs/AGENT-HANDOFF.md), so every picture is the page's own 320x180 buffer after BK.step frames
    (BK.step renders; BK.sim does not), saved at 2x under docs/unburied2/. Not in the suite: it is a camera.

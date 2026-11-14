@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/arena-shut.mjs - THE ARENA IS SHUT (claude/colossus3). Daniel, 10-07, after playing THE GLASS COLOSSUS: "nearby enemies throw bombs into the
 // arena - it makes the fight unnecessarily difficult". The cause was shared: a boss's (or a mini's) walls are six rows high and shut only the way in, and
 // every level foe outside them kept its AI - a thrower's arc goes over a six-row wall. src/main.js arenaShut/arenaHeld now HOLD every level foe standing

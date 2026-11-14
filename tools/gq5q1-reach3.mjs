@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-reach3.mjs - final isolated check: standing at the EDGE of the "centre"/east hoist (h20-23) nearest her east spot, fresh
    fire each trial (the reach2 script's center+edge reuse of one fire window was confounded: whichever placement went first either scorched
    her - ending the fire before the second placement could be tested - or burned out the 3.0 s window). One hoist, one placement, 2 heroes.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/frame-cost.mjs - WHAT A FRAME ASKS OF THE GRAPHICS CARD (claude/perf51, 2026-09-30: Daniel, "why is the game so laggy now?").
 // Three costs a frame counter does not show, each counted in the page rather than timed (a count is the same on every machine):
 //   1. IN PLAY the foreground sheet (main.js drawFront) is never read back. A per-frame getImageData kept the sheet on the CPU, so the near

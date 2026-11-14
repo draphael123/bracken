@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bells.mjs — EVERY SIGNED BELL IS LIVE: a sentry who sees you runs for it, it drops its hall's gate and turns out the
 // watch, and the gate lifts again. (Daniel, 2026-09-25, on the level review: HIGHCROWN's rule is "EVERY HALL HAS A BELL, AND A
 // GATE THAT DROPS WITH IT", and only the Leads' bell did anything. The ward's, the entrance hall's and the chapel's were signed,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-pilot.mjs [passes=4] [boss] — THE UNBURIED FIELD's mini (whatever L.mini names) or FIRST DEATH KNIGHT (boss, arg 2 = boss) at NORMAL health: all six heroes, `passes` seeded passes each (four is
    twenty-four fights, over the brief's twenty-one). One life per fight, no refills: what the bot loses it keeps. Prints a row
    per fight (outcome, seconds, health left, whether he was OPENED, which of his attacks did the damage) and the summary the

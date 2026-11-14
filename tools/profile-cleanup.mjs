@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/profile-cleanup.mjs — EVERY WAY A TOOL CAN END, AND WHAT IT LEAVES IN TEMP (2026-09-21).
    Each case runs in its own node process and must leave no new bracken-* profile and no browser on one:
      normal       openPage, close

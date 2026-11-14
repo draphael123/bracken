@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/skyroad-shots.mjs - THE SKY ROAD's pictures (claude/skyroad, the greybox), for the reviewer and Daniel's look before art. Not in the suite.
 //   work/claude/skyroad/full-level.png   the whole level drawn by the game itself (frames from BK.look stitched), half size, the sections named
 //   work/claude/skyroad/<n>-*.png        moments: a thermal ride, the glide, the reel, the roost chain, the disc road, the spans, the Eyrie

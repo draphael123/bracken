@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/duel-roster-shots.mjs - BROWSER proof of the duel roster pick screen + the duel's rules in the real game (claude/duelroster).
 //   node tools/duel-roster-shots.mjs [roster,flow]  -> stills in $SHOTS (default scratch/lane-reports/duelroster-shots), exits 1 on a FAIL
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-aloft.mjs - NOTHING IN THE UNBURIED FIELD HANGS IN THE AIR (claude/unburied4, Daniel's playtest 10-05: "this is floating" - a
    cart wheel in the sky beside the toppled tower, the gatehouse gallery over an empty arch, the Death Knight's tomb slabs on corbels over nothing).
    WHY A NEW CHECK. tools/unburied-look.mjs 2 let a ledge pass when a set piece CLAIMED to hold it (UF.SETPIECES holds: true): the claim was the art's

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-shots.mjs [tag] - THE UNBURIED FIELD, PHOTOGRAPHED IN THE REAL PAGE, one shot per section, for the look pass
    (Daniel 2026-09-24: "it uses the forest theme/tiles ... it needs a graveyard theme"). Node renders lie about light
    (docs/AGENT-HANDOFF.md), so every picture is the page's own 320x180 buffer after 300 BK.step frames, saved at 2x as

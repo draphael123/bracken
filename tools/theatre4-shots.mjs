@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/theatre4-shots.mjs - claude/theatre4's pictures (not a check): THE GREEN ROOM, the masks, and the puppets' read (hittable gold / taut steel / the
 // night). God mode, pictures only. usage: PORT=<port> node tools/theatre4-shots.mjs [outDir]   (default work/claude/theatre4)
 import { openPage, ROOT } from './cdp.mjs';

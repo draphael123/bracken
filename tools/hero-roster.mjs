@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hero-roster.mjs - THE DEVICE-LEVEL HERO ROSTER + NO UNLOCK-ALL (claude/heroroster, Daniel 10-12).
  *   A. THE RULES, no page (a fake storage): howTo says BUY IN THE STORE - 10 SILVER until the hero-unlock rule ships (the hook, HERO_RULE_SHIPS) and
  *      BEAT HIM, THEN 10 SILVER after; the roster text is parsed/judged; MIGRATION seeds it from every slot once; a damaged roster is kept (.corrupt)

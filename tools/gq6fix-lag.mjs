@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq6fix-lag.mjs - GQ6FIX item 4: frame cost over the Queen's HALL fight, windowed by event (calm / the bell's hoists / cooling / the throne fire's tell / its burn / after).
    One page, seeded (same frames every run), the hero invulnerable (BK.god) and standing at the bell, who rings it once by a real swing. Each frame = BK.step(1) (one update + one render).
    node tools/gq6fix-lag.mjs [--profile] [--secs=70] [--seed=7] [--out=file.json]

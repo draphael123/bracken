@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fire-room.mjs - THE ARCHMAGE'S FIRE ROOM, FIXED (claude/fallingtower2; Daniel 10-08: "the fire room" - scratch/brief-fallingtower2.md A).
 //   GRACE    pulled into the fire realm, nothing burns and nothing is cast for REALM.fire.grace s: the hero, hands off, takes nothing
 //   REAL KEYS every hero (all seven), on the carpet with the game's own keys only - up/down/left/right and the dodge, no teleport - flies

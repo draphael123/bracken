@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/church-road.mjs - THE LIT CHURCH'S ROAD OPENS ON WAYMEET'S THREE VOTIVE LAMPS (claude/towpathchurch, 2026-10-16; Daniel 10-08, confirmed 10-16; scratch/brief-crusader2-1016.md section 3).
 //   A  NODE ONLY: the LEVELS row (needs + spurOf waymeet, votiveLamps, no opensOn / Towpath medal gate); WAYMEET builds three lofts (a ladder, a plank on its poles with a stilt at each end, a dark
 //      lamp on it) and a brazier by each, every one clear of the street's route and of every other thing in the town; the Towpath's first screen has no church door; the flame verb is ONE module

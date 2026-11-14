@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-coop.mjs - ITCH QA SWEEP, ONLINE CO-OP ?join= INSIDE THE EMBED (claude/qasweep; headless, ONE browser, closed at the end; not in the suite).
    The HOST runs in the 960x540 cross-site itch-style iframe; the GUEST is a second iframe of the same itch-style page opened on ?join=CODE (another origin: localhost vs 127.0.0.1, so its storage is its own).
    Uses the REAL internet path the shipped game uses (PeerJS 1.5.5 from cdnjs + the free 0.peerjs.com broker + STUN), not the local stub: it proves the library loads inside the frame, the host gets a code,

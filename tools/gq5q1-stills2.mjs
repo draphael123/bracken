@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-stills2.mjs - fix-up: the first proof pass's "scorched"/"warded" stills never actually triggered a real SCORCHED (the
    synthetic plunge never physically overlapped her, so no real hurtEnemy0 call ever reached G5.onHurt) - both stills just show the
    burn still running. Here a REAL blow (not a plunge) lands on her while she is channelling and the hero is standing on a hoist -

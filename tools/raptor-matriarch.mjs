@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/raptor-matriarch.mjs - THE RAPTOR MATRIARCH's own check (claude/redgorge2), Node only: no page, a few seconds.
 //   - her nest ledge is the gorge's arena: banks at either end, NARROW and BROAD pillars two rows over the channel, the cracks between the cluster's
 //     pillars one row under their tops, a sluice lever on each bank, two rope bridges each from a bank's post to a broad pillar's post

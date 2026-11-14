@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown-probe.mjs - THE WELL TOWN in the page, quickly (claude/welltown): ?level=welltown lands on its entrance; the skin fills at a well
 // and pours a mud wall open and a fire out (and both stay so after a death, while an unpoured fire comes back); the windlass sends the bucket down
 // and the bottom windlass brings it up; the dry cistern opens its vault on four skins; a water-thief's cut takes a sip and cutting him down gives it

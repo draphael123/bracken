@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/whelps.mjs — THE GARGOYLE WHELP and THE BATTLEMENTS (docs/briefs/witchlight-whelps.md; Daniel, 2026-09-26: "a section with
    small gargoyle enemies before the boss. It could last around a minute. Boss is good, but he should summon those minis rather than
    the demons."). It asks, in Node and then on the page:

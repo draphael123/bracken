@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/highcrown2.mjs - HIGHCROWN 2, PLAYED IN THE PAGE (claude/highcrown2, scratch/brief-highcrown2.md). The node half is tools/crown-exam.mjs (the layout);
    this is the rule's machinery, with real blows (BK.press) on the built level:
      winch     a) the bailey winch struck: its gate lifts, and drops again on a foe stood under it when the hold runs out

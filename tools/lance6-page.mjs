@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance6-page.mjs - THE QUEEN'S LANCE 6 IN THE PAGE, per hero, real keys (claude/lance6proof). Not in the suite.
 // usage: node tools/lance6-page.mjs [--heroes=knight,warden,...] [--shot=1|dir]
 //  SPAN LINES (span1/3/5: flat, either way over a gap): UP from the west lookout takes the line and rides it east to the far tower; a jump from the deck boards touches it;

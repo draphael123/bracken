@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/chase-shots.mjs - THE SPIRAL STAIR (src/spiral-chase.js, Daniel 2026-09-29): pictures of the chase up to the Undead Archmage's
 // carpet, rendered with BK.step and saved at 2x into work/undeadchase/<tag>/. God mode. Not in the suite: pictures are for eyes.
 // usage: node tools/chase-shots.mjs <tag>

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/underwell-art-sheet.mjs - a contact sheet of THE UNDERWELL's cast and props (claude/underwellart). Not in the suite.
 //   usage: node tools/underwell-art-sheet.mjs <before|after> -> docs/underwell/<tag>/cast-*.png  (frames at 3x on a dark ground, and a 1x strip at the game's own 320x180 scale)
 import { openPage, ROOT } from './cdp.mjs';

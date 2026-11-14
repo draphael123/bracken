@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/towpath-art-sheet.mjs - THE TOWPATH 2's CAST SHEETS (claude/towpath2art; not in the suite): every pose of THE FOG KNIGHT 2 and THE FOG WRAITH, drawn from the art modules on a dark
 // ground at 3x and written to work/claude/towpath2art/knight-sheet.png and wraith-sheet.png (the B16 review: every move its own windup and release pose).
 //   PORT=8926 node tools/towpath-art-sheet.mjs [knight|wraith|fx]

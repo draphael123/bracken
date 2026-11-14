@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/theatre.mjs - THE MASKWRIGHT'S THEATRE (claude/theatre, the greybox). docs/briefs/maskwright-theatre.md.
 //   PURE (src/theatre-rig.js, no page): the limelight's pool and its beam (scenery between blocks it), a struck lamp swings, a cued lamp keeps its
 //     cues only while the show runs and comes off them when struck; a fly line's batten and sandbag go opposite ways and stop at their stops, and a

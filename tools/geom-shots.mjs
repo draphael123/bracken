@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* Capture one native-resolution game crop for every coordinate in the two report-only sweep receipts. The yellow square
    names the tile at the file's column and row; the rest of the crop is the real settled game frame around it. These are
    evidence for art review, not a new drawing of the level. Run after the two --json sweeps in work/codex-lane-done. */

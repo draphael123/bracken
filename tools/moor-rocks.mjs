@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor-rocks.mjs - GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS (claude/moor2, scratch/brief-moor2.md; src/moor-rocks-hands.js).
    The kite ride is gone (flight is the Sky Road's) and two ground sections of told gusts stand in its columns. This proves they are what the
    brief says, off the BUILT level (Node) and then in the real page (the hero's own keys, no god mode, knight / warden / pyro):

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lamplit3-fire-shots.mjs - THE LAMPLIT STREET 3's fire verbs and the Wickling, as pictures (claude/lamplit3art): oil in all four states, the gutter and valve, floating oil, the cask
 // (full, told, burst), a tar net catching and burnt, thrown fire (the told arc, in flight, lying), the Wickling's six poses. Not in the suite: god mode, a picture not a playtest.
 //   usage: PORT=n node tools/lamplit3-fire-shots.mjs [out-dir] [name-filter,...]   (the dark is lifted for these: `dark` ones keep it)

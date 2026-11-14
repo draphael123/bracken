@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/towpath-route.mjs - THE TOWPATH walked end to end with REAL KEYS (claude/towpath; the shape of tools/ksar-route.mjs). Not in the suite: a route pilot.
 // A scripted hand holds a direction, hops and leaps onto the next footing, and WORKS THE RULE the way a player does: it strikes a lock's paddle from the punt
 // and waits for the water to lift it, drains a full chamber from its bank and rides it up again, drains the mill race and climbs the stilled wheel, swings

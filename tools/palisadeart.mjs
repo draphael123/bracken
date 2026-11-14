@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/palisadeart.mjs - THE ART PASS OF THE PALISADE WOOD + THE BATTERING BEAST (claude/palisadeart), in the page. Art only: it must leave the level's data alone and draw everything the greybox left flat.
      THE LEVEL IS UNTOUCHED  its levelHash equals the greybox's stamp (691a500a873f (re-stamped batch138: the Goblin Fire Mage was placed by claude/pyroboss2)): the reskins are a table (L.reskin) and the setter's skin is given at spawn (pw.pwSetter), never an ent flag; the tint / palette / ambient
                              data it adds are not hashed.

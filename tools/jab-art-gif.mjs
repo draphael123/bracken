@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/jab-art-gif.mjs - THE JAB ART FIX AS GIFS (claude/jabart, Daniel 11-03 14:49): the KNIGHT 3rd jab (shield bash) and the GEOMANCER 2nd / 3rd jab (staff strike, stone fist), as the game draws them.
 //   node tools/jab-art-gif.mjs <outdir> <prefix> [which=k3,g2,g3]   -> <outdir>/<prefix>-<which>.gif   (one headless browser, closed at the end; a crop of the game buffer every 2 sim frames, x5)
 import { writeFileSync, mkdirSync } from 'node:fs';

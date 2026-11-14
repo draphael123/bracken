@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ember-flare.mjs — THE FLAME WARD (claude/pyrokit, Daniel 10-30 20:50-20:52; scratch/brief-pyrokit-1101.md 3A). The file keeps its name (the suite and
 // the reports call it ember-flare) but it holds the ward that REPLACED the ember flare: the pyromancer's down is no longer her parry (it is STOKE, tools/pyro-kit.mjs);
 // TAP C is a 0.45 s dome of fire (src/flame-ward.js WARD):

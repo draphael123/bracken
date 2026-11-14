@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/knight-rework.mjs — THE KNIGHT REWORK DOES WHAT ITS BRIEF SAYS (docs/briefs/knight-rework.md).
 // Played through the real input on a flat floor, the blows delivered through damagePlayer as a foe's would be:
 //   riposte  a PERFECT GUARD (the shield raised as the blow lands) opens a window, and the next cut inside it is HEAVY - a

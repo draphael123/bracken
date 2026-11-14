@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer.mjs — THE GEOMANCER'S STONE NEVER TRAPS AND NEVER STAYS (docs/briefs/geomancer.md, A12 and C1). Played through
 // her real input in the real page:
 //   cap       five pieces raised as fast as she can: never more than three stand (four with THE FOURTH STONE)

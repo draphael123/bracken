@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/leveling2-runtime.mjs - LEVELING2 IN THE PAGE (Daniel 2026-10-04; the save side is tools/leveling.mjs).
 //   THE CARD: a hero at level 5 with nothing chosen opens a FRESH card from the map (flash, sting, slide-in; a mashed key cannot take a perk in the
 //   first half second), the milestone is the small one (L5) with the hero's own as its third option, the words '5 LEVELS TO YOUR NEXT PERK (LEVEL 10)'

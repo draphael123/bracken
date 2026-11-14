@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/footing-art.mjs — NOTHING STANDS ON AN INVISIBLE PLATFORM. Every floor a hero or a creature can stand on is DRAWN.
 //
 // Daniel, 2026-09-25, of Highcrown: "towards the end of the level enemies on some invisible platforms. Can we fix that?"

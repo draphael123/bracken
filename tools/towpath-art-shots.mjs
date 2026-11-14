@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/towpath-art-shots.mjs - THE TOWPATH 2's ART SHOTS (claude/towpath2art; not in the suite): teleports a god-mode hero to each set piece of the level and writes a PNG of the
 // canvas to work/claude/towpath2art/. Scoped: `PORT=8926 node tools/towpath-art-shots.mjs [name,name,...]` (default: all). One headless page.
 import { openPage, ROOT } from './cdp.mjs';

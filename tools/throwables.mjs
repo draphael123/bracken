@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/throwables.mjs — CARRY & THROW (Daniel, 2026-09-28): src/throwables.js's own promises, proved once, generically,
 // so a barrel or a pot built on this table later inherits the same guarantees without re-proving them by hand.
 //   1. THE TABLE ITSELF is sane: every kind arcs (positive speed, positive gravity), respawns, and hits a fire foe harder

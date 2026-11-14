@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/small-adds.mjs — THE BOTS CUT SMALL ADDS PROPERLY. Every boss lab row now counts the pilot's swings at small foes (FAMILY 'small'
 // in main.js: the Mother's sporelings, the Abbot's and the Grandmother's small adds, the Bullfrog's hoppers) and how many of them met air
 // (src/lab.js, the small-foe ledger: smallSwings / smallMissed). This runs the boss lab (refill, dice pinned) on every boss whose fight

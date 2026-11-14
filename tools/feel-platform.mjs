@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/feel-platform.mjs - PLATFORM FEEL (Daniel 10-12, claude/feelplatform), in the page:
 //  CAMERA LOOKAHEAD  running right builds a lead of ~1/6 of the screen, EASED (not at once), stopping lets it go; it is OFF with Reduce motion, in a boss fight, in a camLock, on a co-op screen;
 //                    a long fall leads the camera DOWN further than a short one.

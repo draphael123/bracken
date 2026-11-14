@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stormhold3art-shots.mjs - STORMHOLD 3, THE OUTER WORKS and THE QUEEN'S LANCE, in the real page (claude/stormhold3art): `node tools/stormhold3art-shots.mjs [name:x:y ...]` (x, y in tiles).
 // No arguments = a shot per section of the level + sheet.png. BOSS=1 = the Lance's poses (every mode forced) on the bridge + boss-sheet.png. Not in the suite: pictures are for eyes. PORT from the environment.
 // env: SHOTS=work/claude/shots-stormhold3art, SIM=60, ONLY=a,b, SCALE=1, ZOOM=k (crop the 320x180 frame around the boss at k x), DEBUG=1 (keeps the HUD)

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/tower-ascent.mjs — THE FALLING TOWER, rebuilt (batch 4, 2026-09-21). Replaces tower-return.mjs, tower-finish.mjs
    and their runtime twins, which pinned the old shape (the Folly walked backwards to an indoor arena).
      BUILT   an upward level: SEVEN floors, each its own room kind, a rope through every divider, a GARRISON row that

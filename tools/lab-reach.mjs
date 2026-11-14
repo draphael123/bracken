@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/lab-reach.mjs — BOT BUG A: the parked hand must reach its own boss (Daniel, 2026-09-25, "stands one pixel
    outside its own reach"). LAB_STAND used to be a second, hand-set table beside LAB_REACH - close for six heroes,
    but only 2 px of margin over the walk deadband (4 px) for the warden, so on a flat floor his hands could rest

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyramidart-king-sheet.mjs - THE COFFIN KING, every pose on one sheet (claude/pyramidart): `PORT=8902 node tools/pyramidart-king-sheet.mjs` -> work/claude/shots/pyramidart/king-<ph>.png (phase 1 and 3). Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

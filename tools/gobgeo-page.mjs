@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gobgeo-page.mjs - THE GOBLIN GEOMANCER, THE PAGE HALF (claude/gobgeo): every hero's REAL parry (src/lab.js parryAt: the knight's guard, the warden's deflect, the
    pyro's ward, ...) on the TEACH Geomancer's rock in the Captains Hall sends it back and shatters the seal on the gate; and every hero's REAL BLOW (an attack pressed as
    the rock arrives) does too. One headless page, ~1 min. Not in the suite.  PORT=<free port> node tools/gobgeo-page.mjs */

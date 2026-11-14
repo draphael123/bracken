@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/theatre-shots.mjs - THE MASKWRIGHT'S THEATRE's pictures (claude/theatre, greybox), for Daniel's look before art. Not in the suite.
 //   work/claude/theatre/full-level.png   the whole level drawn by the game itself (frames from BK.look stitched), half size, the sections named
 //   work/claude/theatre/1-..7-*.png      one moment a section, rendered with BK.step at 2x

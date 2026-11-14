@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-probe.mjs - THE RED GORGE in the page, quickly (claude/redgorge): ?level=redgorge lands on its entrance; the flood comes on its clock
 // (a horn, then the torrent) and sweeps a hero in the channel; a wheel shuts a gate and the next flood banks behind it (the channel under it stays dry);
 // a release washes THE JAM out; a basket rides up on running water and sinks back; four feathers open THE OLD NEST's vault; THE GREAT RED CRAB wakes,

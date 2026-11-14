@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor-gusts-walk.mjs [heroes] - F9 for GALE MOOR'S GUSTS (docs/briefs/gale-moor-rework.md §3): every told crossing that
    shoves, driven in the real page on the real loop with the hero's own keys, NO god mode, once per hero (default knight,warden).
    The play bot cannot read a tell (RULES M), so it cannot prove a gust crossing can be made - this does, and it proves the

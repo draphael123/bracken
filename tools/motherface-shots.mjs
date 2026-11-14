@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/motherface-shots.mjs - THE MOTHER CAP 2's EVERY STATE at game zoom (claude/motherface): idle, each tell + release, open, ward, P2 (net), wither, wake, death, rise. Real-page 640x360 stills, knight in god mode.
    OUT=<dir> PREFIX=<name-> PORT=<port> node tools/motherface-shots.mjs [only,tags]   (run it in two checkouts for a before / after; not in the suite) */
 import { openPage } from './cdp.mjs';

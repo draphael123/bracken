@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery2art-motion.mjs - the sisters IN MOTION, headless (claude/rookery2art): fights a god-mode knight for N seconds in phase 1, then kills two sisters (every order) and fights the survivor,
    rendering every frame (BK.step) and tallying, per role, the POSE each mode wore and how long it held, plus page errors / NaN lines. Fails (exit 1) on any page error or a mode with no pose.
    Not in the suite.  SECS=40 PORT=<port> node tools/rookery2art-motion.mjs */

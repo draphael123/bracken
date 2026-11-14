@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/kingswood2-probe.mjs - KINGSWOOD 2 in the page, quickly (claude/kingswood2, the greybox). A smoke test of the rule, its machines and the set piece, not a playtest:
 //   ?level=kings lands in play at the Royal Road (no god mode); a real blow on the first peg drops its cage on the sleeping brute (dead) and the cage stays as a step;
 //   the checkpoint's cage lands as the step over its wall; the road's log trap drops, rolls through the pike line and splits; the stands' log span lands as a bridge;

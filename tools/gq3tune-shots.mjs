@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3tune-shots.mjs [outDir] - claude/gq3tune: the burning tower's firelight, the Queen's tower-hop pose, and the P2 blink / stumble / storm rings + burning bays, photographed in the real page.
    ONE headless page (>= 1500 MB free; stop if scratch\GATE-RUNNING.flag exists). Not in the suite. */
 import { openPage, ROOT } from './cdp.mjs';

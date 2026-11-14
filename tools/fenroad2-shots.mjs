@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad2-shots.mjs - THE FEN ROAD 2 for eyes (claude/fenroad2; the art lane's reference): the greybox sheets of THE STILT-WALKER (SW_POSE, 15 frames) and
 // THE BOG LEECH (LEECH_POSE, 6 frames) laid out x4, and stills in the level: the first peat hole with its bundle, a plank carried to the edge (the ghost plank),
 // the plank laid, the yard's stilt-walker mid-step (the told foot shadow) and rearing for his stomp, a leech rearing and latched.

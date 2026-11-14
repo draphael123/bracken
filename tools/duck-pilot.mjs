@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/duck-pilot.mjs [label] - THE UNIVERSAL DUCK's boss pilot (claude/duck): STORMHOLD's QUEEN'S LANCE, whose thrust is the
    high blow a ducking hero lets go over him, through BK.bossLab (src/lab.js): the knight, the warden and the pyromancer, one pinned
    seed each, the ranking's settings (refill health, a 150 s cap). Run it BEFORE and AFTER a change to the duck or the bot's answer

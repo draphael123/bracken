@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-post.mjs - BC5POST (claude/bc5post): the Glassblower's hall and the shrines around it, with the SHIPPED build (no flag, no env).
    (1) KILL, then die: touch the shrine beyond the portcullis, die, come back there (outside the hall), walk right to the exit and on;
    (2) KILL, then die WITHOUT touching it: back at the kiln shrine before the hall, the dead mini's hall open to walk through;

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/palart-shots.mjs - PALADIN 2 ART (claude/palart; not in the suite): contact sheets of the Paladin's new pieces, in the game.
 //   usage: PORT=8900 node tools/palart-shots.mjs <tag>   -> work/claude/shots/palart/<tag>-poses.png, -circle.png, -throw.png, -smite.png, -aegis.png, -hud.png
 // Each cell is a 3x crop round the paladin's feet, labelled; the sim runs with the real keys on flat Stockade floor.

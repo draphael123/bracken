@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-stills.mjs <outdir> - BC5 WALK (claude/bc5-l): stills of the BC5 rooms in the real page, flag on (BRACKEN_BC5=1). [name, x, y, frames, keepFoes] each; 640x360 from the 320x180 buffer.
    node tools/bc5-stills.mjs ../scratch/lane-reports/bc5 */
 import { openPage } from './cdp.mjs';

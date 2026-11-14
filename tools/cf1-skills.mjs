@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf1-skills.mjs - CF1 PROOF (claude/cf1proof): every mapped capstone / move-ender (src/cf-impact.js SKILL_CLASS) cast through the REAL key (F = 'throw') at a standing
 // foe (and at a pack of three for the ring skills): the freezes it landed (count, longest, each foe's stop starts per 0.30 s). Run on an OFF and an ON tree, compare.
 //   node tools/cf1-skills.mjs [hero,hero..]      one headless browser; seed pinned; game speed 0.6 like the tools.

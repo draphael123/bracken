@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/chief3.mjs - PINS THE CHIEFTAIN'S HORN AND POWDER, AND THE STOCKADE'S BARREL VERB (claude/chief3, Daniel 10-21: "the horn looks cool but we
 // don't utilize it at all for the boss... the barrels that explode, there's more we can do"; report work/claude/lane-done/claude-chief3.md).
 // STATIC (node, the built level):

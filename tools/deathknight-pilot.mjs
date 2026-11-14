@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/deathknight-pilot.mjs [salts=1] [heroes=knight,warden,pyro] - THE DEATH KNIGHT (src/unburied-foes.js updateBloodKnight; rebuilt from the
 // hero's kit, claude/dk3) at NORMAL health, one pass per salt (bossLab pins its dice per row). One life per fight, no refills; the bot is the HUMAN
 // one (src/lab.js bossLab's Death Knight branch: it reads each of his moves ~250 ms late). The hero is the level the campaign expects at THE UNBURIED

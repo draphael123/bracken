@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/juice2-drift.mjs [heroes] - (claude/juice2tune) THE 3-CUT DRIFT: beside a still foe on a calm level, three cuts in a row, no stepping back. Logs the hero's x relative to the foe at each cut, JUICE2 on vs off.
    FINDING: no game drift - the hero's per-cut step is the same on and off (2 px). The windcaller-gusts drift was the moor's GALE pushing an idle hero (the third press missed its 20-frame slot by the freeze's 2 frames).
    Asserts: never past the foe, and on == off within 2 px. PORT=<port> node tools/juice2-drift.mjs [paladin,reaper,knight] */

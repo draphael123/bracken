@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dance-sheet.mjs — ONE CAPTURE SHEET OF ALL SEVEN DANCES (dances lane, 2026-09-29): a row a hero, every distinct drawing of his
 // dance in the order it plays, blown up, on the plain bracken skin - and a second block of the same seven in a different skin
 // (--skin=<id>, --key=dance|dance2|dance3, --heroes=a,b)  ->  work/dances/<key>.png

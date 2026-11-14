@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/village-water.mjs - THE BURNING VILLAGE, BRIEF 10-07 (claude/burnvillage2; Daniel approved 2026-10-07 20:07). What it proves:
      1. THROW WATER: two throwables on one system (src/throwables.js THROW_KIND + src/carry-throw.js KINDS: the arc told is the arc flown;
         the bucket's plain throw is the one it always had), every rack HIGHLIGHTED (an outline and a glint at rest, the told arc in the hand)

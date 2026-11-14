@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/djinn-pail.mjs - THE DJINN's PAIL, IN THE PAGE, FOR EVERY HERO (claude/djinn4, Daniel 10-05 picked SCOOP + THROW). src/djinn.js holds the rule
 // (tools/djinn.mjs proves it in Node); this proves the wiring with each hero the game has, in THE WELL TOWN's hall, in the flood:
 //   THE PAIL COMES   the flood brings a pail to the hero (told: A PAIL FLOATS UP: E SCOOPS THE FLOOD)

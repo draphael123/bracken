@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/arena-yard.mjs - THE ARENA YARD (claude/arenayard, Daniel 11-03; plan scratch/plan-arenayard-1103.md).
 // One shared yard (level 'arena_yard'), NO `trial` flag (co-op works), dummies that hit for nothing but read as hits, PERFECT / GOOD / HIT from the
 // game's own parry counting, a move board that reads the hero standing at it. Checks, in ONE browser (headless, simulated frames, no real time):

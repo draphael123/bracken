@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dr4-shots.mjs - DEEP RAILS 4 pictures (claude/deeprails4, the Opus greybox: the art lane's reference). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8868 node tools/dr4-shots.mjs <group[,group]>  -> work/claude/shots/dr4/<name>.png (crops from the game's canvas) + sheet.png (every crop, labelled)
 //   groups: drill (the gear tower per phase, each gear's windup pose, a broken gear, the jam's slump and lift, the floor), rails (the duck + switch sections),

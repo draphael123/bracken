@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad-shots.mjs - THE FEN ROAD in the real page, for eyes (claude/fenroad): the whole frame at a list of columns (the hero stood there, god mode),
 // a bowed section mid-bow and sunk, a stilt-walker's jab windup, toppled, and his horn, and THE BOG TROLL in his poses at the crossing.
 // -> work/claude/lane-done/fenroad-*.png      PORT=<port> node tools/fenroad-shots.mjs [col ...]

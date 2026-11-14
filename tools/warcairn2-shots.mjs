@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/warcairn2-shots.mjs - real-page stills of WAR CAIRN 2's new pieces (claude/warcairn2, the greybox): the hatchet's told arc at the gorge, the bridge cut down, the hanging
    stone / totem / nests, the ring's stone, and THE CHIEFTAIN 2 (his hatchet in the floor with its grab ring, his frenzy with RING A DRUM, the hero-style RAGE bar, the summit cairn
    and its drum braziers). Knight, god mode.   PORT=<port> PREFIX=warcairn2 OUT=<dir> node tools/warcairn2-shots.mjs   Writes <OUT>/<PREFIX>-<tag>.png (640x360). Not in the suite. */

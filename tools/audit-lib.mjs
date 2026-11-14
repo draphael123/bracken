@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-lib.mjs — WHAT THE COMBAT AND ANIMATION AUDITS SHARE. The page, headless, on its own port; a way to stand any creature in
 // its own level (or a boss in its own arena) with a passive hero pinned beside it; the opaque boxes, hashes and masks of a sprite set;
 // the real drawn pixels of a creature against the ground it stands on; and a PNG writer for the contact sheets. Nothing here changes

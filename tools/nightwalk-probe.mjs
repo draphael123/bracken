@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/nightwalk-probe.mjs (claude/nightwalk) where the camera / view puts the hero in a boss fight (the still tool's overlay maps world to screen with it). BRACKEN_ROAD=ww,sk,mn,ac PORT=n node tools/nightwalk-probe.mjs <area> */
 import { openPage } from './cdp.mjs';
 const AREA = process.argv[2] || 'silk';

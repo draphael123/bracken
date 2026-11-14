@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hcfix-fights-sheet.mjs [out.png] - HCFIX: one labelled contact sheet of BOTH Highcrown fights, in the real page (one headless page, not in the suite).
    THE GOBLIN QUEEN: her intro, the bell lure, the winch gate rising, the grate pin, and one still per told move (its tell on screen: the windup and the mark).
    THE GOBLIN PRINCESS (the fat gpart art): her intro, then the RANGER's arrows landing on the bell rope, on a thrown gem and on the winch in the blaze (the timed pin).

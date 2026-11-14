@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/skill-icons.mjs - EVERY SKILL WEARS ITS OWN ICON, AND NO DESCRIPTION CONTRADICTS THE CODE (docs/ability-audit.md, items 1-4, 18-20).
  *
  * ICONS. The 60 actives each have a drawn icon of their own (nothing falls to the flame default, nothing borrows a

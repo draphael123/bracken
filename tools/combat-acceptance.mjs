@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // Reproducible acceptance audit, separate from structural regression checks.
 // node tools/combat-acceptance.mjs boss|ambush|strategy output.json [level,level] [hero,hero]
 import { openPage } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/djinn-rates.mjs - THE DJINN's HUMAN-BOT WIN RATE, PER HERO, OVER SEEDS (claude/djinn2; a measuring tool, not a check). tools/combat-pilots.mjs
    fights one row per hero and its --seed never reaches bossLab (bossLab reseeds Math.random from the row's own key), so every seed there is the same
    fight. This passes the seed INTO bossLab (opts.seed), so each seed is a different sample of his dice and the bot's misreads - the per-hero spread

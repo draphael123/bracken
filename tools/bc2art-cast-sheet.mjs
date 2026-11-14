@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc2art-cast-sheet.mjs - THE BURIED CITY's cast, every frame, on one sheet (claude/bc2art): `PORT=8847 node tools/bc2art-cast-sheet.mjs [key ...]` -> work/claude/shots/bc2art/cast-<key>.png (and cast.png, all of them). Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

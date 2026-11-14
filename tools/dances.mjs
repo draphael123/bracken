@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dances.mjs — A DANCE PER HERO (dances lane, 2026-09-29). Every hero has a victory dance of his own: the knight's sword
 // salute, the pyromancer's fire twirl, the freebooter's jig, the death knight's blade-plant and bow, the geomancer's stones round
 // her staff, the warden's spear flourish and the paladin's maul raised to the light. It plays on the EMOTE key (H), after every

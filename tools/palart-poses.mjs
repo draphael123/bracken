@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/palart-poses.mjs - PALADIN 2 ART (claude/palart; not in the suite): the paladin's kit poses on one sheet, 5x, no sim.
 //   usage: PORT=8900 node tools/palart-poses.mjs <tag> [key,key,...]   -> work/claude/shots/palart/<tag>-poses.png
 import { openPage, ROOT } from './cdp.mjs';

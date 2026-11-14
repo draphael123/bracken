@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-smoke.mjs - BC5 PROOF (claude/bc5proof): BURIED CITY 5 with the SHIPPED default (no ?bc5, no env, window.BRACKEN_BC5 untouched): a new game's Buried City loads with the race kit,
    runs 900 frames with a clean console, and each of its shrines lights when touched and is where a death puts the hero back.   node tools/bc5-smoke.mjs */
 import { openPage } from './cdp.mjs';

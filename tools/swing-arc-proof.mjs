@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/swing-arc-proof.mjs - RECS158-d: mid-light-cut frames of knight / paladin / pirate / geomancer / berserker / ranger (old arc + smear vs smear alone). Same capture helpers as tools/juice-proof.mjs.
 //   node tools/swing-arc-proof.mjs <outdir>   (run from the build to be shown; the before still is the same tool on the build without the arc skip)
 // (copied from) tools/juice-proof.mjs - JUICE2 PROOF FRAMES (claude/juiceproof-d, 2026-11-10): captures the game buffer, one PNG per rendered step, for a knight / ranger / pyro combo + a kill, and a

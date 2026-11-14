@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor2art-shots.mjs [tag] [spot,spot] - GALE MOOR's WIND ROCKS and GOBLIN SCAFFOLDS art pass (claude/moor2art): the page's own buffer at named spots
    (tile x, stand row), saved at 2x as docs/galemoor/<tag>-<spot>.png. Foes are put down; the hero is a god so a fall into a tarn does not hand him back mid-shot. */
 import { openPage, ROOT } from './cdp.mjs';

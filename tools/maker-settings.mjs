@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-settings.mjs (claude/maker) - THE MAKER's LEVEL SETTINGS work.
    Every BACKGROUND (each of the game's own places) draws in the editor and plays; every TIME OF DAY and WEATHER plays;
    a chosen MUSIC track is the one the level plays; and the settings survive SAVE -> LOAD. The page logs no errors.

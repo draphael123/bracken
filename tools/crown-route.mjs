@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crown-route.mjs - THE WOOD'S CACHE SILVER IS WITHIN EVERY HERO'S REACH (claude/batch105 integ).
 // The old route (the Hornet Crown cache: four hops up a tree) went with the old wood; THE LUMBER TRAIL's cache is the FORD VINE POCKET (src/lumber-trail.js:
 // a vine swings up to a deck in the canopy, a silver on it - the level's VAULT_SILVER). A swinging vine is timing, not a route a script can hop, so the check is

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad2art-sheets.mjs - the baked sheets of the Fen Road 2 art pass, laid out for eyes: THE STILT-WALKER (every frame, and a WALK STRIP of one full stride + stomp), THE BOG LEECH.
 // TAG=after PORT=<port> node tools/fenroad2art-sheets.mjs   ->  work/claude/lane-done/fenroad2art-<TAG>-{stiltwalker-sheet,stiltwalker-walk,leech-sheet}.png
 import { openPage, ROOT } from './cdp.mjs';

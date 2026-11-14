@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // A level chosen on the world map must replace the map theme even if its first file request fails.
 // The DevTools Fetch domain fails only the first Brackenwood request; subsequent requests are real.
 import assert from 'node:assert/strict';

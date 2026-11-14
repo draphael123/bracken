@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-drive.mjs [startTile] [heroes] - a scripted hand on THE UNBURIED FIELD, NO god mode: holds right, swings at
    anything within 40px, hops stake lines and anything above it, strikes the trebuchet once. Not the play bot (tools/unburied-walk.mjs):
    a dumber hand that keeps going, for F9. It cannot climb (the tower) or read a tell. Not in the suite. */

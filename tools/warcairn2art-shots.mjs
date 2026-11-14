@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/warcairn2art-shots.mjs - real-page stills of WAR CAIRN 2's ART PASS 2 (claude/warcairn2art): before/after of the slate-and-snow palette, banners, camps, totems, the
    hatchet kit, the gorge bridge (hauled / swinging / down), stones, totem, nests, the summit cairn and braziers, the Chieftain's rage bar / counter / frenzy / stagger.
    PORT=<port> PREFIX=warcairn2art-after OUT=<dir> [ONLY=a,b] node tools/warcairn2art-shots.mjs   Writes <OUT>/<PREFIX>-<tag>.png (640x360). Not in the suite. */

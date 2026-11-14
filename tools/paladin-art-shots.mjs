@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/paladin-art-shots.mjs - THE PALADIN's fight pictures (claude/churchart; not in the suite): god mode, the hero stands in the sanctuary and the fight runs; a crop round him every 0.25 s.
 //   usage: PORT=8742 node tools/paladin-art-shots.mjs <tag> [seconds]   -> work/claude/church-art/<tag>/pal-NN-<mode>.png (2x crops) and pal-sheet.png
 import { openPage, ROOT } from './cdp.mjs';

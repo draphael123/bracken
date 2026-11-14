@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer-look.mjs — DOES SHE READ AS A GEOMANCER? One picture, from the real page: her standing frame at 5x beside the
 // Pyromancer's and the Knight's (a recoloured mage would look like the middle one), then the drawn game screen cropped round her in
 // the first level - standing, running, winding UPHEAVAL, and C held. `node tools/geomancer-look.mjs before|after` writes

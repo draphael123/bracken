@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-mechanisms.mjs (claude/maker) - THE MAKER's MECHANISMS work when you play them.
    A LEVER hit with the sword opens the DOOR column it is linked to (and not the other one), a PRESSURE PLATE stood on
    opens its door, a KEY opens the gate of its own metal (and a gate of another metal stays shut), a LOCKED GATE builds its

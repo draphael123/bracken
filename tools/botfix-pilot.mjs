@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/botfix-pilot.mjs [maxSecs=150] — THE FULL BOSS LAB, BEFORE/AFTER (Daniel, 2026-09-25, claude/botfix, task 4).
    Every arena boss AND every mini, all 7 heroes, refill health, a 150 s cap, one seed - the ranking's settings. Discovers
    its own boss list by loading every level and asking it whether it has an arena boss or a mini boss, rather than a

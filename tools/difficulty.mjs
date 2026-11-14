@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/difficulty.mjs - THE DIFFICULTY MODES (claude/difficulty; scratch/brief-difficulty.md, src/difficulty.js).
    NODE: NORMAL IS THE IDENTITY (every multiplier 1, every adder 0, the rules the game had: a shrine gives one, a death costs, no punish, the shared
      stale table); every key of the table is READ by a hook somewhere in src/ (a key nobody reads is a lie); MASTER keeps the tells (no key scales a

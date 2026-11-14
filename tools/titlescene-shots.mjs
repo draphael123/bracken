@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/titlescene-shots.mjs - pictures of the title, the hero pick and the map's first frames (claude/titlescene). Not in the suite.
 // usage: PORT=<free port> node tools/titlescene-shots.mjs <outdir> <tag>
 import { openPage, ROOT } from './cdp.mjs';

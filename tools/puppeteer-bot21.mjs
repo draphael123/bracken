@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/puppeteer-bot21.mjs - THE PUPPETEER's HUMAN-SPEED BOT BAND (claude/puppeteer2; a measuring tool, not a check). The boss lab's human bot
    (src/puppeteer.js puppetPlan through src/lab.js) fights THE PUPPETEER at the theatre's campaign depth with no skills, NORMAL health, ONE FIGHT PER
    PAGE (a reload between rows), salts 1..N per hero. Target (scratch/design-standard.md B6): 50-60% across knight/warden/pyro, no hero at 0/N.

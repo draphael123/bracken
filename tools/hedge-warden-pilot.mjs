@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hedge-warden-pilot.mjs [passes=4] [heroes=all, e.g. knight,warden,pyro] — THE HEDGE WARDEN (the Witchlight Stair's mini) at NORMAL health: all six heroes, `passes` seeded passes each (four is
    twenty-four fights, over the brief's twenty-one). One life per fight, no refills: what the bot loses it keeps. Prints a row
    per fight (outcome, seconds, health left, how often his stump BURNED at a brazier, which of his attacks did the damage) and the summary the

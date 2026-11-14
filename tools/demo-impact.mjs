@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/demo-impact.mjs - THE DEMO IMPACT PASS (claude/demoimpact, Daniel 2026-11-02; src/juice.js landShake / landRumble / parryStop, main.js blowKind(tag))
 //   - a skill's hurtAs('heavy'|'dash') lands as the HEAVY class (90 ms) whatever the damage; 'shot' / 'light' stay 40 ms (hitstop never stacks: it is a max)
 //   - a landed heavy / finish blow gives a small shake in ON HIT (JUICE.landShake of the row), none when light; OFF and reduce-motion none

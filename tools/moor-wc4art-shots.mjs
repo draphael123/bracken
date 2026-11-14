@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor-wc4art-shots.mjs [tag] [spot,spot] - THE WINDCALLER 4 ART PASS (claude/windcaller4art): the page's own buffer at named spots, 2x, saved
    to scratch/lane-reports/windcaller4art-<tag>-<spot>.png (beside the repo) and docs/windcaller4art/<tag>-<spot>.png. 'sheet' = his baked frames on one sheet.
    Boss poses are forced (mode + a long modeT, one step) - the picture is the pose, not the fight. */

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/plunges.mjs - THE FOUR NEW PLUNGES (claude/plunges, scratch/brief-plunges.md; src/plunges.js). Each hero's plunge owns ONE job, and every one still
 // produces the B14 FROM ABOVE key (hurtAs('plunge', ...)). Played in the real page, headless, on the Stockade's open floor:
 //   DAWNFALL (paladin, was HAMMER OF DAWN; claude/paladin4 dropped its safe landing - he is bitten like the knight now)  POISE: a guarded shield goblin's guard is BROKEN by one slam where the knight's plunge leaves it standing; a heavy foe's bar breaks

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/archmage-rings.mjs — THE UNDEAD ARCHMAGE'S PORTALS (Falling Tower round 2, docs/briefs/falling-tower-round2.md §3), proved.
 //   STEP     stepTell opens a pair - the entry by him, the exit near you - and the EXIT FLARES (the tell, in windingUp); then he comes
 //            out of the exit already casting, the next tell half gone; left alone, the step opens nothing

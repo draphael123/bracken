@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crouch-b.mjs — PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin's KNEEL IN PRAYER, the geomancer's EARTH SENSE and
 // the blood knight's crouch (src/crouch-b.js), each the universal duck plus a twist (claude/bloodknight: HIS HARVEST IS GONE - Daniel 10-17, crouch option 1). On flat Stockade floor, with the hero held
 // where he stands, this fails when:

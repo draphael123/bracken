@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/tavern.mjs - THE TAVERN, CO-OP PHASE 2 (claude/tavern; Daniel 10-12, scratch brief-tavern.md): The Crossroads Inn and the four-player party.
 //   pure     src/party.js: four seats, eight colours (no two seats share one), cleanTavern reads ANY save shape whole (old saves fine), the party view is one
 //            whole pixel-scale step out and never more than 1.25x, the camera's hysteresis, the leash's cases (off the picture / stretched / never a downed,

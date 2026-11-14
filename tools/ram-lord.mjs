@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ram-lord.mjs - THE RAM LORD, REWORKED (claude/scree2, src/ram-lord.js; Daniel 10-08 "the boss could be better").
 //   NODE  he is a DUELIST off the chip (FULL_DAMAGE, with its reason) whose horns guard by angle (GUARD 'horns': beaten from behind or from the air, never
 //         from his front on the ground); his openings are STUNNED (the cliff) and the wall crash, read by the boss rule (OPEN_RULE); his two overhangs stand

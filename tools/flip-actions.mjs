@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/flip-actions.mjs — TURNED OVER, THE HERO KEEPS EVERYTHING (claude/witchfix; Daniel, live on THE WITCHLIGHT STAIR, 10-08: "glyphs turn
    you over" - in EVERY reverse-gravity section the hero keeps dodge/roll, block/guard and every attack - light, heavy, the plunge toward his new
    'down', his skills - nothing disabled, every hero).

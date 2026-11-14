@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bogtroll-diag.mjs - THE BOG TROLL's fight, looked inside (claude/fenroad; a measuring tool, not a check): one human-bot fight per hero and seed
 // at the campaign level (the campaign kit's flasks), and what happened in it - his moves, the stucks, the drags, how much of the hero each of his blows
 // (and the fen's water) took, the road's sections, and why the bot did what it did (the plan's reasons, counted).

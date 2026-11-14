@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-desktop.mjs - ITCH QA SWEEP, DESKTOP PATHS inside the 960x540 cross-site iframe (claude/qasweep; headless, ONE browser, closed at the end; not in the suite).
    boot + audio-after-first-input, keyboard route (title > map > Lumber Trail, moving), saves across a frame reload, emulated gamepad route, King Gorm -> end card -> KEEP YOUR PROGRESS -> map caption + locked road.
    usage: QA_SHOTS=<dir> node tools/itch-qa-desktop.mjs      needs >= 1500 MB free (exit 3 when not: the caller retries) */

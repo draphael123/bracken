@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/salt-card.mjs - THE FIRST-DEATH CARD (claude/onboard1, Daniel 11-06).
 //   A save's FIRST death that drops something is followed, after the respawn, by ONE card (src/salt-card.js): what was dropped, where it lies,
 //   how to get it back, what a second death does. Dismissed with the confirm key (not before ARM_S). Once per save (PROG.deathCost.card).

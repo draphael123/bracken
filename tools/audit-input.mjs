@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-input.mjs — INPUT AND RESPONSE, by scripted input traces in the page. Findings only; it changes nothing.
 // For each hero, from Bracken Wood's own ground, it presses the real input layer (BK.press / BK.keys, the same presses the keyboard raises)
 // on an exact frame and watches what the hero does. Each question is asked at every frame offset in turn, from a fresh start each time:

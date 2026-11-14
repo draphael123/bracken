@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/queengloss-sheet.mjs - THE HORNET QUEEN's poses, before (left) / after (right) (claude/queengloss). OUT=<png> Z=3 N=<poses>; needs src/redraw/prior_queen_set.js (untracked copy of the pre-pass art).
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync } from 'fs';

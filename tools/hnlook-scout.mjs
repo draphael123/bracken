@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hnlook-scout.mjs - stills of THE HORNET'S NEST at a list of columns (claude/hnlook).  node tools/hnlook-scout.mjs <outdir> <col:row,col:row,...> [hero=geomancer]
 import { openPage } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

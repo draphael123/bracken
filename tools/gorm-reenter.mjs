@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorm-reenter.mjs - KING GORM's phase across visits (claude/smallfix9). Two rules, one page:
 //   a phase-1 bar that empties is no death: he flees, the level is NOT cleared (Burning Village stays shut)
 //   a fresh visit to Kingswood (BK.load) resets him to phase 1 (stage 'court'); only a respawn keeps the flee / glade stage

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyro-kit.mjs — THE PYRO KIT (claude/pyrokit, Daniel 10-30 20:50-20:52 + 10-31 08:41; scratch/brief-pyrokit-1101.md). The ward itself is
 // tools/ember-flare.mjs; this holds the rest of her kit, in the running game (and the save half in Node, first):
 //   THE L10 CARD     a pyro who never played before the kit is offered THE JET / THE EMBER SHOT / WILDFIRE at level 10 (and only there), the pick saves;

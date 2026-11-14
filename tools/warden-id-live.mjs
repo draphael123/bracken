@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/warden-id-live.mjs - THE WARDEN'S IDENTITY PASS in the running page (claude/wardenid): the long thrust (third jab), the reach band, the phalanx skill, the pole-vault.
 //   node tools/warden-id-live.mjs [long,band,phalanx,vault]
 // One browser; start it only with >= 1500 MB free (lane rule). tools/warden-id.mjs is the static twin.

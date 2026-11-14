@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/harvest-fair.mjs - THE HARVEST FAIR (claude/fair1, L1: brief + greybox + THE FACING MECHANIC). docs/briefs/harvest-fair.md.
 // The rule of the level: DON'T TURN YOUR BACK ON THEM. Its engine is the FACING RULE (src/mummer.js + its hook in src/main.js), reusable by any level:
 //   PURE (src/mummer.js, no page):

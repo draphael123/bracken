@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ranger-windlass-probe.mjs (claude/smallfix12) - RANGER vs WINDLASS: with arrows in the quiver, plain X beside a strikable gadget (the Fog Canal's stop-planks windlass)
 // knifes it (the prop is struck: its flash fires); the same X a few tiles back looses an arrow. A probe, not in the suite.   usage: node tools/ranger-windlass-probe.mjs
 import { openPage } from './cdp.mjs';

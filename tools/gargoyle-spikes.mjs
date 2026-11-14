@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-spikes.mjs — THE GATE GARGOYLE ON HIS SPIKES (claude/witchfix; Daniel, live on 10-08: "he takes NO DAMAGE even when he's down
    on the spikes", and "some blocks attached to him").
    THE CAUSE: gargTake let nothing but the stomp's own call through - so the PLUNGE a player brings down on his back (down + X) met 0 and

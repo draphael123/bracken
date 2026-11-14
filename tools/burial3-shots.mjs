@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial3-shots.mjs — the page, captured (claude/burial3): THE DROWNED OSSUARY (the arcade walk, biers, a drowned hand), the Buried
    Dead's GRAVE HANDS (tell and rise) and GRAVE BREATH. Writes work/burial3/look-<name>.png. Not in the suite. */
 import { openPage, ROOT } from './cdp.mjs';

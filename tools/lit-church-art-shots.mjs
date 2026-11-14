@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lit-church-art-shots.mjs - THE LIT CHURCH's art-pass pictures (claude/churchart). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8742 node tools/lit-church-art-shots.mjs <before|after> [name-filter,...]   -> work/claude/church-art/<tag>/*.png (frames from the game's own canvas, 2x)
 //   `lit`: the lamps of the room are lit (all of them) / `dark`: every lamp snuffed first - the A3 pair is the same spot both ways.

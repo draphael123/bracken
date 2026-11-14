@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc3-shots.mjs - THE BURIED CITY 3 lane's pictures (a copy of tools/bc2art-shots.mjs with PRE=<js run after the load, before the drop: e.g. drain a room, flip a glass>). Not in the suite.
 // No arguments = the whole level, a shot per section (SET=all), plus sheet.png (a contact sheet, 2 wide). Not in the suite: pictures are for eyes. PORT from the environment.
 // env: CROP=x0,y0,w,h,k (a zoom of the 320x180 frame at k x), SHOTS=work/claude/shots/bc3 (default), SCALE=1 (the sheet's cell scale), ONLY=a,b (names), DEBUG=1 (keeps the HUD), SIM=70, SUN=1.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bot-calibrate.mjs - FIT THE BOSS BOT TO DANIEL (claude/bot2; a measuring tool, not a check).
    The boss bot's human model has three knobs that decide how hard a fight feels to it (src/bot-profile.js): REACTION (rtMode, with rtMin /
    rtMax around it), MISREAD (a tell answered wrong) and GREED (staying in after a hit). This tool finds the values under which the bot's per-boss

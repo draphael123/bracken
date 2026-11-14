@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/run-slide.mjs - THE RUNNING SLIDE (claude/slope, src/run-slide.js; scratch/brief-combat2.md section 2). A page check (PORT).
 // On a long flat floor of the Greenwood, a fresh save, base movement, keys held as a hand holds them (BK.keys, BK.press), for every hero this fails when:
 //   - IT STARTS WHERE IT MUST NOT: DOWN pressed standing (that is the duck: he must duck and not slide), DOWN pressed at a walk under RUN_SLIDE.minRun of a run,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lantern-eater-shots.mjs [hero=knight] [tag=greybox] - THE LANTERN-EATER stills (claude/lanterneater): the bot plays one whole fight (health refilled),
 // a still the first time each beat shows - the two lights (the read), the bait over the gulp, the snag (OPEN), the ward, the jaws at the rail, the snap's
 // mark, its teeth in the timber, the snuffed lamps, the hunt, the dimmed lantern, the swell, its death.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/sisters2-shots.mjs [only,tags] - real-page stills of THE SHRIEK SISTERS' SIGNATURE MOVES (claude/sisters2, Daniel 10-25): every new move at its TELL and its RELEASE,
    each saved whole (640x360) and as a 2x crop round the sister (-z), plus a contact sheet of the new poses per sister (sisters2-poses.png). Headless Chrome through
    tools/cdp.mjs, the knight in god mode on the summit, the fight woken, the sister set into the mode and two frames run. Not in the suite.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audio-assets.mjs — THE AUDIO CHECK (a gate, not a report): does every level and boss really have music
 // assigned, does every audio file the source points at exist on disk, and does every SFX.name() the source calls
 // exist on the table it is calling. Static, no browser, seconds not minutes - the sound test's own credits and

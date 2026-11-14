@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/footlip-shots.mjs - the orevalue measure (tools/orevalue-shots.mjs) for ANY level (lane claude/footlip): per spot, the L* of the foes, the footing (top rows of
 // walkable tiles) and the hazards against the backdrop median, rows 40-330 of a 640x360 capture. Spots are picked by rule (12 columns spread over the level, the first
 // standable ledge from the top), so before and after are the same frames. Pictures to work/footlip/<level>-<tag>/, numbers to stdout. Not in the suite.

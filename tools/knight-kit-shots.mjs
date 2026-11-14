@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/knight-kit-shots.mjs - KNIGHTKIT stills + console check (claude/knightkit, Daniel 11-05), in a REAL level (Kingswood) / the order knights.
 //   node tools/knight-kit-shots.mjs quake <out.png>   hold X to the full charge in front of a pack on kings; crops: charge, full flash, the quake, the pack down
 //   node tools/knight-kit-shots.mjs bash  <out.png>   double-tap C at a shield foe (guard up) on kings; crops: tap, tap, the lunge, GUARD BROKEN

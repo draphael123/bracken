@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan-jumps.mjs — RULES S2 WITH THE REAL JUMP, for every hero (docs/briefs/caravan-ruins-bandits.md). The reach model's jump is
 // six tiles and a player's is not; S2 says a real full jump is about 3.2 tiles and nothing on the main road may ask for more than 3.0.
 // This drives each hero in the page (god mode, on THE WORM'S HOLLOW's forty flat tiles - the level's longest flat; the rim above it is held shut by THE FIRST KNIFE's gate):

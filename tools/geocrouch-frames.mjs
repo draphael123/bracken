@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geocrouch-frames.mjs - THE NEW FRAMES (claude/geocrouch) at 8x on one strip: her idle for scale, the five gFist (uppercut) beats and the two gSkin (stone skin) beats.   node tools/geocrouch-frames.mjs <out.png>
 import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';

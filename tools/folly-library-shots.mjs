@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/folly-library-shots.mjs <tag> - the real page, captured: THE MAGE'S FOLLY at columns 64-213 (claude/follylib, 2026-09-29). One sheet of four panels
    (the sliding case over its pit, the first vault door, the spiked crossing under the squad, the timed exam and its stack), camera parked on each
    beat, god mode, foes left where they stand. Writes work/folly-library/<tag>.png. Not in the suite. Run it before a change (those columns are the old

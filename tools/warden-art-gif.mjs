@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/warden-art-gif.mjs - THE WARDEN'S ART PASS, AS GIFS (claude/wardenart). The ultimate and the three javelin charge tiers + release, as the game draws them.
 //   node tools/warden-art-gif.mjs <outdir>     -> <outdir>/ult.gif, <outdir>/charge.gif  (one headless browser, closed at the end)
 // A crop of the game's own buffer around the Warden every 3 sim frames, scaled x4, written as a GIF by the small encoder below (no dependencies).

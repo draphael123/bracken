@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/abbotp2-shots.mjs <name> - THE FALSE ABBOT's phase two, two stills (claude/abbotp2): P2 START (he is in the chair) and THE SPILL (the chair on the floor).
 // Saved at 2x into scratch/lane-reports/abbotp2-<name>-start.png / -ride.png / -spill.png. God mode. Not in the suite: pictures are for eyes.
 import { openPage, ROOT } from './cdp.mjs';

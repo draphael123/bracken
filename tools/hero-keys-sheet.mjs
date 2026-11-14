@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hero-keys-sheet.mjs - EVERY HERO'S BAKED STRIKE FRAMES on one page load (claude/herokeys): like tools/pose-frames.mjs, which takes one hero a
 // launch; this takes them all, at 4x, one sheet each.   node tools/hero-keys-sheet.mjs <outDir> [heroes] [keys]
 //   -> <outDir>/<hero>-frames.png   (keys default: atk,atkB,atkC,heavy,air,takeoff,apex,fall,land)

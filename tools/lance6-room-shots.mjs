@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance6-room-shots.mjs - his room (the Long Bridge) and a zip-line moment (claude/lance6). Not in the suite.
 // usage: PORT=8652 node tools/lance6-room-shots.mjs <prefix> [outdir]
 import { openPage } from './cdp.mjs';

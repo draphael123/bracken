@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/levelling-runtime.mjs — THE LEVELLING SYSTEM, IN THE PAGE (the save side is tools/levelling.mjs).
 //   PASSIVES: every passive of every hero reads ON through the game's own tal() at its level with nothing owned and nothing in a
 //   slot, and OFF a level below; the hero menu's PASSIVES tab is the ladder (lit ON, dim LV n), and Z and F on it neither buy nor slot.

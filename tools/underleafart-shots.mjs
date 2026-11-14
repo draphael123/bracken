@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleafart-shots.mjs [only,tags] - real-page stills of UNDERLEAF 3 (claude/underleafart): each named area at its point of use, the three jars and their patches, the
    thorn-beast with and without its coat, and THE GRANDMOTHER 3 at each of her moves. Headless Chrome through tools/cdp.mjs, the knight in god mode, the level reloaded before each shot.
    Writes work/claude/lane-done/underleafart/<PREFIX>-<tag>.png at 2x (640x360), PREFIX = before | after (env PREFIX). Not in the suite.   PORT=<port> PREFIX=after node tools/underleafart-shots.mjs */

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/temple-guardian.mjs - THE TEMPLE GUARDIAN 2's own check (claude/monastery2; src/temple-guardian.js, scratch/brief-temple2.md).
 //   NODE: the numbers (B15's floor: a blade outside its opening lands at >= 0.4; its stagger pays more; a told ward after) and the hall as built
 //         (two bells, each over a gallery three rows up - a jump for every hero; the hall tall enough for a guardian twice the old size).

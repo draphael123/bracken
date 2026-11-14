@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan-worms.mjs - THE SUNKEN CARAVAN's SANDWORMS, IN PLAY, PER HERO, WITH REAL KEYS (claude/caravan2; Daniel 10-09: "the mini sand worms must appear" -
 // they never did: no row ever placed one in the caravan). A page check (PORT). For every placed sandworm (src/draft/sunken-caravan.js WORMS) and every hero
 // (knight, warden, pyro by default), a fresh save, no god, every other foe gone, the hero walks into its bed from outside with the keys a hand holds:

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/death-cost.mjs - THE DEATH COST (Daniel, 2026-09-28: the Salt & Sanctuary / Shovel Knight direction).
 //   What a hero picks up between two shrines (gold, XP) is UNBANKED. A death drops it; a shrine banks it.
 //   DROP        a death takes exactly the carried gold and XP out of the totals (the level's count, the purse, the hero's XP) and puts them in ONE bundle.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-sweep.mjs (claude/maker) - EVERY FOE IN THE MAKER'S PALETTE WORKS IN A PLAIN WOOD.
    Each kind in src/maker-palette.js FOES is placed alone in a fresh made-by-hand wood (a WATER_FOES kind inside a pool) (MKR, src/main.js), played with
    the knight walking up to it, and must: spawn, keep finite coordinates, stay in the world, throw nothing - and,

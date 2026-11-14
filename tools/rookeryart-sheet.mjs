@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookeryart-sheet.mjs - a CONTACT SHEET of THE ROOKERY's baked art (claude/rookeryart): every prop sprite, then the foes' frames, magnified x4 on one grey board.
    Real page (the sprites bake in the browser: canvas). Writes work/claude/lane-done/rookeryart-sheet.png (OUT=<dir> to change).   PORT=<port> node tools/rookeryart-sheet.mjs */
 import { openPage } from './cdp.mjs';

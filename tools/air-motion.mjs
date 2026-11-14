@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/air-motion.mjs (claude/airmotion) - THE BODY IS DRAWN MOVING, AND ONLY DRAWN (src/air-motion.js).
    It reads what the draw really did: P.artTurn (the tilt, radians) and P.artTall (the vertical scale), set beside P.lastKey.
    1. ART ONLY: the same running jump, with all of it on and with it zeroed, travels the same path and lands on the same frame.

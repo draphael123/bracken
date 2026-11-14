@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hero-trials.mjs - EVERY HERO TRAINS IN THE ARENA YARD (rewritten claude/yardswap, Daniel 11-03; it was EVERY HERO HAS A TRIAL YARD).
 // The ten hero trial yards and the open yard are RETIRED: the Arena Yard (src/arena-yard.js) is the one training ground. This tool keeps the old promise -
 // no hero is left without a place to learn his verbs - pointed at the new yard:

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown5-shots.mjs - THE WELL TOWN's welltown5 pictures (claude/welltown5, Daniel played it 10-03): the shade under its casters, the Gang
 // Leader's puddle and slip, the Cistern Queen's stinger and her fire. Not in the suite: god mode, pictures not a playtest.
 //   node tools/welltown5-shots.mjs <tag> [shade|gang|queen|all]   -> work/claude/welltown5/<tag>/*.png (2x frames from the game's own canvas)

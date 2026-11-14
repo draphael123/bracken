@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/corpses.mjs - A RESKINNED FOE DIES IN ITS OWN SKIN (claude/corpses, Daniel 10-02: "the reskinned enemies use a goblin sprite when they
 // die"). The living draw picks a foe's set by a chain of reskin flags (canal cnSkin / lamplighter, the Fair's shy and juggler, the Theatre's cast,
 // the bone archer); the corpse, the knocked-back frame and the hurt flash used to look up SPR[e.t] again and so drew the goblin / drunk /

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/mapscale-shots.mjs - pictures of the world map for the one-scale pass (claude/mapscale). Not in the suite.
 // usage: PORT=<free port> node tools/mapscale-shots.mjs <outdir> <tag> [id,id,...] [crop=x,y,w,h@scale]
 // Every level cleared and fully ticked (worst case for plates), standing on each listed node (default: one per sheet + a few busy ones).

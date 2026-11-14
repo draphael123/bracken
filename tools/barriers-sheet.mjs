@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/barriers-sheet.mjs - ONE SHEET of the barriers (claude/barriers): per region a gate (2 wide x 6 tall), the boss seal (2 x 6), the lock plate, and the boss touches. Not in the suite.
 //   usage: PORT=8834 node tools/barriers-sheet.mjs   -> work/claude/shots/barriers/sheet.png (4x)
 import { openPage, ROOT } from './cdp.mjs';

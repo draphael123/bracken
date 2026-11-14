@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/minecart-route.mjs - THE DEEP RAILS RIDDEN END TO END WITH REAL KEYS (claude/minecart). THE CART PILOT
 // (tools/cart-pilot.mjs) rides the level from the start to the drill's door: it boosts the long gaps, brakes for crushers, gates and rock, ducks the beams,
 // throws the points the plan wants (E), changes lines. A fresh save's hero (level 1, no skills).

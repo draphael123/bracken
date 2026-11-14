@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/buried-city-levers.mjs - THE HOURGLASS KING's LEVERS, REAL KEYS (claude/buriedcity fix pass 10-09; the BCREVIEW's M1: phase two's banks buried both
 // levers and the opening - the level's verb - was dead for two thirds of the fight). A page check (tools/cdp.mjs, PORT): for knight, warden and pyro, in EVERY
 // phase (one, two with its banks up, three with its pours), for EACH lever (west, east): the hero starts on the floor eight tiles in from the lever, WALKS to it with

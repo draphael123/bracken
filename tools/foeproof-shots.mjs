@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/foeproof-shots.mjs - stills of the foe variants (claude/foevariety proof lane, 11-05). Headless Chrome via tools/cdp.mjs, knight in god mode.
    For each skin: the first live foe of that skin in its level, the player placed 9 tiles away facing it, a still at idle, then mid-draw / mid-flight / the tell.
    node tools/foeproof-shots.mjs [skin,skin]   -> <OUT>/foeproof-<skin>-<phase>.png  (OUT = SHOT_OUT or audits/lane-shots). Not in the suite. */

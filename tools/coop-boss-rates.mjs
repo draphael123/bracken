@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/coop-boss-rates.mjs - CO-OP BOSS RATES (claude/coopbalance; a measuring tool, not a check).
    The boss lab's human bot plays seat one (tools/boss-run.mjs fightJs: campaign level, flask kit, profile human) and the party's other seats are the co-op
    AI hands (main.js allyTick - the lab's duel hands) standing in for PEOPLE: COOP.aiAsHuman counts them as people for the scale (the party is x2/x2.6/x3.2

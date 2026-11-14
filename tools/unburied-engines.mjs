@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-engines.mjs - THE UNBURIED FIELD'S TWO NEW VERBS, DRIVEN IN THE PAGE (claude/unburiedart, Daniel 2026-10-03/04).
      THE MANGONEL AT THE BRIDGEHEAD: strike it and its stone smashes the bowmen's palisade on the far bank - the top row goes (the bottom stays as a step), the two bowmen of THE FAR BANK are thrown down
        (hurtFoe, as the ballista does). Never required (tools/unburied.mjs holds that: the palisade is two rows, a hop).

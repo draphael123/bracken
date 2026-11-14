@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/powder-monkey.mjs - THE POWDER MONKEY (claude/flotilla4, src/powder-monkey.js; scratch/brief-flotilla4-1027.md item 4). Node part + one page.
 //   NODE: the module's numbers are sane (small and quick: his box under the big pirates', low health, a told windup, a fuse longer than its flight, the teach fuse longer);
 //         the Flotilla places him 3 times (the first, the TEACH, alone on the Powder Ship's forecastle with the shrine behind and a sign at the point of use) and THE

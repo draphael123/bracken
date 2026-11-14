@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ward-vs-guard.mjs — THE GEOMANCER'S RUNE-WARD BESIDE THE KNIGHT'S GUARD, IN NUMBERS (round 3, docs/briefs/geomancer.md ROUND 3, 2).
 // A REPORT, not a gate: Daniel asked for her guard to be a SIDEGRADE of his - better against big and ranged blows, worse in close
 // melee - and for the two to be put side by side. Every number is measured through the real damagePlayer / seeds / input in the real

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/blood-kit.mjs — THE BLOOD KNIGHT'S BLOOD KIT (claude/bloodknight, scratch/brief-bloodknight-1017.md 2-5; src/blood-kit.js BLOOD, main.js hooks).
 // Pure (Node), on src/blood-kit.js, this fails when:
 //   - BLOOD DEBT: a blow does not leave debt.share of it as debt; the debt does not drain to nothing in ~debt.drainT s, or drains while the blade is

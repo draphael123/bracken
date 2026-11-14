@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hl-route.mjs - THE HIGH LINES PLAYED IN THE PAGE WITH REAL KEYS (claude/hlproof, 11-12). tools/highlines.mjs + tools/line-kit.mjs prove the level in Node (a model of the
 // body, the pure kit). The bots (level-walk / pilot / mash) have no line hook and are lifted past every winch, so nothing had ever ridden THIS level in the page. This does, for a
 // hero (default knight; --heroes=a,b): from the start landing it works the route the level is built for, one section at a time, with BK.keys + BK.press (the keys a player has) and

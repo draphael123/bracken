@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc2art-states.mjs - THE BURIED CITY's rule in motion, for eyes (claude/bc2art): the sand rooms filling and draining, the street sinking, the heap piling, the trap hall fed, the great gate. -> work/claude/shots/bc2art/state-*.png + states.png. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

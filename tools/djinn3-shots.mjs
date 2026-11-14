@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/djinn3-shots.mjs - THE DJINN3 rework's pictures (claude/djinn3): THE STEAM WORKS (the vents told and jetting, a capped vent, the flooded trough's
 // steam, THE BELLOWS lit and capped), THE LESSER DJINN (sand and fire, whirling and open), and the boss's new beats (the turns, the tide over the ledges,
 // the blow from below, the bucket winding up and hanging ready). Not in the suite: god mode, pictures not a playtest.

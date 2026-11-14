@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-art-sheet.mjs - a contact sheet of THE RED GORGE's cast (claude/redgorge-art). Not in the suite.
 //   usage: node tools/redgorge-art-sheet.mjs <before|after> -> work/claude/redgorge-art/<tag>/cast-*.png
 import { openPage, ROOT } from './cdp.mjs';

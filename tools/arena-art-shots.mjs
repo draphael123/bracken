@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/arena-art-shots.mjs - THE ARENA SET's screenshot sheet (claude/arenayardart): each station, the crowd mid-cheer, a tile close-up, the gate props.
 // node tools/arena-art-shots.mjs   -> scratch/lane-reports/arenayard/art-*.png   (one browser, simulated frames)
 import { openPage, ROOT } from './cdp.mjs';

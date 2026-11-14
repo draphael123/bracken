@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/warcairn2art-sheet.mjs - a CONTACT SHEET of stills (claude/warcairn2art): node tools/warcairn2art-sheet.mjs <out.png> <cols> <cellW> <cellH> <file[@x,y,w,h]>...
    Each file is drawn into one cell (an optional crop x,y,w,h of the 640x360 still is scaled up to fill it, pixel-sharp), labelled with its name. Uses the page's canvas (no deps). */
 import { openPage } from './cdp.mjs';

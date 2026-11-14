@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-attract.mjs - ATTRACT MODE IN THE ITCH BUILD (claude/intro; headless, ONE browser; needs dist-itch/site built: node tools/build-itch.mjs). The bot's modules are bundled chunks there:
    forced on (a webdriver page is off by default), 20 s idle on the title plays the first clip in the iframe, the bot moves, a key press ends it on the title with the cursor where it was, and no localStorage key changed.
    usage: QA_SHOTS=<dir> node tools/itch-qa-attract.mjs      needs >= 1500 MB free (exit 3 when not) */

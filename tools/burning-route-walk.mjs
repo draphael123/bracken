@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burning-route-walk.mjs [heroes] - THE BURNING VILLAGE's climb, walked with real keys and NO god mode (F9, for the part the
    play bot cannot do: RULES M, it walks toward the gate's column and does not climb a gable). Waypoints along the route the rework
    made (docs/briefs/burning-village-rework.md §3): up the gable before THE FALLEN HOUSE, over it roof to roof, onto THE HALL, down to

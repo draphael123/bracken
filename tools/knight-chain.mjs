@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/knight-chain.mjs - THE KNIGHT'S IDENTITY PASS (claude/knightid, Daniel 10-31 18:07 Q4 + 11-01): the GUARD CHAIN (3 links: a perfect guard +1, a turned blow keeps,
    a landed blow / the idle clock drops), the cut out of a perfect guard carries the links (1 guard-open, 2 shove, 3 the FINISHER), the third jab is the SHIELD BASH (breaks
    a guard), the heavy cut is ONE fixed weight, the SHIELD RAM (no grace, a link opens a guard), UP+C at 3 links is the SHIELD CHARGE, and the L25-L50 techniques do what

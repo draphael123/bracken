@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/lab-order.mjs - THE LAB DOES NOT REMEMBER THE FIGHT BEFORE (claude/harness). A check.
    Every bossLab row is seeded end to end (src/lab.js runbossLab), so the same boss, hero, profile and seed must come out the SAME whether it
    is the first fight in a freshly loaded page or the last of a batch. Before claude/harness it did not, because a fight left state behind:

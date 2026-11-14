@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fallingtower-shots.mjs — THE FALLING TOWER in the real page, one picture a place, bottom floor to the sky, rendered with BK.step
 // (BK.sim does not draw) and saved at 2x into docs/fallingtower/<tag>/. The same spots every time, so a "before" and an "after" of the
 // rework (docs/briefs/falling-tower-rework.md) can be laid side by side. God mode, the hero stood at each spot and given a second

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/combat-damage.mjs [levels] [heroes] [seeds] [frames] — WHAT A PLAIN RUN COSTS: the in-page play bot (src/playtest.js, the F9
 // bot), NO god mode, from each level's start toward its gate, dice pinned. Not in the suite: a measure, for a before and an after
 // (the combat pass, 2026-09-28: damage taken on two sample levels before and after the attack tokens). Prints, per level, hero and

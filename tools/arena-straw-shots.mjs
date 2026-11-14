@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/arena-straw-shots.mjs - THE STRAW CAST's screenshots (claude/arenastraw): each dummy idle, mid-attack and (the two swordsmen) at the white parry FLASH.
 // node tools/arena-straw-shots.mjs   -> scratch/lane-reports/arenayard/straw-*.png   (one browser, simulated frames; poses are set by hand and drawn without a sim step)
 import { openPage, ROOT } from './cdp.mjs';

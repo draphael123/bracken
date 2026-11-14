@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kite-openings.mjs - DOES THE ANTI-KITE CLOCK SHORTEN A BOSS'S TOLD OPENING? (claude/smallfix10, BATCH139 A11 audit)
    The anti-kite clock (src/boss-pressure.js KITE) runs a boss's idle clock up to x1.45 once the hero has stayed out of reach for 5 s+. It skips windups, e.open/broken/
    stagger/ward and the FROZEN modes - but an opening that is only a plain MODE (planted, beached, mired, a crusader's recovery ...) was not skipped, so a hero who had

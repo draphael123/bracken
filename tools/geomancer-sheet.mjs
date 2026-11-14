@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer-sheet.mjs — THE GEOMANCER'S FRAMES, ALL OF THEM, ON ONE SHEET (docs/geomancer/frames.png): every key of her
 // baked set, a row a key, each frame at 3x with its name - the contact sheet a reviewer reads her from. `node tools/geomancer-sheet.mjs`
 import { writeFileSync } from 'node:fs';

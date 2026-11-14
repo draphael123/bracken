@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/heroblocks-b.mjs - HERO BLOCKS B (claude/heroblocksb, Daniel 10-30 22:15): what the two new holds promise, in the running page.
 //   warden   HOLD C is THE JAVELIN THROW (src/warden-throw.js; the hold-C brace was removed claude/herofeel): a tap is the deflect; held, three tiers (quick / heavy knock-back / pin); the spear comes back at once
 //   ranger   HOLD C is THE BOW GUARD (src/ranger.js): a tap is still the bash (no guard); held past RG.guard.hold the bow is up; a PROJECTILE from the front

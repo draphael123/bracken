@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/lamplit2.mjs - THE LAMPLIT STREET 2 (claude/lamplit2, Daniel 10-08 brief, scratch/brief-lamplit2.md). In the page:
    THE LAMPREEVE (the mini)
      - a lamp he put out, RELIT beside him (fire carried, a real swing on it), STUNS him: blinded, open > 2 s, a blow x1.7

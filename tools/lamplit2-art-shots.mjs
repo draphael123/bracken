@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lamplit2-art-shots.mjs - THE LAMPLIT STREET 2's art-pass pictures (claude/lamplit2art): the Lampreeve and the Tollmaster caught mid-move in the real page, and the street's
 // lamps, pockets, gate and brazier. Not in the suite: god mode, a picture not a playtest.
 //   usage: node tools/lamplit2-art-shots.mjs [out-dir] [name-filter,...]   -> PNGs (the game's own canvas, 3x, cropped round the action)

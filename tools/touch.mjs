@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/touch.mjs - THE PHONE, EMULATED (claude/mobile, 2026-10-02: Daniel, "touch support, all of it").
 // The page runs as a landscape phone (844x390 CSS px at 2x, touch on) and is driven with REAL touch events over the DevTools protocol:
 //   1. the floating stick: eight directions, a dead zone, clear UP and DOWN zones, released cleanly, multi-touch safe, left-handed

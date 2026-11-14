@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/freebooter-kill.mjs — WHAT KILLS IN 0.28 SECONDS (docs/combat-tuning.md: "the Freebooter kills fodder in 0.28 s whatever its
 // health - even 126 hp"). Not a tuning tool: it fights one fodder foe with a health bar set absurdly high and writes down every blow
 // that lands on it (BK.log's 'dmgE' rows), so the mechanic behind the kill is named rather than guessed at.

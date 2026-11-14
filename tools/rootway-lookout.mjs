@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rootway-lookout.mjs - THE LOOKOUT CROSSING, every hero (claude/rootway2art, Daniel 10-10: "this jump is not crossable", twice).
 //   From the near lip (303,18): (A) ANY arrow of the scout's that is struck back drops the span; (B) a thrown SPORE POD (the cap on the near ledge, E) that flies through the rope drops it;
 //   (C) the real thing - the scout draws and shoots, the hero swings at his arrow as it comes (info only: timing is the player's). Then the span is a bridge: 8 one-way cells.

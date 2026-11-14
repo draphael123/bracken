@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/demo-end-page.mjs - THE END CARD ON THE PAGE (claude/demoend; headless, ONE browser; not in the suite yet): ?demo=1, Kingswood won -> the win card -> Z -> state demoend + the card (5 buttons, follow line);
    Down + Enter opens the feedback form, Esc closes it; KEEP YOUR PROGRESS makes a tagged file; CREDITS and Esc come back; BACK TO THE MAP; flag off: no card. usage: node tools/demo-end-page.mjs <shotDir> */
 import { openPage } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/weakboss-pilot.mjs [maxSecs=240] [bosses=lamplit,fields,mage,unburied] [heroes=knight,warden,pyro] — THE WEAK BOSSES (claude/weakboss),
    piloted by the boss-lab hands: the Lampreeve (the Lamplit Street's mini), the Headless Ploughman (fields' mini), the Homunculus (mage's mini) and the
    Death Knight (unburied's boss), refill health, one pinned seed per hero. A row a fight: how it ended, how long, the health the hero lost

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/glasssea-route.mjs - THE GLASS SEA walked end to end with REAL KEYS (claude/glasssea; the shape of tools/underwell-route.mjs). Not in the suite: a
 // route pilot. A scripted hand holds a direction, hops onto the next ledge, SLIDES (down held) down the slick glass and leaps the slide gap, TURNS the mirrors
 // (E) and waits for the glass to fuse, climbs the Sunken Head's holds, relays the fires onto the boiling cracks, and cuts down what stands in its way with plain

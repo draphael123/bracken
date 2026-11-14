@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/boss-jump.mjs - THE PLAYTEST BOSS JUMP LOADS EVERY BOSS AND MINI, AND NEVER TOUCHES THE PLAYER'S SAVE (docs/PLAYTEST.md).
 // In the page, with a real save already in storage, for EVERY row of the hidden boss table (BK.bossJump.table(): read from every level's
 // own arena and mini, and required to be exactly what the levels build, so a NEW boss appears by itself):

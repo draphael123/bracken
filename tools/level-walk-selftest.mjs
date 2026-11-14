@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/level-walk-selftest.mjs - THE LEVEL WALKER RUNS AND REPORTS (claude/walker). A light check of tools/level-walk.mjs, not a difficulty gate:
    one short walk of the marsh (knight, seed 1, 1500 frames) at its campaign level, and the row it hands back has the hero it was promised
    (campaign level, typical build, tonics, the human eyes on level foes) and every field the baseline table reads. ~20 s with the page. */

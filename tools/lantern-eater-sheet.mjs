@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lantern-eater-sheet.mjs [tag=art] - THE LANTERN-EATER's CYCLE SHEET (claude/lanterneater art pass): every pose of src/redraw/lanterneater_art.js drawn
 // on a dark basin backdrop at 4x - the two lights (lamp flickering vs lure swaying, the lure snagged), the raft lantern lit/shuttered, the bulk, the jaws surfacing /
 // open / snapping / clamped / sinking, the gulp, the swell, the snuffed lamps, the decoy and its splash, the death guttering, the card.

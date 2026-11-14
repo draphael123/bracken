@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-walk.mjs (claude/maker) - THE EXAMPLES CAN BE FINISHED. The in-page play bot (src/playtest.js makeBot) walks each of the
    maker's EXAMPLES from START to its goal gate, in god mode (this proves the way through exists - jumps reach, lifts carry, doors
    open - not how hard the fights are). Not in the suite: it is long.   node tools/maker-walk.mjs [steps=9000] */

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/harnesscard-rates.mjs - HUMAN-BOT RATE PER HERO, OLD HARNESS vs NEW (claude/harnesscard; a measuring tool, not a check).
    Before HARNESSCARD a bot hero was levelled by XP alone (PROG.xp = xpFloor(n), no level-up card): growthAt(h, lv, null) = no Vigor/Endurance/Might
    picks, a much weaker hero than a real player who spent his n picks. 'old' reproduces that; 'new' is BKT.setHeroLevel (xp + the even card spread).

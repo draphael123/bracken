@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/titlescene.mjs - THE TITLE AS ONE SCENE, THE HERO ROW, THE MAP'S FIRST FRAME (claude/titlescene, 2026-10-09).
 //   TITLE      the sign, its tagline and the menu all sit whole on the screen; the tagline never meets the menu board; no footer line of another size.
 //   HERO PICK  a ROW of the heroes' own idle frames (they move), the one picked is lifted and lit, every name is on screen with a one-line role, and the

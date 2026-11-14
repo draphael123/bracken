@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-build.mjs (claude/maker, the building batch) - COMBINING PIECES, SWITCHES, HEIGHT AND COPY/PASTE work.
    1. ELITE: a foe set to elite spawns as one (bigger).  2. CRATES: a crate holding a foe lets it out when broken; one holding
    a heart drops a heart.  3. SWITCH: each hit swaps RED and BLUE blocks; a retry puts them back.  4. HEIGHT: rows go on at the

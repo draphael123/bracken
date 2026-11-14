@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-route.mjs - THE RED GORGE walked end to end with REAL KEYS (claude/redgorge, the review's fix 1). Not in the suite: a route pilot.
 // The level-1 pilot (tools/level1-pilot.mjs) lifts its bot by teleport past every rope and basket - exactly where a climb hurts - so its row was
 // blind here (48 lifts). This is a scripted hand, as tools/welltown-route.mjs: it holds a direction, jumps onto the next ledge, holds UP on a rope,

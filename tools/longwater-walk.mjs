@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/longwater-walk.mjs [heroes] [--shots tag [--cols=a,b@row]] [--sections] - F9 for THE LONG WATER (docs/briefs/long-water-river.md): the in-page play bot
    (src/playtest.js), NO god mode, start to gate, once per hero (default knight,warden), then the sweep for art and geometry findings.
    Prints how far it got, where it died and every finding. With --shots <tag> it instead stands (god mode) at a row of river columns,

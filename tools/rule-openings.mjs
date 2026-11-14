@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rule-openings.mjs - THE LEVEL'S RULE IS AN OPENING ON ITS BOSS, AND BOSS WAVE 2's GAME-WIDE RULES (claude/bosswave2, 2026-10-05).
 // Daniel 10-03 (scratch/audit-rules.md): three bosses ignored their level's rule; each gets ONE rule-based opening, retrofitted. And his
 // BOSS WAVE 2 interview: poise fills from heavies only outside an opening, and a mini's opening is worth a third of him at most.

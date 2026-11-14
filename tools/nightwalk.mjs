@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/nightwalk.mjs (claude/nightwalk) THE BROWSER PROOF OF ONE FLAG-OFF ROAD AREA, its flag on in the page only (BRACKEN_ROAD, tools/cdp.mjs).
      BRACKEN_ROAD=ww,sk,mn,ac PORT=8731 OUT=<dir> node tools/nightwalk.mjs wispwood|silk|manor|academy
    Per area, in ONE page: (b) stills of the section starts, the arena and the boss mid-fight (hitbox rectangle drawn over it: green = the hitbox, yellow = a hurtbox

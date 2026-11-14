@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/page-recycle.mjs - A PAGE THAT IS REPLACED EVERY ~6 BK.load CALLS (claude/botmem, 11-03; botaudit sec.4).
 // BK.load leaks 40-65 MB of NATIVE memory per call and nothing in the page frees it; a tool that puts twelve loads in one page crosses
 // memguard's 3 GB cap or the free-RAM floor and is killed, then reports "page CRASHED" as a red. This hands the tool a fresh page (a fresh browser

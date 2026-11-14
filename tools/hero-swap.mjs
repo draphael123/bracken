@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hero-swap.mjs - THE SWAP HERO PANEL and THE LIVING SHOPS (claude/hubpolish, Daniel 11-01). Not in the suite's browser budget twice: one page.
 //   1. PURE     src/hero-swap.js: LEFT/RIGHT wrap, the panel opens on the hero you play, a press is swap / same / locked.
 //   2. STORE    F in the store (non-skills tab) opens it, RIGHT walks it, CONFIRM takes the hero (PROG.hero changes, the hero keeps his own XP and level, the save is written),

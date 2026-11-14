@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/theatre-pilot.mjs - THE MASKWRIGHT'S THEATRE walked end to end with real keys (claude/theatre). Not in the suite: a route pilot.
 // A scripted hand, not the play bot: the bot cannot strike a lamp, a rope-lock or a winch, so this walks each leg with the keys a player would
 // press - hold a direction, jump what blocks, strike a machine from beside it, wait for a batten, hold jump on the star trap - and cuts down

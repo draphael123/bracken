@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq4l-shots.mjs [outDir] - THE GQ4L PROOF WALK IN THE REAL PAGE (claude/gq4l-d): BRACKEN_GQ4L=1, the page's own 320x180 buffer at 2x: G1, G2, the bell tower shell, B3b, B3c, a burning storey,
    the outside stretch, the Queen mid-hop. ONE headless page (>= 1500 MB free; stop if scratch\GATE-RUNNING.flag / BROWSER-HOLD.flag exists). Not in the suite.
      BRACKEN_GQ4L=1 node tools/gq4l-shots.mjs <outDir> */

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3fix-ladder.mjs - GQ3FIX probe: does a hero climb the hatch ladder out of the burning tower onto the deck? (a measuring tool, not a check) */
 import { openPage } from './cdp.mjs';
 const hero = process.argv[2] || 'knight';

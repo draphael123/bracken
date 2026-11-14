@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // Boss Select uses the campaign save's kit and writes only its per-slot records.
 import { openPage } from './cdp.mjs';
 

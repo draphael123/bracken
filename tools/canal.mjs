@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canal.mjs - THE FOG CANAL (claude/canal, the greybox). docs/briefs/fog-canal.md.
 //   PURE (src/canal-rig.js, src/canal-foes.js, no page): a struck paddle fills its lock at its pace and the gate above opens only when the water is
 //     level (and the one below shuts as it rises), a gate never shuts on the barge; the barge drifts only with a hero aboard or ahead, stops at a

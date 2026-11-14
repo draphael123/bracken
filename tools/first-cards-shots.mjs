@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/first-cards-shots.mjs - stills of the first-time cards (claude/onboard2): node tools/first-cards-shots.mjs -> $SHOTS/fc-<id>.png (real fonts)
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';

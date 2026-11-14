@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hurricane2art-shots.mjs - THE HURRICANE DECK 2's art pass in the real page (claude/hurricane2art), for eyes. Not in the suite. PORT from the environment, one page.
 //   node tools/hurricane2art-shots.mjs name:x:row[:sim[:flags]] ...   flags (comma list): k = foes put down, h = HUD kept, cut=<slab>/<end> = cut that post (-1 west / 1 east) then wait=<frames> (default 70) for it to land, hp=<n> = every post of <slab>... see cut=
 //   env: OUT (default work/claude/shots/hurricane2art/cur), CROP=x0,y0,w,h,k (zoom of the 320x180 frame), PRE=<js run after load>

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fenroad2art-shots.mjs - THE FEN ROAD 2 ART PASS for eyes (claude/fenroad2art): the level at fixed columns, the plank beats, the stilt-walker mid-step, the leech.
 // TAG=before|after PORT=<port> node tools/fenroad2art-shots.mjs [col ...]  ->  work/claude/lane-done/fenroad2art-<TAG>-*.png   (ONLY=a,b limits the named shots)
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/flasks2.mjs - FLASKS 2 (claude/flasks2, Daniel 2026-10-08; src/flasks2.js). PORT=<port> node tools/flasks2.mjs  (~3-5 min with the page)
  *   A. RULES (no page): the nine store lines (3 COUNT / 3 POTENCY / 3 PERKS; 3 hidden), the unlock rules (a level beaten, a find, an objective),
  *      '???' for a hidden line, the heal tiers and the card's +10, QUICK DRAUGHT's drink, the objectives (God Mode earns none), the typical kit along

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bkart-shots.mjs - THE BLOOD KNIGHT's crimson art in the real page (claude/bloodknightart), for eyes: each tier's wind + release as the game draws them (with the
 // blade glow, the crescent wave sprite, BLOOD MOON's geysers), BLOOD SPIKE, BLOOD PRICE, the hatched BLOOD DEBT bar at three fills (and low health), and the boss at 1.5x.
 // -> work/claude/lane-done/bkart-*.png (small).   PORT=<port> node tools/bkart-shots.mjs

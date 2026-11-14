@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/tavshop.mjs - THE BAR STORE (claude/tavshop, Daniel 11-04: the store is reachable inside the tavern). One headless browser, four runs:
 // desktop and 812x375 touch, demo flag off and on. Each: stand at the bar, the prompt, USE opens THE ONE STORE, buying is allowed, ESC returns to the same spot.
 //   node tools/tavshop.mjs [outdir]       (writes shots when an outdir is given)

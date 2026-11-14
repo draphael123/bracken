@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canal-shots.mjs - THE FOG CANAL's pictures (claude/canal, greybox), for Daniel's look before art. Not in the suite.
 //   work/claude/canal/full-level.png   the whole level drawn by the game itself (frames from BK.look stitched), half size, the sections named
 //   work/claude/canal/map.png          the inland sheet of the world map, with the canal's node

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-load.mjs - ITCH QA SWEEP, LOAD TIME + CONTENT BLOCKER inside the 960x540 cross-site iframe (claude/qasweep; headless, ONE browser, closed at the end; not in the suite).
    Runs: COLD (cache off), WARM (itch-style max-age cache, second visit), CPU x4 + slow-4G (9 Mbps / 170 ms) cold, and COLD WITH A CONTENT BLOCKER (EasyList/EasyPrivacy-style URL patterns blocked at the network layer).
    Each run: seconds to the title, the loading bar sampled every 250 ms (never stalls = no flat stretch > 3 s while the title is not up), bytes by type, the three biggest/slowest files.

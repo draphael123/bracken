@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/paladin3-art-shots.mjs - THE PALADIN 3 art in the game (claude/paladin3art; not in the suite): on a flat Stockade floor with the real keys, a strip of crops round him (3x) for each
 // of the new effects: the aura (lit, travelling), SMITE, RADIANCE, SUNFALL, VERDICT (wind, hold + sigils, release), HEAVEN'S ARC, the perfect guard's flash, BULWARK ADVANCE, the hammer throw.
 //   usage: PORT=8942 node tools/paladin3-art-shots.mjs <outdir> [scenario,scenario...]  -> <outdir>/<scenario>.png

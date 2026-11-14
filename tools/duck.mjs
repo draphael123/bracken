@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/duck.mjs — THE UNIVERSAL DUCK (claude/duck, Daniel 2026-09-29: "crouch = universal duck").
 //
 // Down held on the ground, standing still, crouches every hero, and a HIGH blow goes over him (src/duck.js, src/marks.js HEIGHT).

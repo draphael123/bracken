@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornsman.mjs - THE HORNSMAN (claude/palisadefoe, src/hornsman.js): the Palisade Wood's siege-crew handler, a foe of the level's own.
 //   Node half: the step (a post he holds, the horn only with an archer in earshot, the told bar, the blast, the maul, a blow in the windup cuts the order short, a backward step
 //   when you come in) and the tables (EHP, threat, marks, voice, bestiary card).

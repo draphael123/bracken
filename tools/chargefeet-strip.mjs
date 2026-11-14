@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/chargefeet-strip.mjs - A HERO WALKING WHILE HE HOLDS THE CHARGE, frame by frame as the game draws it (claude/chargefeet).
 // The real page in Chrome: hold the attack key (the charge) and walk right on flat ground; 8 crops (every 5th tick, the warden's wind is short: every 2nd), blown up.
 // Prints the pose key / frame drawn. Run it in the old checkout and in this one for the before / after strips.

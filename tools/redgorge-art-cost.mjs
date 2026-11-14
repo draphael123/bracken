@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-art-cost.mjs - ms per drawn frame in THE RED GORGE at a few spots (claude/redgorge-art). Not in the suite.
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: true });

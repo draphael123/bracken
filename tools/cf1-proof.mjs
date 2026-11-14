@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf1-proof.mjs - CF1 PROOF FRAMES (claude/cf1proof, 2026-11-12): crops of the game buffer around the hero, one frame per sim step, for the five demo heroes.
 //   node tools/cf1-proof.mjs <out.json>      one headless browser. The flag state is whatever src/cf-impact.js ships (run it on an OFF and an ON tree), JUICE2 as shipped.
 //   tools/cf1-sheets.mjs <off.json> <on.json> <outdir>  stitches the two runs into contact sheets (top row OFF, next row ON).

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookeryart-xp.mjs - add ONLY THE ROOKERY's row to tools/fixtures/campaign-xp.json (claude/rookeryart): the page's BK.xpSim() road, the other rows untouched
    (boss-level.mjs --write-xp rewrites every row; this lane adds the one it owns). Prints the rookery's and the Sky Road's campaign level before / after. */
 import { openPage } from './cdp.mjs';

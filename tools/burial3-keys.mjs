@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial3-keys.mjs — THE BURIAL CAVERNS ROUND 3, IN THE PAGE, WITH REAL KEYS AND NO GOD MODE (claude/burial3, 2026-09-27).
    The Node half is tools/burial3.mjs. This one proves in the running game:
      1. THE ARCADE WALK is crossed end to end with real keys by the heroes named (default knight, pyro, pirate - the Pyromancer and the

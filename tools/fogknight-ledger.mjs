@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fogknight-ledger.mjs - THE FOG KNIGHT 2's fight ledger (claude/towpath2; for the tune lane, not in the suite): one fight per hero and seed, exactly as
 // tools/boss-rates.mjs runs it (tools/boss-run.mjs fightJs: campaign level, the human profile, the kit's flasks), then reads his own counters back
 // (BK.fogKnight(): what each of his moves took off the hero, how often each came and landed, his openings) - where the fight is won and lost.

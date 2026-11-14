@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rootway-aloft.mjs - NOTHING IN THE ROOTWAY HANGS IN THE AIR, and the exam's gaps read as gaps (claude/rootway art pass; the same idea as skyroad-aloft / underwell-aloft / moor-aloft,
    Daniel's playtest 10-05: "this is floating"). The Rootway climbs a tree: every ledge, machine and prop is keyed to root, post, rope or limb, and the floorless chasms are drawn as a drop.
    NODE (no page):

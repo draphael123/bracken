@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/kitchengate4-keys.mjs - LORD GRUBBAG's hall with REAL KEYS, every hero (claude/kitchengate4, Daniel 10-30: the coal trench, the meat-hook rails, the platter drop).
 // In the page, the engine's own loop: for each of the nine heroes, base movement (no mobility skill), the boss awake but held in his chair (no blows thrown):
 //   THE COAL TRENCH  dropped on the coal bed: holding toward the nearer end and pressing JUMP at the step, he climbs back onto the floor - the coals bite (spared: never a death),

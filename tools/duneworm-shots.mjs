@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/duneworm-shots.mjs — THE DUNE WORM in the real page: one picture a beat of his fight, rendered with BK.step (BK.sim does not draw),
 // saved at 2x into docs/duneworm/ (SHOTS=<dir> for somewhere else). Each beat is FORCED from his machine's own chain (the harness way, A3), the
 // hero put where a player would stand. Reworked by claude/caravan2 (the ledges, the stun, the ward, the sand breath). Not in the suite:

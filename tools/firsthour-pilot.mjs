@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/firsthour-pilot.mjs [maxSecs=300] [seeds=1] [levels=wood,marsh] — THE FIRST HOUR'S TWO BOSSES (the Hornet Queen and the Bullfrog
    King), piloted by the boss-lab hands with the three heroes the lanes pilot with (knight, warden, pyro): refill health, a 300 s cap,
    one pinned roll per seed. Prints one row a fight - outcome, seconds, health left, damage taken a minute, the modes it spent time in

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-feel.mjs — COMBAT FEEL NUMBERS: what every hero blow leaves behind when it lands. Findings only; it changes nothing.
 // For each hero, each blow (light 1/2/3, the held heavy - the knight's SHIELD CHARGE and its bash -, the dash strike, the dash attack, the
 // rising cut, the low sweep, the plunge, the riposte, and every active skill in the hero's tree) is thrown at a standing foe in Bracken Wood,

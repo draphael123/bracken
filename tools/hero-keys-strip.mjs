@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hero-keys-strip.mjs - THE HERO'S MOVES AS THE GAME DRAWS THEM, frame by frame (claude/herokeys, art direction 2026-10-09).
 // The real page in Chrome, stepped with the draw on (BK.step renders). Per hero one picture: the light chain (three real presses), the heavy
 // (held, then let go), and the jump with its landing - each caught every N ticks in a crop round the hero, blown up. Also the TIMING FINGERPRINT:

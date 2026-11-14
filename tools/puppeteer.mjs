@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/puppeteer.mjs - THE PUPPETEER, the Maskwright's Theatre's boss (claude/puppeteer; PUPPETEER3; THEATRE3; PUPPETEER2 2026-10-04: the visit loop,
 // the chained lever, his two slow attacks, no fall, four scenes). src/puppeteer.js is the fight (its header is the design). Each rule below was red on
 // the THEATRE3 module (it has no lever chain, no stagger, no snare line, no scenes) - run it against git show 1dd5b181:src/puppeteer.js to see.

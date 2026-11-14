@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/puppeteer-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [level=theatre] [--depth] - THE PUPPETEER (src/puppeteer.js) at NORMAL health, one pass per
 // salt (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health taken,
 // his health left, the phase and cycle reached, the show's counts - drops, slack bars, bar cuts, clanks, flails, props - what did the damage, and how the

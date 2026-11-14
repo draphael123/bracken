@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/orecolour-shots.mjs — THE ORE ROAD colour pass: one 640x360 capture per section in ONE page session, saved to
 // work/orecolour/<tag>/<nn>-<place>.png, each measured with the visual audit's own method (tools/art-rules.py: Lab, rows 40-330 of 360,
 // chroma = median of hypot(a,b), spread = L p90-p10, sep = |median L of the top 45% - the bottom 38%|, warm = share(b>12) - share(b<-8),

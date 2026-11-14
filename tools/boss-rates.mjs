@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-rates.mjs - THE BOSS STANDARD, ONE COMMAND (claude/bot2; a measuring tool, not a check).
    Per boss, per hero, at the boss's CAMPAIGN LEVEL (tools/boss-level.mjs campaignLevel: depth or the road's XP, never under L3), NORMAL health,
    the boss bot with the standard profile (src/bot-profile.js STANDARD, the calibrated player), four ways:

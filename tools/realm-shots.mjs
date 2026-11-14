@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/realm-shots.mjs - THE UNDEAD ARCHMAGE, claude/undead3: pictures of his three spell realms
 // (src/mage-realms.js; his wards on the spiral stair went with claude/towerscroll - the stair's pictures are tools/chase-shots.mjs), rendered with BK.step and saved at 2x into <out>/. God mode. Not in the suite: pictures are
 // for eyes.

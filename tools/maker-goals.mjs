@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-goals.mjs (claude/maker) - THE CLEAR CHECK, LEVEL GOALS AND CO-OP TEST RUNS.
    1. CLEAR: a run from START that reaches the goal clears the level as it stands (SHARE needs that); the win card's confirm goes
       back to the editor; a PLAY HERE win does not clear; any edit un-clears.

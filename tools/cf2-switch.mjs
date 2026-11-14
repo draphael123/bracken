@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf2-switch.mjs - proves BOSS_CF2=on|off (boss-run.mjs) reaches the page's REAL main.js module: the same snippet fightJs injects, then a short hop's airtime.
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });

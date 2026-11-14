@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/tellposes-strip.mjs - FRAME STRIPS OF A FOE'S WIND-UP, as the game draws it (claude/tellposes).
 //   PORT=8796 node tools/tellposes-strip.mjs <outdir> <foe,foe,...>      -> <outdir>/<foe>.png
 // A held foe stands ahead of the hero on a flat floor; the strip is its crop every 2 frames from the moment its mode becomes a wind-up

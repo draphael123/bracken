@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pose-frames.mjs — A HERO'S FRAMES FOR THE NAMED KEYS, blown up on one sheet, straight from the baked set (BK.heroSet)
 // the draw uses: the quickest look at a pose while it is being drawn.   node tools/pose-frames.mjs knight lunge,toss,slam [out.png]
 // (the knight's SHIELD THROW frames are drawn from his BARE set, the one without the kite: pass 'bare:toss')

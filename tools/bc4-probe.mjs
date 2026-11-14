@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc4-probe.mjs - THE BURIED CITY 4 lane's probe (claude/buriedcity4): stand a hero somewhere in the city, optionally strike glasses, and sample once a second
 // where he is, his health, whether the sun drains him (and why not: shade / a cloud) and what foes are near. Not in the suite: a lane's eyes.
 //   PORT=8904 node tools/bc4-probe.mjs <x> <row> [secs=20] [--hero=knight] [--lvl=40] [--hold=right|left|none] [--pre=<js>]

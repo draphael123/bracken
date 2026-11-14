@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/douse-agree.mjs - A DOUSED FIRE GOES OUT WHERE IT IS DRAWN (claude/smallfix7, Daniel 11-01: "where you knock water into things, the fire still
 // appears visually but doesn't do damage"). Two halves:
 //   A. THE PAGE (THE BURNING VILLAGE): light the straw, let it take, splash it. In the SAME FRAME water lands (no sim step in between) every cell in

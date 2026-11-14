@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/chase.mjs - THE CHASE ENGINE (claude/chase): the reusable chaser for the Minecart road, the Rockslide and the Ore Road collapse.
 // The Falling Tower's spiral stair uses it (claude/towerscroll: tools/tower-chase.mjs); this fails when the ENGINE (src/chase.js + its hook in src/main.js) breaks:
 //   PURE (src/chase.js, no page):

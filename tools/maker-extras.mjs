@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-extras.mjs (claude/maker) - THE MAKER's extras hold.
    1. TEST AS another hero: the run is that hero, and your own hero is back afterwards.
    2. SMART HILLS: painting tops makes a hill with a ramp at every one-tile step, and the knight walks over it.

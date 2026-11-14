@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/skyroad-probe.mjs - THE SKY ROAD in the page, quickly (claude/skyroad, the greybox). A smoke test of the rule and its machines, not a playtest:
 //   ?level=skyroad lands at its entrance in play (no god mode); a thermal lifts a hero standing in it to its top; a cloud's shadow kills a thermal and the
 //   sun brings it back; the cloak is taken at its mast and a held jump glides (no cloak, no glide); a dead stone thermal lifts nobody until its stone is

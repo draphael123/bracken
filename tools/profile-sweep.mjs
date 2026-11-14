@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/profile-sweep.mjs — THE NET UNDER browser-profile.mjs: abandoned BRACKEN browser profiles in the temp folder.
 //   node tools/profile-sweep.mjs                 delete abandoned ones idle for 30 min or more (prints a JSON report)
 //   node tools/profile-sweep.mjs --dry-run       say what it would delete, delete nothing

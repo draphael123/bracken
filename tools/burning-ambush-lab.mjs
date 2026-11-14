@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burning-ambush-lab.mjs [reps=1] - THE BARN, measured (RULES Q4, docs/briefs/burning-village-rework.md §5): every hero through
    THE BURNING VILLAGE's ambush room with BK.ambushLab, played straight, against Q's 15-35 s window. Prints a row per run and a
    summary. Not in the suite: it is a measurement, and the suite's ambush-single and ambush-reach hold the room's shape. */

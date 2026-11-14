@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ram-art-sheet.mjs - contact sheets of the SCREE 3 art as PNGs (claude/scree3art). Not in the suite. Needs a headless browser (one, ~1 GB).
 //   usage: OUT=<dir> node tools/ram-art-sheet.mjs [poses|props|fx|all]   -> <dir>/sheet-*.png (4x, nearest-neighbour)
 import { openPage } from './cdp.mjs';

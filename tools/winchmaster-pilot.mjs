@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/winchmaster-pilot.mjs [passes] — THE WINCHMASTER at NORMAL health, six heroes x passes, seeded. The band is 60-75% wins
 // over 21+ runs with the median win at 90-150 s (the Mother Cap's and the Hedge Warden's band), so 4 passes is the least that means
 // anything. The lab's hands play his fight as it is built (src/lab.js, reworked 2026-09-25: find the line that runs into the

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/palisadefoe-shots.mjs - real-page stills of THE HORNSMAN (claude/palisadefoe). A pose sheet (every frame, x4, both faces) and the scenes: tower two idle / the horn up (the bar) /
    the blast with the archers ordered (red pennants, the arcs) / the maul tell / the wall-end scaffold / the exam's tower three. Headless Chrome through tools/cdp.mjs, the knight in
    god mode. Writes <OUT>/palisadefoe-<tag>.png (OUT = SHOT_OUT or the lane-reports folder). Not in the suite.   node tools/palisadefoe-shots.mjs [tag,tag]  */

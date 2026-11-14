@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/nestbugs-sheet.mjs - THE NEST BUGS, before (rows A) and after (rows B) at 6x (claude/nestbugs). OUT=<png>  OLD=1 reads the pre-pass copies src/redraw/prior_*_set.js (untracked, scratch only).
 //   env ONLY=combdrone,nestguard,stinger,honey  Z=6
 import { openPage, ROOT } from './cdp.mjs';

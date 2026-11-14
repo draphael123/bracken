@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/waspart-shots.mjs - BEFORE / AFTER FRAME SEQUENCES of the wasp, the hornet and the Hornet Queen in the real game (claude/waspart).
 // TAG=before|after OUT=<dir> node tools/waspart-shots.mjs  ->  <dir>/<TAG>-<subject>-NN.png (a cropped, zoomed frame every few ticks); ffmpeg makes the GIFs.
 import { openPage, ROOT } from './cdp.mjs';

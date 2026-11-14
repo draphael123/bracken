@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hud-default.mjs - HUD-SLIM (claude/hudslim, Daniel 2026-10-09): the MINIMAL HUD is the default, the PLATE HUD is an opt-in that never takes more
 // than ~20% of the width, and a boss has ONE bar, its name once, and ONE readout per the Boss health setting.
 //   1. settings: a new save and a file from before (no hudV2) get MINIMAL once; an explicit PLATE choice (hudV2) is kept; the retired BAR+BOTH is NUMBERS

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hero-pass.mjs - HERO PASS A (claude/heropassa, src/hero-pass.js + src/ranger.js): what each new verb promises, in the running page.
 //   dodges   ONE DODGE A HERO, one budget: every hero's grace is no longer than the roll's (0.26 s), costs the shared dodge wind, waits the shared
 //            cooldown - and each does its own thing: the knight's SHIELD-STEP keeps his facing and turns a front blow at a shield's price (never a

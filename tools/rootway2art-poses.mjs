@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rootway2art-poses.mjs - THE HUNTMASTER's pose sheet (claude/rootway2art). Not in the suite. Paints every pose of src/redraw/rootway_art.js paintHuntmaster on a dark card.
 //   usage: PORT=8810 node tools/rootway2art-poses.mjs <tag>   -> work/claude/rootway2art/<tag>/poses.png
 import { openPage, ROOT } from './cdp.mjs';

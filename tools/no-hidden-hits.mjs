@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/no-hidden-hits.mjs - NO FOE HURTS YOU WHILE IT IS NOT VISIBLY DRAWN (claude/tunnelfix, Daniel 10-08, the Fog Canal's legging tunnel:
 // "I take a lot of damage from enemies I can't see - they get under the boat and their hitboxes clip").
 // THE RULE (every level): a foe that swings at the hero must put pixels on the screen. Off-screen, behind a hull / wall / foreground layer, inside

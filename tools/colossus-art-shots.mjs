@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/colossus-art-shots.mjs - THE GLASS COLOSSUS's MOTION as pictures (claude/colossus3 ART lane; not in the suite). god mode, hero hidden, the boss forced into a move and then PLAYED (the real sim, 60 steps a second).
 //   usage: PORT=8719 node tools/colossus-art-shots.mjs <outdir> [name-filter,...]   -> <outdir>/sheet-<move>.png (a strip of crops of the giant, each labelled with the seconds since the move began)
 //                                                                              and <outdir>/still-<name>.png (the whole game view, 2x, for a few moments)

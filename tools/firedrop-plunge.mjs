@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/firedrop-plunge.mjs - THE PYRO BUG, PROVED IN THE PAGE (claude/keyscore, scratch/audit-keys.md 0.4). The pyromancer's plunge is her FIREDROP: the ember
    strikes with hurtAs('plunge', e, d, x, false) - the tag says plunge, the boolean (the hero's own body) says no. Before keys-core every boss gate on the
    boolean left her out. This strikes the bosses exactly as the ember does and asks each gate:

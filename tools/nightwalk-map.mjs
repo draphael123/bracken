@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/nightwalk-map.mjs (claude/nightwalk) the world map stretch Burial Caverns -> Mage's Folly with the four road flags on (BRACKEN_ROAD=ww,sk,mn,ac), every level cleared and ticked
    (the worst case for plates), one still per node + a keyed walk of the road with the real arrow keys. PORT=n OUT=<dir> node tools/nightwalk-map.mjs */
 import { openPage } from './cdp.mjs';

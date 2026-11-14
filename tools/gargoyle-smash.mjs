@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-smash.mjs — THE GATE GARGOYLE, REWORKED (docs/briefs/gargoyle-rework.md; Daniel, 2026-09-25: "The boss needs to be
    much further zoomed out, and the platforms don't need to be quite as high up. I'd like the boss to be bigger, and also be able to
    smash through platforms and fall on the floor and get stunned if he does this.")

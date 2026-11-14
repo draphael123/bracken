@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canal-pilot.mjs - THE FOG CANAL walked end to end with real keys (claude/canal; reworked by claude/canalfix for the fixed level). Not in the suite: a route pilot.
 // A scripted hand, not the play bot (the bot cannot strike a paddle, a capstan, a horn or a tiller): it walks each leg with the keys a player
 // would press - hold a way, jump what blocks, board the barge, duck on her deck, strike a machine from beside it, wait for the water, drop onto

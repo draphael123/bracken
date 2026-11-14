@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance-feet.mjs [--secs=240] [--seed=N] - THE QUEEN'S LANCE: every frame he TRANSLATES (|dx| > 0.25 px) is logged by (mode, pose); any held pose that moves
 // (a pose that is not a walk/charge/skid/hop/knock-back frame) is a SLIDE: his feet do not step. Exits 1 on a slide in a mode that is not on the allowed list.
 // (claude/lance146, Daniel 11-05 photo scratch/lance-slide-1105.jpg.) Real fight, god mode, a hero who closes, backs off, strikes and holds C.

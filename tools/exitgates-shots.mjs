@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/exitgates-shots.mjs - THE EXIT GATES' pictures (claude/exitgates). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8827 node tools/exitgates-shots.mjs [level-id,level-id,...]   -> work/claude/shots/exitgates/<level>-<state>.png  (state: closed = 8 tiles out, dark lantern; lit = 5 tiles; open = standing in it)
 //   default levels: one per region. A 'zoom' crop (6x) of the gate itself goes in <level>-zoom-<state>.png.

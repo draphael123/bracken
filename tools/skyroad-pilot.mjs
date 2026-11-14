@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/skyroad-pilot.mjs [salts=1] [heroes=knight,warden,pyro] - THE ROC on her EYRIE (src/roc-eyrie.js) at NORMAL health, one pass per salt (claude/skyroad).
 // One life per fight; the HUMAN bot (src/roc-eyrie.js rocEyriePlan: a quarter-second late). The hero is the level the campaign expects at THE SKY ROAD (its depth on the
 // gate chain, BKT.setHeroLevel, no skills). Prints a row a fight and a summary against the band for a NEW boss (50-60% wins, no hero at 0). Not in the suite: too long.

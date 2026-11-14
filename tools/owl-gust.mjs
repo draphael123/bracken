@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/owl-gust.mjs - THE OWL REEVE 3, IN THE PAGE (claude/owl3, Daniel 2026-10-15: "too easy - lit lanterns last 14 s and each crash opens her").
 //
 // Daniel's calls, each held here:

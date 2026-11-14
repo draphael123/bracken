@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/save-slots.mjs - FIVE SAVE SLOTS (Daniel 2026-10-02: five instead of three).
  *   A. main.js: SLOTS is 5 (and the level editor's ED_SLOTS is left alone).
  *   B. EACH SLOT IS ITS OWN: five saves written to bracken.progress.0..4 read back, load into PROG and erase one at a time, and erasing

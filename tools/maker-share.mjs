@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-share.mjs (claude/maker) - LEVELS SURVIVE THE TRIP: REDO, MY LEVELS, LINK PLAY, SETS, WARP DOORS.
    1. REDO puts back what UNDO took; a new edit clears it.
    2. MY LEVELS: a changed level saves itself; OPEN / COPY / DELETE work; opening a link never overwrites the level you were making.

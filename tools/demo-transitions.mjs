@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/demo-transitions.mjs - THE DEMO'S LEVEL-TO-LEVEL TRANSITIONS, pinned (claude/demotransitions, Daniel 11-02 13:33).
    Every connected level of the demo road (Lumber Trail -> Hornet's Nest -> Marsh -> Fen Road -> Stockade -> Sporewood -> Rootway -> Underleaf -> Palisade Wood -> Kingswood + the Burning Village spur) has a row in
    src/transitions.js; three have a scene on top (Nest -> Marsh: the FERRY; Fen Road -> Stockade: the ROAD to the walls; Kingswood -> Burning Village: SMOKE on the horizon).

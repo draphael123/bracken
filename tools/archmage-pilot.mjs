@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/archmage-pilot.mjs [salts=1,2,3] [heroes] — THE UNDEAD ARCHMAGE (the Falling Tower's boss, fought from the carpet) through
 // BK.bossLab, all seven heroes, one pass per salt (bossLab pins its dice per row; the salt makes each pass its own fight -
 // docs/INTEGRATOR.md §6). Round 2 of the tower (docs/briefs/falling-tower-round2.md) measures him before and after his portals:

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/salt-card-shots.mjs - stills of THE FIRST-DEATH CARD (claude/onboard1): node tools/salt-card-shots.mjs -> scratch/lane-reports/onboard1-shots/salt-*.png
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';

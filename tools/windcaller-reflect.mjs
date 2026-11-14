@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/windcaller-reflect.mjs [heroes] - EVERY HERO TURNS THE WINDCALLER'S PROJECTILES (claude/windcaller5, Daniel 11-02 21:39: "his projectiles should be
    REFLECTABLE ... and a reflected one that hits him KNOCKS HIM DOWN"). In the page, the fight live, the shaman held still on his west ledge (clocks frozen),
    NO god mode, once per hero (default: every hero in src/progression.js HERO_IDS), for his BOLT and his GALE BLADE (low):

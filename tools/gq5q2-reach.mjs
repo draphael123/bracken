@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q2-reach.mjs - GQ5Q2-TUNE BROWSER OWED 2: the 9-hero rope reach, real page physics, flag ON.
    Each hero stands on the deck west of the rope (x = rope.x-16, y=floor), forced into the real perched/WARDED window
    (G52.perchStart -> perchGo, real engine state), faces the rope, then strikes it with:

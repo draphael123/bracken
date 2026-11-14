@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burning-village.mjs — THE BURNING VILLAGE KEEPS ITS PROMISES (batch 5, 2026-09-21).
    Briefs: .claude/briefs/burning-village-pitch.md + -design.md. What this proves, in the order the design lists it:
      1. fire spreads only from the Pyromancer's and the burning goblins' fires; the village's own fire never creeps

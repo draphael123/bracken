@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/sporewood2art-shots.mjs [only,tags] - real-page stills of SPOREWOOD 2 and THE MOTHER CAP 2 (claude/sporewood2) for the lane report and the art lane:
    each named area at its point of use, the rule in motion (a lit dark bud, a spring spore, the seed stair, the root knot), and her every move at its windup
    (B16: each its own pose) and her knot open. Headless Chrome through tools/cdp.mjs, the knight in god mode, the level reloaded before each shot.

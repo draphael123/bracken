@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/reefmaw-pilot.mjs [passes=1] [label] - THE REEFMAW (the Shipwreck Reef's boss) through BK.bossLab (src/lab.js): every hero
    (the geomancer too), the ranking's settings (refill health, a 150 s cap, speed 1, modes on), dice pinned per row, one salt per
    pass so pass two is not pass one again (docs/INTEGRATOR.md). Prints a row per fight (outcome, seconds, damage taken, how often his

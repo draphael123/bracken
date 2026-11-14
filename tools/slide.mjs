@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/slide.mjs - THE BUTT-SLIDE (claude/slide, Daniel 2026-10-01: "holding down on any slope is a butt-slide, like you're on
 // your butt sliding"). src/slopes.js's slideStep is the movement (hold DOWN on a slope tile and you go downhill, faster the steeper);
 // src/slide.js adds the hit, the bounce and the dust, src/chars.js the 'slide' pose of every hero in every skin. In the Sunken

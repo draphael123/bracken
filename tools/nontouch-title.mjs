@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/nontouch-title.mjs - desktop title shot (claude/touchrows proof: the non-touch title is unchanged)   node tools/nontouch-title.mjs <out.png>
 import { openPage } from './cdp.mjs';
 import { writeFileSync } from 'node:fs';

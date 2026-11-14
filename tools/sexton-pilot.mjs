@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/sexton-pilot.mjs [salts=1,2,3] [heroes] — THE SEXTON (the Falling Tower's mini, src/sexton.js) at NORMAL health, all seven heroes,
 // one pass per salt: bossLab pins its dice per row and the salt makes each pass its own fight (docs/INTEGRATOR.md §6). One life per fight,
 // no refills. Prints a row a fight (outcome, seconds, health left, how often he went into THE BELL PIT - the opening - and which of his

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hc3art-shots.mjs [outDir] - HIGHCROWN 3 + THE GOBLIN PRINCESS ART, PHOTOGRAPHED IN THE REAL PAGE (claude/hc3art): the page's own 320x180 buffer at 2x to work/claude/shots/hc3art/ (or outDir)
    plus a contact sheet. SPOTS=a,b limits the walk spots; HC3_GROUPS=spots,rooms,chase,fight,cameo picks parts. One headless page. Not in the suite. */
 import { openPage, ROOT } from './cdp.mjs';

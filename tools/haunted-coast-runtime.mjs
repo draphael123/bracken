@@ -1,1 +1,2 @@
+// PAGE TOOL: launches headless Chrome
 import{openPage}from'./cdp.mjs';import{readFileSync}from'node:fs';import assert from'node:assert/strict';const pg=await openPage({port:5996});try{const r=await pg.evalp(readFileSync(new URL('./fixtures/haunted-browser.js',import.meta.url),'utf8'));assert(r.rows.some(x=>x.id==='causeway'&&x.noMini));assert.deepEqual(pg.errors,[]);console.log('Three new foes, roof chains, flooded hold and a last mile with no mini on it work in game.');}finally{pg.close();}

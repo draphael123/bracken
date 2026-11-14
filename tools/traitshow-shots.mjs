@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* (claude/traitshow) stills of the ACTIVES tab's TRAITS strip: node tools/traitshow-shots.mjs <outdir>; asserts the strip is drawn */
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';import{writeFileSync,mkdirSync}from'node:fs';
 const out=process.argv[2]||'.';mkdirSync(out,{recursive:true});

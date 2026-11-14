@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crouch-a.mjs — THE CROUCH TWISTS, PART A (claude/croucha, src/crouch-a.js): the knight's LOW GUARD and SHIELD TRIP, the
 // warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD. On flat Stockade floor, this fails when:
 //   KNIGHT - crouched, a yellow low swipe (a soldier's slash) finds him, is not counted on the low guard, or slides him back; the armour's

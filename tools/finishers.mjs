@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/finishers.mjs — THE BREAK AND THE FINISHER (the combat pass, part 2, 2026-09-28; src/poise-break.js, src/finishers.js).
 //
 // In the page, headless, on the Stockade's floor, the hero in god mode:

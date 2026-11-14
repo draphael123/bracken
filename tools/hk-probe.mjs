@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hk-probe.mjs - THE HOURGLASS KING, one fight looked into (claude/buriedcity3): the boss lab's fight (tools/boss-run.mjs fightJs) with HIS READ sampled - the
 // phase reached, his moves and openings, the damage BY MOVE he dealt, the great hourglass's flips, the drift. Not in the suite: a measuring hand for the tune lane.
 //   PORT=8867 node tools/hk-probe.mjs [heroes=knight,warden,pyro] [seeds=1] [profile=human]

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* GQ4TUNE-d probe: sample hero/Queen positions during P2 (escape skipped). node tools/gq4tune-probe.mjs [hero] [secs] */
 import { openRetry, diffJs, fightFlasks, gqLeverJs } from './boss-run.mjs';
 const h = process.argv[2] || 'knight', secs = +(process.argv[3] || 60), every = +(process.argv[4] || 90);

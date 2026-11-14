@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/paladin4-art-sheet.mjs - THE PALADIN 3 art sheet (claude/paladin4art; not in the suite): every pose key of the baked paladin set, frame by frame, at 3x on a pale
 // and a dark floor, plus the thrown hammer's eight turns. usage: PORT=8942 node tools/paladin4-art-sheet.mjs <outdir> [key,key,...]
 import { openPage } from './cdp.mjs';

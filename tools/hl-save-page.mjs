@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hl-save-page.mjs - THE HIGH LINES' SAVE MIGRATION IN THE REAL PAGE (claude/hlproof, 11-12). tools/hl-road.mjs proves the rule in Node (the real progDefaults line run over fake
 // saves); this loads real saves through the page's own loadSlot. TWO PAGES: first a page with the road SHUT (the game as it is live today) writes five saves of the shapes an old player
 // has (the page's own fresh PROG + the clears that shape needs, JSON as the save slots hold it); then a page with the road OPEN (BRACKEN_ROAD=hl, the flag-on state) puts those exact

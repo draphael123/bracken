@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/grubbagbig-sheet.mjs - LORD GRUBBAG at his new size (claude/grubbagbig, Daniel 10-25 "enormous, about double the queen, extremely fat"): two contact sheets for the lane report.
      1. work/claude/lane-done/grubbagbig-vs-queen.png - him beside THE GOBLIN QUEEN (src/chars.js bakeGoblinQueen, seated and standing) at the SAME scale, on one floor, with a
         knight for size and each one's measured box (opaque pixels): x2 nearest-neighbour so the pixels read.

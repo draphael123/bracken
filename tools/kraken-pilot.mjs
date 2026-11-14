@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kraken-pilot.mjs [passes=3] [label] [mode=refill|normal|both] [heroes] - THE KRAKEN (the Drowned Causeway's boss) through
    BK.bossLab (src/lab.js): seven heroes, the ranking's settings (refill health, a 150 s cap, speed 1, modes on), and normal health
    (one life, a 300 s cap), dice pinned per row and one salt per pass so pass two is not pass one again (docs/INTEGRATOR.md).

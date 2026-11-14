@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc4art-king-shots.mjs - THE HOURGLASS KING's BC4 moves in the real page (claude/bc4art), for eyes: the withdraw, the throws, the slabs, phase three. -> work/claude/shots/bc4art/king/*.png. Not in the suite. PORT from the environment.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

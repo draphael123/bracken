@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/wicker-queen-pilot.mjs [salts=1] [heroes=knight,warden,pyro] - THE WICKER QUEEN (the Harvest Fair's boss, src/wicker-queen.js) at NORMAL health, one
 // pass per salt (bossLab pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills. Prints a row a fight (outcome, seconds, health
 // left, how often she BURNED - the bonfire opening the bot is taught in src/lab.js - how often she caught, lashed and crowned, and what did the damage) and

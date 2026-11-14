@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stair-pilot.mjs [heroes] - THE SPIRAL STAIR, PILOTED (claude/towerscroll): each hero goes through his ring on the parapet and climbs
 // the Undead Archmage's stair with the lab's stair bot (src/lab.js chaseClimb), NORMAL health, no god mode, no refill: a death is a death
 // and the bot goes again from wherever it wakes (back through the ring if it wakes on the parapet). Prints the seconds to the carpet, the

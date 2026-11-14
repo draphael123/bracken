@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gear-tiers.mjs - VISUAL GEAR TIERS (claude/geartiers). Held here:
      1. the one table: gearTier(level) is 0 below 10, 1 at 10 (cape), 2 at 20 (crest), 3 at 30 (aura), 4 at 50 (full set); hidden gives 0 whatever the level
      2. every hero x tier 0..4 bakes (the full set, every pose, both ways round, hurt, white, bare) with the same pose keys and sizes, and each tier

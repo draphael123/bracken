@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnest-perf.mjs - THE NEW SECTIONS ON A MID PHONE (claude/hornetsnest2; plan: "mobile-perf >= 40 on S2 (drips)").
 // A 915x412 landscape phone at DPR 2.625, touch on, the CPU throttled (MP_CPU, default 4x), the page on its own requestAnimationFrame loop. The hero is put in
 // THE SAGGING GALLERY (drips over the crumbling combs) and THE SAP WELL (five drips over the pendant rungs, a swarm, an amber hornet, hornets) and the frame rate is read.

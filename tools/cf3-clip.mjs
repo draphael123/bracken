@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf3-clip.mjs - CF3 boss clip strip (claude/cf3proof): a boss's phase break + death as the game draws it, every 6 frames, plus the sim clock per frame (slow-mo shows as a smaller step).
 //   PORT=8796 node tools/cf3-clip.mjs <outdir> [levelId] [normal|reduce|flash0]
 import { writeFileSync, mkdirSync } from 'node:fs';

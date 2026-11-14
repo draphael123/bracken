@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/transition-clips.mjs - REVIEW CLIPS of every demo level transition (claude/transland, Daniel 11-06).
    One clip per row of TABLE, real time at the game's own speed, from the boss kill (a gate row: from the party standing at the gate) to control on the arrival
    (the Kingswood > Burning Village row: to the world map). The page records its own canvas (captureStream + MediaRecorder -> .webm); ffmpeg turns it into an

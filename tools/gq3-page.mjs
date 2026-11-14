@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3-page.mjs - HIGHCROWN's GQ3 PASS, PLAYED IN THE PAGE (claude/gq3, scratch/lane-reports/gq3-plan.md). ONE headless page, >= 1500 MB free (the lane rule: >= 3 GB beside a recording lane), run it alone.
      princess  her bar to 0 -> 'dying' (untouchable) -> the ordinary death: a body, the mini ends within ~3 s (no escape, no cameo)
      queen     P1 empties -> the flee -> (lab skip) the tower top -> its bar empties -> she KNEELS, the royal portal opens, she backs in, it snaps shut -> she is gone: alive false, no body, the fight over, PROG.gqFled

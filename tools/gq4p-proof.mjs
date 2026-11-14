@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq4p-proof.mjs [outDir] [part] - THE GQ4P PROOF IN THE REAL PAGE (claude/gq4p-d): BRACKEN_GQ4L=1 + BRACKEN_GQ4P=1, the page's own 320x180 buffer at 2x.
    part 'pins'   (default) : each of the 9 heroes knocks a gate's chain pin shut (G-W adjacent, G-U from the FLOOR, ranged heroes from a few tiles) -> a table
    part 'phase'            : GUARDS! lanterns + goblins, the key, ALL GATES! (invincible shimmer, last ad -> dazed -> phase 2), the 40 s failsafe, the pirouette (stand in it / jump it) + stills

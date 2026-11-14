@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rgart-poses.mjs - THE RANGER'S OWN RIG (claude/rangerart; not in the suite): her baked frames on one sheet, no sim.
 //   usage: PORT=8914 node tools/rgart-poses.mjs <tag> [key,key,...] [zoom]   -> work/claude/shots/rangerart/<tag>-poses.png
 import { openPage, ROOT } from './cdp.mjs';

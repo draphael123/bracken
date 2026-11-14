@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hnlook-walk.mjs - WALK THROUGH THE HORNET'S NEST and record it (claude/hnlook, Daniel 11-03: 'when you move, this area looks weird').  node tools/hnlook-walk.mjs <out.gif> [col=168] [row=43] [frames=330] [hero=geomancer] [every=3] [scale=2]
 // A headless page, god mode, the hero walked right on real keys (jumps when stuck); the game buffer every N sim frames; logs the camera's fractional part and view zoom. Writes <out>.gif and <out>-still.png (frame 20).
 import { writeFileSync } from 'node:fs'; import { deflateSync } from 'node:zlib'; import { openPage } from './cdp.mjs';

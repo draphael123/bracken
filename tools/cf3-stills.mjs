@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf3-stills.mjs - CF3 proof stills (claude/cf3proof): a frame strip per foe of a blow, the flash fade and the kill, as the game draws it.
 //   PORT=8796 node tools/cf3-stills.mjs <outdir> [foe,foe,...] [on|off]      -> <outdir>/<foe>.png  (frames: before, +1,+3,+6,+12 after a hit; a stagger hit; kill +1,+3,+6,+10)
 import { writeFileSync, mkdirSync } from 'node:fs';

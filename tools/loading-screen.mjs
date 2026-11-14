@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/loading-screen.mjs - THE LOADING SCREEN (claude/loadbar, 2026-09-30). Daniel: "progress bars for loading and a hero do a dance at them."
 // src/loading-screen.js puts a pixel bar with the percentage and the player's own hero dancing (his K.R.dance frames) over every slow load: the
 // first boot (scripts, hero, art slices, tiles, props, sky, the first wood) and a wood entered from the map (and a restart, and a trial).

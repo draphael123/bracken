@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/archmage-interrupt.mjs - AN INTERRUPTED CAST TAKES ITS OVERLAY WITH IT (claude/ft2art, Daniel 10-10: "when I hit him during the
 // fill-the-area spell the text and the red line still appear"). The grave script's lines, the skulls', orrery's and void's tells live only in
 // their own windup: a stagger (his own bolt struck home) mid-windup must clear them the same frame.

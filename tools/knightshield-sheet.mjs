@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/knightshield-sheet.mjs - a hero's held-charge pose, the run frames and the pose+run-legs composites side by side, big (claude/knightshield).
 //   node tools/knightshield-sheet.mjs <hero> <poseKey> <out.png> [poseFrame]
 import { writeFileSync } from 'node:fs';

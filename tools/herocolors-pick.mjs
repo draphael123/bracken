@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/herocolors-pick.mjs - the hero pick with three heroes selected + a locked one, and a contact sheet of every banner (claude/herocolors). usage: PORT=8919 node tools/herocolors-pick.mjs
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

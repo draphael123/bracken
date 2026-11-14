@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/intro-shots.mjs - pictures of the living title scene (claude/intro): the walk-in, the idle scene with the hint, reduce-motion, and (later) an attract clip. Not in the suite.
 // usage: PORT=<free port> node tools/intro-shots.mjs <outdir> <tag> [walk|touch|reduce|all]
 import { openPage, ROOT } from './cdp.mjs';

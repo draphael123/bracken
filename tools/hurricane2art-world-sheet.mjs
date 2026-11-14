@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hurricane2art-world-sheet.mjs - THE HURRICANE DECK 2's world art alone (claude/hurricane2art; not in the suite): drawBack at fixed camera spots on a flat sea-grey ground, to see the pieces without the game round them,
 // and a no-throw pass over every draw entry. node tools/hurricane2art-world-sheet.mjs [outdir]    env GLOW=1 (store seams lit)
 import { openPage } from './cdp.mjs';

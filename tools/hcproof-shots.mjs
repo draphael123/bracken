@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hcproof-shots.mjs [outDir] - HCPROOF: the three things hc3art never drew IN-GAME, photographed in the real page with REAL swings (BK.press('atk')): the guardroom
    gate DOWN after three timed winch blows, the bell tower's hatch (shut / open on her escape), and the murder holes (loaded / mid-fall / spent). One headless page, not in the suite.
    Writes work/claude/shots/hcproof/ (or outDir) one PNG each (640x360, the page's 320x180 buffer at 2x) and sheet.png. */

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cisternqueen-sheet.mjs - THE CISTERN QUEEN's poses on one sheet, every told move, on the cistern's own dark floor (claude/welltown-polish). Not in the suite.
 // drawQueen (src/redraw/cistern_queen_art.js) is pure on (e, S): this builds a fake e and S per pose and draws it, so no fight has to be waited for.
 //   node tools/cisternqueen-sheet.mjs [tag=after] [cols=3] [sel]   -> work/claude/welltown-polish/<tag>/queen-sheet-N.png (2 x scale; sel = comma list of pose names to render alone)

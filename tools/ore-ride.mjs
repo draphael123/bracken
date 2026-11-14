@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ore-ride.mjs — THE ORE ROAD, ridden in the page: for each line the road is crossed on, put the hero on a bucket as it comes
 // out of its station and do NOTHING - the engine's own mover code must carry him the whole span and set him down on the far deck,
 // alive. (tools/ore-road.mjs proves the geometry in Node; this proves the ride.) The rusted buckets of the steep line are the one

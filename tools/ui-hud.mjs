@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ui-hud.mjs - UI POLISH A (claude/uihud): THE HUD's TOAST QUEUE + SAFE ZONE, THE STATUS ICONS, THE IDLE FADE, THE GRAPHICS PRESETS, THE
 // ACCESSIBILITY TAB AND THE PAUSE MENU.   node tools/ui-hud.mjs
 //   1. (static, src/ui-hud.js) the queue: a toast arriving over another WAITS (never replaces it), shows at least minShow, the same text only

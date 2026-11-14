@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/huntmaster-diag.mjs - THE GOBLIN HUNTMASTER's fight, looked inside (claude/rootway; a measuring tool, not a check): one human-bot fight per
 // hero and seed at the campaign level, and what happened in it - his shots (gold, red), the arrows struck home, the breaks and staggers, the cages,
 // how much of the hero each of his blows took, and why the bot did what it did (the plan's reasons, counted).

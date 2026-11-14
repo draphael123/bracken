@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lit-church-cost.mjs - what THE LIT CHURCH's art costs a frame (claude/churchart; not in the suite): ms per drawn frame in the nave, the crypt, the organ gallery and beside THE PALADIN,
 // against a plain level (the wood) in the same page. A ceiling, not a benchmark: it fails if a church spot draws slower than 3x the wood or over 25 ms.   usage: PORT=8742 node tools/lit-church-cost.mjs
 import { openPage } from './cdp.mjs';

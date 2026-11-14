@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/slope-momentum.mjs - SLOPE MOMENTUM, MEASURED PER HERO WITH REAL KEYS, BEFORE AND AFTER (claude/slope; scratch/brief-slopemomentum.md). A page check (PORT).
 // Running DOWN a slope builds speed to 1.3x the legs' cap and a jump off it carries it (src/slopes.js HILL_RUN, hillTop; main.js updatePlayer's walk). This
 // finds every SLOPE TAKE-OFF on every level with slopes - a chain of slope tiles run downhill whose foot runs out into an edge within FOOT tiles (a jump off

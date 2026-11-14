@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/forestsupports-shots.mjs - screefix pictures (the banner gone). Not in the suite.
 //   usage: PORT=8770 node tools/forestsupports-shots.mjs <level> [x,y ...]  -> work/claude/screefix/<level>-N.png
 //   with no points: six islands spread along the level (from the supported-island list).

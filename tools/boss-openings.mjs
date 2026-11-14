@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-openings.mjs — THE WINDOW THE PLAYER MAKES.
      (claude/pyramidboss) THE COFFIN KING  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
    All four of the levels added in the Codex pass shipped a boss that chose its attacks with turn++%n and handed out a

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc4art-cast-sheet.mjs - THE BURIED CITY 4's new sprites on one sheet (claude/bc4art): `PORT=.. node tools/bc4art-cast-sheet.mjs [sandbound|king0|king1|king2 ...]`
 //   env: K=scale (4), FROM/TO = the frame range (e.g. FROM=26 TO=32), BOTH=1 also draws the left-facing row.   -> work/claude/shots/bc4art/cast-<key>.png. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';

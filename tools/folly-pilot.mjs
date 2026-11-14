@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/folly-pilot.mjs [salts=1] [heroes=knight,warden,pyro] — THE ARCHMAGE (the Mage's Folly's boss, id 'archmage') through
 // BK.bossLab: one fight a hero a salt, NORMAL health (can the bot live through him?) and a 240 s cap. Prints one line a fight -
 // the outcome, the time, the damage taken, the openings he gave and what was landed in each, and which of his modes hurt - and a

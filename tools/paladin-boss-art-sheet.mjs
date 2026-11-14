@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/paladin-boss-art-sheet.mjs - the Paladin boss's own poses (rebound, falter, reel) and his bestiary card beside the hero frames they are made from (claude/church2art; not in the suite).
 //   usage: PORT=8945 node tools/paladin-boss-art-sheet.mjs [out.png] [scale]
 import { openPage, ROOT } from './cdp.mjs';

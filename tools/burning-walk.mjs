@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burning-walk.mjs [heroes] - F9 for THE BURNING VILLAGE (docs/briefs/burning-village-rework.md): the in-page play bot
    (src/playtest.js), NO god mode, start to gate, once per hero (default knight,warden), then the sweep for art and geometry
    findings. Prints how far it got, where it died and every finding. Not in the suite: it is long, and the bot cannot fight

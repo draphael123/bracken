@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fallingtower2-keys.mjs - THE FALLING TOWER 2'S NEW WAYS, WITH REAL KEYS, EVERY HERO (claude/fallingtower2; design standard A7).
 //   SCOPE  from the failing stair's second step: wait for the telescope's eyepiece to come down level, walk onto it, ride it up, walk off
 //          onto the third step

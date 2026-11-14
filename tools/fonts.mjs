@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fonts.mjs - THE STRICT FONT PAIR (claude/fontpair, Daniel 2026-10-09). Press Start 2P = display, Silkscreen = body, nothing else.
 // Static: both faces are local files in fonts/ with their SIL OFL licence beside them, index.html preloads both and declares them with
 // @font-face (no CDN, no stylesheet link, no VT323), no source file names a system monospace or the retired thin hand (ART.TINY), the Font

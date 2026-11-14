@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/headless.mjs — THE LABS WITHOUT A WINDOW.
 // The fight and boss labs run inside the page, so they only ever ran when somebody had the game open. This starts the
 // dev server if it is not up, launches the Chrome (or Edge) already installed on this machine headless, drives it over

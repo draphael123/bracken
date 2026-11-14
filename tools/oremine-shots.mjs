@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/oremine-shots.mjs — THE ORE ROAD AS A WORKING MINE (docs/briefs/ore-road-mine-life.md), in the real page: one picture a
 // place along the route, rendered with BK.step (BK.sim does not draw) and saved at 2x into docs/oremine/<nn>-<place>-<tag>.png.
 // The hero stands a little WEST of each place and the foes are left alone, so a crew that has not seen him yet is still at its

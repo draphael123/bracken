@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redress-shots.mjs — THREE PICTURES OF A LEVEL, THE AUDIT'S WAY (docs/visual-audit.md): stand at its checkpoints (20% / 50% /
 // near the end; the start, the middle and the end of a level with fewer than three), RENDER 60 frames with BK.step (BK.sim does not
 // draw, and a frame captured after sim alone can draw wrong), and save the 320x180 buffer at 2x as work/audit/NN-id-j.jpg, the

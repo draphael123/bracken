@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ui-hud-shots.mjs - BEFORE / AFTER STILLS FOR THE HUD + MENUS LANE (claude/uihud).   node tools/ui-hud-shots.mjs <outdir> [prefix]
 // Runs on any checkout (it uses only what master already has): the caravan, the well town and the red gorge at their first frames (the
 // CATCHING UP toast and the sun/skin/flood rows), the caravan in shade and in the sun's bite, the pause menu, the settings tabs, and the

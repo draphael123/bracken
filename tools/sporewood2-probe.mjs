@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/sporewood2-probe.mjs - SPOREWOOD 2 in the page, quickly (claude/sporewood2, the greybox). A smoke test of the rule, its machines and the boss's wake, not a playtest:
 //   ?level=spore lands in play in the glade (no god mode); the glade's bud grows under a hero who stops on it; a DARK bud does not grow unlit, a struck lantern cap lights
 //   it and it grows; a lurker in the light is dazzled (out of his cap); a mend puff mends; a struck puffball hangs a spring spore that throws a hero who lands on it;

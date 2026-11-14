@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gqueen3-page.mjs - THE GOBLIN QUEEN 3, PLAYED IN THE PAGE (claude/gqueen3, scratch/plan-goblinqueen3-1104.md section 9). WRITTEN BLIND: the lane that built her ran no browser (the suite owned the PC's RAM) - this is OWED, and it
    will need a first-run pass. One headless page; >= 1500 MB free; run it alone.
      crown     every hero parries a forced crown toss on the beat (src/lab.js parryShot, force) -> STUNNED; a plain held block -> no stun and the crown on the floor; a ducked toss never lands

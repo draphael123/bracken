@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/desert-foes2.mjs - THE DESERT'S SECOND CAST (claude/desertfoes; src/desert-foes2.js, src/desert-foes2-hands.js, src/redraw/desert_foes2.js), proved.
 // Daniel 10-03: "the desert roster is mostly cutthroats; Well Town feels samey." usage: node tools/desert-foes2.mjs [--node]   (--node: skip the page part)
 //   THE FIRE SCORPION   the scorpion's machine: every blow told, a quarter-second reactor takes nothing, an ignorer is hurt; its sting and its death leave a

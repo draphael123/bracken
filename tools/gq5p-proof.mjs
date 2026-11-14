@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gq5p-proof.mjs - GQ5P-TUNE BROWSER OWED 3/4/5, one page session (BRACKEN_GQ5P=1 PORT=<port> node tools/gq5p-proof.mjs [stillsDir]).
 // OWED 4: the tower bell hangs still under the flag (no rope, no winch box, no glow; a blow on the rope/winch rings and pins nothing;
 //   the grate does nothing) - read live off window.__gpN (F.n, the same counters tools/boss-run.mjs reads), never off a screen word.

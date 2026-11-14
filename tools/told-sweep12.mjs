@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/told-sweep12.mjs - THE SEVEN NEW TOLD ATTACKS ANSWER (claude/sweepact12, the act I-II sweep; scratch/brief-foepass-1016.md 4b).
 // In the page, headless, on a flat floor: each family that was on TOLD_TODO (thief, spitcap, sapper, emberwisp, stormshaman, clinger, shardling) is set down
 // beside a god-mode-off hero. Its new windup (src/marks.js MARK) must show, and then

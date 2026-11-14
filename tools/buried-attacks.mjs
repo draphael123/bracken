@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/buried-attacks.mjs — THE BURIED DEAD'S THREE NEW ATTACKS (Daniel, 2026-09-20).
    POISON NOVA costs health and leaves the caverns' poison up close, and nothing from across the room; THE THROW
    lands a body where the hero stood and a zombie gets up there, under the same cap of three as his summon; the

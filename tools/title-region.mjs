@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/title-region.mjs - THE TITLE BY REGION (claude/titleregion). Seeds a save for every region (the cleared chain up to the opener's gate, so the
 // region's first wood is just unlocked), opens the title and checks: the region id, the backdrop differs from the wood's, the slot's hero stands in
 // the scene, no page errors, and the saves in localStorage are byte-identical after (read only). Shots go to work/claude/shots/titleregion/.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fogknight-zoom.mjs - the Fog Knight's poses big (4x) on the night ground (claude/fogknightart3; not in the suite).  PORT=8927 node tools/fogknight-zoom.mjs out.png "walk high,cutTell,..." [zoom] [time]
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync } from 'fs';

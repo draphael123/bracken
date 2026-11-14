@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer-read.mjs - GEOMANCER READABILITY (claude/georead): the four charge tiers of hold-X (look: halo + orbiting stones), the three-stone pips under her feet with the per-stone timer, and the ward-beat first-time hint. Writes scratchlane-reportsgeoread*.png. node tools/geomancer-read.mjs <outdir>
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';

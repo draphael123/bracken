@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pick-shots.mjs - stills of THE HERO PICK (claude/onboard1): node tools/pick-shots.mjs [knight,pyro,...] -> scratch/lane-reports/onboard1-shots/pick-<hero>.png
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';

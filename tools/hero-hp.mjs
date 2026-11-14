@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hero-hp.mjs - max hp of every hero at a campaign level (claude/oneshotcap; a measure). PORT=8905 node tools/hero-hp.mjs 3,5,12,...  -> JSON {level:{hero:maxHp}} */
 import { openPage } from './cdp.mjs';
 const lv = (process.argv[2] || '3').split(',').map(Number), pg = await openPage({ audio: false, fonts: false }), out = {};

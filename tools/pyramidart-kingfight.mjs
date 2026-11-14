@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyramidart-kingfight.mjs - THE COFFIN KING in his real fight (claude/pyramidart): god-mode hero, the boss's hp set per phase, a frame shot the first time each mode appears
 // -> work/claude/shots/pyramidart/kingfight/<n>-<mode>.png + sheet.png. Not in the suite. PORT from env. env: SHOTS, PH=1,2,3 (default all), SIMS=frames per phase (default 5400)
 import { openPage, ROOT } from './cdp.mjs';

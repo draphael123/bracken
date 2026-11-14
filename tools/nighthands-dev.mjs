@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/nighthands-dev.mjs - ONE boss-bot fight on a night-road boss with the lab's samples printed (claude/nighthands; a dev tool, not a check).
    BRACKEN_ROAD=ww,sk,mn,ac PORT=8644 node --import ./tools/road-on.mjs tools/nighthands-dev.mjs <level> <hero> <seed> [secs] [every]  */
 import { openRetry, fightJs, diffJs } from './boss-run.mjs';

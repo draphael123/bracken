@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/zipline.mjs - THE ZIP LINE WITH REAL KEYS, in the page, for every hero (claude/zipline, Daniel 2026-10-08: "Stormhold's ropes don't work in play").
 // tools/watchtowers.mjs proves the ropes' geometry and one step of src/zipline.js in Node; this one PLAYS them: each of the seven heroes stands where a
 // player stands and works the real keys (BK.keys.up / .down / .jump and BK.press('jump') - the same flags the keyboard sets), and the engine's own

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/steam-works.mjs - THE BINDING WORKS, LONGER AND WETTER (claude/djinn3, Daniel played the live Djinn 10-04: the binding works "needs to use WATER
 // more and be a little LONGER"; "MINI DJINN as a prelude"). Node first (the level as built, the pure rules), then the page:
 //   THE LENGTH            the binding works grew >= 30% (94 -> 134 columns: THE STEAM WORKS between the sluice and the conduit); the checkpoint stays at

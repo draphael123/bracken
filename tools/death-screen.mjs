@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/death-screen.mjs - THE DEATH SCREEN (claude/uiscreens, 2026-10-06). It was one 6 px line ("<FOE>  <blow>  RED: DODGE IT"). Now a card, and the check asks for its CONTENT:
 //   1. TIMING     a death still starts the old 1.2 s clock (P.dead; the card sits on the same frames and the respawn is not held: the retry loop is the game's pace).
 //   2. WHO + BLOW the killer's bestiary name and the name of the blow are drawn, under a YOU FELL headline.

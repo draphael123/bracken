@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksarhawk-trace.mjs - ONE HAWK-MISTRESS FIGHT, traced (claude/ksarhawk; not in the suite): the bot's reasons (counted), her counters (src/hawk-mistress.js S.n),
 //   and a line every few seconds. usage: PORT=8892 node tools/ksarhawk-trace.mjs <hero> [seed] [secs] [profile]
 import { openPage } from './cdp.mjs';

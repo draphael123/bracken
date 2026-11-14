@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/abbotclear-shots.mjs - THE FALSE ABBOT's phase two CLARITY stills (claude/abbotclear): the intro pan (chair, mid-rope, basket), the glowing basket + ghost chair, riding down, a warded-hit pulse.
 // Saved at 2x into scratch/lane-reports/abbotclear-<n>.png. God mode off the hero's death only. Not in the suite: pictures are for eyes.
 import { openPage, ROOT } from './cdp.mjs';

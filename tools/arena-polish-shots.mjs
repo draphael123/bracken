@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/arena-polish-shots.mjs - THE ARENA POLISH PACK's pictures (claude/arenapolish). Not in the suite. One headless page: for each of the five arenas, wake the boss in the
 // real game (god mode, a picture not a playtest), put the arena in each state its polish reads (moon lit / warning / dark; the hall dry / burning / flooded; phases one to three;
 // a surge; the bell's glint; the brand) and save a 2x picture of the real 320 x 180 frame to work/claude/arenapolish/<out>/.

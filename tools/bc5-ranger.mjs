@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-ranger.mjs - BC5 PROOF (claude/bc5proof): can THE RANGER trip every Buried City 5 race glass the way a player does, in time?
    Per race glass, in the real page: (A) she looses a quick arrow from 30 px and one from 60 px - does the glass run? (B) a tap of X at 10 px (point-blank rule) - arrow or knife, does it run?
    (C) E at 10 px - does it run? Then bc5-race.mjs (ranger strikes with E) gives the strike-to-end time of R2/R3/R4.

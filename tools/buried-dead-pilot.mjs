@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/buried-dead-pilot.mjs [passes=4] — THE BURIED DEAD at NORMAL health: all six heroes, `passes` salted passes each (four is
    twenty-four fights, over the twenty-one a balance figure needs). One life per fight, no refills. Prints a row per fight and the
    summary: win rate, median win time, which of his attacks did the damage.

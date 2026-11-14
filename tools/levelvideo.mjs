@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/levelvideo.mjs — WATCH THE BOT PLAY IT, without sitting through it.
 // The playtest bot proves a level does not crash; nobody sees what it is like to cross. This drives the same walker
 // (src/playtest.js makeBot) along the MAIN ROUTE that tools/pacing.mjs finds, headless, on the real loop with the real

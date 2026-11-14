@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burning-shots.mjs [tag] [spots] - THE BURNING VILLAGE, PHOTOGRAPHED IN THE REAL PAGE, for the rework
    (docs/briefs/burning-village-rework.md). Node renders lie about light (docs/AGENT-HANDOFF.md), so every picture is the page's
    own 320x180 buffer after 300 BK.step frames, saved at 2x as docs/burning/<tag>-NN-<spot>.png. Run it before the rework (tag

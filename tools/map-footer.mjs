@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/map-footer.mjs - THE WORLD MAP'S FOOTER LABELS MUST NOT TOUCH. The controls (left) and the co-op switch (right) share one 320 px
 // strip; "X BEASTS" once ran into "F CO-OP OFF". Measures every variant (panel open / shut, co-op on / off) with the game's own textW
 // (BK.mapFooter) and fails unless the labels sit inside the screen with at least GAP clear px between them.

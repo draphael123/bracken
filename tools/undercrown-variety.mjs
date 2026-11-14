@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/undercrown-variety.mjs — THE UNDERCROWN GOES FURTHER, AND ITS PRINCE IS A GOBLIN (batch 3 of work/claude/KICKOFF.md).
 // Built: the level is wider and has more ground to walk than the 104-wide mine it was (768 standing cells), it has three
 // kinds of wall (the mine, THE GLITTER VEIN's crystal, THE GOBLIN BARROW's ossuary), the stope's old shaft into the Last

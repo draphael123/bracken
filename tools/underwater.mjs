@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underwater.mjs - OUT OF BREATH IS A QUIET DRAIN, AND A FLASK CAN BE DRUNK SWIMMING (claude/underwater, Daniel 2026-10-16).
    PORT=<port> node tools/underwater.mjs
    A. EVERY WATER LEVEL: with the breath at nothing and the head well under, the hero's health goes down a little at a time and NOTHING else happens - no hurt

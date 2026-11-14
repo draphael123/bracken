@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/class-spurs.mjs — CLASS-LEVEL SIDE ROADS (Daniel, 2026-09-25: "the pyromancer and deathknight level weren't
 // accessible... They can be side paths that are locked until you do this"). Everything the brief asks for, checked
 // against the real page, not a mock: a spur whose level declares `opensOn` is WALKABLE from its junction node (up

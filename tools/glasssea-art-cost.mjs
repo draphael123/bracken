@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/glasssea-art-cost.mjs - ms per drawn frame in THE GLASS SEA at a few spots (claude/glasssea art pass). Not in the suite.   usage: PORT=8678 node tools/glasssea-art-cost.mjs
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: true });

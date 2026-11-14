@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/verb-matrix.mjs - THE HERO VERB MATRIX (claude/combat3, the combat pass; Daniel 2026-10-01: "audit 7 heroes x 6 verbs and build the gaps").
    For each of the seven heroes, in the trial yard, with real presses (BK.press / BK.keys, and real KEYBOARD events for the up-slash), each verb
    must land on a straw dummy as the blow it is (BK.log's dmgE rows name the blow: hurtAs):

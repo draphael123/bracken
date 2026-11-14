@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc3art-king-shots.mjs - THE HOURGLASS KING's new art in the real page (claude/bc3art), for eyes: each move's tell + release, phase two's tide/blocks, phase three's great hourglass flip. -> work/claude/shots/bc3art/king-*.png + king-sheet.png.
 // Not in the suite. PORT from the environment. ONE page, one level load (the throne room only).
 import { openPage, ROOT } from './cdp.mjs';

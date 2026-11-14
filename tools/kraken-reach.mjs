@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/kraken-reach.mjs - EVERY ARM OF THE KRAKEN, IN EVERY PHASE, IS ON REACHABLE, DRAWN ROAD (claude/kraken2, design standard B12;
    Daniel 2026-10-08: "the live game is UNBEATABLE - the rightmost arm goes through terrain and can't be hit").
    On master the fourth arm came up through the wreck at the end of the road (its root was inside the hull), and an arm that slammed a hero

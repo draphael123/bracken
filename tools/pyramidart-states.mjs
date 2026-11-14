@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyramidart-states.mjs - THE SEALED PYRAMID's second-half machines MID-FIRE in the real page (claude/pyramidart): the hero treads the plate (or walks up to the tomb) and a frame is shot at
 // each stage -> work/claude/shots/pyramidart/states/<name>.png + states-sheet.png. Not in the suite. PORT from env. env: SHOTS, ONLY=a,b
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/burial-geometry.mjs — THE CAVERNS ARE NOT A CORRIDOR (2026-09-21; re-laid for claude/burial2's cut, 2026-09-26). Proves, by the map
 // and by the page:
 //   the ways on are the ones the level says they are: gallery one's drop is the only way down to gallery two, and the exam's low pass - a

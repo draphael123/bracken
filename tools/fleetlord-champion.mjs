@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/fleetlord-champion.mjs - THE ADMIRAL'S CHAMPION and THE FLOTILLA 2 keep their promises (claude/flotilla2; scratch/brief-flotilla2.md '!! 10-16').
    It REPLACES what pinned THE QUARTERMASTER (benched, src/benched/quartermaster.js), rule for rule: her deck-guard-broken-by-a-gun became his KNOCKDOWN by a gun
    (B14), her 0.4 front (B15) became his plate at x0.5 (never nothing), her told moves became his seven, and boss-navigation's three decks became his two hulls.

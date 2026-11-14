@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/seam-shots.mjs <suffix> [only,tags] - real-page stills of THE SPOREWOOD -> KINGSWOOD SEAM (claude/sporeseam): the Mother's last stretch and the
    climb out of the fungus (Sporewood's end), and Kingswood's opening screens. Headless Chrome through tools/cdp.mjs (PORT env), the knight in god mode.
    Writes docs/seam/<tag>-<suffix>.png at 2x (640x360). Run it with `before` on the old code and `after` on the new: a column past the level's width is skipped. Not in the suite. */

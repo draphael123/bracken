@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/skyroad-art-shots.mjs - THE SKY ROAD's art-pass pictures (claude/skyroadart). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=<yours> node tools/skyroad-art-shots.mjs <before|after>   -> docs/skyroad/<before|after>/art-*.png (2x frames from the game's own canvas)
 import { openPage, ROOT } from './cdp.mjs';

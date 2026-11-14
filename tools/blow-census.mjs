@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/blow-census.mjs - THE BIGGEST SINGLE BLOW OF EVERY BOSS AND MINI, AFTER THE DIAL (claude/oneshotcap; a measuring tool, not a check).
    Plays the boss-rates fights (campaign level hero, campaign kit flasks, profile human) with BK.blowRec on (src/main.js damagePlayer0 writes, per boss/mini + blow name,
    the biggest blow he threw - landed, blocked or dodged - after BOSS_HIT, the act dial, the tier and the difficulty), and prints, per row, the top blows as a share of

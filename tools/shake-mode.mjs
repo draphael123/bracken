@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/shake-mode.mjs - SCREEN SHAKE MODE (claude/shake, 2026-10-01). Daniel: the camera shook on every landing. The default is now ON HIT: the
 // camera shakes ONLY when the hero is hurt (a blow taken, going down in co-op, dying). FULL is the old behaviour, OFF and reduce-motion are none.
 //   - static: exactly THREE shakeCam call sites carry the 'hurt' tag (hurt line, goDown, die; the lethal-water splash lost its tag in claude/deadwater: deadly water is a quiet drain, no hurt shake); every other call in src/ is untagged, so ON HIT silences it

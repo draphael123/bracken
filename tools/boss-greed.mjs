@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-greed.mjs - THE GLOBAL BOSS RULE AND THE GREED REPRISAL (claude/combat3, the combat pass; Daniel 2026-10-01, src/boss-greed.js).
    Daniel: "the boss is just attack, attack" - the mash bot beat 18 of 34 bosses and 12 of 13 minis by pressing attack and nothing else.
    NODE (no page): every campaign boss has an opening rule or a written reason it has none (NO_OPENING, a boss-wave TODO), and every

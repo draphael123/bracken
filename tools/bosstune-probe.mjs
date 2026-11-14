@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bosstune-probe.mjs (claude/bosstune) - ONE fight with a per-second trace of hero + boss + the hands' stated reason. usage: node tools/bosstune-probe.mjs <row> <hero> <seed> [way=built]
 import { fightJs, openRetry, diffJs } from './boss-run.mjs';
 const [r, h, s, way = 'built'] = process.argv.slice(2);

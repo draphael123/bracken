@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornets2art-shots.mjs - THE HORNET'S NEST 2 ART PASS for eyes (claude/hornets2art): the amber hornet's poses close up, the glob and the sticky patch, the hall's P2 (the tear,
 // the flood, the torn combs, THE LAST COMB, the queen pinned), the stinger, the transitions (old pines, the marsh edge, the far pine on the neighbours), the map landmark.
 // TAG=after PORT=<port> node tools/hornets2art-shots.mjs  ->  work/claude/lane-done/hornets2art-<TAG>-<name>.png   (ONLY=a,b limits the named shots; HERO=knight|warden|pyro)

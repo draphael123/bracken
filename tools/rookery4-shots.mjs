@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery4-shots.mjs [only,tags] - real-page stills of ROOKERY 4 (claude/rookery4tune): the summit with the nests up and dropped, the overhang's steps, the vents open, the support moves
    (pebble, the MARK, the gust), friendly fire, a sister mid fall arc, and the turn-order portraits at the hand-over. Headless Chrome through tools/cdp.mjs, the knight in god mode.
    Not in the suite. OUT=<dir> (default work/claude/shots/rookery4)   PORT=<port> node tools/rookery4-shots.mjs */

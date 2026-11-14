@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/undead-realms.mjs - THE UNDEAD ARCHMAGE'S SPELL REALMS (src/mage-realms.js; claude/undead3, Daniel 2026-09-29: "needs more portals than
 // just desert; fire/ice/poison portals as his spells; more mechanics").
 //   TEAR     at 75%, 50% and 25% of his health (and only then) he tears a portal - told (realmTell, REALM.tear) - and it takes you into

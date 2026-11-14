@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/colossus-respawn.mjs - DRAWN AS A PLATFORM = SOLID; NOT SOLID = NOT DRAWN AS ONE (claude/colossusrework, Daniel's 10-13 playtest).
 //
 // Daniel, 10-13, on THE GLASS COLOSSUS: "after you die the LASERS stay in position but you cannot jump on them". The cause: a respawn puts the grid back

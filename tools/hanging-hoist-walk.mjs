@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hanging-hoist-walk.mjs [heroes] - THE HANGING VILLAGE's machine, WALKED in the real page with real key input, no god mode
    (docs/briefs/hanging-village-rework.md §3, F9). The playtest bot (src/playtest.js) walks toward the gate's column and a switchback
    level defeats it, so it never reaches a hoist; this drives the hero there and does what a player does, once per hero (default

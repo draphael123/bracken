@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fair-folk.mjs - NO GOBLIN IS DRAWN IN THE HARVEST FAIR (claude/fairfix6, Daniel's 10-05 live playtest: "orangish goblin-looking foes near the fair's
 // start"). The fair is past the Goblin Queen, so its foes are the goblins' proven AIs under fair folk's skins - and tools/goblin-lint.mjs only asks that a
 // skin EXISTS: the fair's STRONGMAN was the goblin brute's own sheet recoloured tan (src/redraw/variety_skins.js), so it passed while every frame of it was

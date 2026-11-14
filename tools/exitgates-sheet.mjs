@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/exitgates-sheet.mjs - ONE SHEET of the ten landmarks (claude/exitgates): row 1 shut + dark lantern, row 2 half open + lit, row 3 open. Not in the suite.
 //   usage: PORT=8827 node tools/exitgates-sheet.mjs   -> work/claude/shots/exitgates/sheet.png (5x)
 import { openPage, ROOT } from './cdp.mjs';

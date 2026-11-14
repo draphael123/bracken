@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ksar-art-shots.mjs - THE BANDIT KSAR's art-pass pictures (claude/ksar). Not in the suite. god mode, a picture not a playtest.
 //   usage: PORT=8678 node tools/ksar-art-shots.mjs <before|after> [name-filter]   -> work/claude/ksar-art/<tag>/*.png (frames from the game's own canvas, 2x)
 import { openPage, ROOT } from './cdp.mjs';

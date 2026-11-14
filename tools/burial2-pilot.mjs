@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial2-pilot.mjs [tag] [seeds=3] — THE BURIED DEAD, the bot against him: all SEVEN heroes, REFILL health, 150 s, `seeds`
    pinned rolls each (claude/burial2's before/after, docs/briefs/burial-rework-2.md). Prints a row per fight (outcome, seconds, how
    often he was OPENED and by what, the damage taken a minute, which of his moves did it) and the summary; with a tag the rows go to

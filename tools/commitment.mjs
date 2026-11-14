@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/commitment.mjs - WEIGHT (Daniel 2026-10-02): COMMITMENT + STAMINA, the one Salt & Sanctuary pillar, held in the running game.
    Played through the real input on a flat floor (no foes), every hero at level 20 with one bought skill on F:
    1. COMMIT (WEIGHT-T numbers, coordinator 10-04 - see REC). Each verb (light, third cut, up-slash, low sweep, held heavy, a plunge that lands on nothing) is pressed, then ROLL, JUMP,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rangerart-shots.mjs - THE RANGER'S ART IN THE GAME (claude/rangerart; not in the suite): idle, a drawn bow, arrows stuck/lying, the snare, a marked foe. 3x crops of the game's own canvas.
 //   usage: PORT=8914 node tools/rangerart-shots.mjs <tag>  -> work/claude/shots/rangerart/<tag>-game.png
 import { openPage, ROOT } from './cdp.mjs';

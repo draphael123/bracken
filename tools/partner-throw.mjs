@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/partner-throw.mjs - CO-OP: GRAB YOUR PARTNER, CARRY HIM, THROW HIM (claude/partnerthrow, Daniel 2026-10-12; src/partner-throw.js, scratch/brief-throw.md part 2).
 //   pure      the table is sane; predict() flies the hero's own gravity; the GRAB key/button is a real rebindable action with a default that no other action uses
 //   page      (a flat floor, local co-op: a knight and a warden, or the ally)

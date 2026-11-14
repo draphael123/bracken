@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq4q-proof.mjs [outDir] - THE GQ4Q PROOF IN THE REAL PAGE (claude/gq4q-d): BRACKEN_GQ4Q=1 (+ BRACKEN_GQ4L=1 for the tower/room geometry the Queen sits in).
      A  every hero (all nine) knocks a P1 portal shard OUT (src/hero-strikes.js: a blow, an arrow, an ember, a pistol ball, ...) and sends a P2 shard HOME (her bar drops)
      B  six shards home inside 10 s = DAZED then a ward (shards glance); the ENRAGE fires once at 25%

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/coop-proof.mjs - CO-OP PROOF (claude/coopproof): the browser half of the coopai/cooppr work, 2 human seats in a wood.
      bleed   P2 bleeds out with P1 standing: only P2 wakes (full health + flasks), P1 is not moved or sent back; both down = the party wipe;
              a lift at ~19 s still saves him; a bleed in a LOCKED boss fight returns him inside the arena, the fight still on

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/survival.mjs - SURVIVAL (claude/survival, Daniel's decisions 2026-10-07 after scratch/audit-healing.md: OPTION A + design-standard A10 amended).
  *
  * WHAT IT HOLDS (each fails on the code before it):

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-pilot.mjs [passes=4] [--refill] [--secs N] [--heroes all|a,b] [--out file.json] — THE GATE GARGOYLE (the Witchlight
    Stair's boss). By default NORMAL health, the six lab heroes, `passes` seeded passes each: one life per fight, no refills, what the bot
    loses it keeps. --refill is the ranking's measure instead (health refilled every frame, so every fight runs until he dies or the cap):

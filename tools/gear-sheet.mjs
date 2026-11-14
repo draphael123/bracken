@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gear-sheet.mjs - CONTACT SHEET OF THE GEAR TIERS: every hero x tier 0..4 in idle, run, a swing, a jump (x3).
 //   PORT=8648 node tools/gear-sheet.mjs out.png [heroes,comma] [scale]
 import { writeFileSync } from 'node:fs';

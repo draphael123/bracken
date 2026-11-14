@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/level-peek.mjs - the real page, one level, a wide crop round a tile (claude/knightshield): node tools/level-peek.mjs <levelIndex> <tx> <ty> <out.png>
 import { writeFileSync } from 'node:fs';
 import { openPage } from './cdp.mjs';

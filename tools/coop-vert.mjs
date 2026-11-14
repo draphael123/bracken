@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/coop-vert.mjs - CO-OP VERTICAL FOLLOW (claude/coopvert, Daniel 11-04 'the AI partner isn't great'): player one walks the climb/well/shaft route of a vertical level (the
    playtest walker; a lift past what it cannot do) with an AI partner behind him; what is measured is how well the AI keeps him in reach: share of samples near him (10 tiles across,
    4 rows up/down), the longest apart, the told catch-up puffs by reason (far / stuck / wait), falls into hazards and deaths. The numbers print as JSON on one line per level.

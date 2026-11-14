@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/riposte.mjs - THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR AND THE MIX-UP CHAIN DO WHAT THE BRIEF SAYS (claude/riposte,
 // scratch/brief-riposte.md; src/riposte.js). Played in the real page through the real keys, the blows delivered through damagePlayer:
 //   heroes   ALL EIGHT PARRY: each hero's own answer (found by trying its input - hold / tap / down / let go - at every lead up to 24 frames)

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/walk-controls.mjs - THE WALKER'S OWN HANDS CAN DO WHAT THE LEVELS ASK (claude/walkerctl, Daniel 10-09).
    The campaign walker (tools/level-walk.mjs + src/walk-graph.js) used to get stuck at STORMHOLD on its OWN controls, not the level: it only fetched
    keys on its own floor, could not climb the rope nets out of the chimney slots, could not take the zigzag one-way stair, and struck a kennel winch

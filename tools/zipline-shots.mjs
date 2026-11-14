@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/zipline-shots.mjs - pictures of the zip lines (claude/zipline). Not in the suite. usage: PORT=8748 node tools/zipline-shots.mjs [hero] -> work/claude/zipline/*.png
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

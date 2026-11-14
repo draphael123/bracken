@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geomancer-pilots.mjs — THE GEOMANCER AGAINST THE LAB, BESIDE THE KNIGHT AND THE WARDEN. A report, not a gate (numbers from bots,
 // ~21 runs would be needed to tune on them - see the memory rule): the fight lab against the common foes in the wood, the boss lab
 // on the first bosses, and the playtest walker through three early levels as her. Writes docs/geomancer/pilots.json.

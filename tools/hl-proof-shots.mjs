@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hl-proof-shots.mjs - STILLS OF THE HIGH LINES FROM THE REAL PAGE (claude/hlproof, 11-12). Not in the suite. The road must be open in the page (BRACKEN_ROAD=hl).
 // usage: BRACKEN_ROAD=hl PORT=8644 node tools/hl-proof-shots.mjs <outdir>     -> map node, the level's acts (a winch haul, a glide in the gale, the Hookjack's tell, the gondola, the counterweight,
 // the exam, the cave mouth), SKYHOOK phase 1 and 2, the two bestiary cards. 12 PNGs, each the game's own 320x180 buffer at x3.

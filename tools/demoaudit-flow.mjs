@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/demoaudit-flow.mjs - a new player's first minutes on ?demo=1 (claude/demoaudit): title -> hero pick -> lesson -> inn -> map. stills in scratch/lane-reports/demoaudit/flow-*.png
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs'; import { join } from 'node:path';

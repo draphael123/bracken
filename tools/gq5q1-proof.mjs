@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq5q1-proof.mjs [stillsDir] - GQ5Q1-TUNE BROWSER OWED 3/4, one page session (BRACKEN_GQ5Q1=1 node tools/gq5q1-proof.mjs).
    OWED 3: the burn-tick damage dial (does BOSS_HIT.gqueen 2.15 land on the raw Q5N.fire.dmg?) measured on a real full-HP hero; 8-10 stills
      for the by-eye checks (chains from the ceiling, deck sprite vs the stone slab, bell/hoist/hearth jet not stacking on screen).

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-walk.mjs - BC5 WALK (claude/bc5-l, 11-12): THE GLASSBLOWER mini end to end in the real page (flag forced on by BRACKEN_BC5=1 -> tools/cdp.mjs).
    Drops the hero off the kiln, lets a plan-ish driver (go to the glinting glass and strike it, cut him while buried, else wait) fight him, and reports the beats:
    intro / glint / opens / portcullis (gate cells) / PROG after a reload. NOT a rate (one run, god optional): node tools/bc5-walk.mjs [--god] [--hero=knight] [--shots=dir] */

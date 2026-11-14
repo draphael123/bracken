@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/knock-into.mjs - KNOCK FOES INTO THE LEVEL + THE ANTI-PLUNGE REWORK DO WHAT THE BRIEF SAYS (claude/knockinto, scratch/brief-combat2.md
 // sections 1 and 4 '!! UPDATE'; src/knock-into.js, src/anti-plunge.js, src/foe-react.js REACT_AIR).
 //   pure     the shared helper against stub worlds: hazardAt (spikes / a drop / deep water vs a swim / a turtle at home / fire / a foul pool /

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown-polish-shots.mjs - THE WELL TOWN's polish pictures (claude/welltown-polish): the Gang Leader's new courtyard (the market square), the Kasbah's garrison
 // courtyard, the venom HUD icon, and the Cistern Queen's poses. Not in the suite: god mode, pictures not a playtest.
 //   node tools/welltown-polish-shots.mjs <tag> [courtyard|hud|queen|all]   -> work/claude/welltown-polish/<tag>/*.png (2x frames from the game's own canvas)

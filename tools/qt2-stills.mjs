@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/qt2-stills.mjs (QUEENTUNE-2) - stills of the phase-1 hall fight: the barracks soldiers, a throne-fire burn, a crown blow.
    BRACKEN_GQ5Q1=1 node tools/qt2-stills.mjs <dir>. A god-mode knight stands in the hall; the Queen runs her own fight; a frame is kept when an event shows. */
 import { openPage, ROOT } from './cdp.mjs';

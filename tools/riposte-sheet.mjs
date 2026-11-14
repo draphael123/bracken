@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/riposte-sheet.mjs - EVERY HERO'S PARRY AND RIPOSTE FRAMES on one sheet (claude/riposteart): per hero a row, the two PARRY frames then the three
 // RIPOSTE frames, 4x on a flat ground tone with the foot line marked.   PORT=8838 node tools/riposte-sheet.mjs [out.png] [heroes]
 import { writeFileSync, mkdirSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery2art-sheet.mjs - CONTACT SHEETS of the ROOKERY 2 art pass (claude/rookery2art): the sisters' poses per role, the three phase-2 survivors (x1.3, wearing the dead sisters'
    gifts), and the gale harpy's frames. Real page (sprites bake in the browser). Writes work/claude/shots/rookery2art/sheet-*.png.   PORT=<port> node tools/rookery2art-sheet.mjs */
 import { openPage } from './cdp.mjs';

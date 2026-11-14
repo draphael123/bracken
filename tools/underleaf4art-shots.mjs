@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleaf4art-shots.mjs [only,tags] - real-page stills of UNDERLEAF 4's art (claude/underleaf4art): THE POTION CROSSING (gully + shafts) and THE POTION MASTER at each phase / move / opening.
    Headless Chrome through tools/cdp.mjs, god mode. Writes scratch/lane-reports/underleaf4art-<PREFIX>-<tag>.png (OUTDIR env), 2x (640x360). PREFIX = before | after.   PREFIX=after node tools/underleaf4art-shots.mjs [tags] */
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/weapon-skins.mjs - A WEAPON SKIN IS THE WEAPON, NOT A RECOLOUR OF THE CHARACTER (Daniel, 2026-10-02).
    The store's WEAPONS tab sells swords whose palette is {s, S}. heroSet() used to merge that into the hero's own palette, where 's'/'S' are
    the knight's helm, arms and legs and the pyromancer's whole robe - so buying Ember Blade turned the hero into an ember statue.

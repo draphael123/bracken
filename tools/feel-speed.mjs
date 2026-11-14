@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/feel-speed.mjs - GAME SPEED 50..200% (Daniel 10-12, claude/feelplatform). In the page:
 //  1. the speed row: nine DISPLAYED steps 50/60/70/85/100/125/150/175/200 where 100% is the tuned real 0.6 (Daniel 11-08 relabel; real 0.3..1.2), the default of a fresh profile is real 0.6 = 100%, the old save is migrated ONCE (speedV3) and then left alone;
 //  2. the sub-step rule: above 100% the world runs 2 sub-steps of at most one 100% step (never one long step), so the hero covers speed x the ground in the same wall frames

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/fat-sheet.mjs <tag> - CAPTURE SHEET of the Goblin Queen (15 frames) and King Gorm (5 seated + 7 standing), the sprites
    straight off chars.js at 3x on a floor line, with each set's hitbox drawn over it and the painted size (bounding box of the
    opaque pixels, per frame) printed. Saved to work/fatqueen/<tag>.png. Not in the suite. */

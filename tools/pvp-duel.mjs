@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pvp-duel.mjs - DUEL (BETA), claude/pvpduel (Daniel 11-05: a basic PvP mode for the demo; src/pvp-duel.js, src/duel-pit.js).
 //   pure    NODE ONLY, no browser: the rules (level-normalised damage, the sudden-death ramp, anti-juggle, landed share), whose blow (attackerOf: in a pass,
 //           out of a pass by the tagged effect, never his own), the match machine (best of 3, KO, time, draw, the five-round cap, every match ENDS),

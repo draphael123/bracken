@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/towpath-exits.mjs - THE TOWPATH HAS NO DEAD ENDS (claude/towpathchurch, Daniel 10-16, live: "you miss the boat in this section - it never comes back to you" and "you cannot leave the boss room").
 // REAL KEYS in the real page, three heroes:
 //   A  THE MISSED BOAT (the aqueduct's barge): strike the west sluice and do NOT board - the barge floats to the east stop and docks empty, and the far sluice is across the break. The

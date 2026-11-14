@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-contact.mjs — CONTACT DURING PLAY, BY THE PIXELS. Findings only; it changes nothing.
 // The load-time pass (node tools/headless.mjs floats) catches a sprite floating where it SPAWNS. This one lets the playtest bot
 // (src/playtest.js) play every level (lifted to a quarter, half and three quarters of the way along, so the samples cover the level and

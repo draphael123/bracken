@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [--l1] - THE GREAT RED CRAB (src/gorge-crab.js) at NORMAL health, one pass per salt (bossLab
 // pins its dice per row; docs/INTEGRATOR.md section 6). One life per fight, no refills; the bot is the HUMAN one (src/gorge-crab.js PLAN: a quarter-second late,
 // it misreads some tells and is late to some releases). The hero is the level the campaign expects at THE RED GORGE (its depth on the gate chain, no skills -

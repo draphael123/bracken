@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/stockade-horns.mjs — PINS THE STOCKADE'S FOUR AUDIT BEATS (work/claude/lane-done/claude-stockade.md), so a later
 // merge can't silently drop them:
 //   twist     tower 3's horn archer starts on the ground, short of his own climb column, and a real NET column stands

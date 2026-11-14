@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bosszoom-shots.mjs - THE CAPTURE PASS for claude/bosszoom (Daniel, 2026-09-28: "boss battles in general need
 // to be more zoomed out"). One page session: boot every level once, wake its boss and (if it has one) its mini,
 // let the camera settle, then (a) save a screenshot of the zoomed arena to work/bosszoom/ and (b) check the numbers

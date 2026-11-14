@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-heal.mjs - THE ARENA HEAL (claude/bossheal, Daniel 10-30: "whenever you find a mini boss or a boss, you get automatically healed").
    PAGE, one browser. For a boss (the Kitchen Gate's Grubbag) and a mini (Kingswood's Great Hound; the Deep Rails' Foreman when asked):
      - a hero at 30% health who walks into the arena trigger is at FULL health the frame the fight starts (bossActive / miniActive), his FLASKS unchanged;

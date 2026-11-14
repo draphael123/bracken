@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/map-shots.mjs - pictures of the world map's sheets, every level cleared and fully ticked (the worst case for the name plates).
 // Not in the suite. usage: PORT=<free port> node tools/map-shots.mjs <outdir> <tag>   (e.g. work/claude/mapspace before)
 import { openPage, ROOT } from './cdp.mjs';

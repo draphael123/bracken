@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hintlevel.mjs - SETTINGS > HINTS: NONE / LOW / MEDIUM / HIGH (claude/hintlevel; Daniel 10-16: "the menu should choose how many").
 //   node tools/hintlevel.mjs            the check          node tools/hintlevel.mjs --inventory   also print the hint sources by tier
 // 1. src/hints.js, pure: the gate gives HIGH everything, NONE nothing; LOW only a mechanic, once per save; MEDIUM mechanic + tip once, one reminder a level, the

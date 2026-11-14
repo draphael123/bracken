@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyramidart-music.mjs - THE COFFIN KING's theme and THE SEALED PYRAMID's level bed, measured in the real page (claude/pyramidart): renders the synth boss themes offline
 // (OfflineAudioContext) and decodes level files, then prints RMS / peak at the volume the game plays them (synth: BOSS_SYNTH_GAIN, files: 0.45 x TRACK_GAIN). Not in the suite. PORT from env.
 import { openPage } from './cdp.mjs';

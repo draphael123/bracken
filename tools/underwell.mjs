@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underwell.mjs - THE UNDERWELL's own check (claude/underwell, the greybox; src/underwell.js, src/underwell-hands.js, docs/concepts/the-underwell.md).
    NODE (no page): the level as built - its oil lies on floors, every torch hangs over oil, every nest seals a doorway (rock over it: no way over) with oil
    against it, the cast (scorpions and sandworms in their elements: no skin over ~35%, three roles, a ranged spitter), the four new skins baked, carded,

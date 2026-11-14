@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* hint-shown: a line written for the player must be one the player can see (claude/hintsweep).
    main.js's number() lets a capital-letter string through only when it is one of the MOVE_WORDS; every other one is dropped, so a
    number(x, y, 'HE IS OPEN') was never on screen (the Undead Archmage's realm lines, claude/archfix, were the first found).

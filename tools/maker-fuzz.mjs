@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-fuzz.mjs (claude/maker) - THE MAKER UNDER A THOUSAND RANDOM HANDS. A seeded run of random editor actions (any piece
    anywhere, erase, box erase, undo / redo, styles, slopes, warps, tracks, wider / taller, copy / paste, goals, a boss linked, PLAY
    for a moment and back, MY LEVELS open). After every action the level must still be a level: the grid the right size, every

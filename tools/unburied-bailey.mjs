@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-bailey.mjs - THE BAILEY, DRIVEN FOR REAL (claude/unburied4; Daniel's playtest 10-05: "a MUD FIELD under ARROW VOLLEYS with cover you move between").
    In the page, a real hero in the real level (src/unburied-field.js 5b; the volley is src/unburied-foes.js stepYardVolley):
      1  told      the horn blows (yv.warn) before every volley, and a hero standing in the open mud is hit by it

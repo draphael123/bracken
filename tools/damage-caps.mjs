@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/damage-caps.mjs - A BOSS'S OPENING CAP IS ON WHAT LANDS (claude/capsfix, the damage-caps audit of 10-11). Fails when:
 //   a boss that counts its per-opening cap EARLY in hurtEnemy0 (before the mix-up chain x1.3, the riposte opening x1.5, a poise-broken x1.5 and a hero talent's x2 are
 //   multiplied on) lets more than its cap through one opening. Six bosses count early and each has a fix function that main.js calls after the multipliers:

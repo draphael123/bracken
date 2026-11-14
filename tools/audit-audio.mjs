@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/audit-audio.mjs — THE AUDIO COVERAGE AUDIT. Findings only: it measures and reports, it fixes nothing.
 // The page is opened headless (tools/cdp.mjs), every method on the SFX object is wrapped to LOG its name and the game
 // frame it was called on (music.play, duck, muffle and ambient.set too), and the game is driven through every

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/witchlight.mjs — THE WITCHLIGHT STAIR, REDESIGNED (2026-09-22). Brief: .claude/briefs/witchlight-redesign.md.
    Daniel rejected the first build ("climb and go right with a massive enemy gauntlet... looks like a repeat"). This proves the
    redesign by the map (Node) and then on the page:

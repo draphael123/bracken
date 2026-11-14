@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/flotilla2art-sheet.mjs - THE ADMIRAL'S CHAMPION's pose sheet (claude/flotilla2art; not in the suite): every pose key of src/redraw/champion_art.js at p = 0, .5, 1, on a dusk sky and a deck, 3x.
 //   node tools/flotilla2art-sheet.mjs <outdir> [p1|p2|fx|dead|all]
 import { openPage } from './cdp.mjs';

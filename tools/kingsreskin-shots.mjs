@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/kingsreskin-shots.mjs - KINGSWOOD's court guard in the real page, before (the camp goblin) and after (the livery), for eyes (claude/kingsreskin). Not in the suite. PORT from the environment, one page.
 //   node tools/kingsreskin-shots.mjs   env: OUT (default work/claude/shots/kingsreskin)
 import { openPage, ROOT } from './cdp.mjs';

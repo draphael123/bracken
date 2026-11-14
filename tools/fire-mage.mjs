@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/fire-mage.mjs - THE GOBLIN FIRE MAGE (claude/pyroboss2, Daniel 11-01 09:05 #4 + 09:07; scratch/brief-pyroboss2-firemage-1101.md). What it proves:
      1. THE RULES (pure, src/fire-mage.js): the skins, the lob lands where it was aimed, a patch burns who stands in it on its own clock and hops once a gen
         on grass (three gens at most), the ward pops only when you rush him, spent/doused he takes x1.5

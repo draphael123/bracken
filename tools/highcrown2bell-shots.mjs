@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/highcrown2bell-shots.mjs [outDir] - the Goblin Queen ringing her own bell (claude/highcrown2bell), in the real page: the tell at four moments, the toll, the grate landing, the recovery.
    Same setup as tools/highcrown2art-shots.mjs. Saved at 2x to work/claude/shots/highcrown2bell/. Not in the suite. */
 import { openPage, ROOT } from './cdp.mjs';

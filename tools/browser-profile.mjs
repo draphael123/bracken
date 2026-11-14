@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/browser-profile.mjs — THE THROWAWAY BROWSER PROFILE, and taking it away again (2026-09-21).
 // Every tool that drives a headless Chrome gives it a fresh --user-data-dir under the OS temp folder, and until now only
 // levelvideo.mjs ever deleted one: 3,130 of them had piled up in Windows Temp. This owns the whole life of one:

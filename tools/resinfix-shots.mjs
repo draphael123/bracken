@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/resinfix-shots.mjs - claude/resinfix: same spots across THE HORNET'S NEST + the Queen's hall. TAG=before|after OUT=<dir>
 import { openPage } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

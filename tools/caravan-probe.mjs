@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan-probe.mjs — THE SUNKEN CARAVAN in the real page, quickly: who is in it (by kind), whether anything throws, and what
 // the bandits and the sun do on the screen. Not in the suite (pictures are for eyes). usage: node tools/caravan-probe.mjs [outdir]
 //   It loads the level (god mode, so nothing ends the run), counts the creatures by kind, then walks the hero into THE TRADERS' YARD

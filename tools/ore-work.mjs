@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ore-work.mjs — THE ORE ROAD'S WORK LOOPS, proved in the page (docs/briefs/ore-road-mine-life.md, section 2).
 // A goblin at work in the mine is not fighting: it picks at a seam, pushes a cart, hauls a sack, sorts at a table or cranks a
 // winch, and when it sees the hero it drops the work, shouts (told: the jump, the shout, its notice sound), stands a startled

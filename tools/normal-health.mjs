@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* THE WINNABLE ROW MOVED OFF KING GORM (claude/sweep1 follow-up, Daniel approved Q7): King Gorm sits in the 50-60% boss band now (1000 hp, x1.5) and a level-1 legacy reaper rightly dies to him. The row is the Bullfrog (marsh): the first-act puzzle wall whose openings are made, left untouched by the sweep (no number changed, 58% for the standard bot), and the one early boss a level-1 hero is MEANT to be able to beat at normal health. Every assertion is unchanged - a win, never died, endHp>0, health reconciles - and the damageTaken>0 line now holds for it too (the King took none), so its exemption is gone. */
 /* THE WINNABLE ROW is Kingswood's, not the Deep's: the Diving Bell was the easy fight this leaned on, and he is not easy now (docs/briefs/deep-rework-2.md) */
 /* THE DEATH ROW MOVED OFF LONGWATER (claude/botfix, batch32): longwater/knight/normal used to stop on death here, but two real bot

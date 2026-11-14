@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-newlevel.mjs (claude/maker) - A NEW LEVEL STARTS EMPTY, AND THE START BEGINS IT.
    1. NEW: no ground, no pieces, no START; the START tool is in hand. PLAY refuses until there is a START (and a goal).
    2. Placing the START in the open with nothing under it puts three tiles of ground there; never inside the ground.

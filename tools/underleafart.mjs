@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleafart.mjs - THE ART PASS OF UNDERLEAF 3 + THE GRANDMOTHER 3 (claude/underleafart), in the page. Art only: it must leave the level's data alone and draw what the greybox left flat.
      THE LEVEL IS UNTOUCHED  its levelHash equals the greybox's (3d5dd5571299): the reskin is a table (L.reskin) the page applies at spawn, the dressing is derived from the grid at the load
      THE PEOPLE              every sprig / thief / shield / rockgoblin / archer / brute is reskinned (cnSkin) with its own sheet (the goblin's frame count, mirrored, white-flash) and a bestiary card; the thorn-beast has a bare sheet too

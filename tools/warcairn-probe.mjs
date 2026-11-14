@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/warcairn-probe.mjs - THE WAR CAIRN in the page, quickly (claude/warcairn, the greybox). A smoke test of the rule, its machines, the drummer and the boss, not a playtest:
 // ?level=warcairn lands in play at the foot of the gully (no god mode); a REAL BLOW on the far bank's drum is a BEAT - the tunnel's drum gate swings open, the striker is in
 // WAR-RAGE (a blow dealt lands harder, a blow taken costs more), and the gate swings shut a few seconds later; the gate run's drum opens all three chimney hatches; a RANGER's

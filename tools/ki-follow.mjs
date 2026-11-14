@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ki-follow.mjs - THE KNOCK-INTO FOLLOW-UP DOES WHAT THE BRIEF SAYS (claude/kifollow, scratch/brief-combat2.md '!! 10-11 16:35').
 //   pure     the art + data tables (src/ki-art.js, src/knock-data.js): the spines are keyed 0 / 1 / 2 / full / fire with a layout per elite body, the armed
 //            ramps (urchin / jelly / grub / marshlight), every hazard kind has an entry burst, the Deep Rails' lava and every quicksand patch become rows,

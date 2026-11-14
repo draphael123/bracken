@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown3-shots.mjs - THE WELL TOWN's art-pass pictures (claude/welltown3-art). Not in the suite. god mode, a picture not a playtest.
 //   usage: node tools/welltown3-shots.mjs <before|after>   -> work/claude/welltown3/<before|after>/*.png (2x frames from the game's own canvas)
 import { openPage, ROOT } from './cdp.mjs';

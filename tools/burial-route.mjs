@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial-route.mjs — THE BURIAL CAVERNS, WALKED WITH THE REAL JUMP (claude/burial2, 2026-09-26: the Grave Causeway's slabs and the
    Bone Stairs went with the cut). RULE S2: "measure them with the real jump, for every hero, not with the reach model" - the reach model's
    jump is six tiles and a player's is about 3.2. Every three-tile jump over green water on the road (tools/burial2.mjs finds them; seven),

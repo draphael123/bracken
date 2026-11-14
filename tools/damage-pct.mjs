@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/damage-pct.mjs - DAMAGE % STAGGER (Smash-style) DOES WHAT THE BRIEF SAYS (claude/damagepct, scratch/brief-damagepct.md; src/damage-pct.js).
 //   pure     the curves: a throw at 0% is a shove, ~72% the old fixed throw, 200% a launch (capped); the lift and the shove the same way; a heavy's
 //            hitstun grows more than a light's; a boss's break up to +50% and no more; the gain - a heavy / a riposte worth more than a light cut,

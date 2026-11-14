@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/nestpolish-shots.mjs - NESTPOLISH proof strips (claude/nestpolish): depth at 6 spots, pots glow + THROW AT HER hint, the Queen's fall (tumble, crash, still).
 //   OUT=<dir> node tools/nestpolish-shots.mjs   -> <dir>/np-depth.png, np-pots.png, np-fall.png
 import { openPage, ROOT } from './cdp.mjs';

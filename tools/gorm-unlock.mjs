@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorm-unlock.mjs - THE BURNING VILLAGE OPENS ON KING GORM BEATEN IN ONE LIFE (claude/smallfix7, Daniel 11-01: "beating King Gorm
 // without dying between the two phases"). In the real page, through the game's own hurtEnemy / die / save-load paths:
 //   1. a clean fight (P1 spared, the burning wood, the glade, his death) -> PROG.burningOpen, the node unlocked

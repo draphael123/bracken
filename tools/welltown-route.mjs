@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown-route.mjs - THE WELL TOWN walked end to end with real keys (claude/welltown). Not in the suite: a route pilot.
 // A scripted hand, not the play bot: the bot cannot fill a skin, pour it, or strike a windlass, so this walks each leg with the keys a player would
 // press - hold a direction, jump what blocks, E at a well, E facing mud or fire, a blow on the windlass, UP on the rungs - and cuts down what stands

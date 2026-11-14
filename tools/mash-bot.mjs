@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/mash-bot.mjs - THE MASH BOT (claude/mashbot, 2026-10-01). Daniel, of the Fair, the Theatre and more: "no challenge... the boss is just attack,
    attack". Our pilots are too kind: nothing asked whether a player who ONLY MASHES ATTACK fails. This is that player. He walks toward the boss and
    presses the basic attack every frame it is free. He never blocks, never dodges or rolls, never jumps on purpose, never uses a heavy blow, a skill,

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-terrain.mjs (claude/maker) - THE MAKER's TERRAIN works when you play it.
    In one made-by-hand wood: the knight SWIMS in a WATER box, a CRUMBLE LEDGE holds, counts, drops him and stands again on
    the next attempt, a MOVING PLATFORM carries him and a LIFT rises; and the terrain survives SAVE -> LOAD.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/act-cards.mjs - ACT CARDS + THE BOSS-KILL BEAT (claude/actcards, Daniel 10-18 B3/B4; src/act-cards.js).
      node tools/act-cards.mjs             node-only: the pure logic and the source wiring (no browser; safe beside a suite)
      node tools/act-cards.mjs --browser   adds the page checks (the integ runs this): first entry shows the card once and never blocks input, reduce-motion,

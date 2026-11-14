@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ram-shots.mjs - the Ram Lord's new looks as pictures (claude/scree3). Not in the suite.
 //   usage: OUT=<dir> node tools/ram-shots.mjs     -> stomp tell, stomp release (+0.1 s, +0.5 s), boulder tell, boulder rolling, prop armed / in-line / spent
 import { openPage } from './cdp.mjs';

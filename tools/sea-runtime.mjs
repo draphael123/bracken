@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import {openPage} from './cdp.mjs';
 import assert from 'node:assert/strict';
 const pg=await openPage({port:5996});

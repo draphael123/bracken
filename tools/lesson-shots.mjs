@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lesson-shots.mjs - stills of THE ROADSIDE LESSON and the inn (claude/tutorial1). node tools/lesson-shots.mjs [tavern,lesson,inn]  -> scratch/lane-reports/tutorial1-*.png (one browser, simulated frames)
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';

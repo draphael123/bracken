@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/titlemenu-shots.mjs - stills of the six-row title, each submenu and the demo (?demo=1) title (claude/titlemenu, Daniel 11-08). Not in the suite.
 // usage: PORT=<free port> node tools/titlemenu-shots.mjs <outdir>
 import { openPage } from './cdp.mjs';

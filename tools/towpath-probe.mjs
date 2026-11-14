@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/towpath-probe.mjs - THE TOWPATH 2 in the real page (claude/towpath2; not in the suite: a smoke probe for the lane and the art lane). It loads the level, walks
 // a god-mode hero through each section's machine with the hands' own levers (the hoist, the sluice, the crane, the locks), lets a fog wraith and the Fog Knight run,
 // and fails on any page error, a ride that does not carry, a wraith that leaves its fog, or a knight move that never comes. With `shots` it writes PNGs of each

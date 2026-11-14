@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/drpolish-shots.mjs - Deep Rails geometry stills (claude/drpolish). usage: node tools/drpolish-shots.mjs <tag> x,y x,y ...  (tile coords). Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

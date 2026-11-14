@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ability-poses.mjs — EVERY ABILITY HAS A BODY. A bought active that selects no pose of its own is drawn as whatever the
 // hero was already doing, so the effect plays NEXT TO a hero who does not move (that is why Rising Cut once "looked like a jump").
 // Each ACTIVE in the catalog (src/progression-catalog.js SKILLS, which already carries STARTER_SKILLS) is bought alone, pressed

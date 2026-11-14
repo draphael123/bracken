@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/level1-pilot.mjs - THE LEVEL-1 NO-ABILITY PILOT (claude/checklist, 2026-10-01). A brand-new knight (a fresh save: level 1, no talents, no bought
    skills, no upgrades) walks the level's main route (tools/pacing.mjs, a waypoint every ~8 columns) with the play bot's hands and no god mode; where the bot cannot work a lock, winch or lever in 4 s it is LIFTED to the next waypoint (counted and printed), so every stretch of the level is met. A level that costs that hero nothing is a walk, not a level: it must take
    real damage (LIM.pilotHits blows in tools/level-quality.mjs).

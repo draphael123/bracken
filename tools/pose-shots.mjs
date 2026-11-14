@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pose-shots.mjs — THE OTHER FOUR HEROES' POSES, AS THE GAME DRAWS THEM. The real page in Chrome, stepped with the draw on
 // (BK.step renders, with its glows and its 'lighter' fire), so what is on the sheet is what the player sees - not a Node render,
 // which draws light flat. One picture a hero (docs/poses2/<hero>.png): every active of his, bought alone and pressed on a flat floor

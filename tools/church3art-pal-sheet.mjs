@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/church3art-pal-sheet.mjs - the Paladin boss's rows (hero frames + claude/church3art's own: snuff pair) in the page. PORT=8745 node tools/church3art-pal-sheet.mjs <out.png> [scale] [rows e.g. 0,30,32,33]
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync } from 'fs';

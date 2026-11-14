@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try { const d = await pg.evalp(`(async () => { const { LEVELS } = await import('/src/level.js'); const out = [];

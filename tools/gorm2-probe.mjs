@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gorm2-probe.mjs - KING GORM 2 in the page, quickly (claude/gorm2). A smoke test of his three acts with the game's own hands, not a playtest
 // (the rates are tools/boss-rates.mjs kings; the burning wood's walk is tools/level-walk.mjs kings --from=470 --setup="BK.gorm().flee()"):
 //   THE HALL: he wakes on his litter; the court files two rafter archers onto the live rope's deck and they loose told arrows (no rocks since 11-03: the test cuts them down as the scaffold does);

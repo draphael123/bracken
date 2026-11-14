@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial-variety.mjs — THE BLIND VAULT and THE ROTTEN BRIDGES (Daniel, 2026-09-24; src/burial-variety.js; the dark crypt under the
    Restless Rows went with them in claude/burial2, and THE ROTTEN BRIDGES is dark now: the level's exam).
    By the map:

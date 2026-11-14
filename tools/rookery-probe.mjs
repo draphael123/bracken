@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rookery-probe.mjs - THE ROOKERY in the page, quickly (claude/rookery, the greybox). A smoke test of the rule, its machines, the shrieker and the boss, not a playtest:
 // ?level=rookery lands in play (no god mode); on every REQUIRED cracked rock a hero standing on the mark draws her scream and aim, steps off, and her dive breaks it in the real
 // game (the hole opens / the bridge, the platform, the steps are laid); a death keeps what broke; a shrieker screams and marks the hero, and the harpies near dive at the

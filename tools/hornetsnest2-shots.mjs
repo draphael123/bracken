@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnest2-shots.mjs - THE HORNET'S NEST 2 for eyes (claude/hornetsnest2): ONE ARENA (the hall in P1, the hall torn in P2: resin, the torn combs, THE LAST COMB, a pin),
 // THE FALLING NEST after her death, THE MARSH EDGE, the old pines at the start, THE AMBER HORNET's poses in play.
 // PORT=<port> node tools/hornetsnest2-shots.mjs  ->  work/claude/lane-done/hornetsnest2-*.png   (ONLY=a,b limits the named shots)

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/bc5-cam.mjs <outdir> - BC5 PROOF (claude/bc5proof): (1) the post-strike camera on a race glass: strike R2's glass with the knight, then every 6 frames for 1.2 s record the frame (strip PNG) and whether input still moves the hero
    (the camera look must be the short 0.6 s one, non-blocking); (2) the first 1.2 s after the Glassblower's kill: state, transition kind/value and a frame strip, to tell an iris/fade from a bug.
    node tools/bc5-cam.mjs ../scratch/lane-reports/bc5proof */

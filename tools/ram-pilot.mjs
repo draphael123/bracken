@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ram-pilot.mjs [salt] [heroes] — THE RAM LORD at normal health (the Scree Path lane, A11 rework: the fold widened from 16
 // to about 30 tiles with a scree bank on one wall, so his wall crash is a CAUSED opening now, not a guaranteed one). Three
 // heroes, one salt, before/after the change - not a standing check, a one-off pilot for the lane report.

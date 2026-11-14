@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hurricane3art-shots.mjs - THE HURRICANE 3 after-shots, each set up in its state (lane helper). PORT from the env; OUT dir (default work/claude/shots/hurricane3art/after)
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

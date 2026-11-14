@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/flask-sheet.mjs - FLASKS 2 ART contact sheet: per hero, the idle frame then every drink frame (set.R.drink), blown up.
 //   PORT=8811 node tools/flask-sheet.mjs [--skin=bracken] [--sc=6] [--h=knight,warden]  ->  work/claude/flasks2art/drink-sheet.png
 import { writeFileSync, mkdirSync } from 'node:fs';

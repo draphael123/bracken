@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc3art-sheet.mjs - the BC3 art lane's CONTACT SHEET (claude/bc3art): composes work/claude/shots/bc3art/*.png (names below) into contact-sheet.png. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { readFileSync, writeFileSync } from 'fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/crouch-a-pilot.mjs [label] - THE CROUCH TWISTS, PART A's pilot (claude/croucha): the KNIGHT, the WARDEN and the FREEBOOTER, one
    pinned seed each, run BEFORE and AFTER a change to their crouch or the bot's use of it:
      1. STORMHOLD's QUEEN'S LANCE through BK.bossLab (src/lab.js), the duck pilot's settings (refill health, a 150 s cap, salt duck-1)

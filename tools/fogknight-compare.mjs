@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fogknight-compare.mjs - THE FOG KNIGHT 2 beside THE CRUSADER (claude/fogknightart2; not in the suite): the Crusader's frames and the knight's poses at 1x (left) and 2x, on the night ground.
 //   PORT=8926 node tools/fogknight-compare.mjs [out.png] [poses, comma list]
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/pyro-duel.mjs — THE PYROMANCER 2: THE MIRROR DUEL ON THE NEW KIT (claude/pyroboss2, Daniel 11-01 09:05 + 09:07 "You can build both";
    scratch/brief-pyroboss2-firemage-1101.md). It was the old-kit mirror (the run of three, THE BELLOWS, the ember volley, the read-guard, the vent);
    the hero's kit changed (BATCH135 pyrokit + claude/pyrocontrols) and the boss with it. What it proves:

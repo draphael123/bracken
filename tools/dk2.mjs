@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dk2.mjs — THE DEATH KNIGHT 2 (claude/dk2b, scratch/brief-dk2.md; src/dk2.js). On flat Stockade floor, the hero held where he
 // stands, this fails when:
 //   - THE RED RHYTHM is not the Paladin's pace (src/commit.js artRate = DK2.rhythm.rate 0.56; claude/dkfeel, was ~35% quicker than the old 0.34), a swing in the page takes as long

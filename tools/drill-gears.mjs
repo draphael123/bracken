@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/drill-gears.mjs - THE GREAT DRILL 4's GEARS, MEASURED (claude/deeprails4; a measuring tool, not a check). The boss bot fights the drill (tools/boss-run.mjs, the
    same fight boss-rates runs: campaign level, the kit's flasks, profile human) and, sampled as it fights, the drill's own ledger (src/great-drill.js S.n): gears broken,
    blows on gears against blows on the cab, damage dealt to the gears against the body, the stalls, the held blows and what the gates gave - THE 50-50 (Daniel 10-12:

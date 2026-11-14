@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-feel.mjs (claude/maker, the feel batch) - THE MAKER FEELS LIKE A MAKER.
    1. GRAB AND MOVE with the real mouse: a placed piece drags to a new cell; a platform's gold handle drags its reach; a click
       that moves nothing leaves no undo step; a piece will not be dragged into the ground.

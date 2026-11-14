@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ft3art-page-shots.mjs - FALLING TOWER 3 ART page captures: each chase room, the core, the pillars and his poses, rendered with BK.step at 2x.
 // usage: node tools/ft3art-page-shots.mjs [outdir]   (default scratch/lane-reports ft3art-*.png written by the caller). Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';

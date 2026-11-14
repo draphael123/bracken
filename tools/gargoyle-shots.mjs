@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-shots.mjs <tag> — the real page, captured: THE GATE GARGOYLE's fight as the player sees it (the view he wakes into,
    his dive's shadow on your slab, and his opening - hanging from an edge before the 2026-09-25 rework, crashed and stunned on the
    garden floor after it). Writes work/gargoyle/<tag>-<name>.png. Not in the suite. Run it before a change and after it. */

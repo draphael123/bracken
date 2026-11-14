@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/wicker-queen.mjs - THE WICKER QUEEN, the Harvest Fair's boss (claude/fair3, L3), ON HER CAROUSEL (claude/fairboss). src/wicker-queen.js is the fight,
 // src/wicker-carousel.js the ride, docs/briefs/harvest-fair.md the brief.
 // PURE (src/wicker-queen.js and src/wicker-carousel.js, no page):

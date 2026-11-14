@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fair-route.mjs - THE HARVEST FAIR's ROUTE PILOT (claude/fairlevel): one hero, real keys, no god mode, the foes gone (this is geometry, not a fight), walks the level from the gate to
 // the door of the Maypole Green by each road, and by the rides. Not "can the bot fight": "is every climb, hop, ride and slide a hero can be asked to do one a hero can do".
 //   node tools/fair-route.mjs [low|high|strike|all] [hero]     default all, knight. Prints each leg; exits 1 if a road does not reach the door (x 619, on the road).

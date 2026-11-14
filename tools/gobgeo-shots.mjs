@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gobgeo-shots.mjs [outDir] - THE GOBLIN GEOMANCER AND HIS REFLECTED ROCKS, PHOTOGRAPHED IN THE REAL PAGE (claude/gobgeo): the page's own buffer at 2x to
    work/claude/shots/gobgeo/ (or outDir) plus a contact sheet. One headless page (tools/cdp.mjs: it kills its own browser). Not in the suite.
    Each reflect use: the hero stands where the room puts him, the Geomancer tells and throws, and when his rock reaches the hero it is SENT BACK (the hands' own

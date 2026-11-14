@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/walk-curve.mjs - THE WALKER'S CURVE TABLE (claude/curvec2, brief-curvefix-1018 2f / lane C2). No browser.
    tools/level-walk.mjs plays a level as a campaign-level player; this folds its rows (one per level x hero x seed) into docs/walk-curve.json: per level and per hero the
    deaths a first run and the mean hp at a shrine arrival, read against the BY-ACT target (level-walk.mjs TARGET_BY_ACT: deaths 0.5-1.5 / 1-2 / 1.5-2.5 / 2-3 / 2.5-3.5, arrival 65/60/55/50/45%).

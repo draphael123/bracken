@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/courtyard.mjs — THE WARDED COURTYARD and THE COMMON WHELP'S FIREBALL (claude/courtyard; Daniel, 2026-09-28):
      1. "REPLACE section 1 of THE MAGE'S FOLLY (the hedge maze, topiary, gate) with THE WARDED COURTYARD, ~60-70 columns ... a stone
         courtyard at the tower's foot. It TEACHES THE TOWER'S RULE OUTDOORS - strike a rune and the paving slabs slide (a path, a bridge,

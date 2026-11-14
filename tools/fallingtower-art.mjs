@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fallingtower-art.mjs — THE FALLING TOWER's own art rendered in Node, no browser (tools/node-canvas.mjs): the seven room back
 // walls (src/redraw/fallen_tower.js), the tower's stone and slate ledge, and THE SEXTON's sheet (src/redraw/sexton.js), into
 // docs/fallingtower/art/. Node renders are honest about construction and not about light (docs/AGENT-HANDOFF.md): the page captures

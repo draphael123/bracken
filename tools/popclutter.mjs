@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/popclutter.mjs — HOW MUCH FLOATS OVER A FIGHT, AND WHAT SITS ON TOP OF A TELL?
 // The yellow ! and the red !! are the most important marks in a fight, and they are the same floating number() text as
 // the damage. This runs real fights headless (BK.bossLab's bot in a boss room, and a small bot in the ambush rooms) and,

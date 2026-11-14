@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hnlook-shift.mjs - HOW FAR EACH LAYER MOVES PER FRAME while the hero walks (claude/hnlook): for a few screen bands, the best horizontal shift between frame t and t+1 (SAD) against the camera's own step.
 //   node tools/hnlook-shift.mjs [col=177] [row=43] [frames=40] [hero=geomancer]   -> a table; a band that moves != the camera is a layer that swims (parallax) or shimmers (sub-pixel)
 import { openPage } from './cdp.mjs';

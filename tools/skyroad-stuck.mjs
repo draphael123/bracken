@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/skyroad-stuck.mjs - THE SKY ROAD's DEAD-AIR TRAPS (claude/skyroad2; Daniel 10-08, a photo: "I got stuck here in the Sky Road" - the knight on a
 // disc-road pinnacle over the cloud sea, the disc's sun gone off it). THE CAUSE: the cloud sea throws you back to "the last solid footing you stood on" -
 // and a gated pinnacle whose air is dead WAS that footing, so a drop off it threw you straight back onto it, for ever. Every hero, both ways.

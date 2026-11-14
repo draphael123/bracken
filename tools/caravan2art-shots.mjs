@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan2art-shots.mjs - THE SUNKEN CARAVAN's art pass in the real page: `node tools/caravan2art-shots.mjs name:x:y[:sim] ...` (x, y in tiles; y 'g' = the ground under x).
 // Not in the suite: pictures are for eyes. SHOTS=work/claude/caravan2art/after (default). 640x360, 2x.
 import { openPage, ROOT } from './cdp.mjs';

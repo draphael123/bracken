@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/level-complete.mjs - THE LEVEL-COMPLETE CARD (claude/uiscreens, 2026-10-06). It was a receipt. The check asks for what a player is owed on it:
 //   1. THE TALLY     time, gold, foes / blocks / dodges, silver found (n/3) and the quest (done / open), deaths.
 //   2. THE COMPARE   a first clear says FIRST CLEAR; a faster run than the saved best says NEW BEST -m:ss; a slower one says BEST m:ss (the best it did not beat).

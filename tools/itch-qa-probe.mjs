@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-probe.mjs - dev probe for the QA sweep: load the embed, run the body of an async function from argv[2] in the game frame. */
 import { startSession, freeMB } from './itch-qa-lib.mjs';
 import { readFileSync } from 'node:fs';

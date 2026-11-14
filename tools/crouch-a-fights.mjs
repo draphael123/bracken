@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/crouch-a-fights.mjs [label] - THE CROUCH TWISTS, PART A in plain fights (claude/croucha): BK.fightLab in BRACKEN WOOD, the knight,
    the warden and the freebooter against the wood's shieldbearer, badger (a yellow charge) and sprig, one fight each, the dice pinned,
    health put back each frame (keepAlive). Prints one row a fight and the crouch counters. Not in the suite. */

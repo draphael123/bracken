@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/mark-integrity.mjs - EVERY MARK BELONGS TO A REAL MOVE (claude/mothermarks, 2026-10-07).
 // Daniel, on the Mother Cap: "the mother root has red and yellow hitboxes at points, but there's actually no animation or nothing that
 // comes out." Her marks were in the table and her blows were real, but no windup moved her body and her zone blows were drawn as a box.

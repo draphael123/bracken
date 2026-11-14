@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lethal-water.mjs - LETHAL WATER MUST READ AS LETHAL (claude/towpathchurch, Daniel 10-16, live photo of the Towpath: "the lock water looks like the water you swim").
 // A pool you can neither swim nor wade (no `swim`, not `shallow`) bites or drowns whoever falls in (main.js: the inPool pass - waterHurts hands you back at ~27% elsewhere
 // DROWNED). Such a pool must LOOK like it: src/main.js drawDeadWater draws it near-black under a pale fog-skin, with churning froth, sucking eddies, drowned wreckage and a

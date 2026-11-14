@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/sporewood2art-pairs.mjs - BEFORE / AFTER sheets for the lane report (claude/sporewood2art): each row is the greybox's still (left, work/claude/lane-done/sporewood2-<tag>.png) beside the art
    pass's (right, sporewood2art-<tag>.png), half size. Writes work/claude/lane-done/sporewood2art-pairs-<name>.png.   PORT=<port> node tools/sporewood2art-pairs.mjs */
 import { openPage } from './cdp.mjs';

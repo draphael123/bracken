@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/colossus-art-cost.mjs - ms per drawn frame in THE GLASS COLOSSUS's arena (claude/colart; the art pass's mobile-perf spot, not in the suite).
 //   usage: PORT=8899 node tools/colossus-art-cost.mjs [cpu-throttle=4]    -> ms per BK.step(1) (sim + draw) for the idle, walk, gaze and lunge moments, the CPU throttled like tools/mobile-perf.mjs
 import { openPage } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/level-jump.mjs - THE PLAYTEST LEVEL JUMP (claude/theatre, THEATRE2; docs/PLAYTEST.md): ?level=<id>[&hero=<id>] starts any level from its own
 // entrance, and never writes a save. In the page, with a real save in storage: the URL lands in play on that level at its START with the hero asked for
 // (and at full health, no god mode); a bad id leaves the title alone; and after the level is run to its gate the save is byte-identical.

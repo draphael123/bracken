@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/reefmaw-land.mjs - THE REEFMAW'S THIRD PHASE, ON LAND (docs/briefs/reef-longer.md, Daniel 2026-09-25), proved in the page:
      1. THE TIDE GOES OUT, TOLD FIRST (C1): under a third he smashes the reef (THE REEF BREAKS) while the water is still up, the water
         then drains back down to his holes, and he hauls himself out onto the dry reef and crawls

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/redgorge-art-shots.mjs - THE RED GORGE's art-pass pictures (claude/redgorge-art). Not in the suite. god mode, a picture not a playtest.
 //   usage: node tools/redgorge-art-shots.mjs <before|after>   -> work/claude/redgorge-art/<before|after>/*.png (2x frames from the game's own canvas)
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/itch-qa-lib.mjs - shared harness for the itch QA sweep (claude/qasweep; headless, ONE browser per run; not in the suite).
    Serves dist-itch/site on 127.0.0.1 (the game) and a stand-in itch page on localhost (cross-site embed), launches ONE headless Chrome/Edge over CDP,
    installs hooks before any page script runs: an AudioContext recorder (__acs) and an emulated gamepad (__pad, a standard-mapping Xbox pad). */

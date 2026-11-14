@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/lance5art-shots.mjs - THE QUEEN'S LANCE 5 ART's pictures (claude/lance5art). Not in the suite. A picture, not a playtest: the storm, the teeth and the updraft,
 // the gust, the skewer's column, the pivot, the torn pennant, tossed / buffeted. usage: node tools/lance5art-shots.mjs <before|after>  -> scratch/lane-reports/lance5art-<tag>-*.png (2x of the game's canvas)
 import { openPage, ROOT } from './cdp.mjs';

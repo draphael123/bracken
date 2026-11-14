@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/raft-recall.mjs - RAFT RECALL (claude/frogking2; scratch/brief-playtest-1021b.md item 2, Daniel 10-21: "the raft call-back must be INSTANT
    when you die mid-section - the raft is back at the start / your shrine side right away"). Page check. For EVERY raft in EVERY level (the marsh's
    grove raft and ferry, its two current rafts in the reed run and at the boom, the Long Water's free ferry), it fails when:

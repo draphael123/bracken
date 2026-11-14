@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/mobile-profile.mjs - WHERE A PHONE'S FRAME GOES (claude/mobile2). The same emulated phone as tools/mobile-perf.mjs, a CPU profile
 // (CDP Profiler) of a few seconds of one scene, the top functions by SELF time. A tool for a lane, not a check.
 //   MP_SCENE=title|map|<level id> MP_CPU=4 node tools/mobile-profile.mjs

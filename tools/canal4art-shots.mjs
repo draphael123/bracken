@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canal4art-shots.mjs - THE LEGGING TUNNEL's and JENNY's RAFT's art-pass pictures (claude/canal4art). Not in the suite. god mode: a picture, not a playtest.
 //   usage: PORT=8662 node tools/canal4art-shots.mjs <before|after>   -> work/claude/lane-done/canal4art/<tag>/*.png (2x frames from the game's own canvas)
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnest-fog.mjs - THE FOG DROPS THE HORNET QUEEN, and the nest's new resin drips, in the page (claude/hornetsnest2; scratch/plan-hornetsnest2-1102.md A + B).
 //   A1a  a THROWN pot that breaks on her in 'aim' at hover height -> mode dazed (grounded) within 0.3 s, then she FALLS to the floor; the stun (3.0 s) starts ON LANDING
 //   A1b  her BODY in a fog cloud for 0.25 s (any flying mode) grounds her

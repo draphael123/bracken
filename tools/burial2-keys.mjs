@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/burial2-keys.mjs — THE WHOLE ROAD WITH REAL KEYS, NO GOD MODE (claude/burial2, 2026-09-26; the lesson of THE DEEP, which shipped a
    softlock the reach model missed). Not a bot: a script of what a player presses, start to the lair's door, for every hero - hold right,
    jump at each pit's edge, drop down the rotten floors, walk gallery two west, swim the black water, climb onto the east pier, drop into

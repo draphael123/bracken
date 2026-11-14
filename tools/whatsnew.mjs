@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/whatsnew.mjs - WHAT'S NEW ON THE TITLE MENU (claude/whatsnew, 2026-10-11).
 //   DATA   docs/updates.json is valid: newest first, each entry a date + 3-6 short player lines (no branch names), a batch number.
 //   ROW    the title board has a WHAT'S NEW row showing the newest entry's date, with a dot until it is opened (seen-date in localStorage).

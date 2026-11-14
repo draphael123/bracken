@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3tune-sheet.mjs <stillsDir> <outPng> - lays gq3tune-shots.mjs's stills into one labelled contact sheet (one headless page). Not in the suite. */
 import { openPage } from './cdp.mjs';
 import { readFileSync, writeFileSync } from 'fs';

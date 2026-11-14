@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fair-pilot.mjs - THE HARVEST FAIR AT LEVEL 1 WITH NO ABILITIES (claude/fairfix2; Daniel 2026-10-01: "INCREDIBLY EASY at level 1 with no abilities").
 // A human-ish hand, not god mode: a fresh level-1 hero (no xp, no skills, no loadout, no items), real keys, the foes ON. It walks the low road gate to door
 // with the route pilot's legs (tools/fair-route.mjs) and fights like a plain player: it turns to the nearest foe in arm's reach (a quarter-second to react),

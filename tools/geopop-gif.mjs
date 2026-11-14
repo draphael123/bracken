@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geopop-gif.mjs - THE GEOMANCER POPULARITY PASS AS A GIF (claude/geopop, Daniel 11-03): in the Arena Yard's straw row, three combos -> three knee stones (the third jab plants) -> DOWN+C: DETONATE.
 //   node tools/geopop-gif.mjs <outdir> [name=yard-run]   -> <outdir>/<name>.gif   (one headless browser, closed at the end; a crop of the game buffer every 3 sim frames, x4; the waits between combos are jump-cut)
 import { writeFileSync, mkdirSync } from 'node:fs';

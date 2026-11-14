@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/order-knights.mjs - THE ROAD WARDENS DOES WHAT THE BRIEF SAYS (claude/order, scratch/brief-elite-order.md; src/order-chapters.js,
 // src/order-knights.js).
 //   table   (node) every ORDER_AT row names a real body, chapter, twist and built signature moves; one affix at most, and it fits the level;

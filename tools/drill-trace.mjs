@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 import { openPage } from './cdp.mjs';
 import { fightJs } from './boss-run.mjs';
 const h = process.argv[2] || 'knight', s = +(process.argv[3] || 1);

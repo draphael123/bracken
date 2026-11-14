@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/order-shots.mjs - THE ROAD WARDENS, LOOKED AT (claude/order): the three exams with their knight in place (his gate and its banner),
 // and a sheet of every body's frames in each built chapter's skin. Writes work/claude/order/<tag>-*.png for the Sonnet art lane.
 //   node tools/order-shots.mjs [tag]      (PORT from the environment)

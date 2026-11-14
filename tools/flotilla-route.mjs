@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/flotilla-route.mjs - EVERY HERO ROUTES THE FLOTILLA'S MOVING WAYS WITH BASE MOVEMENT (claude/flotilla2; design standard A7).
    The reach model cannot ride a mover and the level walker (tools/level-walk.mjs) only follows the reach model's route, which swims the bilge and the harbour
    under THE GALLEY HULL's benches and THE RIGGING RUN's yards. So this plays each chain of them with a player's inputs, per hero, in the page: stand at the

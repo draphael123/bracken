@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/waspart-sheet.mjs - THE WASP AND THE HORNET, every frame at 8x (claude/waspart). TAG=before|after OUT=<png>  (BEFORE = the old bakers, from git, via OLD=1 which imports the old files)
 import { openPage, ROOT } from './cdp.mjs';
 import { writeFileSync } from 'fs';

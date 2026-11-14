@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geofix-shots.mjs - THE GEOFIX PROOF SHOTS (claude/geofix, Daniel 11-04). One headless browser, closed at the end.
 //   node tools/geofix-shots.mjs <outdir> <mode>      mode: knee | collapse | recall | tusker
 //   knee      plants a knee stone, walks the Geomancer through it (the stone is her own: no obstruction), a foe bumps it; frame strip + JSON of x travel

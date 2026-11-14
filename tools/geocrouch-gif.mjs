@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/geocrouch-gif.mjs - THE UPPERCUT COMBO and STONE SKIN TAKING HITS AS GIFS (claude/geocrouch, Daniel 11-03), as the game draws them.
 //   node tools/geocrouch-gif.mjs <outdir> [which=uppercut,skin]   -> <outdir>/<which>.gif   (one headless browser, closed at the end; a crop of the game buffer every 2 sim frames, x5)
 import { writeFileSync, mkdirSync } from 'node:fs';

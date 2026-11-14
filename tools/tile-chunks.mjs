@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/tile-chunks.mjs - THE TILE CHUNKS DRAW WHAT THE PER-TILE LOOP DREW (claude/kingsfix).
 // src/main.js drawTileChunks() blits 8x8-tile chunk canvases instead of ~550 sixteen-pixel drawImage calls. This loads levels, parks the hero at several spots (normal view and the
 // boss view, which zooms out to 640x360), draws frames with BK.tileChunks(false) (the per-tile path) and with it on, and compares the display canvas pixel for pixel. A frame has

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/weak-bosses.mjs — THE WEAK BOSSES GET CAUSED OPENINGS (claude/weakboss, Daniel's HANDOFF item 15: "the opening arrives on its
    own, they are harmless, phase 2 is just faster"). In the page, for each of the three minis, it asks:
    THE LAMPREEVE (the Lamplit Street)

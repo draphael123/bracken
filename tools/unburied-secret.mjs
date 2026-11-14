@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/unburied-secret.mjs - THE UNBURIED FIELD IS A SECRET (claude/unburiedsecret, Daniel 10-08).
 // Three LOST BANNERS (one hidden off the road in THE HEXED FIELDS, THE BURIAL CAVERNS and THE WITCHLIGHT STAIR) open it; the silver-medal rule is gone.
 //  1. GEOMETRY (node, no page): each banner is one ent in its level, stands on footing the reach fill (the slowest hero's moves, no god mode) gets to from the

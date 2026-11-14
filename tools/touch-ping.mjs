@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/touch-ping.mjs - THE PING PILL ON A PHONE (claude/coopproof): emulated landscape phone, a 2-seat wood. The PING button appears only in a party,
    fits the safe area, overlaps no other button or the stick zone, in both presets, either hand, at the three sizes, beside the ranger's stance
    button and under a notch; a real touch on it marks (BK.pings) and a solo wood has no pill. PORT=8789 node tools/touch-ping.mjs */

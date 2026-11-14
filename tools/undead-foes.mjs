@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/undead-foes.mjs — THE TWO NEW DEAD, AT RUNTIME.
    The Burial Caverns had one creature doing 70% of the work (forty-four identical zombies) and the Falling Tower had no
    undead at all in a dead wizard's tower: docs/audit-new-levels-0920.md. The GRAVE HUSK is the caverns' second dead man

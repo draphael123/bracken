@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/oreroadminor-boss-shots.mjs - THE WINCHMASTER's ORE ARMOUR and his SEND tell, close up (lane claude/oreroadminor, Daniel 10-26: "redraw the ore armour so it sits on his body as real armour, cracks + plates falling as it breaks;
 // the launched platform rush ~30% slower with a longer, clearer tell"). usage: PORT=6604 node tools/oreroadminor-boss-shots.mjs <tag> [before]
 //   pictures to work/oreroadminor/<tag>/  ('before' takes only the armoured + plating frames, the ones master has)

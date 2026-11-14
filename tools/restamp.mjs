@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/restamp.mjs - ONE COMMAND TO REFRESH EVERY PER-LEVEL STAMP A LEVEL EDIT MAKES STALE (claude/restamp, 11-02).
    A level edit changes its levelHash (tools/level-quality.mjs), and every row stamped with the old hash goes stale and reds a check. The stamped rows are:
      pilot  docs/level1-pilot.json   tools/level1-pilot.mjs <id> --write     (read by level-quality 'pilot')

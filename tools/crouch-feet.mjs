@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crouch-feet.mjs - EVERY CROUCH FRAME STANDS ON THE FLOOR. A hero's older crouch frames were drawn on the standing legs cut
 // down to two rows and never moved down with the body (legsDy 0 against a body 3 px lower), so he ducked with his boots ~3 px above
 // the ground. The bakers (knightFrame, pyroFrame in src/chars.js) record the row the boots stand on (canvas.feet), which is exact

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/canalart-shots.mjs - THE FOG CANAL's art-pass pictures (claude/canalart). Not in the suite. god mode, a picture not a playtest.
 //   usage: node tools/canalart-shots.mjs <before|after>   -> work/claude/canalart/<before|after>/*.png (2x frames from the game's own canvas)
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/knight-kit.mjs - KNIGHTKIT (claude/knightkit, Daniel 11-05): (1) the FULL CHARGE of the heavy cut (0.9 s) adds a ground-shaker both ways (QUAKE: 3 tiles, small foes
    go down, a boss/mini is never thrown, costs half again, 2.5 s cooldown) and (2) DOUBLE-TAP C is the SHIELD BASH (the first tap still blocks; a held C never counts; no double
    fire; UP+C is unchanged). Real page, real input, one headless browser. Reuses the knight-chain harness. ONLY=quake,dtap,regress */

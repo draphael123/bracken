@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fair-shots.mjs - THE HARVEST FAIR's pictures (claude/fairlevel: the vertical rebuild), one per set piece, rendered with BK.step and saved at 2x into work/claude/fairlevel/<tag>/.
 // God mode, the hero teleported to each spot. Not in the suite: pictures are for eyes.   usage: node tools/fair-shots.mjs [tag] [only,names]
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-run.mjs - THE BOSS BOT'S FIGHT RUNNER, shared by tools/boss-rates.mjs and tools/bot-calibrate.mjs (claude/bot2).
    runFights(fights, {jobs, secs, onRow}) plays each {r: 'level[:mini]', way: 'practiced'|'first'|'built', h, s, profile} fight in a fresh page
    at the boss's campaign level (tools/boss-level.mjs; --level=N overrides), NORMAL health, and returns a row per fight. `profile` is a name in

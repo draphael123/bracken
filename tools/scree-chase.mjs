@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/scree-chase.mjs - THE ROCKSLIDE CHASE on the Scree Path (claude/scree2, src/scree-chase.js; Daniel 10-08: "a LONGER section fleeing the rockslide").
 //   NODE   the built level hands src/chase.js ONE chase (the old once-a-save L.slide is gone); the engine's lint passes it with the level's own shrines (one
 //          within 15 tiles before the start line); every surge is warned; it HURTS on contact (never an outright kill: the pits kill) and is RE-ARMED by a

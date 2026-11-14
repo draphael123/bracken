@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/sealed-pyramid-stuck.mjs - THE SEALED PYRAMID's GLINT AND 10 s NUDGE, IN THE PAGE (claude/sealedpyramid). tools/stuck.mjs runtime holds the shared guide's
 // spots (src/stuck-spots.js STUCK); a level whose hands run their own guide (STUCK_HANDS.sealedpyramid, src/sealed-pyramid-hands.js stall) is held here: for every
 // ROUTE need (the robbers' hole, the first counterweight, the weighed pair, the great stone's plate, the second pit, the last shaft) a hero is stood still at a stall

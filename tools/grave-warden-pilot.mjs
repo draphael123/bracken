@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/grave-warden-pilot.mjs [passes=4] — THE GRAVE WARDEN (the Burial Caverns' mini) at NORMAL health: all six heroes, `passes` seeded passes each (four is
    twenty-four fights, over the brief's twenty-one). One life per fight, no refills: what the bot loses it keeps. Prints a row
    per fight (outcome, seconds, health left, how often he OVERHEATED, which of his attacks did the damage) and the summary the

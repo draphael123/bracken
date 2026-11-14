@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bc4art-floors.mjs <x> ... : the floor rows (first solid under open air from row 24 down) of columns in the buried city. Not in the suite.
 import { openPage } from './cdp.mjs';
 const xs = process.argv.slice(2).map(Number); const pg = await openPage({ audio: false, fonts: false });

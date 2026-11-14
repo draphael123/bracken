@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/bog-stills150.mjs - stills + a plank-throw reach test for the Bog Troll (claude/bosstune150; a capture tool, not a check).
 // usage: node tools/bog-stills150.mjs <outdir>
 import { openPage } from './cdp.mjs';

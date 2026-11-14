@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/deep-walk.mjs — THE DEEP, WALKED AND LOOKED AT (rule S8; docs/briefs/deep-rework-2.md). Not in the suite.
    The playtest bot's own walker (src/playtest.js makeBot) on the real page, from the shelf to the Diving Bell's door, no god mode,
    with what it cost written down PER SECTION (the level's own named zones, L.deep.zones): blows taken, health lost, deaths, least

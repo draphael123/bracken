@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/desert-ledge-art.mjs — THE DESERT DOES NOT STAND ON FELLED LOGS.
 //
 // Daniel, 2026-09-26, of THE SUNKEN CARAVAN: "it's good but uses wood platforms at a point. It should use sand platforms

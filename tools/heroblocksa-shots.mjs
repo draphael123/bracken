@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/heroblocksa-shots.mjs - THE HOOK CATCH + THE BLOOD KNIGHT'S BLOCK in the real page, for eyes (claude/heroblocksa). Each event is a CONTACT STRIP of frames (left to right, 3 frames apart
 // unless said): the perfect Hook Catch on a blow (snag), the arrow FLUNG BACK, the late catch + the heavy breaking through; the Blood Knight's held ward taking three blows (debt flash, notches, glow),
 // the drunk blade's heavy, and the CRIMSON PARRY.

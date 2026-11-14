@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/ending.mjs - THE END OF THE ROAD, FOR NOW (claude/shipfix, Daniel 10-11; src/ending.js, main.js drawVictory).
  *   A solo player's last level used to be a win card and the map; the co-op VICTORY card fired in the MIDDLE of the road, at THE MAGE'S FOLLY ('THE ARCHMAGE IS DOWN'),
  *   with the Falling Tower and the whole desert still ahead. Now:

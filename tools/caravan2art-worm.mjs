@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/caravan2art-worm.mjs - THE DUNE WORM's art poses in the real page (claude/caravan2art): wakes him in the hollow, then FORCES the machine into each pose and takes a
 // 640x360 picture. Not in the suite: pictures are for eyes. usage: node tools/caravan2art-worm.mjs [mode ...]  (SHOTS=work/claude/caravan2art/worm)
 import { openPage, ROOT } from './cdp.mjs';

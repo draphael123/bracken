@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // Run the unchanged check suite, keep its complete output, and print its release-parser result lines.
 // Example: node tools/release-suite.mjs --jobs=3 --max-browsers=1 --log=work/release.log
 import { spawn } from 'node:child_process';

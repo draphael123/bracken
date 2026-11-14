@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pose-sheet.mjs — THE KNIGHT'S AND THE WARDEN'S ABILITIES, CAUGHT MID-MOVE. Each active is bought alone and pressed
 // on a flat floor in the real page, and the drawn frame (BK.step renders it) is cropped round the hero at three moments after
 // the press; then the jump - take-off, rising, the top, falling - and the landing, three frames of it. One row a move.

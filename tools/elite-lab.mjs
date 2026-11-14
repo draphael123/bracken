@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/elite-lab.mjs - EVERY ELITE AGAINST THE MASH BOT AND THE HUMAN BOT (claude/elites2).
 // The brief's gate: the mash bot must LOSE to every elite (dies, or the elite still stands after the fight's time), and the human-speed bot
 // should win about 75-85% (harder than a common foe, easier than a boss); a fight runs 20-45 s. Each elite kind is fought where its first

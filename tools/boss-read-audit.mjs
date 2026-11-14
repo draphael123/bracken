@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/boss-read-audit.mjs - THE BOSS-READ AUDIT (claude/bot2; Daniel 10-05, design-standard B10-B13; a measuring tool, not a check).
    For each boss: the standard bot (src/bot-profile.js) fights it with knight, warden and pyro at its campaign level, health refilled, and a
    watcher (bossLab opts.observe) reads the real state every frame:

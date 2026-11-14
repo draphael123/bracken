@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/rootway-probe.mjs - THE ROOTWAY in the page, quickly (claude/rootway, the greybox). A smoke test of the rule, its machines and the boss, not a playtest:
 //   ?level=rootway lands in play at its entrance (no god mode); a bud grows under a hero who stops on it and sets him level with the root wall; a blow on a
 //   cleat drops its span across the pit (one-way cells, a bridge) and a cage onto its stump (a step, the scouts under it crushed); a hunter on his hoist

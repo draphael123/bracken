@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/coop-flasks.mjs - CO-OP BALANCE: FLASKS FOR EVERY SEAT + THE SPLIT SCALE (claude/coopbalance, Daniel 10-21 interview item 12 + the numbers).
    pure   the tables: foes x2 / x2.6 / x3.2 by seats, the blow on each hero x1.25 / x1.38 / x1.5 (measured), an AI partial, solo untouched
    page   a wood with TWO human seats and then THREE: every seat starts with its own save's flask count (a guest the host's), each can DRINK (a held

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/palisadeart-shots.mjs [only,tags] - real-page stills of THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadeart: the art pass, same shots as the greybox's) for the lane report and the art lane:
    each named area at its point of use, a prop before (its result ghosted) and after, the stake-setter's wall, and the beast's every move at its windup / release (B16) and STUCK.
    Headless Chrome through tools/cdp.mjs, the knight in god mode, the level reloaded before each shot. Writes work/claude/lane-done/palisadewood-<tag>.png (640x360).

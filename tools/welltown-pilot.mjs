@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/welltown-pilot.mjs [salts=1] [heroes=knight,warden,pyro] [--mini] - THE CISTERN QUEEN (src/cistern-queen.js; or with --mini THE GANG LEADER,
 // src/gang-leader.js) at NORMAL health, one pass per salt (bossLab pins its dice per row). One life per fight, no refills; the bot is the HUMAN one
 // (cistern-queen.js / gang-leader.js PLAN: a quarter-second late, it misreads some tells and lets some openings go), the hero at the level's campaign

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gq3art-shots.mjs [outDir] - THE GQ3 ART PHOTOGRAPHED IN THE REAL PAGE (claude/gq3art): the page's own 320x180 buffer at 2x to work/claude/shots/gq3art/ (or outDir) plus a contact sheet.
    GQ3_GROUPS=princess,stair,geode,tower,roof,flee picks parts. ONE headless page (>= 1500 MB free; stop if scratch\GATE-RUNNING.flag exists). Not in the suite. */
 import { openPage, ROOT } from './cdp.mjs';

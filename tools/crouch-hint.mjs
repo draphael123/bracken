@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/crouch-hint.mjs - THE FIRST-CROUCH HINT (claude/crouchfix, src/crouch-hint.js): the first time each hero crouches, one short line names
 // his twist. On the Stockade's flat floor, fresh save, this fails when:
 //   - a hero stood or walking is told anything, or crouching 0.1 s (a stumble) is

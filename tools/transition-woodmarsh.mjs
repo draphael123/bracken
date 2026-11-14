@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/transition-woodmarsh.mjs - THE FIRST LEVEL TRANSITION, pinned (claude/transwm; src/transitions.js + transitions-art.js; brief-transition-woodmarsh-1018.md).
    OLD TUSKER falls -> the clear is credited -> the way opens -> the heroes walk out -> the ferry carries them -> fade -> MARSH begins with them stepping off.
      node tools/transition-woodmarsh.mjs            node-only: the table, the timeline (skip, walk cap, policy), the ferry scene's geometry, the source wiring

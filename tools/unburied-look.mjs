@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/unburied-look.mjs - THE UNBURIED FIELD'S PICTURE, MEASURED (claude/unburiedart, the ten look checks of docs/briefs: "a siege that never ended").
    WHY. tools/unburied.mjs reads the level's grid and rules; footing-art reads only the TILE layer, so an overpaint passes it. None of them can say
    "this screen looks like a siege". These ten run in the page (a real Chrome, the real frame via BK.look) and test the picture itself:

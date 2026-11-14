@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/uiscreens-shots.mjs - UI POLISH B (claude/uiscreens): stills of the opening + results screens, desktop or phone.
 //   PORT=8650 node tools/uiscreens-shots.mjs before|after [desktop|phone] [sections,comma]
 // sections: boot, title, intro, heropick, map, death, win. Writes work/claude/lane-done/uiscreens/<tag>-<profile>-<name>.png

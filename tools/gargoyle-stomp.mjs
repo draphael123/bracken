@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/gargoyle-stomp.mjs — THE GATE GARGOYLE, ROUND THREE, and the battlements he rules (Daniel's design, 2026-09-27:
    docs/briefs/gargoyle-spikes.md). "FIRE BREATH attacks. The arena floor is SPIKES. MANY MORE platforms. He DIVES at the player; if he
    crashes down THROUGH a platform he lands stunned on the spikes. Broken platforms REGROW after a few seconds. He is INVULNERABLE except

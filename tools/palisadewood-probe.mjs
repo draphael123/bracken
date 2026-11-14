@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/palisadewood-probe.mjs - THE PALISADE WOOD in the page, quickly (claude/palisadewood, the greybox). A smoke test of the rule, its machines, the stake-setter and the boss,
 // not a playtest: ?level=palisadewood lands in play (no god mode); a real blow on each prop brings down what it holds (the ramps' steps are laid, the towers' and the
 // gatehouse scaffold's bridges are laid, the crews come down hurt, the stake stacks drop and roll); a death keeps the ramps and bridges; a stake-setter plants a wall and

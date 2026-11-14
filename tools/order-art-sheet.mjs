@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/order-art-sheet.mjs - THE ROAD WARDENS' ART, LOOKED AT (claude/orderart): bakes the painter's sets in a bare page (no game boot) and writes
 //   work/claude/shots/orderart/sheet.png   4 bodies x 3 built chapters x 12 frames (x3)
 //   work/claude/shots/orderart/skins.png   every body in all ten chapters' palettes, frame 2 and 3

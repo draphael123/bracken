@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/redgorge-matprobe.mjs - THE RAPTOR MATRIARCH's fight, read from the inside (claude/redgorgerework; a measuring tool, not a check).
    Plays boss-rates' practiced fight (the same page, profile, campaign level and flasks: tools/boss-run.mjs fightJs) and prints, per fight, her own
    counters at the end (src/raptor-matriarch.js S.n: sluice stuns, lures, wasted waves, basket knock-downs, phase times...).

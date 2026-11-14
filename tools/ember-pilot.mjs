@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/ember-pilot.mjs [label] - THE FLAME WARD's pilot (claude/pyrokit; it was THE EMBER WARD's, claude/ember-ward): the PYROMANCER alone, one pinned seed, run BEFORE and
    AFTER a change to her ward or to the bot's use of it:
      1. STORMHOLD's QUEEN'S LANCE through BK.bossLab (src/lab.js), the duck pilot's settings (refill health, a 150 s cap, salt duck-1)

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/folly-library.mjs — THE RUNE LIBRARY (claude/follylib; Daniel, 2026-09-29): "the Mage's Folly should be a bit LONGER: add ~150 columns as a
    RUNE LIBRARY between the grounds/courtyard and the Archmage's tower - sliding BOOKCASE platforms; a RUNE-LOCK that teaches the boss's rune trick
    (in his fight you strike runes to break his ward, one sits on a book stack you knock down with its foot rune, round 3 reseals them in 4 s): a door

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/juice.mjs — THE JUICE TABLE (claude/juice, 2026-09-29; src/juice.js). Every landed blow, every blow the hero takes and every shake goes through
 // ONE table, so the weight of a hit is the same for every hero and foe. Proved on the table AND in the page:
 //   - hit-stop fires on a LANDED blow only (a 0-damage glance, and a whiff, freeze nothing) and SCALES with weight: light < heavy, a boss opening a little more

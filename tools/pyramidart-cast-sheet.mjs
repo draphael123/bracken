@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/pyramidart-cast-sheet.mjs - THE SEALED PYRAMID's cast, every frame, on one sheet (claude/pyramidart): `PORT=8872 node tools/spart-cast-sheet.mjs [key ...]` -> work/claude/shots/pyramidart/cast-<key>.png. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

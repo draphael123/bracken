@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 process.env.BLOW_CENSUS='1';
 const { runFights } = await import('./boss-run.mjs');
 const hero=process.argv[2]||'knight', n=+process.argv[3]||4; const f=[];for(let s=1;s<=n;s++)f.push({r:'unburied',way:'practiced',h:hero,s,profile:'human',flasks:'kit'});

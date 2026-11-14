@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/minecartmap3-shots.mjs - THE DEEP RAILS' cave-in rubble and cart speedometer, zoomed (claude/minecartmap). Not in the suite.
 //   usage: PORT=8738 node tools/minecartmap3-shots.mjs <tag>  -> work/claude/minecart-art/<tag>/{crumble,speedo-*}.png
 import { openPage, ROOT } from './cdp.mjs';

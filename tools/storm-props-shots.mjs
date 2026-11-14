@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/storm-props-shots.mjs - a picture of every lamp, brazier, torch, bell and checkpoint on THE LONG BRIDGE and the road to it, as DRAWN (claude/lance6, Daniel 11-04: floating lamps/braziers).
 // Not in the suite. usage: PORT=8652 node tools/storm-props-shots.mjs <prefix> [outdir] [x0-x1] -> <outdir>/<prefix>-<kind>-<x>.png
 import { openPage } from './cdp.mjs';

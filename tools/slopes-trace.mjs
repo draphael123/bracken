@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/slopes-trace.mjs — THE EQUIVALENCE CHECK IN THE REAL PAGE (docs/slopes-integration.md §8.3).
 //
 // WHY THIS EXISTS. Phase 2 replaces `moveBody` — the one function under ~138 call sites — with a wrapper that picks

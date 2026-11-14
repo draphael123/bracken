@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/sweep-pages.mjs - THE SHARED FORM OF A WHOLE-GAME SWEEP (claude/redcleanup, 10-26; scratch/brief-redcleanup-1026.md part 2).
 // A sweep that drives every level inside ONE page for ten minutes or more is a sweep that hangs: the page keeps every level's canvases, timers and
 // caches, memguard (scratch/memguard.ps1) kills a headless Chrome when the PC runs low, and the tool then sits on Runtime.evaluate for its whole

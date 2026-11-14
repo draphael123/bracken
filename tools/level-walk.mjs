@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/level-walk.mjs - THE CAMPAIGN-LEVEL LEVEL WALKER (claude/walker, Daniel 10-07: "levels are still incredibly easy"; scratch/audit-healing.md sec.2).
    The level-1 pilot (tools/level1-pilot.mjs) walks a level with a FRESH SAVE (level 0, no skills, no gear, no tonics) and LIFTS the bot past
    what it cannot work. A player arrives with the campaign behind him. This plays a whole level as that player:

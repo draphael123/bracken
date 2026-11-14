@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-style.mjs (claude/maker) - THE LEVEL STYLE, THE ONE SLOPE PIECE AND THE TABS BY ROLE.
    1. STYLE: every plain ground cell wears the level's style (in the editor and in play); a SHIFT-stamped cell keeps its own
       when the style changes; save/load keeps the style.

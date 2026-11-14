@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/rookery2-shots.mjs [only,tags] - real-page stills of THE ROOKERY 2 greybox (claude/rookery2, Daniel 10-27): the anchored ledges and roosts, the rock-and-guano caps,
    THE GALE HARPY in her tell, a RIDE in the air, and the SHRIEK SISTERS' three bars, the ride to the perch (CORNERED) and the PHASE 2 survivor. Headless Chrome through
    tools/cdp.mjs, the knight in god mode. Not in the suite. OUT=<dir> (default work/claude/shots/rookery2)   PORT=<port> node tools/rookery2-shots.mjs */

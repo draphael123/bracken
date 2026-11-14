@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/ft3art-page-poses.mjs - FALLING TOWER 3 ART page captures: his poses (fall, crash, rise, sink, tear, landing), the pillars' states, the core. Not in the suite.
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/page-recycle-selftest.mjs - NO BROWSER (claude/botmem): the recycler's counting, its one labelled rerun, INFRA-KILLED, and infra-kill.mjs's kill-log reader.
 import { writeFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';

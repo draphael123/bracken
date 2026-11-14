@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-paint.mjs (claude/maker) - PAINTING IN THE MAKER behaves (Daniel 2026-11-09: "why do we only have one tile
    texture, why do slopes not load, and why does the terrain move oddly when I try placing things").
    1. PAINTING A TILE MOVES ONLY ITS OWN DRESSING: the trees, fences and tufts more than a column away stay where they were

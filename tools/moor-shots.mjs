@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/moor-shots.mjs [tag] [spot,spot] - GALE MOOR, PHOTOGRAPHED IN THE REAL PAGE, for the rework
    (docs/briefs/gale-moor-rework.md). Node renders lie about light (docs/AGENT-HANDOFF.md), so every picture is the page's own
    320x180 buffer after 300 BK.step frames, saved at 2x as docs/galemoor/<tag>-NN-<spot>.png.

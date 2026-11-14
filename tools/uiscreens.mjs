@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/uiscreens.mjs - UI POLISH B, the opening and the map (claude/uiscreens, 2026-10-06). What the screens must SAY and DO:
 //   PRESS PROMPT the first title is the LIVING SCENE (claude/intro: the bright forest, the sign, five heroes walking in, PRESS ANY KEY blinking under the sign with the controls line), not the menu;
 //                the first key (or tap) starts the sound and takes the prompt down and does nothing else (the menu does not move or open), then the board slides in;

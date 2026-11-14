@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/sealed-pyramid-route.mjs - THE SEALED PYRAMID walked end to end with REAL KEYS (claude/sealedpyramid; the shape of tools/buried-city-route.mjs). A route
 // pilot: a scripted hand holds a direction, hops onto the next step, works THE RULE by its feet (treads a plate, stands on a counterweight and waits for it), jumps
 // the gaps a block leaves in a pit, and cuts down what stands in its way with plain swings (a careless player: it never blocks or dodges).

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/keep-walk.mjs — THE UNDERWATER KEEP, WALKED AND LOOKED AT (rule S8; docs/briefs/keep-rework-2.md). Not in the suite.
    The playtest bot's own greedy walker (src/playtest.js makeBot) on the real page, start to the Drowned King's door, no god mode,
    with what it cost written down PER SECTION (L.keepSections): blows taken, health lost, deaths, and where it had to be lifted.

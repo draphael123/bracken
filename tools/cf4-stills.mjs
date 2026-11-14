@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf4-stills.mjs - CF4 proof stills (claude/cf4proof). node tools/cf4-stills.mjs <outdir>
 // Wood level, knight: damage-number pop frames, heavy + gold kill number, chip bar mid-drain, low HP at 20% (two pulse phases), heal flash + green lead, a number at the view's right edge.
 // Each still = the 320x180 frame x3 (no smoothing) plus an x8 crop of the interesting corner. Lab only; not in the suite.

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/flask-shots.mjs - FLASKS 2 ART in the real page: each hero mid-drink (uncork, gulp, gulp, lower) + the spill, cropped round him and the HUD row,
 // blown up.  PORT=8811 node tools/flask-shots.mjs  ->  work/claude/flasks2art/drink-live.png
 import { writeFileSync, mkdirSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/plunge-sheet.mjs - THE FOUR NEW PLUNGES' FRAMES ON ONE SHEET (docs/plunges/frames.png): for each hero a row a key - idle and the old plunge for scale, then his own windup/fall, release and ride/spin
 // frames (claude/plunges, B16: each ability its own windup + release pose). Also an assertion: every key must exist, with the frame counts src/main.js draws.
 //   node tools/plunge-sheet.mjs [out.png] [--scale=4]       (PORT for the page)

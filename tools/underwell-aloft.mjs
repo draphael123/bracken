@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underwell-aloft.mjs - NOTHING IN THE UNDERWELL HANGS IN THE AIR (claude/underwellart; the same idea as the unburied and moor lanes' aloft checks, Daniel's playtest 10-05:
    "this is floating"). The Underwell's scaffold boards and grated catwalks cross open halls; the art keys every one of them to the rock or to something that reaches it.
    NODE (no page):

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-hero.mjs (claude/maker) - WHO PLAYS A MADE-BY-HAND LEVEL, AND THE ARROW SIGN.
    1. A SET HERO plays on the starter kit, and the save's own progress is exactly as it was after the run.
    2. YOUR OWN HERO plays with the save's progress; such a run never marks the level BEATEN, and the level can be shared

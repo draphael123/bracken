@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/dk2art-sheet.mjs - CONTACT SHEET of THE DEATH KNIGHT 2's hero poses (claude/dk2art): each row a move, frames left to right, the ground line yellow.
 //   PORT=<port> node tools/dk2art-sheet.mjs out.png [zoom] [pose,pose,...]
 import { writeFileSync } from 'node:fs';

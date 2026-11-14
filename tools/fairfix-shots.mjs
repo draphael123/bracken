@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/fairfix-shots.mjs - THE HARVEST FAIR after the review's fixes (claude/fairfix), one picture per new beat, rendered with BK.step and saved at 2x into work/claude/fairfix/<tag>/.
 // The foes are LEFT IN (this is what the fix is about); god mode; the hero teleported to each spot. Not in the suite: pictures are for eyes.
 //   usage: node tools/fairfix-shots.mjs [tag] [only,names]        (the full map is tools/fair-map.mjs)

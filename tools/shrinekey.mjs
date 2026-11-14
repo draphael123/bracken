@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/shrinekey.mjs - claude/shrinekey (Daniel 11-06): R no longer sends the hero back to the shrine. The pause menu's 'Back to shrine'
 // asks YES / NO (opens on NO), and is greyed 'no shrine here' in the tutorial and the Arena Yard. Needs a headless browser (RAM >= 1500 MB free).
 import assert from 'node:assert/strict';

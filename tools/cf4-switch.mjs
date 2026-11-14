@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/cf4-switch.mjs - proves BOSS_CF4=on|off (boss-run.mjs cf4Js) reaches the page's REAL main.js module: the same snippet fightJs injects, then the module flag is read back
 // (a hurt foe) and read back: ON numbers carry popAt/popK (CF4.popNum), OFF numbers do not. Exit 0 = the switch works.
 import { openPage } from './cdp.mjs';

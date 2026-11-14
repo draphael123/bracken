@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/hornetsnestart-shots.mjs - THE HORNET'S NEST ART PASS for eyes (claude/hornetsnestart): the level at fixed spots, the foes, the queen.
 // TAG=before|after PORT=<port> node tools/hornetsnestart-shots.mjs  ->  work/claude/lane-done/hornetsnestart-<TAG>-*.png   (ONLY=a,b limits the named shots)
 import { openPage, ROOT } from './cdp.mjs';

@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/gate-openers.mjs - EVERY GATE THE ROAD SHUTS CAN BE OPENED (claude/kingsgate).
 // Daniel, live in KINGSWOOD at 7 minutes: "This gate cannot be opened." The court's portcullis is lifted by a plate on the ledge
 // beside it - and the plate had been placed at the ledge's own row, INSIDE the boards, a tile under the feet of anyone standing

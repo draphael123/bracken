@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/maker-editing.mjs (claude/maker, batch 1) - EDITING IN THE MAKER does not corrupt a level or hide a problem.
    1. UNDO after WIDER / NEW gives back the old size (it restored the old grid into the new width: a scrambled level).
    2. A piece cannot be put INSIDE the ground; painting ground over a piece takes the piece away.

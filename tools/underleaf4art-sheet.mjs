@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/underleaf4art-sheet.mjs [poses] [scale] - a contact sheet of THE POTION MASTER's three looks (green P1 / blue P2 / red P3) over the named poses (default: the new ones).
    Writes scratch/lane-reports/underleaf4art-<PREFIX>-sheet.png.   PREFIX=after node tools/underleaf4art-sheet.mjs singed,snared,aloft,idle 5 */
 import { openPage, ROOT } from './cdp.mjs';

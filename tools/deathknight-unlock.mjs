@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/deathknight-unlock.mjs — THE DEATH KNIGHT OPENS ON HIS OWN DEATH (Daniel, 2026-09-25: "beating him opens the Death Knight hero
    in the shop ... implement as defeated the Unburied boss, a flag set on his death, not just cleared the level"). In the page:
      - a fresh save: the hero is LOCKED in the shop (feat 'boss:unburied') and has no gold route;

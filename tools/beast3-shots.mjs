@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/beast3-shots.mjs [only,tags] - real-page stills of THE BATTERING BEAST 3 (claude/beast3, Daniel 11-01): the war-ox look, THE VOLLEY ORDER (the horn up + the lanes,
    the arrows coming down), THE WALL BREAKER (the turn + its run line, the slam, the breach + rubble step + rolling timbers), a pose sheet of every frame (3x) and a side by
    side with OLD TUSKER (3x). Headless Chrome through tools/cdp.mjs, the knight in god mode. Writes OUT (default scratch/lane-reports/beast3-shots beside the worktrees) beast3-<tag>.png.

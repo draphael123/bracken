@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/buriedcity-exit.mjs - THE BURIED CITY'S EXIT GATE LEADS ON (batch91 integ, scratch/brief-buriedcity4.md item 0).
 // THE BUG: "the final exit gate does not advance to the next level". The gate stands at stage col W-2 (col 788) of the throne room; phase two's east
 // sand BANK (HK_STAGE.banks [37, 39] = cols 787-789, T.SOFT, solid) is written over it, and nothing took the bank away when the King fell - the gate

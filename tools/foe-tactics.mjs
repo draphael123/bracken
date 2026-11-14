@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/foe-tactics.mjs — HELD WIND-UPS AND REACTIVE WAITING (the combat pass, part 2, 2026-09-28; src/foe-tactics.js).
 //
 // In Node, the rules themselves:

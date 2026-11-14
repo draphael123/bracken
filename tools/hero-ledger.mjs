@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 /* tools/hero-ledger.mjs - WHERE A HERO'S FIGHT GOES (claude/wardenkit; a measuring tool, not a check).
    The boss standard's fight (tools/boss-run.mjs fightJs: campaign level, normal health, the standard profile, no skills) with a ledger:
    what each of the boss's modes took off the hero (bossLab modes), every blow that landed on the boss (size, and whether he was open),

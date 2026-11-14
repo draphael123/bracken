@@ -1,3 +1,4 @@
+// PAGE TOOL: launches headless Chrome
 // tools/queen-court.mjs — THE GOBLIN QUEEN HOLDS COURT, AND YOU BRING HER HALL DOWN ON HER (Daniel, 2026-09-29: "she's basically the Ram
 // Lord - just ramming into walls"; docs/briefs/goblin-queen-court.md). It replaces the retired queen-pillars check (her charge into a pillar). In the page:
 //   chain     no charge anywhere in her: updateGQueen never enters chargeTell, charge or dazed, and forty seconds of each round never shows one
