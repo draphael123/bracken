@@ -12,6 +12,7 @@ import { GG, GG_SAY, newGeo, geoStep, lob, fan, homeVel, geoTake, geoStruck, swe
 import { Q4 } from './gq4q.js'; import { heroStrikes } from './hero-strikes.js';   /* (claude/gq4q) any blow or hero shot sends a rock back */
 import * as GGA from './redraw/gob_geomancer_art.js'; import * as GQ3A from './redraw/gq3_art.js';   /* (claude/gq3art) the counterweights, the pivot slabs, the geode grille */
 import { BELLGATE } from './bell-gate.js';
+import { G6CALL, GCALL } from './gq6geo.js'; import * as GQ4A from './redraw/gq4_art.js'; import * as GCA from './redraw/gq6call_art.js';   /* (claude/gq6call-art) the stone, the shard pair and the told rings, drawn */   /* (claude/gq6geo, GQ6CALL_SHIPS) THE GEODE CALL: the Queen's boulder, her hanging-glint and shadow, borrowed (default OFF) */
 import { LANCE4, bellStrike } from './lance-support.js';
 
 export function makeGobGeoHands(ctx) {
@@ -19,29 +20,31 @@ export function makeGobGeoHands(ctx) {
   let S = null;
   const now = () => ctx.time();
   const sfx = k => { const f = ctx.sfx && ctx.sfx[k]; if (f) f(); };
+  const sfx2 = (k, fallback) => { const f = ctx.sfx && ctx.sfx[k]; if (f) f(); else sfx(fallback); };   /* (GQ6CALL) the call's own sounds (src/audio.js geoCall*), the old ones when a host has none */
   const sign = v => (v < 0 ? -1 : 1);
-  const fresh = L => ({ L, rocks: [], fx: [], lamps: [], smashed: S && S.L === L ? S.smashed : new Set(), fail: new Map(), rid: 0, said: new Set(),
-    n: { thrown: 0, slates: 0, back: 0, parried: 0, struck: 0, seals: 0, shields: 0, lamps: 0, bells: 0, staggers: 0, warded: 0, held: 0, foes: 0, hits: 0 } });
+  const fresh = L => ({ L, rocks: [], fx: [], lamps: [], calls: [], smashed: S && S.L === L ? S.smashed : new Set(), fail: new Map(), rid: 0, said: new Set(),
+    n: { thrown: 0, slates: 0, back: 0, parried: 0, struck: 0, seals: 0, shields: 0, lamps: 0, bells: 0, staggers: 0, warded: 0, held: 0, foes: 0, hits: 0, ...(G6CALL ? { calls: 0, callHits: 0, callHome: 0 } : {}) } });
   const st = () => { const L = ctx.L; if (!L) return null; if (!S || S.L !== L) S = fresh(L); return S; };
   const once = k => { if (S.said.has(k)) return false; S.said.add(k); return true; };
   /* every seat on his feet: fn(P) with P the seat (main.js asPlayer) */
   const seats = fn => { if (ctx.eachHero) ctx.eachHero(fn); else { const p = ctx.hero(); if (p && !p.dead) fn(p); } };
 
   H.load = () => { S = null; };
-  H.clear = () => { const s = st(); if (!s) return; s.rocks = []; s.fx = []; s.lamps = []; s.fail = new Map(); };   /* a respawn: nothing in the air; a smashed seal STAYS smashed */
+  H.clear = () => { const s = st(); if (!s) return; s.rocks = []; s.fx = []; s.lamps = []; s.calls = []; s.fail = new Map(); };   /* a respawn: nothing in the air; a smashed seal STAYS smashed */
   H.owns = e => !!e && e.t === 'gobgeo';
   H.on = () => !!(ctx.L && ((ctx.L.rocklocks || []).length || ctx.enemies().some(e => e.t === 'gobgeo')));
 
   /* ---------- HIS BODY ---------- */
   H.spawn = (base, e) => { const hp = (ctx.EHP && ctx.EHP.gobgeo) || GG.hp;
     return { ...base, t: 'gobgeo', w: GG.w, h: GG.h, hp, maxHp0: hp, speed: GG.speed, face: e.face || -1, perch: !!e.perch, early: !!e.early, sight: e.sight || 0, sealId: e.seal || null, cd: GG.first,
-      ...newGeo({ post: e.leash === 0 ? null : base.x, leash: e.leash || GG.leash }) }; };
+      ...newGeo({ post: e.leash === 0 ? null : base.x, leash: e.leash || GG.leash, callOk: G6CALL && !e.early && !e.seal /* (GQ6CALL) never the teach Geomancer's or an early sighting's */ }) }; };
   const standable = (tx, ty) => ctx.standable ? ctx.standable(tx, ty) : false;
   H.foeUpdate = (e, dt) => {
     const s = st(); if (!s) return; const P = ctx.hero();
     const ahead = dir => { const tx = Math.floor((e.x + dir * (e.w / 2 + 5)) / TS), ty = Math.floor((e.y + 1) / TS); return standable(tx, ty) && !ctx.solidAt(e.x + dir * (e.w / 2 + 3), e.y - 6); };
-    const r = geoStep(e, dt, { tx: P ? P.x : e.x, ty: P ? P.y : e.y, ahead, roll: () => Math.random(), tokWait: !!e.tokWait });
+    const r = geoStep(e, dt, { tx: P ? P.x : e.x, ty: P ? P.y : e.y, ahead, roll: () => Math.random(), tokWait: !!e.tokWait, air: G6CALL ? airRows(P) : 0, callFree: G6CALL ? callFree(e) : false });
     for (const v of r.events) {
+      if (G6CALL && callEvent(e, v)) continue;
       if (v.ev === 'tell') { if (v.move === 'rockTell') sfx('crumble'); else if (v.move === 'slateTell') { sfx('thud'); ctx.dust(e.x + e.face * 18, e.y, 4); } else sfx('clatter'); }
       else if (v.ev === 'cancel') { if (v.move === 'rockTell') { ctx.burst(e.x, e.y - 34, 6, ['#5c5c6e', '#868698'], 40, 0.4); } }
       else if (v.ev === 'rock') throwRock(e, P);
@@ -52,6 +55,46 @@ export function makeGobGeoHands(ctx) {
     e.vy = Math.min(270, (e.vy || 0) + 1000 * dt);
     const m = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (m && m.ground) e.vy = 0;
   };
+  /* ---------- (GQ6CALL) THE GEODE CALL: the stone, its landing ring, the two hanging shards, the shard sent home ---------- */
+  const groundY = (x, y) => { let yy = y; for (let i = 0; i < 90 && !ctx.solidAt(x, yy + 1); i++) yy += 2; return yy; };   /* the floor under a spot */
+  const airRows = P => { if (!P) return 0; let n = 0; for (let r = 0; r < 8; r++) { if (ctx.solidAt(P.x, P.y - 24 - r * 16)) break; n++; } return n; };   /* free rows over the hero's head */
+  const callFree = e => !!S && !S.calls.some(c => c.owner === e) && S.calls.length < GCALL.level;
+  const callOf = e => S && S.calls.find(c => c.owner === e && c.state === 'tell');
+  /* a geoStep event that is the call's: true if it was handled here */
+  function callEvent(e, v) { const s = st(); if (!s) return false;
+    if (v.ev === 'tell' && v.move === 'callTell') { const P = ctx.hero(), ax = e.aim ? e.aim.x : (P ? P.x : e.x), ay = e.aim ? e.aim.y : (P ? P.y : e.y); s.calls.push({ id: ++s.rid, owner: e, state: 'tell', t: 0, locked: false, tx: ax, ty: groundY(ax, ay), shards: [] }); sfx2('geoCallTell', 'crumble'); return true; }
+    const c = callOf(e);
+    if (v.ev === 'lock') { if (c) { c.locked = true; c.tx = v.x; c.ty = groundY(v.x, v.y); ctx.ring(c.tx, c.ty - 2, GCALL.r, '#ff6b6b', 0.3); sfx('clank'); } return true; }
+    if (v.ev === 'call') { if (c) { c.state = 'fall'; c.t = 0; c.locked = true; sfx2('geoCallFall', 'leap'); } return true; }
+    if (v.ev === 'cancel' && v.move === 'callTell') { if (c) { c.dead = true; ctx.burst(c.tx, c.ty - 20, 6, ['#b28cff', '#8a8a9c'], 40, 0.3); } return true; }
+    return false; }
+  function landCall(c) { const s = st(), x = c.tx, y = c.ty;
+    ctx.burst(x, y - 6, 14, ['#5a5a68', '#8a8a9c', '#b28cff'], 90, 0.5); ctx.dust(x, y, 8); ctx.shake(3); sfx2('geoCallLand', 'thud'); ctx.ring(x, y - 2, GCALL.r, '#b28cff', 0.25); s.n.calls++;
+    seats(P1 => { if (P1.dead || Math.abs(P1.x - x) >= GCALL.r || P1.y <= y - 14) return; const res = ctx.damagePlayer(x, GCALL.dmg, { who: c.owner, name: 'THE GEODE CALL' }); if (res && res !== 'blocked') s.n.callHits++; });
+    c.state = 'hang'; c.t = 0; c.shards = [-1, 1].map(d => ({ id: ++s.rid, x: x + d * GCALL.dx, y: y - 14 })).slice(0, GCALL.shards); }
+  /* ANY blow or hero shot on a hanging shard sends it HOME to him (the same rule as his rock); its twin falls apart: one payoff per call */
+  function homeShard(c, sh) { const s = st(), o = c.owner; c.dead = true; for (const q of c.shards) if (q !== sh) ctx.burst(q.x, q.y, 5, ['#b28cff', '#8a8a9c'], 40, 0.3);
+    if (!(o && o.alive)) return;
+    const r = { kind: 'cshard', x: sh.x, y: sh.y, vx: 0, vy: 0, g: 0, owner: o, back: false, t: 0, life: GG.back.life, id: ++s.rid, r: 5, dmg: 0 }; s.rocks.push(r); sendBack(r, 'blow'); s.n.callHome++; }
+  function stepCalls(dt) { const s = S; if (!s.calls.length) return;
+    for (const c of s.calls) { c.t += dt;
+      if (c.state === 'tell') { if (!c.owner.alive || c.t > GCALL.tell + 0.6) c.dead = true; continue; }
+      if (c.state === 'fall') { if (c.t >= GCALL.fall) landCall(c); continue; }
+      if (c.t >= GCALL.hang || !c.owner.alive) { for (const q of c.shards) ctx.burst(q.x, q.y, 4, ['#b28cff', '#8a8a9c'], 40, 0.3); c.dead = true; continue; }
+      for (const sh of c.shards) { if (c.dead) break; if (heroStrikes({ l: sh.x - GCALL.shardR, r: sh.x + GCALL.shardR, t: sh.y - GCALL.shardR, b: sh.y + GCALL.shardR }, 'gc' + sh.id, HSX)) homeShard(c, sh); } }
+    s.calls = s.calls.filter(c => !c.dead); }
+  function drawCalls(g, cx, cy, time) { const s = S;
+    for (const c of s.calls) { const o = c.owner, live = c.state === 'tell' && o.aim && !o.aim.locked, ax = live ? o.aim.x : c.tx, ay = live ? groundY(o.aim.x, o.aim.y) : c.ty, X = Math.round(ax - cx), Y = Math.round(ay - cy);
+      if (c.state === 'tell') { const k = Math.min(1, c.t / GCALL.tell), pulse = 0.5 + 0.5 * Math.sin(time * 18);
+        GCA.drawLandRing(g, X, Y, GCALL.r, c.locked, time);   /* the landing ring on the floor: violet dashes while it follows you, RED and solid once it locks */
+        { const P1 = ctx.hero(); if (P1) GCA.drawHeroRing(g, Math.round(P1.x - cx), Math.round(P1.y - cy) - 38, k, time); else GCA.drawHeroRing(g, X, Y - 38, k, time); }   /* the small violet ring closing over the hero's head */
+        continue; }
+      if (c.state === 'fall') { const k = Math.min(1, c.t / GCALL.fall), sy = Y - 8 - Math.round(130 * (1 - k * k)); GQ4A.drawRockShadow(g, X, Y, k, time);
+        GCA.drawCallStone(g, X, sy, Math.floor(time * 10) & 3, k); continue; }
+      for (const q of c.shards) { const bob = Math.round(Math.sin(time * 6 + q.id) * 1.5); GCA.drawCallShard(g, Math.round(q.x - cx), Math.round(q.y - cy) + bob, q.id & 1, q.x < c.tx ? -1 : 1); GQ4A.drawHangGlint(g, Math.round(q.x - cx), Math.round(q.y - cy) + bob, time + c.t); } } }
+  H.callRead = () => { if (!G6CALL || !S || !S.calls.length) return null;
+    return { calls: S.calls.map(c => { const o = c.owner, live = c.state === 'tell' && o.aim && !o.aim.locked;
+      return { state: c.state, x: live ? o.aim.x : c.tx, y: c.ty, r: GCALL.r, locked: !!c.locked, left: c.state === 'tell' ? Math.max(0, o.modeT || 0) + GCALL.fall : c.state === 'fall' ? Math.max(0, GCALL.fall - c.t) : 0, hang: c.state === 'hang' ? Math.max(0, GCALL.hang - c.t) : 0, shards: c.shards.map(q => ({ x: q.x, y: q.y })) }; }) }; };
   const staffTop = e => ({ x: e.x + e.face * 13, y: e.y - 36 });
   function throwRock(e, P) { const s = st(), o = { x: e.x + e.face * 2, y: e.y - (e.perch ? 42 : 36) }, t = P || { x: e.x + e.face * 120, y: e.y };
     const v = lob(o.x, o.y, t.x, t.y - 12, GG.rock, e.perch ? 1.15 : 0);   /* from a roof: a high arc over its merlons */
@@ -157,6 +200,7 @@ export function makeGobGeoHands(ctx) {
     const s = st(); if (!s) return;
     for (const r of s.rocks) if (!r.dead) rockStep(r, dt);
     s.rocks = s.rocks.filter(r => !r.dead);
+    if (G6CALL) stepCalls(dt);
     /* A SEAL IS NEVER A SOFT-LOCK: one whose Geomancer is dead (however he died) and that a hero is near fails on its own */
     const P = ctx.hero();
     for (const k of ctx.L.rocklocks || []) { if (s.smashed.has(k.id) || !k.seal) continue;
@@ -193,7 +237,8 @@ export function makeGobGeoHands(ctx) {
       const n = Math.max(0, e.orbit - (e.mode === 'rockTell' ? 1 : 0)), tight = e.mode === 'shellTell', rr = tight ? 8 : GG.orbit.r;
       for (let i = 0; i < n; i++) { const a = time * (tight ? 7 : 2.2) + i * Math.PI * 2 / 3, jit = tight ? (Math.floor(time * 30 + i) & 1) : 0;
         GGA.drawChunk(g, e.x - cx + Math.cos(a) * rr + jit, e.y - 16 - cy + Math.sin(a) * rr * 0.45 + Math.sin(time * 3 + i) * 1.5, i, tight || e.mode === 'slateTell' ? 1 : 0); } }
-    for (const r of s.rocks) { if (r.kind === 'rock') GGA.drawRock(g, r.x - cx, r.y - cy, time, r.back, r.id); else GGA.drawSlate(g, r.x - cx, r.y - cy, r.vx, r.vy, r.back); }
+    for (const r of s.rocks) { if (r.kind === 'rock') GGA.drawRock(g, r.x - cx, r.y - cy, time, r.back, r.id); else if (r.kind === 'cshard') GCA.drawCallShard(g, r.x - cx, r.y - cy, r.id & 1, r.vx < 0 ? -1 : 1); else GGA.drawSlate(g, r.x - cx, r.y - cy, r.vx, r.vy, r.back); }
+    if (G6CALL) drawCalls(g, cx, cy, time);
     for (const f of s.fx) { if (f.k === 'shell') GGA.drawShell(g, f.x - cx, f.y - cy, 8 + f.t / 0.35 * (GG.shell.r - 8), f.t / 0.35); else if (f.k === 'chunk') GGA.drawChunk(g, f.x - cx, f.y - cy, f.id, 0); }
   };
   H.read = () => S && { rocks: S.rocks.map(r => ({ kind: r.kind, x: r.x, y: r.y, back: r.back })), smashed: [...S.smashed], n: { ...S.n } };

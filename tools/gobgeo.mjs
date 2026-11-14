@@ -17,7 +17,7 @@ install();
 globalThis.window = globalThis.window || {};
 const { makeGobGeoHands } = await import('../src/gobgeo-hands.js');
 const { LEVELS, T } = await import('../src/level.js');
-const { GOBGEO } = await import('../src/gobgeo-level.js'); const { SH_HALL, G4 } = await import('../src/gq4l.js'); const EARLY = G4 ? 2 : 0;   /* (gq4l) E1 the crag + E2 the chapel loft */
+const { GOBGEO } = await import('../src/gobgeo-level.js'); const { SH_HALL, G4 } = await import('../src/gq4l.js'); const EARLY = G4 ? 2 : 0; const { G6GEO } = await import('../src/gq6geo.js'); const EXTRA = G6GEO ? 3 : 0;   /* (gq6geo) the Crag Walk, the Bakehouse Yard, the Keep */   /* (gq4l) E1 the crag + E2 the chapel loft */
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 
 /* ---------------- RULES ---------------- */
@@ -36,7 +36,7 @@ let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
   s.cd = 5; s.x = 100; geoStep(s, 1 / 60, { ...w, tx: 120 }); ok(true, 'walk'); const r2 = geoStep(s, 1 / 60, { ...w, tx: 120 }); ok(r2.vx < 0, 'too close: he backs away (keeps 90-170 px)');
   const r3 = geoStep(s, 1 / 60, { ...w, tx: 120, ahead: () => false }); ok(r3.vx === 0, 'never off his ledge');
   s.x = 100 - GG.leash - 2; const r4 = geoStep(s, 1 / 60, { ...w, tx: 60 }); ok(r4.vx >= 0, 'never past his leash');
-  ok(GG_MODES.length === 3 && GG_MODES.every(m => m.endsWith('Tell')), 'three windups, each a ...Tell (the told mark reads them)'); }
+  ok(GG_MODES.length === 3 + (process.env.BRACKEN_GQ6CALL === '1' ? 1 : 0) && GG_MODES.every(m => m.endsWith('Tell')), 'three windups (four with the Geode Call, GQ6CALL), each a ...Tell (the told mark reads them)'); }
 { const v = lob(0, 0, 160, 40); let x = 0, y = 0, vy = v.vy; for (let t = 0; t < v.T; t += 1 / 240) { x += v.vx / 240; vy += GG.rock.g / 240; y += vy / 240; } ok(Math.abs(x - 160) < 3 && Math.abs(y - 40) < 6, 'the lob lands where it is aimed (' + x.toFixed(0) + ',' + y.toFixed(0) + ')');
   const f = fan(0, 0, 100, 0); ok(f.length === GG.slate.n && Math.abs(Math.atan2(f[0].vy, f[0].vx) - Math.atan2(f[2].vy, f[2].vx)) > 0.3, 'the volley is a fan of three'); }
 { const s = { x: 100, y: 200, face: 1, ...newGeo(), maxHp: GG.hp };
@@ -105,8 +105,8 @@ function room(o = {}) {
 /* ---------------- LAYOUT ---------------- */
 const L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, at = (x, y) => L.grid[y * W + x];
 ok(W === 841 + SH_HALL, 'Highcrown is 841 columns (gq3: the Queen Stair +64, the tower top +12); the Geomancer rooms are laid into columns that are there (' + W + ')');
-const geos = L.ents.filter(e => e.t === 'gobgeo'); ok(geos.length === 8 + EARLY, 'eight Geomancers: teach, shield, chandelier, the secret, the last walk (the five of gobgeo) + gq3: the stair grille, the geode store, the burning tower (' + geos.length + ')');
-ok(geos.filter(e => e.x < L.arena.x0 / 16).length === 7 + EARLY && geos.filter(e => e.x > L.arena.x1 / 16).length === 1, 'seven of them BEFORE the Queen hall (the Captains Hall, the battlements, gq3 the stair), one in the burning tower AFTER it (gq3: the tower is past her flee portal)');
+const geos = L.ents.filter(e => e.t === 'gobgeo'); ok(geos.length === 8 + EARLY + EXTRA, 'eight Geomancers: teach, shield, chandelier, the secret, the last walk (the five of gobgeo) + gq3: the stair grille, the geode store, the burning tower (' + geos.length + ')');
+ok(geos.filter(e => e.x < L.arena.x0 / 16).length === 7 + EARLY + EXTRA && geos.filter(e => e.x > L.arena.x1 / 16).length === 1, 'seven of them BEFORE the Queen hall (the Captains Hall, the battlements, gq3 the stair), one in the burning tower AFTER it (gq3: the tower is past her flee portal)');
 const TG = GOBGEO.TEACH, seal = L.rocklocks.find(k => k.id === 'gg-teach');
 ok(seal && seal.kind === 'seal', 'the teach gate has its seal');
 for (let y = TG.rows[0]; y <= TG.rows[1]; y++) ok(at(TG.gate, y) === T.PORT, 'the teach gate is down across the hall at row ' + y);
