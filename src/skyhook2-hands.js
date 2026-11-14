@@ -48,6 +48,8 @@ export function makeSky2Hands(ctx) {
   H.sky2 = true;
   H.show = () => S;
   H.on = () => !!(S && A());
+  /* (claude/sky2tune) THE CAMERA LOOKS UP: with the hero on the floor the view's top is ~184 px over it, and he rides 216-272 px up (the sky line, the crowns): never on screen. Same hook as the Crypt Mother's: rise toward him, the hero's feet (and the boss plate) kept in the picture. Flag OFF has no camY (main.js guards) */
+  H.camY = (ty, VH) => { const e = live(); if (!S || !e || !A() || !S.woke) return ty; const p = ctx.hero && ctx.hero(); if (!p) return ty; const want = e.y - SK.h - SK.camPad, lim = p.y + 28 - VH; return Math.max(lim, Math.min(ty, want)); };
   H.owns = e => !!e && e.t === 'skyhook';
   H.ownsProp = e => !!e && e.t === 'skylever';
   H.phase = () => (S ? S.ph : 1);

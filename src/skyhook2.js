@@ -45,6 +45,7 @@ export const SK = {
   cw: { every: 4, tell: 0.9, fall: 0.35, r: 28, dmg: 13, up: -300, step: 4 },
   rivet: { every: 3, tell: 0.8, fall: 0.3, n: 5, r: 9, dmg: 6, gap: 40 },
   fall: { dmg: 5, stun: 0.4 },
+  camPad: 30,   /* (sky2tune) the camera rises until his head is this far under the top of the view (main.js -> hands camY), never past the hero's feet + the boss plate */
 };
 export const SKY2_SAY = { wake: 'SKYHOOK', rule: 'THROW THE POINTS: BRING HIM DOWN TO THE LOW LINE', reach: 'OUT OF REACH', reachTip: 'OUT OF REACH - THROW THE POINTS',
   set: 'THE POINTS ARE SET', already: 'THE POINTS ARE SET', locked: 'THE LOW LINE IS DOWN', rehook: 'HE HOOKS THE POINTS', held: 'HELD', snapBack: 'THE POINTS SNAP BACK',
