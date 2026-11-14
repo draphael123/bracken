@@ -10,6 +10,8 @@
 //   the YARD         drawYard: the bakehouse yard's stone ovens, flour sacks, iron racks
 import { canvas, rect, px, mulberry } from '../px.js';
 import { STONE } from './highcrown2_art.js';
+import { SHIFT } from '../gq4l.js';   /* (rel167) GQ4L shifts the wall walk W3 and the bell tower: 40 columns of gatehouse + leads walk before them, the tower 20 wider (0 each with the flag off) */
+const X40 = SHIFT.battle, X20 = SHIFT.bell, XB = X40 + X20 / 2;
 
 const R = rect, S = STONE;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
@@ -17,11 +19,11 @@ const TS = 16;
 const SNOW = '#dfe5f2', SNOW_D = '#aab4cc';
 export const K = {
   S: 21,                                            // the wall walk's standing row (its floor tiles are row 22)
-  PARAPET: [[527, 556], [567, 575], [585, 601], [612, 622]],        // the open stretches (the towers and the broken stretch are between)
+  PARAPET: [[527, 556], [567, 575], [585, 601], [612, 622]].concat(X40 ? [[612 + X40, 622 + X40]] : []),        // the open stretches (the towers and the broken stretch are between)
   GAP: [576, 584],
   TOWERS: [{ x0: 557, x1: 566, bell: 564, door: 561, winch: 558 }, { x0: 602, x1: 611, bell: 609, door: 606, winch: 603 }],
-  BT: [623, 648], BT_ROOF: 6, HATCH: 639,
-  FAR: [520, 652],                                  // where the far wards are drawn (tile columns)
+  BT: [623 + X40, 648 + X40 + X20], BT_ROOF: 6, HATCH: 639 + XB,
+  FAR: [520, 652 + X40 + X20],                                  // where the far wards are drawn (tile columns)
   CAPT: 431, BANQ: 479,                             // the 'royal' interiors' west columns: the Captains Hall, the Banquet Hall
   YARD: [{ k: 'oven', col: 264, row: 64 }, { k: 'sacks', col: 322, row: 62 }, { k: 'rack', col: 326, row: 62 }, { k: 'oven', col: 309, row: 56 }, { k: 'trough', col: 285, row: 56 }, { k: 'sacks', col: 258, row: 64 }, { k: 'rack', col: 291, row: 56 }],
 };

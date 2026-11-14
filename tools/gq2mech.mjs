@@ -9,9 +9,11 @@ import path from 'node:path';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = f => readFileSync(path.join(ROOT, f), 'utf8');
 const imp = f => import(pathToFileURL(path.join(ROOT, f)).href);
+process.env.BRACKEN_GQ5Q1 ??= '0'; process.env.BRACKEN_GQ5Q2 ??= '0';   /* (batch182) this proof asserts the OLD hall bell (the lure + the grate drop); the Queen rework ships ON now, so it pins the lab-OFF fight, as gq5p's old-default proofs did */
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const { LEVELS, T } = await imp('src/level.js');
 const { makeGQueenHands, GQ3 } = await imp('src/gqueen-hands.js');
+const { Q4: Q4T, Q4N: Q4NT } = await import('../src/gq4q.js');   /* (gq4tune-d) hall blows ride Q4N.p1.dmgK */
 const GM = GQ3.mech;
 const make = (seats = 1) => {
   const Lw = LEVELS.find(l => l.id === 'crown').build(), W = Lw.W, A = Lw.arena;
@@ -87,7 +89,7 @@ console.log('== BELL: a miss, a parry on the charge, a blockable charge');
   ok(stunned && v.st.grate.length === 0, 'a PARRY on her charge stuns her (the crown/shard skill opening, same verb); the lure is off, no grate');
   const u = make(); u.e.x = gx + 100; ring(u); u.step(2); u.heroes[0].x = u.e.x - 8; u.step(Math.round(60 * GM.wind) - 12);
   ok(u.e.luWind === 1 && u.st.dmg.length === 0 && u.e.vx === 0, '(gq3fix) the charge is TOLD: a ' + GM.wind + ' s wind-up first (planted, her gather pose, no contact blow in it)'); u.step(24);
-  ok(u.st.dmg.some(d => d.d === GM.contact && !d.o.unblockable), 'the charge is a BLOCKABLE hit (yellow), not a red one'); }
+  ok(u.st.dmg.some(d => d.d === Math.max(1, Math.round(GM.contact * (Q4T ? Q4NT.p1.dmgK : 1))) && !d.o.unblockable), 'the charge is a BLOCKABLE hit (yellow), not a red one'); }
 console.log('== BELL: standing under the grate you rang');
 { const w = make(); const gx = w.bell.gate * 16 + 8; w.e.x = gx + 40; w.heroes[0].x = gx + 2; w.heroes[0].y = w.A.floor - 20; ring(w); w.step(2);
   for (let i = 0; i < 60 * 3 && !w.st.grate.length; i++) { w.heroes[0].x = gx + 2; w.step(1); }

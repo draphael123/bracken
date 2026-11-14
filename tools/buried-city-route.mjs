@@ -5,6 +5,8 @@
 // SOURCE in that leg. A death stands you up at the last checkpoint: the hand is taken back to the leg's foot (a retry, counted); a leg that fails three times is
 // LIFTED past (a teleport, counted and named).
 //   PORT=8763 node tools/buried-city-route.mjs [heroes=knight,warden,pyro] [god=0|1] [foes=1|0] [--lvl=N] [--dbg]   (god=1 foes=0: base movement only)
+//   BRACKEN_BC5=1 PORT=8763 node tools/buried-city-route.mjs ...   (claude/bc5fix) BURIED CITY 5 on in the page: THE RELAY leg is SKIPPED (the Glassblower's hall stands where it was) and the legs of RACE THE GLASS are added -
+//        THE GLASSBLOWER (a real fight: strike the glinting glass, cut him buried), R2 the span, R3 the lift chain, R4's door and re-strike pad; --r1 adds the optional R1 gallery. Flag OFF = master's legs exactly.
 import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden,pyro').split(','), god = process.argv[3] === '1', foes = process.argv[4] !== '0', LVL = +((process.argv.find(a => a.startsWith('--lvl=')) || '--lvl=0').slice(6)), FROM = +((process.argv.find(a => a.startsWith('--from=')) || '--from=0').slice(7));   /* --from=N: start at leg N (a teleport to its foot, the rooms before it left as built) */
 const pg = await openPage({ audio: false, fonts: false });
@@ -77,6 +79,7 @@ try {
         for (let j = 0; j < 110; j++) { if (Math.abs(P().x - goal) < 5 || (P().x - goal) * d > 0) { k.left = k.right = false; } tick(1); if (j > 24) k.jump = false; if (j > 4 && P().ground) break; }
         clear(); tick(2); if (feet() !== row) DBG.push('jumpTo ' + tx + '>' + row + ' at ' + col() + ',' + feet()); return feet() === row; };
       /* (BURIED CITY 2, claude/buriedcity2: grid rows - the feet row is the row a hero stands in) */
+      const BC5 = !!(BK.L && BK.L.bc5), R1 = false;   /* (claude/bc5fix) the legs below that say BC5 run only on a bc5 level */
       const LEGS = [
         ['the dunes and the sand stair: down into the city, drain the first room', [3, 24], () => { walk(56); if (!lever(58, 'first', 'open')) return false; waitFor(() => empty('first'), 900);
             walk(100); if (!turn(102, 'stair')) return false; walk(103, { tol: 2 }); if (!jumpTo(105, 33)) return false; if (!jumpTo(109, 31)) return false; walk(112, { tol: 2 }); settle(); DBG.push('past the house ' + col() + ',' + feet()); return col() >= 112 && feet() >= 33; }   /* (past the fallen house: on the street, or on the stall's awning the jump down lands on) */, [113, 36]],
@@ -94,15 +97,29 @@ try {
             if (feet() !== 15) return false; if (!turn(372, 'works3')) return false; walk(377); walk(386); return col() >= 384 && feet() === 10; }, [386, 10]],
         ['THE RELAY: the high kiln glass raises the way to the stub, its glass the last roof; the sand-bound on the floor, the shrine', [386, 10], () => { if (!turn(385, 'works4')) return false; walk(388, { tol: 2 }); if (!jumpTo(391, 13) || !jumpTo(395, 17) || !jumpTo(399, 21)) return false;
             if (!turn(399, 'works5')) return false; if (!jumpTo(402, 26)) return false; walk(404, { tol: 2 }); settle(); walk(408); return col() >= 406 && feet() === 32; }, [408, 32]],
+        /* (claude/bc5fix) THE GLASSBLOWER: the drop off the kiln, then a real fight - his glass glints (the mini's hands: BK.bc5().gb.glint), strike it, cut him while he is buried, the portcullis lifts, the shrine */
+        ...(BC5 ? [['THE GLASSBLOWER: drop into his hall, strike the glinting glass, cut him buried, out by the lifted gate to the shrine', [386, 10], () => {
+            walk(388, { tol: 2 }); walk(392, { tol: 3, noFight: true }); settle();
+            const gbE = () => BK.enemies().find(q => q.t === 'glassblower'), HX = { gb: 396, gb2: 401 };
+            for (let g = 0; g < 700 && gbE() && gbE().alive; g++) { const rd = BK.bc5(), s = rd && rd.gb, e = gbE();
+              if (s && s.glint) { walk(HX[s.glint] || 396, { tol: 3, noFight: true }); press('talk', 1); }
+              else if (s && s.mode === 'buried') { const dx = e.x - P().x; if (Math.abs(dx) > 16) walk(Math.round(e.x / TS) + (dx > 0 ? -1 : 1), { tol: 4 }); else { face(Math.sign(dx)); press('atk'); } }
+              else { clear(); tick(6); } }
+            DBG.push('mini ' + (gbE() ? (gbE().alive ? 'ALIVE' : 'dead') : 'gone') + ' t' + frames + ' hp' + Math.round(P().hp)); waitFor(() => !gbE() || !gbE().alive, 30, { noFight: true });
+            walk(408, { tol: 3 }); settle(); return col() >= 406 && feet() === 32; }, [408, 32]]] : []),
         ['THE SAND-FALL: swing it onto the wall, let it pile, swing it back, climb to the arch', [408, 32], () => { walk(417, { tol: 3 }); if (!swing(417, 'sluice', 'wall')) return false; waitFor(heapFull, 900);
             if (!swing(438, 'sluice', 'grate')) return false; walk(441, { tol: 3 }); hop(441, 40, 1); walk(444, { tol: 3 }); hop(444, 38, 1); walk(447, { tol: 3 }); hop(447, 36, 1); walk(449, { tol: 3 }); hop(449, 34, 1); walk(474); return col() >= 472 && feet() === 36; }, [474, 36]],
         ['THE GREAT SAND-GATE: three turns, the quarter drains, over the ruins', [474, 36], () => { for (let i = 0; i < 6 && !K().wheel.done; i++) { walk(477, { tol: 3 }); press('talk', 1); tick(30); }
             DBG.push('wheel ' + JSON.stringify(K().wheel)); if (!K().wheel.done) return false; waitFor(() => room('great').level <= 0.05, 1500);
             walk(489); hop(491, 41, 1); walk(494, { tol: 3 }); hop(495, 38, 1); walk(499, { tol: 3 }); hop(500, 35, 1); walk(504, { tol: 3 }); hop(504, 32, 1); walk(509, { tol: 3 }); walk(514); hop(515, 41, 1); walk(518, { tol: 3 }); hop(519, 38, 1); walk(523, { tol: 3 }); hop(524, 35, 1); walk(529, { tol: 3 }); hop(529, 33, 1); walk(538); walk(566); return col() >= 564 && feet() === 44; }, [566, 44]],
         ['THE FOUNDRY FLOOR-GATE, then THE CLOCK SHAFT: ride the sand up through the sun', [566, 44], () => { if (!lever(568, 'yard', 'shut')) return false; waitFor(() => full('yard'), 600); walk(587); if (!lever(588, 'shaft', 'shut')) return false; walk(595, { noFight: true }); waitFor(() => full('shaft'), 1500, { noFight: true });
-            DBG.push('shaft ' + room('shaft').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(605); return col() >= 603 && feet() === 32; }, [605, 32]],
-        ['THE TRAP HALL: shut its floor-gate, swing the fall in, wait for the fill, on to the throne door', [605, 32], () => { if (!lever(616, 'trap', 'shut')) return false; if (!swing(610, 'trapfall', 'hall')) return false; waitFor(() => full('trap'), 900);
-            DBG.push('trap ' + room('trap').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(642); DBG.push('past the hall ' + col() + ',' + feet()); walk(700); return col() >= 698 && feet() === 32; }, [700, 32]],
+            DBG.push('shaft ' + room('shaft').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(BC5 ? 598 : 605); return BC5 ? (col() >= 596 && feet() === 32) : (col() >= 603 && feet() === 32); }, BC5 ? [598, 32] : [605, 32]],
+        /* (claude/bc5fix) R2 THE SPAN: strike the glass on the lip, run the two crumbling slabs before they go (a fall is a bite and back to the glass) */
+        ...(BC5 ? [['R2 THE SPAN: strike the glass on the lip, run the slabs over the pit', [598, 32], () => { if (!turn(600, 'span')) return false; walk(610, { tol: 3, noFight: true }); DBG.push('R2 ' + col() + ',' + feet() + ' t' + frames); return col() >= 608 && feet() === 32; }, [610, 32]]] : []),
+        ['THE TRAP HALL: shut its floor-gate, swing the fall in, wait for the fill, on to the throne door', BC5 ? [610, 32] : [605, 32], () => { if (!lever(616, 'trap', 'shut')) return false; if (!swing(610, 'trapfall', 'hall')) return false; waitFor(() => full('trap'), 900);
+            DBG.push('trap ' + room('trap').level.toFixed(1) + ' at ' + col() + ',' + feet()); walk(642); DBG.push('past the hall ' + col() + ',' + feet());
+            if (BC5) { walk(660, { tol: 3 }); if (!turn(662, 'r3a')) return false; walk(667, { tol: 2, noFight: true }); if (!turn(668, 'r3b')) return false; walk(675, { tol: 2, noFight: true }); DBG.push('R3 ' + col() + ',' + feet() + ' t' + frames); }   /* (claude/bc5fix) R3 THE LIFT CHAIN: A raises the stairs, B on the pier raises the last step and turns A back */
+            walk(700); return col() >= 698 && feet() === 32; }, [700, 32]],
         /* (claude/buriedcity3) THE ROOFTOPS: up the breach, the fall that flows up, the chain of two glasses, the exam's glass, down into the courtyard */
         ['THE BREACH: up out of the roof onto the dune', [700, 32], () => { walk(707, { tol: 3 }); if (!hop(707, 29, 0) || !hop(706, 26, 0) || !hop(706, 23, 0) || !hop(706, 20, 0) || !hop(706, 17, 0)) return false; if (!hop(709, 14, 1)) return false; walk(715); return col() >= 713 && feet() === 14; }, [715, 14]],
         ['THE FALL THAT FLOWS UP: over the roofs to the dome, turn its glass, ride the fall to the high dune', [715, 14], () => { walk(717, { tol: 2 }); if (!jumpTo(722, 14)) return false; walk(725, { tol: 2 }); if (!jumpTo(728, 14)) return false; if (!turn(728, 'fall')) return false;
@@ -113,8 +130,11 @@ try {
             DBG.push('rim ' + col() + ',' + feet() + ' t' + frames); walk(810, { tol: 2, noFight: true }); clear(); k.right = true; tick(7); clear(); settle(); walk(816); DBG.push('down ' + col() + ',' + feet() + ' t' + frames + ' hp' + Math.round(P().hp)); waitFor(() => !BK.enemies().some(e => e.alive && e.elite && Math.abs(e.x / TS - 815) < 8), 3000); DBG.push('elite done ' + col() + ',' + feet() + ' t' + frames + ' hp' + Math.round(P().hp)); walk(820); settle(); DBG.push('courtyard ' + col() + ',' + feet()); return col() >= 819 && feet() === 32; }, [820, 32]],
         /* (claude/buriedcity4) THE EXAM BEFORE THE THRONE: the courtyard's glass buries the sand-bound; the antechamber's glass raises the timed slabs - across before they crumble, the shrine */
         ['THE COURTYARD SAND-BOUND and THE ANTECHAMBER: turn the glass, cross the timed slabs before they crumble, the last shrine', [820, 32], () => { if (BK.enemies().some(e => e.alive && e.cnSkin === 'sandbound' && Math.abs(e.x / TS - 819) < 6)) { if (!turn(814, 'court')) return false; walk(819); }
-            walk(824, { tol: 3 }); press('talk', 1); if (!glassRuns('ante')) return false; walk(825, { tol: 2 }); if (!jumpTo(828, 31) || !jumpTo(832, 30) || !jumpTo(836, 31) || !jumpTo(840, 32)) return false; walk(842); return col() >= 841 && feet() === 32; }, [842, 32]],
-      ];
+            walk(824, { tol: 3 }); press('talk', 1); if (!glassRuns('ante')) return false; walk(825, { tol: 2 });
+            if (BC5) { if (!jumpTo(828, 31) || !jumpTo(832, 30) || !jumpTo(834, 31)) return false; press('talk', 1); if (!jumpTo(836, 31) || !jumpTo(840, 32)) return false; press('talk', 1); walk(842, { noFight: true }); }   /* (claude/bc5fix) R4: the pier's pad re-strikes the glass between the slabs, the far pad by the door holds it open */
+            else { if (!jumpTo(828, 31) || !jumpTo(832, 30) || !jumpTo(836, 31) || !jumpTo(840, 32)) return false; walk(842); } return col() >= 841 && feet() === 32; }, [842, 32]],
+      ].filter(l => !(BC5 && l[0].startsWith('THE RELAY')));   /* (claude/bc5fix) the relay's rooms are the Glassblower's hall under the flag */
+      if (R1 && BC5) LEGS.splice(LEGS.findIndex(l => l[0].startsWith('THE SINKING STREET')), 0, ['R1 (optional): strike the balcony glass, run the hung gallery door', [165, 28], () => { if (!turn(168, 'race1')) return false; walk(185, { tol: 3, noFight: true }); DBG.push('R1 ' + col() + ',' + feet()); return col() >= 183; }, [185, 28]]);
       let lifts = [], retries = 0;
       if (${FROM}) { BK.tp(LEGS[${FROM}][1][0], LEGS[${FROM}][1][1]); BK.sim(5); if (LEGS[${FROM}][0].startsWith('THE FOUNDRY') || ${FROM} > LEGS.findIndex(l => l[0].startsWith('THE GREAT SAND-GATE'))) { const W = K().wheel; W.done = true; W.turns = 3; const g = room('great'); g.gate = 'open'; g.drain = 4; } }
       for (const [name, foot, plan, end] of LEGS.slice(${FROM}, ${process.env.UPTO ? +process.env.UPTO : 99})) {

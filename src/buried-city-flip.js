@@ -13,7 +13,9 @@
 import * as SET from './redraw/buried_city_set.js';
 import * as ART from './redraw/buried_city_flip_art.js';
 import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
+import * as A5 from './redraw/buried_city_bc5_art.js';   /* (claude/bc5art) the race door and the race marker */
 import * as FIX from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the glass's link to what it moves, its STRIKE glint */
+import { BC5_SAY, DOOR, CAM5, RACE_GLASSES, RACE } from './buried-city5.js';   /* (claude/bc5) RACE THE GLASS: the race door's numbers and the race lines (pure data) */
 
 export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6,
   boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8,
@@ -35,12 +37,15 @@ export function makeFlip(api) {
     K.seas = (L.seas || []).map(s => ({ ...s }));
     K.tilts = (L.tilts || []).map(t => ({ ...t, dir: 0 })); for (const t of K.tilts) writeTilt(t, true);   /* (claude/buriedcity4) the tilting dunes: idle (mirrored) */
     K.tplats = (L.tplats || []).map(p => ({ ...p, t: 0, up: false })); for (const p of K.tplats) writeSlab(p, false);   /* (claude/buriedcity4) the timed slabs: down */
+    K.doors = (L.doors || []).map(d => ({ ...d, open: 0, solid: null, wait: 0 })); for (const d of K.doors) writeDoor(d, true);   /* (claude/bc5) the race doors: shut */
     K.riserCells = new Set(); for (const r of K.risers) for (let y = r.top; y < r.top + r.rows; y++) for (let x = r.x0; x <= r.x1; x++) K.riserCells.add(y * L.W + x);
     for (const r of K.risers) writeRiser(r, true);
     for (const b of K.banks) writeBank(b, true);
     K.safe = new Map(); K.flipN = K.flipN || { strikes: 0, turns: 0, runs: 0, swallowed: 0, lifted: 0, beaten: 0, rose: 0, sank: 0, ranOut: 0, tilted: 0, slabs: 0, crumbled: 0, held: 0, glanced: 0 };
     if (fresh) K.flipN = { strikes: 0, turns: 0, runs: 0, swallowed: 0, lifted: 0, beaten: 0, rose: 0, sank: 0, ranOut: 0, tilted: 0, slabs: 0, crumbled: 0, held: 0, glanced: 0 };
   };
+  /* (claude/bc5art2) the floor under each race's end column: the AIR cell nearest the race's own row that has something under it (read once, from the cells as built) */
+  const finishCols = L => [[RACE.r1.end, 22, ['race1']], [RACE.r2.end, 31, ['span']], [RACE.r3.end, 31, ['r3a', 'r3b']], [RACE.r4.end, 31, ['ante']]].map(([c, row, glasses]) => { let fy = row + 1; for (const d of [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6]) { const r = row + d; if (ctx.cellGet(c, r) === T().AIR && ctx.cellGet(c, r + 1) !== T().AIR) { fy = r + 1; break; } } return { c, y: fy * TS(), glasses }; });
   const glassOf = id => K.glasses.find(g => g.id === id);
   const running = id => { const g = glassOf(id); return !!g && g.t > 0; };
   F.running = running;
@@ -58,6 +63,9 @@ export function makeFlip(api) {
     const want = b.full >= 0.5; if (!force && want === b.solid) return; b.solid = want;
     for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) ctx.cellSet(x, y, want ? T().SOFT : T().AIR);
   }
+  /* (claude/bc5) A RACE DOOR: a stone shutter, open (AIR - as the level is built) while its glass runs, shut (SOLID) when it has run out - and it NEVER shuts onto a body: it waits for a clear doorway (like a bank) */
+  function writeDoor(d, force) { const want = d.open < 0.5; if (!force && want === d.solid) return; d.solid = want; for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) ctx.cellSet(x, y, want ? T().SOLID : T().AIR);
+    if (!force) { ctx.shake(1); ctx.burst(px((d.x0 + d.x1) / 2), (d.y0 + d.y1 + 1) / 2 * TS(), 8, ['#cdb98a', '#8a7a5a'], 50, 0.5); if (want) { K.flipN.shut = (K.flipN.shut || 0) + 1; ctx.sfx.gateDrop && ctx.sfx.gateDrop(); } else { K.flipN.opened = (K.flipN.opened || 0) + 1; ctx.sfx.gateLift && ctx.sfx.gateLift(); } } }
   /* (claude/buriedcity4) THE TILTING DUNE: dir +1 rises EAST (as laid in the level: the route), -1 rises WEST (idle, mirrored). Its cells from the high end's row to
      its floor: air over the slope, the slope tile, rock under it */
   function writeTilt(t, force) {
@@ -70,7 +78,7 @@ export function makeFlip(api) {
   function writeSlab(p, up) { p.up = up; for (let x = p.x0; x <= p.x1; x++) ctx.cellSet(x, p.y, up ? T().ONEWAY : T().AIR); if (up) api.unburyIn(p.x0, p.x1, null); }
   const raiseSlabs = id => { for (const p of K.tplats) if (p.glass === id) { p.t = p.life; if (!p.up) { writeSlab(p, true); K.flipN.slabs++; ctx.burst(px((p.x0 + p.x1) / 2), p.y * TS(), 8, ['#e6c98a', '#a87a40'], 60, 0.5); } } };
   /* ---------- STRIKE / TURN: a blow or E on a glass ---------- */
-  function flip(g, P) {
+  function flip(g, P, chained) {
     if (g.cd > 0) return false; g.cd = 0.35; g.spin = FLIP.spinT; K.flipN.strikes++; g.linkT = 0; g.byHero = !!P;   /* (claude/bc4fix) THE LINK runs from the glass to what it moves; struck by a hero, the camera looks at it */
     const was = g.t > 0; g.t = g.dur; g.warned = false; g.runs++; if (!was) K.flipN.runs++; else K.flipN.turns++; raiseSlabs(g.id);
     ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2);
@@ -86,8 +94,16 @@ export function makeFlip(api) {
       else if (g.id === 'works2') number(x, y, 'THE SAND-FALL FLOWS UP: STEP IN AND RIDE IT', '#8fd160');
       else if (g.id === 'works3' || g.id === 'court') number(x, y, 'THE SAND-BOUND IS BURIED: STRIKE IT NOW', '#8fd160');
       else if (g.id === 'ante') number(x, y, 'THE SAND RISES: CROSS BEFORE EACH SLAB CRUMBLES', '#8fd160');
+      else if (g.id === 'race1') number(x, y, BC5_SAY.door, '#8fd160');   /* (claude/bc5) RACE THE GLASS */
+      else if (g.id === 'span') number(x, y, BC5_SAY.span, '#8fd160');
+      else if (g.id === 'r3a') number(x, y, BC5_SAY.lift, '#8fd160');
+      else if (g.id === 'r3b') number(x, y, BC5_SAY.chain, '#8fd160');
+      else if (g.id === 'antepad' || g.id === 'antefar') number(x, y, BC5_SAY.pad, '#8fd160');
       else number(x, y, 'THE SAND RUNS BACKWARD: THE ROOFS RISE', '#8fd160');
     } else number(x, y, 'THE GLASS IS STRUCK: ITS SAND RUNS UP', '#ffd36b');
+    /* (claude/bc5) A GLASS THAT TURNS ANOTHER (g.also: the lift chain's second glass, a re-strike pad): the others are struck with it - run, slabs, doors, all of it */
+    if (!chained) for (const id of g.also || []) { const h = glassOf(id); if (h) { h.cd = 0; flip(h, P, true); } }
+    if (P && !chained && api.struck) api.struck(g, P);   /* (claude/bc5) the mini's hook: a hero struck THIS glass */
     return true;
   }
   const glassBox = g => ({ l: px(g.x) - 9, r: px(g.x) + 9, t: (g.y + 1) * TS() - 26, b: (g.y + 1) * TS() });
@@ -121,6 +137,11 @@ export function makeFlip(api) {
     for (const t of K.tilts) writeTilt(t, false);
     for (const t of K.tilts) t.turn = Math.min(1, (t.turn === undefined ? 1 : t.turn) + dt / 0.7);   /* (claude/bc4art) the turn's animation clock */
     for (const p of K.tplats) { if (!p.up) continue; p.t = Math.max(0, p.t - dt); if (p.t === 0) { writeSlab(p, false); K.flipN.crumbled++; ctx.burst(px((p.x0 + p.x1) / 2), p.y * TS() + 4, 12, ['#e6c98a', '#a87a40', '#7a5a30'], 70, 0.6); ctx.sfx.gateDrop && ctx.sfx.gateDrop(); } }
+    /* (claude/bc5) THE RACE DOORS: open while their glass runs; they shut when it has run out - never onto a body */
+    for (const d of K.doors) { const on = running(d.glass);
+      if (on) d.open = Math.min(1, d.open + dt / DOOR.rise);
+      else if (d.open > 0) { if (bodyIn(d.x0, d.x1, d.y0, d.y1)) d.wait = DOOR.waitClear; else if ((d.wait = Math.max(0, d.wait - dt)) === 0) d.open = Math.max(0, d.open - dt / DOOR.rise); }
+      writeDoor(d, false); }
     /* the dune falls: idle they beat you down, flipped they carry you up to the lip */
     for (const f of K.dfalls) { const on = running(f.glass), l = f.x0 * TS() - 2, r = (f.x1 + 1) * TS() + 2, top = f.top * TS(), bot = (f.bottom + 1) * TS();
       for (const p of ctx.players) { if (p.dead || p.x < l || p.x > r || p.y < top - 4 || p.y - (p.h || 14) > bot) continue;
@@ -146,9 +167,11 @@ export function makeFlip(api) {
   }
   /* ---------- the glint's states and the walker's hints ---------- */
   F.state = id => { const g = glassOf(id); return g ? (g.t > 0 ? 'running' : 'idle') : ''; };
-  F.read = () => K && { glasses: K.glasses.map(g => ({ id: g.id, t: +g.t.toFixed(2), runs: g.runs })), risers: K.risers.map(r => ({ glass: r.glass, x0: r.x0, up: +r.up.toFixed(2), solid: r.solid })), banks: K.banks.map(b => ({ glass: b.glass, full: +b.full.toFixed(2) })), tilts: K.tilts.map(t => ({ glass: t.glass, dir: t.dir })), tplats: K.tplats.map(p => ({ glass: p.glass, x0: p.x0, up: p.up, t: +p.t.toFixed(2) })), n: { ...K.flipN } };
+  F.read = () => K && { glasses: K.glasses.map(g => ({ id: g.id, t: +g.t.toFixed(2), runs: g.runs })), risers: K.risers.map(r => ({ glass: r.glass, x0: r.x0, up: +r.up.toFixed(2), solid: r.solid })), banks: K.banks.map(b => ({ glass: b.glass, full: +b.full.toFixed(2) })), tilts: K.tilts.map(t => ({ glass: t.glass, dir: t.dir })), tplats: K.tplats.map(p => ({ glass: p.glass, x0: p.x0, up: p.up, t: +p.t.toFixed(2) })), doors: K.doors.map(d => ({ glass: d.glass, x0: d.x0, open: +d.open.toFixed(2), solid: d.solid })), n: { ...K.flipN } };
   /* the tools' hand: every glass struck at once (tools/drawn-solids.mjs) */
   F.flipAll = () => { for (const g of K.glasses) flip(g, null); };
+  F.flipById = (id, P) => { const g = glassOf(id); if (!g) return false; g.cd = 0; return flip(g, P || null); };   /* (claude/bc5) THE GLASSBLOWER turns his own glass (no hero: no camera look) */
+  F.doorsOf = () => K.doors;
   /* (claude/bc4fix, brief item 4 - Daniel 10-15: "I still don't understand what the hourglass does") WHAT A GLASS MOVES, as world rects (px): its risers and sinkers,
      its banks, its sand-falls, its tilting dunes, its timed slabs, and the sand-bound it holds. The link is drawn to each; the camera looks at them */
   const targetsOf = g => { const ts = TS(), out = [], box = (x0, x1, y0, y1) => out.push({ l: x0 * ts, r: (x1 + 1) * ts, t: y0 * ts, b: (y1 + 1) * ts });
@@ -157,15 +180,19 @@ export function makeFlip(api) {
     for (const f of K.dfalls) if (f.glass === g.id) box(f.x0, f.x1, f.top, Math.min(f.bottom, f.top + 6));
     for (const t of K.tilts) if (t.glass === g.id) box(t.x0, t.x1, t.lo - (t.x1 - t.x0 + 1), t.lo - 1);
     for (const p of K.tplats) if (p.glass === g.id) box(p.x0, p.x1, p.y, p.y);
+    for (const d of K.doors) if (d.glass === g.id) box(d.x0, d.x1, d.y0, d.y1);   /* (claude/bc5) the race doors */
     for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'sandbound' && e.glass === g.id) out.push({ l: e.x - 9, r: e.x + 9, t: e.y - (e.h || 18) - 2, b: e.y, foe: true });
     return out; };
   F.targetsOf = id => { const g = glassOf(id); return g ? targetsOf(g) : []; };
   /* THE CAMERA LOOKS AT WHAT IT MOVED (A3: draw the state where the player stands): for FLIP.camT s after a hero's strike, the middle of what the glass moves (main.js
      updateCamera leans toward it, never losing the hero) */
   F.cam = () => { if (!K) return null; const P0 = ctx.hero(); if (!P0 || P0.dead) return null;
-    const g = K.glasses.filter(q => q.byHero && (q.linkT ?? 99) < FLIP.camT && Math.abs(px(q.x) - P0.x) < FLIP.camR * TS()).sort((a, b) => a.linkT - b.linkT)[0]; if (!g) return null;
+    /* (claude/bc5fix) a bc5 race glass: a SHORT look (CAM5.camT, lean CAM5.lean) that lets go when the hero runs - it never holds the picture while the glass's clock runs */
+    const r5 = q => !!K.L.bc5 && RACE_GLASSES.includes(q.id), camT = q => (r5(q) ? CAM5.camT : FLIP.camT);
+    const g = K.glasses.filter(q => q.byHero && (q.linkT ?? 99) < camT(q) && Math.abs(px(q.x) - P0.x) < FLIP.camR * TS()).sort((a, b) => a.linkT - b.linkT)[0]; if (!g) return null;
+    if (r5(g) && g.linkT > CAM5.holdMin && Math.abs(P0.vx || 0) > CAM5.releaseV) return null;
     const ts = targetsOf(g).filter(q => !q.foe); if (!ts.length) return null; const x = ts.reduce((a, q) => a + (q.l + q.r) / 2, 0) / ts.length, y = ts.reduce((a, q) => a + (q.t + q.b) / 2, 0) / ts.length;
-    return { x, y, k: Math.min(1, (FLIP.camT - g.linkT) / 0.4) }; };
+    return r5(g) ? { x, y, k: Math.min(1, (CAM5.camT - g.linkT) / 0.2) * (CAM5.lean / 0.75) } : { x, y, k: Math.min(1, (FLIP.camT - g.linkT) / 0.4) }; };
   /* ---------- DRAWING (claude/bc3art: src/redraw/buried_city_flip_art.js - the hourglasses, risers, banks, dune falls, the sea, the gauges) ---------- */
   const R = Math.round;
   F.draw = (g, cx, cy, time) => {
@@ -179,9 +206,18 @@ export function makeFlip(api) {
     for (const r of K.risers) { if (!vis(r.x0, r.x1)) continue; const gl = glassOf(r.glass);
       ART.drawRiser(V, r, { l: r.x0 * ts - cx, top: r.top * ts - cy, w: (r.x1 - r.x0 + 1) * ts, h: r.rows * ts, near: !!(P0 && gl && Math.abs(P0.x - px(gl.x)) < 22 * ts), moving: r.up > 0.02 && r.up < 0.98 }); }
     for (const b of K.banks) { if (!vis(b.x0, b.x1) || b.full >= 0.999) continue; const l = b.x0 * ts, w = (b.x1 - b.x0 + 1) * ts, bot = (b.y1 + 1) * ts, h = (b.y1 - b.y0 + 1) * ts * b.full; if (h > 1) { SET.sandBody(V, l, bot - h, w, bot); ART.drawBankRunning(V, l - cx, bot - cy, w, h, b.full); } }
+    /* (claude/bc5) RACE THE GLASS: THE DRAINING BAND - a bar over every governed piece, linked to its glass: gold while it runs, red in its last FLIP.warn s, empty when it has run out (A3) */
+    const band = (l, y, w, k, warn) => { if (!(k > 0)) return; const bw = Math.max(24, w), bx = R(l + (w - bw) / 2); g.fillStyle = 'rgba(24,16,8,0.75)'; g.fillRect(bx - 1, R(y) - 1, bw + 2, DOOR.band + 2); g.fillStyle = warn ? '#ff6b4a' : '#ffd36b'; g.fillRect(bx, R(y), R(bw * k), DOOR.band); };
+    for (const d of K.doors) { if (!vis(d.x0, d.x1)) continue; const gl = glassOf(d.glass), run = !!gl && gl.t > 0, k = run ? gl.t / gl.dur : 0, warn = run && gl.t <= FLIP.warn, l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, top = d.y0 * ts - cy, hh = (d.y1 - d.y0 + 1) * ts, shown = hh * (1 - Math.min(1, d.open));
+      A5.drawRaceDoor(V, { l: R(l), top: R(top), w: R(w), hh: R(hh), open: Math.min(1, d.open), run, k, warn, moving: d.open > 0.02 && d.open < 0.98 });   /* (claude/bc5art) the shutter in its slots under a brass lintel (was greybox) */
+      band(l, top - 12, w + 8, k, warn); }
+    if (K.L.bc5) { for (const r of K.risers) { const gl = glassOf(r.glass); if (!gl || gl.t <= 0 || !vis(r.x0, r.x1) || r.sinks) continue; band(r.x0 * ts - cx, r.top * ts - cy - 9, (r.x1 - r.x0 + 1) * ts, gl.t / gl.dur, gl.t <= FLIP.warn); } }
+    /* (claude/bc5art2) THE FINISH LINES: draw-only, at each race's existing end column (RACE.*.end): two posts, a chequered ribbon, a chequered floor strip - gold while the race's glass runs */
+    if (K.L.bc5) { const fin = K.finish || (K.finish = finishCols(K.L)); for (const q of fin) { if (!vis(q.c, q.c)) continue; const run = q.glasses.some(running), warn = q.glasses.some(id => { const gq = glassOf(id); return !!gq && gq.t > 0 && gq.t <= FLIP.warn; }); A5.drawFinishLine(V, px(q.c) - cx, q.y - cy, { run, warn }); } }
     for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; ART.drawDuneFall(V, running(f.glass), f.x0 * ts - cx, f.top * ts - cy, (f.x1 - f.x0 + 1) * ts, (f.bottom + 1) * ts - cy); }
     for (const gq of K.glasses) { const gx = px(gq.x), gy = (gq.y + 1) * ts, x = gx - cx, y = gy - cy, run = gq.t > 0; if (x < -40 || x > vw + 40) continue;
       const k = run ? gq.t / gq.dur : (gq.back > 0 ? gq.back / FLIP.backT : 0), warn = run && gq.t <= FLIP.warn;   /* (claude/bc4fix) running: the sand left below; run out: the top's sand falls back down */
+      if (K.L.bc5 && RACE_GLASSES.includes(gq.id)) A5.drawRaceMarker(V, x, y, { run, warn });   /* (claude/bc5art) a pennant: this glass is a race */
       ART.drawGlass(V, gq, { k, warn, spin: Math.max(0, (gq.spin || 0) / FLIP.spinT), x, y });
       /* (claude/bc4fix) THE LINK TO WHAT IT MOVES: struck, a trail of gold grains runs to each thing (FLIP.linkRun s) and brackets pulse on them; it stays faint while the glass runs;
          idle and near, a pale ghost of it shows what the glass is tied to before you strike (Rootway's "shows its target first") */

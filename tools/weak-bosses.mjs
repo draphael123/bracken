@@ -66,8 +66,8 @@ try {
     o.headStand=head(false);o.headLeave=head(true);
     /* PHASE TWO: the furrows. None are called in phase one; in phase two they are told red and burn a hero on one, not a hero off them */
     { fresh();b.furrows=[{x0:M.x0+40,x1:M.x0+160,t:20}];b.T.furrow=0;b.x=M.x1-60;BK.P.x=M.x0+100;let seen=false;for(let i=0;i<120;i++){hold();BK.sim(1);if(b.mode==='furrowTell')seen=true;b.T.charge=99;b.T.head=99;b.T.goad=99;}o.p1Furrow=seen; }
-    const furrow=(on)=>{fresh();BK.god=false;b.phase=2;b.hp=HP0*0.4;b.furrows=[{x0:M.x0+40,x1:M.x0+160,t:20}];b.x=M.x1-60;const px=on?M.x0+100:M.x0+220;b.T.furrow=0;let mark=null,hp0=BK.P.hp,told=false;
-      for(let i=0;i<150;i++){hold();BK.P.x=px;BK.P.y=M.floor;b.T.charge=99;b.T.head=99;b.T.goad=99;if(b.mode==='furrowTell'){told=true;mark=mark||BK.markShown(b);}BK.sim(1);if(told&&b.mode==='walk')break;}
+    const furrow=(on)=>{fresh();BK.god=false;BK.P.dodge=0;BK.P.knock=0;BK.P.vx=0;BK.P.vy=0;BK.sim(40);fresh();b.phase=2;b.hp=HP0*0.4;b.furrows=[{x0:M.x0+40,x1:M.x0+160,t:20}];b.x=M.x1-60;const px=on?M.x0+100:M.x0+220;b.T.furrow=0;let mark=null,hp0=BK.P.hp,told=false;
+      for(let i=0;i<420;i++){hold();BK.P.x=px;BK.P.y=M.floor;BK.P.inv=0;b.T.charge=99;b.T.head=99;b.T.goad=99;if(b.mode==='furrowTell'){told=true;mark=mark||BK.markShown(b);}BK.sim(1);if(told&&b.mode==='walk')break;}
       const r={told,mark,hurt:Math.round(hp0-BK.P.hp)};BK.god=true;return r;};
     o.furrowOn=furrow(true);o.furrowOff=furrow(false);
     out.plough=o;}

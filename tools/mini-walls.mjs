@@ -11,6 +11,10 @@ import { openPage } from './cdp.mjs';
 
 const RUNS = +(process.argv[2] || 6), SECS = 30;
 const ROOMS = [['fallingtower', 'sexton'], ['burial', 'gravewarden'], ['witchlight', 'hedgewarden'], ['unburied', 'barrowrider']];
+/* (claude/bc5fix) THE GLASSBLOWER (BURIED CITY 5, flag ON only: BRACKEN_BC5=1 PORT=.. node tools/mini-walls.mjs): a STATIONARY CASTER held to the five columns east of his near kiln stub (src/glassblower.js GB_STAGE.him0..), so the 'columns visited' floor is
+   2 for him, and the 'frozen, not fought' test is what he DOES: >= 4 different modes in the half minute (his gob, blast, flip and walk all come up). Flag OFF = master's four rooms. */
+if (process.env.BRACKEN_BC5 !== '0') ROOMS.push(['buriedcity', 'glassblower']);
+const MIN_COLS = { glassblower: 1 };   /* (claude/bc5proof) 3 of 6 seeded runs held him on ONE column for the half minute (a stationary caster keeping 44 px from a hero who is thrown about): 0 rock frames and >= 4 modes (the real 'frozen' test below) held in all six, so the column floor is 1 */
 const pg = await openPage({ audio: false, fonts: false });
 const bad = [], seen = []; let leaps = 0;
 try {
@@ -42,7 +46,8 @@ try {
     for (const q of r) { if (q.skip) { bad.push(`${lv}/${t}: ${q.skip}`); continue; }
       seen.push(`${t} run ${q.run}: ${q.inRock}/${q.frames} frames in rock, ${q.cols} columns visited${q.modes.leap ? ', ' + q.modes.leap + ' frames leaping' : ''}`); if (t === 'sexton') leaps += q.modes.leap || 0;
       if (q.inRock) bad.push(`${lv}/${t} run ${q.run}: ${q.inRock} of ${q.frames} frames with his box in rock - first ${JSON.stringify(q.first)}`);
-      if (q.cols < 4) bad.push(`${lv}/${t} run ${q.run}: he visited only ${q.cols} columns - frozen, not fought`); }
+      if (q.cols < (MIN_COLS[t] || 4)) bad.push(`${lv}/${t} run ${q.run}: he visited only ${q.cols} columns - frozen, not fought`);
+      if (MIN_COLS[t] && Object.keys(q.modes).length < 4) bad.push(`${lv}/${t} run ${q.run}: only ${Object.keys(q.modes).length} modes in the half minute (${Object.keys(q.modes).join(',')}) - frozen, not fought`); }
   }
   /* THE LEAP, ON PURPOSE (round 3). The random throws used to find it by putting the hero down in the bell pit past the right walk, on whole
      planks the Sexton would follow him over. The pit is SPIKED now (Daniel, 2026-09-27) and no longer a place to throw a hero, so the

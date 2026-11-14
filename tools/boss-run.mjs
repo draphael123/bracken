@@ -24,11 +24,14 @@ export const ROW_MIN_SECS = { crown: 360 };
 /* (claude/traittune-d) BOSS_TRAITS=on|core (off/unset = today): flips the passives rework in the page before the fight (TRAITS_SHIP on: the bot wears its defaults; core: core passives only) and CHARMS2_SHIP (BOSS_CHARMS2=0 to skip). A measuring flag; the shipped flags stay false. */
 const traitsJs = () => { const t = process.env.BOSS_TRAITS; if (!t || t === 'off') return ''; return "{const T=await import('/src/traits.js');T.setTraitsShip(true);T.setLabTraits(" + (t === 'core' ? "'core'" : t === 'on' ? 'null' : JSON.stringify(t.split(','))) + ");}" + (process.env.BOSS_CHARMS2 === '0' ? '' : "{const C=await import('/src/charms2.js');C.setCharms2Ship(true);}"); };
 /* (claude/juice2tune) BOSS_JUICE2=off|on: sets the hit-feel flag (src/juice.js setJuice2) in the page before the fight, so ONE build measures both (unset = the build's own JUICE2_SHIPS) */
+const cf3Js = () => { const j = process.env.BOSS_CF3; if (!j) return ''; return "{const CF=await import('/src/cf-foe.js');CF.setCF3(" + (j === 'on' ? 'true' : 'false') + ");}"; };   /* (claude/cf3proof) BOSS_CF3=on|off flips the CF3 foe-feel flag for a rates run */
+const cf2Js = () => { const j = process.env.BOSS_CF2; if (!j) return ""; return "{const CF=await import('/src/cf-platform.js');CF.setCF2(" + (j === 'on' ? 'true' : 'false') + ");}"; };   /* (claude/prepcf2) BOSS_CF2=on|off flips the CF2 platform-feel flag for a rates run */
+const cf4Js = () => { const j = process.env.BOSS_CF4; if (!j) return ""; return "{const CF=await import('/src/cf-hud.js');CF.setCF4(" + (j === 'on' ? 'true' : 'false') + ");}"; };   /* (claude/cf4proof) BOSS_CF4=on|off flips the CF4 HUD-feel flag for a rates run */
 const juiceJs = () => { const j = process.env.BOSS_JUICE2; if (!j) return ''; return "{const JJ=await import('/src/juice.js');JJ.setJuice2(" + (j === 'on' ? 'true' : 'false') + ");}"; };
 export function fightJs({ r, way, h, s, profile, flasks }, secs = 240) {
   const [id, fl] = r.split(':'), lvl = levelOverride() ?? campaignLevel(id), built = way === 'built', fk = fightFlasks(id, flasks), fkN = Object.keys(fk).filter(k => ['tonic', 'extra2', 'extra3'].includes(k)).length;
   const prof = way === 'first' ? (typeof profile === 'string' ? profile + '+first' : { ...profile, first: true }) : profile;
-  return { lvl, js: `(async()=>{BK.manualSimulation=true;${juiceJs()}${traitsJs()}const P0=BKT.PROG,h=${JSON.stringify(h)},lvl=${lvl};BKT.setHeroLevel(h,lvl);P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};let kit=[];
+  return { lvl, js: `(async()=>{BK.manualSimulation=true;${juiceJs()}${cf3Js()}${cf2Js()}${cf4Js()}${traitsJs()}const P0=BKT.PROG,h=${JSON.stringify(h)},lvl=${lvl};BKT.setHeroLevel(h,lvl);P0.skillOwned=P0.skillOwned||{};P0.loadouts=P0.loadouts||{};P0.skillOwned[h]={};P0.loadouts[h]=[];if(P0.talents)P0.talents[h]={};let kit=[];
     ${built ? `const B=await import('/src/bot-profile.js'),PR=await import('/src/progression.js');P0.card[h]=B.typicalCard(lvl);kit=${process.env.BK_KIT ? JSON.stringify(process.env.BK_KIT.split(",")) : "(B.TYPICAL_SKILLS[h]||[])"}.filter(id=>{const n=PR.skillFor(h,id);return n&&n.active&&n.level<=lvl;}).slice(0,PR.slotsAt(lvl));for(const id of kit)P0.skillOwned[h][id]=true;P0.loadouts[h]=kit.slice();` : ''}
     P0.flaskItems=${JSON.stringify(fk)};P0.flaskUp=${fkN};${leverJs()}${bkLeverJs()}${wardenUltJs()}
     BK.setHero(h);BK.reset({fresh:true});BK.applyUpgrades();${process.env.BLOW_CENSUS ? 'BK.blowRec={};' : ''}${process.env.HITLOG ? 'BK.hitLog=[];' : ''}const maxHp=BK.P.maxHp,flasks0=BK.P.flasks,heal0=BK.flaskHealPct?BK.flaskHealPct():null;
@@ -40,18 +43,38 @@ export const diffJs = () => 'BK.difficulty&&BK.difficulty.setOverride(' + JSON.s
 /* a page, tried three times: under a loaded machine a first navigate can miss its 15 s */
 export async function openRetry(opts = {}) { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false, ...opts }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
 export const won = x => x.outcome === 'win' || x.outcome === 'trade';
+/* (claude/browserleak 11-12) THE KEEPER BROWSER IS KEPT SMALL AND RENEWED. memguard killed 8+ test Chromes a morning at ~1.8-2.2 GB. What the numbers say (memguard.log, leakhunt-1110, loadleak):
+   a game page is ~1.3-1.5 GB the moment it has booted (the bake), a fight adds a few hundred MB, and a fresh browser context per fight already throws each fight's renderer away. What this runner
+   itself added on top: (1) the keeper's OWN first tab loaded the whole game and sat idle for the entire table (a third of the tree) - it now opens about:blank (cdp.mjs opts.blank);
+   (2) the keeper's browser-side processes (browser, GPU, network, storage) were never renewed - they are measured after every fight (tools/proc-rss.mjs, the same working set memguard judges) and the keeper
+   is replaced, once no fight is in flight, every BOSS_KEEPER_EVERY fights (default 12; 0 = never) or when they pass BOSS_KEEPER_MB (default 700); (3) a fight whose page the machine killed (memguard, a crash) is
+   rerun ONCE on a fresh page, labelled infraRetry, instead of becoming a red/err row. BOSS_RSS_LOG=1 prints the tree after every fight and puts it on the row as .rss. BRACKEN_LITE=1 opens the keeper with
+   cdp.mjs LITE_ARGS (state-only: boss rows read no pixels) - opt-in, default off, because it can change raster paths. onRow gets every finished fight AT ONCE (boss-rates writes its file from it). */
+import { treeRss } from './proc-rss.mjs';
+import { INFRA_RE } from './infra-kill.mjs';
+const sleepMs = ms => new Promise(r => setTimeout(r, ms));
 export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {}) {
   if (!list.length) return [];
-  const queue = list.slice(), out = [], keeper = await openRetry();
+  const KEEP_EVERY = process.env.BOSS_KEEPER_EVERY === undefined ? 12 : +process.env.BOSS_KEEPER_EVERY, KEEP_MB = +(process.env.BOSS_KEEPER_MB || 700), RSS_LOG = process.env.BOSS_RSS_LOG === '1';
+  const keeperOpts = { blank: true, ...(process.env.BRACKEN_LITE === '1' ? { lite: true } : {}) };
+  const queue = list.slice(), out = [];
+  let keeper = await openRetry(keeperOpts), inflight = 0, served = 0, browserMb = 0, recycling = null, renewals = 0;
   /* One browser owns the server and profile. Each seed gets a fresh, disposable browser context,
      so no fight inherits localStorage or page state and we skip the old page's extra reload. */
-  const worker = async () => { for (;;) { const F = queue.shift(); if (!F) return; let row, pg; const { lvl, js } = fightJs(F, secs);
-    try { pg = await openRetry({ browserPort: keeper.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
-    catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; }
-    finally { if (pg) await pg.close(); }
-    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...row }; out.push(rec); if (onRow) onRow(rec, out); } };
+  const need = () => (KEEP_EVERY > 0 && served >= KEEP_EVERY) || (KEEP_MB > 0 && browserMb > KEEP_MB);
+  /* renewal waits for the fights in flight, closes the old browser FIRST (it may own the dev server, which its close kills), then opens the next one */
+  const renew = () => recycling = (async () => { while (inflight > 0) await sleepMs(300); const old = keeper; await old.close().catch(() => {}); keeper = await openRetry(keeperOpts); served = 0; browserMb = 0; renewals++; })().finally(() => { recycling = null; });
+  const gate = async () => { for (;;) { if (recycling) { await recycling; continue; } if (need()) { await renew(); continue; } break; } inflight++; served++; };
+  const worker = async () => { for (;;) { if (!queue.length) return; await gate(); const F = queue.shift(); if (!F) { inflight--; return; } let row, pg, again = false; const { lvl, js } = fightJs(F, secs), kp = keeper;
+    try { pg = await openRetry({ browserPort: kp.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
+    catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; if (!F.infraTried && ((pg && pg.infra) || INFRA_RE.test(String(e.message)))) again = true; }
+    finally { if (pg) await pg.close().catch(() => {}); }
+    if (again) { queue.unshift({ ...F, infraTried: true }); console.log('  [infra-retry] ' + F.r + ' ' + F.way + ' ' + F.h + ' s' + F.s + ': ' + row.err.slice(0, 80) + ' - one rerun on a fresh page'); inflight--; continue; }
+    let rss = null; try { rss = await treeRss(kp.profile); } catch {}
+    if (rss) { browserMb = Math.max(browserMb, rss.browser); if (RSS_LOG) console.log('  [rss] keeper tree total ' + rss.total + ' MB, browser-side ' + rss.browser + ', renderers ' + rss.renderers + ', biggest ' + rss.biggest + ' (' + rss.n + ' procs, fights since renewal ' + served + ', renewals ' + renewals + ')'); }
+    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...(F.infraTried ? { infraRetry: true } : {}), ...(RSS_LOG && rss ? { rss } : {}), ...row }; out.push(rec); inflight--; if (onRow) onRow(rec, out); } };
   try { await Promise.all(Array.from({ length: Math.min(jobs, list.length) }, () => worker())); } finally { await keeper.close(); }
   return out;
 }
-export const line = x => x.row + ' ' + x.way + ' ' + x.hero + ' s' + x.seed + ' L' + x.lvl + ': ' + (x.err ? 'ERR ' + x.err : x.outcome + ' ' + x.secs + 's left ' + x.bossLeft + '% taken ' + x.taken + (x.stk ? ' tower ' + x.stk : '') + (x.hb ? ' hb ' + JSON.stringify(x.hb) : '') + (x.gph ? ' gph ' + JSON.stringify(x.gph) + (x.gpn ? ' gpn ' + JSON.stringify(x.gpn) : '') : '') + (x.gq ? ' gq ' + x.gq.stage + ' stuns ' + x.gq.stuns + ' p1 ' + x.gq.p1Secs + 's esc ' + x.gq.escSecs + 's' + (x.gq.skip ? '(' + x.gq.skip + ')' : '') + ' p2 ' + x.gq.p2Secs + 's bar ' + x.gq.barLeft + '%' + (x.gq.tally ? ' gqt ' + JSON.stringify(x.gq.tally) : '') : '')
+export const line = x => x.row + ' ' + x.way + ' ' + x.hero + ' s' + x.seed + ' L' + x.lvl + ': ' + (x.err ? 'ERR ' + x.err : x.outcome + ' ' + x.secs + 's left ' + x.bossLeft + '% taken ' + x.taken + (x.stk ? ' tower ' + x.stk : '') + (x.hb ? ' hb ' + JSON.stringify(x.hb) : '') + (x.gph ? ' gph ' + JSON.stringify(x.gph) + (x.gpn ? ' gpn ' + JSON.stringify(x.gpn) : '') : '') + (x.gq ? ' gq ' + x.gq.stage + ' stuns ' + x.gq.stuns + ' p1 ' + x.gq.p1Secs + 's esc ' + x.gq.escSecs + 's' + (x.gq.skip ? '(' + x.gq.skip + ')' : '') + ' p2 ' + x.gq.p2Secs + 's bar ' + x.gq.barLeft + '%' + (x.gq.tally ? ' gqt ' + JSON.stringify(x.gq.tally) : '') + (x.gq.s2 ? ' s2 ' + JSON.stringify(x.gq.s2) : '') : '')
   + (x.eyes ? ' rt' + x.eyes.rtMean + ' mis' + x.eyes.misreads + ' greed' + x.eyes.greeds + (x.eyes.guardTells !== undefined ? ' guard ' + x.eyes.guardRaised + '/' + x.eyes.guardTried + '/' + x.eyes.guardTells : '') : '') + (x.bk ? ' bk ' + JSON.stringify(x.bk) : '') + (x.gaps && (x.gaps.noRange.length || x.gaps.empty) ? ' !!BUILD-GAP ' + (x.gaps.empty ? 'no typical skills for ' + x.hero + ' (casts nothing but its ultimate)' : '') + (x.gaps.noRange.length ? ' no SKILL_RANGE for ' + x.gaps.noRange.join(',') + ' (never cast)' : '') : '') + (x.casts ? ' casts ' + JSON.stringify(x.casts) : '') + (x.rp ? ' rp ' + JSON.stringify(x.rp) : '') + (x.bz ? ' bz ' + JSON.stringify(x.bz) : '') + (x.rg ? ' rg ' + JSON.stringify(x.rg) : '') + (x.geo ? ' geo ' + JSON.stringify(x.geo) : '') + (x.am ? ' am ' + JSON.stringify(x.am) : '') + (x.rot ? ' rot ' + JSON.stringify(x.rot) : ''));   /* (claude/riposte) the parries, the boss's riposte openings and the mix-up chain's pips and verbs */

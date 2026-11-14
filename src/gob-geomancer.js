@@ -18,6 +18,7 @@
 //   above, an empty orbit, and his own rock sent back are taken whole. The rock held over his head in the tell is his weak spot: strike him then and it
 //   falls on his own head (x1 + 6, staggered 1 s).
 // He keeps his distance (90-170 px), never steps off his ledge, and never leaves his post by more than `leash` px. No contact damage: told blows only.
+import { G6CALL, GCALL } from './gq6geo.js';   /* (claude/gq6geo, GQ6CALL_SHIPS) THE GEODE CALL: his second attack, behind its own flag (default OFF) */
 export const GG = {
   hp: 44, w: 12, h: 22, speed: 34,
   keep: [90, 170], leash: 72, sight: 260, sightUp: 260, sightDown: 120,
@@ -39,13 +40,19 @@ export const GG = {
 };
 export const GG_SAY = { back: 'SENT BACK', warded: 'WARDED', held: 'HIS ROCK FALLS ON HIM', stagger: 'STAGGERED', seal: 'THE SEAL SHATTERS', sealFail: 'WITH HIM GONE THE SEAL FAILS',
   stone: 'ONLY STONE BREAKS IT', shield: 'SHIELD KNOCKED ASIDE', lamp: 'THE CHANDELIER FALLS', bell: 'THE BELL RINGS', secret: 'THE OLD STONE GIVES', spent: 'SPENT' };
-export const GG_MODES = ['rockTell', 'slateTell', 'shellTell'];   /* every windup (src/marks.js BY_HAND: all three a yellow !) */
+export const GG_MODES = ['rockTell', 'slateTell', 'shellTell', ...(G6CALL ? ['callTell'] : [])];   /* every windup (src/marks.js BY_HAND: all three a yellow !; the Geode Call's too, flag GQ6CALL) */
+/* THE GEODE CALL (flag GQ6CALL_SHIPS): the Queen's portal boulder, borrowed. callTell 0.8 s (the staff goes up, a small violet ring over you, a landing ring on the floor that LOCKS 0.5 s in), then the stone
+   falls 0.6 s, 9 within 14 px, and bursts into two HANGING SHARDS: any blow or hero shot sends one home to him (STAGGERED 1.4 s, his own rock's damage). It takes the throw where n % 4 == 2, and only when he sees
+   you, you are 60+ px off and have 4+ rows of air over your head, with at most one live call each and two in the level (w.air, w.callFree). Never the teach Geomancer's or an early sighting's (s.callOk). */
+export function callWanted(s, w, adx) {
+  return !!(G6CALL && s.callOk && s.n % GCALL.every === GCALL.phase && adx >= GCALL.minDist && adx <= GCALL.maxDist && (w.air || 0) >= GCALL.air && w.callFree);
+}
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /* a fresh foe state on top of main.js's spawn base */
 export function newGeo(o = {}) {
-  return { mode: 'idle', modeT: 0, cd: GG.first, orbit: GG.orbit.max, regenT: 0, n: 0, spent: 0, shellCd: 0, held: false, post: o.post ?? null, leash: o.leash ?? GG.leash };
+  return { mode: 'idle', modeT: 0, cd: GG.first, orbit: GG.orbit.max, regenT: 0, n: 0, spent: 0, shellCd: 0, held: false, post: o.post ?? null, leash: o.leash ?? GG.leash, ...(G6CALL ? { callOk: !!o.callOk, aim: null } : {}) };
 }
 
 /* THE BRAIN, one frame. s: the foe (it carries the fields newGeo made plus x, y, face, stagger). w: { tx, ty: the hero he means (feet); ahead(dir): true if
@@ -56,16 +63,18 @@ export function geoStep(s, dt, w) {
   s.shellCd = Math.max(0, s.shellCd - dt); if (s.spent > 0) s.spent = Math.max(0, s.spent - dt);
   /* the orbit comes back a chunk at a time (never while he is hurt or casting) */
   if (s.orbit < GG.orbit.max && !(s.stagger > 0) && !s.mode.endsWith('Tell')) { s.regenT += dt; if (s.regenT >= GG.orbit.regen) { s.regenT = 0; s.orbit++; } } else if (s.orbit >= GG.orbit.max) s.regenT = 0;
-  if (s.stagger > 0) { if (s.mode.endsWith('Tell')) { out.events.push({ ev: 'cancel', move: s.mode }); s.held = false; } s.mode = 'stagger'; s.modeT = 0; return out; }
+  if (s.stagger > 0) { if (s.mode.endsWith('Tell')) { out.events.push({ ev: 'cancel', move: s.mode }); s.held = false; } if (G6CALL) s.aim = null; s.mode = 'stagger'; s.modeT = 0; return out; }
   if (s.mode === 'stagger') { s.mode = 'idle'; s.cd = Math.max(s.cd, 0.6); }
   const dx = w.tx - s.x, adx = Math.abs(dx), dy = w.ty - s.y;
   const sees = adx < (s.sight || GG.sight) && dy > -GG.sightUp && dy < GG.sightDown + (s.perch ? 200 : 0);
   if (sees) s.face = Math.sign(dx) || s.face;
   /* a move in its tell */
   if (s.mode.endsWith('Tell')) { s.modeT -= dt;
+    if (G6CALL && s.mode === 'callTell' && s.aim && !s.aim.locked) { s.aim.x = w.tx; s.aim.y = w.ty; if (GCALL.tell - s.modeT >= GCALL.lockAt) { s.aim.locked = true; out.events.push({ ev: 'lock', x: s.aim.x, y: s.aim.y }); } }   /* the landing ring follows you until it locks */
     if (s.modeT <= 0) { const m = s.mode; s.mode = 'release'; s.modeT = 0.3; s.held = false;
       if (m === 'rockTell') { s.orbit = Math.max(0, s.orbit - 1); out.events.push({ ev: 'rock' }); }
       else if (m === 'slateTell') out.events.push({ ev: 'slate' });
+      else if (m === 'callTell') { const a = s.aim || { x: w.tx, y: w.ty }; s.aim = null; out.events.push({ ev: 'call', x: a.x, y: a.y }); }
       else if (m === 'shellTell') { s.orbit = 0; s.spent = GG.shell.spent; s.shellCd = GG.shell.cd; out.events.push({ ev: 'shell' }); }
       s.cd = GG.cd[0] + (GG.cd[1] - GG.cd[0]) * w.roll(); s.relMove = m; }
     return out; }
@@ -81,8 +90,8 @@ export function geoStep(s, dt, w) {
     if (s.cd <= 0 && !w.tokWait) {
       let m = null;
       if (adx < GG.shell.near && Math.abs(dy) < 30 && s.orbit > 0 && s.shellCd <= 0) m = 'shellTell';
-      else if (adx >= 40) { s.n++; m = (s.n % GG.slate.every === 0 || s.orbit === 0) ? 'slateTell' : 'rockTell'; }
-      if (m) { s.mode = m; s.modeT = GG[m === 'rockTell' ? 'rock' : m === 'slateTell' ? 'slate' : 'shell'].tell; s.held = m === 'rockTell'; out.vx = 0; out.events.push({ ev: 'tell', move: m }); }
+      else if (adx >= 40) { s.n++; m = (s.n % GG.slate.every === 0 || s.orbit === 0) ? 'slateTell' : 'rockTell'; if (callWanted(s, w, adx)) m = 'callTell'; }   /* (GQ6CALL) the call takes this throw */
+      if (m) { s.mode = m; s.modeT = m === 'callTell' ? GCALL.tell : GG[m === 'rockTell' ? 'rock' : m === 'slateTell' ? 'slate' : 'shell'].tell; s.held = m === 'rockTell'; out.vx = 0; if (m === 'callTell') s.aim = { x: w.tx, y: w.ty, locked: false }; out.events.push({ ev: 'tell', move: m }); }
     }
   } else { s.mode = 'idle'; if (s.post !== null && Math.abs(s.x - s.post) > 6) { const d = Math.sign(s.post - s.x); if (w.ahead(d)) { out.vx = d * GG.speed * 0.6; s.mode = 'walk'; } } }
   return out;

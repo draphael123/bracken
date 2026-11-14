@@ -15,6 +15,10 @@ export function gqLabStep(BK, boss, f, st, mode, spf) {
   const P = BK.P, stage = BK.gqStage ? BK.gqStage() : 'hall';
   if (boss.mode !== st.lastMode) { if (boss.mode === 'stunned') st.stuns++; if (boss.mode === 'stunned' || boss.mode === 'pinned') { const k = gqCls(boss, stage); st.tl.n[k] = (st.tl.n[k] || 0) + 1; } st.lastMode = boss.mode; }
   gqTally(st.tl, boss, stage, spf);
+  if (stage === 'roof') {   /* (claude/gq6hitch) the burning climb's row: seconds per tier (0 = the deck), the tier + phase she was in at the end, the last-resort lifts, and her crown tosses on each tier */
+    const H = BK.gqHands ? BK.gqHands() : null, g = H && H.gq6s2 && H.gq6s2(), s2 = g && g.state();
+    if (s2) { const a = st.s2 || (st.s2 = { tt: {}, crowns: {}, lifts: 0, tier: 0, phase: '', steps: 0, m: '' }); const k = s2.tier; a.tt[k] = +((a.tt[k] || 0) + spf).toFixed(2); a.tier = k; a.phase = s2.phase; a.lifts = s2.lifts; a.steps = s2.steps || 0;
+      if (boss.mode !== a.m) { if (boss.mode === 'crownTossTell') a.crowns[k] = (a.crowns[k] || 0) + 1; a.m = boss.mode; } } }
   if (stage !== st.stage) {
     if (st.hallF === null && stage !== 'hall') st.hallF = f;
     if (st.escF === null && stage === 'escape') { st.escF = f; st.escHp0 = pct(P.hp, P.maxHp); }
@@ -22,7 +26,7 @@ export function gqLabStep(BK, boss, f, st, mode, spf) {
     st.stage = stage;
   }
   if (stage === 'escape' && st.escF !== null && !P.dead) {
-    const why = mode === 'skip' ? 'skip' : (f - st.escF) * spf > GQ_ESC_STALL ? 'stall' : null;
+    const why = mode === 'skip' ? 'skip' : (BK.L && BK.L.gqEscape && BK.L.gqEscape.tower && BK.L.gqEscape.tower.OUT) ? 'gq4l' :   /* (gq4tune-d) GQ4L's tower is seven storeys + the outside face: the lab bot has no route for it (it stalled the full 90 s in the fire, burning flasks, every row), so the climb is the level walker's, like Gorm's */ (f - st.escF) * spf > GQ_ESC_STALL ? 'stall' : null;
     const H = why && BK.gqHands ? BK.gqHands() : null;
     if (H && H.skipRoof && H.skipRoof()) { st.skip = why; st.roofF = f; st.escHpEnd = pct(P.hp, P.maxHp); st.stage = 'roof'; return true; }
   }
@@ -56,6 +60,7 @@ export function gqLabRow(st, boss, f, spf) {
     p2Secs: st.roofF === null ? null : span(st.roofF, f, spf),
     escHp0: st.escHp0, escHpEnd: st.escHpEnd,
     barLeft: boss.alive ? pct(boss.hp, boss.maxHp) : 0,
+    s2: st.s2 ? { tt: st.s2.tt, crowns: st.s2.crowns, lifts: st.s2.lifts, tier: st.s2.tier, phase: st.s2.phase, steps: st.s2.steps } : null,   /* (claude/gq6hitch) null with the climb off */
     tally: Object.fromEntries(Object.keys({ ...st.tl.d, ...st.tl.t }).sort().map(k => [k, [Math.round(st.tl.d[k] || 0), +(st.tl.t[k] || 0).toFixed(1), st.tl.n[k] || 0]])),   /* (claude/hcqueen) [hp lost, s spent, openings entered] by class */
   };
 }

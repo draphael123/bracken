@@ -1,6 +1,8 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
+import { CF1_SHIPS, CF1 } from './cf-impact.js';   /* (claude/cf1) the thwack's material / combo pitch, the kill boom, the flame sizzle (all no-ops with the flag off) */
+import { heartGain } from './cf-hud.js';   /* (claude/cf4) the quiet low-health heartbeat's gain (appended SFX block) */
 import { JUICE2_SHIPS } from './juice.js'; import { feel as jfFeel } from './jump-feel.js';   /* (claude/juice2) the flag and the hero weights: the thwack layer, the clink, the jump / land weight (all OFF = today's sound) */
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
 const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg', canal: './audio/canal.ogg', harvestfair: './audio/harvestfair.ogg', wickerqueen: './audio/wickerqueen.ogg', unburied: './audio/unburied.ogg', deathknight: './audio/deathknight.ogg', blacklord: './audio/blacklord.ogg', oreroad: './audio/oreroad.ogg', witchlight: './audio/witchlight.ogg', fallingtower: './audio/fallingtower.ogg', underkeep: './audio/underkeep.ogg', stormharbor: './audio/stormharbor.ogg', burial: './audio/burial.ogg', store: './audio/store.ogg', hurricane: './audio/hurricane.ogg', drowned: './audio/drowned.ogg', theme: './audio/theme.ogg', theme2: './audio/theme2.ogg', theme3: './audio/theme3.mp3', mountain: './audio/mountain.ogg',   /* THE SCREE PATH (claude/scree2, Daniel 10-08): "Mountain Theme Loop" by beardalaxy, CC0 (audio/CREDITS.txt) */ boss: './audio/boss.ogg', boss2: './audio/boss2.ogg', boss3: './audio/boss3.ogg', boss4: './audio/boss4.ogg', snow: './audio/snow.ogg', king: './audio/king.mp3', cave: './audio/cave.mp3', town: './audio/town.mp3', adventure: './audio/adventure.mp3', stockade: './audio/stockade.ogg', sunspire: './audio/sunspire.ogg', stormhold: './audio/stormhold.ogg', roc: './audio/roc.ogg', highcrown: './audio/highcrown.ogg', queen: './audio/queen.ogg', ending: './audio/ending.ogg', select: './audio/select.ogg', ambForest: './audio/ambience_forest.mp3', longwater: './audio/longwater.ogg', reef: './audio/reef.mp3', flotilla: './audio/flotilla.ogg', waymeet: './audio/waymeet.ogg', deep: './audio/deep.ogg', deepdread: './audio/deepdread.ogg', underleaf: './audio/underleaf.ogg', mineworks: './audio/mineworks.ogg', marketday: './audio/marketday.ogg',
@@ -1391,6 +1393,11 @@ Object.assign(SFX, {
   arrowWhistle() { tone('sine', 3300, 1500, 1.0, 0.05); tone('sine', 2900, 1250, 1.05, 0.04, 0.1); tone('sine', 3600, 1700, 0.9, 0.035, 0.22); noise(0.9, 0.025, 5200, 0.5, 0.1); },
   whistleCall() { tone('sine', 2100, 2600, 0.16, 0.09); tone('sine', 2600, 2200, 0.2, 0.08, 0.15); tone('sine', 2400, 3000, 0.14, 0.07, 0.34); },
   fuse() { noise(0.5, 0.07, 4200, 0.5); noise(0.4, 0.05, 6000, 0.4, 0.12); },
+  /* (claude/gq6call-art) THE GEODE CALL (the Goblin Geomancer's, GQ6CALL): three sounds of its own, all synthesized. TELL 0.8 s: a crystal shimmer that RISES (two sines climbing a fifth apart, a glassy hiss) over a low stone grind -
+     'something is gathering overhead'; FALL: a thin falling whistle, higher and shorter than the Queen's boulder; LAND: a short dry thud with a crack and two glass tinks (the stone is smaller than hers: shorter, higher) */
+  geoCallTell() { tone('sine', 660, 1320, 0.8, 0.07); tone('sine', 990, 1980, 0.7, 0.05, 0.1); tone('triangle', 1320, 2640, 0.55, 0.025, 0.25); noise(0.8, 0.04, 2600, 0.5); noise(0.35, 0.09, 380, 0.5); tone('square', 110, 70, 0.3, 0.05); },
+  geoCallFall() { tone('sine', 1900, 520, 0.5, 0.07); tone('sine', 2300, 700, 0.4, 0.035, 0.04); noise(0.45, 0.035, 3200, 0.6); },
+  geoCallLand() { tone('sine', 190, 80, 0.1, 0.22); noise(0.07, 0.22, 1100, 0.6); tone('square', 240, 90, 0.07, 0.1); tone('triangle', 1560, 1200, 0.14, 0.06, 0.01); tone('sine', 2400, 2000, 0.1, 0.045, 0.04); tone('sine', 3100, 2600, 0.08, 0.035, 0.07); },
   crumble() { noise(0.4, 0.16, 420, 0.5); noise(0.3, 0.1, 900, 0.6, 0.06); tone('square', 150, 70, 0.2, 0.07); },
   gateOpen() { noise(0.5, 0.12, 300, 0.7); tone('sawtooth', 90, 130, 0.5, 0.08); },
   mawRoar() { noise(0.9, 0.2, 260, 0.4); tone('sawtooth', 90, 46, 0.7, 0.16); tone('square', 60, 40, 0.5, 0.1, 0.05); }, // the moray coming out of its hole
@@ -1604,6 +1611,7 @@ const DIE = {
   swornsword() { tone('square', 190, 80, 0.26, 0.15); noise(0.2, 0.18, 700, 0.45, 0.05); SFX.clank && SFX.clank(); },
   lancer() { tone('square', 180, 70, 0.3, 0.14); noise(0.24, 0.2, 650, 0.5, 0.05); tone('sawtooth', 520, 300, 0.35, 0.06, 0.12); /* the man, and the horse going on without him */ },
   hedgeknight() { tone('square', 150, 60, 0.36, 0.18); noise(0.3, 0.26, 500, 0.55, 0.06); },
+  gobknight() { tone('square', 150, 60, 0.36, 0.18); noise(0.3, 0.26, 500, 0.55, 0.06); },
   runner() { tone('square', 330, 180, 0.2, 0.12); noise(0.12, 0.14, 900, 0.35, 0.05); },
   crossbow() { tone('square', 230, 110, 0.22, 0.13); noise(0.16, 0.16, 800, 0.4, 0.04); },
   closedhelm() { tone('sine', 110, 44, 0.9, 0.26, 0.02); noise(0.5, 0.44, 300, 0.6, 0.05); for (let i = 0; i < 3; i++) tone('square', 420 - i * 80, 180, 0.2, 0.08, 0.26 + i * 0.15); tone('sine', 60, 40, 1.2, 0.14, 0.45); },
@@ -1814,6 +1822,7 @@ const HURT = {
   swornsword() { tone('square', 260, 190, 0.12, 0.1); noise(0.1, 0.12, 1200, 0.4); },
   lancer() { tone('square', 240, 170, 0.12, 0.1); noise(0.12, 0.14, 1000, 0.45); },
   hedgeknight() { tone('square', 200, 150, 0.14, 0.11); noise(0.14, 0.16, 900, 0.45); },
+  gobknight() { tone('square', 200, 150, 0.14, 0.11); noise(0.14, 0.16, 900, 0.45); },
   runner() { tone('square', 420, 300, 0.1, 0.09); },
   crossbow() { tone('square', 300, 220, 0.11, 0.09); },
   closedhelm() { tone('sine', 150, 96, 0.24, 0.16); noise(0.22, 0.26, 420, 0.55); },
@@ -2324,14 +2333,17 @@ for (const k of ['hitHeavy', 'hitFinish', 'heavy', 'blockHeavy', 'guardBreak']) 
    THWACK: one shared transient under EVERY landed blow, whoever swung and whatever it hit: a 30 ms click (2.4 kHz) over a 140 Hz body (light); a 60 Hz sub, 90 ms, under it (heavy); a crunch on top (finish).
    Pitch +/- 6% per hit; the voice / material layers sit 15% under it (duckUnder). Peak (naive sum, layers never coincide): light ~0.24, finish ~0.62, under the 0.9 mix headroom with the voice + material + music ducks. */
 export const THWACK = { light: { click: 0.11, body: 0.13, sub: 0, crunch: 0 }, heavy: { click: 0.13, body: 0.15, sub: 0.2, crunch: 0 }, finish: { click: 0.12, body: 0.14, sub: 0.18, crunch: 0.12 }, jitter: 0.06, duck: 0.85, duckSec: 0.09, gate: 0.03 };
-SFX.thwack = function (cls = 'light') {
+SFX.thwack = function (cls = 'light', o) {
   if (!JUICE2_SHIPS || !ac) return; const R = THWACK[cls] || THWACK.light; if (!gate('thwack', THWACK.gate)) return;
-  const k = 1 - THWACK.jitter + Math.random() * 2 * THWACK.jitter;   /* +/- 6% */
-  noise(0.03, R.click, 2400 * k, 1.1); tone('sine', 140 * k, 90 * k, 0.07, R.body);
-  if (R.sub) tone('sine', 60 * k, 40 * k, 0.09, R.sub);
-  if (R.crunch) { noise(0.08, R.crunch, 1200 * k, 0.9, 0.012); tone('triangle', 520 * k, 260 * k, 0.07, R.crunch * 0.5, 0.01); }
+  const co = CF1_SHIPS && o, g = co ? o.gain : 1, k = (1 - THWACK.jitter + Math.random() * 2 * THWACK.jitter) * (co ? o.pitch : 1);   /* +/- 6%; (claude/cf1) x material / combo pitch, x the haft's -3 dB */
+  noise(0.03, R.click * g, 2400 * k, 1.1); tone('sine', 140 * k, 90 * k, 0.07, R.body * g);
+  if (R.sub) tone('sine', 60 * k, 40 * k, 0.09, R.sub * g);
+  if (R.crunch) { noise(0.08, R.crunch * g, 1200 * k, 0.9, 0.012); tone('triangle', 520 * k, 260 * k, 0.07, R.crunch * 0.5 * g, 0.01); }
   thwackUntil = ac.currentTime + THWACK.duckSec;
 };
+/* (claude/cf1) THE KILL BOOM (a low 70 Hz thump under the finish, the music ducked -4 dB for 150 ms) and THE FLAME SIZZLE (a soft tick of a burn / jet); no-ops with CF1_SHIPS off */
+SFX.cfBoom = function () { if (!CF1_SHIPS || !ac) return; duckBeat(CF1.boom.duck); tone('sine', CF1.boom.hz, CF1.boom.hz * 0.6, CF1.boom.dur, CF1.boom.vol); };
+SFX.cfSizzle = function () { if (!CF1_SHIPS || !ac || !gate('cfSizzle', 0.1)) return; noise(0.07, 0.05, 3400, 0.6); tone('triangle', 1800, 1200, 0.05, 0.015); };
 /* THE CLINK: the blocked blow, the clash file and a high ping (the synth glance while the files load or the flag is off) */
 SFX.clink = function () {
   if (!JUICE2_SHIPS) return SFX.glance(); if (!gate('clink', 0.05)) return;
@@ -2351,6 +2363,11 @@ export const landDepth = (w, tier) => ({ f0: 150 / Math.max(0.5, w), f1: 60 / Ma
     tone('sine', d.f0, d.f1, d.dur, d.v); if (w >= 1.2) noise(0.05 + 0.02 * tier, 0.08 + 0.02 * tier, 420, 0.6); } return r; }; }
 /* Sound Test rows for the layered cases (the hero shown is the one picked in the game): the third cut, a drop, a big drop */
 SFX.swingThird = () => SFX.swingUp(2); SFX.pLandDrop = () => SFX.pLand('stone', 1); SFX.pLandBig = () => SFX.pLand('stone', 2);
+/* ==== (claude/cf4) CF4 HUD SFX - APPENDED BLOCK, new keys only (CF1 owns the existing hit fns above). Played only behind CF4_SHIPS (src/cf-hud.js): lowHeart = the quiet low-health
+   heartbeat (-18 dB under the mix), healUp = a soft rising two-note under the flask's mend, coinLadder(n) = the coin chime n semitones up (a run inside 0.4 s climbs, cap +8). ==== */
+SFX.lowHeart = function () { if (!ac || !gate('lowHeart', 0.4)) return; const v = heartGain(); tone('sine', 70, 42, 0.14, 0.9 * v); tone('sine', 62, 38, 0.16, 0.7 * v, 0.17); };
+SFX.healUp = function () { if (!ac || !gate('healUp', 0.2)) return; tone('sine', 523, 659, 0.16, 0.07); tone('triangle', 784, 988, 0.22, 0.05, 0.08); };
+SFX.coinLadder = function (n = 0) { if (!ac) return; const r = Math.pow(2, Math.max(0, Math.min(8, n | 0)) / 12); tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); };
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rootway', 'huntmaster', 'greatdrill', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'mountain', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'admiral', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage', 'lanterneater', 'kingswood', 'towpath', 'gorm', 'lumbertrail', 'folly', 'gqueen', 'gqjudge', 'gqescape', 'kraken', 'kraken2', 'litchurch', 'churchcrypt', 'paladin'];
 MUSIC_NAMES.push('marsh', 'chieftain', 'bellcrab', 'chase', 'fenroad', 'hornetnest', 'hornetqueen', 'kitchengate', 'grubbag', 'palisadewood', 'batteringbeast', 'shrieksisters', 'rookery', 'warcairn', 'clanchief');

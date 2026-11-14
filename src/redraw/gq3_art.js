@@ -232,15 +232,34 @@ export function drawCupola(g, x0, x1, solidTop, fx0, fx1, fr, cx, cy, t) {
   R(g, bx - 1, FY - 9, 3, 9, '#e0b040'); px(g, bx, FY - 10, '#fff6c8'); R(g, bx - 3, FY - 4, 7, 2, '#a0781c'); px(g, bx, FY - 6, '#c9463d');                    // a gold finial with a stone
 }
 // a bay's floor span (x0..x1 world px, fy = deck top): idle = a timber hatch-board set in the slates (so you can tell which bay it is), smoke = soot and a red seam and smoke, burn = alight
-export function drawBay(g, x0, x1, fy, state, t, i = 0) {
+export function drawBay(g, x0, x1, fy, state, t, i = 0, step = 7, wstep = 10) {   /* (claude/gq6s3) step / wstep: a wide burnt span (the climb's) draws every 2nd flame / smoke column - the default is the bay's own */
   x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
   if (state === 'idle') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#2a1a10'); R(g, x0 + 2, fy, x1 - x0 - 4, 1, '#6a4a2a'); for (let x = x0 + 8; x < x1 - 4; x += 8) R(g, x, fy + 1, 1, 3, '#0e0806'); for (const x of [x0 + 5, x1 - 7]) { R(g, x, fy + 1, 2, 2, '#9a9ab0'); }   // oak boards, iron nailed
     R(g, x0, fy - 1, 3, 5, S.dk); R(g, x1 - 3, fy - 1, 3, 5, S.dk); return; }
   if (state === 'smoke') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1);
-    for (let x = x0 + 4; x < x1 - 4; x += 10) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
+    for (let x = x0 + 4; x < x1 - 4; x += wstep) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
   R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); alpha(g, 0.28); R(g, x0 - 6, fy - 30, x1 - x0 + 12, 30, '#ff6b2c'); alpha(g, 1);
-  for (let x = x0 + 4; x < x1 - 2; x += 7) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
+  for (let x = x0 + 4; x < x1 - 2; x += step) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0) + (step > 7 ? 3 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
   for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1);
+}
+/* (claude/gq6s3bake) THE CLIMB'S BURNT SPANS, BAKED. drawBay's flames / smoke cost ~35 canvas calls a flame, so a 944 px span on screen was 1700+ calls a frame. Here ONE shared sheet per state (flame: 84 px tile x 12 frames over 1.396 s = 2 sway cycles; smoke: 100 px tile x 10 frames over 1.111 s = one puff cycle) is drawn into an offscreen canvas, 1 sheet frame per game frame, smoke first then flame (the bake never costs a frame), and a span is a slab + glow + a few drawImage tiles + 6 sparks. NOT pixel-identical to drawBay: flames repeat every 84 px, time is quantised to the frames, wave(t,5) wraps with a ~1 px jump. No document (node) = returns false = the caller draws with drawBay. */
+const BK = { burn: { w: 84, h: 32, base: 30, n: 12, loop: 2 * Math.PI / 9 * 2, done: 0, c: null, g: null }, smoke: { w: 100, h: 44, base: 36, n: 10, loop: 1.111, done: 0, c: null, g: null } };
+let bakeT = -1;   // one sheet frame is baked per game frame (every span of a frame shares its t): smoke first, then the flame sheet ahead of the tell ending
+const bakeStep = (B, burn, quota = 1) => { if (B.done >= B.n || B.c === false || typeof document === 'undefined') return; if (!B.c) { try { [B.c, B.g] = canvas(B.w, B.h * B.n, true); } catch (e) { B.c = false; return; } }
+  for (let q = 0; q < quota && B.done < B.n; q++, B.done++) { const k = B.done, g = B.g, t = k * B.loop / B.n, oy = k * B.h;
+    if (burn) { for (let j = 0; j < 6; j++) { const x = 4 + 14 * j; drawFlame(g, x + 2, oy + B.base, 8 + 9 * wave(t, 9, x * 0.37) + 3 * wave(t, 5, x * 0.9) + 3, t, x * 0.5, 6); } }
+    else { for (let j = 0; j < 5; j++) { const x = 4 + 20 * j, ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), oy + B.base - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); } } };
+// a baked span: x0..x1 in screen px (NOT clipped), fy = deck top, state 'smoke' | 'burn'
+export function drawBayBaked(g, x0, x1, fy, state, t, i = 0, VWd = 320) {   /* (claude/gq6s23look) VWd = the picture's real width (the Queen's fight draws a 629 px wide view: the 328 clip drew nothing right of x 328) */
+  const RE = VWd + 8;
+  const burn = state !== 'smoke', B = burn ? BK.burn : BK.smoke; if (t !== bakeT) { bakeT = t; if (BK.smoke.done < BK.smoke.n && !burn) bakeStep(BK.smoke, false); else bakeStep(BK.burn, true); if (!B.done) bakeStep(B, burn); } if (!B.c || !B.done) return false;
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
+  if (!burn) { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1); }
+  else { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); const gx0 = Math.max(x0 - 6, -8), gx1 = Math.min(x1 + 6, RE); alpha(g, 0.28); R(g, gx0, fy - 30, gx1 - gx0, 30, '#ff6b2c'); alpha(g, 1); }
+  const fr = Math.floor((((t % B.loop) + B.loop) % B.loop) / B.loop * B.n) % B.done, end = burn ? x1 - 2 : x1 - 4, oy = burn ? fy + 1 - B.base : fy - B.base;
+  for (let m = Math.max(0, Math.floor((-8 - x0) / B.w)); ; m++) { const tx = x0 + m * B.w; if (tx > RE || tx >= end) break; let sw = Math.min(B.w, end - tx), sx = 0, dx = tx; if (dx < -8) { sx = -8 - dx; dx = -8; sw -= sx; } if (dx + sw > RE) sw = RE - dx; if (sw > 0) g.drawImage(B.c, sx, fr * B.h, sw, B.h, dx, oy, sw, B.h); }
+  if (burn) { for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1); }
+  return true;
 }
 // THE ROOF BACK, the new tower top's: over the shared night (GQA.drawRoofBack), behind the deck - two spires and the old bell turret in silhouette far off, and straight up out of the hatch the tower's own fire, a column of smoke and sparks (world x hx)
 export function drawRoofBack2(g, cx, cy, VW, VH, t, hx, deckY) {
@@ -254,7 +273,8 @@ export function drawRoofBack2(g, cx, cy, VW, VH, t, hx, deckY) {
 }
 
 // ====================================================================================== THE QUEEN'S STAIR
-const QS = { gate: [661, 667, 14, 19], steps: [[654, 656, 17], [657, 658, 15], [659, 660, 13]], catwalk: [[670, 673, 6], [674, 680, 6]], alcove: [686, 688, 17, 19], gallery: { x0: 704, x1: 715, row: 12 }, banners: [706, 710, 714] };
+import { SH_STAIR, SHIFT } from '../gq4l.js'; const qa = SH_STAIR, qb = SH_STAIR + SHIFT.stair;   /* (claude/gq4l) the stair's columns slide with GQ4L_SHIPS: B1-B3 by qa, the gallery by qb */
+const QS = { gate: [661 + qa, 667 + qa, 14, 19], steps: [[654 + qa, 656 + qa, 17], [657 + qa, 658 + qa, 15], [659 + qa, 660 + qa, 13]], catwalk: [[670 + qa, 673 + qa, 6], [674 + qa, 680 + qa, 6]], alcove: [686 + qa, 688 + qa, 17, 19], gallery: { x0: 704 + qb, x1: 715 + qb, row: 12 }, banners: [706 + qb, 710 + qb, 714 + qb] };
 // the dropped portcullis: a round arch of voussoirs with a gold crown boss, the barred iron gate in it (vertical bars, three cross-bands, spikes sunk in the sill), the chains up into the winch slot, torn banners either side
 function drawGate(g, cx, cy, t) {
   const [a, b, r0, r1] = QS.gate, X0 = ri(a * 16 - cx), W = (b - a + 1) * 16, Y0 = ri(r0 * 16 - cy), H = (r1 - r0 + 1) * 16, mid = X0 + (W >> 1);
@@ -326,7 +346,7 @@ function bakeStore(w, h) {
 }
 export function paintStore(g, sx, sy, w, h, tx0, ty0, time) {
   g.drawImage(bakeStore(w, h), sx, sy);
-  for (const wc of [691, 695, 699]) { const x = ri(sx + (wc - tx0) * 16 + 8); R(g, x - 8, sy + 8, 16, 7, '#3a3a46'); R(g, x - 8, sy + 8, 16, 1, '#9a9ab0'); R(g, x - 4, sy + 15, 8, 5, '#5a6270'); px(g, x, sy + 17, '#14151d'); }   // the pulley blocks over the three weights
+  for (const wc of [691 + qa, 695 + qa, 699 + qa]) { const x = ri(sx + (wc - tx0) * 16 + 8); R(g, x - 8, sy + 8, 16, 7, '#3a3a46'); R(g, x - 8, sy + 8, 16, 1, '#9a9ab0'); R(g, x - 4, sy + 15, 8, 5, '#5a6270'); px(g, x, sy + 17, '#14151d'); }   // the pulley blocks over the three weights
   alpha(g, 0.07 + 0.04 * wave(time, 3)); R(g, sx, sy + 22, w, h - 28, '#b28cff'); alpha(g, 1);
 }
 // the princess's hoard in the alcove (cols 686..688, rows 17..19): a niche, a small altar of upturned crates, a toy crown, ribbons, a doll, gems winking
@@ -342,7 +362,7 @@ function drawAlcove(g, cx, cy, t) {
 // the gallery over her door (cols x0..x1 at row `row`): a low balustrade and a gold-edged rail, and the banners hung from the corbels down the face (they stir)
 function drawGallery(g, cx, cy, t) {
   const G = QS.gallery, X0 = ri(G.x0 * 16 - cx), W = (G.x1 - G.x0 + 1) * 16, Y = ri(G.row * 16 - cy);
-  for (let x = X0 + 3; x < X0 + W - 3; x += 6) { if (Math.abs(x - ri(712 * 16 + 8 - cx)) < 12) continue; R(g, x, Y - 11, 3, 11, S.e); R(g, x, Y - 11, 1, 11, S.g); R(g, x + 2, Y - 11, 1, 11, S.b); R(g, x - 1, Y - 6, 5, 2, S.d); }
+  for (let x = X0 + 3; x < X0 + W - 3; x += 6) { if (Math.abs(x - ri((712 + qb) * 16 + 8 - cx)) < 12) continue; R(g, x, Y - 11, 3, 11, S.e); R(g, x, Y - 11, 1, 11, S.g); R(g, x + 2, Y - 11, 1, 11, S.b); R(g, x - 1, Y - 6, 5, 2, S.d); }
   R(g, X0, Y - 14, W, 3, S.d); R(g, X0, Y - 14, W, 1, S.g); R(g, X0, Y - 12, W, 1, '#e0b040');
   for (const bx of QS.banners) { const x = ri(bx * 16 - cx) + 4, sw = ri(Math.sin(t * 1.8 + bx) * 3), sw2 = ri(Math.sin(t * 1.8 + bx + 1.5) * 4);
     R(g, x - 1, Y + 6, 10, 2, '#3a3a46'); R(g, x + sw * 0, Y + 8, 8, 6, '#5a2a7a'); R(g, x + sw, Y + 14, 8, 14, '#5a2a7a'); R(g, x + sw2, Y + 28, 8, 8, '#5a2a7a'); R(g, x + sw2 + 1, Y + 36, 3, 4, '#5a2a7a'); R(g, x + sw2 + 5, Y + 36, 3, 2, '#5a2a7a');
@@ -350,7 +370,7 @@ function drawGallery(g, cx, cy, t) {
 }
 // the whole section's dressing, over the tiles and under the creatures (cx = the camera's left edge, VW the view's width)
 export function drawStairSet(g, cx, cy, t, VW) {
-  if (cx > 718 * 16 || cx + VW < 650 * 16) return;
+  if (cx > (718 + qb) * 16 || cx + VW < (650 + qa) * 16) return;
   drawGate(g, cx, cy, t); drawFlights(g, cx, cy, t); drawCatwalks(g, cx, cy, t); drawAlcove(g, cx, cy, t); drawGallery(g, cx, cy, t);
 }
 // main.js drawRoomPaint calls this for the two room styles this pass added ('gq3shaft', 'gq3store'); true = painted
@@ -358,4 +378,46 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time) {
   if (st === 'gq3shaft') { paintShaft(g, sx, sy, w, h, tx0, ty0, time); return true; }
   if (st === 'gq3store') { paintStore(g, sx, sy, w, h, tx0, ty0, time); return true; }
   return false;
+}
+
+// ====================================================================================== (claude/gq5q2) THE TOWER TOP, CLEAR: the bell rope, the perch ward, the hatch's eruption, the sceptre sweep
+// THE BELL ROPE: hangs from the cupola frame's underside (x, top = the frame's bottom edge) to a knotted grip over the deck (bot). k 0 idle, 1 READY (she is in the bell: a gold glow + a pulsing grip), 2 SWINGING (the 1.2 s tell: it sways, kk 0..1),
+// 3 tolled (a short sway, nothing in the bell). Plain fillRects (the node sheet renders it).
+export function drawBellRope(g, x, top, bot, k, kk, t) {
+  x = ri(x); top = ri(top); bot = ri(bot); const len = Math.max(8, bot - top), sway = k === 2 ? Math.sin(kk * 18) * (2 + 4 * (1 - kk)) : k === 3 ? Math.sin(t * 14) * 1.5 : Math.sin(t * 1.3) * 0.6;
+  R(g, x - 4, top - 1, 9, 3, '#5a6270'); R(g, x - 3, top - 1, 7, 1, '#9aa4b8'); R(g, x - 1, top + 2, 3, 2, '#34343f');                          // the iron eye bolted to the frame
+  for (let y = top + 3; y < bot - 6; y += 2) { const f = (y - top) / len, ox = ri(sway * f); R(g, x - 1 + ox, y, 3, 2, ((y - top) >> 1) & 1 ? '#8a6a3a' : '#b08a4a'); R(g, x - 1 + ox, y, 1, 2, '#5a4222'); }   // twisted hemp
+  const gx = x + ri(sway), gy = bot - 7;
+  if (k === 1 || k === 2) { alpha(g, 0.25 + 0.2 * wave(t, 9)); R(g, gx - 8, gy - 4, 17, 16, '#ffd36b'); alpha(g, 1); }
+  R(g, gx - 3, gy, 7, 7, '#5a4222'); R(g, gx - 2, gy + 1, 5, 5, k ? '#ffd36b' : '#b08a4a'); R(g, gx - 1, gy + 2, 3, 3, k ? '#fff6c8' : '#c9a060'); R(g, gx - 3, gy, 7, 1, '#e0b040');   // the knotted grip
+}
+// THE PERCH WARD: the cupola ring flares violet under her and a rune ring spins round her (k 0..1 = the blink-in tell, then solid); swinging = the rune ring shudders and flashes gold
+export function drawPerchWard(g, x, y, t, k, swinging) {
+  x = ri(x); y = ri(y); const col = swinging ? '#ffd36b' : '#c9a0ff';
+  drawRoyalPortal(g, x, y - 17, t, { state: 'idle', tint: swinging ? 'gold' : 'royal', s: 0.62 + 0.1 * wave(t, 12) });
+  alpha(g, 0.18 + 0.1 * wave(t, 6)); R(g, x - 18, y - 56, 37, 56, col); alpha(g, 1);
+  for (let i = 0; i < 12; i++) { const a = t * (swinging ? 9 : 2.4) + i * 0.5236, rx = 19, ry = 27; alpha(g, Math.min(1, k * 1.4)); R(g, ri(x + Math.cos(a) * rx), ri(y - 30 + Math.sin(a) * ry), 2, 2, i & 1 ? '#e8dcff' : col); }
+  alpha(g, 1);
+}
+// THE HATCH SEAM (the told 1.2 s): the deck seam glows ember-red and breathes smoke (k 0..1)
+export function drawHatchSeam(g, x0, x1, fy, k, t) {
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy); alpha(g, 0.4 + 0.5 * k * wave(t, 18)); R(g, x0 + 1, fy - 1, x1 - x0 - 2, 2, '#ff6b2c'); R(g, x0 + 5, fy - 1, x1 - x0 - 10, 1, '#ffd36b'); alpha(g, 1);
+  for (let i = 0; i < 6; i++) { const ph = (t * 1.4 + i * 0.19) % 1; alpha(g, (1 - ph) * (0.35 + 0.5 * k)); R(g, x0 + 2 + ((i * 7) % Math.max(1, x1 - x0 - 8)) + ri(Math.sin(t * 3 + i) * 2), fy - 3 - ri(ph * 34), 5 + ri(ph * 5), 4 + ri(ph * 4), ph < 0.3 ? '#3a3a46' : '#6a6a78'); }
+  alpha(g, 1);
+}
+// THE HATCH FIRE: a column of flame `h` px tall over the 2-tile hatch for 2.0 s (k 0..1): the roar, a white-hot core, sparks; it gutters out over the last 0.2
+export function drawHatchFire(g, x0, x1, fy, h, k, t) {
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy); const rise = Math.min(1, k * 8), fade = k > 0.85 ? (1 - k) / 0.15 : 1, hh = ri(h * rise);
+  alpha(g, 0.22 * fade); R(g, x0 - 8, fy - hh, x1 - x0 + 16, hh, '#ff6b2c'); alpha(g, 1);
+  for (let x = x0; x < x1; x += 4) { const hv = ri(hh * (0.7 + 0.3 * wave(t, 21, x * 0.6))) * fade; alpha(g, 0.9 * fade); R(g, x, fy - hv, 4, hv, '#ff6b2c'); R(g, x + 1, fy - ri(hv * 0.8), 2, ri(hv * 0.8), '#ffa040'); alpha(g, 1); }
+  alpha(g, fade); R(g, x0 + 6, fy - ri(hh * 0.6), x1 - x0 - 12, ri(hh * 0.6), '#fff0b0'); alpha(g, 1);
+  for (let i = 0; i < 10; i++) { const ph = (t * 1.8 + i * 0.13) % 1; alpha(g, (1 - ph) * fade); R(g, x0 + ((i * 11) % Math.max(1, x1 - x0)), fy - ri(ph * (h + 20)), 1, 1, i & 1 ? '#ffd36b' : '#ff9a5c'); }
+  alpha(g, 1);
+}
+// THE SCEPTRE SWEEP, over her sceptre-up pose (she keeps her staff): the wind-up draws the chest-high arc as a gold ghost growing with k and a glint on the staff head; the release is the full white arc (reach px, chest height)
+export function drawSweep(g, x, y, face, k, released, reach, t) {
+  x = ri(x); y = ri(y); const dir = face < 0 ? -1 : 1, band0 = y - 30, n = 8;
+  if (!released) { alpha(g, 0.2 + 0.45 * k); for (let i = 0; i < n; i++) { const f = i / (n - 1), px0 = x + dir * ri(reach * f * Math.min(1, k * 1.4)), py0 = band0 + ri(18 * Math.sin(f * Math.PI) * 0.5); R(g, px0, py0, 2, 2, '#ffd36b'); } alpha(g, 1);
+    alpha(g, 0.5 + 0.5 * wave(t, 26)); R(g, x - dir * 6 - 1, y - 52, 3, 3, '#fff6c8'); alpha(g, 1); return; }
+  alpha(g, 0.85); for (let i = 0; i < n * 2; i++) { const f = i / (n * 2 - 1), px0 = x + dir * ri(reach * f), py0 = band0 + ri(9 + 9 * Math.cos(f * Math.PI)); R(g, px0, py0 - 2, 3, 5, f > 0.7 ? '#ffffff' : '#fff6c8'); } alpha(g, 1);
 }

@@ -111,20 +111,41 @@ export async function openPage(opts = {}) {
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
   if (opts.duelBeta) await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__DUELBETA=1' });   /* (pvpduel2) the DUEL (BETA) dev switch while PVP_SHIP_FLAG is off */
   if (process.env.BRACKEN_ROAD) await send('Page.addScriptToEvaluateOnNewDocument', { source: process.env.BRACKEN_ROAD.split(',').map(k => ({ ww: 'window.__WW=true', sk: 'window.__SK=true', mn: 'window.__MN=true', ac: 'window.__AC=true', hl: 'window.__HL=true' })[k.trim()]).filter(Boolean).join(';') || '0' });   /* (claude/nightwalk) BRACKEN_ROAD=ww,sk,mn,ac: the four flag-off road areas on in THIS page only (the same globals tools/road-on.mjs sets in node), from the first script of every document; never a committed flip */
+  if (process.env.BRACKEN_BC5 === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_BC5=false' });   /* (claude/prepbc5) ships ON: =0 is the lab OFF */
+  if (process.env.BRACKEN_BC5 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_BC5=true' });   /* (claude/bc5-l) BURIED CITY 5 (src/buried-city5.js bc5On) on in THIS page only, from the first script of every document */
+  if (process.env.BRACKEN_GQ4P === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4P=true' });   /* (claude/gq4p-d) the Princess half of Highcrown pass 4 (src/gq4p.js gq4pOn) */
+  if (process.env.BRACKEN_GQ4L === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4L=true' });   /* (claude/gq4l) Highcrown pass 4's level half (src/gq4l.js gq4lOn): from the first script of every document */
+  if (process.env.BRACKEN_GQ6GEO === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6GEO=true' });   /* (claude/gq6geo) three more Geomancers in Highcrown (src/gq6geo.js gq6geoOn) */
+  if (process.env.BRACKEN_GQ6GEO === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6GEO=false' });   /* (batch184) ships ON: =0 is the lab OFF (the old Highcrown) */
+  if (process.env.BRACKEN_CF4CHIP === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_CF4CHIP=false' });   /* (batch187) the chip drain on foe / elite / mini bars ships ON: =0 is the lab OFF (the old bars) */
+  if (process.env.BRACKEN_GQ6CALL === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6CALL=true' });   /* (claude/gq6geo) THE GEODE CALL (src/gq6geo.js gq6callOn) */
+  if (process.env.BRACKEN_GQ6CALL === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6CALL=false' });   /* (batch185) ships ON: =0 is the lab OFF (the old three-throw Geomancer) */
+  if (process.env.BRACKEN_GQ4Q === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ4Q=true' });   /* (claude/gq4q) the Queen's pass 4 (src/gq4q.js gq4qOn) */
+  if (process.env.BRACKEN_GQ5P === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5P=false' });   /* (claude/prepgq5p) ships ON: =0 is the lab OFF */
+  if (process.env.BRACKEN_GQ5P === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5P=true' });   /* (claude/gq5p-d, TUNE: the gq5p lane built the flag but never wired a cdp env hook for it - added here, same pattern as GQ4P/L/Q) the Princess's blade (src/gq5p.js gq5pOn) */
   if (process.env.BRACKEN_COL4 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_COL4=true' });   /* (claude/colossus4) the Glass Sea + Colossus 4 flag for bossLab / boss-rates (src/colossus4.js col4On): from the first script of every document, so the lab's reloads keep it */
+  if (process.env.BRACKEN_GQ5Q1 === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5Q1=false' });   /* (claude/prepqon) ships ON: =0 is the lab OFF */
+  if (process.env.BRACKEN_GQ5Q1 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5Q1=true' });   /* (claude/gq5q1-d) the Queen hall's bell hoists + throne fire (src/gq5q1.js gq5q1On) - same gap gq5p-d found missing for BRACKEN_GQ5P (65af7438a); without this hook boss-rates silently measures the OFF boss */
+  if (process.env.BRACKEN_GQ5Q2 === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5Q2=false' });   /* (claude/prepqon) ships ON: =0 is the lab OFF */
+  if (process.env.BRACKEN_GQ6FIX === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6FIX=false' });   /* (claude/gq6fix) ships ON: =0 is the lab OFF (the batch182 entry + teach) */
+  if (process.env.BRACKEN_GQ6S2 === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6S2=false' });   /* (claude/prepgq6s23) opt-out: the old Queen fight (also S3 off) */
+  if (process.env.BRACKEN_GQ6S3 === '0') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6S3=false' });
+  if (process.env.BRACKEN_GQ6S2 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6S2=true' });   /* (claude/gq6s2) the tower top's final platform (src/gq6s2.js gq6s2On) */
+  if (process.env.BRACKEN_GQ6S3 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ6S3=true' });   /* (claude/gq6s3) the burning climb (src/gq6s3.js gq6s3On; implies the final platform) */
+  if (process.env.BRACKEN_GQ5Q2 === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.BRACKEN_GQ5Q2=true' });   /* (claude/gq5q2-d) the tower top's bell perch + rope + sweep + hatch (src/gq5q2.js gq5q2On) - same gap class as BRACKEN_GQ5P/BRACKEN_GQ5Q1; without this hook boss-rates silently measures the OFF boss */
   /* (FIX158B) no window.__gcOnLoad: the in-page collection every 3rd level load is OFF by default (BRACKEN_PAGE_GC_INPAGE=1 brings it back) */ if (gcOn && process.env.BRACKEN_PAGE_GC_INPAGE === '1') await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__gcOnLoad=3' });   /* (claude/leakfix) src/main.js retireBakes: a full collection every 3rd level load, only while this is set and the browser was started with --expose-gc (browser-profile.mjs) */
   if (opts.seed !== undefined) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{let s=' + (opts.seed >>> 0) + ';Math.random=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};})()' });
   /* THE GAME SPEED IS PINNED (Daniel 10-12: results must not change with the player's setting): every page a tool opens starts with a settings file at the speed the
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
-  await send('Page.navigate', { url: URL0 });
+  await send('Page.navigate', { url: opts.blank ? 'about:blank' : URL0 });   /* (claude/browserleak) opts.blank: a browser that only OWNS the server/profile and lends contexts (tools/boss-run.mjs keeper) must not carry a loaded game (~1.5 GB) for the whole run */
   let ready = false;
-  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
-  if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+  for (let i = 0; i < 480 && !ready && !opts.noWait && !opts.blank; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
+  if (!ready && !opts.noWait && !opts.blank) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
-  const port = await evalp('location.port', 10000);
+  const port = opts.blank ? String(PORT) : await evalp('location.port', 10000);
   if (String(port) !== String(PORT)) throw new Error('the page is on port ' + port + ', not ' + PORT);
   gcLive = gcOn;
   const reload = async () => {
@@ -143,6 +164,6 @@ export async function openPage(opts = {}) {
   };
   /* (claude/botmem) killedByGuard(): the memguard2 kill-log entry for THIS page's profile (or null); dead: why the page stopped answering; infra: either */
   const profName = run ? basename(run.prof) : '';
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, get dead() { return deadWhy; }, killedByGuard: () => profName ? killedByGuard({ profile: profName, sinceMs: t00 }) : null, get infra() { return !!(deadWhy && INFRA_RE.test(deadWhy)) || !!(profName && killedByGuard({ profile: profName, sinceMs: t00 })); }, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, profile: profName, reload, get dead() { return deadWhy; }, killedByGuard: () => profName ? killedByGuard({ profile: profName, sinceMs: t00 }) : null, get infra() { return !!(deadWhy && INFRA_RE.test(deadWhy)) || !!(profName && killedByGuard({ profile: profName, sinceMs: t00 })); }, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }

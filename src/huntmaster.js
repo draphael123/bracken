@@ -23,7 +23,7 @@ import * as RWA from './redraw/rootway_art.js';   /* THE HUNTMASTER's pose paint
 // The read (B10): gold glint + a yellow ! = strike it back; a red trail + a red !! = get out of its way; a pale rope ball + !! = roll through it.
 // main.js calls makeHuntmaster(ctx): spawnBoss, owns, on, update, take, caught (a boss cage landed), podHit (a thrown pod), drawBoss, drawOver, barName, end, read, fight.
 export const HM = {
-  hp: 1095, w: 14, h: 26, markH: 44,
+  hp: 1145, w: 14, h: 26, markH: 44,
   p2: 0.7, p3: 0.38,
   walk: 54, keep: [96, 150], back: 70, turnLag: 0.35,
   draw: 0.78, volleyDraw: 0.9, splitDraw: 0.95, hoistTell: 1.0, bracerK: 1.45, loose: 0.28,
@@ -41,7 +41,7 @@ export const HM = {
   rollAt: 30, roll: 0.42, rollDist: 92, rollAfter: 2.5,
   leapTell: 0.5, leapT: 0.72, landT: 0.35, perchT: 4, leapCd: 1,
   backV: 340, backDmg: 14, reflectR: 16, strikeR: 30,
-  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 3.1, hitCap: 3, blowRef: 15, maxBlows: 4, stagT: 1.4, softCap: 1, caughtT: 2.4, ward: 3, wardMul: 0.4, guardMul: 0.4,
+  cageDmg: 20, openMul: 1.5, maskMul: 2, stagLong: 3.9, hitCap: 3, blowRef: 20, maxBlows: 4, stagT: 1.4, softCap: 1, caughtT: 2.4, ward: 3, wardMul: 0.4, guardMul: 0.4,
 };
 /* each cycle is a list; the phase's new move joins at its turn (k % n). 'horn' is once a phase (a second one reads as 'aim') */
 const CYCLE = {

@@ -178,43 +178,43 @@
   "lostPct": 170
  },
  "crown": {
-  "hash": "85a25396d5d2",
+  "hash": "332433eba1c3",
   "hero": "knight",
   "steps": 30000,
   "runs": 6,
-  "hits": 68,
-  "deaths": 3,
-  "kills": 90,
-  "lifts": 431,
+  "hits": 77,
+  "deaths": 7,
+  "kills": 80,
+  "lifts": 473,
   "walked": 100,
   "bare": true,
   "seed": 1,
-  "lostPct": 205,
+  "lostPct": 274,
   "lostRuns": [
-   196,
-   158,
-   205,
-   205,
-   275,
-   191
+   299,
+   265,
+   266,
+   255,
+   263,
+   297
   ],
-  "lostSd": 38.4,
-  "lostSe": 15.7,
+  "lostSd": 18.9,
+  "lostSe": 7.7,
   "deathsRuns": [
-   0,
-   0,
-   0,
    1,
    1,
-   1
+   1,
+   1,
+   1,
+   2
   ],
   "hitsRuns": [
-   11,
-   8,
+   12,
+   10,
+   12,
    12,
    13,
-   12,
-   12
+   18
   ]
  },
  "longwater": {
@@ -647,17 +647,44 @@
   "lostPct": 432
  },
  "buriedcity": {
-  "hash": "09cb68eae630",
+  "hash": "8f287b9fc898",
   "hero": "knight",
   "steps": 30000,
-  "runs": 3,
-  "hits": 20,
-  "deaths": 6,
-  "kills": 3,
-  "lifts": 160,
+  "runs": 6,
+  "hits": 40,
+  "deaths": 8,
+  "kills": 9,
+  "lifts": 386,
   "walked": 100,
   "bare": true,
-  "lostPct": 349
+  "seed": 1,
+  "lostPct": 335,
+  "lostRuns": [
+   252,
+   208,
+   457,
+   332,
+   432,
+   332
+  ],
+  "lostSd": 97.3,
+  "lostSe": 39.7,
+  "deathsRuns": [
+   1,
+   1,
+   2,
+   1,
+   2,
+   1
+  ],
+  "hitsRuns": [
+   7,
+   6,
+   7,
+   6,
+   7,
+   7
+  ]
  },
  "minecart": {
   "hash": "4020966545d3",
