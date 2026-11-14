@@ -82,20 +82,95 @@ export function bakeFar() {
     for (let k = 0; k < 20; k++) rect(g, (r() * W) | 0, 50 + ((r() * 50) | 0), 3, 1, FARC[0]);
     return c; });
 }
-/* ---------- the head station's back wall: five stone bays, iron roof beams, a sheave wheel, lamps ---------- */
-export const SW = 640, SH = 180;
+/* ---------- the head station: THE CAVE MOUTH (claude/caveback, Daniel 11-14: the boss backdrop should look like the opening to a cave) ----------
+   You stand INSIDE a rock cave looking down the ore road's throat: a ragged granite arch frames a dark tunnel that recedes in five arches under two hung lamps, the rails running to a small far exit where pale daylight is
+   the ONLY light (east of centre). Rough rock ceiling with hanging rock and rime, iron crown housings and a winch bolted into the stone, eyebolt anchors in the frame. Everything is dark granite (2+ value steps under the lines).
+   Two baked layers, both horizontally periodic on 640: bakeStation (the wall + throat, parallax 0.3) and bakeStationNear (hanging rock + ceiling lip, parallax 0.55); the live sheave wheel turns on the bracket the bake leaves for it (STATION_WHEEL). */
+export const SW = 640, SH = 180, STATION_WHEEL = { x: 380, y: 44, r: 14 };
+const TP = 640, TAU = 6.2832;
+const ROCK = ['#0a0b10', '#12131a', '#1a1b24', '#22232c', '#2c2c36', '#383844'];                              /* the cave's granite, shadow to a lit rim (the level's own stone is two steps lighter) */
+const ROCKEDGE = '#0a0b10';
+const RIME = ['#7a8694', '#9aa6b2'];
+const SKYC = ['#34465e', '#4a5e78', '#6a7e98', '#8a9cb4'];
+const pn = (x, s) => { let v = 0; for (let k = 1; k <= 3; k++) v += Math.sin(TAU * (k + (s % 3)) * x / TP + (hash(k, s) % 628) / 100) / k; return v / 1.8; };   /* periodic noise -1..1 */
+const wdx = (x, c) => { let d = ((x - c) % TP + TP) % TP; return d > TP / 2 ? d - TP : d; };
+function bakeRock(g) {                                                                                      /* granite facets: jittered cells (wrapping), a crack where two meet, lit toward the upper left */
+  const CW = 32, CH = 24, NC = TP / CW, seed = (i, j) => { const ii = ((i % NC) + NC) % NC; return [ii * CW + (hash(ii, j) % 28), j * CH + (hash(j + 40, ii) % 20), hash(ii, j + 7)]; };
+  for (let y = 0; y < SH; y++) for (let x = 0; x < TP; x++) {
+    const ci = Math.floor(x / CW), cj = Math.floor(y / CH); let d1 = 1e9, d2 = 1e9, best = null;
+    for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) { const s = seed(i, j), d = Math.hypot(wdx(x, s[0]), (y - s[1]) * 1.25); if (d < d1) { d2 = d1; d1 = d; best = s; } else if (d < d2) d2 = d; }
+    let idx = 1 + (best[2] % 3) + ((best[2] >> 5) & 1);
+    const gap = d2 - d1, st = y + Math.round(pn(x, 7) * 3);
+    if (hash(Math.floor(st / 8), 3) % 5 === 0) idx--;
+    if (y > 140) idx--;
+    if (gap < 1.4) idx = 0; else if (gap < 3 && wdx(x, best[0]) < 0 && y < best[1]) idx++;
+    else if ((hash(x, y) >> 7) % 17 === 0) idx += (hash(y, x) & 1) ? 1 : -1;
+    rect(g, x, y, 1, 1, ROCK[clamp(idx, 0, 4)]); } }
 export function bakeStation() {
-  return once('station', () => { const [c, g] = canvas(SW, SH), r = mulberry(404);
-    for (let y = 0; y < SH; y++) for (let x = 0; x < SW; x++) { const course = Math.floor(y / 12), off = (course & 1) * 14, bx = Math.floor((x + off) / 28), blk = hash(bx, course), jx = (x + off) % 28 === 0, jy = y % 12 === 0;
-      rect(g, x, y, 1, 1, jx || jy ? STONE[0] : STONE[1 + (blk % 3) - (y > 130 ? 1 : 0) + (y < 30 ? 0 : 0)] || STONE[1]); }
-    for (let b = 0; b < 5; b++) { const bx = 24 + b * 128, hw = 40;                                                                  /* five arched bays, dark */
-      for (let y = 38; y < SH; y++) for (let x = bx - hw; x <= bx + hw; x++) { const dy = y - 78, dd = y < 78 ? Math.hypot(x - bx, dy) : Math.abs(x - bx); if (dd > hw) continue; const e = hw - dd; rect(g, x, y, 1, 1, e < 2 ? STONE[3] : e < 3 ? STONE[2] : CAVE[1 + ((hash(x, y) % 11 === 0) ? 1 : 0) + (y > 140 ? 1 : 0)]); }
-      for (let q = 0; q < 12; q++) rect(g, bx - 3, 60 + q * 7, 6, 1, IRON[2]);                                                    /* the ore chute's iron ladder in the bay */ }
-    for (let k = 0; k < 4; k++) { rect(g, 0, 20 + k * 6, SW, 2, k === 0 ? IRON[4] : IRON[2]); }                                    /* the roof's iron beams, in tiers */
-    for (let x = 0; x < SW; x += 64) { rect(g, x, 0, 6, 44, IRON[2]); rect(g, x, 0, 2, 44, IRON[4]); for (let q = 0; q < 6; q++) rect(g, x + 1, 4 + q * 7, 4, 1, IRON[0]); }   /* the iron posts of the roof frame */
-    rect(g, 0, 0, SW, 12, IRON[1]); rect(g, 0, 11, SW, 1, IRON[3]);
-    for (let x = 36; x < SW; x += 128) { rect(g, x - 1, 12, 2, 16, IRON[3]); rect(g, x - 4, 28, 8, 9, IRON[1]); rect(g, x - 3, 29, 6, 7, LAMP[1]); rect(g, x - 1, 31, 2, 3, LAMP[3]); }   /* lamps hung under the beam */
-    for (let x = 0; x < SW; x += 2) { const y = 156 + Math.round(Math.sin(x * 0.04) * 1); rect(g, x, y, 1, 1, ROPE[2]); }               /* the high line's cable across, just a thread of rope */
+  return once('station', () => { const [c, g] = canvas(SW, SH);
+    bakeRock(g);
+    /* the ceiling: a shadowed overhang band, a lit lip, hanging rock with pale icicle tips */
+    const ceil = x => Math.round(17 + pn(x, 2) * 9 + (hash(x >> 2, 6) % 4));
+    for (let x = 0; x < TP; x++) { const cy = ceil(x); for (let y = 0; y < cy; y++) rect(g, x, y, 1, 1, ROCK[(hash(x, y) % 6 === 0) ? 1 : 0]); rect(g, x, cy, 1, 1, ROCK[4]); rect(g, x, cy + 1, 1, 1, ROCK[1]); }
+    for (let k = 0, x = 6; x < TP - 10; k++, x += 22 + (hash(k, 11) % 20)) { const w = 4 + (hash(k, 3) % 5), l = 6 + (hash(k, 4) % 15);
+      for (let q = 0; q < l; q++) { const hw = Math.max(0, Math.round(w / 2 * (1 - q / l))); for (let i = -hw; i <= hw; i++) rect(g, x + i, ceil(x + i) + 1 + q, 1, 1, i < 0 ? ROCK[3] : ROCK[1]); }
+      if (hash(k, 9) % 2 === 0) for (let q = 0; q < 4; q++) rect(g, x, ceil(x) + 1 + l + q, 1, 1, q < 3 ? RIME[0] : RIME[1]); }
+    /* THE ARCH: a rough rock frame round a dark throat; the throat recedes in five arches to a small exit */
+    const AX = 240, AR = 100, TOP = 26, VPX = AX + 26;
+    const shell = k => { const t = k / 5, e = Math.pow(t, 0.8), hw = Math.round(lerp(AR, 16, e)), top = Math.round(lerp(TOP, 78, e)), cx = Math.round(lerp(AX, VPX, e)); return { hw, top, cx, cy: top + hw, fl: Math.round(lerp(SH, 118, e)) }; };
+    const inArch = (S, x, y) => { const dx = wdx(x, S.cx); return Math.abs(dx) <= S.hw && y >= S.top && (y >= S.cy ? y <= S.fl : Math.hypot(dx, y - S.cy) <= S.hw); };
+    const wob = x => Math.round(pn(x, 4) * 5);
+    for (let y = TOP - 14; y < SH; y++) for (let x = AX - AR - 16; x <= AX + AR + 16; x++) {                                          /* the frame's lit lip and inner shadow */
+      const dx = x - AX, dist = y < TOP + AR ? Math.hypot(dx, y - (TOP + AR)) : Math.abs(dx), e = dist - (AR + wob(x));
+      if (e > 0 && e <= 1) rect(g, x, y, 1, 1, dx < 0 ? ROCK[5] : ROCK[4]); else if (e > 1 && e <= 4) rect(g, x, y, 1, 1, ROCK[(hash(x, y) % 4 === 0) ? 1 : 0]);
+      else if (e <= 0) rect(g, x, y, 1, 1, ROCK[0]); }
+    const WALL = [CAVE[2], CAVE[1], CAVE[1], CAVE[0], CAVE[0]], FLOOR = [ROCK[1], ROCK[1], ROCK[0], ROCK[0], ROCK[0]];
+    for (let k = 0; k < 5; k++) { const S = shell(k), P = k ? shell(k - 1) : null;
+      for (let y = S.top; y <= S.fl; y++) for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) if (inArch(S, x, y)) { const gr = (hash(x, y) % 13 === 0) ? 1 : 0; rect(g, x, y, 1, 1, y > S.cy + 6 && k < 4 ? FLOOR[k] : WALL[Math.min(4, k + gr)]); }
+      if (P) for (let y = S.fl; y <= P.fl; y++) for (let x = P.cx - P.hw; x <= P.cx + P.hw; x++) if (inArch(P, x, y) && y > P.cy) rect(g, x, y, 1, 1, FLOOR[k - 1]);
+      for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) { const dx = x - S.cx, yy = Math.round(S.cy - Math.sqrt(Math.max(0, S.hw * S.hw - dx * dx))); rect(g, x, yy, 1, 1, dx < 0 ? ROCK[3] : ROCK[2]); }   /* each arch's crown ring, a rock rib */
+      for (let y = S.cy; y <= S.fl; y++) { rect(g, S.cx - S.hw, y, 1, 1, ROCK[3]); rect(g, S.cx + S.hw, y, 1, 1, ROCK[2]); } }
+    /* hanging rock and icicles at the arch's crown */
+    for (let k = 0; k < 9; k++) { const ix = AX - 70 + k * 17 + (hash(k, 21) % 8), l = 3 + (hash(k, 22) % 8), iy = Math.round(TOP + AR - Math.sqrt(Math.max(0, AR * AR - (ix - AX) ** 2))) + wob(ix);
+      for (let q = 0; q < l; q++) rect(g, ix, iy + q, 1, 1, q < l - 3 ? ROCK[2] : q < l - 1 ? RIME[0] : RIME[1]); }
+    /* THE FAR EXIT: pale daylight and a hazed peak, the only light in the cave */
+    { const S = shell(5);
+      for (let y = S.top; y <= S.fl; y++) for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) if (inArch(S, x, y)) { const t = (y - S.top) / (S.fl - S.top); rect(g, x, y, 1, 1, SKYC[Math.min(3, Math.floor(t * 3.4))]); }
+      for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) { const pk = S.fl - 4 - Math.round(Math.abs(Math.sin(x * 0.4)) * 6 + Math.max(0, 6 - Math.abs(x - S.cx - 4))); for (let y = pk; y <= S.fl; y++) if (inArch(S, x, y)) rect(g, x, y, 1, 1, y === pk ? MT[5] : MT[3]); }
+      for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) { const dx = x - S.cx, yy = Math.round(S.cy - Math.sqrt(Math.max(0, S.hw * S.hw - dx * dx))); rect(g, x, yy - 1, 1, 1, ROCK[2]); } }
+    /* the ore road: two rails run from our feet to the exit, sleepers between, a few glints where the daylight finds them */
+    for (let y = 119; y < SH; y++) { const t = (y - 118) / (SH - 118), cx = lerp(VPX, AX, t), sp = lerp(1, 48, t);
+      rect(g, Math.round(cx - sp), y, 1, 1, y < 130 && y % 2 ? IRON[4] : IRON[3]); rect(g, Math.round(cx + sp), y, 1, 1, y < 130 && y % 2 ? IRON[3] : IRON[2]); }
+    for (let i = 1; i < 13; i++) { const t = Math.pow(i / 13, 1.8), y = Math.round(119 + (SH - 119) * t), cx = lerp(VPX, AX, t), sp = lerp(1, 48, t); rect(g, Math.round(cx - sp - 2), y, Math.round(sp * 2 + 5), t > 0.4 ? 2 : 1, '#2a2218'); }
+    /* two hung lamps in the throat, dim amber on a dithered halo */
+    for (const [lx, ly, hl] of [[AX - 56, 66, 5], [AX + 4, 84, 4]]) {
+      for (let y = -11; y <= 11; y++) for (let x = -14; x <= 14; x++) { const d = Math.hypot(x / 1.3, y); if (d < 4.5) rect(g, lx + x, ly + y, 1, 1, CAVE[5]); else if (d < 10 && ((x + y) & 1) === 0) rect(g, lx + x, ly + y, 1, 1, CAVE[4]); }
+      for (let q = 0; q < hl * 2; q++) rect(g, lx, ly - 8 - q, 1, 1, IRON[2]);
+      rect(g, lx - 2, ly - 2, 5, 6, IRON[1]); rect(g, lx - 2, ly - 2, 5, 1, IRON[3]); rect(g, lx - 1, ly - 1, 3, 4, LAMP[1]); rect(g, lx, ly, 1, 2, LAMP[2]); }
+    /* IRON AND ROPE BOLTED INTO THE ROCK: crown housings in the ceiling, eyebolt anchors in the frame, a winch on a shelf, the wheel's bracket */
+    for (const hx of [90, 232, 372, 520]) { const y0 = ceil(hx) - 3;
+      rect(g, hx - 14, y0, 28, 11, IRON[1]); rect(g, hx - 14, y0, 28, 1, IRON[3]); rect(g, hx - 14, y0 + 10, 28, 1, IRON[0]); rect(g, hx - 14, y0, 1, 11, IRON[2]);
+      for (const rx of [-12, -4, 4, 11]) { rect(g, hx + rx, y0 + 2, 2, 2, IRON[3]); rect(g, hx + rx, y0 + 7, 2, 2, IRON[3]); }
+      rect(g, hx - 3, y0 + 11, 6, 6, IRON[2]); rect(g, hx - 2, y0 + 12, 4, 4, IRON[0]); rect(g, hx - 1, y0 + 13, 2, 2, IRON[4]);                 /* the crown sheave housing */
+      for (let q = 0; q < 28; q++) rect(g, hx + (q < 14 ? 0 : 1), y0 + 17 + q, 1, 1, q < 20 ? ROPE[2] : ROPE[1]); }
+    for (const [ex, ey, sg] of [[AX - AR - 10, 88, -1], [AX + AR + 10, 96, 1]]) {
+      rect(g, ex - 5, ey, 10, 13, IRON[1]); rect(g, ex - 5, ey, 10, 1, IRON[3]); rect(g, ex - 4, ey + 2, 2, 2, IRON[4]); rect(g, ex + 2, ey + 9, 2, 2, IRON[4]);
+      for (const [rx, ry] of [[-1, 4], [0, 4], [1, 4], [-1, 5], [1, 5], [-1, 6], [0, 6], [1, 6]]) rect(g, ex + rx, ey + ry, 1, 1, IRON[4]);                    /* the eye */
+      for (let q = 0; q < 16; q++) rect(g, ex + sg * (2 + q), ey + 5 + Math.round(q * q / 60), 1, 1, q % 3 ? ROPE[2] : ROPE[1]); }
+    { const wx = 95, wy = 134; rect(g, wx - 20, wy + 12, 44, 5, ROCK[4]); rect(g, wx - 20, wy + 12, 44, 1, ROCK[5]);                                              /* a winch on a rock shelf */
+      rect(g, wx - 16, wy - 4, 4, 16, IRON[2]); rect(g, wx + 12, wy - 4, 4, 16, IRON[2]); rect(g, wx - 12, wy, 24, 12, IRON[1]); rect(g, wx - 12, wy, 24, 1, IRON[3]);
+      for (let q = 0; q < 6; q++) rect(g, wx - 11 + q * 4, wy + 1, 2, 10, q % 2 ? ROPE[1] : ROPE[2]); rect(g, wx - 18, wy - 2, 2, 2, IRON[4]); rect(g, wx + 16, wy - 2, 2, 2, IRON[4]); rect(g, wx + 14, wy + 4, 10, 2, IRON[3]); rect(g, wx + 22, wy + 2, 2, 6, IRON[4]); }
+    { const W = STATION_WHEEL, c0 = ceil(W.x); rect(g, W.x - 2, c0, 4, W.y - c0, IRON[2]); rect(g, W.x - 2, c0, 1, W.y - c0, IRON[3]); rect(g, W.x - 10, c0 - 2, 20, 4, IRON[1]); rect(g, W.x - 10, c0 - 2, 20, 1, IRON[3]);   /* the sheave's hanger bolted to the ceiling */
+      for (const sx of [-1, 1]) for (let q = 0; q < W.r; q++) rect(g, W.x + sx * (W.r + 2), W.y - q, 1, 1, IRON[1]); rect(g, W.x - W.r - 2, W.y - W.r, W.r * 2 + 5, 2, IRON[2]); }
+    return c; });
+}
+/* the near layer: the ceiling's dark lip and four hanging masses, the darkest thing on screen, slid at 0.55 over the wall */
+export function bakeStationNear() {
+  return once('stationNear', () => { const [c, g] = canvas(SW, SH);
+    for (let x = 0; x < TP; x++) { const cy = Math.round(7 + pn(x, 5) * 5 + (hash(x >> 1, 8) % 3)); for (let y = 0; y < cy; y++) rect(g, x, y, 1, 1, ROCK[0]); rect(g, x, cy, 1, 1, ROCK[1]); }
+    for (const [mx, w, l] of [[58, 36, 78], [214, 30, 62], [352, 40, 92], [520, 28, 56]]) for (let y = 0; y < l; y++) { const t = y / l, hw = Math.round(w / 2 * (1 - t * 0.9) + pn(mx * 7 + y * 4, 3) * 2.5);
+      for (let i = -hw; i <= hw; i++) rect(g, mx + i, y, 1, 1, i === hw || (i === hw - 1 && y % 3) ? ROCK[2] : ROCK[0]);
+      if (y > l - 8 && hash(mx, y) % 2) rect(g, mx, y, 1, 1, RIME[0]); }
     return c; });
 }
 
@@ -138,10 +213,13 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full = true) {
     g.globalAlpha = (1 - sa) * 0.34 * (1 - p); g.fillStyle = MISTC; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
   if (sa > 0) {
-    const S = bakeStation(), w = S.width; let x = ((-cx * 0.3) % w + w) % w; if (x > 0) x -= w; const y = Math.round(Math.min(0, VH - S.height) + Math.min(dY * 0.2, 12));
-    g.globalAlpha = sa; for (; x < VW; x += w) g.drawImage(S, Math.round(x), y); g.globalAlpha = 1;
-    const wx = Math.round(VW * 0.5 - cx * 0.3 % 220), wy = 62; g.globalAlpha = sa; wheel(g, ((wx % 320) + 320) % 320 - 10, wy, 22, time * 0.9); g.globalAlpha = 1;   /* the big sheave wheel turning */
-    g.globalAlpha = sa * (0.08 + 0.03 * Math.sin(time * 7)); g.fillStyle = '#ffb23c'; g.fillRect(0, 20, VW, 60); g.globalAlpha = 1;
+    const S = bakeStation(), N = bakeStationNear(), w = S.width, y = Math.round(Math.min(0, VH - S.height) + Math.min(dY * 0.2, 12)); let x0 = ((-cx * 0.3) % w + w) % w; if (x0 > 0) x0 -= w;
+    g.globalAlpha = sa; for (let x = x0; x < VW; x += w) g.drawImage(S, Math.round(x), y);
+    for (let x = x0; x < VW; x += w) { const W = STATION_WHEEL; g.globalAlpha = sa * 0.8; wheel(g, Math.round(x) + W.x, y + W.y, W.r, time * 0.9);   /* the sheave wheel turning on its ceiling hanger */
+      g.globalAlpha = sa * (0.045 + 0.02 * Math.sin(time * 7)); g.fillStyle = '#ffb23c'; for (const [lx, ly] of [[184, 66], [244, 84]]) g.fillRect(Math.round(x) + lx - 16, y + ly - 11, 32, 22); }   /* the two lamps breathe */
+    let xn = ((-cx * 0.55) % w + w) % w; if (xn > 0) xn -= w; g.globalAlpha = sa * 0.92; for (; xn < VW; xn += w) g.drawImage(N, Math.round(xn), y);   /* the near layer: hanging rock */
+    g.globalAlpha = sa * 0.9; g.fillStyle = ROCKEDGE; for (let yy = 0; yy < VH; yy += 3) { const a = 3 + (hash(yy, 5) % 7) + Math.max(0, 12 - yy / 3) * 0.5, b = 3 + (hash(yy, 6) % 7) + Math.max(0, 12 - yy / 3) * 0.5; g.fillRect(0, yy, Math.round(a), 3); g.fillRect(VW - Math.round(b), yy, Math.round(b), 3); }   /* dark rock silhouettes at both walls */
+    g.globalAlpha = 1;
   }
   /* mist bands, thicker low in the shaft */
   if (full) { const n = Math.round(lerp(5, 2, p)); g.fillStyle = MISTC; for (let k = 0; k < n; k++) { const w = 80 + k * 23, y = Math.round(((k * 53 + 20 - cy * (0.12 + k * 0.02)) % (VH + 30) + VH + 30) % (VH + 30)) - 10, x = Math.round(((k * 97 + time * (4 + k * 1.5) - cx * 0.2) % (VW + w) + VW + w) % (VW + w)) - w;
