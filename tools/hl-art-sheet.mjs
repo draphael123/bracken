@@ -5,6 +5,7 @@
 import { deflateSync } from 'node:zlib';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+if (process.env.HLSW === '1') globalThis.__HLSW = true;   /* (claude/hlswart) HLSW=1: build the level with the switch rule and add switches.png (levers in every state, boards live/shut) */
 const OUT = process.argv[2] || fileURLToPath(new URL('../../scratch/hl-art/', import.meta.url));
 mkdirSync(OUT, { recursive: true });
 const hexRgb = c => { c = String(c); let m; if ((m = /^#([0-9a-f]{6})$/i.exec(c))) return [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)]; if ((m = /^rgba?\((\d+),(\d+),(\d+)/.exec(c.replace(/\s/g, '')))) return [+m[1], +m[2], +m[3]]; return [255, 0, 255]; };
@@ -93,4 +94,15 @@ function scene(g, cx, cy, VW, VH, time = 0.2, o = {}) {
   { const z = kit.lines.GD, cab = kit.cabs[0]; const [cc, gg] = mk(120, 100); skyGrad(gg, 120, 100, [86, 112, 160], [150, 166, 190]); HLA.drawLines(gg, { ...kit, list: [z], posts: [], winds: [], weights: [] }, cab.x - 60, cab.hookY - 36, 120, 100, time); g.drawImage(cc, 120, 100); }
   { const [cc, gg] = mk(120, 100); skyGrad(gg, 120, 100, [86, 112, 160], [150, 166, 190]); const W = kit.weights[0], cx0 = W.d.a.x0 * 16 - 8, cy0 = W.d.a.top * 16 - 50; HLA.drawLines(gg, { ...kit, list: [], posts: [], cabs: [], winds: [] }, cx0, cy0, 120, 100, time); g.drawImage(cc, 240, 100); }
   png(c, 3, 'machinery.png'); }
+/* ---- (claude/hlswart) THE SWITCH ART: levers in every state, then each board live / shut (x4 / x2) ---- */
+if (kit.rule === 'switch') {
+  const lv = kit.posts.find(p => p.kind === 'lever' && p.from === 'foot'), cells = [[0, 0, 0, 'idle 0 + tell'], [0, 0, 0.4, 'idle 0 clank'], [1, 0.8, 0, 'struck k.2'], [1, 0.55, 0, 'struck k.45'], [1, 0.25, 0, 'struck k.75'], [1, 0, 0, 'thrown 1 + tell'], [0, 0.55, 0, 'back k.45']];
+  const [c, g] = mk(46 * cells.length, 60, '#4c5c78'), S = kit.sw[lv.sw];
+  cells.forEach(([st, sw, cool], i) => { S.state = st; lv.swing = sw; lv.cool = cool; const [cc, gg] = mk(46, 60); skyGrad(gg, 46, 60, [86, 112, 160], [150, 166, 190]); gg.fillStyle = '#2c323a'; gg.fillRect(0, 50, 46, 10);
+    HLA.drawLines(gg, { ...kit, list: [], posts: [{ ...lv, x: 23 + 0, y: 50 - 12 + 0 }], cabs: [], weights: [], winds: [], ends: [] }, 0, 0, 46, 60, 0.1, []); g.drawImage(cc, i * 46, 0); }); S.state = 0; lv.swing = 0; lv.cool = 0;
+  png(c, 4, 'switch-levers.png');
+  const pairs = [['W3', 'S2', 'J1', 58], ['H2', 'S4', 'J3', 40], ['E2', 'EL', 'J4', 64]], [c2, g2] = mk(120 * 6, 100, '#4c5c78'); let n = 0;
+  for (const [a, b, id, at] of pairs) for (const st of [0, 1]) { kit.sw[id].state = st; const [cc, gg] = mk(120, 100); skyGrad(gg, 120, 100, [86, 112, 160], [150, 166, 190]); const z = kit.lines[a], y = LKT.lineY(z, at * 16);
+    HLA.drawLines(gg, { ...kit, list: [z, kit.lines[b]], posts: [], cabs: [], weights: [], winds: [], ends: [] }, at * 16 - 60, y - 60, 120, 100, 0.1, []); g2.drawImage(cc, n++ * 120, 0); kit.sw[id].state = 0; }
+  png(c2, 3, 'switch-boards.png'); }
 console.log('done');
