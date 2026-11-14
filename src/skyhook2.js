@@ -20,7 +20,7 @@ export const SKY2_DEFAULT = false;   /* SKY2REL flips this; ?sky2=0 stays the ol
 export const SKY2 = sky2Forced() || (SKY2_DEFAULT && !sky2OptOut());
 const up = v => Math.round(v * 1.15);   /* the plan's first tune: the old moves x1.15 (weightier), tells unchanged */
 export const SK = {
-  hp: 2000, w: 18, h: 32, markH: 44, hang: 40,
+  hp: 2600, w: 18, h: 32, markH: 44, hang: 40,
   p2: 0.65, p3: 0.35, enrage: { hp: 0.20, t: 270, tell: 1.4, speed: 1.2 },
   low: 0.75, wardMul: 0.4,                                            /* on the LOW line (and anywhere off his SKY line / crowns): his coat; warded */
   rest: [0.9, 0.75, 0.65],
