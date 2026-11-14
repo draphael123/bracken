@@ -4,7 +4,8 @@
     "batch": 187,
     "lines": [
       { "s": "Enemy health bars now show what your last hit took: a white chunk, then it drains away.", "lv": [] },
-      { "s": "Elites and mini-bosses get it too, so a big blow is easy to read.", "lv": [] }
+      { "s": "Elites and mini-bosses get it too, so a big blow is easy to read.", "lv": [] },
+      { "s": "A graze leaves a thin sliver; a heavy blow takes a thick one.", "lv": [] }
     ]
   },
   {
