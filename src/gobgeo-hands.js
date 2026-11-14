@@ -56,7 +56,8 @@ export function makeGobGeoHands(ctx) {
     const m = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (m && m.ground) e.vy = 0;
   };
   /* ---------- (GQ6CALL) THE GEODE CALL: the stone, its landing ring, the two hanging shards, the shard sent home ---------- */
-  const groundY = (x, y) => { let yy = y; for (let i = 0; i < 90 && !ctx.solidAt(x, yy + 1); i++) yy += 2; return yy; };   /* the floor under a spot */
+  const floorAt = (x, y) => (ctx.standable ? ctx.standable(Math.floor(x / (ctx.TS || 16)), Math.floor(y / (ctx.TS || 16))) : ctx.solidAt(x, y));   /* (gq6calllook) ctx.solidAt is T.SOLID only: a ONE-WAY walkway (the Keep's landing) let the stone fall through to the floor 11 rows down and hang its shards out of reach; standable = solid or one-way */
+  const groundY = (x, y) => { let yy = y; for (let i = 0; i < 90 && !floorAt(x, yy + 1); i++) yy += 2; return yy; };   /* the floor under a spot */
   const airRows = P => { if (!P) return 0; let n = 0; for (let r = 0; r < 8; r++) { if (ctx.solidAt(P.x, P.y - 24 - r * 16)) break; n++; } return n; };   /* free rows over the hero's head */
   const callFree = e => !!S && !S.calls.some(c => c.owner === e) && S.calls.length < GCALL.level;
   const callOf = e => S && S.calls.find(c => c.owner === e && c.state === 'tell');

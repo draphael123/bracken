@@ -415,7 +415,7 @@ export function geoCall(BK, h, f) {
   if (ring) { const dir = P.x >= ring.x ? 1 : -1; k.right = dir > 0; k.left = dir < 0; P.face = dir;
     if (ring.left < 0.3 && Math.abs(ring.x - P.x) < ring.r + 6 && P.ground && !(P.dodge > 0)) BK.press('dodge');   /* no room to leave it: roll through the stone */
     return { defend: 1, swing: 0 }; }
-  if (shard) { const toward = Math.sign(shard.x - P.x) || P.face, reach = (LAB_REACH[h] || 22) + 4, ranged = h === 'ranger' || h === 'pyro' || h === 'pirate' || h === 'warden' || h === 'geomancer'; P.face = toward;
+  if (shard) { const toward = Math.sign(shard.x - P.x) || P.face, reach = (LAB_REACH[h] || 22) + 4, ranged = h === 'ranger' || h === 'pyro' || h === 'warden' || h === 'geomancer'; P.face = toward;   /* (gq6calllook) NOT the pirate: his tap X is the cutlass (the pistol is a held heavy), so he walks in like a melee hero - shooting from 120 px never touched a shard */
     const near = Math.abs(shard.x - P.x) <= (ranged ? 120 : reach);
     if (!near) { k.right = toward > 0; k.left = toward < 0; return { defend: 0, swing: 0 }; }
     if (P.atk < 0) BK.press('atk'); return { defend: 0, swing: 1 }; }
