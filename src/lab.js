@@ -402,10 +402,30 @@ function lowerFooting(BK, e, T, avoidTarget = true) {
   }
   return best ?? e.x + (Math.sign(P.x - e.x) || 1) * ((e.w || 16) / 2 + 24);
 }
+/* (claude/gq6geo, GQ6CALL) THE GEODE CALL, as a player answers it (a bot that ignored a told move would waste every tune lane): from the tell until the stone lands, LEAVE THE RING (the landing spot is shown, and it locks 0.5 s
+   into the 0.8 s tell: step out of radius + 14 px; a roll through it in the last 0.3 s if there is no room); once it has landed, STRIKE THE NEAREST HANGING SHARD (walk to it, then the hero's own attack key: a blow, an arrow,
+   an ember, a shot - every class has one) inside its 1.2 s. Returns the frame ({ defend, swing }) or null (no call live: every flag-OFF frame). Exported so tools/gq6call.mjs can drive it. */
+export function geoCall(BK, h, f) {
+  const G = BK.gobgeo && BK.gobgeo(), C = G && G.callRead ? G.callRead() : null; if (!C) return null;
+  const P = BK.P, k = BK.keys; if (P.dead) return null;
+  let ring = null, shard = null, sd = 1e9;
+  for (const c of C.calls) { if ((c.state === 'tell' || c.state === 'fall') && Math.abs(c.x - P.x) < c.r + 40) ring = ring && Math.abs(ring.x - P.x) < Math.abs(c.x - P.x) ? ring : c;
+    if (c.state === 'hang') for (const q of c.shards) { const d = Math.abs(q.x - P.x); if (d < sd && d < 200) { sd = d; shard = q; } } }
+  k.left = k.right = k.block = k.atk = k.up = k.down = k.jump = false;
+  if (ring) { const dir = P.x >= ring.x ? 1 : -1; k.right = dir > 0; k.left = dir < 0; P.face = dir;
+    if (ring.left < 0.3 && Math.abs(ring.x - P.x) < ring.r + 6 && P.ground && !(P.dodge > 0)) BK.press('dodge');   /* no room to leave it: roll through the stone */
+    return { defend: 1, swing: 0 }; }
+  if (shard) { const toward = Math.sign(shard.x - P.x) || P.face, reach = (LAB_REACH[h] || 22) + 4, ranged = h === 'ranger' || h === 'pyro' || h === 'pirate' || h === 'warden' || h === 'geomancer'; P.face = toward;
+    const near = Math.abs(shard.x - P.x) <= (ranged ? 120 : reach);
+    if (!near) { k.right = toward > 0; k.left = toward < 0; return { defend: 0, swing: 0 }; }
+    if (P.atk < 0) BK.press('atk'); return { defend: 0, swing: 1 }; }
+  return null;
+}
 function labBotFrame(BK, h, e, f) {
   const P = BK.P, k = BK.keys; let defend = 0, swing = 0;
   const d = e.x - P.x, ad = Math.abs(d); if (!(P.dash > 0) && !(P.rush > 0)) P.face = Math.sign(d) || P.face;
   const threat = threatOf(e) && !HELD(e) && ad < 70 && Math.abs(e.y - P.y) < 50;
+  { const gc = geoCall(BK, h, f); if (gc) return gc; }   /* (claude/gq6geo) the Geode Call: leave the ring, strike the shard (null with the flag OFF) */
   k.left = false; k.right = false; k.block = false; k.atk = false; k.up = false; k.down = false; k.jump = false;
   if (h === 'reaper') { k.throw = P.harvest >= 100; if (k.throw && !(P.fHeld > 0)) BK.press('throw'); }   /* HOLD F on a full bar: the surge */
   if (duckNow(BK, h, e)) { defend = 1; k.down = true; BK.unpress(); }   /* THE DUCK: a high blow goes over (duckNow) */

@@ -15,6 +15,7 @@
 // R.rocklocks: [{ id, kind: 'seal' | 'crack', x, y (its centre tile), box [x0, x1, y0, y1] (tiles a sent-back rock must cross), cells [[col, y0, y1]] (opened when smashed), seal (the
 // Geomancer bound to it: the seal fails on its own if he is dead - never a soft-lock) }]. src/gobgeo-hands.js reads them.
 import { G4 } from './gq4l.js';
+import { G6GEO, GEO6 } from './gq6geo.js';   /* (claude/gq6geo) THREE MORE GEOMANCERS, flag GQ6GEO_SHIPS (default OFF) */
 export const GOBGEO = {
   CAPT: 431,
   TEACH: { gate: 441, rows: [10, 19], seal: 18, geo: 448 },
@@ -90,4 +91,23 @@ export function gobgeoLay(R, { T, TS }) {
     ent('sign', E2.sign[0], E2.sign[1], { text: 'A GEOMANCER IN THE CHOIR LOFT. HIS ROCK GOES BACK THE WAY IT CAME.' });
   }
   return R;
+}
+
+/* (claude/gq6geo, GQ6GEO_SHIPS) THREE MORE GEOMANCERS: THE CRAG WALK, THE BAKEHOUSE YARD, THE KEEP. Laid on the FINISHED level (src/level.js, after the garrison, the elites, the checkpoints and the coin sprinkle), so
+   the seeded sprinkles draw exactly what they drew before and a foe is never dropped on a perch: flag ON = flag OFF + these ledges, piers / chains, three Geomancers and three signs, nothing else moves.
+   Each stands on a ONE-WAY ledge 5-7 rows over the route (a plain jump cannot reach it; the Keep's can be dropped onto from the walk above), on a pier or a chain; none sits by a shrine or in an arena. */
+export function gobgeoLate(L, { T, TS }) {
+  if (!G6GEO || !L || !L.grid || L.W < 440) return L;
+  const W = L.W, g = L.grid, ent = (t, x, y, o = {}) => L.ents.push({ t, x, y, ...o });
+  if (L.ents.some(e => e.t === 'gobgeo' && e.x === GEO6.CRAG.geo && e.y === GEO6.CRAG.row)) return L;   /* laid once */
+  L.routeSupports = L.routeSupports || [];
+  for (const k of ['CRAG', 'BAKE', 'KEEP']) { const P = GEO6[k];
+    for (let x = P.ledge[0]; x <= P.ledge[1]; x++) if (g[P.ledge[2] * W + x] === T.AIR) g[P.ledge[2] * W + x] = T.ONEWAY;
+    if (P.pier !== undefined) for (const x of [P.ledge[0], P.ledge[1]]) L.routeSupports.push({ x, y: P.ledge[2], bottom: P.pier, kind: 'hcpier' });
+    else for (const x of [P.ledge[0], P.ledge[1]]) L.routeSupports.push({ x, y: P.ledge[2], bottom: P.ledge[2] + 2, top: P.chainTop, kind: 'hcchain' });
+    ent('gobgeo', P.geo, P.row, { face: -1, perch: true, ...(P.early ? { early: true } : {}), leash: P.leash, sight: P.sight }); }
+  ent('sign', GEO6.CRAG.sign[0], GEO6.CRAG.sign[1], { text: 'A GEOMANCER ON A PIER OVER THE CLIMB. HIS ROCK GOES BACK THE WAY IT CAME.' });
+  ent('sign', GEO6.BAKE.sign[0], GEO6.BAKE.sign[1], { text: 'A GEOMANCER ON THE YARD ROOF. STRIKE HIS ROCK OR PARRY IT.' });
+  ent('sign', GEO6.KEEP.sign[0], GEO6.KEEP.sign[1], { text: 'A GEOMANCER ON A CHAIN LANDING. HIS ROCK GOES BACK THE WAY IT CAME.' });
+  return L;
 }

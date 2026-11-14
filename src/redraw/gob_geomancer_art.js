@@ -7,11 +7,13 @@
 // of slate that float round him (drawn live by the hands: drawChunk). The hero Geomancer (earth browns, a stone fist) never wears purple.
 // Frames (GGF): 0,1 idle | 2-5 walk | 6 rock told (staff up, a chunk over his head) | 7 the throw | 8 slate told (staff planted, crouched) | 9 the slate sweep |
 //   10 shell told (hunched, arms in) | 11 shell burst (arms flung wide) | 12 stagger | 13 death (fallen) | 14 hurt
+//   (GQ6CALL on) 14, 15 THE GEODE CALL told (both arms and the staff straight up, the geode blazing under a violet ring, stones in the ring's mouth: a 2-frame wobble) | 16 its release (the staff slammed down at the floor) | 17 hurt
 import { canvas, px, rect, line, circle, fillPoly, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
+import { G6CALL } from '../gq6geo.js';   /* (claude/gq6geo) THE GEODE CALL's three frames are baked only with GQ6CALL_SHIPS on: flag OFF = the 15-frame sheet, byte for byte */
 
-export const GGF = { idle: 0, walk: 2, rockTell: 6, rock: 7, slateTell: 8, slate: 9, shellTell: 10, shell: 11, stagger: 12, death: 13, hurt: 14 };
-export const GG_FRAMES = 15;
+export const GGF = { idle: 0, walk: 2, rockTell: 6, rock: 7, slateTell: 8, slate: 9, shellTell: 10, shell: 11, stagger: 12, death: 13, hurt: G6CALL ? 17 : 14, ...(G6CALL ? { callTell: 14, callRel: 16 } : {}) };
+export const GG_FRAMES = G6CALL ? 18 : 15;   /* the hurt pose stays LAST (main.js HAS_HURT draws R.length - 1) */
 /* the ramps: [deepest, dark, mid, light, highlight] */
 export const GGC = {
   robe: ['#1e0c2e', '#3a1656', '#5a2a86', '#7e4ab4', '#a87ad8'],
@@ -29,7 +31,7 @@ const W = 58, H = 60, CX = 25, G = 56;
 const LX = -0.62, LY = -0.78;   /* the light: from the upper left */
 const pick = (ramp, k) => ramp[Math.max(0, Math.min(ramp.length - 1, k))];
 /* a round volume: ellipse (cx, cy, rx, ry) lit by its normal; bias shifts the whole ramp (+ lighter) */
-function ball(g, cx, cy, rx, ry, ramp, bias = 0) {
+export function ball(g, cx, cy, rx, ry, ramp, bias = 0) {
   for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
     const nx = (x + 0.5 - cx) / rx, ny = (y + 0.5 - cy) / ry, d = nx * nx + ny * ny; if (d > 1) continue;
     const nz = Math.sqrt(Math.max(0, 1 - d)), l = -(nx * LX + ny * LY) * 0.75 + nz * 0.55 + bias;   /* lambert-ish, -0.8..1.3 */
@@ -175,8 +177,31 @@ function pose(f) {
   }
 }
 
+/* ---------- THE GEODE CALL's poses (GQ6CALL) ----------
+   TELL (k = 0, 1: a 2-frame wobble): the rock's tell is a chunk in the BACK hand and the staff cocked forward; this one is nothing like it - BOTH arms thrown straight up, the staff
+   upright through his front fist, its geode blazing under a flat violet RING (a portal seen from below) with three stones in its mouth and three violet chevrons falling toward his
+   head, the hood blown back, eyes shut, mouth chanting. Read at 1x as 'something is coming from above'.  RELEASE (k = 2): the staff SLAMMED DOWN at the floor in front of him, the geode
+   a hand's breadth off the stones, mouth open, a ring of dust and a spray of violet at the tip: the stone has left the ring. */
+function callRing(g, cx, cy, rx, ry, k) {   /* a pixel ellipse seen from below: the far (upper) arc dark, the near arc bright - the ring is a portal, not a halo */
+  for (let a = 0; a < 64; a++) { const t = a / 64 * Math.PI * 2, x = Math.round(cx + Math.cos(t) * rx), y = Math.round(cy + Math.sin(t) * ry), near = Math.sin(t) > 0;
+    px(g, x, y, near ? (a & 3 ? C.gem[3] : C.gem[4]) : C.gem[1]); if (near && rx > 7) px(g, x, y + 1, C.gem[2]); }
+  for (let x = -rx + 2; x <= rx - 2; x++) { const y = Math.round(cy - 0.5 + Math.sqrt(Math.max(0, 1 - (x / rx) ** 2)) * (ry - 1) * 0.4); px(g, Math.round(cx + x), y, C.gem[0]); }   /* the dark mouth */
+  for (const [dx, dy] of [[-rx - 1, 1], [rx + 1, 1], [0, ry + 3]]) px(g, cx + dx, cy + dy - (k ? 1 : 0), C.glow);
+}
+function callPose(k) {
+  if (k === 2) return { lean: 3, by: 0, staff: [11, 6, 22, -4], ba: [5, 4], glow: 0.6, eyes: 'glow', mouth: 'shout', sway: 3, legs: [4, -3], flare: 1,
+    fx: g => { for (const dx of [-14, -8, 12, 18, 25, 30]) { px(g, CX + dx, G - 1 - (dx & 1), C.stone[4]); px(g, CX + dx + 1, G - 2, C.stone[3]); }   /* a ring of dust off the stones */
+      for (const [dx, dy] of [[20, -9], [27, -6], [24, -13], [19, -14]]) { px(g, CX + dx, G + dy, C.glow); px(g, CX + dx + 1, G + dy + 1, C.gem[2]); }   /* violet spray at the tip */
+      for (let x = 14; x <= 30; x += 2) px(g, CX + x, G - 1, C.gem[2]); } };
+  const w = k;   /* the wobble: the ring breathes, the hood and the robe sway the other way, the chevrons fall one step */
+  return { by: -1 - w, lean: -1, staff: [8, -17 - w, 8, -46 - w], ba: [-7, -17 - w], glow: 1, handGlow: 1, eyes: 'shut', mouth: 'open', sway: w ? 2 : -2, hood: 1, flare: 1, legs: [-3, 3],
+    fx: g => { const ty = G - 48 - w; callRing(g, CX + 8, ty + 1, 8 + 2 * w, 3 + w, w);
+      for (const [dx, dy] of [[-3, 6], [8, 9], [19, 6]]) { const y = G + dy - 52 + w * 3 + 3; px(g, CX + dx, y, C.glow); px(g, CX + dx - 1, y - 1, C.gem[3]); px(g, CX + dx + 1, y - 1, C.gem[3]); px(g, CX + dx, y + 1, C.gem[4]); }   /* the chevrons: a V, falling */
+      for (const [dx, dy] of [[4, 2], [8, 4], [12, 1]]) { rect(g, CX + dx, ty + dy, 2, 2, C.stone[2]); px(g, CX + dx, ty + dy, C.stone[4]); px(g, CX + dx + 1, ty + dy + 1, C.stone[0]); }   /* stones in its mouth */ } };
+}
+
 export function bakeGobGeomancer() {
-  const F = Array.from({ length: GG_FRAMES }, (_, f) => { const [c, g] = canvas(W, H); if (f === GGF.death) drawDead(g); else draw(g, pose(f)); outline(c, OUT); return c; });
+  const F = Array.from({ length: GG_FRAMES }, (_, f) => { const [c, g] = canvas(W, H); if (f === GGF.death) drawDead(g); else if (G6CALL && f >= 14 && f <= 16) draw(g, callPose(f - 14)); else draw(g, pose(f === GG_FRAMES - 1 ? 14 : f)); outline(c, OUT); return c; });
   return { R: F, L: F.map(c => flipX(c)), white: { R: F.map(c => whiten(c)), L: F.map(c => flipX(whiten(c))) }, ax: CX, ay: G, w: 12, h: 22 };
 }
 
@@ -185,9 +210,10 @@ export function ggFrame(e) {
   const m = e.mode, a = e.anim || 0, moving = Math.abs(e.vx || 0) > 4;
   switch (m) {
     case 'rockTell': return GGF.rockTell;
+    case 'callTell': return G6CALL ? GGF.callTell + (Math.floor(a * 6) & 1) : GGF.rockTell;   /* (claude/gq6geo) THE GEODE CALL's own tell (a 2-frame wobble); flag OFF it never runs */
     case 'slateTell': return GGF.slateTell;
     case 'shellTell': return GGF.shellTell;
-    case 'release': return e.relMove === 'slateTell' ? GGF.slate : e.relMove === 'shellTell' ? GGF.shell : GGF.rock;
+    case 'release': return e.relMove === 'callTell' && G6CALL ? GGF.callRel : e.relMove === 'slateTell' ? GGF.slate : e.relMove === 'shellTell' ? GGF.shell : GGF.rock;
     case 'stagger': return GGF.stagger;
     default: return moving ? GGF.walk + (Math.floor(a * 8) & 3) : GGF.idle + (Math.floor(a * 1.6) & 1);
   }
