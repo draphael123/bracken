@@ -217,6 +217,8 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full = true) {
     g.globalAlpha = sa; for (let x = x0; x < VW; x += w) g.drawImage(S, Math.round(x), y);
     for (let x = x0; x < VW; x += w) { const W = STATION_WHEEL; g.globalAlpha = sa * 0.8; wheel(g, Math.round(x) + W.x, y + W.y, W.r, time * 0.9);   /* the sheave wheel turning on its ceiling hanger */
       g.globalAlpha = sa * (0.045 + 0.02 * Math.sin(time * 7)); g.fillStyle = '#ffb23c'; for (const [lx, ly] of [[184, 66], [244, 84]]) g.fillRect(Math.round(x) + lx - 16, y + ly - 11, 32, 22); }   /* the two lamps breathe */
+    /* daylight spill (claude/batch189): the exit's cool light washes the cave wall in the band where Skyhook perches and rides, so his dark coat reads against paler stone; the ceiling stays dark */
+    g.fillStyle = '#8ea4c6'; for (let yy = 10; yy < 104; yy += 2) { const b = clamp((yy - 10) / 14) * clamp((104 - yy) / 14); g.globalAlpha = sa * 0.24 * ease(b); g.fillRect(0, yy, VW, 2); }
     let xn = ((-cx * 0.55) % w + w) % w; if (xn > 0) xn -= w; g.globalAlpha = sa * 0.92; for (; xn < VW; xn += w) g.drawImage(N, Math.round(xn), y);   /* the near layer: hanging rock */
     g.globalAlpha = sa * 0.9; g.fillStyle = ROCKEDGE; for (let yy = 0; yy < VH; yy += 3) { const a = 3 + (hash(yy, 5) % 7) + Math.max(0, 12 - yy / 3) * 0.5, b = 3 + (hash(yy, 6) % 7) + Math.max(0, 12 - yy / 3) * 0.5; g.fillRect(0, yy, Math.round(a), 3); g.fillRect(VW - Math.round(b), yy, Math.round(b), 3); }   /* dark rock silhouettes at both walls */
     g.globalAlpha = 1;
