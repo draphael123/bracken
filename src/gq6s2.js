@@ -93,17 +93,37 @@ export function makeGQ6S2(env) {
     if (ctx.tilesDone) ctx.tilesDone();
   };
   /* (claude/gq6s3) one tier: its floor + a ladder at each END (top rung at the floor row, so no hole and no gap in the climb). The east stub of the old 'random ladder' is put back (restore) as the bottom rung of the hoardings' east ladder, never 'laid'. */
-  const layTier = k => {
-    const g = tg(k); if (!g || !ctx.tiles || layK.has(k)) return;
+  const layOps = k => {
+    const g = tg(k);
     if (k === 1) ctx.tiles(g.row, g.hoard[0], g.hoard[1], 'lay', true); else if (k === 2) ctx.tiles(g.row, g.c0, g.c1, 'lay', true); else ctx.tiles(g.row, g.c0, g.c1, 'solid', true);
     for (const lc of g.lads) for (let r = g.row; r <= g.lowStand; r++) ctx.tiles(r, lc, lc, isStub(lc, r) ? 'restore' : 'ladder', true);
-    layK.add(k); laid = true; if (ctx.tilesDone) ctx.tilesDone();
+    layK.add(k); laid = true;
   };
-  const unlayTiers = () => {
+  /* (claude/gq6hitch) the burn is told on a frame that must stay light: the tier's tile state was resolved ONCE while the hall fight woke (E.warm) and is copied in (ctx.tilePut) - no whole-level resolve on the tell frame (it was 0.2-0.35 s). Only valid in order (tiers 1..k-1 laid, the hatch sealed); anything else resolves as before. */
+  const layTier = k => {
+    const g = tg(k); if (!g || !ctx.tiles || layK.has(k)) return;
+    const fast = !!(cache[k] && ctx.tilePut && layK.size === k - 1);
+    layOps(k); if (fast) ctx.tilePut(cache[k]); else if (ctx.tilesDone) ctx.tilesDone();
+  };
+  const unlayOps = () => {
     for (const k of [...layK].sort((a, b) => b - a)) { const g = tg(k); if (!g) continue;
       ctx.tiles(g.row, k === 1 ? g.hoard[0] : g.c0, k === 1 ? g.hoard[1] : g.c1, k === 3 ? 'unsolid' : 'unlay', true);
       for (const lc of g.lads) for (let r = g.row; r <= g.lowStand; r++) ctx.tiles(r, lc, lc, 'unladder', true); }
-    layK.clear(); laid = false; if (ctx.tilesDone) ctx.tilesDone();
+    layK.clear(); laid = false;
+  };
+  const unlayTiers = () => { unlayOps(); if (ctx.tilesDone) ctx.tilesDone(); };
+  /* (claude/gq6hitch) WARM, one state per call (one level resolve a frame, while the hall fight wakes: nothing moves on the name card): 0 = the hatch sealed (roof entry), 1..3 = tiers 1..k laid on top. Each call lays its state, resolves, keeps the tower's tile columns, and puts EVERYTHING back (grid by the same ops a reset uses, the tile picture by a copy) - the world is as it was when the call returns, and nothing is drawn in between. */
+  const cache = {}; let warmN = 0;
+  E.warmed = () => warmN;
+  E.warm = () => {
+    if (!S3 || warmN >= 4 || !ctx.tileKeep || !ctx.tilePut || !ctx.tilesDone || !ctx.tiles || !env.seal || !(env.warmOk && env.warmOk())) return;
+    const Tw = tower(); if (!Tw || !Tw.OUT || (st && st.phase !== 'off') || layK.size) { if (!Tw || !Tw.OUT) warmN = 99; return; }
+    const gs = [1, 2, 3].map(tg); if (gs.some(g => !g)) { warmN = 99; return; }
+    const ks = warmN, cols = ks === 0 ? Tw.OUT.mouth : [Math.min(...gs[ks - 1].lads, gs[ks - 1].c0), Math.max(...gs[ks - 1].lads, gs[ks - 1].c1)], dd = ks === 3 ? 10 : 4, xa = Math.min(...cols) - dd, xb = Math.max(...cols) + dd;   /* the columns this state changes, + 4 for the neighbours' pictures (+ 10 for the roof's solid slab: the ground depth reaches 9) - tight, so what the hall fight changed elsewhere is never overwritten */
+    const all = ctx.tileKeep(0, 1e9);
+    try { env.seal(true, true); for (let k = 1; k <= ks; k++) layOps(k); ctx.tilesDone(); cache[ks] = ctx.tileKeep(xa, xb); }
+    finally { unlayOps(); env.seal(false, true); ctx.tilePut(all); }
+    warmN++;
   };
   const setRespawn = r => { if (env.setRespawn) env.setRespawn(r); };
   E.laid = () => laid;

@@ -292,11 +292,11 @@ export function makeGQueenHands(ctx) {
     const P0 = ctx.P(); ctx.burst(P0.x, P0.y - 10, 18, ['#b28cff', '#e8dcff', '#2a1a3a'], 90, 0.7);
   }
   /* (gq3fix) THE HATCH IS SHUT for the fight on the deck: a two-column hole in the middle of the west deck swallowed the melee bots (and any hero who mistimed a jump) into the burning shaft, with no way back into the fight. The oak trap (the old hatch art, closed) lies flush; a retry into the tower opens it again. */
-  function sealHatch(on) {
+  function sealHatch(on, defer) {
     const Lv = L(), A0 = Lv && Lv.arenaRoof, Tw = A0 && A0.tower; if (!Tw || !Lv.grid) return; const [c0, c1] = Tw.HATCH.cols, fy = Tw.DECK.floor;
     if (Tw.OUT) { const [m0, m1] = Tw.OUT.mouth; for (let y = fy; y <= fy + 1; y++) for (let x = m0; x <= m1; x++) Lv.grid[y * Lv.W + x] = on ? 8 : (x === Tw.OUT.mouthLadder ? 9 : 0); }   /* (gq4l) the outside stretch's mouth in the deck floor (a ladder up it) */
     else for (let y = fy; y <= fy + 1; y++) { Lv.grid[y * Lv.W + c0] = on ? 8 : 9; Lv.grid[y * Lv.W + c1] = on ? 8 : 0; }   /* 8 = T.PLANK, 9 = T.NET (the ladder), 0 = air */
-    if (GS2 && Tw.OUT) { const m = Tw.OUT.mouthLadder; ctx.tiles(fy - 1, m, m, on ? 'drop' : 'restore'); }   /* (claude/gq6s2) the one-tile ladder left at the deck's east end (rung row 19 of the mouth ladder) is the 'random ladder': gone for the fight, back with the way into the tower */
+    if (GS2 && Tw.OUT) { const m = Tw.OUT.mouthLadder; ctx.tiles(fy - 1, m, m, on ? 'drop' : 'restore', defer); }   /* (claude/gq6s2) the one-tile ladder left at the deck's east end (rung row 19 of the mouth ladder) is the 'random ladder': gone for the fight, back with the way into the tower */
     S.hatchShut = !!on;
   }
   function roofBegin(e) { sealHatch(true); S.roof = { lash: 0, ambushCd: 6, geyserCd: 4, lashCd: 2, blinkCd: 3, stormAt: 0, stormBreakAt: 0, adds: new Set(), hatch: null, geysers: [], banner: null, orbit: null, blink: null, reinf: null, pstorm: null,
@@ -960,7 +960,7 @@ export function makeGQueenHands(ctx) {
   G52 = Q52 ? makeGQ5Q2({ TS, ctx, L, q, now, seats, sfx, gqRed: (...a) => gqRed(...a), gqHit: (...a) => gqHit(...a), jarr: e => jarr(e), strikes: (b, k) => strikes(b, k), ringPos: r => ringPos(r), rings: () => rings(), lvlRings: n => lvlRings(n), pickExit: (...a) => pickExit(...a), target: () => target(), addShardRef: o => (addShard(o) ? S.rocks[S.rocks.length - 1] : null), setCrown: v => { S.crown = v; },
     R0: () => (S ? S.roof : null), pfBlock: e => !!(GS2 && (GS2.live() || GS2.pending(e))), noHatch: () => !!GS2, lightBay: (R0, i, tt) => lightBay(R0, i, tt), art: GQ3A, stunGap: () => G.stunGuard,
     guard: v => (v === undefined ? (S ? S.stunGuardUntil : 0) : (S.stunGuardUntil = Math.max(S.stunGuardUntil, v))), markStun: d => { S.stunUntil = now() + d; } }) : null;   /* (claude/gq5q2) */
-  GS2 = S2 ? makeGQ6S2({ TS, ctx, L, q, now, seats, everyone, sfx, R0: () => (S ? S.roof : null), setCrown: c => { S.crown = c; },
+  GS2 = S2 ? makeGQ6S2({ TS, ctx, L, q, now, seats, everyone, sfx, seal: (on, defer) => sealHatch(on, defer), warmOk: () => { const e0 = q(); return !!(e0 && inHall(e0) && !e0.hidden && ctx.bossActive()); },   /* (claude/gq6hitch) the tier tile states are resolved once while the hall fight wakes */ R0: () => (S ? S.roof : null), setCrown: c => { S.crown = c; },
     clearShards: () => { for (const r of S.rocks) if (r.p2) r.dead = true; },   /* her stones in the air are gone when she goes up */
     cullAdds: () => { const e0 = q(); if (!e0) return; for (const q2 of ctx.enemies()) if (q2.alive && q2 !== e0 && !q2.mini && (q2.t === 'soldier' || q2.t === 'javelin') && Math.abs(q2.x - e0.x) < 900) { q2.alive = false; ctx.burst(q2.x, q2.y - 14, 8, ['#8fd160', '#5a8a3a'], 60, 0.4); } },   /* reinforcements are dropped up there */
     perchIdle: () => !G52 || (G52.perchPhase() === 'idle' && !G52.hatchBusy()),
@@ -1218,7 +1218,7 @@ export function makeGQueenHands(ctx) {
     if (S.esc && S.esc.on) escapeStep(dt);
     if (S.rocks.length) rockStep(dt);
     if (!ctx.bossActive() || !q()) { S.crown = null; S.geode = null; S.geodeBits = []; if (!(S.esc && S.esc.on)) { S.rocks = []; } S.portals = []; return; }
-    crownStep(dt); portalStep(dt); geodeStep(dt); bitsStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt); if (G5) G5.update(dt); if (Q4) q4Update(dt); if (G52) G52.update(dt); if (GS2) GS2.update(dt);
+    crownStep(dt); portalStep(dt); geodeStep(dt); bitsStep(dt); if (S.roof) roofUpdate(dt); mechStep(dt); if (G5) G5.update(dt); if (Q4) q4Update(dt); if (G52) G52.update(dt); if (GS2) { GS2.warm(); GS2.update(dt); }
   };
 
   /* ---------------- DRAW ---------------- */
