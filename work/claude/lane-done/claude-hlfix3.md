@@ -1,4 +1,4 @@
-# HLFIX3 - BUILT flag OFF 160ac4bfb (claude/hlfix3, off master 3df8e7fdb). BROWSER LOOK OWED (node only, no page run). Not merged / deployed / pushed.
+# HLFIX3 - BUILT flag OFF fec4f9207 (claude/hlfix3, off master 3df8e7fdb). BROWSER LOOK OWED (node only, no page run). Not merged / deployed / pushed.
 Flag HL_FIX3 (src/highlines.js): OFF by default; ?hlfix3=1 | globalThis.__HLFIX3 | BRACKEN_HLFIX3=1. OFF = master by hash: level sha256 9e07f4f7efbd5b56 (sw on) / 432d5aae9df5946d (sw off) identical on master and branch (scratch/hlfix3-hash.mjs <repo> [1|0]); HL_DATA / HL_DATA_SW never touched (patch = deep copy).
 ## What changed
 - A CARTS WAIT (src/line-kit.js, kit.fix3): cab rests until a hero stands in it, 0.6 s beat (cabBoard clank + a filling bar), then up to 2.5 s more while another live seat within 12 tiles / 6 rows is not aboard (boards = goes at once; far/downed/dead = no wait). Empty cab at the dock comes BACK along a visible way (new state 'back', 240 px/s) instead of blinking home. Counterweight cage (same beat + wait): a struck stone with nobody aboard no longer sends it up empty; it comes home empty by itself as before.
