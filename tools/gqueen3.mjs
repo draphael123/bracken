@@ -5,6 +5,7 @@
 //   SOURCE   (static, src/main.js + src/gqueen-hands.js) the crown, the shards and the storm are hit through gqHit and never `unblockable` / `pierce`; GREED.chipBy.gqueen >= 0.4; gqOpen names stunned + the roof;
 //            every new mode has its MARK / ANSWER / HEIGHT row; the flee full-heals (hp, stamina, flasks); the stun guard is >= 1.0 s; the pillar / plate / chandelier-pin machinery is gone.
 //   node tools/gqueen3.mjs        (GQ_ROOT=<checkout> runs it against another checkout: the plan's "prove it RED on master")
+process.env.BRACKEN_GQ6S3 = '0'; process.env.BRACKEN_GQ6S2 = '0';   /* (claude/gq6s2) this tool proves the DECK fight (the hatch, the rage on the deck, the perch); the final platform is proved by tools/gq6s2.mjs */
 import { readFileSync, existsSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';

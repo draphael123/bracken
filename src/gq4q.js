@@ -13,7 +13,7 @@ export function gq4qOn() {
 export const Q4 = gq4qOn();
 /* the numbers (starting values for the tune lane) */
 export const Q4N = {
-  hearth: { tell: 1.0, jet: 0.6, dmg: 12 /* (GQ4TUNE r1: 16 -> 12; baseline crown n=6/hero 0/18) */, cd: 12, knee: 14, firstCd: 6 },
+  hearth: { tell: 1.0, jet: 0.6, dmg: 12 /* (GQ4TUNE r1: 16 -> 12; baseline crown n=6/hero 0/18) */, cd: 12, cdS3: 15 /* (claude/gq6hallstep2) S3 preview flag ON only: hearth jet one step slower, 12 -> 15 s */, knee: 14, firstCd: 6 },
   reach: { tell: 0.8, jab: 0.25, dmg: 14, cd: 8, minDist: 100, behind: 30, stagger: 1.5, mul: 1.15, cap: 0.08, hw: 20 },
   p1: { dmgK: 0.65, knockChip: 0.02 },   /* r4: dmgK 0.7 -> 0.65 */   /* (GQ4TUNE r3) x on every hall blow she throws through gqHit */
   shardHurt: 9,                                            // blow hurtbox r for a shard (was 6)

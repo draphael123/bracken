@@ -232,15 +232,34 @@ export function drawCupola(g, x0, x1, solidTop, fx0, fx1, fr, cx, cy, t) {
   R(g, bx - 1, FY - 9, 3, 9, '#e0b040'); px(g, bx, FY - 10, '#fff6c8'); R(g, bx - 3, FY - 4, 7, 2, '#a0781c'); px(g, bx, FY - 6, '#c9463d');                    // a gold finial with a stone
 }
 // a bay's floor span (x0..x1 world px, fy = deck top): idle = a timber hatch-board set in the slates (so you can tell which bay it is), smoke = soot and a red seam and smoke, burn = alight
-export function drawBay(g, x0, x1, fy, state, t, i = 0) {
+export function drawBay(g, x0, x1, fy, state, t, i = 0, step = 7, wstep = 10) {   /* (claude/gq6s3) step / wstep: a wide burnt span (the climb's) draws every 2nd flame / smoke column - the default is the bay's own */
   x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
   if (state === 'idle') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#2a1a10'); R(g, x0 + 2, fy, x1 - x0 - 4, 1, '#6a4a2a'); for (let x = x0 + 8; x < x1 - 4; x += 8) R(g, x, fy + 1, 1, 3, '#0e0806'); for (const x of [x0 + 5, x1 - 7]) { R(g, x, fy + 1, 2, 2, '#9a9ab0'); }   // oak boards, iron nailed
     R(g, x0, fy - 1, 3, 5, S.dk); R(g, x1 - 3, fy - 1, 3, 5, S.dk); return; }
   if (state === 'smoke') { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1);
-    for (let x = x0 + 4; x < x1 - 4; x += 10) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
+    for (let x = x0 + 4; x < x1 - 4; x += wstep) { const ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), fy - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); return; }
   R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); alpha(g, 0.28); R(g, x0 - 6, fy - 30, x1 - x0 + 12, 30, '#ff6b2c'); alpha(g, 1);
-  for (let x = x0 + 4; x < x1 - 2; x += 7) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
+  for (let x = x0 + 4; x < x1 - 2; x += step) { const h = 8 + 9 * wave(t, 9, x * 0.37 + i) + 3 * wave(t, 5, x * 0.9) + (((x - x0) / 7) % 3 === 0 ? 5 : 0) + (step > 7 ? 3 : 0); drawFlame(g, x + 2, fy + 1, h, t, x * 0.5 + i, 6); }
   for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1);
+}
+/* (claude/gq6s3bake) THE CLIMB'S BURNT SPANS, BAKED. drawBay's flames / smoke cost ~35 canvas calls a flame, so a 944 px span on screen was 1700+ calls a frame. Here ONE shared sheet per state (flame: 84 px tile x 12 frames over 1.396 s = 2 sway cycles; smoke: 100 px tile x 10 frames over 1.111 s = one puff cycle) is drawn into an offscreen canvas, 1 sheet frame per game frame, smoke first then flame (the bake never costs a frame), and a span is a slab + glow + a few drawImage tiles + 6 sparks. NOT pixel-identical to drawBay: flames repeat every 84 px, time is quantised to the frames, wave(t,5) wraps with a ~1 px jump. No document (node) = returns false = the caller draws with drawBay. */
+const BK = { burn: { w: 84, h: 32, base: 30, n: 12, loop: 2 * Math.PI / 9 * 2, done: 0, c: null, g: null }, smoke: { w: 100, h: 44, base: 36, n: 10, loop: 1.111, done: 0, c: null, g: null } };
+let bakeT = -1;   // one sheet frame is baked per game frame (every span of a frame shares its t): smoke first, then the flame sheet ahead of the tell ending
+const bakeStep = (B, burn, quota = 1) => { if (B.done >= B.n || B.c === false || typeof document === 'undefined') return; if (!B.c) { try { [B.c, B.g] = canvas(B.w, B.h * B.n, true); } catch (e) { B.c = false; return; } }
+  for (let q = 0; q < quota && B.done < B.n; q++, B.done++) { const k = B.done, g = B.g, t = k * B.loop / B.n, oy = k * B.h;
+    if (burn) { for (let j = 0; j < 6; j++) { const x = 4 + 14 * j; drawFlame(g, x + 2, oy + B.base, 8 + 9 * wave(t, 9, x * 0.37) + 3 * wave(t, 5, x * 0.9) + 3, t, x * 0.5, 6); } }
+    else { for (let j = 0; j < 5; j++) { const x = 4 + 20 * j, ph = (t * 0.9 + x * 0.17) % 1; alpha(g, 0.6 * (1 - ph)); R(g, x + ri(Math.sin(t + x) * 3), oy + B.base - 4 - ri(ph * 30), 6 + ri(ph * 6), 5 + ri(ph * 4), ph < 0.25 ? '#4a4a58' : '#7a7a88'); } alpha(g, 1); } } };
+// a baked span: x0..x1 in screen px (NOT clipped), fy = deck top, state 'smoke' | 'burn'
+export function drawBayBaked(g, x0, x1, fy, state, t, i = 0, VWd = 320) {   /* (claude/gq6s23look) VWd = the picture's real width (the Queen's fight draws a 629 px wide view: the 328 clip drew nothing right of x 328) */
+  const RE = VWd + 8;
+  const burn = state !== 'smoke', B = burn ? BK.burn : BK.smoke; if (t !== bakeT) { bakeT = t; if (BK.smoke.done < BK.smoke.n && !burn) bakeStep(BK.smoke, false); else bakeStep(BK.burn, true); if (!B.done) bakeStep(B, burn); } if (!B.c || !B.done) return false;
+  x0 = ri(x0); x1 = ri(x1); fy = ri(fy);
+  if (!burn) { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#1a0e08'); alpha(g, 0.5 + 0.4 * wave(t, 12, i)); R(g, x0 + 3, fy + 1, x1 - x0 - 6, 1, '#ff6b2c'); R(g, x0 + 10, fy + 2, x1 - x0 - 20, 1, '#ffd36b'); alpha(g, 1); }
+  else { R(g, x0 + 2, fy, x1 - x0 - 4, 4, '#08060a'); const gx0 = Math.max(x0 - 6, -8), gx1 = Math.min(x1 + 6, RE); alpha(g, 0.28); R(g, gx0, fy - 30, gx1 - gx0, 30, '#ff6b2c'); alpha(g, 1); }
+  const fr = Math.floor((((t % B.loop) + B.loop) % B.loop) / B.loop * B.n) % B.done, end = burn ? x1 - 2 : x1 - 4, oy = burn ? fy + 1 - B.base : fy - B.base;
+  for (let m = Math.max(0, Math.floor((-8 - x0) / B.w)); ; m++) { const tx = x0 + m * B.w; if (tx > RE || tx >= end) break; let sw = Math.min(B.w, end - tx), sx = 0, dx = tx; if (dx < -8) { sx = -8 - dx; dx = -8; sw -= sx; } if (dx + sw > RE) sw = RE - dx; if (sw > 0) g.drawImage(B.c, sx, fr * B.h, sw, B.h, dx, oy, sw, B.h); }
+  if (burn) { for (let k = 0; k < 6; k++) { const ph = (t * 0.7 + k * 0.17) % 1; alpha(g, 1 - ph); R(g, ri(x0 + 4 + ((k * 53) % Math.max(1, x1 - x0 - 8))), ri(fy - 10 - ph * 54), 1, 1, k & 1 ? '#ffd36b' : '#ff9a5c'); } alpha(g, 1); }
+  return true;
 }
 // THE ROOF BACK, the new tower top's: over the shared night (GQA.drawRoofBack), behind the deck - two spires and the old bell turret in silhouette far off, and straight up out of the hatch the tower's own fire, a column of smoke and sparks (world x hx)
 export function drawRoofBack2(g, cx, cy, VW, VH, t, hx, deckY) {

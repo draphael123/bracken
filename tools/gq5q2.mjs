@@ -11,6 +11,7 @@
 //   S  sweep      within 3 tiles only: tell 0.7 s, 2.5-tile chest arc, 18 x dmgK, a jumper is spared, a parry = STAGGERED 1.2 s, cd 4 s
 //   H  hatch      never before 50%; smoke 1.2 s + "THE HATCH!", fire 2.0 s, 14 + push once a hero, the nearest bay burns; every 15 s; never in the perch's swing / downed window or when a perch is due inside the lead
 //   X  soak       3 x 600 s of everything with a bot that rings / ducks / wanders: no mode sticks, every perch ends, the rope always re-arms (no soft-lock)
+process.env.BRACKEN_GQ6S3 = '0'; process.env.BRACKEN_GQ6S2 = '0';   /* (claude/gq6s2) this tool proves the DECK fight (the hatch, the rage on the deck, the perch); the final platform is proved by tools/gq6s2.mjs */
 process.env.BRACKEN_GQ6FIX ??= '0';   /* (claude/gq6fix) this tool pins the batch182 teach (hint + plate at entry, the shard from a ring at 1.5 s); the gq6fix entry / teach is proved by tools/gq6fix.mjs */
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';

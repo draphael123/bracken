@@ -855,6 +855,8 @@ function gqueenReact(BK, boss, P, k, A, h) {
   const stage = BK.gqStage(), shots = BK.gqShots(), rd = BK.gqHands() ? BK.gqHands().read() : null;
   if (stage === 'escape') return gqEscapeBot(BK, P, k);
   /* (claude/gq4q) THE SHARD FIGHT: her P2 stone shards are STRUCK HOME - face the shard and swing / shoot (every hero's attack key: a blow, an arrow, an ember, a shot); a hanging one (a boulder's burst, the great geode's) is walked to and struck. */
+  /* (claude/gq6s3, Highcrown only, flag ON) THE CLIMB, as a player does it: when the fire is told (or she has gone up) and I am not on her tier, walk to the ladder of the next tier up from the level I stand on and hold UP on it; nothing else matters until I am up (she holds her attacks until every seat is). */
+  if (stage === 'roof' && !P.dead) { const Hq6 = BK.gqHands && BK.gqHands(), g6 = Hq6 && Hq6.gq6s2 ? Hq6.gq6s2() : null, r6 = g6 && g6.botGoal ? g6.botGoal(P) : null; if (r6) { k.left = k.right = false; k.down = false; k.up = !!r6.up; return { goal: r6.goal, strike: false }; } }
   if (stage === 'roof' && !P.dead) {
     let tgt = null, td = 1e9, hang = null, hd = 1e9;
     for (const q of shots) { if (!q.p2 || q.home) continue; const dx = q.x - P.x, dy = q.y - (P.y - 9), d = Math.hypot(dx, dy);
