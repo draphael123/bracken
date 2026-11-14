@@ -1,6 +1,6 @@
 // tools/gq6call.mjs - GQ6CALL, THE GEODE CALL, THE NODE HALF (claude/gq6geo, scratch/lane-reports/gq6-plan.md section C / slice S4). No page, no browser.
-//   OFF  (flag default) the Geomancer is master's: three windups, no call state, no callRead, no callTell ever entered (a 40 s sim), the lab hand returns null
-//   ON   (BRACKEN_GQ6CALL=1, run as a child of this tool)
+//   OFF  (BRACKEN_GQ6CALL=0, the lab off-switch; ships ON since batch185, run as a child of this tool) the Geomancer is master's: three windups, no call state, no callRead, no callTell ever entered (a 40 s sim), the lab hand returns null
+//   ON   (the default)
 //   RULES    the call takes the throw where n % 4 == 2 - only if he sees you, you are 60+ px off, there are 4+ rows of air over you, nobody has a live call beyond the caps; never a teach / early Geomancer's
 //            (callOk); told 0.8 s; the landing aim follows you and LOCKS 0.5 s in; the stone lands where it locked; a blow breaks the tell
 //   HANDS    a fake room: the stone falls 0.6 s after the tell, 9 within 14 px (a hero 15 px off or rolling is untouched), bursts into 2 hanging shards at +-13 px for 1.2 s; left alone they fade and
@@ -44,7 +44,7 @@ function room(o = {}) {
 }
 const call0 = w => (w.H.callRead() || { calls: [] }).calls[0];
 
-if (!G6CALL) {
+if (!G6CALL) {   /* the lab OFF: BRACKEN_GQ6CALL=0 */
   ok(GG_MODES.length === 3 && !GG_MODES.includes('callTell'), 'FLAG OFF: three windups, no callTell');
   ok(!('callOk' in newGeo({ callOk: true })) && !('aim' in newGeo()), 'and no call state on him');
   { const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const g = w.geo(260); const modes = new Set(); let thrown = 0; g.cd = 0; g.n = 1;
@@ -52,10 +52,11 @@ if (!G6CALL) {
     ok(![...modes].includes('callTell') && thrown >= 4 && w.H.callRead() === null && !('calls' in w.H.read().n), 'FLAG OFF, 40 s: he throws (' + thrown + ' throws) and never calls; callRead is null'); }
   { const lab = await import('../src/lab.js'); ok(lab.geoCall({ P: {}, keys: {} }, 'knight', 0) === null && lab.geoCall({ P: {}, keys: {}, gobgeo: () => ({ callRead: () => null }) }, 'knight', 0) === null, 'the lab hand is null with no call live'); }
   console.log('gq6call OFF: ' + n + ' checks');
-  const r = spawnSync(process.execPath, [new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1').replace(/%20/g, ' ')], { env: { ...process.env, BRACKEN_GQ6CALL: '1' }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-  process.stdout.write(r.stdout || ''); if (r.status !== 0) { process.stderr.write(r.stderr || ''); process.exit(r.status || 1); }
   process.exit(0);
 }
+{ const r = spawnSync(process.execPath, [new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1').replace(/%20/g, ' ')], { env: { ...process.env, BRACKEN_GQ6CALL: '0' }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  process.stdout.write(r.stdout || ''); if (r.status !== 0) { process.stderr.write(r.stderr || ''); process.exit(r.status || 1); } }
+
 
 /* ================= ON: RULES ================= */
 ok(GG_MODES.includes('callTell') && GG_MODES.every(m => m.endsWith('Tell')), 'FLAG ON: the call is a windup (...Tell)');

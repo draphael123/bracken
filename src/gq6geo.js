@@ -7,7 +7,7 @@
 //                  ART BEFORE LIVE: this flag cannot ship until the art lane has drawn the two poses (scratch/lane-reports/gq6geo.md lists them).
 // The override for review and the lanes: ?gq6geo=1 / ?gq6call=1 on the page, globalThis.BRACKEN_GQ6GEO / BRACKEN_GQ6CALL = true (tools/cdp.mjs sets them from the env), or the same names = '1' in a Node tool's env.
 export const GQ6GEO_SHIPS = true;
-export const GQ6CALL_SHIPS = false;
+export const GQ6CALL_SHIPS = true;   /* batch185: ON; the lab OFF is ?gq6call=0 / BRACKEN_GQ6CALL=false|0 (flag() below) = the old three-throw Geomancer */
 function flag(ships, name, query) {
   /* the lab OFF override (GQ6GEO ships ON since batch184): ?gq6geo=0 / globalThis.BRACKEN_GQ6GEO = false or '0' / env =0 = the old Highcrown cell for cell */
   try { if (globalThis[name] === false || globalThis[name] === '0') return false; } catch { /* no global */ }

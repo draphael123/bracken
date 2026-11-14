@@ -17,7 +17,7 @@ install();
 globalThis.window = globalThis.window || {};
 const { makeGobGeoHands } = await import('../src/gobgeo-hands.js');
 const { LEVELS, T } = await import('../src/level.js');
-const { GOBGEO } = await import('../src/gobgeo-level.js'); const { SH_HALL, G4 } = await import('../src/gq4l.js'); const EARLY = G4 ? 2 : 0; const { G6GEO } = await import('../src/gq6geo.js'); const EXTRA = G6GEO ? 3 : 0;   /* (gq6geo) the Crag Walk, the Bakehouse Yard, the Keep */   /* (gq4l) E1 the crag + E2 the chapel loft */
+const { GOBGEO } = await import('../src/gobgeo-level.js'); const { SH_HALL, G4 } = await import('../src/gq4l.js'); const EARLY = G4 ? 2 : 0; const { G6GEO, G6CALL } = await import('../src/gq6geo.js'); const EXTRA = G6GEO ? 3 : 0;   /* (gq6geo) the Crag Walk, the Bakehouse Yard, the Keep */   /* (gq4l) E1 the crag + E2 the chapel loft */
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 
 /* ---------------- RULES ---------------- */
@@ -36,7 +36,7 @@ let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
   s.cd = 5; s.x = 100; geoStep(s, 1 / 60, { ...w, tx: 120 }); ok(true, 'walk'); const r2 = geoStep(s, 1 / 60, { ...w, tx: 120 }); ok(r2.vx < 0, 'too close: he backs away (keeps 90-170 px)');
   const r3 = geoStep(s, 1 / 60, { ...w, tx: 120, ahead: () => false }); ok(r3.vx === 0, 'never off his ledge');
   s.x = 100 - GG.leash - 2; const r4 = geoStep(s, 1 / 60, { ...w, tx: 60 }); ok(r4.vx >= 0, 'never past his leash');
-  ok(GG_MODES.length === 3 + (process.env.BRACKEN_GQ6CALL === '1' ? 1 : 0) && GG_MODES.every(m => m.endsWith('Tell')), 'three windups (four with the Geode Call, GQ6CALL), each a ...Tell (the told mark reads them)'); }
+  ok(GG_MODES.length === 3 + (G6CALL ? 1 : 0) && GG_MODES.every(m => m.endsWith('Tell')), 'three windups (four with the Geode Call, GQ6CALL), each a ...Tell (the told mark reads them)'); }
 { const v = lob(0, 0, 160, 40); let x = 0, y = 0, vy = v.vy; for (let t = 0; t < v.T; t += 1 / 240) { x += v.vx / 240; vy += GG.rock.g / 240; y += vy / 240; } ok(Math.abs(x - 160) < 3 && Math.abs(y - 40) < 6, 'the lob lands where it is aimed (' + x.toFixed(0) + ',' + y.toFixed(0) + ')');
   const f = fan(0, 0, 100, 0); ok(f.length === GG.slate.n && Math.abs(Math.atan2(f[0].vy, f[0].vx) - Math.atan2(f[2].vy, f[2].vx)) > 0.3, 'the volley is a fan of three'); }
 { const s = { x: 100, y: 200, face: 1, ...newGeo(), maxHp: GG.hp };

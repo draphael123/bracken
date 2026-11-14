@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-14",
+    "batch": 185,
+    "lines": [
+      { "s": "The Keep's goblin geomancer can now call down a stone on the spot you stand.", "lv": ["crown"] },
+      { "s": "Step out of the ring in time, or you take the hit.", "lv": ["crown"] },
+      { "s": "Strike a shard it leaves behind and it flies home and floors him.", "lv": ["crown"] }
+    ]
+  },
+  {
     "date": "2026-11-13",
     "batch": 184,
     "lines": [
