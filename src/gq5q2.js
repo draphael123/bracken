@@ -108,6 +108,7 @@ export function makeGQ5Q2(env) {
   E.perchWanted = e => {
     if (!st) return false; const Pc = st.perch, tt = tn();
     if (Pc.phase !== 'idle' || tt < Pc.nextAt || st.hatch.phase !== 'idle' || !cupola()) return false;
+    if (env.pfBlock && env.pfBlock(e)) return false;   /* (claude/gq6s2) at 50 pct she goes up to the final platform: no perch from there on */
     return e.mode === 'roofStand' || e.mode === 'rec';
   };
   E.perchStart = e => {
@@ -186,6 +187,7 @@ export function makeGQ5Q2(env) {
 
   /* ---- THE HATCH ERUPTS ---- */
   function hatchStep(dt) {
+    if (env.noHatch && env.noHatch()) return;   /* (claude/gq6s2) the hatch's eruptions are dropped with the final platform */
     const Hs = st.hatch, e = env.q(), tt = tn(), h = E.hatch(), R0 = env.R0(); if (!h || !e || !R0) return; const hpk = e.hp / e.maxHp;
     if (!Hs.armed && hpk <= N.hatch.at && e.hp > 0) { Hs.armed = true; Hs.next = tt + N.hatch.first; }
     if (Hs.phase === 'idle') {
