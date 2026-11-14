@@ -92,7 +92,7 @@ const PAGE = `(async (hero, reset) => {
   /* the cave mouth steps: on foot */
   { const steps = [29, 30, 31, 32, 33, 34]; for (let i = 0; i + 1 < steps.length; i++) { if (!hop(steps[i], steps[i + 1], 'steps ' + steps[i] + '->' + steps[i + 1])) break; } }
   /* ---- shrines and death: the three shrines, a death on a winch, a death on a glide in the gale, a death at the cave mouth: he wakes at the LAST lit shrine, whole, off any line, and the line he died on works again ---- */
-  { fresh(); const SH = BK.shrines().slice().sort((a, b) => b.y - a.y); row('shrines: three, bottom to top (' + SH.map(q => Math.round(q.x / TS) + ',' + Math.round(q.y / TS)).join(' ') + ')', SH.length === 3, 'shrines ' + SH.length);
+  { fresh(); const SH = BK.shrines().slice().sort((a, b) => b.y - a.y), S1 = SH.length === 5 ? 2 : 1, S2 = SH.length === 5 ? 4 : 2;   /* (batch190) the fix batch ships ON: five shrines (start, L5, L8, dock, cave mouth); L8 is the third, the cave mouth the fifth */ row('shrines: three, bottom to top (' + SH.map(q => Math.round(q.x / TS) + ',' + Math.round(q.y / TS)).join(' ') + ')', (SH.length === 3 || SH.length === 5), 'shrines ' + SH.length);
     const visit = q => { clr(); P.lk = null; P.x = q.x; P.y = q.y; P.vx = 0; P.vy = 0; BK.sim(4); };
     const die = () => { BK.god = false; P.inv = 0; BK.damagePlayer(P.x, 99999, { unblockable: true, name: 'TEST' }); let n = 0; while (n < 900 && (P.dead || P.hp <= 0)) { BK.sim(1); n++; } BK.god = true; BK.sim(30); return n; };
     const woke = (q, name) => { const dx = Math.abs(P.x - q.x), dy = Math.abs(P.y - q.y); row(name + ': wakes at the shrine (' + Math.round(P.x / TS) + ',' + Math.round(P.y / TS) + '), whole, off the line', dx < 40 && dy < 40 && !P.lk && P.hp >= P.maxHp - 1 && !(P.dead > 0), 'woke ' + JSON.stringify(info()) + ' want ' + Math.round(q.x / TS) + ',' + Math.round(q.y / TS)); };
@@ -100,13 +100,13 @@ const PAGE = `(async (hero, reset) => {
     /* die half-way up W1 */
     { walkTo(12.2); const got = take('W1'); for (let f = 0; f < 120 && P.lk; f++) { if (f % 18 === 0) BK.press('atk'); BK.sim(1); } const up = P.lk ? 'hanging at ' + Math.round(P.y / TS) : 'off the line'; die(); woke(SH[0], 'a death on W1 (' + up + ')');
       walkTo(12.2); const again = take('W1'); row('W1 works again after the death', again, JSON.stringify(info())); }
-    visit(SH[1]); row('shrine 2 (L8) lights the checkpoint', BK.checkpointAt().x === SH[1].x, 'cp ' + JSON.stringify(BK.checkpointAt()));
+    visit(SH[S1]); row('shrine 2 (L8) lights the checkpoint', BK.checkpointAt().x === SH[S1].x, 'cp ' + JSON.stringify(BK.checkpointAt()));
     /* die riding G3 (the shrine's own glide) */
-    { const got = take('G3'); for (let f = 0; f < 60 && P.lk; f++) BK.sim(1); die(); woke(SH[1], 'a death on G3 after shrine 2'); }
+    { const got = take('G3'); for (let f = 0; f < 60 && P.lk; f++) BK.sim(1); die(); woke(SH[S1], 'a death on G3 after shrine 2'); }
     /* die in the exam: stand at E2's foot, strike up it, die */
-    { stand(74.5 * TS, LAND[27][1] * TS); const got = take('E2') || (stand(73.4 * TS, LAND[27][1] * TS), take('E2')); for (let f = 0; f < 150 && P.lk; f++) { if (f % 18 === 0) BK.press('atk'); BK.sim(1); } die(); woke(SH[1], 'a death on E2 in the exam gale (the last lit shrine is still shrine 2)'); }
-    visit(SH[2]); row('shrine 3 (cave mouth) lights the checkpoint', BK.checkpointAt().x === SH[2].x, 'cp ' + JSON.stringify(BK.checkpointAt()));
-    die(); woke(SH[2], 'a death at the cave mouth'); }
+    { stand(74.5 * TS, LAND[27][1] * TS); const got = take('E2') || (stand(73.4 * TS, LAND[27][1] * TS), take('E2')); for (let f = 0; f < 150 && P.lk; f++) { if (f % 18 === 0) BK.press('atk'); BK.sim(1); } die(); woke(SH[S1], 'a death on E2 in the exam gale (the last lit shrine is still shrine 2)'); }
+    visit(SH[S2]); row('shrine 3 (cave mouth) lights the checkpoint', BK.checkpointAt().x === SH[S2].x, 'cp ' + JSON.stringify(BK.checkpointAt()));
+    die(); woke(SH[S2], 'a death at the cave mouth'); }
   return { rows, hero, hp: Math.round(P.hp) };
 })(${JSON.stringify('HERO')}, ${RESET})`;
 const out = {}; let bad = 0;

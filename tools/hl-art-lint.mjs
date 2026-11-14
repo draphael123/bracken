@@ -43,14 +43,15 @@ ok(HLT.hlTile(T.SPIKE, 3, 3, () => T.AIR, T, L) === null, 'a tile the kit does n
 // ---------- B. THE SUPPORTS ----------
 reset(); const S = L.routeSupports || [];
 ok(S.length > 60, 'drawn supports: ' + S.length); ok(S.every(p => p.kind === 'hlgantry' && p.bottom > p.y + 1), 'every post reaches below its deck');
-const runs = L.landings.map((b, i) => [b[0], b[2], b[1], i]).filter(r => !HLD.FLOOR_LANDINGS.includes(r[3])).concat(L.nets.map(b => [b[0], b[2], b[1], -1]));
+const runs = L.landings.map((b, i) => [b[0], b[2], b[1], i]).filter(r => !HLD.FLOOR_LANDINGS.includes(r[3])).concat(L.nets.filter(b => b[4] !== 'fx').map(b => [b[0], b[2], b[1], -1]));   /* (batch190) the fix batch's rope nets hang wall to wall from a winch house at each end (src/line-net.js drawNets): no posts */
 for (const [x0, x1, y] of runs) { ok(S.some(p => p.x === x0 && p.y === y), 'a post at the left end of the run ' + x0 + '-' + x1 + ',' + y); ok(S.some(p => p.x === x1 && p.y === y), 'a post at the right end of the run ' + x0 + '-' + x1 + ',' + y); }
 const stk = {}; for (const p of S) stk[p.st] = (stk[p.st] || 0) + 1; ok(stk.pylon > 5 && stk.corbel > 10 && (stk.bracketL || 0) + (stk.bracketR || 0) > 5, 'pylons, corbels and brackets all used: ' + JSON.stringify(stk));
 for (const p of S) for (const cx of [p.x * 16 - 100, p.x * 16 + 30]) HLT.drawGantry(makeCtx(320, 180), p, cx, p.y * 16 - 90);
 { const g = makeCtx(320, 180); for (const p of S) HLT.drawGantry(g, p, p.x * 16 - 100, p.y * 16 - 90); }
 ok(BAD.length === 0, 'supports: no NaN or bad colour ' + BAD.slice(0, 3)); ok(colourBad(LIT.tiles).length === 0, 'supports: every colour is a kit literal: ' + colourBad(LIT.tiles).slice(0, 4));
-{ const AL = await import(URLS('../tools/anchor-lint.mjs').href); const f = AL.anchorFaults(L); ok(f.filter(q => q.kind === 'cantilever').length === 0, 'anchor-lint: no cantilever left: ' + JSON.stringify(f.filter(q => q.kind === 'cantilever').slice(0, 3)));
-  ok(f.filter(q => q.kind === 'prop').length === 0, 'anchor-lint: no prop on air'); ok(f.filter(q => q.kind === 'overhang').length === 0, 'anchor-lint: no overhang'); }
+{ const AL = await import(URLS('../tools/anchor-lint.mjs').href); const fxRow = q => L.nets.some(b => b[4] === 'fx' && b[1] === q.y), f = AL.anchorFaults(L).filter(q => !fxRow(q));   /* (batch190) the rope nets of the fix batch are anchored by their winch houses, not by posts */ ok(f.filter(q => q.kind === 'cantilever').length === 0, 'anchor-lint: no cantilever left: ' + JSON.stringify(f.filter(q => q.kind === 'cantilever').slice(0, 3)));
+  ok(f.filter(q => q.kind === 'prop').length === 0, 'anchor-lint: no prop on air'); const deckOver = q => L.nets.some(b => b[4] === 'fx') && L.landings.some(b => b[1] === q.y && b[0] <= q.x && b[2] >= q.x1);   /* (batch190) with the fix batch's net at row 171 under landing 9 the island finder reads its 8-wide deck (posts at BOTH ends, asserted above) as an overhang; flag off it does not: a classification, not a new unsupported slab */
+  ok(f.filter(q => q.kind === 'overhang' && !deckOver(q)).length === 0, 'anchor-lint: no overhang'); }
 /* (claude/hlfix) NO FLOATING CONNECTORS: every end of every line is held by a drawn mast / hanger / wall arm, checked against the level's own grid and landings, and the lint reds a floating one */
 { const solid = (x, y) => at(x, y) === T.SOLID, E = LKT.endSupports(L, solid), nEnds = L.lineKit.lines.length * 2;
   ok(L.lineKit.strictEnds === true, 'the level asks the strict end lint (lineKit.strictEnds)'); ok(E.length === nEnds && E.every(r => r.kind !== 'none'), 'every one of the ' + nEnds + ' line ends is held: ' + E.filter(r => r.kind === 'none').map(r => r.line + r.end));
@@ -65,7 +66,7 @@ ok(BAD.length === 0, 'supports: no NaN or bad colour ' + BAD.slice(0, 3)); ok(co
 // ---------- C. THE BACKDROP ----------
 reset();
 const mtn = HLB.bakeMountain(), far = HLB.bakeFar(), st = HLB.bakeStation();
-ok(mtn.width === HLB.MW && mtn.height === HLB.MH, 'mountain 480x300'); ok(far.width === 480 && st.width === 640 && st.height === 180, 'far range and station bake'); ok(HLB.bakeMountain() === mtn && HLB.bakeStation() === st, 'layers bake once');
+ok(mtn.width === HLB.MW && mtn.height === HLB.MH, 'mountain 480x300'); ok(far.width === 480 && st.width === 640 && st.height === HLB.STH && HLB.STH === 180 + 2 * HLB.STATION_PAD, 'far range and station bake'); ok(HLB.bakeMountain() === mtn && HLB.bakeStation() === st, 'layers bake once');
 { let last = null, grow = true, slide = true; for (let p = 0; p <= 1.0001; p += 0.05) { const G = HLB.mouthGeom(p, 320, 180, 0); if (last && (G.s < last.s || G.y < last.y)) { grow = false; slide = false; } last = G; ok([G.s, G.x, G.y, G.w, G.h].every(Number.isFinite), 'mouth geometry finite at ' + p); }
   ok(grow, 'the cave mouth only grows as you climb'); ok(slide, 'and slides down the screen as you rise'); const g0 = HLB.mouthGeom(0, 320, 180, 0), g1 = HLB.mouthGeom(1, 320, 180, 0); ok(g1.s / g0.s > 5, 'it grows more than five-fold: ' + (g1.s / g0.s).toFixed(1)); ok(g0.s < 0.35 && g1.s > 1.6, 'scale from ' + g0.s + ' to ' + g1.s); }
 ok(HLB.stationAlpha(L.H * 16) === 0 && HLB.stationAlpha(0) === 1 && HLB.stationAlpha(40 * 16) > 0.9, 'the station wall takes over inside the cave');
@@ -156,3 +157,4 @@ ok(L.hlKit === true && Array.isArray(L.routeSupports), 'the level carries hlKit 
   const skyF = readFileSync(URLS('skyhook2-hands.js'), 'utf8'); ok(skyF.includes('sky_works_art.js') && !/#[0-9a-f]{6}/i.test(skyF.split('H.drawBoss')[1].replace(/'#(e8e0d0|ffffff|e8c070|ff9a5c|7a7a82)'/gi, '')), 'the hands place the art and carry no stray colours'); }
 console.log((bad ? 'FAIL ' : 'ok  ') + 'hl-art-lint ' + n + ' checks' + (bad ? ', ' + bad + ' failed' : ''));
 process.exit(bad ? 1 : 0);
+// batch189: touched so the QUICK gate runs this check beside the cave-backdrop draw change

@@ -244,3 +244,4 @@ ok(Object.values(M.SKY_SAY).every(t => t.length <= 48), 'every line short enough
   ok(G.ropeY(G.mid) + SH.hang < G.floorY - 80, 'riding, he hangs out of a melee hero\'s reach (feet ' + (G.floorY - G.ropeY(G.mid) - SH.hang).toFixed(0) + ' px up): the lever is how you get him'); }
 
 console.log('skyhook: ' + n + ' checks OK (' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');
+// batch189: touched so the QUICK gate runs this check beside the cave-backdrop draw change

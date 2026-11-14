@@ -146,3 +146,4 @@ for (const [name, P0] of CASES) {
   ok(Object.keys(S).join() === 'hookjackCard,skyhookCard', 'the keys the page reads: SPR.hookjackCard, SPR.skyhookCard'); }
 { const { SFX } = await import('../src/audio.js'); for (const t of ['hookjack', 'skyhook']) ok(!!SFX.hurtOf(t) && !!SFX.dieOf(t), t + ' has a hurt and a death voice (src/audio.js: goblin voices, claude/hlfix)'); }
 console.log('THE HIGH LINES ROAD (flag on): ' + n + ' checks so far');
+// batch190: touched so the QUICK gate runs this check beside the HL_FIX3 flip (carts wait, nets, five shrines)

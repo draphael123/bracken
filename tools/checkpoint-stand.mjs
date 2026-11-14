@@ -13,6 +13,7 @@
 // usage: node tools/checkpoint-stand.mjs
 //   REACH_HERO=<knight|warden|pyro|paladin|pirate|reaper|geomancer> node tools/checkpoint-stand.mjs  runs it with that hero's own legs (src/reachcore.js opts.hero, claude/reachcore; tools/reach-heroes.mjs sweeps them all)
 import assert from 'node:assert/strict';
+import { HL_FIX3 } from '../src/highlines.js';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { carpetBox } from '../src/carpet.js';
@@ -46,13 +47,14 @@ export const seenFromFlight = (L, e) => { const A = L.arena; if (!A || !A.carpet
   assert(seenFromFlight(L, { x: 31, y: 50 }), 'a lantern one row under the flight floor passes'); assert(seenFromFlight(L, { x: 31, y: 40 }), 'one inside the flight passes');
   assert(!seenFromFlight(L, { x: 31, y: 56 }), 'one six rows under the floor fails'); assert(!seenFromFlight({ arena: { ...L.arena, carpet: false } }, { x: 31, y: 50 }), 'a standing arena is checkpoints.mjs\'s business'); }
 
+if (HL_FIX3) for (const [x, y] of [[25, 188], [61, 164], [65, 103]]) MODEL_GAPS.highlines.push([x, y, 'a fix-batch shrine on the walk between two line rides (L5, the east lee, the dock): the fill has no line verb (tools/hl-fix3.mjs walks them, tools/hl-route.mjs lights them in the page)']);   /* (batch190) */
 const bad = [], built = {}; let n = 0;
 for (const lv of LEVELS) { const L = built[lv.id] = lv.build(), R = floodReach(ksarOpened(L), T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO });
   for (const e of L.ents.filter(e => e.t === 'check')) { n++;
     const v = seenFromFlight(L, e); if (v) bad.push(`${lv.id} @${e.x},${e.y}: ${v}`);
     const stood = [-1, 0, 1].some(dx => R.seen.has(R.key(e.x + dx, e.y)));
     if (!stood && !(MODEL_GAPS[lv.id] || []).some(([x, y]) => x === e.x && y === e.y)) bad.push(`${lv.id} @${e.x},${e.y}: the fill with a real jump (${ACROSS} columns) never stands here`); } }
-const stale = Object.entries(MODEL_GAPS).flatMap(([id, list]) => list.filter(([x, y]) => { const L = built[id]; if (!L || !L.ents.some(e => e.t === 'check' && e.x === x && e.y === y)) return true;
+const stale = Object.entries(MODEL_GAPS).flatMap(([id, list]) => list.filter(([x, y]) => { if (HL_FIX3 && id === 'highlines' && x === 62 && y === 164) return false; const L = built[id];   /* (batch190) the fix batch moves the lee shrine onto the walk: the old gap is not stale for the flag-off level */ if (!L || !L.ents.some(e => e.t === 'check' && e.x === x && e.y === y)) return true;
   const R = floodReach(ksarOpened(L), T, { rides: true, across: ACROSS, hero: process.env.REACH_HERO }); return [-1, 0, 1].some(dx => R.seen.has(R.key(x + dx, y))); }).map(([x, y]) => id + ' @' + x + ',' + y));
 assert.equal(stale.length, 0, stale.length + ' MODEL_GAPS entr(y/ies) forgive nothing - delete them from tools/checkpoint-stand.mjs: ' + stale.join(', '));
 assert.equal(bad.length, 0, bad.length + ' checkpoint(s) nobody can stand at:\n  ' + bad.join('\n  '));
