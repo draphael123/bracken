@@ -38,7 +38,7 @@ export const GCALL = {
   fall: 0.6, r: 14, dmg: 9,        /* the stone's fall; its landing radius (px, either side) and the blow */
   hang: 1.2, shards: 2, dx: 13,    /* the two hanging shards: how long they hang, how many, how far either side of the landing */
   stagger: 1.4,                    /* a shard sent home: his stagger (s); the damage is his own rock's (src/gob-geomancer.js geoStruck) */
-  minDist: 60, air: 4,             /* he calls only if you are >= 60 px away and have >= 4 rows of air over your head */
+  minDist: 60, maxDist: 150, air: 4, /* he calls only if you are 60..150 px away (the screen shows ~160 px either side: the staff pose and the ! are always seen) and have >= 4 rows of air over your head */
   every: 4, phase: 2,              /* it replaces the throw where n % 4 == 2 */
   perGeo: 1, level: 2,             /* at most one live call per Geomancer, two across the level */
   scale: 0.6,                      /* the Queen's portal boulder, drawn at 0.6x */

@@ -76,10 +76,19 @@ for (const [why, w, o] of [['a teach / early Geomancer (callOk false)', W0, { ca
   ok(calls === 3 && throws === 9, 'over 12 decisions: ' + calls + ' calls, ' + throws + ' throws (every 4th throw is the call)'); }
 { const s = fresh({ n: 1 }); geoStep(s, 1 / 60, W0); s.stagger = 0.5; const r = geoStep(s, 1 / 60, W0); ok(r.events.some(e => e.ev === 'cancel' && e.move === 'callTell') && s.aim === null && s.mode === 'stagger', 'a blow (a stagger) breaks the tell: no stone'); }
 ok(callWanted(fresh({ n: 2 }), W0, 120) === true && callWanted(fresh({ n: 3 }), W0, 120) === false && callWanted(fresh({ n: 2 }), W0, 59) === false, 'callWanted: the rotation and the 60 px floor');
+/* (GQ6CALLRANGE) the call STARTS only inside GCALL.maxDist (150 px), so the staff pose and the ! are on screen (the view is ~160 px either side) */
+ok(GCALL.maxDist === 150 && GCALL.maxDist < 160, 'the call range cap is 150 px (screen shows ~160 either side)');
+{ let startedFar = 0, startedNear = 0, far = 0, near2 = 0;
+  for (let d = 40; d <= 340; d += 1) { const s = fresh({ n: 1, sight: 340, x: 400 }); const w = { ...W0, tx: 400 + d, ty: 200 }; geoStep(s, 1 / 60, w);
+    if (s.mode === 'callTell') { if (d > GCALL.maxDist) startedFar++; else startedNear++; } if (d > GCALL.maxDist && d < 340) far++; if (d >= GCALL.minDist && d <= GCALL.maxDist) near2++; }
+  ok(startedFar === 0 && far > 150, 'no call starts beyond 150 px (' + far + ' distances 151..339 tried, 0 calls)');
+  ok(startedNear === near2 && near2 === 91, 'a call starts at EVERY distance 60..150 px (' + startedNear + ' of ' + near2 + ')'); }
+ok(callWanted(fresh({ n: 2 }), W0, 150) === true && callWanted(fresh({ n: 2 }), W0, 151) === false && callWanted(fresh({ n: 2 }), W0, 340) === false, 'callWanted: 150 yes, 151 no, 340 no');
+{ const s = fresh({ n: 1, sight: 340, x: 400 }); geoStep(s, 1 / 60, { ...W0, tx: 700, ty: 200 }); ok(s.mode === 'rockTell' || s.mode === 'slateTell', 'at 300 px (inside his 340 sight) he still throws normally (' + s.mode + '): only the call is capped'); }
 
 /* ================= ON: HANDS ================= */
 /* the sequence: tell -> fall -> stone -> two hanging shards */
-function callWorld(heroes, o = {}) { const w = room({ heroes, ceil: o.ceil }); const g = w.geo(260, o.geo || {}); g.cd = 0; g.n = 1; return { ...w, g }; }
+function callWorld(heroes, o = {}) { const w = room({ heroes, ceil: o.ceil }); const g = w.geo(230, o.geo || {}); g.cd = 0; g.n = 1; return { ...w, g }; }
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); let t0 = -1;
   w.run(0.1); const c = call0(w); ok(c && c.state === 'tell' && w.g.mode === 'callTell', 'in the room: he tells the call (the landing ring is shown)');
   ok(w.st.dmg.length === 0, 'told: nothing hurts yet');
@@ -121,11 +130,11 @@ for (const [name, put] of KINDS) { const w = callWorld([{ x: 100, y: 320, mode: 
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }, { x: 60, y: 320, mode: 'hit' }, { x: 40, y: 320, mode: 'hit' }, { x: 20, y: 320, mode: 'hit' }]); w.run(0.55); w.heroes[0].x = 70; w.heroes[1].x = 50; toHang(w); const c = call0(w); w.heroes[3].x = c.shards[0].x - 24; w.heroes[3].swing = true; w.run(0.1);
   ok(w.H.read().n.callHome === 1, '4 seats: the BACK seat\'s blow sends a shard home too'); }
 /* caps */
-{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const gs = [260, 300, 340].map(x => { const g = w.geo(x); g.cd = 0; g.n = 1; return g; }); let maxLive = 0, perGeo = 0; w.run(12, () => { const cs = (w.H.callRead() || { calls: [] }).calls; maxLive = Math.max(maxLive, cs.length); const st = w.H.test.state(); const owners = st.calls.map(c => c.owner); perGeo = Math.max(perGeo, ...gs.map(g => owners.filter(o => o === g).length), 0); return false; });
+{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const gs = [180, 210, 240].map(x => { const g = w.geo(x); g.cd = 0; g.n = 1; return g; }); let maxLive = 0, perGeo = 0; w.run(12, () => { const cs = (w.H.callRead() || { calls: [] }).calls; maxLive = Math.max(maxLive, cs.length); const st = w.H.test.state(); const owners = st.calls.map(c => c.owner); perGeo = Math.max(perGeo, ...gs.map(g => owners.filter(o => o === g).length), 0); return false; });
   ok(maxLive === 2 && perGeo === 1, 'three Geomancers in sight: never more than TWO calls live in the level (' + maxLive + '), never two from one Geomancer (' + perGeo + ')'); }
 { const w = callWorld([{ x: 100, y: 320, mode: 'roll' }], { ceil: 250 }); let called = false; w.run(30, () => { called = called || w.g.mode === 'callTell'; return false; }); ok(!called && w.H.read().n.thrown + w.H.read().n.slates >= 4, 'under a CEILING (3 rows of air): no call in 30 s, he throws instead'); }
-{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const g = w.geo(260, { early: true }); g.cd = 0; g.n = 1; let called = false; w.run(30, () => { called = called || g.mode === 'callTell'; return false; }); ok(!called, 'an EARLY sighting never calls'); }
-{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const g = w.geo(260, { seal: 'gg-teach' }); g.cd = 0; g.n = 1; let called = false; w.run(30, () => { called = called || g.mode === 'callTell'; return false; }); ok(!called, 'the TEACH Geomancer (the sealed one) never calls'); }
+{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const g = w.geo(230, { early: true }); g.cd = 0; g.n = 1; let called = false; w.run(30, () => { called = called || g.mode === 'callTell'; return false; }); ok(!called, 'an EARLY sighting never calls'); }
+{ const w = room({ heroes: [{ x: 100, y: 320, mode: 'roll' }] }); const g = w.geo(230, { seal: 'gg-teach' }); g.cd = 0; g.n = 1; let called = false; w.run(30, () => { called = called || g.mode === 'callTell'; return false; }); ok(!called, 'the TEACH Geomancer (the sealed one) never calls'); }
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); w.run(0.3); w.g.stagger = 0.4; w.run(0.1); ok(w.H.callRead() === null, 'a stagger in the tell cancels the call (no stone, no ring)'); }
 { const w = callWorld([{ x: 100, y: 320, mode: 'hit' }]); w.run(0.3); w.H.clear(); ok(w.H.callRead() === null, 'a respawn clears every call'); }
 /* drawing does not throw (a node canvas) */

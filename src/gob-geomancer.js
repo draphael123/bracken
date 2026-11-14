@@ -45,7 +45,7 @@ export const GG_MODES = ['rockTell', 'slateTell', 'shellTell', ...(G6CALL ? ['ca
    falls 0.6 s, 9 within 14 px, and bursts into two HANGING SHARDS: any blow or hero shot sends one home to him (STAGGERED 1.4 s, his own rock's damage). It takes the throw where n % 4 == 2, and only when he sees
    you, you are 60+ px off and have 4+ rows of air over your head, with at most one live call each and two in the level (w.air, w.callFree). Never the teach Geomancer's or an early sighting's (s.callOk). */
 export function callWanted(s, w, adx) {
-  return !!(G6CALL && s.callOk && s.n % GCALL.every === GCALL.phase && adx >= GCALL.minDist && (w.air || 0) >= GCALL.air && w.callFree);
+  return !!(G6CALL && s.callOk && s.n % GCALL.every === GCALL.phase && adx >= GCALL.minDist && adx <= GCALL.maxDist && (w.air || 0) >= GCALL.air && w.callFree);
 }
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
