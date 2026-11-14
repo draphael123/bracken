@@ -139,5 +139,20 @@ ok(L.hlKit === true && Array.isArray(L.routeSupports), 'the level carries hlKit 
   const ra = readFileSync(URLS('route-art.js'), 'utf8'); ok(ra.includes("p.kind==='hlgantry'"), 'route-art draws the hlgantry supports');
   const hh = readFileSync(URLS('highlines-hands.js'), 'utf8'); for (const w of ['HLA.drawLines', 'HLA.drawGrip', 'drawHookjack']) ok(hh.includes(w), 'highlines-hands uses ' + w);
   const sk = readFileSync(URLS('skyhook-hands.js'), 'utf8'); for (const w of ['drawRiggerArt', 'drawSkyTrolley', 'drawSkyHook', 'drawLeverArt', 'drawRag', 'chainLine']) ok(sk.includes(w), 'skyhook-hands uses ' + w); }
+/* (claude/sky2art) G. SKYHOOK 2's WORKS (src/redraw/sky_works_art.js): every piece draws with no NaN and only kit / declared colours, the rim leaves the live rigger unchanged, the three levers differ in every state */
+{ const SWA = await import(URLS('redraw/sky_works_art.js').href), litW = lit(URLS('redraw/sky_works_art.js')), allowed = new Set([...litW, ...LIT.crew, ...Object.values(CREW.CP).flat().filter(v => typeof v === 'string' && v[0] === '#').map(v => v.toLowerCase())]);
+  reset(); const g = makeCtx(400, 300), W = SWA.SW, t = 0.4;
+  for (const id of ['POINTS', 'WEIGHT', 'CRANE']) for (const st of Object.keys(SWA.LAMP_LOOK)) for (const sw of [0, 0.2]) SWA.drawLeverPost(g, id, 100, 200, { swing: sw, st, blink: true, hot: true, time: t, tell: sw > 0 });
+  SWA.drawCrown(g, 50, 60, 20, 'W', 40, t); SWA.drawCrown(g, 350, 60, 20, 'E', 40, t); SWA.drawJib(g, 200, 30, 20); SWA.drawRope(g, 10, 390, () => 100, 'sky', 'taut', t); SWA.drawRope(g, 10, 390, () => 120, 'low', 'cut', t); SWA.drawFrayedEnd(g, 10, 100, 1, 40, t); SWA.drawFrayAt(g, 100, 100, 0.5, t);
+  for (const o of [{}, { dim: true }, { held: true, time: t }]) SWA.drawSkip(g, 200, 150, 30, o); SWA.drawSkipArc(g, [[10, 10], [50, 60], [90, 90]], t, 1); SWA.drawSkipTrail(g, [[50, 50], [60, 60]]);
+  SWA.drawWeightBlock(g, 50, 50, t, true); SWA.drawWeightTell(g, 20, 20, 120, 200, 210, 28, t, true); SWA.drawWeightFall(g, 20, 20, 60, 100); SWA.drawSlam(g, 100, 200, 0.3); SWA.drawIronStep(g, 100, 200, 3, 4, t); SWA.drawIronStep(g, 100, 200, 0.5, 4, t);
+  SWA.drawRivetDot(g, 100, 200, 9, t); SWA.drawRivetFall(g, 100, 100, t); SWA.drawRivetHit(g, 100, 200, 0.3); SWA.drawOutOfReach(g, 100, 100, t); for (const k of ['downed', 'jarred', 'smashed']) SWA.drawTarget(g, 100, 100, t, k);
+  SWA.drawWard(g, 100, 100, t); SWA.drawEnrage(g, 100, 100, t); SWA.drawTrolleyLamp(g, 50, 50, 'sky'); SWA.drawTrolleyLamp(g, 50, 50, 'low'); SWA.drawGoldChain(g, 10, 10, 100, 100, t); SWA.drawTellBar(g, 10, 10, 30, 0.5, W.gold); SWA.drawWhipBand(g, 10, 200, 150, 170, 0.5, t);
+  ok(BAD.length === 0, 'sky works: no NaN rects or bad colours ' + BAD.slice(0, 3)); ok(colourBad(allowed).length === 0, 'sky works: every colour is declared: ' + colourBad(allowed).slice(0, 4));
+  const rec = (id, st, o2 = {}) => { REC = []; SWA.drawLeverPost(makeCtx(100, 100), id, 50, 90, { st, time: 0, ...o2 }); const r = REC.join('|'); REC = null; return r; };
+  ok(new Set(['POINTS', 'WEIGHT', 'CRANE'].map(id => rec(id, 'READY'))).size === 3, 'the three levers draw three different silhouettes'); ok(rec('POINTS', 'SKY') !== rec('POINTS', 'LOW') && rec('WEIGHT', 'READY') !== rec('WEIGHT', 'SPENT') && rec('CRANE', 'DARK') !== rec('CRANE', 'READY'), 'every lever state differs in shape, not only colour (lamp glyph / arm / block)');
+  const rg = (o) => { REC = []; CREW.drawRiggerArt(makeCtx(100, 100), SKH.POSE.perch, false, 0, 1, 50, 80, 1, o); const r = REC.join('|'); REC = null; return r; };
+  ok(rg(undefined) === rg(undefined) && rg({ rim: true }) !== rg(undefined), 'the light rim is opt-in: the live rigger draws as before');
+  const skyF = readFileSync(URLS('skyhook2-hands.js'), 'utf8'); ok(skyF.includes('sky_works_art.js') && !/#[0-9a-f]{6}/i.test(skyF.split('H.drawBoss')[1].replace(/'#(e8e0d0|ffffff|e8c070|ff9a5c|7a7a82)'/gi, '')), 'the hands place the art and carry no stray colours'); }
 console.log((bad ? 'FAIL ' : 'ok  ') + 'hl-art-lint ' + n + ' checks' + (bad ? ', ' + bad + ' failed' : ''));
 process.exit(bad ? 1 : 0);

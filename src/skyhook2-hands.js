@@ -136,7 +136,7 @@ export function makeSky2Hands(ctx) {
     g.save(); g.translate(R(e.x - cx), R(e.y - cy)); if (m !== 'downed' && m !== 'smashed') g.scale(f, 1);
     const onLine = m === 'ride' || m === 'dropTell' || m === 'rehookTell' || m === 'frayTell' || m === 'rampUp';
     if (onLine || m === 'rideTell') { const ty = -SK.hang - 6 + (m === 'rideTell' ? SK.hang - 30 : 0); drawSkyTrolley(g, 0, ty, 1, time); if (where === 'sky' || where === 'low') SWA.drawTrolleyLamp(g, 0, ty - 9, where); }
-    if (p.rope) SWA.rc(g, 0, -80, 1, 48, SWA.SW.rope || '#c8b088');
+    if (p.rope) SWA.rc(g, 0, -80, 1, 48, SWA.SW.rope);
     const hot = S.enraged ? (Math.floor(time * 6) & 1 ? SWA.SW.redS : SWA.SW.hot) : undefined;
     drawRiggerArt(g, p, flash, time, Math.min(2, S.ph), 0, 0, 1, { rim: true, rimCol: hot });   /* the pale coat + light edge parts him from the cave rock; enraged the edge runs red */
     if (S.enraged && m !== 'sleep') SWA.drawEnrage(g, 0, -16, time);
