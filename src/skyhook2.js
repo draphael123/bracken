@@ -35,7 +35,7 @@ export const SK = {
   swing: { ...SH.swing, dmg: up(SH.swing.dmg) },
   phase: { tell: 1.4 },
   leverHook: { tell: [0.7, 0.6, 0.6], range: 64 },
-  points: { rehook: [3.5, 2.5, 2.0], tell: 1.0 },                     /* KNOB 1: how long a route stays */
+  points: { rehook: [3.5, 2.5, 2.0], tell: 1.0, onRise: true },       /* KNOB 1: how long a route stays. onRise (lane decision, see the report): back on a crown after a DOWN / SMASHED he hooks the points first (the same told, holdable re-hook) - without it one POINTS strike sets the LOW route for the rest of the fight and WEIGHT loops him */
   weight: { rehang: 6, fall: 0.45 },
   downed: { t: 4.0, mul: 2.0, cap: 0.22 },                             /* KNOB 2: DOWN purse / window */
   smashed: { t: 4.0, mul: 2.0, cap: 0.30, capSky: 0.25, capRun: 0.20 },
@@ -54,17 +54,17 @@ export const SKY2_SAY = { wake: 'SKYHOOK', rule: 'THROW THE POINTS: BRING HIM DO
   cut: 'HE CUTS YOUR LINE', swing: 'HE SWINGS LOW', ward: 'HE SHRUGS IT OFF', hooked: 'HOOKED', rise: 'HE GETS UP', guard: 'RIGGER\'S COAT' };
 export const OPEN_NAME2 = { downed: 'DOWN', jarred: 'JARRED', smashed: 'SMASHED' };
 export const sky2Open = e => !!e && (e.mode === 'downed' || e.mode === 'jarred' || e.mode === 'smashed');
-const TELLS = new Set(['rideTell', 'hookTell', 'dropTell', 'sweepTell', 'cutTell', 'swingTell', 'rise', 'climbTell', 'phaseTell', 'enrageTell', 'cwTell', 'rivetTell', 'rehookTell', 'frayTell']);
+const TELLS = new Set(['crownHookTell', 'rideTell', 'hookTell', 'dropTell', 'sweepTell', 'cutTell', 'swingTell', 'rise', 'climbTell', 'phaseTell', 'enrageTell', 'cwTell', 'rivetTell', 'rehookTell', 'frayTell']);
 export const sky2Telling = e => TELLS.has(e.mode);
 /* WHERE HE IS: 'crown' | 'sky' | 'low' | 'floor' (in the air on a drop / climb / swing counts as floor: off his lines) */
-const CROWN = new Set(['sleep', 'wake', 'perch', 'phaseTell', 'enrageTell', 'rideTell', 'hookTell', 'hook', 'cutTell', 'cut', 'cwTell', 'cw', 'rivetTell', 'rivet', 'swingTell']);
+const CROWN = new Set(['crownHookTell', 'sleep', 'wake', 'perch', 'phaseTell', 'enrageTell', 'rideTell', 'hookTell', 'hook', 'cutTell', 'cut', 'cwTell', 'cw', 'rivetTell', 'rivet', 'swingTell']);
 const LOWM = new Set(['rehookTell', 'frayTell', 'rampUp', 'swingBack']);
 export const sky2Where = e => !e ? 'floor' : CROWN.has(e.mode) ? 'crown' : (e.mode === 'ride' && e.route === 'sky') || e.mode === 'dropTell' ? 'sky' : (e.mode === 'ride' && e.route === 'low') || LOWM.has(e.mode) ? 'low' : 'floor';
 export const sky2Immune = e => { const w = sky2Where(e); return w === 'crown' || w === 'sky'; };
 export const sky2OnLow = e => sky2Where(e) === 'low';
 /* B16: every told move a windup and a release that differ (src/skyhook2-hands.js POSE2) */
 export const MOVES2 = [['rideTell', 'ride'], ['hookTell', 'hook'], ['dropTell', 'drop'], ['sweepTell', 'sweep'], ['cutTell', 'cut'], ['swingTell', 'swing'], ['rise', 'climb'], ['phaseTell', 'perch'],
-  ['enrageTell', 'perch'], ['cwTell', 'cw'], ['rivetTell', 'rivet'], ['rehookTell', 'rampUp'], ['frayTell', 'swingBack']];
+  ['enrageTell', 'perch'], ['cwTell', 'cw'], ['rivetTell', 'rivet'], ['rehookTell', 'rampUp'], ['crownHookTell', 'hook'], ['frayTell', 'swingBack']];
 
 /* ---------- THE STATION (px). A = main.js's arena (src/highlines.js, unchanged). o.feet = { W: { x, y }, E: { x, y } } the winch lines' feet (the kit's SW / SE) ---------- */
 export function geom2(A, o = {}) {
@@ -166,7 +166,10 @@ export function stepSky2(e, S, dt, heroes, w) {
     /* THE GRAPPLE: from the floor up to the nearest crown */
     case 'climbTell': if (e.modeT <= 0) { e.mode = 'climb'; e.modeT = SK.climb.t; e.cx0 = e.x; e.cy0 = e.y; w.sound('grapple'); } return;
     case 'climb': { const p = G.crown[e.climbTo], k = 1 - Math.max(0, e.modeT) / SK.climb.t; e.x = e.cx0 + (p.x - e.cx0) * k; e.y = e.cy0 + (p.y - e.cy0) * k - Math.sin(k * Math.PI) * 18;
-      if (e.modeT <= 0) { S.side = e.climbTo; e.mode = 'perch'; S.restT = SK.rest[i]; atCrown(e, S); } return; }
+      if (e.modeT <= 0) { S.side = e.climbTo; e.mode = 'perch'; S.restT = SK.rest[i]; atCrown(e, S);
+        if (e.fromDown && SK.points.onRise && S.points === 'LOW') { e.mode = 'crownHookTell'; e.modeT = SK.points.tell; S.held = false; S.act++; w.sound('rehook'); w.number(G.levers[0].x, G.floorY - 50, SKY2_SAY.rehook, '#ff9a5c'); } e.fromDown = false; } return; }
+    /* HE HOOKS THE POINTS from his crown (back up after a DOWN): the same told re-hook; a strike on POINTS in the tell holds them */
+    case 'crownHookTell': atCrown(e, S); if (e.modeT <= 0) { if (!S.held) { S.points = 'SKY'; S.n.rehook++; w.sound('clank'); w.number(G.levers[0].x, G.floorY - 50, SKY2_SAY.snapBack, '#ff9a5c'); } e.mode = 'perch'; S.restT = SK.rest[i] * 0.5; } return;
     /* OFF A LINE ONTO THE ROCK: the weight dropped, or the skip snapped the sky line (leverStruck2 / stepSkip start it) */
     case 'slip': { const k = 1 - Math.max(0, e.modeT) / SK.weight.fall; e.y = e.vy0 + (G.floorY - e.vy0) * k * k;
       if (e.modeT <= 0) { e.y = G.floorY; openUp(e, S, 'downed', SK.downed.t, e.slipCap || SK.downed.cap, w); w.shake(9); } return; }
@@ -211,7 +214,7 @@ export function stepSky2(e, S, dt, heroes, w) {
 function toCrown(e, S) { const G = S.G; e.climbTo = Math.abs(e.x - G.crown.W.x) <= Math.abs(e.x - G.crown.E.x) ? 'W' : 'E'; e.mode = 'rampUp'; e.modeT = 9; }
 function toFloor(e, S, w) { e.mode = 'drop'; e.modeT = SK.drop.fall; e.lockX = e.x; e.vy0 = e.y; e.hitKey = null; e.noHit = true; S.act++; w.sound('drop'); }   /* his line parted under him: down onto the rock, no blow (untold) */
 function openUp(e, S, mode, t, cap, w) {
-  e.mode = mode; e.modeT = t; e.openT0 = t; S.purse = e.maxHp * cap; S.leverHook = null; e.y = S.G.floorY;
+  e.mode = mode; e.modeT = t; e.openT0 = t; S.purse = e.maxHp * cap; e.fromDown = mode !== 'jarred'; S.leverHook = null; e.y = S.G.floorY;
   if (mode === 'downed') S.n.downed++; else if (mode === 'jarred') S.n.jarred++; else if (mode === 'smashed') S.n.smashed++;
   w.fx('open', e.x, S.G.floorY); w.sound(mode === 'jarred' ? 'jarred' : 'downed'); w.number(e.x, S.G.floorY - 50, SKY2_SAY[mode], '#ffd36b');
 }
@@ -267,7 +270,7 @@ function stepSkip(e, S, dt, heroes, w) {
   /* it hits HIM too: the chain crosses his SKY trolley (the line snaps), or the skip meets him on the LOW line (SMASHED) */
   if (!K.hitHim && e.alive !== false && e.hp > 0) { const where = sky2Where(e);
     if (where === 'sky' && e.mode === 'ride') { const cx = chainX(S, q, e.y - SK.h / 2); if (cx !== null && Math.abs(cx - e.x) < C.him) { K.hitHim = true; S.skyCut = SK.cut.restring; S.n.skySnap++; e.slipCap = SK.smashed.capSky; e.mode = 'slip'; e.modeT = SK.weight.fall; e.vy0 = e.y; S.leverHook = null; S.act++; w.sound('slip'); w.shake(6); w.number(e.x, e.y - 60, SKY2_SAY.snap, '#ffd36b'); } }
-    else if (where === 'low') { const cy = e.y - SK.h / 2; if (Math.abs(q.x - e.x) < C.him && Math.abs(q.y - cy) < 34) { K.hitHim = true; e.x = Math.max(S.G.x0 + 20, Math.min(S.G.x1 - 20, e.x + K.dir * 24)); openUp(e, S, 'smashed', SK.smashed.t, K.from === 'run' ? SK.smashed.capRun : SK.smashed.cap, w); w.shake(9); } } }
+    else if (where === 'low') { if (Math.abs(q.x - e.x) < C.him && q.y > e.y - SK.h && q.y < e.y + C.r) {   /* the skip itself at his body's height: only the low part of its arc (mid +-105 px) - at the ends of the LOW line it passes over him (mistimed) */ K.hitHim = true; e.x = Math.max(S.G.x0 + 20, Math.min(S.G.x1 - 20, e.x + K.dir * 24)); openUp(e, S, 'smashed', SK.smashed.t, K.from === 'run' ? SK.smashed.capRun : SK.smashed.cap, w); w.shake(9); } } }
   if (K.t <= 0) { K.st = 'rest'; K.x = K.y = undefined; K.dir = -K.dir; if (K.from === 'run') K.cycle = Math.max(0.01, SK.run.every - SK.run.tell - C.sweep); }
 }
 function startSkip(S, from, w) { const K = S.skip; K.st = 'tell'; K.t = from === 'run' ? SK.run.tell : SK.crane.tell; K.from = from; K.key = 'sk' + (++S.act); if (from === 'run') S.n.run++; else S.n.crane++; w.sound('skipTell'); w.markAt && w.markAt(S.G.pivot.x, S.G.pivot.y + 30, '!!'); }
@@ -333,8 +336,9 @@ export function rivetDots(S, heroes, rnd = Math.random) {
 export function leverStruck2(e, S, id, w) {
   const G = S.G, at = (G.levers.find(l => l.id === id) || { x: G.mid }).x, say = (k, col = '#c8d8e8') => { if (w) w.number(at, G.floorY - 50, SKY2_SAY[k], col); };
   const clank = (k, once = true) => { S.n.clank++; if (w) { w.sound('clank'); if (!once || !S.told[k]) { S.told[k] = 1; say(k); } } S.struck.push({ id, out: 'clank', why: k }); return 'clank'; };
-  if (!e || e.hp <= 0 || e.mode === 'sleep' || e.mode === 'wake') return clank('craneDark');
+  if (!e || e.hp <= 0 || e.mode === 'sleep' || e.mode === 'wake') { S.n.clank++; if (w) w.sound('clank'); return 'clank'; }   /* before he wakes: iron only */
   if (id === 'POINTS') {
+    if (e.mode === 'crownHookTell' && !S.held) { S.held = true; S.n.held++; e.mode = 'perch'; if (w) { w.sound('held'); say('held', '#ffd36b'); } S.struck.push({ id, out: 'held' }); return 'held'; }
     if (e.mode === 'rehookTell' && !S.held) { S.held = true; S.n.held++; S.onLow = 0; e.mode = 'ride'; e.route = 'low'; if (w) { w.sound('held'); say('held', '#ffd36b'); } S.struck.push({ id, out: 'held' }); return 'held'; }
     if (pointsLocked(S)) return clank('locked');
     if (S.points === 'LOW') return clank('already');
@@ -367,7 +371,7 @@ export function takeBlow2(e, S, dmg) {
 /* the lamps (src/skyhook2-hands.js draws them; the bot reads them): POINTS 'SKY' (blinks while he is out of reach) | 'LOW' | 'LOCKED' | 'HOOKING' | 'HELD';
    WEIGHT 'READY' (lit while he is on the LOW line) | 'SPENT'; CRANE 'DARK' | 'READY' | 'SWINGING' | 'COOLING' | 'PAUSE' (enraged) | 'HOLDS' */
 export function lamps(e, S) {
-  const P = e && e.mode === 'rehookTell' ? 'HOOKING' : pointsLocked(S) ? 'LOCKED' : S.held && sky2OnLow(e) ? 'HELD' : S.points;
+  const P = e && (e.mode === 'rehookTell' || e.mode === 'crownHookTell') ? 'HOOKING' : pointsLocked(S) ? 'LOCKED' : S.held && sky2OnLow(e) ? 'HELD' : S.points;
   const W = S.weightT > 0 ? 'SPENT' : 'READY';
   const C = S.enraged ? (S.skip.pauseT > 0 ? 'HOLDS' : 'PAUSE') : S.ph < 3 ? 'DARK' : S.skip.st !== 'rest' ? 'SWINGING' : S.craneT > 0 ? 'COOLING' : 'READY';
   return { POINTS: P, WEIGHT: W, CRANE: C, blink: { POINTS: P === 'SKY' && sky2Immune(e), WEIGHT: W === 'READY' && sky2OnLow(e), CRANE: C === 'READY' || C === 'PAUSE' } };
@@ -434,13 +438,13 @@ export function sky2Plan(s) {
     if (seenFor(key)) { out.gx = edge; out.why = 'to the wall: the arc is high there'; return out; } }
   if (e.mode === 'rise') { out.gx = clamp(e.x + side * (SK.rise.r + 24)); out.why = 'he gets up: off him'; return out; }
   /* 7. HE HOOKS THE POINTS: hold them (strike POINTS in the tell) */
-  if (levers && e.mode === 'rehookTell' && !S.held && mine('POINTS')) { const key = 'p' + S.act; if (seenFor(key, s.v2 ? 0.05 : PLAN2.react) && !roll(key + 'm', s.v2 ? 0 : PLAN2.missLever)) return strike('POINTS', 'hold the points: he hooks them'); }
+  if (levers && (e.mode === 'rehookTell' || e.mode === 'crownHookTell') && !S.held && mine('POINTS')) { const key = 'p' + S.act; if (seenFor(key, s.v2 ? 0.05 : PLAN2.react) && !roll(key + 'm', s.v2 ? 0 : PLAN2.missLever)) return strike('POINTS', 'hold the points: he hooks them'); }
   /* 8. OPEN: strike him */
   if (sky2Open(e)) { const sd = s.ranged ? Math.min(90, Math.max(40, dx)) : s.tip ? SK.w / 2 + s.tip : SK.w / 2 + Math.max(6, reach - 8); out.gx = clamp(e.x + side * sd);
     if (dx < sd + 10) swingAtHim(); out.why = 'strike him: ' + e.mode; return out; }
   /* 9. P3: CRANE when he will be in the arc as the skip comes through (the tell + half the sweep, a lead), then the wall */
   if (levers && L.CRANE === 'READY' && mine('CRANE')) { const tHit = SK.crane.tell + SK.crane.sweep / 2 + PLAN2.craneLead, px = predictX(e, S, tHit);
-    if (px !== null && Math.abs(px - G.mid) < 26 && (sky2OnLow(e) || (e.mode === 'ride' && e.route === 'sky'))) { const key = 'cr' + Math.round(t * 2); if (!roll(key + 'm', s.v2 ? 0 : PLAN2.missLever)) return strike('CRANE', 'CRANE: he will be in the arc'); } }
+    if (px !== null && Math.abs(px - G.mid) < 60 && (sky2OnLow(e) || (e.mode === 'ride' && e.route === 'sky'))) { const key = 'cr' + Math.round(t * 2); if (!roll(key + 'm', s.v2 ? 0 : PLAN2.missLever)) return strike('CRANE', 'CRANE: he will be in the arc'); } }
   if (levers && L.CRANE === 'PAUSE' && s.ranged && mine('CRANE') && K.st === 'rest' && K.cycle < 0.6) return strike('CRANE', 'pause the runaway skip');
   /* 10. HE IS ON THE LOW LINE: WEIGHT if it is mine and ready; the rest hit him */
   if (sky2OnLow(e)) {

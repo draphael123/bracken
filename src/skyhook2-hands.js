@@ -38,6 +38,7 @@ const NEW_POSES = {
   rehookTell: { crouch: 0, lean: 0.3, hand: [-14, -20], off: [2, -34], hook: [-24, -10], legs: 'hang', grip: true, coil: true },  /* hanging one-handed, the hook flung back at the points */
   rampUp: { crouch: 0, lean: -0.1, hand: [2, -34], off: [-2, -34], hook: [-10, -12], legs: 'hang', grip: true },
   frayTell: { crouch: 0, lean: 0.35, hand: [8, -30], off: [4, -26], hook: [-12, -16], legs: 'hang', grip: true, cutter: 'jaw' },   /* the cutter's jaws on the low line */
+  crownHookTell: { crouch: 2, lean: 0.35, hand: [16, -14], off: [-6, -30], hook: [26, 2], legs: 'stand', coil: true },   /* from the crown, the hook flung down at the points */
   swingBack: { crouch: 0, lean: -0.3, hand: [0, -34], off: [2, -32], hook: [-10, -16], legs: 'swing', rope: true },
   smashed: { crouch: 0, lean: 0, hand: [12, -6], off: [-12, -4], hook: [20, -2], legs: 'down', stars: true },
 };
@@ -172,7 +173,7 @@ export function makeSky2Hands(ctx) {
     if (e.mode === 'hookTell') { const set = e.modeT <= SK.hook.lock; g.globalAlpha = 0.7; g.strokeStyle = set ? blink : '#ffb347'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X(e.x), Y(e.y - 20)); g.lineTo(X(e.aimX), Y(e.aimY)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
     for (const h of S.hooks) { chainLine(g, X(h.ox), Y(h.oy), X(h.x), Y(h.y), time); drawSkyHook(g, X(h.x), Y(h.y), h.x >= h.ox ? 1 : -1, time); }
     /* HE HOOKS THE POINTS: a gold chain from his hook to the POINTS lever */
-    if (e.mode === 'rehookTell') { const l = G.levers[0], k = 1 - Math.max(0, e.modeT) / SK.points.tell; chainLine(g, X(e.x), Y(e.y - 20), X(e.x + (l.x - e.x) * Math.min(1, k * 1.6)), Y(e.y - 20 + (G.floorY - 30 - e.y + 20) * Math.min(1, k * 1.6)), time);
+    if (e.mode === 'rehookTell' || e.mode === 'crownHookTell') { const l = G.levers[0], k = 1 - Math.max(0, e.modeT) / SK.points.tell; chainLine(g, X(e.x), Y(e.y - 20), X(e.x + (l.x - e.x) * Math.min(1, k * 1.6)), Y(e.y - 20 + (G.floorY - 30 - e.y + 20) * Math.min(1, k * 1.6)), time);
       g.globalAlpha = 0.8; g.strokeStyle = '#ffd36b'; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(X(e.x), Y(e.y - 20)); g.lineTo(X(l.x), Y(G.floorY - 30)); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
     /* HE CUTS THE LOW LINE: the red fray bar on the line, and the floor band the rope will whip */
     if (e.mode === 'frayTell') { const k = 1 - Math.max(0, e.modeT) / SK.fray.tell, x = X(e.x), y = Y(e.y - SK.hang - 8); rect(g, x - 16, y, 32, 3, '#1b1626'); rect(g, x - 16, y, 32 * k, 3, blink);
