@@ -971,7 +971,7 @@ export function makeGQueenHands(ctx) {
   const hearthXs = () => { const A = L().arena, e = q(), tx = e && e.throneX; let ex = A.x1 - 3 * TS - 8; if (tx && Math.abs(ex - tx) < 84) ex = tx - 84; return [A.x0 + 3 * TS + 8, ex]; };   /* (GQ5FIX 11-12, Daniel still b: the geode throne's crystals were drawn over the east hearth gate - both stood at tile 858; the east hearth now stands 84 px (5 tiles) clear of the throne) */
   function hearthStart(e) {
     const A = L().arena, h4 = g4(), [wx, ex] = hearthXs(); h4.side = -h4.side; const src = h4.side > 0 ? wx : ex;
-    h4.hearth = { src, far: src === wx ? A.x1 - 8 : A.x0 + 8 }; h4.hearthCd = Q4N.hearth.cd; h4.gapUntil = now() + 2.5;
+    h4.hearth = { src, far: src === wx ? A.x1 - 8 : A.x0 + 8 }; h4.hearthCd = (S3 ? Q4N.hearth.cdS3 : Q4N.hearth.cd); h4.gapUntil = now() + 2.5;
     e.mode = 'hearthTell'; e.modeT = Q4N.hearth.tell; e.vx = 0; e.face = sign(src - e.x) || e.face; ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); sfx('bellow');
   }
   function reachStart(e) {
