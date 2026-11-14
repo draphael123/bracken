@@ -9,7 +9,8 @@
 //   UNCHANGED     reflected stones are the damage (8 pct a shard, daze after 4), blows chip 0.5x, her bar, the dmgK.
 // S3 (the burn driven by HER HEALTH 85 / 70 / 50 and the tier ladders) is NOT built here: with S2 alone the fight goes deck -> platform at 50 pct (the stand-in).
 import { MOVE, HERO_RUN, HERO_MOVE_IDS } from './hero-move.js';
-import { S3, S3N, tierGeom, spansFor, arriveX } from './gq6s3.js';   /* (claude/gq6s3) THE BURN AND THE CLIMB (src/gq6s3.js, its own switch, OFF): S3 on implies S2 on */
+import { S3, S3N, tierGeom, spansFor, arriveX } from './gq6s3.js';
+import * as TA6 from './redraw/gq6s3_art.js';   /* (claude/gq6s3art) the tiers', the burnt spans' and the ladders' art (drawing only; no document = it answers false and the old look stays) */   /* (claude/gq6s3) THE BURN AND THE CLIMB (src/gq6s3.js, its own switch, OFF): S3 on implies S2 on */
 export const GQ6S2_SHIPS = false;
 export function gq6s2On() {
   try { if (globalThis.BRACKEN_GQ6S2 === false || globalThis.BRACKEN_GQ6S2 === '0') return false; } catch { /* no global */ }
@@ -220,14 +221,29 @@ export function makeGQ6S2(env) {
   };
   /* the picture: S3 = the burning spans (Highcrown's own bay fire, drawn once per visible span, clipped to the screen) + the ladder glow while it is the way (tell / hold / nobody up) */
   E.draw = (g2, cx, cy, t) => {
+    if (st && S2) TA6.bakeStep();   /* (claude/gq6s3art) the art sheets bake ONE a frame from the roof entry on (the first burn tell is a minute away), never during a tell */
     if (!st || st.phase === 'off' || !laid) return;
     const VWv = (g2.canvas && g2.canvas.width) || 320, VHv = (g2.canvas && g2.canvas.height) || 180, RE = VWv + 8;   /* (claude/gq6s23look) the Queen's fight is drawn on a 629 x 311 picture, not 320 x 180: the old 328 / 190 culls hid every span right of x 328 and below y 190 (the deck itself) */
+    const artOK = TA6.ready();
+    if (artOK) {   /* (claude/gq6s3art) the laid tiers' floors, drawn over the default tiles (before the burnt spans' char, the flames and the ladders) */
+      if (S3) { for (const k of layK) { const gk = tg(k); if (!gk) continue; if (k === 3) TA6.roofRun(g2, gk.c0, gk.c1, gk.row, cx, cy, VWv, VHv); else if (k === 1) TA6.floorRun(g2, 'hoard', gk.hoard[0], gk.hoard[1], gk.row, cx, cy, VWv, VHv); else TA6.floorRun(g2, 'loft', gk.c0, gk.c1, gk.row, cx, cy, VWv, VHv); } }
+      else { const gp = geom(); if (gp) TA6.roofRun(g2, gp.c0, gp.c1, gp.row, cx, cy, VWv, VHv, gp.lad); }
+    }
+    if (artOK && S3) for (let i = 0; i < st.burns.length; i++) { const b = st.burns[i], tc = tg(1), ca = Math.round(b.x0 / TS), cb = Math.round(b.x1 / TS) - 1, row = Math.round(b.y / TS), p = b.state === 'burn' ? 1 : Math.max(0, Math.min(1, 1 - (b.at - tn()) / S3N.tell));
+      const ta = b.step === 0 ? 99999 : b.step === 1 ? (tc ? tc.hoard[0] : 99999) : ca, tb = b.step === 0 ? -1 : b.step === 1 ? (tc ? tc.hoard[1] : -1) : cb;
+      TA6.burnRun(g2, b.step === 2 ? 'loft' : 'hoard', ca, cb, ta, tb, row, p, t, cx, cy, VWv, VHv, i); }
     if (S3 && env.art) for (let i = 0; i < st.burns.length; i++) { const b = st.burns[i]; let x0 = Math.round(b.x0 - cx), x1 = Math.round(b.x1 - cx); if (x1 < -8 || x0 > RE) continue;
       const fyb = Math.round(b.y - cy); if (fyb < -36 || fyb > VHv + 10) continue;   /* a span off the screen (above / below the camera) draws nothing */
       if (x0 < -8) x0 += 14 * Math.ceil((-8 - x0) / 14); if (x1 > RE) x1 = RE; if (x1 - x0 < 8) continue; const sm = b.state === 'smoke'; if (!(env.art.drawBayBaked && env.art.drawBayBaked(g2, b.x0 - cx, b.x1 - cx, fyb, sm ? 'smoke' : 'burn', t, i, VWv))) env.art.drawBay(g2, x0, x1, fyb, sm ? 'smoke' : 'burn', t, i, 14, 20); }
-    const glow = st.phase === 'tell' || st.phase === 'hold' || (st.phase === 'on' && !E.anyOn()); if (!glow) return;
-    const g = S3 ? tg(st.phase === 'tell' ? st.next : st.tier) : geom(); if (!g) return;
+    const glow = st.phase === 'tell' || st.phase === 'hold' || (st.phase === 'on' && !E.anyOn());
+    const g = glow ? (S3 ? tg(st.phase === 'tell' ? st.next : st.tier) : geom()) : null;
     const k = 0.3 + 0.2 * Math.sin(t * 6);
+    if (artOK) {   /* (claude/gq6s3art) every laid tier's ladders (oak rails, iron-shod rungs); the way up is lit gold over them */
+      for (const gk of (S3 ? [...layK].map(tg) : [geom()])) { if (!gk) continue; const lit = gk === g ? Math.min(1, k * 1.7) : 0, rowTop = S3 ? gk.row : gk.row - 1, n = (S3 ? gk.lowStand : gk.stand) - rowTop + 1;
+        for (const lc of (S3 ? gk.lads : [gk.lad])) TA6.ladderDraw(g2, lc, rowTop, n, cx, cy, VWv, VHv, lit); }
+      return;
+    }
+    if (!g) return;
     for (const lc of (S3 ? g.lads : [g.lad])) { const x = Math.round(lc * TS - cx), y0 = Math.round((g.row - (S3 ? 0 : 1)) * TS - cy), y1 = Math.round(((S3 ? g.lowStand : g.stand) + 1) * TS - cy);
       g2.globalAlpha = k; g2.fillStyle = '#ffd36b'; g2.fillRect(x, y0, TS, y1 - y0); g2.globalAlpha = 1; }
   };
