@@ -336,6 +336,8 @@ export const CALL_LINES = new Set(['GATE SHUT', 'EVERY GATE IS SHUT: NOBODY COME
   "THE LINE WON'T HOLD YOU", 'ROUND BY THE SUPPLY CARTS', 'HOLD ON', 'STRUCK', 'KNOCKED FLAT: TAKE A LINE', 'SHE IS GOING DOWN UNDER US', 'I WILL GO DOWN WITH HER', 'YOU HAVE HIS LINE: HE HAS NONE', 'BRACE!', 'HE DIVES', 'HE IS BACK ON GUARD: WARDED', 'SHIELD WALL', 
   /* claude/ft4a (FALLING TOWER 4): the vault's two lines (main.js chase3Vault) - the chase's other event lines are said through variables: FT4_SAY below */
   'THE VAULT COMES DOWN ON HIM', 'HE WAS NOT UNDER IT',
+  /* (testkit-d 11-13) two teaching lines that were never on screen: the Goblin Princess's heel-dash stumble = her opening (src/goblin-princess.js) and the Glassblower's first cooled gob = a step (src/glassblower.js) */
+  'SHE TRIPS ON HER OWN HEELS: CUT HER', 'IT COOLS: A STEP',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
