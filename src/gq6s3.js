@@ -12,7 +12,7 @@
 export const GQ6S3_SHIPS = true;   /* (claude/prepgq6s23) SHIPPED ON (Daniel 11-14); ?gq6s3=0 = the final platform only, ?gq6s2=0 = the old fight (S3 needs S2) */
 export function gq6s3On() {
   try { if (globalThis.BRACKEN_GQ6S2 === false || globalThis.BRACKEN_GQ6S2 === '0') return false; } catch { /* no global */ }   /* (claude/prepgq6s23) S3 needs S2: the S2 opt-out is the old fight */
-  try { if (typeof location !== 'undefined' && /[?&]gq6s2=0/.test(location.search || '')) return false; } catch { /* no page */ }
+  try { if (typeof location !== 'undefined' && /[?&]gq6s2=0\b/.test(location.search || '')) return false; } catch { /* no page */ }
   try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_GQ6S2 === '0') return false; } catch { /* no node */ }
   try { if (globalThis.BRACKEN_GQ6S3 === false || globalThis.BRACKEN_GQ6S3 === '0') return false; } catch { /* no global */ }
   try { if (typeof location !== 'undefined' && /[?&]gq6s3=0\b/.test(location.search || '')) return false; } catch { /* no page */ }
