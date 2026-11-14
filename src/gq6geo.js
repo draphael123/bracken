@@ -29,7 +29,7 @@ export const G6CALL = gq6callOn();
 export const GEO6 = {
   CRAG: { geo: 140, row: 42, ledge: [138, 142, 43], pier: 48, sign: [126, 53], early: true, leash: 8, sight: 300 },       /* over the climb to the tower block: sees the plank bridge and the ramp */
   BAKE: { geo: 300, row: 39, ledge: [298, 302, 40], pier: 45, sign: [285, 55], early: true, leash: 8, sight: 300 },       /* over the yard's top walk: sees the climb's upper half and the walk down the east side */
-  KEEP: { geo: 406, row: 38, ledge: [404, 408, 39], chainTop: 33, sign: [416, 45], early: false, leash: 8, sight: 340 },   /* the tall hall's chain landing over the switchback's long walk; the first to use THE GEODE CALL */
+  KEEP: { geo: 406, row: 40, ledge: [404, 408, 41], chainTop: 33, sign: [416, 45], early: false, leash: 8, sight: 340 },   /* the tall hall's chain landing over the switchback's long walk; the first to use THE GEODE CALL */
 };
 
 /* THE GEODE CALL (S4) - the numbers (starting values for the tune lane) */
