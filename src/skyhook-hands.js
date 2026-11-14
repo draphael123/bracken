@@ -14,6 +14,7 @@ import * as SKM from './skyhook.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { lineCut } from './line-kit.js';
 import { drawRiggerArt, drawSkyTrolley, drawSkyHook, chainLine, drawRag, drawLeverArt } from './redraw/line_crew_art.js';   /* (claude/hlart) the hand-drawn rigger, trolley, hook, chain, rags and tension lever */
+import { SKY2 } from './skyhook2.js'; import { makeSky2Hands } from './skyhook2-hands.js';   /* (claude/sky2grey) SKYHOOK 2 behind the flag SKY2 (off: this file's fight, unchanged) */
 const { SH } = SKM;
 const R = Math.round;
 const SOUND = { rideTell: s => (s.ratchet || s.clank)(), ride: s => (s.ratchet || s.throwWhoosh)(), perch: s => (s.pStep || s.thud)(), hookTell: s => s.tell && s.tell(false),
@@ -89,6 +90,7 @@ function drawRigger(g, p, flash, time, ph) {
   if (p.bracket) rect(g, p.hand[0] - 2, p.hand[1] + cr - 6, 5, 3, C.iron);
 }
 export function makeSkyhookHands(ctx) {
+  if (ctx.sky2 !== undefined ? ctx.sky2 === true : SKY2) return makeSky2Hands(ctx);   /* (claude/sky2grey) ?sky2=1 (a tool: ctx.sky2 = true); ?sky2=0 / off = the live fight below */
   let S = null; let props = []; const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'skyhook' ? ctx.L.arena : null);
   H.show = () => S;

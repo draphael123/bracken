@@ -116,7 +116,7 @@ export const OPEN_RULE = {
   deacon: e => dcOpen(e),                                                    // THE DEACON (claude/church2): his lamps out, he GROPES IN THE DARK - open
   bzchief: e => bzcOpen(e),                                                 // THE BERSERKER CHIEFTAIN (claude/warcairn): a beat in his frenzy - he LOSES THE BEAT; or his whiffed cross-chop's axes in the stone
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
-  skyhook: e => skyOpen(e),                                                  // SKYHOOK (claude/skyhook): DOWN off his slipped line, or JARRED (his drop landed on nothing)
+  skyhook: e => skyOpen(e) || e.mode === 'smashed',   /* (claude/sky2grey) SKYHOOK 2 (flag SKY2): SMASHED by the ore skip is an opening too (never entered with the flag off) */                                                  // SKYHOOK (claude/skyhook): DOWN off his slipped line, or JARRED (his drop landed on nothing)
   bogtroll: e => btOpen(e) || btStun(e),                                                  // THE BOG TROLL (claude/fenroad): STUCK in a rotten section he burst up through
   hornetqueen: e => hqOpen(e),                                               // THE HORNET QUEEN 2 (claude/hornetsnest): STUCK in comb/wood, STAGGERED off a shield, DAZED by smoke under her, PINNED under a pine or the last comb
   grubbag: e => e.mode === 'stun' || e.mode === 'hot' || e.mode === 'drop',                                        // (claude/kitchengate4: + KNOCKED OFF HIS FEET, the platter drop)  LORD GRUBBAG (claude/kitchengate): STUNNED by a bomb / TOO HOT from a chilli he gulped off the serving line (src/grubbag.js, claude/kitchengate2)
