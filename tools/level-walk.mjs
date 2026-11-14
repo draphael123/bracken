@@ -53,6 +53,7 @@ import { depthsOf, gateOf } from '../src/campaign-order.js';
 import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
 import { openRetry, diffJs } from './boss-run.mjs';
+import { glitchEnabled, glitchAttach } from './glitch-log.mjs';   /* (testkit-d) BRACKEN_GLITCH_LOG=<file>: the glitch recorder rides on every walk; unset = nothing runs */
 import { recycler } from './page-recycle.mjs';   /* (claude/botmem) each slot's page is replaced every ~6 walks (one BK.load each) and a walk whose page memguard killed is rerun once, labelled */   /* (claude/difficulty) --difficulty= */
 import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
 import { ACTS, actOf } from '../src/foe-react.js';
@@ -291,7 +292,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
 export async function runWalks(cfgs, { jobs = 1, onRow = null } = {}) {
   const queue = cfgs.slice(), out = [], rcs = Array.from({ length: Math.max(1, Math.min(jobs, cfgs.length)) }, () => recycler({ open: openRetry }));
   const worker = async i => { for (;;) { const c = queue.shift(); if (!c) return; let row;
-    try { row = await rcs[i].run(async pg => { await pg.reload(); await pg.evalp(diffJs()); const r = await pg.evalp(walkJs(c), 1800000); const errs = pg.errors.splice(0); if (errs.length) r.pageErrors = errs.slice(0, 3); return r; }, 1); }
+    try { row = await rcs[i].run(async pg => { await pg.reload(); await pg.evalp(diffJs()); const gl = glitchEnabled() ? await glitchAttach(pg, { row: c.id, hero: c.hero, seed: c.seed }) : null; let r; try { r = await pg.evalp(walkJs(c), 1800000); } finally { if (gl) { const g = await gl.collect().catch(() => null); if (r) r.glitch = g; } } const errs = pg.errors.splice(0); if (errs.length) r.pageErrors = errs.slice(0, 3); return r; }, 1); }
     catch (e) { row = { id: c.id, hero: c.hero, seed: c.seed, err: String(e.message).slice(0, 160), ...(e.infraKilled ? { infraKilled: true } : {}) }; await rcs[i].reset(); }
     out.push(row); if (onRow) onRow(row, out); } };
   try { await Promise.all(rcs.map((_, i) => worker(i))); } finally { for (const r of rcs) try { await r.close(); } catch {} }

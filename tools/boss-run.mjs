@@ -53,6 +53,7 @@ export const won = x => x.outcome === 'win' || x.outcome === 'trade';
    cdp.mjs LITE_ARGS (state-only: boss rows read no pixels) - opt-in, default off, because it can change raster paths. onRow gets every finished fight AT ONCE (boss-rates writes its file from it). */
 import { treeRss } from './proc-rss.mjs';
 import { INFRA_RE } from './infra-kill.mjs';
+import { glitchEnabled, glitchAttach } from './glitch-log.mjs';   /* (testkit-d) BRACKEN_GLITCH_LOG=<file>: the glitch recorder rides on every fight; unset = nothing runs */
 const sleepMs = ms => new Promise(r => setTimeout(r, ms));
 export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {}) {
   if (!list.length) return [];
@@ -66,14 +67,14 @@ export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {
   /* renewal waits for the fights in flight, closes the old browser FIRST (it may own the dev server, which its close kills), then opens the next one */
   const renew = () => recycling = (async () => { while (inflight > 0) await sleepMs(300); const old = keeper; await old.close().catch(() => {}); keeper = await openRetry(keeperOpts); served = 0; browserMb = 0; renewals++; })().finally(() => { recycling = null; });
   const gate = async () => { for (;;) { if (recycling) { await recycling; continue; } if (need()) { await renew(); continue; } break; } inflight++; served++; };
-  const worker = async () => { for (;;) { if (!queue.length) return; await gate(); const F = queue.shift(); if (!F) { inflight--; return; } let row, pg, again = false; const { lvl, js } = fightJs(F, secs), kp = keeper;
-    try { pg = await openRetry({ browserPort: kp.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
+  const worker = async () => { for (;;) { if (!queue.length) return; await gate(); const F = queue.shift(); if (!F) { inflight--; return; } let row, pg, again = false, gl = null, glRow = null; const { lvl, js } = fightJs(F, secs), kp = keeper;
+    try { pg = await openRetry({ browserPort: kp.browserPort }); await pg.evalp(diffJs()); if (glitchEnabled()) gl = await glitchAttach(pg, { row: F.r, way: F.way, hero: F.h, seed: F.s }); row = await pg.evalp(js, +process.env.BOSS_EVAL_MS || 1200000);   /* (claude/bkbot) BOSS_EVAL_MS: give up on a fight whose page died (memguard kills a leaking headless Chrome) instead of waiting 20 min */ }
     catch (e) { row = { err: String(e.message).slice(0, +process.env.ERRLEN||120) }; if (!F.infraTried && ((pg && pg.infra) || INFRA_RE.test(String(e.message)))) again = true; }
-    finally { if (pg) await pg.close().catch(() => {}); }
+    finally { if (gl) glRow = await gl.collect().catch(() => null); if (pg) await pg.close().catch(() => {}); }
     if (again) { queue.unshift({ ...F, infraTried: true }); console.log('  [infra-retry] ' + F.r + ' ' + F.way + ' ' + F.h + ' s' + F.s + ': ' + row.err.slice(0, 80) + ' - one rerun on a fresh page'); inflight--; continue; }
     let rss = null; try { rss = await treeRss(kp.profile); } catch {}
     if (rss) { browserMb = Math.max(browserMb, rss.browser); if (RSS_LOG) console.log('  [rss] keeper tree total ' + rss.total + ' MB, browser-side ' + rss.browser + ', renderers ' + rss.renderers + ', biggest ' + rss.biggest + ' (' + rss.n + ' procs, fights since renewal ' + served + ', renewals ' + renewals + ')'); }
-    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...(F.infraTried ? { infraRetry: true } : {}), ...(RSS_LOG && rss ? { rss } : {}), ...row }; out.push(rec); inflight--; if (onRow) onRow(rec, out); } };
+    const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...(F.infraTried ? { infraRetry: true } : {}), ...(RSS_LOG && rss ? { rss } : {}), ...(glRow ? { glitch: glRow } : {}), ...row }; out.push(rec); inflight--; if (onRow) onRow(rec, out); } };
   try { await Promise.all(Array.from({ length: Math.min(jobs, list.length) }, () => worker())); } finally { await keeper.close(); }
   return out;
 }
