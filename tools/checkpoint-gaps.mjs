@@ -21,6 +21,7 @@ import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
 import { THIN, CHECK_DROP, CHECK_PIN } from '../src/checkpoint-thin.js';
+import { HL_FIX3 } from '../src/highlines.js';   /* (claude/hlfix3) THE HIGH LINES' five shrines, with the flag on */
 
 import { MAX, MIN, judgeLevel, A10B, judgeLevelA10b } from './checkpoint-rule.mjs';
 export { MAX, MIN };
@@ -29,6 +30,7 @@ const KNOWN = new Map([
   ['fallingtower', 'FALLING TOWER 4 (claude/ft4b, Daniel 10-29 #4: checkpoints 8 -> 4, one braced room an act + one before him): ACT II - the Observatory, the Pendulum Gallery and the Alchemy Lab under THE COLLAPSE FRONT - runs ~263 route tiles from its braced room to the next, on purpose (the front never kills: it hurts and throws you up). Delete this line if a shrine is ever put in act II.'],
   ['kings', 'THE BURNING WOOD ESCAPE runs 220 route tiles from the last shrine (route 415) with no shrine in it, on purpose: claude/kingsfix2 lengthened it 40 columns (Daniel 10-23 playtest; src/kingswood.js checkRun 240). Delete this line if a shrine is ever put in it.'],
 ]);
+if (HL_FIX3) KNOWN.set('highlines', 'THE HIGH LINES has FIVE shrines with HL_FIX3 (Daniel 11-14, playing the live level: "I saw no checkpoints"; he approved two more on the main route and the east-lee one moved onto the path - this level only, overriding the fewer-checkpoints direction): after JUNCTIONS (L5) and the east lee (L8) stand 72 route tiles apart, under MIN 80. Delete this line if the flag is removed or the shrines are re-spaced.');
 const bad = [], stale = [], rows = [], a10b = []; let total = 0;
 for (const lv of LEVELS) {
   if (lv.hidden && !lv.secret) continue;

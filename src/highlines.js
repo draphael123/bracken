@@ -171,6 +171,30 @@ export const HL_DATA_SW = applySwitchPatch(HL_DATA);
 export const SIGNS_SW = { '6,231': 'HANG ON (UP), THEN STRIKE ONCE: THE LINE CARRIES YOU ALL THE WAY UP.', '66,207': 'A LEVER SETS THE POINTS. THE LIT LAMP IS THE WAY THE LINE GOES.',
   '9,176': 'THE GORGE LINES WAIT FOR YOUR BLOW. LAUNCH WITH THE WIND, NOT INTO IT.', '24,155': 'A GOBLIN WITH A SAW. STRIKE THE LEVER AND THE POINTS TAKE YOU CLEAR.', '66,103': 'NO NETS FROM HERE. THE LEVER PICKS THE GALE OR THE LEE.' };
 
+/* ---------------- (claude/hlfix3, 11-14) THE FIX BATCH, behind HL_FIX3 (OFF by default; ?hlfix3=1 previews it; node: globalThis.__HLFIX3 = true or BRACKEN_HLFIX3=1). Daniel played the live level and approved exactly this:
+   A  CARTS WAIT: the gondola and the counterweight cage stay docked until a hero stands in them, then a 0.6 s beat (a clank, a filling bar) and up to 2.5 s more for the other seats (src/line-kit.js, lineKit.fix3); an empty cab comes home along a visible way.
+   B  FALL RECOVERY: a NET at every section's own bottom station (wall to wall, a one-way rope deck: the rows below), -10 pct max hp (floor 1 hp) and a RETURN WINCH at the net that hauls the hero back to the ledge he fell from (src/line-net.js).
+   C  CHECKPOINTS: five shrines ON THE ROUTE: the start, after the JUNCTIONS (L5, where W4 tops out), the east lee (moved to where the hero walks from W6's landing to G3's grab), after the GONDOLA (the dock, at E1's foot), the cave mouth.
+   The flag OFF is the level as before, byte for byte (HL_DATA / HL_DATA_SW are never touched: the patch is a deep copy, like the switch patch). Rows / cols touched: see FIX3_NETS and the checkpoints below. */
+const hlfix3Forced = () => { try { const g = typeof globalThis !== 'undefined' ? globalThis : null; if (g && g.__HLFIX3 === true) return true; if (g && g.location && /[?&]hlfix3=1(&|#|$)/.test(String(g.location.search || ''))) return true; } catch { /* no globals */ } try { if (typeof process !== 'undefined' && process.env && process.env.BRACKEN_HLFIX3 === '1') return true; } catch { /* no node */ } return false; };
+export const HL_FIX3_DEFAULT = false;   /* (hlfix3) OFF until Daniel's browser look; ?hlfix3=1 is the preview */
+export const HL_FIX3 = HL_FIX3_DEFAULT || hlfix3Forced();
+/* the nets, [x0, top, x1, bottom, 'fx'] (tiles; the row is the deck's top). Each sits at its section's own bottom station and spans the shaft where the rock lets it; the cols beside an existing deck of the same row are that deck.
+   The two cargo nets of band 1 (rows 234 / 222) are already there and become return-winch nets too. Rows: 208 (JUNCTIONS: L2's own row, 1-57), 189 (THE WIND GORGE: L5's own row, 1-23 and 35-59 - W5 starts at row 188 so the net cannot stand higher; cols 22-23 stay clear of W4's top-out hop), 171 (THE AMBUSH: L9's row, 12-78),
+   134 (THE LEE HUT: the hut's row, 56-67 under the crevice lips), 120 (THE COUNTERWEIGHT, 1-49: under the shelf and the cage shafts, the rock wall 50-55 is its end), 104 (THE GONDOLA and THE EXAM: the dock's row, 26-62 and 73-78), 60 (THE CAVE MOUTH, 16-78, two rows under its ledge) */
+export const FIX3_NETS = [[1, 208, 57, 209, 'fx'], [1, 189, 23, 190, 'fx'], [35, 189, 59, 190, 'fx'], [12, 171, 78, 172, 'fx'], [56, 134, 67, 135, 'fx'], [1, 120, 49, 121, 'fx'], [26, 104, 62, 105, 'fx'], [73, 104, 78, 105, 'fx'], [16, 60, 78, 61, 'fx']];
+export const FIX3_CHECKS = [{ x: 4, y: 232 }, { x: 25, y: 189 }, { x: 61, y: 165 }, { x: 66, y: 104 }, { x: 5, y: 58 }];   /* start; after JUNCTIONS (L5: W4 tops out at x 24.3, W5's grip starts at 26.1: the walk between); the east lee (L8: W6 tops out at 62.3, G3's grab is x <= 60.6: the walk between, the old shrine stood on the landing spot itself); after the GONDOLA (the dock: the cab sets you down at 66.1, E1's foot is 66.4-67.4); the cave mouth */
+export function applyFix3Patch(src) {
+  const D = JSON.parse(JSON.stringify(src));
+  D.lineKit.fix3 = true;
+  D.nets.push(...FIX3_NETS.map(b => b.slice()));
+  D.checkpoints = FIX3_CHECKS.map(c => ({ ...c }));
+  return D;
+}
+export const HL_DATA_FX = applyFix3Patch(HL_DATA), HL_DATA_SW_FX = applyFix3Patch(HL_DATA_SW);
+/* the sign texts the flag changes (the nets and the carts are told where the player reads) */
+export const SIGNS_FX = { '36,219': 'A MISS: THE NET CATCHES YOU (A TENTH OF YOUR HEALTH). STRIKE AT THE NET AND THE WINCH HAULS YOU BACK.', '70,103': 'NETS ALL THE WAY UP: A MISS COSTS A TENTH OF YOUR HEALTH, THEN THE WINCH HAULS YOU BACK.', '17,101': 'THE GONDOLA WAITS FOR YOU. STEP IN AND IT GOES. IF THE LINE CREAKS, HOLD ON.' };
+
 /* ---------------- THE DRAWN SUPPORTS (claude/hlart): every deck stands on the line crews' iron or the cliff's own stone ---------------- */
 /* L.routeSupports kind 'hlgantry' (drawn by src/redraw/high_lines_tiles.js drawGantry through src/route-art.js): per landing / net run, posts at both ends and every 8 tiles. The rock lips (ROCK_LANDINGS) stand on granite
    CORBELS; an iron deck beside rock (a cliff wall, the head station's arch) hangs from a wall BRACKET (an I-beam from a bolted plate, a knee brace and a tie rod at the tip); a deck in the open shaft stands on a lattice PYLON
@@ -180,7 +204,7 @@ export const FLOOR_LANDINGS = [0];   /* solid rock under it already (the line-ya
 export function hlSupports(D, at, solid) {
   const out = [], runs = [];
   D.landings.forEach((b, i) => { if (!FLOOR_LANDINGS.includes(i)) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: ROCK_LANDINGS.includes(i) }); });
-  for (const b of D.nets) runs.push({ x0: b[0], x1: b[2], y: b[1], rock: false, net: true });
+  for (const b of D.nets) if (b[4] !== 'fx') runs.push({ x0: b[0], x1: b[2], y: b[1], rock: false, net: true });   /* (hlfix3) the new rope nets stand on no posts: they hang wall to wall (art owed) */
   for (const r of runs) {
     const wl = solid(at(r.x0 - 1, r.y)) || solid(at(r.x0 - 1, r.y + 1)), wr = solid(at(r.x1 + 1, r.y)) || solid(at(r.x1 + 1, r.y + 1)), run = [r.x0, r.x1];
     const step = r.rock && r.x1 - r.x0 > 20 ? 3 : 8, xs = new Set([r.x0, r.x1]); for (let x = r.x0 + step; x < r.x1 - (step > 3 ? 3 : 1); x += step) xs.add(x);   /* a long rock shelf stands on a corbel table (every 3 tiles: the post-reach rule) */
@@ -195,9 +219,9 @@ export function hlSupports(D, at, solid) {
 }
 
 /* ---------------- THE GAME'S LEVEL (src/level.js calls this) ---------------- */
-export function buildHighLines({ painter, T, TS, sw = HL_SWITCH }) {   /* sw: the HL_SWITCH flag (a node proof passes it in) */
-  const { W, H } = HL, D = sw ? HL_DATA_SW : HL_DATA, L = painter(W, H), { set, block, ent } = L;
-  const sign = (x, y, text) => ent('sign', x, y, { text: sw && SIGNS_SW[x + ',' + y] !== undefined ? SIGNS_SW[x + ',' + y] : text });   /* flag on: the switch rule's words at the same spots */
+export function buildHighLines({ painter, T, TS, sw = HL_SWITCH, fx = HL_FIX3 }) {   /* sw: the HL_SWITCH flag, fx: the HL_FIX3 flag (a node proof passes them in) */
+  const { W, H } = HL, D = fx ? (sw ? HL_DATA_SW_FX : HL_DATA_FX) : (sw ? HL_DATA_SW : HL_DATA), L = painter(W, H), { set, block, ent } = L;
+  const sign = (x, y, text) => ent('sign', x, y, { text: fx && SIGNS_FX[x + ',' + y] !== undefined ? SIGNS_FX[x + ',' + y] : sw && SIGNS_SW[x + ',' + y] !== undefined ? SIGNS_SW[x + ',' + y] : text });   /* flag on: the switch rule's words at the same spots */
   const foe = (t, x, y, o) => ent(t, x, y, o || {});
   const lineAt = (id, tx) => { const d = D.lineKit.lines.find(q => q.id === id), k = (tx - d.a[0]) / (d.b[0] - d.a[0]); return d.a[1] + (d.b[1] - d.a[1]) * k; };
   const coinOn = (id, tx) => ent('coin', tx, Math.floor(lineAt(id, tx)));   /* a coin on a rider's path (taken as you ride by) */
@@ -248,7 +272,7 @@ export function buildHighLines({ painter, T, TS, sw = HL_SWITCH }) {   /* sw: th
   sign(17, 101, 'THE GONDOLA. STEP IN. IF THE LINE CREAKS, HOLD ON.');
   foe('harpy', 45, 90, { face: -1 });
   /* ---- 8 THE EXAM ---- */
-  sign(66, 103, 'NO NETS FROM HERE. A MISS FALLS A LONG WAY.');
+  sign(fx ? 70 : 66, 103, 'NO NETS FROM HERE. A MISS FALLS A LONG WAY.');   /* (hlfix3) the dock's shrine stands at 66: the sign moves to 70 and tells the nets */
   foe('galeharpy', 56, 78, { face: 1 }); foe('crossbow', 45, 73, { face: 1 });
   /* ---- THE CAVE MOUTH ---- */
   sign(9, 57, 'THE CAVE MOUTH. THE ORE ROAD RUNS INTO THE MOUNTAIN FROM HERE.');
