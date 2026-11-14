@@ -287,7 +287,9 @@ if (SW) {
   ok(K.rule === 'switch' && ['J1', 'J3', 'J4'].every(id => K.switches.some(s => s.id === id)), 'the switch rule is on with the levers J1, J3, J4');
   ok(K.lines.every(d => (d.points || []).every(p => p.sw !== undefined)) && !K.lines.some(d => d.drive), 'every board reads a lever (hold-UP retired) and no line is post-driven');
   ok(L('W3').points[0].sw === 'J1' && L('H2').points[0].sw === 'J3' && L('E2').points[0].sw === 'J4' && L('E2').points[0].to === 'EL', 'J1 sets W3 at 58 (silver line), J3 sets H2 at 40 (S4, off the cutter), J4 sets E2 at 64 (the lee branch EL)');
-  ok(L('G2').hold && L('G3').hold && L('EG').hold && L('EG').kind === 'glide' && L('EL').kind === 'winch' && L('S5').kind === 'glide', 'G2, G3, EG are held glides; EL is a winch; S5 a glide');
+  ok(L('G2').hold && L('G3').hold && L('EG').hold && L('EG').kind === 'glide' && L('EL').kind === 'winch' && L('S5').kind === 'winch', 'G2, G3, EG are held glides; EL and S5 are winches (S5 climbs east: a glide there would ride the wrong way)');
+  /* (claude/hlswitchproof) EVERY LINE RIDES THE WAY IT IS DRAWN a -> b: the kit's downhill is by slope, so a glide must fall a -> b and a winch must rise a -> b (the browser caught S5 drawn rising as a glide: L11 -> Ls4, the J3 branch a dead end) */
+  { const wrong = K.lines.filter(d => d.kind !== 'free' && Math.abs(d.a[1] - d.b[1]) * TS >= 2 && (d.kind === 'glide' ? !(d.a[1] < d.b[1]) : !(d.a[1] > d.b[1]))).map(d => d.id); ok(!wrong.length, 'every glide falls and every winch rises a -> b (' + wrong.join(',') + ')'); }
   ok(L('EG').a[1] < L('EG').b[1] && L('EG').a[0] > L('EG').b[0], 'EG runs DOWNHILL west (a glide runs downhill: LE stands above L17)');
   ok(DATA.landings.length === 38 && DATA.landings[37][0] === 71 && K.lee.some(b => b[0] === 71 && b[1] <= DATA.landings[37][1] - 1), 'the new landing LE stands in the (extended) east lee');
   { const bad = lintLines(lvl()); ok(!bad.length, 'the patched level lints clean (' + bad.join('; ') + ')'); }

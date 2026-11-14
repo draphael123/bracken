@@ -138,12 +138,12 @@ export const HL_DATA = {
 
 /* ---------------- (claude/hlswitch) THE SWITCH PATCH: what HL_SWITCH changes in the data (a patched deep copy; HL_DATA itself, the flag-off level, is never touched) ----------------
    BAND 2: J1, a foot lever on L2, sets W3's points at 58 (main way, or the silver line S2). BAND 3: G2 / G3 are HELD glides (parked until you strike). BAND 4: J3, a lever on a pylon beside H2 (a line swing, or
-   a shot from the rider), sets H2's points at 40 onto S4 - the way off the cutter's saw - and S5 (a glide from SILVER TWO's ledge to L11) makes that branch a longer, safe route, not a dead end.
+   a shot from the rider), sets H2's points at 40 onto S4 - the way off the cutter's saw - and S5 (a winch from SILVER TWO's ledge to L11) makes that branch a longer, safe route, not a dead end.
    BAND 8: J4, a foot lever on L16, sets E2's points at 64 (the gale line with two Hookjacks, or EL: a steep winch to the NEW landing LE in the lee) and EG, a held glide west from LE to L17 in the gale.
    (The plan drew EG from (70,79) to (47,74.6): that is UPHILL going west and a glide runs downhill, so LE stands higher than L17 - top 70 against 74 - and EL climbs to it.) */
 const PATCH_LANDINGS = [[71, 70, 78, 71]];   /* 37 LE: the exam's east lee, high (EL tops onto it; the held glide EG leaves it). Appended: every landing index above is unchanged */
 const PATCH_LINES = [
-  { id: 'S5', kind: 'glide', a: [31, 142.4], b: [54, 141.6] },                 /* SILVER TWO's ledge (Ls4) -> L11: the safe way round the cutter once S4 has taken you off H2 */
+  { id: 'S5', kind: 'winch', a: [29, 142.4], b: [54, 141.6] },                 /* SILVER TWO's ledge (Ls4) -> L11: the safe way round the cutter once S4 has taken you off H2. (claude/hlswitchproof) A WINCH, not a glide: it climbs 0.8 row east, and a glide runs the way DOWNHILL (the kit's `down`), so the glide drawn a->b rode L11 -> Ls4 and the S4 branch was a dead end; its foot starts at 29 so a rider standing on the ledge is in reach (a dir -1 line is taken from xa + 12) */
   { id: 'EL', kind: 'winch', a: [63, 86.46], b: [75, 68.9] },                  /* the exam's lee branch: off E2 at 64 (J4 = 1) up to LE */
   { id: 'EG', kind: 'glide', a: [72, 69.2], b: [47, 73], hold: true },         /* a held glide LE -> L17 over the gale: parked until one blow, so you pick your gust */
 ];
