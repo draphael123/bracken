@@ -24,7 +24,7 @@ export const Q5 = gq5q1On();
 export const Q5N = {
   bellCd: 16,
   hoist: { cols: [7, 13, 20], w: 4, rows: 2, rise: 0.6, hold: 7.0, warn: 6.5, sink: 0.5 },   // the plan's h5-8 / h19-22 / h34-37, moved: see the report (the east hearth moved 84 px west; the centre lift clears the bell; the dais starts at h29). GQ5Q1-TUNE knob 4 (11-12): hold 8.0 -> 7.0 (per the tune order; knobs 1-3 were no-moves)
-  fire: { tell: 3.0, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 30, run: 260, waveWait: 17, spotW: 72, capPct: 0.07 },   // GQ5Q1T-2 (QDMG 11-13): capPct 0.15 -> 0.07 = ONE tick (17 hp, ~8% of a 208 bar) for an unanswered burn on any bar up to ~242 hp (a tick is a fixed ~17, not a % of the bar); was two ticks (34)
+  fire: { tell: 3.0, burn: 3.0, tick: 0.5, dmg: 5, first: 15, every: 30, everyS3: 36, run: 260, waveWait: 17, spotW: 72, capPct: 0.07 },   // GQ5Q1T-2 (QDMG 11-13): capPct 0.15 -> 0.07 = ONE tick (17 hp, ~8% of a 208 bar) for an unanswered burn on any bar up to ~242 hp (a tick is a fixed ~17, not a % of the bar); was two ticks (34)
   //   // GQ5Q1B REWORK (11-12, gq5q1-rework-plan.md): tell 2.5 -> 3.0 (grille steps 1.0 s each), every 20 -> 26, capPct 0.20 = one burn costs at most ~20% of the bar (+ one tick)   // GQ5Q1-TUNE knob 1 (11-12): dmg 6 -> 5 (n=6 baseline 17%->11%, no-move, kept). knob 2: first 12 -> 15 (more time to reach a hoist before the first, currently-unanswerable, fire)
   scorch: { stun: 3.0, mul: 1.25, cap: 0.12, ward: 3.0, grace: 1.2 },   // GQ5Q1-TUNE knob 3 (11-12): cap 15% -> 12% (per the plan's tune-back order; knobs 1-2 were no-moves)
   soldier: { slashK: 0.75, stagger: 0.6 },   // GQ5Q1T-4 (QUEENTUNE-3, flag ON, Queen's hall only): the wave guard's slash x0.75 (24 -> 18 hp) and the next guard may not START its tell within 0.6 s of the last one (the tell is 0.5 s: two blows land >= 0.6 s apart, past a hit-stun)
@@ -125,7 +125,7 @@ export function makeGQ5Q1(env) {
   E.fireStart = e => {
     const tt = tn(), g = G0(); st.side = -st.side; const side = st.side, hs = env.hearthXs();
     st.fire = { phase: 'tell', t0: tt, side, spotX: spotOf(side), hearthX: hs[side < 0 ? 0 : 1], tickN: 0, tB: 0, ringSaid: 0 };
-    st.nextFire = tt + N.fire.every; st.fires++;
+    st.nextFire = tt + (env.hallEase ? N.fire.everyS3 : N.fire.every); st.fires++;   /* (claude/gq6hallstep) S3 preview flag ON only: one step slower throne fire (30 -> 36 s) */
     e.mode = 'fireTell'; e.modeT = N.fire.tell; e.vx = 0; e.crownOut = false; e.face = sgn(st.fire.spotX - e.x);
     env.gap(tt + N.fire.tell + N.fire.burn + 1.5);
     ctx.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); ctx.number(e.x, e.y - 70, 'THE FLOOR BURNS', '#ff9a5c'); env.sfx('bellow'); env.sfx('callerChant');
