@@ -12,6 +12,13 @@ import { fileURLToPath } from 'url';
 import { killedByGuard, INFRA_RE } from './infra-kill.mjs';
 import { basename } from 'path';
 import { PORT_BASE } from './ports.mjs';   /* a port block per checkout, so two worktrees do not fight over 5892 (tools/ports.mjs) */
+import { freemem } from 'os';
+/* (testkit-d 11-13) RAM FLOOR, OPT-IN: BRACKEN_RAM_FLOOR_MB=N (default 0 = off, so no gate on any machine changes). openPage REFUSES to start its OWN headless Chrome (a borrowed suite browser is never refused:
+   a context in it adds no browser) while the PC has less than N MB of free physical memory, with a message that says how much is free. A booted game page is ~1.4 GB; the desktop test PC (16 GB) sets 4500.
+   It is a refusal, never a wait: the caller stops and reports. ramFloorCheck() is exported for a tool that wants the same answer before it does anything else. */
+export const ramFloorMb = () => { const n = +(process.env.BRACKEN_RAM_FLOOR_MB || 0); return n > 0 ? n : 0; };
+export const ramFreeMb = () => Math.round(freemem() / 1048576);
+export function ramFloorCheck() { const floor = ramFloorMb(); if (!floor) return null; const free = ramFreeMb(); return free < floor ? 'RAM GUARD: refusing to launch headless Chrome - ' + free + ' MB free, BRACKEN_RAM_FLOOR_MB is ' + floor + ' (a booted page is ~1.4 GB). Close something or wait for a lighter moment, then rerun; set BRACKEN_RAM_FLOOR_MB=0 to turn the guard off.' : null; }
 
 export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
@@ -48,6 +55,7 @@ async function borrowedTarget(port) {
 }
 
 export async function openPage(opts = {}) {
+  if (!(opts.browserPort || process.env.BRACKEN_BROWSER_PORT)) { const refuse = ramFloorCheck(); if (refuse) throw new Error(refuse); }   /* (testkit-d) BRACKEN_RAM_FLOOR_MB, off by default */
   const t00 = Date.now();
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
