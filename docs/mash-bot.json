@@ -2000,7 +2000,7 @@
   }
  },
  "crown": {
-  "hash": "3e2c11ae45a2",
+  "hash": "332433eba1c3",
   "boss": {
    "boss": "gqueen",
    "wins": 0,
@@ -2200,7 +2200,7 @@
    ]
   },
   "carried": {
-   "from": "b3f7f7a78937",
+   "from": "3e2c11ae45a2",
    "parts": [
     "boss",
     "mini"
@@ -2208,57 +2208,36 @@
   },
   "level": {
    "knight": {
-    "deaths": 5,
+    "deaths": 4,
     "minHpPct": 0,
-    "hpLostPct": 586,
-    "hits": 37,
+    "hpLostPct": 406,
+    "hits": 38,
     "walked": 100,
     "lifts": 90,
-    "held": 24,
-    "duels": 3,
-    "boardLifts": 3,
+    "held": 30,
+    "duels": 1,
+    "boardLifts": 2,
     "rides": 2,
-    "pulls": 12,
+    "pulls": 11,
     "ridden": {
-     "swing": 1,
-     "lift": 1
+     "lift": 1,
+     "swing": 1
     },
     "machines": true,
-    "frames": 37550,
-    "kills": 4,
+    "frames": 34447,
+    "kills": 7,
     "heroLevel": 22
    },
    "warden": {
-    "deaths": 4,
+    "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 461,
+    "hpLostPct": 398,
     "hits": 32,
     "walked": 100,
-    "lifts": 87,
-    "held": 21,
+    "lifts": 90,
+    "held": 32,
     "duels": 1,
-    "boardLifts": 3,
-    "rides": 2,
-    "pulls": 10,
-    "ridden": {
-     "swing": 1,
-     "lift": 1
-    },
-    "machines": true,
-    "frames": 32958,
-    "kills": 11,
-    "heroLevel": 22
-   },
-   "pyro": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 498,
-    "hits": 34,
-    "walked": 100,
-    "lifts": 89,
-    "held": 19,
-    "duels": 1,
-    "boardLifts": 3,
+    "boardLifts": 2,
     "rides": 2,
     "pulls": 14,
     "ridden": {
@@ -2266,7 +2245,28 @@
      "lift": 1
     },
     "machines": true,
-    "frames": 34982,
+    "frames": 34755,
+    "kills": 6,
+    "heroLevel": 22
+   },
+   "pyro": {
+    "deaths": 3,
+    "minHpPct": 0,
+    "hpLostPct": 370,
+    "hits": 27,
+    "walked": 100,
+    "lifts": 88,
+    "held": 27,
+    "duels": 3,
+    "boardLifts": 2,
+    "rides": 3,
+    "pulls": 14,
+    "ridden": {
+     "swing": 2,
+     "lift": 1
+    },
+    "machines": true,
+    "frames": 38373,
     "kills": 13,
     "heroLevel": 22
    }
