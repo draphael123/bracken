@@ -8,7 +8,8 @@
 //   MIST BANDS   thin drifting strips, thicker low in the shaft
 //   THE HEAD STATION  below row ~48 the camera is INSIDE the cave: the mountain fades out and the station's back wall takes over - five stone bays, iron roof beams, a big sheave wheel turning, hung lamps
 // drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full)   bakeStation() / bakeMountain() are exported for the contact sheet and the lint.
-import { canvas, rect, mulberry } from '../px.js';
+import { canvas, rect as rectRaw, mulberry } from '../px.js';
+let OY = 0; const rect = (g, x, y, w, h, c) => rectRaw(g, x, y + OY, w, h, c);   /* OY: the row the station bakes shift by (STATION_PAD), 0 for every other bake */
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -87,6 +88,10 @@ export function bakeFar() {
    the ONLY light (east of centre). Rough rock ceiling with hanging rock and rime, iron crown housings and a winch bolted into the stone, eyebolt anchors in the frame. Everything is dark granite (2+ value steps under the lines).
    Two baked layers, both horizontally periodic on 640: bakeStation (the wall + throat, parallax 0.3) and bakeStationNear (hanging rock + ceiling lip, parallax 0.55); the live sheave wheel turns on the bracket the bake leaves for it (STATION_WHEEL). */
 export const SW = 640, SH = 180, STATION_WHEEL = { x: 380, y: 44, r: 14 };
+/* claude/cavefill (Daniel 11-14, fullscreen: "the backdrop doesn't fill the screen"): the composition is 640x180 but the view is 320x180 CLOSE and up to 640x360 WIDE (Camera: WIDE, the boss view, fullscreen) - the bake used to be 180 tall and the bottom half of a wide view was bare.
+   Both station layers are now 180 + 2 x STATION_PAD tall: the composition keeps its rows (PAD..PAD+180), the ceiling rock continues above it and the tunnel floor + rock wall below, and drawBackdrop centres the composition in the view. PAD 128 covers any view up to 380 tall with the 12 px depth slide and a 16 px shake. */
+export const SHAKE_PAD = 24;   /* the backdrop is drawn this far past the view's left and right edges (the camera's shake and kick) */
+export const STATION_PAD = 128, STH = SH + 2 * STATION_PAD;
 const TP = 640, TAU = 6.2832;
 const ROCK = ['#0a0b10', '#12131a', '#1a1b24', '#22232c', '#2c2c36', '#383844'];                              /* the cave's granite, shadow to a lit rim (the level's own stone is two steps lighter) */
 const ROCKEDGE = '#0a0b10';
@@ -96,7 +101,7 @@ const pn = (x, s) => { let v = 0; for (let k = 1; k <= 3; k++) v += Math.sin(TAU
 const wdx = (x, c) => { let d = ((x - c) % TP + TP) % TP; return d > TP / 2 ? d - TP : d; };
 function bakeRock(g) {                                                                                      /* granite facets: jittered cells (wrapping), a crack where two meet, lit toward the upper left */
   const CW = 32, CH = 24, NC = TP / CW, seed = (i, j) => { const ii = ((i % NC) + NC) % NC; return [ii * CW + (hash(ii, j) % 28), j * CH + (hash(j + 40, ii) % 20), hash(ii, j + 7)]; };
-  for (let y = 0; y < SH; y++) for (let x = 0; x < TP; x++) {
+  for (let y = -STATION_PAD; y < SH + STATION_PAD; y++) for (let x = 0; x < TP; x++) {
     const ci = Math.floor(x / CW), cj = Math.floor(y / CH); let d1 = 1e9, d2 = 1e9, best = null;
     for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) { const s = seed(i, j), d = Math.hypot(wdx(x, s[0]), (y - s[1]) * 1.25); if (d < d1) { d2 = d1; d1 = d; best = s; } else if (d < d2) d2 = d; }
     let idx = 1 + (best[2] % 3) + ((best[2] >> 5) & 1);
@@ -105,22 +110,24 @@ function bakeRock(g) {                                                          
     if (y > 140) idx--;
     if (gap < 1.4) idx = 0; else if (gap < 3 && wdx(x, best[0]) < 0 && y < best[1]) idx++;
     else if ((hash(x, y) >> 7) % 17 === 0) idx += (hash(y, x) & 1) ? 1 : -1;
+    if (y < 0) idx -= 2;   /* above the composition: the ceiling's solid rock, facets faint */
     rect(g, x, y, 1, 1, ROCK[clamp(idx, 0, 4)]); } }
 export function bakeStation() {
-  return once('station', () => { const [c, g] = canvas(SW, SH);
+  return once('station', () => { const [c, g] = canvas(SW, STH); OY = STATION_PAD;
+    try {
     bakeRock(g);
     /* the ceiling: a shadowed overhang band, a lit lip, hanging rock with pale icicle tips */
     const ceil = x => Math.round(17 + pn(x, 2) * 9 + (hash(x >> 2, 6) % 4));
-    for (let x = 0; x < TP; x++) { const cy = ceil(x); for (let y = 0; y < cy; y++) rect(g, x, y, 1, 1, ROCK[(hash(x, y) % 6 === 0) ? 1 : 0]); rect(g, x, cy, 1, 1, ROCK[4]); rect(g, x, cy + 1, 1, 1, ROCK[1]); }
+    for (let x = 0; x < TP; x++) { const cy = ceil(x); for (let y = -STATION_PAD; y < cy; y++) rect(g, x, y, 1, 1, ROCK[(hash(x, y) % 6 === 0) ? 1 : 0]); rect(g, x, cy, 1, 1, ROCK[4]); rect(g, x, cy + 1, 1, 1, ROCK[1]); }
     for (let k = 0, x = 6; x < TP - 10; k++, x += 22 + (hash(k, 11) % 20)) { const w = 4 + (hash(k, 3) % 5), l = 6 + (hash(k, 4) % 15);
       for (let q = 0; q < l; q++) { const hw = Math.max(0, Math.round(w / 2 * (1 - q / l))); for (let i = -hw; i <= hw; i++) rect(g, x + i, ceil(x + i) + 1 + q, 1, 1, i < 0 ? ROCK[3] : ROCK[1]); }
       if (hash(k, 9) % 2 === 0) for (let q = 0; q < 4; q++) rect(g, x, ceil(x) + 1 + l + q, 1, 1, q < 3 ? RIME[0] : RIME[1]); }
     /* THE ARCH: a rough rock frame round a dark throat; the throat recedes in five arches to a small exit */
     const AX = 240, AR = 100, TOP = 26, VPX = AX + 26;
-    const shell = k => { const t = k / 5, e = Math.pow(t, 0.8), hw = Math.round(lerp(AR, 16, e)), top = Math.round(lerp(TOP, 78, e)), cx = Math.round(lerp(AX, VPX, e)); return { hw, top, cx, cy: top + hw, fl: Math.round(lerp(SH, 118, e)) }; };
+    const shell = k => { const t = k / 5, e = Math.pow(t, 0.8), hw = Math.round(lerp(AR, 16, e)), top = Math.round(lerp(TOP, 78, e)), cx = Math.round(lerp(AX, VPX, e)); return { hw, top, cx, cy: top + hw, fl: k === 0 ? SH + STATION_PAD : Math.round(lerp(SH, 118, e)) }; };   /* the first arch's floor runs on down to the bake's foot */
     const inArch = (S, x, y) => { const dx = wdx(x, S.cx); return Math.abs(dx) <= S.hw && y >= S.top && (y >= S.cy ? y <= S.fl : Math.hypot(dx, y - S.cy) <= S.hw); };
     const wob = x => Math.round(pn(x, 4) * 5);
-    for (let y = TOP - 14; y < SH; y++) for (let x = AX - AR - 16; x <= AX + AR + 16; x++) {                                          /* the frame's lit lip and inner shadow */
+    for (let y = TOP - 14; y < SH + STATION_PAD; y++) for (let x = AX - AR - 16; x <= AX + AR + 16; x++) {                                          /* the frame's lit lip and inner shadow */
       const dx = x - AX, dist = y < TOP + AR ? Math.hypot(dx, y - (TOP + AR)) : Math.abs(dx), e = dist - (AR + wob(x));
       if (e > 0 && e <= 1) rect(g, x, y, 1, 1, dx < 0 ? ROCK[5] : ROCK[4]); else if (e > 1 && e <= 4) rect(g, x, y, 1, 1, ROCK[(hash(x, y) % 4 === 0) ? 1 : 0]);
       else if (e <= 0) rect(g, x, y, 1, 1, ROCK[0]); }
@@ -139,9 +146,10 @@ export function bakeStation() {
       for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) { const pk = S.fl - 4 - Math.round(Math.abs(Math.sin(x * 0.4)) * 6 + Math.max(0, 6 - Math.abs(x - S.cx - 4))); for (let y = pk; y <= S.fl; y++) if (inArch(S, x, y)) rect(g, x, y, 1, 1, y === pk ? MT[5] : MT[3]); }
       for (let x = S.cx - S.hw; x <= S.cx + S.hw; x++) { const dx = x - S.cx, yy = Math.round(S.cy - Math.sqrt(Math.max(0, S.hw * S.hw - dx * dx))); rect(g, x, yy - 1, 1, 1, ROCK[2]); } }
     /* the ore road: two rails run from our feet to the exit, sleepers between, a few glints where the daylight finds them */
-    for (let y = 119; y < SH; y++) { const t = (y - 118) / (SH - 118), cx = lerp(VPX, AX, t), sp = lerp(1, 48, t);
+    for (let y = 119; y < SH + STATION_PAD; y++) { const t = (y - 118) / (SH - 118), cx = lerp(VPX, AX, Math.min(1, t)), sp = t <= 1 ? lerp(1, 48, t) : Math.min(84, 48 + (y - SH) * 0.3);   /* past the old foot the road runs on to the bottom, the rails still opening */
       rect(g, Math.round(cx - sp), y, 1, 1, y < 130 && y % 2 ? IRON[4] : IRON[3]); rect(g, Math.round(cx + sp), y, 1, 1, y < 130 && y % 2 ? IRON[3] : IRON[2]); }
     for (let i = 1; i < 13; i++) { const t = Math.pow(i / 13, 1.8), y = Math.round(119 + (SH - 119) * t), cx = lerp(VPX, AX, t), sp = lerp(1, 48, t); rect(g, Math.round(cx - sp - 2), y, Math.round(sp * 2 + 5), t > 0.4 ? 2 : 1, '#2a2218'); }
+    for (let y = SH + 4, q = 0; y < SH + STATION_PAD; y += 7 + (q++ >> 2)) { const sp = Math.min(84, 48 + (y - SH) * 0.3); rect(g, AX - sp - 2, y, sp * 2 + 5, 2, '#2a2218'); }   /* the sleepers go on, a little further apart */
     /* two hung lamps in the throat, dim amber on a dithered halo */
     for (const [lx, ly, hl] of [[AX - 56, 66, 5], [AX + 4, 84, 4]]) {
       for (let y = -11; y <= 11; y++) for (let x = -14; x <= 14; x++) { const d = Math.hypot(x / 1.3, y); if (d < 4.5) rect(g, lx + x, ly + y, 1, 1, CAVE[5]); else if (d < 10 && ((x + y) & 1) === 0) rect(g, lx + x, ly + y, 1, 1, CAVE[4]); }
@@ -162,15 +170,18 @@ export function bakeStation() {
       for (let q = 0; q < 6; q++) rect(g, wx - 11 + q * 4, wy + 1, 2, 10, q % 2 ? ROPE[1] : ROPE[2]); rect(g, wx - 18, wy - 2, 2, 2, IRON[4]); rect(g, wx + 16, wy - 2, 2, 2, IRON[4]); rect(g, wx + 14, wy + 4, 10, 2, IRON[3]); rect(g, wx + 22, wy + 2, 2, 6, IRON[4]); }
     { const W = STATION_WHEEL, c0 = ceil(W.x); rect(g, W.x - 2, c0, 4, W.y - c0, IRON[2]); rect(g, W.x - 2, c0, 1, W.y - c0, IRON[3]); rect(g, W.x - 10, c0 - 2, 20, 4, IRON[1]); rect(g, W.x - 10, c0 - 2, 20, 1, IRON[3]);   /* the sheave's hanger bolted to the ceiling */
       for (const sx of [-1, 1]) for (let q = 0; q < W.r; q++) rect(g, W.x + sx * (W.r + 2), W.y - q, 1, 1, IRON[1]); rect(g, W.x - W.r - 2, W.y - W.r, W.r * 2 + 5, 2, IRON[2]); }
+    } finally { OY = 0; }
     return c; });
 }
 /* the near layer: the ceiling's dark lip and four hanging masses, the darkest thing on screen, slid at 0.55 over the wall */
 export function bakeStationNear() {
-  return once('stationNear', () => { const [c, g] = canvas(SW, SH);
-    for (let x = 0; x < TP; x++) { const cy = Math.round(7 + pn(x, 5) * 5 + (hash(x >> 1, 8) % 3)); for (let y = 0; y < cy; y++) rect(g, x, y, 1, 1, ROCK[0]); rect(g, x, cy, 1, 1, ROCK[1]); }
+  return once('stationNear', () => { const [c, g] = canvas(SW, STH); OY = STATION_PAD;
+    try {
+    for (let x = 0; x < TP; x++) { const cy = Math.round(7 + pn(x, 5) * 5 + (hash(x >> 1, 8) % 3)); for (let y = -STATION_PAD; y < cy; y++) rect(g, x, y, 1, 1, ROCK[0]); rect(g, x, cy, 1, 1, ROCK[1]); }
     for (const [mx, w, l] of [[58, 36, 78], [214, 30, 62], [352, 40, 92], [520, 28, 56]]) for (let y = 0; y < l; y++) { const t = y / l, hw = Math.round(w / 2 * (1 - t * 0.9) + pn(mx * 7 + y * 4, 3) * 2.5);
       for (let i = -hw; i <= hw; i++) rect(g, mx + i, y, 1, 1, i === hw || (i === hw - 1 && y % 3) ? ROCK[2] : ROCK[0]);
       if (y > l - 8 && hash(mx, y) % 2) rect(g, mx, y, 1, 1, RIME[0]); }
+    } finally { OY = 0; }
     return c; });
 }
 
@@ -213,13 +224,13 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full = true) {
     g.globalAlpha = (1 - sa) * 0.34 * (1 - p); g.fillStyle = MISTC; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1;
   }
   if (sa > 0) {
-    const S = bakeStation(), N = bakeStationNear(), w = S.width, y = Math.round(Math.min(0, VH - S.height) + Math.min(dY * 0.2, 12)); let x0 = ((-cx * 0.3) % w + w) % w; if (x0 > 0) x0 -= w;
-    g.globalAlpha = sa; for (let x = x0; x < VW; x += w) g.drawImage(S, Math.round(x), y);
-    for (let x = x0; x < VW; x += w) { const W = STATION_WHEEL; g.globalAlpha = sa * 0.8; wheel(g, Math.round(x) + W.x, y + W.y, W.r, time * 0.9);   /* the sheave wheel turning on its ceiling hanger */
-      g.globalAlpha = sa * (0.045 + 0.02 * Math.sin(time * 7)); g.fillStyle = '#ffb23c'; for (const [lx, ly] of [[184, 66], [244, 84]]) g.fillRect(Math.round(x) + lx - 16, y + ly - 11, 32, 22); }   /* the two lamps breathe */
+    const S = bakeStation(), N = bakeStationNear(), w = S.width, y = Math.round((VH - SH) / 2 - STATION_PAD + clamp(dY * 0.2, -12, 12)), yc = y + STATION_PAD; let x0 = ((-cx * 0.3) % w + w) % w; if (x0 > -SHAKE_PAD) x0 -= w;   /* a tile always starts left of the shake margin */
+    g.globalAlpha = sa; for (let x = x0; x < VW + SHAKE_PAD; x += w) g.drawImage(S, Math.round(x), y);
+    for (let x = x0; x < VW + SHAKE_PAD; x += w) { const W = STATION_WHEEL; g.globalAlpha = sa * 0.8; wheel(g, Math.round(x) + W.x, yc + W.y, W.r, time * 0.9);   /* the sheave wheel turning on its ceiling hanger */
+      g.globalAlpha = sa * (0.045 + 0.02 * Math.sin(time * 7)); g.fillStyle = '#ffb23c'; for (const [lx, ly] of [[184, 66], [244, 84]]) g.fillRect(Math.round(x) + lx - 16, yc + ly - 11, 32, 22); }   /* the two lamps breathe */
     /* daylight spill (claude/batch189): the exit's cool light washes the cave wall in the band where Skyhook perches and rides, so his dark coat reads against paler stone; the ceiling stays dark */
     g.fillStyle = '#8ea4c6'; for (let yy = 10; yy < 104; yy += 2) { const b = clamp((yy - 10) / 14) * clamp((104 - yy) / 14); g.globalAlpha = sa * 0.24 * ease(b); g.fillRect(0, yy, VW, 2); }
-    let xn = ((-cx * 0.55) % w + w) % w; if (xn > 0) xn -= w; g.globalAlpha = sa * 0.92; for (; xn < VW; xn += w) g.drawImage(N, Math.round(xn), y);   /* the near layer: hanging rock */
+    let xn = ((-cx * 0.55) % w + w) % w; if (xn > -SHAKE_PAD) xn -= w; g.globalAlpha = sa * 0.92; for (; xn < VW + SHAKE_PAD; xn += w) g.drawImage(N, Math.round(xn), y);   /* the near layer: hanging rock */
     g.globalAlpha = sa * 0.9; g.fillStyle = ROCKEDGE; for (let yy = 0; yy < VH; yy += 3) { const a = 3 + (hash(yy, 5) % 7) + Math.max(0, 12 - yy / 3) * 0.5, b = 3 + (hash(yy, 6) % 7) + Math.max(0, 12 - yy / 3) * 0.5; g.fillRect(0, yy, Math.round(a), 3); g.fillRect(VW - Math.round(b), yy, Math.round(b), 3); }   /* dark rock silhouettes at both walls */
     g.globalAlpha = 1;
   }

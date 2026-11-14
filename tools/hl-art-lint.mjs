@@ -65,7 +65,7 @@ ok(BAD.length === 0, 'supports: no NaN or bad colour ' + BAD.slice(0, 3)); ok(co
 // ---------- C. THE BACKDROP ----------
 reset();
 const mtn = HLB.bakeMountain(), far = HLB.bakeFar(), st = HLB.bakeStation();
-ok(mtn.width === HLB.MW && mtn.height === HLB.MH, 'mountain 480x300'); ok(far.width === 480 && st.width === 640 && st.height === 180, 'far range and station bake'); ok(HLB.bakeMountain() === mtn && HLB.bakeStation() === st, 'layers bake once');
+ok(mtn.width === HLB.MW && mtn.height === HLB.MH, 'mountain 480x300'); ok(far.width === 480 && st.width === 640 && st.height === HLB.STH && HLB.STH === 180 + 2 * HLB.STATION_PAD, 'far range and station bake'); ok(HLB.bakeMountain() === mtn && HLB.bakeStation() === st, 'layers bake once');
 { let last = null, grow = true, slide = true; for (let p = 0; p <= 1.0001; p += 0.05) { const G = HLB.mouthGeom(p, 320, 180, 0); if (last && (G.s < last.s || G.y < last.y)) { grow = false; slide = false; } last = G; ok([G.s, G.x, G.y, G.w, G.h].every(Number.isFinite), 'mouth geometry finite at ' + p); }
   ok(grow, 'the cave mouth only grows as you climb'); ok(slide, 'and slides down the screen as you rise'); const g0 = HLB.mouthGeom(0, 320, 180, 0), g1 = HLB.mouthGeom(1, 320, 180, 0); ok(g1.s / g0.s > 5, 'it grows more than five-fold: ' + (g1.s / g0.s).toFixed(1)); ok(g0.s < 0.35 && g1.s > 1.6, 'scale from ' + g0.s + ' to ' + g1.s); }
 ok(HLB.stationAlpha(L.H * 16) === 0 && HLB.stationAlpha(0) === 1 && HLB.stationAlpha(40 * 16) > 0.9, 'the station wall takes over inside the cave');
