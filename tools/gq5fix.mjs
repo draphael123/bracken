@@ -1,6 +1,6 @@
 // tools/gq5fix.mjs - GQ5FIX (Daniel 11-12 14:04, Highcrown pass 4 feedback). NODE ONLY, no page.
-//   C  THE PRINCESS'S BELL: every hero reaches the bell's hit box with a standing JUMP blow from the belfry landing, and the rope with a standing blow from the floor;
-//      the Queen's hall bell (the winch box, t = y-22) with a standing blow. Hero rise = src/hero-move.js flown by src/reach-hero.js; the blow boxes are the plain
+//   C  THE PRINCESS'S BELL: (flags off) every hero reaches the bell's hit box with a standing JUMP blow from the belfry landing, and the rope with a standing blow from the floor;
+//      (gq6fix flags ON, the shipped state: the bell is DRESSING hung high, and NO hero reaches it); the Queen's hall bell (the winch box, t = y-22) with a standing blow. Hero rise = src/hero-move.js flown by src/reach-hero.js; the blow boxes are the plain
 //      air/stand boxes of main.js attackBox0 (the table below). The weakest plain blow of each hero is used (the up-slash and the rising cut reach higher).
 //   D  THE ALARM TIMERS: no forced idle over 3 s at the pass-4 alarm gates.
 //   E  THE QUEEN'S STAFF: a 'back' sceptre is drawn over her body (not behind it), so no pose drops it.
@@ -13,6 +13,8 @@ import { LEVELS, T } from '../src/level.js';
 import { HERO_MOVE_IDS } from '../src/hero-move.js';
 import { heroJumps } from '../src/reach-hero.js';
 import { GP } from '../src/goblin-princess.js';
+import { P5 } from '../src/gq5p.js';
+import { Q6 } from '../src/gq6fix.js';
 const rd = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 const TS = 16, L = LEVELS.find(l => l.id === 'crown').build(), W = L.W, g = (x, y) => (x < 0 || y < 0 || x >= W || y >= L.H) ? T.SOLID : L.grid[y * W + x];
@@ -20,6 +22,8 @@ const solidish = v => v !== T.AIR && v !== T.NET && v !== T.SPIKE;
 
 console.log("== C. the Princess's bell");
 { const M = L.mini, Ar = M.grate, bx = Ar.col * TS + 8, by0 = (Ar.gy0 + GP.bell.hang) * TS, box = { l: bx - 12, r: bx + 13, t: by0, b: by0 + 30 };
+  /* (gq6fix 11-13, Daniel 11-14) GQ5P retired the bell: with both flags on it is DRESSING, hung back up (hang 4) where it cannot be struck; flags off = the old reachable bell (hang 7) */
+  const DRESSING = !!(P5 && Q6); if (DRESSING) ok(GP.bell.hang === 4, 'the dressing bell hangs high (GP.bell.hang ' + GP.bell.hang + ', was 7 = a standing jump\x27s reach)');
   const landing = M.land.y;   /* the belfry landing's top: where a hero's feet stand on it */
   /* the plain blow box in the air, [top, bottom, reach] from the feet y (P.y): main.js attackBox0 - generic swing (t -17, b -1, 22 out), pirate (-19), warden thrust (-16, 40 out),
      ranger knife (-22 / +2, 17 out), berserker AIR SPIN (-26, 17 both sides), geomancer head-strike (-28), paladin hammer (-24); pyromancer and reaper use the generic top (weaker than theirs) */
@@ -27,6 +31,7 @@ console.log("== C. the Princess's bell");
   for (const h of HERO_MOVE_IDS) { const J = heroJumps(h), rise = J.risePx, a = AIR[h]; if (!a) { ok(false, h + ': no blow table'); continue; }
     const apex = landing - rise, atk = { l: bx - 4 - a[2], r: bx + 4 + a[2], t: apex + a[0], b: apex + a[1] };   /* standing under the bell's centre line, at the top of the jump */
     const hit = atk.l < box.r && atk.r > box.l && atk.t < box.b && atk.b > box.t, slack = Math.min(atk.b, box.b) - Math.max(atk.t, box.t);
+    if (DRESSING) ok(!hit, h + ': the dressing bell is out of reach of a standing jump from the landing (rise ' + rise.toFixed(1) + ' px): blow y ' + atk.t.toFixed(0) + '..' + atk.b.toFixed(0) + ' vs bell ' + box.t + '..' + box.b + ' (gap ' + (-slack).toFixed(0) + ' px)'); else
     ok(hit, h + ': a standing jump from the landing (rise ' + rise.toFixed(1) + ' px) reaches the bell: blow y ' + atk.t.toFixed(0) + '..' + atk.b.toFixed(0) + ' vs bell ' + box.t + '..' + box.b + ' (overlap ' + slack.toFixed(0) + ' px)'); }
   ok(box.b < landing - 28, 'the bell hangs clear above a standing hero on the landing (bell bottom ' + box.b + ', head ' + (landing - 28) + ')');
   const rope = { l: M.rope - 8, r: M.rope + 8, t: M.floor - 34, b: M.floor };
